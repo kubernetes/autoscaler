@@ -692,7 +692,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
-	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
+	scaleDownFnStartTime := time.Now()
+	defer updateScaleDownMetrics(scaleDownFnStartTime, &findNodesToRemoveDuration, &nodeDeletionDuration)
 	nodesWithoutMaster := filterOutMasters(allNodes, pods)
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
@@ -831,14 +832,16 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
 	simulator.RemoveNodeFromTracker(sd.usageTracker, toRemove.Node.Name, sd.unneededNodes)
-	nodeDeletionStart := time.Now()
 
 	// Starting deletion.
-	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 	sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(true)
 
-	go func() {
+	go func(findNodesToRemoveDuration time.Duration) {
 		// Finishing the delete process once this goroutine is over.
+		nodeDeletionStart := time.Now()
+		nodeDeletionDuration := time.Duration(0)
+		defer updateScaleDownMetrics(scaleDownFnStartTime, &findNodesToRemoveDuration, &nodeDeletionDuration)
+
 		var result status.NodeDeleteResult
 		defer func() { sd.nodeDeletionTracker.AddNodeDeleteResult(toRemove.Node.Name, result) }()
 		defer sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(false)
@@ -849,6 +852,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			return
 		}
 		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, nodeGroup)
+		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
+
 		if result.ResultType != status.NodeDeleteOk {
 			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
 			return
@@ -858,7 +863,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		} else {
 			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, toRemove.Node, nodeGroup), metrics.Unready)
 		}
-	}()
+	}(findNodesToRemoveDuration)
 
 	scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups, map[string][]*apiv1.Pod{toRemove.Node.Name: toRemove.PodsToReschedule})
 	scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
