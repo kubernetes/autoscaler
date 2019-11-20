@@ -18,7 +18,7 @@ limitations under the License.
 
 package aws
 
-// InstanceType is sepc of EC2 instance
+// InstanceType is spec of EC2 instance
 type InstanceType struct {
 	InstanceType string
 	VCPU         int64
@@ -223,7 +223,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"c5d.12xlarge": {
 		InstanceType: "c5d.12xlarge",
 		VCPU:         48,
-		MemoryMb:     131072,
+		MemoryMb:     98304,
 		GPU:          0,
 	},
 	"c5d.18xlarge": {
@@ -235,7 +235,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"c5d.24xlarge": {
 		InstanceType: "c5d.24xlarge",
 		VCPU:         96,
-		MemoryMb:     262144,
+		MemoryMb:     196608,
 		GPU:          0,
 	},
 	"c5d.2xlarge": {
@@ -265,7 +265,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"c5d.metal": {
 		InstanceType: "c5d.metal",
 		VCPU:         96,
-		MemoryMb:     262144,
+		MemoryMb:     196608,
 		GPU:          0,
 	},
 	"c5d.xlarge": {
@@ -436,6 +436,12 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          1,
 	},
+	"g4dn": {
+		InstanceType: "g4dn",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          8,
+	},
 	"g4dn.12xlarge": {
 		InstanceType: "g4dn.12xlarge",
 		VCPU:         48,
@@ -465,6 +471,12 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         32,
 		MemoryMb:     131072,
 		GPU:          1,
+	},
+	"g4dn.metal": {
+		InstanceType: "g4dn.metal",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          8,
 	},
 	"g4dn.xlarge": {
 		InstanceType: "g4dn.xlarge",
@@ -1700,6 +1712,30 @@ var InstanceTypes = map[string]*InstanceType{
 		InstanceType: "u-12tb1",
 		VCPU:         448,
 		MemoryMb:     12582912,
+		GPU:          0,
+	},
+	"u-18tb1": {
+		InstanceType: "u-18tb1",
+		VCPU:         448,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"u-18tb1.metal": {
+		InstanceType: "u-18tb1.metal",
+		VCPU:         448,
+		MemoryMb:     18874368,
+		GPU:          0,
+	},
+	"u-24tb1": {
+		InstanceType: "u-24tb1",
+		VCPU:         448,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"u-24tb1.metal": {
+		InstanceType: "u-24tb1.metal",
+		VCPU:         448,
+		MemoryMb:     25165824,
 		GPU:          0,
 	},
 	"u-6tb1": {
