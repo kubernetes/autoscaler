@@ -208,6 +208,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	if err != nil {
 		klog.Errorf("Cannot get cluster history: %v", err)
 	}
+
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
 		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)

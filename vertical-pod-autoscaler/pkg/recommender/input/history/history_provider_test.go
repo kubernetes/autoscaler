@@ -243,3 +243,71 @@ func TestGetLabels(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
 }
+
+func TestSplitTimeShards(t *testing.T) {
+	tests := []struct {
+		name      string
+		timeWidth string
+		step      string
+		expected  []string
+	}{
+		{
+			name:      "time range shorter than a day",
+			timeWidth: "6h",
+			step:      "30s",
+			expected:  []string{"6h"},
+		},
+		{
+			name:      "two days",
+			timeWidth: "2d",
+			step:      "30s",
+			expected:  []string{"1d", "1d"},
+		},
+		{
+			name:      "a week",
+			timeWidth: "7d",
+			step:      "30s",
+			expected:  []string{"1d", "1d", "1d", "1d", "1d", "1d", "1d"},
+		},
+		{
+			name:      "two and a bit days",
+			timeWidth: "60h",
+			step:      "30s",
+			expected:  []string{"12h", "1d", "1d"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			dur, err := prommodel.ParseDuration(test.timeWidth)
+			assert.NoError(t, err)
+			step, err := prommodel.ParseDuration(test.step)
+			assert.NoError(t, err)
+
+			end := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+			start := end.Add(-time.Duration(dur))
+
+			expRange := []prometheusv1.Range{}
+			rangeStart := start
+			for _, d := range test.expected {
+
+				rangeDur, err := prommodel.ParseDuration(d)
+				assert.NoError(t, err)
+
+				rangeEnd := rangeStart.Add(time.Duration(rangeDur))
+
+				expRange = append(expRange, prometheusv1.Range{
+					Start: rangeStart,
+					End:   rangeEnd,
+					Step:  time.Duration(step),
+				})
+				rangeStart = rangeEnd
+			}
+
+			result := splitTimeShards(start, end, time.Duration(step))
+
+			assert.Equal(t, expRange, result)
+		})
+	}
+}

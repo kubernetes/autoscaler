@@ -19,6 +19,7 @@ package history
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -27,7 +28,10 @@ import (
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/klog"
 )
+
+const Day = 24 * time.Hour
 
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
@@ -126,6 +130,57 @@ func (p *prometheusHistoryProvider) getPodLabelsMap(metric prommodel.Metric) map
 	return podLabels
 }
 
+// splitTimeShards splits a larger range of time into smaller time periods
+// (currently of a day each, but this may change in future).
+// It returns a slice of v1.Ranges with the first Range starting at the given
+// time and the last Range ending at the given end time.
+// Each Range will be no more than a day.
+func splitTimeShards(start, end time.Time, step time.Duration) []prometheusv1.Range {
+	timeRange := end.Sub(start)
+
+	if timeRange < Day {
+		// no need to split up time range
+		return []prometheusv1.Range{
+			{
+				Start: start,
+				End:   end,
+				Step:  step,
+			},
+		}
+	}
+
+	// split time range up into days, save the remainder
+	days := int(math.Floor(timeRange.Hours() / 24.))
+	remainder := timeRange - (time.Duration(days) * Day)
+
+	res := []prometheusv1.Range{}
+
+	rangeStart := start
+	rangeEnd := start.Add(remainder)
+
+	// If there's a remainder bit, put it first
+	if int(remainder) > 0 {
+		res = append(res, prometheusv1.Range{
+			Start: rangeStart,
+			End:   rangeEnd,
+			Step:  step,
+		})
+	}
+
+	// Add ranges of a day each
+	for i := 0; i < days; i++ {
+		rangeStart = rangeEnd
+		rangeEnd = rangeStart.Add(Day)
+		res = append(res, prometheusv1.Range{
+			Start: rangeStart,
+			End:   rangeEnd,
+			Step:  step,
+		})
+	}
+
+	return res
+}
+
 func promMetricToLabelMap(metric prommodel.Metric) map[string]string {
 	labels := map[string]string{}
 	for k, v := range metric {
@@ -167,44 +222,44 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 	end := time.Now()
 	start := end.Add(-time.Duration(historyDuration))
 
-	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
-	defer cancel()
-
 	step, err := prommodel.ParseDuration(p.config.HistoryResolution)
 	if err != nil {
 		return fmt.Errorf("history resolution %s is not a valid duration: %v", p.config.HistoryResolution, err)
 	}
 
-	v, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
-		Start: start,
-		End:   end,
-		Step:  time.Duration(step),
-	})
+	for _, r := range splitTimeShards(start, end, time.Duration(step)) {
+		ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
+		defer cancel()
 
-	if err != nil {
-		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
-	}
+		klog.V(4).Infof("Running query for %s between %s and %s with step %s", query, r.Start.Format(time.RFC3339), r.End.Format(time.RFC3339), r.Step.String())
+		v, err := p.prometheusClient.QueryRange(ctx, query, r)
 
-	matrix, ok := v.(prommodel.Matrix)
-	if !ok {
-		return fmt.Errorf("expected query to return a matrix; got result type %T", v)
-	}
-
-	for _, ts := range matrix {
-		containerID, err := p.getContainerIDFromLabels(ts.Metric)
 		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels: %v", ts.Metric)
+			return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 		}
 
-		newSamples := getContainerUsageSamplesFromSamples(ts.Values, resource)
-		podHistory, ok := res[containerID.PodID]
+		matrix, ok := v.(prommodel.Matrix)
 		if !ok {
-			podHistory = newEmptyHistory()
-			res[containerID.PodID] = podHistory
+			return fmt.Errorf("expected query to return a matrix; got result type %T", v)
 		}
-		podHistory.Samples[containerID.ContainerName] = append(
-			podHistory.Samples[containerID.ContainerName],
-			newSamples...)
+		klog.V(4).Infof("Got %d results for query", len(matrix))
+
+		for _, ts := range matrix {
+			containerID, err := p.getContainerIDFromLabels(ts.Metric)
+			if err != nil {
+				return fmt.Errorf("cannot get container ID from labels: %v", ts.Metric)
+			}
+
+			newSamples := getContainerUsageSamplesFromSamples(ts.Values, resource)
+			podHistory, ok := res[containerID.PodID]
+			if !ok {
+				podHistory = newEmptyHistory()
+				res[containerID.PodID] = podHistory
+			}
+			podHistory.Samples[containerID.ContainerName] = append(
+				podHistory.Samples[containerID.ContainerName],
+				newSamples...)
+		}
 	}
 	return nil
 }
@@ -213,7 +268,11 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
 	defer cancel()
 
-	v, err := p.prometheusClient.Query(ctx, query, time.Now())
+	t := time.Now()
+
+	klog.V(4).Infof("Running query for %s for %s", query, t.Format(time.RFC3339))
+
+	v, err := p.prometheusClient.Query(ctx, query, t)
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for labels: %v", err)
 	}
@@ -222,6 +281,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 	if !ok {
 		return fmt.Errorf("expected query to return a matrix; got result type %T", v)
 	}
+	klog.V(4).Infof("Got %d results for query", len(matrix))
 
 	for _, ts := range matrix {
 		podID, err := p.getPodIDFromLabels(ts.Metric)
@@ -248,7 +308,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	podSelector := fmt.Sprintf("job=\"%s\", %s=~\".+\", %s!=\"POD\", %s!=\"\"",
 		p.config.CadvisorMetricsJobName, p.config.CtrPodNameLabel,
 		p.config.CtrNameLabel, p.config.CtrNameLabel)
-	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryLength), model.ResourceCPU)
+	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryResolution), model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
