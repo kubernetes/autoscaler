@@ -31,6 +31,7 @@ import (
 	"k8s.io/klog"
 )
 
+// Day is a shortcut for the Prometheus-defined day (which is always 24 hours, unlike real days
 const Day = 24 * time.Hour
 
 // PrometheusHistoryProviderConfig allow to select which metrics
