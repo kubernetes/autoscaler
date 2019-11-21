@@ -265,39 +265,53 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 }
 
 func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHistory, query string) error {
+	historyDuration, err := prommodel.ParseDuration(p.config.HistoryLength)
+	if err != nil {
+		return fmt.Errorf("history length %s is not a valid duration: %v", p.config.HistoryLength, err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
 	defer cancel()
 
-	t := time.Now()
+	end := time.Now()
+	start := end.Add(-time.Duration(historyDuration))
 
-	klog.V(4).Infof("Running query for %s for %s", query, t.Format(time.RFC3339))
-
-	v, err := p.prometheusClient.Query(ctx, query, t)
+	step, err := prommodel.ParseDuration(p.config.HistoryResolution)
 	if err != nil {
-		return fmt.Errorf("cannot get timeseries for labels: %v", err)
+		return fmt.Errorf("history resolution %s is not a valid duration: %v", p.config.HistoryResolution, err)
 	}
 
-	matrix, ok := v.(prommodel.Matrix)
-	if !ok {
-		return fmt.Errorf("expected query to return a matrix; got result type %T", v)
-	}
-	klog.V(4).Infof("Got %d results for query", len(matrix))
+	for _, r := range splitTimeShards(start, end, time.Duration(step)) {
 
-	for _, ts := range matrix {
-		podID, err := p.getPodIDFromLabels(ts.Metric)
+		klog.V(4).Infof("Running query for %s between %s and %s with step %s", query, r.Start.Format(time.RFC3339), r.End.Format(time.RFC3339), r.Step.String())
+
+		v, err := p.prometheusClient.QueryRange(ctx, query, r)
 		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels %v: %v", ts.Metric, err)
+			return fmt.Errorf("cannot get timeseries for labels: %v", err)
 		}
-		podHistory, ok := res[*podID]
+
+		matrix, ok := v.(prommodel.Matrix)
 		if !ok {
-			podHistory = newEmptyHistory()
-			res[*podID] = podHistory
+			return fmt.Errorf("expected query to return a matrix; got result type %T", v)
 		}
-		podLabels := p.getPodLabelsMap(ts.Metric)
-		lastSample := ts.Values[len(ts.Values)-1]
-		if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
-			podHistory.LastSeen = lastSample.Timestamp.Time()
-			podHistory.LastLabels = podLabels
+		klog.V(4).Infof("Got %d results for query", len(matrix))
+
+		for _, ts := range matrix {
+			podID, err := p.getPodIDFromLabels(ts.Metric)
+			if err != nil {
+				return fmt.Errorf("cannot get container ID from labels %v: %v", ts.Metric, err)
+			}
+			podHistory, ok := res[*podID]
+			if !ok {
+				podHistory = newEmptyHistory()
+				res[*podID] = podHistory
+			}
+			podLabels := p.getPodLabelsMap(ts.Metric)
+			lastSample := ts.Values[len(ts.Values)-1]
+			if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
+				podHistory.LastSeen = lastSample.Timestamp.Time()
+				podHistory.LastLabels = podLabels
+			}
 		}
 	}
 	return nil
@@ -321,7 +335,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 			sort.Slice(samples, func(i, j int) bool { return samples[i].MeasureStart.Before(samples[j].MeasureStart) })
 		}
 	}
-	err = p.readLastLabels(res, fmt.Sprintf("%s[%s]", p.config.PodLabelsMetricName, p.config.HistoryLength))
+	err = p.readLastLabels(res, p.config.PodLabelsMetricName)
 	if err != nil {
 		return nil, err
 	}
