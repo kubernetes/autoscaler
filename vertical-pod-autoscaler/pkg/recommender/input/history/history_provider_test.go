@@ -30,15 +30,15 @@ import (
 )
 
 const (
-	cpuQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d])"
+	cpuQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[30s])"
 	memoryQuery = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}"
-	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
+	labelsQuery = "up{job=\"kubernetes-pods\"}[1d]"
 )
 
 func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProviderConfig {
 	return PrometheusHistoryProviderConfig{
 		Address:                "",
-		HistoryLength:          "8d",
+		HistoryLength:          "1d",
 		HistoryResolution:      "30s",
 		PodLabelPrefix:         "pod_label_",
 		PodLabelsMetricName:    "up{job=\"kubernetes-pods\"}",
