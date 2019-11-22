@@ -26,7 +26,7 @@ import (
 	"net"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -42,7 +42,6 @@ import (
 	"k8s.io/kubernetes/pkg/proxy/metrics"
 	"k8s.io/kubernetes/pkg/proxy/userspace"
 	"k8s.io/kubernetes/pkg/util/configz"
-	utildbus "k8s.io/kubernetes/pkg/util/dbus"
 	utilipset "k8s.io/kubernetes/pkg/util/ipset"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	utilipvs "k8s.io/kubernetes/pkg/util/ipvs"
@@ -84,13 +83,11 @@ func newProxyServer(
 	var ipvsInterface utilipvs.Interface
 	var kernelHandler ipvs.KernelHandler
 	var ipsetInterface utilipset.Interface
-	var dbus utildbus.Interface
 
 	// Create a iptables utils.
 	execer := exec.New()
 
-	dbus = utildbus.New()
-	iptInterface = utiliptables.New(execer, dbus, protocol)
+	iptInterface = utiliptables.New(execer, protocol)
 	kernelHandler = ipvs.NewLinuxKernelHandler()
 	ipsetInterface = utilipset.New(execer)
 	canUseIPVS, _ := ipvs.CanUseIPVSProxier(kernelHandler, ipsetInterface)
@@ -128,11 +125,9 @@ func newProxyServer(
 		Namespace: "",
 	}
 
-	var healthzServer *healthcheck.HealthzServer
-	var healthzUpdater healthcheck.HealthzUpdater
+	var healthzServer *healthcheck.ProxierHealthServer
 	if len(config.HealthzBindAddress) > 0 {
-		healthzServer = healthcheck.NewDefaultHealthzServer(config.HealthzBindAddress, 2*config.IPTables.SyncPeriod.Duration, recorder, nodeRef)
-		healthzUpdater = healthzServer
+		healthzServer = healthcheck.NewProxierHealthServer(config.HealthzBindAddress, 2*config.IPTables.SyncPeriod.Duration, recorder, nodeRef)
 	}
 
 	var proxier proxy.Provider
@@ -142,7 +137,8 @@ func newProxyServer(
 	if nodeIP.IsUnspecified() {
 		nodeIP = utilnode.GetNodeIP(client, hostname)
 		if nodeIP == nil {
-			return nil, fmt.Errorf("unable to get node IP for hostname %s", hostname)
+			klog.V(0).Infof("can't determine this node's IP, assuming 127.0.0.1; if this is incorrect, please set the --bind-address flag")
+			nodeIP = net.ParseIP("127.0.0.1")
 		}
 	}
 	if proxyMode == proxyModeIPTables {
@@ -165,7 +161,7 @@ func newProxyServer(
 			hostname,
 			nodeIP,
 			recorder,
-			healthzUpdater,
+			healthzServer,
 			config.NodePortAddresses,
 		)
 		if err != nil {
@@ -181,10 +177,10 @@ func newProxyServer(
 			var ipt [2]utiliptables.Interface
 			if iptInterface.IsIpv6() {
 				ipt[1] = iptInterface
-				ipt[0] = utiliptables.New(execer, dbus, utiliptables.ProtocolIpv4)
+				ipt[0] = utiliptables.New(execer, utiliptables.ProtocolIpv4)
 			} else {
 				ipt[0] = iptInterface
-				ipt[1] = utiliptables.New(execer, dbus, utiliptables.ProtocolIpv6)
+				ipt[1] = utiliptables.New(execer, utiliptables.ProtocolIpv6)
 			}
 
 			proxier, err = ipvs.NewDualStackProxier(
@@ -252,8 +248,6 @@ func newProxyServer(
 			return nil, fmt.Errorf("unable to create proxier: %v", err)
 		}
 	}
-
-	iptInterface.AddReloadFunc(proxier.Sync)
 
 	return &ProxyServer{
 		Client:                 client,
@@ -326,7 +320,7 @@ func getProxyMode(proxyMode string, khandle ipvs.KernelHandler, ipsetver ipvs.IP
 	case proxyModeIPVS:
 		return tryIPVSProxy(khandle, ipsetver, kcompat)
 	}
-	klog.Warningf("Flag proxy-mode=%q unknown, assuming iptables proxy", proxyMode)
+	klog.Warningf("Unknown proxy mode %q, assuming iptables proxy", proxyMode)
 	return tryIPTablesProxy(kcompat)
 }
 

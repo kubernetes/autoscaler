@@ -21,9 +21,10 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client-go metrics registration
+	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
 
-	"github.com/prometheus/client_golang/prometheus"
+	k8smetrics "k8s.io/component-base/metrics"
+	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog"
 )
 
@@ -92,32 +93,32 @@ const (
 
 var (
 	/**** Metrics related to cluster state ****/
-	clusterSafeToAutoscale = prometheus.NewGauge(
-		prometheus.GaugeOpts{
+	clusterSafeToAutoscale = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "cluster_safe_to_autoscale",
 			Help:      "Whether or not cluster is healthy enough for autoscaling. 1 if it is, 0 otherwise.",
 		},
 	)
 
-	nodesCount = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
+	nodesCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "nodes_count",
 			Help:      "Number of nodes in cluster.",
 		}, []string{"state"},
 	)
 
-	nodeGroupsCount = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
+	nodeGroupsCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "node_groups_count",
 			Help:      "Number of node groups managed by CA.",
 		}, []string{"node_group_type"},
 	)
 
-	unschedulablePodsCount = prometheus.NewGauge(
-		prometheus.GaugeOpts{
+	unschedulablePodsCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unschedulable_pods_count",
 			Help:      "Number of unschedulable pods in the cluster.",
@@ -125,16 +126,16 @@ var (
 	)
 
 	/**** Metrics related to autoscaler execution ****/
-	lastActivity = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
+	lastActivity = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "last_activity",
 			Help:      "Last time certain part of CA logic executed.",
 		}, []string{"activity"},
 	)
 
-	functionDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
+	functionDuration = k8smetrics.NewHistogramVec(
+		&k8smetrics.HistogramOpts{
 			Namespace: caNamespace,
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
@@ -142,8 +143,8 @@ var (
 		}, []string{"function"},
 	)
 
-	functionDurationSummary = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
+	functionDurationSummary = k8smetrics.NewSummaryVec(
+		&k8smetrics.SummaryOpts{
 			Namespace: caNamespace,
 			Name:      "function_duration_quantile_seconds",
 			Help:      "Quantiles of time taken by various parts of CA main loop.",
@@ -152,72 +153,72 @@ var (
 	)
 
 	/**** Metrics related to autoscaler operations ****/
-	errorsCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	errorsCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "errors_total",
 			Help:      "The number of CA loops failed due to an error.",
 		}, []string{"type"},
 	)
 
-	scaleUpCount = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	scaleUpCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_up_nodes_total",
 			Help:      "Number of nodes added by CA.",
 		},
 	)
 
-	gpuScaleUpCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	gpuScaleUpCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_up_gpu_nodes_total",
 			Help:      "Number of GPU nodes added by CA, by GPU name.",
 		}, []string{"gpu_name"},
 	)
 
-	failedScaleUpCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	failedScaleUpCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "failed_scale_ups_total",
 			Help:      "Number of times scale-up operation has failed.",
 		}, []string{"reason"},
 	)
 
-	scaleDownCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	scaleDownCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_down_nodes_total",
 			Help:      "Number of nodes removed by CA.",
 		}, []string{"reason"},
 	)
 
-	gpuScaleDownCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	gpuScaleDownCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_down_gpu_nodes_total",
 			Help:      "Number of GPU nodes removed by CA, by reason and GPU name.",
 		}, []string{"reason", "gpu_name"},
 	)
 
-	evictionsCount = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	evictionsCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of pods evicted by CA",
 		},
 	)
 
-	unneededNodesCount = prometheus.NewGauge(
-		prometheus.GaugeOpts{
+	unneededNodesCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unneeded_nodes_count",
 			Help:      "Number of nodes currently considered unneeded by CA.",
 		},
 	)
 
-	scaleDownInCooldown = prometheus.NewGauge(
-		prometheus.GaugeOpts{
+	scaleDownInCooldown = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "scale_down_in_cooldown",
 			Help:      "Whether or not the scale down is in cooldown. 1 if its, 0 otherwise.",
@@ -225,24 +226,24 @@ var (
 	)
 
 	/**** Metrics related to NodeAutoprovisioning ****/
-	napEnabled = prometheus.NewGauge(
-		prometheus.GaugeOpts{
+	napEnabled = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "nap_enabled",
 			Help:      "Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise.",
 		},
 	)
 
-	nodeGroupCreationCount = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	nodeGroupCreationCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "created_node_groups_total",
 			Help:      "Number of node groups created by Node Autoprovisioning.",
 		},
 	)
 
-	nodeGroupDeletionCount = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	nodeGroupDeletionCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "deleted_node_groups_total",
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
@@ -252,25 +253,25 @@ var (
 
 // RegisterAll registers all metrics.
 func RegisterAll() {
-	prometheus.MustRegister(clusterSafeToAutoscale)
-	prometheus.MustRegister(nodesCount)
-	prometheus.MustRegister(nodeGroupsCount)
-	prometheus.MustRegister(unschedulablePodsCount)
-	prometheus.MustRegister(lastActivity)
-	prometheus.MustRegister(functionDuration)
-	prometheus.MustRegister(functionDurationSummary)
-	prometheus.MustRegister(errorsCount)
-	prometheus.MustRegister(scaleUpCount)
-	prometheus.MustRegister(gpuScaleUpCount)
-	prometheus.MustRegister(failedScaleUpCount)
-	prometheus.MustRegister(scaleDownCount)
-	prometheus.MustRegister(gpuScaleDownCount)
-	prometheus.MustRegister(evictionsCount)
-	prometheus.MustRegister(unneededNodesCount)
-	prometheus.MustRegister(scaleDownInCooldown)
-	prometheus.MustRegister(napEnabled)
-	prometheus.MustRegister(nodeGroupCreationCount)
-	prometheus.MustRegister(nodeGroupDeletionCount)
+	legacyregistry.MustRegister(clusterSafeToAutoscale)
+	legacyregistry.MustRegister(nodesCount)
+	legacyregistry.MustRegister(nodeGroupsCount)
+	legacyregistry.MustRegister(unschedulablePodsCount)
+	legacyregistry.MustRegister(lastActivity)
+	legacyregistry.MustRegister(functionDuration)
+	legacyregistry.MustRegister(functionDurationSummary)
+	legacyregistry.MustRegister(errorsCount)
+	legacyregistry.MustRegister(scaleUpCount)
+	legacyregistry.MustRegister(gpuScaleUpCount)
+	legacyregistry.MustRegister(failedScaleUpCount)
+	legacyregistry.MustRegister(scaleDownCount)
+	legacyregistry.MustRegister(gpuScaleDownCount)
+	legacyregistry.MustRegister(evictionsCount)
+	legacyregistry.MustRegister(unneededNodesCount)
+	legacyregistry.MustRegister(scaleDownInCooldown)
+	legacyregistry.MustRegister(napEnabled)
+	legacyregistry.MustRegister(nodeGroupCreationCount)
+	legacyregistry.MustRegister(nodeGroupDeletionCount)
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
