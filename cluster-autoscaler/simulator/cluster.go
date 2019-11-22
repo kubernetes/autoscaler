@@ -233,7 +233,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta predicates.PredicateMetadata) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta predicates.Metadata) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
 			if nodeInfo.Node() == nil {

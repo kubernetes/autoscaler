@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -32,6 +33,44 @@ var (
 	showHiddenOnce sync.Once
 	showHidden     atomic.Value
 )
+
+// shouldHide be used to check if a specific metric with deprecated version should be hidden
+// according to metrics deprecation lifecycle.
+func shouldHide(currentVersion *semver.Version, deprecatedVersion *semver.Version) bool {
+	guardVersion, err := semver.Make(fmt.Sprintf("%d.%d.0", currentVersion.Major, currentVersion.Minor))
+	if err != nil {
+		panic("failed to make version from current version")
+	}
+
+	if deprecatedVersion.LT(guardVersion) {
+		return true
+	}
+
+	return false
+}
+
+func validateShowHiddenMetricsVersion(currentVersion semver.Version, targetVersionStr string) error {
+	if targetVersionStr == "" {
+		return nil
+	}
+
+	validVersionStr := fmt.Sprintf("%d.%d", currentVersion.Major, currentVersion.Minor-1)
+	if targetVersionStr != validVersionStr {
+		return fmt.Errorf("--show-hidden-metrics-for-version must be omitted or have the value '%v'. Only the previous minor version is allowed", validVersionStr)
+	}
+
+	return nil
+}
+
+// ValidateShowHiddenMetricsVersion checks invalid version for which show hidden metrics.
+func ValidateShowHiddenMetricsVersion(v string) []error {
+	err := validateShowHiddenMetricsVersion(parseVersion(version.Get()), v)
+	if err != nil {
+		return []error{err}
+	}
+
+	return nil
+}
 
 // SetShowHidden will enable showing hidden metrics. This will no-opt
 // after the initial call
@@ -62,6 +101,8 @@ type KubeRegistry interface {
 	RawRegister(prometheus.Collector) error
 	// Deprecated
 	RawMustRegister(...prometheus.Collector)
+	CustomRegister(c StableCollector) error
+	CustomMustRegister(cs ...StableCollector)
 	Register(Registerable) error
 	MustRegister(...Registerable)
 	Unregister(Registerable) bool
@@ -99,6 +140,29 @@ func (kr *kubeRegistry) MustRegister(cs ...Registerable) {
 		}
 	}
 	kr.PromRegistry.MustRegister(metrics...)
+}
+
+// CustomRegister registers a new custom collector.
+func (kr *kubeRegistry) CustomRegister(c StableCollector) error {
+	if c.Create(&kr.version, c) {
+		return kr.PromRegistry.Register(c)
+	}
+
+	return nil
+}
+
+// CustomMustRegister works like CustomRegister but registers any number of
+// StableCollectors and panics upon the first registration that causes an
+// error.
+func (kr *kubeRegistry) CustomMustRegister(cs ...StableCollector) {
+	collectors := make([]prometheus.Collector, 0, len(cs))
+	for _, c := range cs {
+		if c.Create(&kr.version, c) {
+			collectors = append(collectors, c)
+		}
+	}
+
+	kr.PromRegistry.MustRegister(collectors...)
 }
 
 // RawRegister takes a native prometheus.Collector and registers the collector
@@ -148,14 +212,9 @@ func newKubeRegistry(v apimachineryversion.Info) *kubeRegistry {
 	return r
 }
 
-func registerMetadataMetrics(r *kubeRegistry) {
-	RegisterBuildInfo(r)
-}
-
 // NewKubeRegistry creates a new vanilla Registry without any Collectors
 // pre-registered.
 func NewKubeRegistry() KubeRegistry {
 	r := newKubeRegistry(version.Get())
-	registerMetadataMetrics(r)
 	return r
 }

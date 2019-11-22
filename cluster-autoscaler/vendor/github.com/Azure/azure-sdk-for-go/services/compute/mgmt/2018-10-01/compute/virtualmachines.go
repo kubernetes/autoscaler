@@ -1270,7 +1270,7 @@ func (client VirtualMachinesClient) PowerOffResponder(resp *http.Response) (resu
 	return
 }
 
-// Redeploy the operation to redeploy a virtual machine.
+// Redeploy shuts down the virtual machine, moves it to a new node, and powers it back on.
 // Parameters:
 // resourceGroupName - the name of the resource group.
 // VMName - the name of the virtual machine.

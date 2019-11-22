@@ -1244,6 +1244,17 @@ type AutomaticOSUpgradeProperties struct {
 	AutomaticOSUpgradeSupported *bool `json:"automaticOSUpgradeSupported,omitempty"`
 }
 
+// AutomaticRepairsPolicy specifies the configuration parameters for automatic repairs on the virtual
+// machine scale set.
+type AutomaticRepairsPolicy struct {
+	// Enabled - Specifies whether automatic repairs should be enabled on the virtual machine scale set. The default value is false.
+	Enabled *bool `json:"enabled,omitempty"`
+	// GracePeriod - The amount of time for which automatic repairs are suspended due to a state change on VM. The grace time starts after the state change has completed. This helps avoid premature or accidental repairs. The time duration should be specified in ISO 8601 format. The default value is 5 minutes (PT5M).
+	GracePeriod *string `json:"gracePeriod,omitempty"`
+	// MaxInstanceRepairsPercent - The percentage (capacity of scaleset) of virtual machines that will be simultaneously repaired. The default value is 20%.
+	MaxInstanceRepairsPercent *int32 `json:"maxInstanceRepairsPercent,omitempty"`
+}
+
 // AvailabilitySet specifies information about the availability set that the virtual machine should be
 // assigned to. Virtual machines specified in the same availability set are allocated to different nodes to
 // maximize availability. For more information about availability sets, see [Manage the availability of
@@ -8709,6 +8720,8 @@ type VirtualMachineScaleSetOSProfile struct {
 type VirtualMachineScaleSetProperties struct {
 	// UpgradePolicy - The upgrade policy.
 	UpgradePolicy *UpgradePolicy `json:"upgradePolicy,omitempty"`
+	// AutomaticRepairsPolicy - Policy for automatic repairs.
+	AutomaticRepairsPolicy *AutomaticRepairsPolicy `json:"automaticRepairsPolicy,omitempty"`
 	// VirtualMachineProfile - The virtual machine profile.
 	VirtualMachineProfile *VirtualMachineScaleSetVMProfile `json:"virtualMachineProfile,omitempty"`
 	// ProvisioningState - READ-ONLY; The provisioning state, which only appears in the response.
@@ -9528,10 +9541,14 @@ type VirtualMachineScaleSetUpdateOSProfile struct {
 type VirtualMachineScaleSetUpdateProperties struct {
 	// UpgradePolicy - The upgrade policy.
 	UpgradePolicy *UpgradePolicy `json:"upgradePolicy,omitempty"`
+	// AutomaticRepairsPolicy - Policy for automatic repairs.
+	AutomaticRepairsPolicy *AutomaticRepairsPolicy `json:"automaticRepairsPolicy,omitempty"`
 	// VirtualMachineProfile - The virtual machine profile.
 	VirtualMachineProfile *VirtualMachineScaleSetUpdateVMProfile `json:"virtualMachineProfile,omitempty"`
 	// Overprovision - Specifies whether the Virtual Machine Scale Set should be overprovisioned.
 	Overprovision *bool `json:"overprovision,omitempty"`
+	// DoNotRunExtensionsOnOverprovisionedVMs - When Overprovision is enabled, extensions are launched only on the requested number of VMs which are finally kept. This property will hence ensure that the extensions do not run on the extra overprovisioned VMs.
+	DoNotRunExtensionsOnOverprovisionedVMs *bool `json:"doNotRunExtensionsOnOverprovisionedVMs,omitempty"`
 	// SinglePlacementGroup - When true this limits the scale set to a single placement group, of max size 100 virtual machines.
 	SinglePlacementGroup *bool `json:"singlePlacementGroup,omitempty"`
 }
