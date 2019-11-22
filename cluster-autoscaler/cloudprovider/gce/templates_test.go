@@ -614,7 +614,7 @@ func makeResourceList2(cpu int64, memory int64, gpu int64, pods int64) (apiv1.Re
 
 func assertEqualResourceLists(t *testing.T, name string, expected, actual apiv1.ResourceList) {
 	t.Helper()
-	assert.True(t, quota.V1Equals(expected, actual),
+	assert.True(t, quota.Equals(expected, actual),
 		"%q unequal:\nExpected: %v\nActual:   %v", name, stringifyResourceList(expected), stringifyResourceList(actual))
 }
 
