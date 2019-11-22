@@ -44,6 +44,8 @@ var (
 	memoryPerNode        = flag.String("extra-memory", "0Mi", "The amount of memory to add per node.")
 	baseStorage          = flag.String("storage", noValue, "The base storage resource requirement.")
 	storagePerNode       = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
+	scaleDownDelay       = flag.Duration("scale-down-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale down can be performed.")
+	scaleUpDelay         = flag.Duration("scale-up-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale up can be performed.")
 	recommendationOffset = flag.Int("recommendation-offset", 10, "A number from range 0-100. When the dependent's resources are rewritten, they are set to the closer end of the range defined by this percentage threshold.")
 	acceptanceOffset     = flag.Int("acceptance-offset", 20, "A number from range 0-100. The dependent's resources are rewritten when they deviate from expected by a percentage that is higher than this threshold. Can't be lower than recommendation-offset.")
 	// Flags to identify the container to nanny.
@@ -184,5 +186,7 @@ func main() {
 			RecommendationOffset: int64(*recommendationOffset),
 			Resources:            resources,
 		},
-		pollPeriod)
+		pollPeriod,
+		*scaleDownDelay,
+		*scaleUpDelay)
 }

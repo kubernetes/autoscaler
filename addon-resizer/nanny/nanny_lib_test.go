@@ -19,6 +19,7 @@ package nanny
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	api "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -130,111 +131,207 @@ var (
 		AcceptableRange:  ResourceListPair{belowStandardNoStorage, aboveStandardNoStorage},
 		RecommendedRange: ResourceListPair{belowStandardNoStorage, aboveStandardNoStorage},
 	}
+	noDelay        = time.Duration(0)
+	oneSecondDelay = time.Second
+	oneMinuteDelay = time.Minute
 )
 
 func TestCheckResources(t *testing.T) {
 	testCases := []struct {
-		x    api.ResourceList
-		e    *EstimatorResult
-		res  api.ResourceName
-		want *api.ResourceList
+		x       api.ResourceList
+		e       *EstimatorResult
+		res     api.ResourceName
+		wantRes *api.ResourceList
+		wantOp  operation
 	}{
 		// Test for the CPU resource type.
-		{standard, standardRecommended, "cpu", nil},
-		{belowStandard, standardRecommended, "cpu", nil},
-		{aboveStandard, standardRecommended, "cpu", nil},
-		{standard, standardAcceptableAboveRecommended, "cpu", nil},
-		{standard, standardAcceptableBelowRecommended, "cpu", nil},
-		{standard, standardAboveAcceptable, "cpu", &belowStandard},
-		{standard, standardBelowAcceptable, "cpu", &aboveStandard},
-		{noStorage, standardRecommended, "cpu", nil},
-		{noMemory, standardRecommended, "cpu", nil},
-		{noCPU, standardRecommended, "cpu", &belowStandard},
-		{smallStorage, standardRecommended, "cpu", nil},
-		{smallMemory, standardRecommended, "cpu", nil},
-		{smallCPU, standardRecommended, "cpu", &belowStandard},
-		{bigStorage, standardRecommended, "cpu", nil},
-		{bigMemory, standardRecommended, "cpu", nil},
-		{bigCPU, standardRecommended, "cpu", &aboveStandard},
+		{standard, standardRecommended, "cpu", nil, unknown},
+		{belowStandard, standardRecommended, "cpu", nil, unknown},
+		{aboveStandard, standardRecommended, "cpu", nil, unknown},
+		{standard, standardAcceptableAboveRecommended, "cpu", nil, unknown},
+		{standard, standardAcceptableBelowRecommended, "cpu", nil, unknown},
+		{standard, standardAboveAcceptable, "cpu", &belowStandard, scaleDown},
+		{standard, standardBelowAcceptable, "cpu", &aboveStandard, scaleUp},
+		{noStorage, standardRecommended, "cpu", nil, unknown},
+		{noMemory, standardRecommended, "cpu", nil, unknown},
+		{noCPU, standardRecommended, "cpu", &belowStandard, unknown},
+		{smallStorage, standardRecommended, "cpu", nil, unknown},
+		{smallMemory, standardRecommended, "cpu", nil, unknown},
+		{smallCPU, standardRecommended, "cpu", &belowStandard, scaleUp},
+		{bigStorage, standardRecommended, "cpu", nil, unknown},
+		{bigMemory, standardRecommended, "cpu", nil, unknown},
+		{bigCPU, standardRecommended, "cpu", &aboveStandard, scaleDown},
 
 		// Test for the memory resource type.
-		{standard, standardRecommended, "memory", nil},
-		{belowStandard, standardRecommended, "memory", nil},
-		{aboveStandard, standardRecommended, "memory", nil},
-		{standard, standardAcceptableAboveRecommended, "memory", nil},
-		{standard, standardAcceptableBelowRecommended, "memory", nil},
-		{standard, standardAboveAcceptable, "memory", &belowStandard},
-		{standard, standardBelowAcceptable, "memory", &aboveStandard},
-		{noStorage, standardRecommended, "memory", nil},
-		{noMemory, standardRecommended, "memory", &belowStandard},
-		{noCPU, standardRecommended, "memory", nil},
-		{smallStorage, standardRecommended, "memory", nil},
-		{smallMemory, standardRecommended, "memory", &belowStandard},
-		{smallCPU, standardRecommended, "memory", nil},
-		{bigStorage, standardRecommended, "memory", nil},
-		{bigMemory, standardRecommended, "memory", &aboveStandard},
-		{bigCPU, standardRecommended, "memory", nil},
+		{standard, standardRecommended, "memory", nil, unknown},
+		{belowStandard, standardRecommended, "memory", nil, unknown},
+		{aboveStandard, standardRecommended, "memory", nil, unknown},
+		{standard, standardAcceptableAboveRecommended, "memory", nil, unknown},
+		{standard, standardAcceptableBelowRecommended, "memory", nil, unknown},
+		{standard, standardAboveAcceptable, "memory", &belowStandard, scaleDown},
+		{standard, standardBelowAcceptable, "memory", &aboveStandard, scaleUp},
+		{noStorage, standardRecommended, "memory", nil, unknown},
+		{noMemory, standardRecommended, "memory", &belowStandard, unknown},
+		{noCPU, standardRecommended, "memory", nil, unknown},
+		{smallStorage, standardRecommended, "memory", nil, unknown},
+		{smallMemory, standardRecommended, "memory", &belowStandard, scaleUp},
+		{smallCPU, standardRecommended, "memory", nil, unknown},
+		{bigStorage, standardRecommended, "memory", nil, unknown},
+		{bigMemory, standardRecommended, "memory", &aboveStandard, scaleDown},
+		{bigCPU, standardRecommended, "memory", nil, unknown},
 
 		// Test for the storage resource type.
-		{standard, standardRecommended, "storage", nil},
-		{belowStandard, standardRecommended, "storage", nil},
-		{aboveStandard, standardRecommended, "storage", nil},
-		{standard, standardAcceptableAboveRecommended, "storage", nil},
-		{standard, standardAcceptableBelowRecommended, "storage", nil},
-		{standard, standardAboveAcceptable, "storage", &belowStandard},
-		{standard, standardBelowAcceptable, "storage", &aboveStandard},
-		{noStorage, standardRecommended, "storage", &belowStandard},
-		{noMemory, standardRecommended, "storage", nil},
-		{noCPU, standardRecommended, "storage", nil},
-		{smallStorage, standardRecommended, "storage", &belowStandard},
-		{smallMemory, standardRecommended, "storage", nil},
-		{smallCPU, standardRecommended, "storage", nil},
-		{bigStorage, standardRecommended, "storage", &aboveStandard},
-		{bigMemory, standardRecommended, "storage", nil},
-		{bigCPU, standardRecommended, "storage", nil},
+		{standard, standardRecommended, "storage", nil, unknown},
+		{belowStandard, standardRecommended, "storage", nil, unknown},
+		{aboveStandard, standardRecommended, "storage", nil, unknown},
+		{standard, standardAcceptableAboveRecommended, "storage", nil, unknown},
+		{standard, standardAcceptableBelowRecommended, "storage", nil, unknown},
+		{standard, standardAboveAcceptable, "storage", &belowStandard, scaleDown},
+		{standard, standardBelowAcceptable, "storage", &aboveStandard, scaleUp},
+		{noStorage, standardRecommended, "storage", &belowStandard, unknown},
+		{noMemory, standardRecommended, "storage", nil, unknown},
+		{noCPU, standardRecommended, "storage", nil, unknown},
+		{smallStorage, standardRecommended, "storage", &belowStandard, scaleUp},
+		{smallMemory, standardRecommended, "storage", nil, unknown},
+		{smallCPU, standardRecommended, "storage", nil, unknown},
+		{bigStorage, standardRecommended, "storage", &aboveStandard, scaleDown},
+		{bigMemory, standardRecommended, "storage", nil, unknown},
+		{bigCPU, standardRecommended, "storage", nil, unknown},
 
 		// Test successful comparison when not all ResourceNames are present.
-		{smallMemoryNoStorage, standardRecommendedNoStorage, "memory", &belowStandardNoStorage},
+		{smallMemoryNoStorage, standardRecommendedNoStorage, "memory", &belowStandardNoStorage, scaleUp},
 	}
 
 	for i, tc := range testCases {
-		got := checkResource(tc.e, tc.x, tc.res)
-		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("checkResource got %v, want %v for test case %d.", got, tc.want, i)
+		gotRes, gotOp := checkResource(tc.e, tc.x, tc.res)
+		if !reflect.DeepEqual(tc.wantRes, gotRes) || !reflect.DeepEqual(tc.wantOp, gotOp) {
+			t.Errorf("checkResource got (%v, %v), want (%v, %v) for test case %d.", gotRes, gotOp, tc.wantRes, tc.wantOp, i)
 		}
 	}
 }
 
 func TestShouldOverwriteResources(t *testing.T) {
 	testCases := []struct {
-		res  api.ResourceList
-		e    *EstimatorResult
-		want *api.ResourceRequirements
+		res     api.ResourceList
+		e       *EstimatorResult
+		wantRes *api.ResourceRequirements
+		wantOp  operation
 	}{
-		{standard, standardRecommended, nil},
-		{belowStandard, standardRecommended, nil},
-		{aboveStandard, standardRecommended, nil},
-		{standard, standardAcceptableAboveRecommended, nil},
-		{standard, standardAcceptableBelowRecommended, nil},
-		{standard, standardAboveAcceptable, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{standard, standardBelowAcceptable, &api.ResourceRequirements{aboveStandard, aboveStandard}},
-		{noStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{noMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{noCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{smallStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
-		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
-		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
-		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
+		{standard, standardRecommended, nil, unknown},
+		{belowStandard, standardRecommended, nil, unknown},
+		{aboveStandard, standardRecommended, nil, unknown},
+		{standard, standardAcceptableAboveRecommended, nil, unknown},
+		{standard, standardAcceptableBelowRecommended, nil, unknown},
+		{standard, standardAboveAcceptable, &api.ResourceRequirements{belowStandard, belowStandard}, scaleDown},
+		{standard, standardBelowAcceptable, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleUp},
+		{noStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
+		{noMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
+		{noCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
+		{smallStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
+		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
+		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
+		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
+		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
+		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
 
 		// Test successful comparison when not all ResourceNames are present.
-		{smallMemoryNoStorage, standardRecommendedNoStorage, &api.ResourceRequirements{belowStandardNoStorage, belowStandardNoStorage}},
+		{smallMemoryNoStorage, standardRecommendedNoStorage, &api.ResourceRequirements{belowStandardNoStorage, belowStandardNoStorage}, scaleUp},
 	}
 	for i, tc := range testCases {
-		got := shouldOverwriteResources(tc.e, tc.res, tc.res)
-		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("shouldOverwriteResources got %v, want %v for test case %d.", got, tc.want, i)
+		gotRes, gotOp := shouldOverwriteResources(tc.e, tc.res, tc.res)
+		if !reflect.DeepEqual(tc.wantRes, gotRes) || !reflect.DeepEqual(tc.wantOp, gotOp) {
+			t.Errorf("shouldOverwriteResources got (%v, %v), want (%v, %v) for test case %d.", gotRes, gotOp, tc.wantRes, tc.wantOp, i)
 		}
 	}
+}
+
+func TestUpdateResources(t *testing.T) {
+	now := time.Now()
+	tenSecondsAgo := now.Add(-10 * time.Second)
+	oneMinuteAgo := now.Add(-time.Minute)
+	oneHourAgo := now.Add(-time.Hour)
+	testCases := []struct {
+		res     api.ResourceList
+		e       *EstimatorResult
+		lc      time.Time
+		sud     time.Duration
+		sdd     time.Duration
+		wantRes *api.ResourceRequirements
+		want    updateResult
+	}{
+		// No changes to the resources
+		{standard, standardRecommended, now, noDelay, noDelay, nil, noChange},
+		{standard, standardRecommended, oneHourAgo, noDelay, noDelay, nil, noChange},
+		{standard, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, nil, noChange},
+		{standard, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, nil, noChange},
+		{standard, standardAcceptableAboveRecommended, now, noDelay, noDelay, nil, noChange},
+		{standard, standardAcceptableBelowRecommended, now, noDelay, noDelay, nil, noChange},
+		// Delay has not passed
+		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, noDelay, nil, postpone},
+		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, nil, postpone},
+		{bigCPU, standardRecommended, tenSecondsAgo, noDelay, oneMinuteDelay, nil, postpone},
+		{bigCPU, standardRecommended, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, nil, postpone},
+		// Delay has passed
+		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite},
+		{bigCPU, standardRecommended, oneMinuteAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite},
+		{smallCPU, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite},
+		{bigCPU, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite},
+	}
+	for i, tc := range testCases {
+		k8s := newFakeKubernetesClient(10, tc.res, tc.res)
+		est := newFakeResourceEstimator(tc.e)
+		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, noChange)
+		if tc.want != got {
+			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
+		}
+		if tc.want == overwrite && got == overwrite && !reflect.DeepEqual(tc.wantRes, k8s.newResources) {
+			t.Errorf("updateResources got %v, want %v for test case %d.", k8s.newResources, tc.wantRes, i)
+		}
+	}
+}
+
+type fakeKubernetesClient struct {
+	nodes        uint64
+	resources    *api.ResourceRequirements
+	newResources *api.ResourceRequirements
+}
+
+func newFakeKubernetesClient(nodes uint64, limits, reqs api.ResourceList) *fakeKubernetesClient {
+	return &fakeKubernetesClient{
+		nodes: 10,
+		resources: &api.ResourceRequirements{
+			Limits:   limits,
+			Requests: reqs,
+		},
+	}
+}
+
+func (f *fakeKubernetesClient) CountNodes() (uint64, error) {
+	return f.nodes, nil
+}
+
+func (f *fakeKubernetesClient) ContainerResources() (*api.ResourceRequirements, error) {
+	return f.resources, nil
+}
+
+func (f *fakeKubernetesClient) UpdateDeployment(resources *api.ResourceRequirements) error {
+	f.newResources = resources
+	return nil
+}
+
+func (f *fakeKubernetesClient) Stop() {
+}
+
+type fakeResourceEstimator struct {
+	result *EstimatorResult
+}
+
+func newFakeResourceEstimator(result *EstimatorResult) *fakeResourceEstimator {
+	return &fakeResourceEstimator{
+		result: result,
+	}
+}
+
+func (f *fakeResourceEstimator) scaleWithNodes(numNodes uint64) *EstimatorResult {
+	return f.result
 }
