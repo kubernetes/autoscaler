@@ -31,7 +31,6 @@ require (
 	k8s.io/component-base v0.0.0
 	k8s.io/klog v1.0.0
 	k8s.io/kubernetes v1.16.2
-	k8s.io/utils v0.0.0-20191030222137-2b95a09bc58d // indirect
 )
 
 replace (
@@ -61,4 +60,5 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.0.0-20191016112829-06bb3c9d77c9
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.0.0-20191016114214-d25a4244b17f
 	k8s.io/sample-controller => k8s.io/sample-controller v0.0.0-20191016113152-0c2dd40eec0c
+	k8s.io/utils => k8s.io/utils v0.0.0-20190801114015-581e00157fb1
 )
