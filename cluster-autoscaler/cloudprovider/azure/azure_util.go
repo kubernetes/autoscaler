@@ -37,7 +37,7 @@ import (
 
 	"golang.org/x/crypto/pkcs12"
 
-	"k8s.io/client-go/pkg/version"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/klog"
 )
 
@@ -233,8 +233,7 @@ func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.Private
 // example:
 // Azure-SDK-for-Go/7.0.1-beta arm-network/2016-09-01; cluster-autoscaler/v1.7.0-alpha.2.711+a2fadef8170bb0-dirty;
 func configureUserAgent(client *autorest.Client) {
-	k8sVersion := version.Get().GitVersion
-	client.UserAgent = fmt.Sprintf("%s; cluster-autoscaler/%s", client.UserAgent, k8sVersion)
+	client.UserAgent = fmt.Sprintf("%s; cluster-autoscaler/%s", client.UserAgent, version.ClusterAutoscalerVersion)
 }
 
 // normalizeForK8sVMASScalingUp takes a template and removes elements that are unwanted in a K8s VMAS scale up/down case
