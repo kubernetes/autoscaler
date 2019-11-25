@@ -56,6 +56,8 @@ Cluster autoscaler supports four Kubernetes cluster options on Azure:
 
 > **_NOTE_**: only the `vmss` option supports scaling down to zero nodes.
 
+> **_NOTE_**: The `subscriptionID` parameter is optional. When skipped, the subscription will be fetched from [the instance metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/instance-metadata-service).
+
 ### VMSS deployment
 
 Prerequisites:
