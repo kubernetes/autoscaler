@@ -26,11 +26,10 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"gopkg.in/gcfg.v1"
-	"k8s.io/klog"
-	azure2 "k8s.io/legacy-cloud-providers/azure"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/klog"
+	providerazure "k8s.io/legacy-cloud-providers/azure"
 )
 
 const (
@@ -547,7 +546,7 @@ func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) 
 func getSubscriptionIdFromInstanceMetadata() (string, error) {
 	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
 	if !present {
-		metadataService, err := azure2.NewInstanceMetadataService(metadataURL)
+		metadataService, err := providerazure.NewInstanceMetadataService(metadataURL)
 		if err != nil {
 			return "", err
 		}
