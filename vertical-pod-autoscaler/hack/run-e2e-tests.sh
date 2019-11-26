@@ -47,9 +47,11 @@ export GO111MODULE=on
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
-    go test -mod vendor ${SCRIPT_ROOT}/e2e/v1beta2/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    pushd ${SCRIPT_ROOT}/e2e
+    go test -mod vendor ./v1beta2/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     FIRST_RESULT=$?
-    go test -mod vendor ${SCRIPT_ROOT}/e2e/v1/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    go test -mod vendor ./v1/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    popd
     echo First test result: ${FIRST_RESULT}
     if [ $FIRST_RESULT -gt 0 ]; then
       echo "Please check first \"go test\" logs!"
