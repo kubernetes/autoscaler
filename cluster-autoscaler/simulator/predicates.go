@@ -32,7 +32,6 @@ import (
 
 	"k8s.io/kubernetes/pkg/scheduler"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
-	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	schedulersnapshot "k8s.io/kubernetes/pkg/scheduler/nodeinfo/snapshot"
@@ -113,10 +112,6 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 	podInformer := informerFactory.Core().V1().Pods()
-	defaultProviderName := schedulerconfig.SchedulerDefaultProviderName
-	algorithmSource := schedulerconfig.SchedulerAlgorithmSource{
-		Provider: &defaultProviderName,
-	}
 
 	sched, err := scheduler.New(
 		kubeClient,
@@ -124,7 +119,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		podInformer,
 		NoOpEventRecorder{},
 		stop,
-		scheduler.WithAlgorithmSource(algorithmSource),
+		scheduler.WithFrameworkConfigProducerRegistry(nil),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create scheduler; %v", err)
