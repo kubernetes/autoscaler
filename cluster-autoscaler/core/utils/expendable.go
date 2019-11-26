@@ -24,15 +24,26 @@ import (
 // FilterOutExpendableAndSplit filters out expendable pods and splits into:
 //   - waiting for lower priority pods preemption
 //   - other pods.
-func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
+func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
 	var unschedulableNonExpendable []*apiv1.Pod
 	var waitingForLowerPriorityPreemption []*apiv1.Pod
+
+	nodeNames := make(map[string]bool)
+	for _, node := range nodes {
+		nodeNames[node.Name] = true
+	}
+
 	for _, pod := range unschedulableCandidates {
 		if pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff {
 			klog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
 		} else if nominatedNodeName := pod.Status.NominatedNodeName; nominatedNodeName != "" {
-			waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
-			klog.V(4).Infof("Pod %s will be scheduled after low priority pods are preempted on %s. Ignoring in scale up.", pod.Name, nominatedNodeName)
+			if nodeNames[nominatedNodeName] {
+				klog.V(4).Infof("Pod %s will be scheduled after low priority pods are preempted on %s. Ignoring in scale up.", pod.Name, nominatedNodeName)
+				waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
+			} else {
+				klog.V(4).Infof("Pod %s has nominatedNodeName set to %s but node is gone", pod.Name, nominatedNodeName)
+				unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
+			}
 		} else {
 			unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
 		}
