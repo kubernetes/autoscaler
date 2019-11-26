@@ -551,7 +551,7 @@ func getSubscriptionIdFromInstanceMetadata() (string, error) {
 			return "", err
 		}
 
-		metadata, err := metadataService.GetMetadata()
+		metadata, err := metadataService.GetMetadata(0)
 		if err != nil {
 			return "", err
 		}
