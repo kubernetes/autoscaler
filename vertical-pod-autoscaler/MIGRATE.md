@@ -40,7 +40,7 @@ metadata:
   name: hamster-vpa
 spec:
   targetRef:
-    apiVersion: "extensions/v1beta1"
+    apiVersion: "apps/v1"
     kind:       Deployment
     name:       hamster
 ```
@@ -73,7 +73,7 @@ spec:
   # Note the empty selector field - this is needed to remove previously defined selector
   selector:
   targetRef:
-    apiVersion: "extensions/v1beta1"
+    apiVersion: "apps/v1"
     kind:       "Deployment"
     name:       "<deployment_name>" # This matches the deployment name
 ```

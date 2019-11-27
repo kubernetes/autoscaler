@@ -71,9 +71,9 @@ var (
 	// KindRC var
 	KindRC = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
 	// KindDeployment var
-	KindDeployment = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "Deployment"}
+	KindDeployment = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
 	// KindReplicaSet var
-	KindReplicaSet = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "ReplicaSet"}
+	KindReplicaSet = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "ReplicaSet"}
 	subresource    = "scale"
 )
 
