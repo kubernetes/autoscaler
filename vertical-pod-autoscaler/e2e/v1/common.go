@@ -25,6 +25,8 @@ import (
 	"github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 )
@@ -46,11 +49,13 @@ const (
 	actuationSuite               = "actuation"
 	pollInterval                 = 10 * time.Second
 	pollTimeout                  = 15 * time.Minute
+	cronJobsWaitTimeout          = 15 * time.Minute
 	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
 	// mechanisms blocking it (for example PDB).
 	VpaEvictionTimeout = 3 * time.Minute
 
-	defaultHamsterReplicas = int32(3)
+	defaultHamsterReplicas     = int32(3)
+	defaultHamsterBackoffLimit = int32(10)
 )
 
 var hamsterTargetRef = &autoscaling.CrossVersionObjectReference{
@@ -165,7 +170,73 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(options)
 }
 
-// SetupHamsterContainer returns containter with given amount of cpu and memory
+// NewTestCronJob returns a CronJob for test purposes.
+func NewTestCronJob(name, schedule string) *batchv1beta1.CronJob {
+	replicas := defaultHamsterReplicas
+	backoffLimit := defaultHamsterBackoffLimit
+	sj := &batchv1beta1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "CronJob",
+		},
+		Spec: batchv1beta1.CronJobSpec{
+			Schedule:          schedule,
+			ConcurrencyPolicy: batchv1beta1.AllowConcurrent,
+			JobTemplate: batchv1beta1.JobTemplateSpec{
+				Spec: batchv1.JobSpec{
+					Parallelism:  &replicas,
+					Completions:  &replicas,
+					BackoffLimit: &backoffLimit,
+					Template: apiv1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{"job": name},
+						},
+						Spec: apiv1.PodSpec{
+							RestartPolicy: apiv1.RestartPolicyOnFailure,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return sj
+}
+
+func waitForActiveJobs(c clientset.Interface, ns, cronJobName string, active int) error {
+	return wait.Poll(framework.Poll, cronJobsWaitTimeout, func() (bool, error) {
+		curr, err := getCronJob(c, ns, cronJobName)
+		if err != nil {
+			return false, err
+		}
+		return len(curr.Status.Active) >= active, nil
+	})
+}
+
+func createCronJob(c clientset.Interface, ns string, cronJob *batchv1beta1.CronJob) (*batchv1beta1.CronJob, error) {
+	return c.BatchV1beta1().CronJobs(ns).Create(cronJob)
+}
+
+func getCronJob(c clientset.Interface, ns, name string) (*batchv1beta1.CronJob, error) {
+	return c.BatchV1beta1().CronJobs(ns).Get(name, metav1.GetOptions{})
+}
+
+// SetupHamsterCronJob creates and sets up a new CronJob
+func SetupHamsterCronJob(f *framework.Framework, schedule, cpu, memory string, replicas int32) {
+	cronJob := NewTestCronJob("hamster-cronjob", schedule)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
+	for label, value := range hamsterLabels {
+		cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
+	}
+	cronJob, err := createCronJob(f.ClientSet, f.Namespace.Name, cronJob)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = waitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 1)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+}
+
+// SetupHamsterContainer returns container with given amount of cpu and memory
 func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 	cpuQuantity := ParseQuantityOrDie(cpu)
 	memoryQuantity := ParseQuantityOrDie(memory)
