@@ -54,7 +54,7 @@ const (
 )
 
 var hamsterTargetRef = &autoscaling.CrossVersionObjectReference{
-	APIVersion: "extensions/v1beta1",
+	APIVersion: "apps/v1",
 	Kind:       "Deployment",
 	Name:       "hamster-deployment",
 }

@@ -96,6 +96,7 @@ metadata:
   name: system:evictioner
 rules:
   - apiGroups:
+      - "apps"
       - "extensions"
     resources:
       - replicasets
