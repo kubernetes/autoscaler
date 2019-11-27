@@ -194,6 +194,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	klog.V(4).Info("Starting main loop")
 
 	stateUpdateStart := time.Now()
+	if err := a.PredicateChecker.SnapshotClusterState(); err != nil {
+		return errors.ToAutoscalerError(errors.ApiCallError, fmt.Errorf("could not snapshot cluster state in scheduler; %v", err))
+	}
+
 	allNodes, readyNodes, typedErr := a.obtainNodeLists(a.CloudProvider)
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)

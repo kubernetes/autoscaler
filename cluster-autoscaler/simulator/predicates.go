@@ -63,6 +63,7 @@ type PredicateChecker struct {
 	predicates                []PredicateInfo
 	predicateMetadataProducer predicates.MetadataProducer
 	enableAffinityPredicate   bool
+	scheduler                 *scheduler.Scheduler
 }
 
 // We run some predicates first as they are cheap to check and they should be enough
@@ -162,6 +163,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		predicates:                predicateList,
 		predicateMetadataProducer: sched.Algorithm.PredicateMetadataProducer(),
 		enableAffinityPredicate:   true,
+		scheduler:                 sched,
 	}, nil
 }
 
@@ -197,6 +199,15 @@ func NewCustomTestPredicateChecker(predicateInfos []PredicateInfo) *PredicateChe
 			return nil
 		},
 	}
+}
+
+// SnapshotClusterState updates cluster snapshot used by the predicate checker.
+// It should be called every CA loop iteration.
+func (p *PredicateChecker) SnapshotClusterState() error {
+	if p.scheduler != nil {
+		return p.scheduler.Algorithm.Snapshot()
+	}
+	return nil
 }
 
 // SetAffinityPredicateEnabled can be used to enable or disable checking MatchInterPodAffinity
