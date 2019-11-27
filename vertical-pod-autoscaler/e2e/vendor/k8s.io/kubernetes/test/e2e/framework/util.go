@@ -158,13 +158,7 @@ const (
 	// ClaimDeletingTimeout is How long claims have to become deleted.
 	ClaimDeletingTimeout = 3 * time.Minute
 
-
 	// PVReclaimingTimeout is how long PVs have to beome reclaimed.
-
-	// How long to wait until some cron jobs would be active
-	CronJobsWaitTimeout = 15 * time.Minute
-
-	// How long PVs have to beome reclaimed
 	PVReclaimingTimeout = 3 * time.Minute
 
 	// PVBindingTimeout is how long PVs have to become bound.
