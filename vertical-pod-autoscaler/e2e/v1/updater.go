@@ -23,7 +23,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -237,7 +236,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 	case "Job":
 		setupHamsterJob(f, cpu, memory, replicas)
 	case "CronJob":
-		setupHamsterCronJob(f, cpu, memory, replicas)
+		SetupHamsterCronJob(f, "*/2 * * * *", cpu, memory, replicas)
 	case "ReplicaSet":
 		setupHamsterRS(f, cpu, memory, replicas)
 	case "StatefulSet":
@@ -252,7 +251,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 }
 
 func setupHamsterReplicationController(f *framework.Framework, cpu, memory string, replicas int32) {
-	hamsterContainer := setupHamsterContainer(cpu, memory)
+	hamsterContainer := SetupHamsterContainer(cpu, memory)
 	rc := framework.RcByNameContainer("hamster-rc", replicas, "k8s.gcr.io/ubuntu-slim:0.1",
 		hamsterLabels, hamsterContainer, nil)
 
@@ -283,7 +282,7 @@ func waitForRCPodsRunning(f *framework.Framework, rc *apiv1.ReplicationControlle
 func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32) {
 	job := framework_job.NewTestJob("notTerminate", "hamster-job", apiv1.RestartPolicyOnFailure,
 		replicas, replicas, nil, 10)
-	job.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	job.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	for label, value := range hamsterLabels {
 		job.Spec.Template.Labels[label] = value
 	}
@@ -293,23 +292,10 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
-func setupHamsterCronJob(f *framework.Framework, cpu, memory string, replicas int32) {
-	cronJob := framework.NewTestCronJob("hamster-cronjob", "*/5 * * * *", batchv1beta1.ForbidConcurrent,
-			[]string{"sleep", "1000000"}, replicas, replicas, 10, nil, nil)
-	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
-	for label, value := range hamsterLabels {
-		cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
-	}
-	cronJob, err := framework.CreateCronJob(f.ClientSet, f.Namespace.Name, cronJob)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	err = framework.WaitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 1)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-}
-
 func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) {
 	rs := framework_rs.NewReplicaSet("hamster-rs", f.Namespace.Name, replicas,
 		hamsterLabels, "", "")
-	rs.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	rs.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createReplicaSetWithRetries(f.ClientSet, f.Namespace.Name, rs)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework_rs.WaitForReadyReplicaSet(f.ClientSet, f.Namespace.Name, rs.Name)
@@ -320,28 +306,10 @@ func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas i
 	stateful := framework_ss.NewStatefulSet("hamster-stateful", f.Namespace.Name,
 		"hamster-service", replicas, nil, nil, hamsterLabels)
 
-	stateful.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	stateful.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createStatefulSetSetWithRetries(f.ClientSet, f.Namespace.Name, stateful)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	framework_ss.WaitForRunningAndReady(f.ClientSet, *stateful.Spec.Replicas, stateful)
-}
-
-func setupHamsterContainer(cpu, memory string) apiv1.Container {
-	cpuQuantity := ParseQuantityOrDie(cpu)
-	memoryQuantity := ParseQuantityOrDie(memory)
-
-	return apiv1.Container{
-		Name:  "hamster",
-		Image: "k8s.gcr.io/ubuntu-slim:0.1",
-		Resources: apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    cpuQuantity,
-				apiv1.ResourceMemory: memoryQuantity,
-			},
-		},
-		Command: []string{"/bin/sh"},
-		Args:    []string{"-c", "while true; do sleep 10 ; done"},
-	}
 }
 
 func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1beta1.PodDisruptionBudget {
