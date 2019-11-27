@@ -77,7 +77,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		vpaCRD = NewVPA(f, "hamster-vpa", &autoscaling.CrossVersionObjectReference{
-			APIVersion: "extensions/v1beta1",
+			APIVersion: "apps/v1",
 			Kind:       "Deployment",
 			Name:       "hamster",
 		})
