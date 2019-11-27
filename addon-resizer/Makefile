@@ -53,7 +53,7 @@ container: .container-$(ARCH)
         /bin/bash -c "\
             go get github.com/tools/godep && \
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w' -o $(TEMP_DIR)/pod_nanny main.go"
+            CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w -X k8s.io/autoscaler/addon-resizer/nanny.AddonResizerVersion=$(TAG)' -o $(TEMP_DIR)/pod_nanny main.go"
 
 	docker build -t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
 
