@@ -185,7 +185,7 @@ set +o errexit
   fi
 
   # Commit go.mod* and vendor
-  git restore --staged . >&${BASH_XTRACEFD} 2>&1
+  git reset . >&${BASH_XTRACEFD} 2>&1
   git add vendor go.mod go.sum >&${BASH_XTRACEFD} 2>&1
   if ! git diff --quiet --cached; then
     echo "Commiting vendor, go.mod and go.sum"
