@@ -48,6 +48,8 @@ var (
 	memoryPerNode  = flag.String("extra-memory", "", "The amount of memory to add per node.")
 	baseStorage    = flag.String("storage", nannyconfig.NoValue, "The base storage resource requirement.")
 	storagePerNode = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
+	scaleDownDelay = flag.Duration("scale-down-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale down can be performed.")
+	scaleUpDelay   = flag.Duration("scale-up-delay", time.Duration(0), "The time to wait after the addon-resizer start or last scaling operation before the scale up can be performed.")
 	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
 	// Flags to identify the container to nanny.
 	podNamespace  = flag.String("namespace", os.Getenv("MY_POD_NAMESPACE"), "The namespace of the ward. This defaults to the nanny pod's own namespace.")
@@ -155,7 +157,7 @@ func main() {
 	}
 
 	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
+	nanny.PollAPIServer(k8s, est, pollPeriod, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
 }
 
 func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
