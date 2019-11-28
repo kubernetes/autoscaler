@@ -40,6 +40,7 @@ function update_deps() {
             go mod download -json "${MOD}@kubernetes-${K8S_TAG}" |
             sed -n 's|.*"Version": "\(.*\)".*|\1|p'
         )
+        echo "Replacing ${MOD} with version ${V}"
         go mod edit "-replace=${MOD}=${MOD}@${V}"
     done
 }
