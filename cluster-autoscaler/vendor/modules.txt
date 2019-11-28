@@ -235,7 +235,7 @@ github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/duration
-# github.com/google/cadvisor v0.34.0 => github.com/google/cadvisor v0.34.0
+# github.com/google/cadvisor v0.35.0 => github.com/google/cadvisor v0.35.0
 github.com/google/cadvisor/container/common
 github.com/google/cadvisor/container/containerd
 github.com/google/cadvisor/container/docker
@@ -664,7 +664,7 @@ gopkg.in/square/go-jose.v2/json
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.2.4 => gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
-# k8s.io/api v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/api
+# k8s.io/api v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/api
 k8s.io/api/core/v1
 k8s.io/api/apps/v1
 k8s.io/api/policy/v1beta1
@@ -708,9 +708,9 @@ k8s.io/api/authorization/v1beta1
 k8s.io/api/admission/v1beta1
 k8s.io/api/admission/v1
 k8s.io/api/imagepolicy/v1alpha1
-# k8s.io/apiextensions-apiserver v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/apiextensions-apiserver
+# k8s.io/apiextensions-apiserver v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/apiextensions-apiserver
 k8s.io/apiextensions-apiserver/pkg/features
-# k8s.io/apimachinery v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/apimachinery
+# k8s.io/apimachinery v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/apimachinery
 k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/util/sets
@@ -768,7 +768,7 @@ k8s.io/apimachinery/pkg/api/validation/path
 k8s.io/apimachinery/pkg/apis/meta/internalversion/scheme
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/pkg/apis/meta/v1beta1/validation
-# k8s.io/apiserver v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/apiserver
+# k8s.io/apiserver v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/apiserver
 k8s.io/apiserver/pkg/util/feature
 k8s.io/apiserver/pkg/features
 k8s.io/apiserver/pkg/admission
@@ -852,13 +852,12 @@ k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager/internal
 k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission
 k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission/v1
 k8s.io/apiserver/pkg/admission/plugin/webhook/config/apis/webhookadmission/v1alpha1
-# k8s.io/client-go v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/client-go
+# k8s.io/client-go v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/client-go
 k8s.io/client-go/kubernetes
 k8s.io/client-go/rest
 k8s.io/client-go/tools/clientcmd
 k8s.io/client-go/tools/leaderelection
 k8s.io/client-go/tools/leaderelection/resourcelock
-k8s.io/client-go/pkg/version
 k8s.io/client-go/informers
 k8s.io/client-go/util/cert
 k8s.io/client-go/tools/record
@@ -912,6 +911,7 @@ k8s.io/client-go/kubernetes/typed/storage/v1
 k8s.io/client-go/kubernetes/typed/storage/v1alpha1
 k8s.io/client-go/kubernetes/typed/storage/v1beta1
 k8s.io/client-go/util/flowcontrol
+k8s.io/client-go/pkg/version
 k8s.io/client-go/plugin/pkg/client/auth/exec
 k8s.io/client-go/rest/watch
 k8s.io/client-go/tools/clientcmd/api
@@ -1079,14 +1079,14 @@ k8s.io/client-go/tools/watch
 k8s.io/client-go/metadata/metadatainformer
 k8s.io/client-go/metadata
 k8s.io/client-go/metadata/metadatalister
-# k8s.io/cloud-provider v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/cloud-provider
+# k8s.io/cloud-provider v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/cloud-provider
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider
 k8s.io/cloud-provider/node/helpers
 k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/component-base v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/component-base
+# k8s.io/component-base v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/component-base
 k8s.io/component-base/cli/flag
 k8s.io/component-base/config
 k8s.io/component-base/metrics/legacyregistry
@@ -1098,10 +1098,10 @@ k8s.io/component-base/version/verflag
 k8s.io/component-base/logs
 k8s.io/component-base/config/validation
 k8s.io/component-base/config/v1alpha1
-# k8s.io/cri-api v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/cri-api
+# k8s.io/cri-api v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/cri-api
 k8s.io/cri-api/pkg/apis
 k8s.io/cri-api/pkg/apis/runtime/v1alpha2
-# k8s.io/csi-translation-lib v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/csi-translation-lib
+# k8s.io/csi-translation-lib v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/csi-translation-lib
 k8s.io/csi-translation-lib/plugins
 k8s.io/csi-translation-lib
 # k8s.io/klog v1.0.0 => k8s.io/klog v1.0.0
@@ -1113,18 +1113,18 @@ k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/handler
 k8s.io/kube-openapi/pkg/util
 k8s.io/kube-openapi/pkg/schemaconv
-# k8s.io/kube-proxy v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/kube-proxy
+# k8s.io/kube-proxy v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/kube-proxy
 k8s.io/kube-proxy/config/v1alpha1
-# k8s.io/kube-scheduler v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/kube-scheduler
+# k8s.io/kube-scheduler v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/kube-scheduler
 k8s.io/kube-scheduler/config/v1
 k8s.io/kube-scheduler/config/v1alpha1
-# k8s.io/kubectl v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/kubectl
+# k8s.io/kubectl v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/kubectl
 k8s.io/kubectl/pkg/scale
-# k8s.io/kubelet v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/kubelet
+# k8s.io/kubelet v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/kubelet
 k8s.io/kubelet/config/v1beta1
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
 k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1
-# k8s.io/kubernetes v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes
+# k8s.io/kubernetes v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes
 k8s.io/kubernetes/pkg/client/leaderelectionconfig
 k8s.io/kubernetes/pkg/apis/scheduling
 k8s.io/kubernetes/pkg/kubelet/types
@@ -1136,7 +1136,6 @@ k8s.io/kubernetes/pkg/scheduler/api
 k8s.io/kubernetes/pkg/scheduler
 k8s.io/kubernetes/pkg/scheduler/algorithm/predicates
 k8s.io/kubernetes/pkg/scheduler/algorithmprovider
-k8s.io/kubernetes/pkg/scheduler/apis/config
 k8s.io/kubernetes/pkg/scheduler/listers
 k8s.io/kubernetes/pkg/scheduler/nodeinfo/snapshot
 k8s.io/kubernetes/pkg/api/v1/pod
@@ -1189,6 +1188,7 @@ k8s.io/kubernetes/test/utils
 k8s.io/kubernetes/pkg/scheduler/apis/extender/v1
 k8s.io/kubernetes/pkg/scheduler/algorithm
 k8s.io/kubernetes/pkg/scheduler/algorithm/priorities
+k8s.io/kubernetes/pkg/scheduler/apis/config
 k8s.io/kubernetes/pkg/scheduler/apis/config/scheme
 k8s.io/kubernetes/pkg/scheduler/apis/config/validation
 k8s.io/kubernetes/pkg/scheduler/core
@@ -1505,7 +1505,7 @@ k8s.io/kubernetes/pkg/security/podsecuritypolicy/seccomp
 k8s.io/kubernetes/pkg/security/podsecuritypolicy/util
 k8s.io/kubernetes/pkg/volume/util/nestedpendingoperations
 k8s.io/kubernetes/pkg/serviceaccount
-# k8s.io/legacy-cloud-providers v0.0.0 => /tmp/ca-update-vendor.oDH2/kubernetes/staging/src/k8s.io/legacy-cloud-providers
+# k8s.io/legacy-cloud-providers v0.0.0 => /tmp/ca-update-vendor.55jg/kubernetes/staging/src/k8s.io/legacy-cloud-providers
 k8s.io/legacy-cloud-providers/aws
 k8s.io/legacy-cloud-providers/gce
 k8s.io/legacy-cloud-providers/azure
