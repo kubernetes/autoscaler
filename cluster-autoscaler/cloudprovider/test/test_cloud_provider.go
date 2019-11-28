@@ -239,6 +239,23 @@ type TestNodeGroup struct {
 	taints          []apiv1.Taint
 }
 
+// NewTestNodeGroup creates a TestNodeGroup without setting up the realted TestCloudProvider.
+// Useful for testing only.
+func NewTestNodeGroup(id string, maxSize, minSize, targetSize int, exist, autoprovisioned bool,
+	machineType string, labels map[string]string, taints []apiv1.Taint) *TestNodeGroup {
+	return &TestNodeGroup{
+		id:              id,
+		maxSize:         maxSize,
+		minSize:         minSize,
+		targetSize:      targetSize,
+		exist:           exist,
+		autoprovisioned: autoprovisioned,
+		machineType:     machineType,
+		labels:          labels,
+		taints:          taints,
+	}
+}
+
 // MaxSize returns maximum size of the node group.
 func (tng *TestNodeGroup) MaxSize() int {
 	tng.Lock()

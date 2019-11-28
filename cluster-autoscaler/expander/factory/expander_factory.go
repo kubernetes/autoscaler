@@ -18,19 +18,23 @@ package factory
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/priority"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	kube_client "k8s.io/client-go/kubernetes"
 )
 
 // ExpanderStrategyFromString creates an expander.Strategy according to its name
 func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider.CloudProvider,
-	nodeLister kube_util.NodeLister) (expander.Strategy, errors.AutoscalerError) {
+	autoscalingKubeClients *context.AutoscalingKubeClients, kubeClient kube_client.Interface,
+	configNamespace string) (expander.Strategy, errors.AutoscalerError) {
 	switch expanderFlag {
 	case expander.RandomExpanderName:
 		return random.NewStrategy(), nil
@@ -44,8 +48,14 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 			return nil, err
 		}
 		return price.NewStrategy(pricing,
-			price.NewSimplePreferredNodeProvider(nodeLister),
+			price.NewSimplePreferredNodeProvider(autoscalingKubeClients.AllNodeLister()),
 			price.SimpleNodeUnfitness), nil
+	case expander.PriorityBasedExpanderName:
+		// It seems other listers do the same here - they never receive the termination msg on the ch.
+		// This should be currently OK.
+		stopChannel := make(chan struct{})
+		lister := kubernetes.NewConfigMapListerForNamespace(kubeClient, stopChannel, configNamespace)
+		return priority.NewStrategy(lister.ConfigMaps(configNamespace), autoscalingKubeClients.Recorder)
 	}
 	return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)
 }

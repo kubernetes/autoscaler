@@ -102,3 +102,15 @@ func NewTestStatefulSetLister(sss []*appsv1.StatefulSet) (v1appslister.StatefulS
 	}
 	return v1appslister.NewStatefulSetLister(store), nil
 }
+
+// NewTestConfigMapLister returns a lister that returns provided ConfigMaps
+func NewTestConfigMapLister(cms []*apiv1.ConfigMap) (v1lister.ConfigMapLister, error) {
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	for _, cm := range cms {
+		err := store.Add(cm)
+		if err != nil {
+			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		}
+	}
+	return v1lister.NewConfigMapLister(store), nil
+}
