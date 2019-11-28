@@ -41,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -343,7 +344,7 @@ func main() {
 	kube_flag.InitFlags()
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
-	klog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
