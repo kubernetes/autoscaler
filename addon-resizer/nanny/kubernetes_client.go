@@ -68,7 +68,7 @@ func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, e
 
 func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequirements) error {
 	// First, get the Deployment.
-	dep, err := k.clientset.Extensions().Deployments(k.namespace).Get(k.deployment, metav1.GetOptions{})
+	dep, err := k.clientset.AppsV1().Deployments(k.namespace).Get(k.deployment, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequiremen
 		if container.Name == k.container {
 			// Update the deployment.
 			dep.Spec.Template.Spec.Containers[i].Resources = *resources
-			_, err = k.clientset.Extensions().Deployments(k.namespace).Update(dep)
+			_, err = k.clientset.AppsV1().Deployments(k.namespace).Update(dep)
 			return err
 		}
 	}
