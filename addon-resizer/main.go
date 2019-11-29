@@ -20,6 +20,7 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -66,7 +67,7 @@ func GetClientOrDie() kubernetes.Interface {
 	if err != nil {
 		log.Fatalf("Can not get kubernetes config: %v", err)
 	}
-
+	config.UserAgent = userAgent()
 	return kubernetes.NewForConfigOrDie(config)
 }
 
@@ -75,7 +76,23 @@ func buildOutOfClusterConfig() (*rest.Config, error) {
 	if kubeconfigPath == "" {
 		kubeconfigPath = os.Getenv("HOME") + "/.kube/config"
 	}
-	return clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+	config.UserAgent = userAgent()
+	return config, nil
+}
+
+func userAgent() string {
+	command := ""
+	if len(os.Args) > 0 && len(os.Args[0]) > 0 {
+		command = filepath.Base(os.Args[0])
+	}
+	if len(command) == 0 {
+		command = "addon-resizer"
+	}
+	return command + "/" + nanny.AddonResizerVersion
 }
 
 // GetClientOutOfClusterOrDie returns a k8s clientset to the request from outside of cluster
@@ -103,6 +120,7 @@ func main() {
 	checkPercentageFlagBounds("acceptance-offset", *acceptanceOffset)
 
 	pollPeriod := time.Duration(int64(*pollPeriodMillis) * int64(time.Millisecond))
+	log.Infof("Version: %s", nanny.AddonResizerVersion)
 	log.Infof("Poll period: %+v", pollPeriod)
 	log.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
 	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
