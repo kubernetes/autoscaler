@@ -1,8 +1,8 @@
 # Vertical Pod Autoscaler
 
 ## Contents
-- [Intro](#intro)
-- [Installation](#installation)
+- [Contents](#contents)
+  - [Notice on removal of v1beta1 version (>=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
   - [Prerequisites](#prerequisites)
   - [Install command](#install-command)
   - [Quick start](#quick-start)
@@ -11,9 +11,11 @@
   - [Troubleshooting](#troubleshooting)
   - [Components of VPA](#components-of-vpa)
   - [Tear down](#tear-down)
-- [Known limitations](#known-limitations)
-  - [Limitations of beta version](#limitations-of-beta-version)
-- [Related Links](#related-links)
+- [Examples](#examples)
+  - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
+  - [Capping to Limit Range](#capping-to-limit-range)
+  - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
+- [Limitations of beta version](#limitations-of-beta-version)
 
 # Intro
 
@@ -155,7 +157,7 @@ metadata:
   name: my-app-vpa
 spec:
   targetRef:
-    apiVersion: "extensions/v1beta1"
+    apiVersion: "apps/v1"
     kind:       Deployment
     name:       my-app
   updatePolicy:
