@@ -63,6 +63,7 @@ var (
 func main() {
 	// First log our starting config, and then set up.
 	glog.Infof("Invoked by %v", os.Args)
+	glog.Infof("Version: %s", nanny.AddonResizerVersion)
 	flag.Parse()
 
 	// Perform further validation of flags.
@@ -86,6 +87,7 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	config.UserAgent = userAgent()
 	// Use protobufs for communication with apiserver
 	config.ContentType = "application/vnd.kubernetes.protobuf"
 
@@ -156,6 +158,17 @@ func main() {
 
 	// Begin nannying.
 	nanny.PollAPIServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
+}
+
+func userAgent() string {
+	command := ""
+	if len(os.Args) > 0 && len(os.Args[0]) > 0 {
+		command = filepath.Base(os.Args[0])
+	}
+	if len(command) == 0 {
+		command = "addon-resizer"
+	}
+	return command + "/" + nanny.AddonResizerVersion
 }
 
 func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {

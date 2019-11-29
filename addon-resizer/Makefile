@@ -35,7 +35,7 @@ deps:
 		go get -u github.com/tools/godep
 
 compile: nanny/ deps
-		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -o $(OUT_DIR)/pod_nanny nanny/main/pod_nanny.go
+		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build --ldflags '-X k8s.io/autoscaler/addon-resizer/nanny.AddonResizerVersion=$(TAG)' -a -o $(OUT_DIR)/pod_nanny nanny/main/pod_nanny.go
 
 test: nanny/
 		godep go test ${PACKAGE}/nanny -v
