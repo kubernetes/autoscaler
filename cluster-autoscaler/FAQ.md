@@ -846,7 +846,7 @@ Depending on how long scale-ups have been failing, it may wait up to 30 minutes 
 
 ### How can I run e2e tests?
 
-1. Set up environment and build e2e.go as described in the [Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/e2e-tests.md#building-and-running-the-tests).
+1. Set up environment and build e2e.go as described in the [Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md#building-and-running-the-tests).
 2. Set up the following env variables:
     ```sh
     export KUBE_AUTOSCALER_MIN_NODES=3
