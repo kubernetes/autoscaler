@@ -86,7 +86,7 @@ Note that:
 
 * It is recommended to use a second tag like `cluster-autoscaler-name=<YOUR CLUSTER NAME>` when `cluster-autoscaler-enabled=true` is used across many clusters to prevent VMSSs from different clusters recognized as the node groups
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
-* No min/max values are provided when using Auto-Discovery, cluster-autoscaler will respect the current min and max values of the VMSS being targeted, and it will adjust only the "desired" value.
+* No min/max values are provided when using Auto-Discovery, cluster-autoscaler will detect the "min" and "max" tags on the VMSS resource in Azure, adjusting the desired number of nodes within these limits.
 
 ```
 kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
