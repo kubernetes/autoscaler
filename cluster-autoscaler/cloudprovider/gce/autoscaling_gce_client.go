@@ -60,6 +60,7 @@ type AutoscalingGceClient interface {
 	FetchMigTemplate(GceRef) (*gce.InstanceTemplate, error)
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
+	FetchAvailableCpuPlatforms() (map[string][]string, error)
 
 	// modifying resources
 	ResizeMig(GceRef, int64) error
@@ -310,6 +311,22 @@ func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error
 		zones[i] = path.Base(link)
 	}
 	return zones, nil
+}
+
+func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][]string, error) {
+	availableCpuPlatforms := make(map[string][]string)
+	err := client.gceService.Zones.List(client.projectId).Pages(
+		context.TODO(),
+		func(zones *gce.ZoneList) error {
+			for _, zone := range zones.Items {
+				availableCpuPlatforms[zone.Name] = zone.AvailableCpuPlatforms
+			}
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+	return availableCpuPlatforms, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
