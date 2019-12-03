@@ -117,16 +117,21 @@ func (client *autoscalingGceClientV1) FetchMachineType(zone, machineType string)
 
 func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.MachineType, error) {
 	registerRequest("machine_types", "list")
-	machines, err := client.gceService.MachineTypes.List(client.projectId, zone).Do()
+	var machineTypes []*gce.MachineType
+	err := client.gceService.MachineTypes.List(client.projectId, zone).Pages(
+		context.TODO(),
+		func(page *gce.MachineTypeList) error {
+			machineTypes = append(machineTypes, page.Items...)
+			return nil
+		})
 	if err != nil {
 		return nil, err
 	}
-	return machines.Items, nil
+	return machineTypes, nil
 }
 
 func (client *autoscalingGceClientV1) FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error) {
 	registerRequest("instance_group_managers", "list")
-
 	var migs []*gce.InstanceGroupManager
 	err := client.gceService.InstanceGroupManagers.List(client.projectId, zone).Pages(
 		context.TODO(),
