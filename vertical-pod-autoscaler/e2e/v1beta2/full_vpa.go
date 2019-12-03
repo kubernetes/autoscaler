@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	e2e_common "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	"github.com/onsi/ginkgo"
@@ -62,7 +61,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name
 		ginkgo.By("Setting up a hamster deployment")
-		rc = NewDynamicResourceConsumer("hamster", ns, e2e_common.KindDeployment,
+		rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,
 			replicas,
 			1,             /*initCPUTotal*/
 			10,            /*initMemoryTotal*/
