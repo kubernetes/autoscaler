@@ -29,7 +29,10 @@ import (
 	"k8s.io/klog"
 )
 
-var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
+var (
+	defaultAsgCacheTTL = 3600 // Seconds
+	virtualMachineRE   = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
+)
 
 type asgCache struct {
 	registeredAsgs     []cloudprovider.NodeGroup
@@ -39,7 +42,7 @@ type asgCache struct {
 	interrupt          chan struct{}
 }
 
-func newAsgCache() (*asgCache, error) {
+func newAsgCache(asgCacheTTL int64) (*asgCache, error) {
 	cache := &asgCache{
 		registeredAsgs:     make([]cloudprovider.NodeGroup, 0),
 		instanceToAsg:      make(map[azureRef]cloudprovider.NodeGroup),
@@ -53,7 +56,7 @@ func newAsgCache() (*asgCache, error) {
 		if err := cache.regenerate(); err != nil {
 			klog.Errorf("Error while regenerating Asg cache: %v", err)
 		}
-	}, time.Hour, cache.interrupt)
+	}, time.Duration(asgCacheTTL)*time.Second, cache.interrupt)
 
 	return cache, nil
 }
@@ -118,7 +121,9 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	klog.V(4).Infof("FindForInstance: starts, ref: %s", instance.Name)
 	resourceID, err := convertResourceGroupNameToLower(instance.Name)
+	klog.V(4).Infof("FindForInstance: resourceID: %s", resourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +131,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	if m.notInRegisteredAsg[inst] {
 		// We already know we don't own this instance. Return early and avoid
 		// additional calls.
+		klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
 		return nil, nil
 	}
 
@@ -147,21 +153,28 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		}
 	}
 
+	klog.V(4).Infof("FindForInstance: cache before refresh %v", m.instanceToAsg)
+
 	// Look up caches for the instance.
 	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
+		klog.V(4).Infof("FindForInstance: returns before refresh, asg: %s", asg.Id())
 		return asg, nil
 	}
 
 	// Not found, regenerate the cache and try again.
 	if err := m.regenerate(); err != nil {
+		klog.Errorf("FindForInstance: error while looking for ASG for instance %q, error: %v", instance.Name, err)
 		return nil, fmt.Errorf("error while looking for ASG for instance %q, error: %v", instance.Name, err)
 	}
+
+	klog.V(4).Infof("FindForInstance: cache after refresh %v", m.instanceToAsg)
+
 	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
+		klog.V(4).Infof("FindForInstance: returns after refresh, asg: %s", asg.Id())
 		return asg, nil
 	}
 
-	// Add the instance to notInRegisteredAsg since it's unknown from Azure.
-	m.notInRegisteredAsg[inst] = true
+	klog.Warningf("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
 	return nil, nil
 }
 
@@ -186,6 +199,10 @@ func (m *asgCache) regenerate() error {
 	}
 
 	m.instanceToAsg = newCache
+
+	// Incalidating unowned instance cache.
+	m.invalidateUnownedInstanceCache()
+
 	return nil
 }
 
