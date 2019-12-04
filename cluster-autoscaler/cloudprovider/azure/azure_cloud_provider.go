@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -91,15 +92,16 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	klog.V(6).Infof("NodeGroupForNode: starts")
 	if node.Spec.ProviderID == "" {
-		klog.V(6).Infof("Skipping to search for node group for the node '%s'. Because doesn't have spec.ProviderID.\n", node.ObjectMeta.Name)
-		return nil, nil
+		return nil, fmt.Errorf("NodeGroupForNode: provider ID for node %s is not found", node.Name)
 	}
 	klog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,
 	}
 
+	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
 	return azure.azureManager.GetAsgForInstance(ref)
 }
 

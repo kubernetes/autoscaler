@@ -70,7 +70,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		},
 	}
 
-	cache, error := newAsgCache()
+	cache, error := newAsgCache(int64(defaultAsgCacheTTL))
 	assert.NoError(t, error)
 
 	manager.asgCache = cache
