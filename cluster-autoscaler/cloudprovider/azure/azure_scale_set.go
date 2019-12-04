@@ -299,11 +299,13 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // Note that the list results is not used directly because their resource ID format
 // is not consistent with Get results.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
+	klog.V(4).Infof("GetScaleSetVms: starts")
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
+	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
 	if err != nil {
 		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
 		return nil, err
@@ -335,27 +337,14 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
 func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
-	if delta >= 0 {
-		return fmt.Errorf("size decrease size must be negative")
-	}
-
-	size, err := scaleSet.GetScaleSetSize()
+	// VMSS size would be changed automatically after the Node deletion, hence this operation is not required.
+	// To prevent some unreproducible bugs, an extra refresh of cache is needed.
+	scaleSet.invalidateInstanceCache()
+	_, err := scaleSet.GetScaleSetSize()
 	if err != nil {
-		return err
+		klog.Warningf("DecreaseTargetSize: failed with error: %v", err)
 	}
-
-	nodes, err := scaleSet.Nodes()
-	if err != nil {
-		return err
-	}
-
-	if int(size)+delta < len(nodes) {
-		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
-			size, delta, len(nodes))
-	}
-
-	scaleSet.SetScaleSetSize(size + int64(delta))
-	return nil
+	return err
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
@@ -613,6 +602,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
+	klog.V(4).Infof("Nodes: starts, scaleSet.Name: %s", scaleSet.Name)
 	curSize, err := scaleSet.getCurSize()
 	if err != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, err)
@@ -624,9 +614,11 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 
 	if int64(len(scaleSet.instanceCache)) == curSize &&
 		scaleSet.lastInstanceRefresh.Add(vmssInstancesRefreshPeriod).After(time.Now()) {
+		klog.V(4).Infof("Nodes: returns with curSize %d", curSize)
 		return scaleSet.instanceCache, nil
 	}
 
+	klog.V(4).Infof("Nodes: starts to get VMSS VMs")
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
 		if isAzureRequestsThrottled(err) {
@@ -646,6 +638,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 
 	scaleSet.instanceCache = instances
 	scaleSet.lastInstanceRefresh = time.Now()
+	klog.V(4).Infof("Nodes: returns")
 	return instances, nil
 }
 
