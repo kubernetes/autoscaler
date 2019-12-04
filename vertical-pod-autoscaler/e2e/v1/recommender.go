@@ -254,6 +254,63 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 })
 
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+
+	var vpaClientSet vpa_clientset.Interface
+
+	ginkgo.BeforeEach(func() {
+		vpaClientSet = getVpaClientSet(f)
+	})
+
+	ginkgo.It("with no containers opted out all containers get recommendations", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = startDeploymentPods(f, d)
+		ginkgo.By("Setting up VPA CRD")
+		vpaCRD := createVpaCRDWithContainerScalingModes(f, vpa_types.ContainerScalingModeAuto, vpa_types.ContainerScalingModeAuto)
+
+		ginkgo.By("Waiting for recommendation to be filled for both containers")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(2))
+	})
+
+	ginkgo.It("only containers not-opted-out get recommendations", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = startDeploymentPods(f, d)
+		vpaCRD := createVpaCRDWithContainerScalingModes(f, vpa_types.ContainerScalingModeOff, vpa_types.ContainerScalingModeAuto)
+
+		ginkgo.By("Waiting for recommendation to be filled for just one container")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		errMsg := fmt.Sprintf("%s container has recommendations turned off. We expect expect only recommendations for %s",
+			GetHamsterContainerNameByIndex(0),
+			GetHamsterContainerNameByIndex(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(GetHamsterContainerNameByIndex(1)), errMsg)
+	})
+})
+
+// createVpaCRDWithContainerScalingModes creates vpa object with containers policies
+// having assigned given scaling modes respectively.
+func createVpaCRDWithContainerScalingModes(f *framework.Framework, modes ...vpa_types.ContainerScalingMode) *vpa_types.VerticalPodAutoscaler {
+	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+	containerResourcePolicies := make([]vpa_types.ContainerResourcePolicy, len(modes), len(modes))
+	for i := range modes {
+		containerResourcePolicies[i] = vpa_types.ContainerResourcePolicy{
+			ContainerName: GetHamsterContainerNameByIndex(i),
+			Mode:          &modes[i],
+		}
+	}
+	vpaCRD.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{
+		ContainerPolicies: containerResourcePolicies,
+	}
+	InstallVPA(f, vpaCRD)
+	return vpaCRD
+}
+
 func deleteRecommender(c clientset.Interface) error {
 	namespace := "kube-system"
 	listOptions := metav1.ListOptions{}
