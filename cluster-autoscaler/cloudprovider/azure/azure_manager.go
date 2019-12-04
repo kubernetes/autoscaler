@@ -79,6 +79,9 @@ type Config struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
 	//Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
+
+	// ASG cache TTL in seconds
+	AsgCacheTTL int64 `json:"asgCacheTTL" yaml:"asgCacheTTL"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -128,6 +131,13 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 				return nil, err
 			}
 		}
+
+		if asgCacheTTL := os.Getenv("AZURE_ASG_CACHE_TTL"); asgCacheTTL != "" {
+			cfg.AsgCacheTTL, err = strconv.ParseInt(asgCacheTTL, 10, 0)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ASG_CACHE_TTL %q: %v", asgCacheTTL, err)
+			}
+		}
 	}
 	cfg.TrimSpace()
 
@@ -145,6 +155,10 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		}
 
 		cfg.DeploymentParameters = parameters
+	}
+
+	if cfg.AsgCacheTTL == 0 {
+		cfg.AsgCacheTTL = int64(defaultAsgCacheTTL)
 	}
 
 	// Defaulting env to Azure Public Cloud.
@@ -175,7 +189,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		explicitlyConfigured: make(map[string]bool),
 	}
 
-	cache, err := newAsgCache()
+	cache, err := newAsgCache(cfg.AsgCacheTTL)
 	if err != nil {
 		return nil, err
 	}
