@@ -68,6 +68,14 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		})
 	})
 
+	ginkgo.It("evicts pods in a CronJob", func() {
+		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
+			APIVersion: "batch/v1",
+			Kind:       "CronJob",
+			Name:       "hamster-cronjob",
+		})
+	})
+
 	ginkgo.It("evicts pods in a ReplicaSet", func() {
 		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
 			APIVersion: "apps/v1",
@@ -227,6 +235,8 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 		setupHamsterReplicationController(f, cpu, memory, replicas)
 	case "Job":
 		setupHamsterJob(f, cpu, memory, replicas)
+	case "CronJob":
+		SetupHamsterCronJob(f, "*/2 * * * *", cpu, memory, replicas)
 	case "ReplicaSet":
 		setupHamsterRS(f, cpu, memory, replicas)
 	case "StatefulSet":
@@ -241,7 +251,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 }
 
 func setupHamsterReplicationController(f *framework.Framework, cpu, memory string, replicas int32) {
-	hamsterContainer := setupHamsterContainer(cpu, memory)
+	hamsterContainer := SetupHamsterContainer(cpu, memory)
 	rc := framework.RcByNameContainer("hamster-rc", replicas, "k8s.gcr.io/ubuntu-slim:0.1",
 		hamsterLabels, hamsterContainer, nil)
 
@@ -272,7 +282,7 @@ func waitForRCPodsRunning(f *framework.Framework, rc *apiv1.ReplicationControlle
 func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32) {
 	job := framework_job.NewTestJob("notTerminate", "hamster-job", apiv1.RestartPolicyOnFailure,
 		replicas, replicas, nil, 10)
-	job.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	job.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	for label, value := range hamsterLabels {
 		job.Spec.Template.Labels[label] = value
 	}
@@ -285,7 +295,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) {
 	rs := framework_rs.NewReplicaSet("hamster-rs", f.Namespace.Name, replicas,
 		hamsterLabels, "", "")
-	rs.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	rs.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createReplicaSetWithRetries(f.ClientSet, f.Namespace.Name, rs)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework_rs.WaitForReadyReplicaSet(f.ClientSet, f.Namespace.Name, rs.Name)
@@ -296,28 +306,10 @@ func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas i
 	stateful := framework_ss.NewStatefulSet("hamster-stateful", f.Namespace.Name,
 		"hamster-service", replicas, nil, nil, hamsterLabels)
 
-	stateful.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	stateful.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createStatefulSetSetWithRetries(f.ClientSet, f.Namespace.Name, stateful)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	framework_ss.WaitForRunningAndReady(f.ClientSet, *stateful.Spec.Replicas, stateful)
-}
-
-func setupHamsterContainer(cpu, memory string) apiv1.Container {
-	cpuQuantity := ParseQuantityOrDie(cpu)
-	memoryQuantity := ParseQuantityOrDie(memory)
-
-	return apiv1.Container{
-		Name:  "hamster",
-		Image: "k8s.gcr.io/ubuntu-slim:0.1",
-		Resources: apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    cpuQuantity,
-				apiv1.ResourceMemory: memoryQuantity,
-			},
-		},
-		Command: []string{"/bin/sh"},
-		Args:    []string{"-c", "while true; do sleep 10 ; done"},
-	}
 }
 
 func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1beta1.PodDisruptionBudget {
