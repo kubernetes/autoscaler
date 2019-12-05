@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -143,6 +144,33 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 		list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(metav1.ListOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(list.Items).To(gomega.BeEmpty())
+	})
+})
+
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+
+	ginkgo.It("serves recommendation for CronJob", func() {
+		ginkgo.By("Setting up hamster CronJob")
+		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", defaultHamsterReplicas)
+
+		config, err := framework.LoadConfig()
+		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
+		vpaClient := vpaClientSet.AutoscalingV1()
+
+		ginkgo.By("Setting up VPA")
+		vpaCRD := NewVPA(f, "hamster-cronjob-vpa", &autoscaling.CrossVersionObjectReference{
+			APIVersion: "batch/v1",
+			Kind:       "CronJob",
+			Name:       "hamster-cronjob",
+		})
+
+		_, err = vpaClient.VerticalPodAutoscalers(f.Namespace.Name).Create(vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		_, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
 
