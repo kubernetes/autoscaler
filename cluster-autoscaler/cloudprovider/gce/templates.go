@@ -177,7 +177,9 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 
 	// TODO: extract it somehow
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
 	result[apiv1.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
