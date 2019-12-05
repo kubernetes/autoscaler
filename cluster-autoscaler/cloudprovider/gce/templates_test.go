@@ -134,6 +134,8 @@ func TestBuildGenericLabels(t *testing.T) {
 		apiv1.LabelInstanceType:      "n1-standard-8",
 		kubeletapis.LabelArch:        cloudprovider.DefaultArch,
 		kubeletapis.LabelOS:          cloudprovider.DefaultOS,
+		apiv1.LabelArchStable:        cloudprovider.DefaultArch,
+		apiv1.LabelOSStable:          cloudprovider.DefaultOS,
 	}
 	labels, err := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
