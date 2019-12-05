@@ -127,18 +127,21 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 }
 
 func TestBuildGenericLabels(t *testing.T) {
+	expectedLabels := map[string]string{
+		apiv1.LabelZoneRegion:        "us-central1",
+		apiv1.LabelZoneFailureDomain: "us-central1-b",
+		apiv1.LabelHostname:          "sillyname",
+		apiv1.LabelInstanceType:      "n1-standard-8",
+		kubeletapis.LabelArch:        cloudprovider.DefaultArch,
+		kubeletapis.LabelOS:          cloudprovider.DefaultOS,
+	}
 	labels, err := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
 		"n1-standard-8", "sillyname")
-	assert.Nil(t, err)
-	assert.Equal(t, "us-central1", labels[apiv1.LabelZoneRegion])
-	assert.Equal(t, "us-central1-b", labels[apiv1.LabelZoneFailureDomain])
-	assert.Equal(t, "sillyname", labels[apiv1.LabelHostname])
-	assert.Equal(t, "n1-standard-8", labels[apiv1.LabelInstanceType])
-	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
-	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
+	assert.NoError(t, err)
+	assert.Equal(t, expectedLabels, labels)
 }
 
 func TestCalculateAllocatable(t *testing.T) {
