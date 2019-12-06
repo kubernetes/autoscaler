@@ -44,12 +44,12 @@ Replace sts.amazonaws.com to your service account ID.
 
 D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial] . 
 - Open the Amazon EC2 console, and then choose EKS worker node Auto Scaling Groups from the navigation pane.
-- In the "Add/Edit Auto Scaling Group Tags" window, please make sure you enter the following tags by replacing 'awsExampleClusterName' with the name of your EKS cluster. Then, choose "Save".
+- In the "Add/Edit Auto Scaling Group Tags" window, please make sure you enter the following tags by replacing '<<awsExampleClusterName>>' with the name of your EKS cluster. Then, choose "Save".
 
 | Plugin | README |
 | ------ | ------ |
 | Key: | k8s.io/cluster-autoscaler/enabled |
-| Key: | k8s.io/cluster-autoscaler/awsExampleClusterName |
+| Key: | k8s.io/cluster-autoscaler/<<awsExampleClusterName>> |
 
 Note: The keys for the tags that you entered don't have values. Cluster Autoscaler ignores any value set for the keys.
 
@@ -75,7 +75,7 @@ Note: The keys for the tags that you entered don't have values. Cluster Autoscal
 }
 ```
 
-NOTE: autoscaling:DescribeTags is very important if you are making use of the AutoDiscovery feature of the Cluster AutoScaler. 
+NOTE: ```sh autoscaling:DescribeTags``` is very important if you are making use of the AutoDiscovery feature of the Cluster AutoScaler. 
 
 - Attach the above created policy to the *instance role* that's attached to your Amazon EKS worker nodes.
 - Download a deployment example file provided by the Cluster Autoscaler project on GitHub, run the following command:
@@ -128,7 +128,7 @@ metadata:
     k8s-addon: cluster-autoscaler.addons.k8s.io
     k8s-app: cluster-autoscaler
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::xxxxx:role/AmazonEKSPodS3BucketRole   # Add the IAM role created in the above C section.
+    eks.amazonaws.com/role-arn: arn:aws:iam::xxxxx:role/Amazon_CA_role   # Add the IAM role created in the above C section.
   name: cluster-autoscaler
   namespace: kube-system
 ```
