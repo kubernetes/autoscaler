@@ -22,8 +22,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/digitalocean/godo"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
 )
 
 func TestNewManager(t *testing.T) {
