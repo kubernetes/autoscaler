@@ -22,12 +22,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/digitalocean/godo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
 )
 
 func TestNodeGroup_TargetSize(t *testing.T) {
