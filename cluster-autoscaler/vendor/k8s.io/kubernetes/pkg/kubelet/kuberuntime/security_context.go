@@ -108,9 +108,6 @@ func convertToRuntimeSecurityContext(securityContext *v1.SecurityContext) *runti
 	if securityContext.RunAsUser != nil {
 		sc.RunAsUser = &runtimeapi.Int64Value{Value: int64(*securityContext.RunAsUser)}
 	}
-	if securityContext.RunAsGroup != nil {
-		sc.RunAsGroup = &runtimeapi.Int64Value{Value: int64(*securityContext.RunAsGroup)}
-	}
 	if securityContext.Privileged != nil {
 		sc.Privileged = *securityContext.Privileged
 	}

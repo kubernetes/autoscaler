@@ -3,10 +3,9 @@
 // Package autoscaling provides the client and types for making API
 // requests to Auto Scaling.
 //
-// Amazon EC2 Auto Scaling is designed to automatically launch or terminate
-// EC2 instances based on user-defined policies, schedules, and health checks.
-// Use this service in conjunction with the AWS Auto Scaling, Amazon CloudWatch,
-// and Elastic Load Balancing services.
+// Auto Scaling is designed to automatically launch or terminate EC2 instances
+// based on user-defined policies, schedules, and health checks. Use this service
+// in conjunction with the Amazon CloudWatch and Elastic Load Balancing services.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01 for more information on this service.
 //
@@ -15,7 +14,7 @@
 //
 // Using the Client
 //
-// To contact Auto Scaling with the SDK use the New function to create
+// To Auto Scaling with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.
 // These clients are safe to use concurrently.
 //

@@ -17,11 +17,9 @@ go_library(
         "int64.go",
         "string.go",
     ],
-    importmap = "k8s.io/kubernetes/vendor/k8s.io/apimachinery/pkg/util/sets",
     importpath = "k8s.io/apimachinery/pkg/util/sets",
 )
 
-# This rule makes all sorts of terrible assumptions that it's running inside k8s.io/kubernetes, even though it's part of k8s.io/apimachinery. :\
 go_genrule(
     name = "set-gen",
     srcs = [
@@ -37,13 +35,13 @@ go_genrule(
     ],
     cmd = """
 $(location //vendor/k8s.io/code-generator/cmd/set-gen) \
-    --input-dirs k8s.io/kubernetes/vendor/k8s.io/apimachinery/pkg/util/sets/types \
+    --input-dirs ./vendor/k8s.io/apimachinery/pkg/util/sets/types \
     --output-base $$(dirname $$(dirname $(location :byte.go))) \
     --go-header-file $(location //hack/boilerplate:boilerplate.generatego.txt) \
     --output-package sets
     """,
     go_deps = [
-        "//staging/src/k8s.io/apimachinery/pkg/util/sets/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets/types:go_default_library",
     ],
     tools = [
         "//vendor/k8s.io/code-generator/cmd/set-gen",

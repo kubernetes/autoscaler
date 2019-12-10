@@ -8,9 +8,6 @@ import (
 	"io/ioutil"
 	"reflect"
 	"time"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/private/protocol"
 )
 
 // UnmarshalJSON reads a stream and unmarshals the results in object v.
@@ -53,10 +50,7 @@ func unmarshalAny(value reflect.Value, data interface{}, tag reflect.StructTag) 
 				t = "list"
 			}
 		case reflect.Map:
-			// cannot be a JSONValue map
-			if _, ok := value.Interface().(aws.JSONValue); !ok {
-				t = "map"
-			}
+			t = "map"
 		}
 	}
 
@@ -189,13 +183,6 @@ func unmarshalScalar(value reflect.Value, data interface{}, tag reflect.StructTa
 				return err
 			}
 			value.Set(reflect.ValueOf(b))
-		case aws.JSONValue:
-			// No need to use escaping as the value is a non-quoted string.
-			v, err := protocol.DecodeJSONValue(d, protocol.NoEscape)
-			if err != nil {
-				return err
-			}
-			value.Set(reflect.ValueOf(v))
 		default:
 			return errf()
 		}

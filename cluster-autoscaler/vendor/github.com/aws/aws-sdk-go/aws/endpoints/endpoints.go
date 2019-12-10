@@ -206,11 +206,10 @@ func (p Partition) EndpointFor(service, region string, opts ...func(*Options)) (
 // enumerating over the regions in a partition.
 func (p Partition) Regions() map[string]Region {
 	rs := map[string]Region{}
-	for id, r := range p.p.Regions {
+	for id := range p.p.Regions {
 		rs[id] = Region{
-			id:   id,
-			desc: r.Description,
-			p:    p.p,
+			id: id,
+			p:  p.p,
 		}
 	}
 
@@ -240,10 +239,6 @@ type Region struct {
 
 // ID returns the region's identifier.
 func (r Region) ID() string { return r.id }
-
-// Description returns the region's description. The region description
-// is free text, it can be empty, and it may change between SDK releases.
-func (r Region) Description() string { return r.desc }
 
 // ResolveEndpoint resolves an endpoint from the context of the region given
 // a service. See Partition.EndpointFor for usage and errors that can be returned.
@@ -289,11 +284,10 @@ func (s Service) ResolveEndpoint(region string, opts ...func(*Options)) (Resolve
 func (s Service) Regions() map[string]Region {
 	rs := map[string]Region{}
 	for id := range s.p.Services[s.id].Endpoints {
-		if r, ok := s.p.Regions[id]; ok {
+		if _, ok := s.p.Regions[id]; ok {
 			rs[id] = Region{
-				id:   id,
-				desc: r.Description,
-				p:    s.p,
+				id: id,
+				p:  s.p,
 			}
 		}
 	}
@@ -352,10 +346,6 @@ type ResolvedEndpoint struct {
 
 	// The service name that should be used for signing requests.
 	SigningName string
-
-	// States that the signing name for this endpoint was derived from metadata
-	// passed in, but was not explicitly modeled.
-	SigningNameDerived bool
 
 	// The signing method that should be used for signing requests.
 	SigningMethod string

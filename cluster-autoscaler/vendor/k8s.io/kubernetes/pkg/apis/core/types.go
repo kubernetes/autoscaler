@@ -1264,7 +1264,6 @@ type ScaleIOVolumeSource struct {
 	// +optional
 	StoragePool string
 	// Indicates whether the storage for a volume should be ThickProvisioned or ThinProvisioned.
-	// Default is ThinProvisioned.
 	// +optional
 	StorageMode string
 	// The name of a volume already created in the ScaleIO system
@@ -1272,8 +1271,7 @@ type ScaleIOVolumeSource struct {
 	VolumeName string
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
-	// Ex. "ext4", "xfs", "ntfs".
-	// Default is "xfs".
+	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
 	// +optional
 	FSType string
 	// Defaults to false (read/write). ReadOnly here will force
@@ -1302,7 +1300,6 @@ type ScaleIOPersistentVolumeSource struct {
 	// +optional
 	StoragePool string
 	// Indicates whether the storage for a volume should be ThickProvisioned or ThinProvisioned.
-	// Default is ThinProvisioned.
 	// +optional
 	StorageMode string
 	// The name of a volume created in the ScaleIO system
@@ -1310,8 +1307,7 @@ type ScaleIOPersistentVolumeSource struct {
 	VolumeName string
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
-	// Ex. "ext4", "xfs", "ntfs".
-	// Default is "xfs".
+	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
 	// +optional
 	FSType string
 	// Defaults to false (read/write). ReadOnly here will force
@@ -1523,7 +1519,7 @@ type CSIPersistentVolumeSource struct {
 
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
-	// Ex. "ext4", "xfs", "ntfs".
+	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
 	// +optional
 	FSType string
 
@@ -1593,7 +1589,7 @@ type VolumeMount struct {
 	SubPath string
 	// mountPropagation determines how mounts are propagated from the host
 	// to container and the other way around.
-	// When not set, MountPropagationNone is used.
+	// When not set, MountPropagationHostToContainer is used.
 	// This field is beta in 1.10.
 	// +optional
 	MountPropagation *MountPropagationMode

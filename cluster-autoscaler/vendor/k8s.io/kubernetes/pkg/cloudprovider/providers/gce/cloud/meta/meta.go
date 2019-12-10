@@ -115,7 +115,6 @@ var AllServices = []*ServiceInfo{
 		keyType:     Global,
 		serviceType: reflect.TypeOf(&beta.BackendServicesService{}),
 		additionalMethods: []string{
-			"Update",
 			"SetSecurityPolicy",
 		},
 	},
@@ -225,17 +224,6 @@ var AllServices = []*ServiceInfo{
 		Object:      "HealthCheck",
 		Service:     "HealthChecks",
 		Resource:    "healthChecks",
-		version:     VersionBeta,
-		keyType:     Global,
-		serviceType: reflect.TypeOf(&beta.HealthChecksService{}),
-		additionalMethods: []string{
-			"Update",
-		},
-	},
-	{
-		Object:      "HealthCheck",
-		Service:     "HealthChecks",
-		Resource:    "healthChecks",
 		version:     VersionAlpha,
 		keyType:     Global,
 		serviceType: reflect.TypeOf(&alpha.HealthChecksService{}),
@@ -320,20 +308,6 @@ var AllServices = []*ServiceInfo{
 		version:     VersionAlpha,
 		keyType:     Zonal,
 		serviceType: reflect.TypeOf(&alpha.NetworkEndpointGroupsService{}),
-		additionalMethods: []string{
-			"AttachNetworkEndpoints",
-			"DetachNetworkEndpoints",
-			"ListNetworkEndpoints",
-		},
-		options: AggregatedList,
-	},
-	{
-		Object:      "NetworkEndpointGroup",
-		Service:     "NetworkEndpointGroups",
-		Resource:    "networkEndpointGroups",
-		version:     VersionBeta,
-		keyType:     Zonal,
-		serviceType: reflect.TypeOf(&beta.NetworkEndpointGroupsService{}),
 		additionalMethods: []string{
 			"AttachNetworkEndpoints",
 			"DetachNetworkEndpoints",

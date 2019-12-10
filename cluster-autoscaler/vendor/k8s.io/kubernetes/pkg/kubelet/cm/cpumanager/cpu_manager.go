@@ -33,6 +33,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/status"
+	"path"
 )
 
 // ActivePodsFunc is a function that returns a list of pods to reconcile.
@@ -44,8 +45,8 @@ type runtimeService interface {
 
 type policyName string
 
-// cpuManagerStateFileName is the name file name where cpu manager stores it's state
-const cpuManagerStateFileName = "cpu_manager_state"
+// CPUManagerStateFileName is the name file name where cpu manager stores it's state
+const CPUManagerStateFileName = "cpu_manager_state"
 
 // Manager interface provides methods for Kubelet to manage pod cpus.
 type Manager interface {
@@ -97,7 +98,7 @@ type manager struct {
 var _ Manager = &manager{}
 
 // NewManager creates new cpu manager based on provided policy
-func NewManager(cpuPolicyName string, reconcilePeriod time.Duration, machineInfo *cadvisorapi.MachineInfo, nodeAllocatableReservation v1.ResourceList, stateFileDirectory string) (Manager, error) {
+func NewManager(cpuPolicyName string, reconcilePeriod time.Duration, machineInfo *cadvisorapi.MachineInfo, nodeAllocatableReservation v1.ResourceList, stateFileDirecory string) (Manager, error) {
 	var policy Policy
 
 	switch policyName(cpuPolicyName) {
@@ -136,10 +137,9 @@ func NewManager(cpuPolicyName string, reconcilePeriod time.Duration, machineInfo
 		policy = NewNonePolicy()
 	}
 
-	stateImpl, err := state.NewCheckpointState(stateFileDirectory, cpuManagerStateFileName, policy.Name())
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize checkpoint manager: %v", err)
-	}
+	stateImpl := state.NewFileState(
+		path.Join(stateFileDirecory, CPUManagerStateFileName),
+		policy.Name())
 
 	manager := &manager{
 		policy:                     policy,

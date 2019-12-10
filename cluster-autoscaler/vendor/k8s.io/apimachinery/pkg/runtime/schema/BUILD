@@ -19,7 +19,6 @@ go_library(
         "group_version.go",
         "interfaces.go",
     ],
-    importmap = "k8s.io/kubernetes/vendor/k8s.io/apimachinery/pkg/runtime/schema",
     importpath = "k8s.io/apimachinery/pkg/runtime/schema",
     deps = ["//vendor/github.com/gogo/protobuf/proto:go_default_library"],
 )
@@ -35,4 +34,10 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+)
+
+filegroup(
+    name = "go_default_library_protos",
+    srcs = ["generated.proto"],
+    visibility = ["//visibility:public"],
 )

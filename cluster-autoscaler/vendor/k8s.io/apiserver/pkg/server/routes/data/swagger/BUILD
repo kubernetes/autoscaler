@@ -8,7 +8,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["datafile.go"],
-    importmap = "k8s.io/kubernetes/vendor/k8s.io/apiserver/pkg/server/routes/data/swagger",
     importpath = "k8s.io/apiserver/pkg/server/routes/data/swagger",
 )
 

@@ -17,54 +17,55 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	computebeta "google.golang.org/api/compute/v0.beta"
+	computealpha "google.golang.org/api/compute/v0.alpha"
 
-	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud/filter"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud/meta"
 )
 
 const (
+	NEGLoadBalancerType          = "LOAD_BALANCING"
 	NEGIPPortNetworkEndpointType = "GCE_VM_IP_PORT"
 )
 
 func newNetworkEndpointGroupMetricContext(request string, zone string) *metricContext {
-	return newGenericMetricContext("networkendpointgroup_", request, unusedMetricLabel, zone, computeBetaVersion)
+	return newGenericMetricContext("networkendpointgroup_", request, unusedMetricLabel, zone, computeAlphaVersion)
 }
 
-func (gce *GCECloud) GetNetworkEndpointGroup(name string, zone string) (*computebeta.NetworkEndpointGroup, error) {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) GetNetworkEndpointGroup(name string, zone string) (*computealpha.NetworkEndpointGroup, error) {
 	mc := newNetworkEndpointGroupMetricContext("get", zone)
-	v, err := gce.c.BetaNetworkEndpointGroups().Get(ctx, meta.ZonalKey(name, zone))
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return nil, mc.Observe(err)
+	}
+	v, err := gce.c.AlphaNetworkEndpointGroups().Get(context.Background(), meta.ZonalKey(name, zone))
 	return v, mc.Observe(err)
 }
 
-func (gce *GCECloud) ListNetworkEndpointGroup(zone string) ([]*computebeta.NetworkEndpointGroup, error) {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) ListNetworkEndpointGroup(zone string) ([]*computealpha.NetworkEndpointGroup, error) {
 	mc := newNetworkEndpointGroupMetricContext("list", zone)
-	negs, err := gce.c.BetaNetworkEndpointGroups().List(ctx, zone, filter.None)
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return nil, mc.Observe(err)
+	}
+	negs, err := gce.c.AlphaNetworkEndpointGroups().List(context.Background(), zone, filter.None)
 	return negs, mc.Observe(err)
 }
 
 // AggregatedListNetworkEndpointGroup returns a map of zone -> endpoint group.
-func (gce *GCECloud) AggregatedListNetworkEndpointGroup() (map[string][]*computebeta.NetworkEndpointGroup, error) {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) AggregatedListNetworkEndpointGroup() (map[string][]*computealpha.NetworkEndpointGroup, error) {
 	mc := newNetworkEndpointGroupMetricContext("aggregated_list", "")
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return nil, mc.Observe(err)
+	}
 	// TODO: filter for the region the cluster is in.
-	all, err := gce.c.BetaNetworkEndpointGroups().AggregatedList(ctx, filter.None)
+	all, err := gce.c.AlphaNetworkEndpointGroups().AggregatedList(context.Background(), filter.None)
 	if err != nil {
 		return nil, mc.Observe(err)
 	}
-	ret := map[string][]*computebeta.NetworkEndpointGroup{}
+	ret := map[string][]*computealpha.NetworkEndpointGroup{}
 	for key, byZone := range all {
 		// key is "zones/<zone name>"
 		parts := strings.Split(key, "/")
@@ -77,56 +78,56 @@ func (gce *GCECloud) AggregatedListNetworkEndpointGroup() (map[string][]*compute
 	return ret, mc.Observe(nil)
 }
 
-func (gce *GCECloud) CreateNetworkEndpointGroup(neg *computebeta.NetworkEndpointGroup, zone string) error {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) CreateNetworkEndpointGroup(neg *computealpha.NetworkEndpointGroup, zone string) error {
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return err
+	}
 	mc := newNetworkEndpointGroupMetricContext("create", zone)
-	return mc.Observe(gce.c.BetaNetworkEndpointGroups().Insert(ctx, meta.ZonalKey(neg.Name, zone), neg))
+	return mc.Observe(gce.c.AlphaNetworkEndpointGroups().Insert(context.Background(), meta.ZonalKey(neg.Name, zone), neg))
 }
 
 func (gce *GCECloud) DeleteNetworkEndpointGroup(name string, zone string) error {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return err
+	}
 	mc := newNetworkEndpointGroupMetricContext("delete", zone)
-	return mc.Observe(gce.c.BetaNetworkEndpointGroups().Delete(ctx, meta.ZonalKey(name, zone)))
+	return mc.Observe(gce.c.AlphaNetworkEndpointGroups().Delete(context.Background(), meta.ZonalKey(name, zone)))
 }
 
-func (gce *GCECloud) AttachNetworkEndpoints(name, zone string, endpoints []*computebeta.NetworkEndpoint) error {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) AttachNetworkEndpoints(name, zone string, endpoints []*computealpha.NetworkEndpoint) error {
 	mc := newNetworkEndpointGroupMetricContext("attach", zone)
-	req := &computebeta.NetworkEndpointGroupsAttachEndpointsRequest{
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return mc.Observe(err)
+	}
+	req := &computealpha.NetworkEndpointGroupsAttachEndpointsRequest{
 		NetworkEndpoints: endpoints,
 	}
-	return mc.Observe(gce.c.BetaNetworkEndpointGroups().AttachNetworkEndpoints(ctx, meta.ZonalKey(name, zone), req))
+	return mc.Observe(gce.c.AlphaNetworkEndpointGroups().AttachNetworkEndpoints(context.Background(), meta.ZonalKey(name, zone), req))
 }
 
-func (gce *GCECloud) DetachNetworkEndpoints(name, zone string, endpoints []*computebeta.NetworkEndpoint) error {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) DetachNetworkEndpoints(name, zone string, endpoints []*computealpha.NetworkEndpoint) error {
 	mc := newNetworkEndpointGroupMetricContext("detach", zone)
-	req := &computebeta.NetworkEndpointGroupsDetachEndpointsRequest{
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return mc.Observe(err)
+	}
+	req := &computealpha.NetworkEndpointGroupsDetachEndpointsRequest{
 		NetworkEndpoints: endpoints,
 	}
-	return mc.Observe(gce.c.BetaNetworkEndpointGroups().DetachNetworkEndpoints(ctx, meta.ZonalKey(name, zone), req))
+	return mc.Observe(gce.c.AlphaNetworkEndpointGroups().DetachNetworkEndpoints(context.Background(), meta.ZonalKey(name, zone), req))
 }
 
-func (gce *GCECloud) ListNetworkEndpoints(name, zone string, showHealthStatus bool) ([]*computebeta.NetworkEndpointWithHealthStatus, error) {
-	ctx, cancel := cloud.ContextWithCallTimeout()
-	defer cancel()
-
+func (gce *GCECloud) ListNetworkEndpoints(name, zone string, showHealthStatus bool) ([]*computealpha.NetworkEndpointWithHealthStatus, error) {
 	mc := newNetworkEndpointGroupMetricContext("list_networkendpoints", zone)
+	if err := gce.alphaFeatureEnabled(AlphaFeatureNetworkEndpointGroup); err != nil {
+		return nil, mc.Observe(err)
+	}
 	healthStatus := "SKIP"
 	if showHealthStatus {
 		healthStatus = "SHOW"
 	}
-	req := &computebeta.NetworkEndpointGroupsListEndpointsRequest{
+	req := &computealpha.NetworkEndpointGroupsListEndpointsRequest{
 		HealthStatus: healthStatus,
 	}
-	l, err := gce.c.BetaNetworkEndpointGroups().ListNetworkEndpoints(ctx, meta.ZonalKey(name, zone), req, filter.None)
+	l, err := gce.c.AlphaNetworkEndpointGroups().ListNetworkEndpoints(context.Background(), meta.ZonalKey(name, zone), req, filter.None)
 	return l, mc.Observe(err)
 }

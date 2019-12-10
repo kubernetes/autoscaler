@@ -154,7 +154,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 	}
 
 	// Add field conversion funcs.
-	err = scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Pod"),
+	err = scheme.AddFieldLabelConversionFunc("v1", "Pod",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "metadata.name",
@@ -177,7 +177,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 	if err != nil {
 		return err
 	}
-	err = scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Node"),
+	err = scheme.AddFieldLabelConversionFunc("v1", "Node",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "metadata.name":
@@ -192,7 +192,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 	if err != nil {
 		return err
 	}
-	err = scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("ReplicationController"),
+	err = scheme.AddFieldLabelConversionFunc("v1", "ReplicationController",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "metadata.name",
@@ -553,7 +553,7 @@ func Convert_v1_ResourceList_To_core_ResourceList(in *v1.ResourceList, out *core
 }
 
 func AddFieldLabelConversionsForEvent(scheme *runtime.Scheme) error {
-	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Event"),
+	return scheme.AddFieldLabelConversionFunc("v1", "Event",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "involvedObject.kind",
@@ -576,7 +576,7 @@ func AddFieldLabelConversionsForEvent(scheme *runtime.Scheme) error {
 }
 
 func AddFieldLabelConversionsForNamespace(scheme *runtime.Scheme) error {
-	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Namespace"),
+	return scheme.AddFieldLabelConversionFunc("v1", "Namespace",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "status.phase",
@@ -589,7 +589,7 @@ func AddFieldLabelConversionsForNamespace(scheme *runtime.Scheme) error {
 }
 
 func AddFieldLabelConversionsForSecret(scheme *runtime.Scheme) error {
-	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Secret"),
+	return scheme.AddFieldLabelConversionFunc("v1", "Secret",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "type",

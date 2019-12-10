@@ -21,19 +21,13 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 // FormatMap formats map[string]string to a string.
 func FormatMap(m map[string]string) (fmtStr string) {
-	// output with keys in sorted order to provide stable output
-	keys := sets.NewString()
-	for key := range m {
-		keys.Insert(key)
-	}
-	for _, key := range keys.List() {
-		fmtStr += fmt.Sprintf("%v=%q\n", key, m[key])
+	for key, value := range m {
+		fmtStr += fmt.Sprintf("%v=%q\n", key, value)
 	}
 	fmtStr = strings.TrimSuffix(fmtStr, "\n")
 

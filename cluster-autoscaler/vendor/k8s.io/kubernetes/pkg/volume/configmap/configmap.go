@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ioutil "k8s.io/kubernetes/pkg/util/io"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/strings"
 	"k8s.io/kubernetes/pkg/volume"
@@ -92,6 +93,7 @@ func (plugin *configMapPlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, opts v
 			pod.UID,
 			plugin,
 			plugin.host.GetMounter(plugin.GetPluginName()),
+			plugin.host.GetWriter(),
 			volume.MetricsNil{},
 		},
 		source:       *spec.Volume.ConfigMap,
@@ -108,6 +110,7 @@ func (plugin *configMapPlugin) NewUnmounter(volName string, podUID types.UID) (v
 			podUID,
 			plugin,
 			plugin.host.GetMounter(plugin.GetPluginName()),
+			plugin.host.GetWriter(),
 			volume.MetricsNil{},
 		},
 	}, nil
@@ -128,6 +131,7 @@ type configMapVolume struct {
 	podUID  types.UID
 	plugin  *configMapPlugin
 	mounter mount.Interface
+	writer  ioutil.Writer
 	volume.MetricsNil
 }
 

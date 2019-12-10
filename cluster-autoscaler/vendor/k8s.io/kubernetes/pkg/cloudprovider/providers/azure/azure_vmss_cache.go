@@ -99,7 +99,7 @@ func (ss *scaleSet) newNodeNameToScaleSetMappingCache() (*timedCache, error) {
 
 			for _, vm := range vms {
 				if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil {
-					glog.Warningf("failed to get computerName for vmssVM (%q)", ssName)
+					glog.Warningf("failed to get computerName for vmssVM (%q)", vm.Name)
 					continue
 				}
 

@@ -114,25 +114,17 @@ func (h *HumanReadablePrinter) EnsurePrintHeaders() {
 // See ValidatePrintHandlerFunc for required method signature.
 func (h *HumanReadablePrinter) Handler(columns, columnsWithWide []string, printFunc interface{}) error {
 	var columnDefinitions []metav1beta1.TableColumnDefinition
-	for i, column := range columns {
-		format := ""
-		if i == 0 && strings.EqualFold(column, "name") {
-			format = "name"
-		}
-
+	for _, column := range columns {
 		columnDefinitions = append(columnDefinitions, metav1beta1.TableColumnDefinition{
-			Name:        column,
-			Description: column,
-			Type:        "string",
-			Format:      format,
+			Name: column,
+			Type: "string",
 		})
 	}
 	for _, column := range columnsWithWide {
 		columnDefinitions = append(columnDefinitions, metav1beta1.TableColumnDefinition{
-			Name:        column,
-			Description: column,
-			Type:        "string",
-			Priority:    1,
+			Name:     column,
+			Type:     "string",
+			Priority: 1,
 		})
 	}
 
@@ -639,13 +631,6 @@ func (h *HumanReadablePrinter) legacyPrinterToTable(obj runtime.Object, handler 
 	args := []reflect.Value{reflect.ValueOf(obj), reflect.ValueOf(buf), reflect.ValueOf(options)}
 
 	if meta.IsListType(obj) {
-		listInterface, ok := obj.(metav1.ListInterface)
-		if ok {
-			table.ListMeta.SelfLink = listInterface.GetSelfLink()
-			table.ListMeta.ResourceVersion = listInterface.GetResourceVersion()
-			table.ListMeta.Continue = listInterface.GetContinue()
-		}
-
 		// TODO: this uses more memory than it has to, as we refactor printers we should remove the need
 		// for this.
 		args[0] = reflect.ValueOf(obj)

@@ -47,20 +47,19 @@ type csiBlockMapper struct {
 
 var _ volume.BlockVolumeMapper = &csiBlockMapper{}
 
-// GetGlobalMapPath returns a path (on the node) to a device file which will be symlinked to
-// Example: plugins/kubernetes.io/csi/volumeDevices/{volumeID}/dev
+// GetGlobalMapPath returns a path (on the node) where the devicePath will be symlinked to
+// Example: plugins/kubernetes.io/csi/volumeDevices/{volumeID}
 func (m *csiBlockMapper) GetGlobalMapPath(spec *volume.Spec) (string, error) {
 	dir := getVolumeDevicePluginDir(spec.Name(), m.plugin.host)
 	glog.V(4).Infof(log("blockMapper.GetGlobalMapPath = %s", dir))
 	return dir, nil
 }
 
-// GetPodDeviceMapPath returns pod's device file which will be mapped to a volume
-// returns: pods/{podUid}/volumeDevices/kubernetes.io~csi/{volumeID}/dev, {volumeID}
+// GetPodDeviceMapPath returns pod's device map path and volume name
+// path: pods/{podUid}/volumeDevices/kubernetes.io~csi/, {volumeID}
 func (m *csiBlockMapper) GetPodDeviceMapPath() (string, string) {
-	path := filepath.Join(m.plugin.host.GetPodVolumeDeviceDir(m.podUID, csiPluginName), m.specName, "dev")
-	specName := m.specName
-	glog.V(4).Infof(log("blockMapper.GetPodDeviceMapPath [path=%s; name=%s]", path, specName))
+	path, specName := m.plugin.host.GetPodVolumeDeviceDir(m.podUID, csiPluginName), m.specName
+	glog.V(4).Infof(log("blockMapper.GetPodDeviceMapPath = %s", path))
 	return path, specName
 }
 
@@ -87,9 +86,6 @@ func (m *csiBlockMapper) SetUpDevice() (string, error) {
 		glog.Error(log("blockMapper.SetupDevice failed to get global map path: %v", err))
 		return "", err
 	}
-
-	globalMapPathBlockFile := filepath.Join(globalMapPath, "file")
-	glog.V(4).Infof(log("blockMapper.SetupDevice global device map path file set [%s]", globalMapPathBlockFile))
 
 	csi := m.csiClient
 	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
@@ -132,24 +128,12 @@ func (m *csiBlockMapper) SetUpDevice() (string, error) {
 		}
 	}
 
-	// setup path globalMapPath and block file before call to NodeStageVolume
+	// create globalMapPath before call to NodeStageVolume
 	if err := os.MkdirAll(globalMapPath, 0750); err != nil {
 		glog.Error(log("blockMapper.SetupDevice failed to create dir %s: %v", globalMapPath, err))
 		return "", err
 	}
 	glog.V(4).Info(log("blockMapper.SetupDevice created global device map path successfully [%s]", globalMapPath))
-
-	// create block device file
-	blockFile, err := os.OpenFile(globalMapPathBlockFile, os.O_CREATE|os.O_RDWR, 0750)
-	if err != nil {
-		glog.Error(log("blockMapper.SetupDevice failed to create dir %s: %v", globalMapPathBlockFile, err))
-		return "", err
-	}
-	if err := blockFile.Close(); err != nil {
-		glog.Error(log("blockMapper.SetupDevice failed to close file %s: %v", globalMapPathBlockFile, err))
-		return "", err
-	}
-	glog.V(4).Info(log("blockMapper.SetupDevice created global map path block device file successfully [%s]", globalMapPathBlockFile))
 
 	//TODO (vladimirvivien) implement better AccessModes mapping between k8s and CSI
 	accessMode := v1.ReadWriteOnce
@@ -160,7 +144,7 @@ func (m *csiBlockMapper) SetUpDevice() (string, error) {
 	err = csi.NodeStageVolume(ctx,
 		csiSource.VolumeHandle,
 		publishVolumeInfo,
-		globalMapPathBlockFile,
+		globalMapPath,
 		fsTypeBlockName,
 		accessMode,
 		nodeStageSecrets,
@@ -174,8 +158,8 @@ func (m *csiBlockMapper) SetUpDevice() (string, error) {
 		return "", err
 	}
 
-	glog.V(4).Infof(log("blockMapper.SetupDevice successfully requested NodeStageVolume [%s]", globalMapPathBlockFile))
-	return globalMapPathBlockFile, nil
+	glog.V(4).Infof(log("blockMapper.SetupDevice successfully requested NodeStageVolume [%s]", globalMapPath))
+	return globalMapPath, nil
 }
 
 func (m *csiBlockMapper) MapDevice(devicePath, globalMapPath, volumeMapPath, volumeMapName string, podUID types.UID) error {
@@ -192,28 +176,15 @@ func (m *csiBlockMapper) MapDevice(devicePath, globalMapPath, volumeMapPath, vol
 
 	csiSource, err := getCSISourceFromSpec(m.spec)
 	if err != nil {
-		glog.Error(log("blockMapper.MapDevice failed to get CSI persistent source: %v", err))
+		glog.Error(log("blockMapper.Map failed to get CSI persistent source: %v", err))
 		return err
 	}
 
+	dir := filepath.Join(volumeMapPath, volumeMapName)
 	csi := m.csiClient
+
 	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
 	defer cancel()
-
-	globalMapPathBlockFile := devicePath
-	dir, _ := m.GetPodDeviceMapPath()
-	targetBlockFilePath := filepath.Join(dir, "file")
-	glog.V(4).Infof(log("blockMapper.MapDevice target volume map file path %s", targetBlockFilePath))
-
-	stageCapable, err := hasStageUnstageCapability(ctx, csi)
-	if err != nil {
-		glog.Error(log("blockMapper.MapDevice failed to check for STAGE_UNSTAGE_VOLUME capabilty: %v", err))
-		return err
-	}
-
-	if !stageCapable {
-		globalMapPathBlockFile = ""
-	}
 
 	nodeName := string(m.plugin.host.GetNodeName())
 	attachID := getAttachmentName(csiSource.VolumeHandle, csiSource.Driver, nodeName)
@@ -242,22 +213,10 @@ func (m *csiBlockMapper) MapDevice(devicePath, globalMapPath, volumeMapPath, vol
 	}
 
 	if err := os.MkdirAll(dir, 0750); err != nil {
-		glog.Error(log("blockMapper.MapDevice failed to create dir %s:  %v", dir, err))
+		glog.Error(log("blockMapper.MapDevice failed to create dir %#v:  %v", dir, err))
 		return err
 	}
-	glog.V(4).Info(log("blockMapper.MapDevice created target volume map path successfully [%s]", dir))
-
-	// create target map volume block file
-	targetBlockFile, err := os.OpenFile(targetBlockFilePath, os.O_CREATE|os.O_RDWR, 0750)
-	if err != nil {
-		glog.Error(log("blockMapper.MapDevice failed to create file %s: %v", targetBlockFilePath, err))
-		return err
-	}
-	if err := targetBlockFile.Close(); err != nil {
-		glog.Error(log("blockMapper.MapDevice failed to close file %s: %v", targetBlockFilePath, err))
-		return err
-	}
-	glog.V(4).Info(log("blockMapper.MapDevice created target volume map file successfully [%s]", targetBlockFilePath))
+	glog.V(4).Info(log("blockMapper.MapDevice created NodePublish path [%s]", dir))
 
 	//TODO (vladimirvivien) implement better AccessModes mapping between k8s and CSI
 	accessMode := v1.ReadWriteOnce
@@ -269,8 +228,8 @@ func (m *csiBlockMapper) MapDevice(devicePath, globalMapPath, volumeMapPath, vol
 		ctx,
 		m.volumeID,
 		m.readOnly,
-		globalMapPathBlockFile,
-		targetBlockFilePath,
+		globalMapPath,
+		dir,
 		accessMode,
 		publishVolumeInfo,
 		csiSource.VolumeAttributes,
@@ -281,7 +240,7 @@ func (m *csiBlockMapper) MapDevice(devicePath, globalMapPath, volumeMapPath, vol
 	if err != nil {
 		glog.Errorf(log("blockMapper.MapDevice failed: %v", err))
 		if err := os.RemoveAll(dir); err != nil {
-			glog.Error(log("blockMapper.MapDevice failed to remove mapped dir after a NodePublish() error [%s]: %v", dir, err))
+			glog.Error(log("blockMapper.MapDevice failed to remove mount dir after a NodePublish() error [%s]: %v", dir, err))
 		}
 		return err
 	}

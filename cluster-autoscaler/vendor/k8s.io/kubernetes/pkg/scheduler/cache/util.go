@@ -16,10 +16,7 @@ limitations under the License.
 
 package cache
 
-import (
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-)
+import "k8s.io/api/core/v1"
 
 // CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
 // and the values are the aggregated information for that node.
@@ -32,47 +29,11 @@ func CreateNodeNameToInfoMap(pods []*v1.Pod, nodes []*v1.Node) map[string]*NodeI
 		}
 		nodeNameToInfo[nodeName].AddPod(pod)
 	}
-	imageExistenceMap := createImageExistenceMap(nodes)
-
 	for _, node := range nodes {
 		if _, ok := nodeNameToInfo[node.Name]; !ok {
 			nodeNameToInfo[node.Name] = NewNodeInfo()
 		}
-		nodeInfo := nodeNameToInfo[node.Name]
-		nodeInfo.SetNode(node)
-		nodeInfo.imageStates = getNodeImageStates(node, imageExistenceMap)
+		nodeNameToInfo[node.Name].SetNode(node)
 	}
 	return nodeNameToInfo
-}
-
-// getNodeImageStates returns the given node's image states based on the given imageExistence map.
-func getNodeImageStates(node *v1.Node, imageExistenceMap map[string]sets.String) map[string]*ImageStateSummary {
-	imageStates := make(map[string]*ImageStateSummary)
-
-	for _, image := range node.Status.Images {
-		for _, name := range image.Names {
-			imageStates[name] = &ImageStateSummary{
-				Size:     image.SizeBytes,
-				NumNodes: len(imageExistenceMap[name]),
-			}
-		}
-	}
-	return imageStates
-}
-
-// createImageExistenceMap returns a map recording on which nodes the images exist, keyed by the images' names.
-func createImageExistenceMap(nodes []*v1.Node) map[string]sets.String {
-	imageExistenceMap := make(map[string]sets.String)
-	for _, node := range nodes {
-		for _, image := range node.Status.Images {
-			for _, name := range image.Names {
-				if _, ok := imageExistenceMap[name]; !ok {
-					imageExistenceMap[name] = sets.NewString(node.Name)
-				} else {
-					imageExistenceMap[name].Insert(node.Name)
-				}
-			}
-		}
-	}
-	return imageExistenceMap
 }

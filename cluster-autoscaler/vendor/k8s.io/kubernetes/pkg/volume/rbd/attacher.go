@@ -58,7 +58,7 @@ func (plugin *rbdPlugin) newDetacherInternal(manager diskManager) (volume.Detach
 // GetDeviceMountRefs implements AttachableVolumePlugin.GetDeviceMountRefs.
 func (plugin *rbdPlugin) GetDeviceMountRefs(deviceMountPath string) ([]string, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	return mounter.GetMountRefs(deviceMountPath)
+	return mount.GetMountRefs(mounter, deviceMountPath)
 }
 
 // rbdAttacher implements volume.Attacher interface.

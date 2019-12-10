@@ -203,7 +203,7 @@ func (plugin *iscsiPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*v
 	// Find globalPDPath from pod volume directory(mountPath)
 	var globalPDPath string
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	paths, err := mounter.GetMountRefs(mountPath)
+	paths, err := mount.GetMountRefs(mounter, mountPath)
 	if err != nil {
 		return nil, err
 	}

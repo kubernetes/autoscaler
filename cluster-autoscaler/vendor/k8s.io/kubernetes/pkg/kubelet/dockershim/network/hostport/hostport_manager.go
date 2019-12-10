@@ -341,7 +341,7 @@ func getExistingHostportIPTablesRules(iptables utiliptables.Interface) (map[util
 
 	for chain := range existingNATChains {
 		if strings.HasPrefix(string(chain), string(kubeHostportsChain)) || strings.HasPrefix(string(chain), kubeHostportChainPrefix) {
-			existingHostportChains[chain] = string(existingNATChains[chain])
+			existingHostportChains[chain] = existingNATChains[chain]
 		}
 	}
 

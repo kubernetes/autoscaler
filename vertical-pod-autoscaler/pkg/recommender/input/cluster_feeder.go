@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/watch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
@@ -69,14 +68,13 @@ type ClusterStateFeeder interface {
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
 func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
-	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, &oomObserver)
-	watchEvictionEvents(kubeClient, &oomObserver)
+	podLister, observer := newPodClients(kubeClient)
 	return &clusterStateFeeder{
 		coreClient:          kubeClient.CoreV1(),
 		specClient:          spec.NewSpecClient(podLister),
 		metricsClient:       newMetricsClient(config),
-		oomObserver:         &oomObserver,
+		oomObserver:         observer,
+		vpaClient:           vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
 		clusterState:        clusterState,
@@ -88,44 +86,22 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	return metrics.NewMetricsClient(metricsGetter)
 }
 
-func watchEvictionEvents(kubeClient kube_client.Interface, observer *oom.Observer) {
-	options := metav1.ListOptions{
-		FieldSelector: "reason=Evicted",
-	}
-	watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
-	if err != nil {
-		glog.Errorf("Cannot initialize watching events. Reason %v", err)
-		return
-	}
-	go func() {
-		for {
-			result := <-watchInterface.ResultChan()
-			if result.Type == watch.Added {
-				result, ok := result.Object.(*apiv1.Event)
-				if !ok {
-					continue
-				}
-				observer.OnEvent(result)
-			}
-		}
-	}()
-}
-
-// Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler) v1lister.PodLister {
+// Creates clients watching pods: PodLister (listing only not terminated pods) and OOM observer.
+func newPodClients(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.Observer) {
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
+	oomObserver := oom.NewObserver()
 	indexer, controller := cache.NewIndexerInformer(
 		podListWatch,
 		&apiv1.Pod{},
 		time.Hour,
-		resourceEventHandler,
+		&oomObserver,
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	podLister := v1lister.NewPodLister(indexer)
 	stopCh := make(chan struct{})
 	go controller.Run(stopCh)
-	return podLister
+	return podLister, &oomObserver
 }
 
 type clusterStateFeeder struct {
@@ -133,6 +109,7 @@ type clusterStateFeeder struct {
 	specClient          spec.SpecClient
 	metricsClient       metrics.MetricsClient
 	oomObserver         *oom.Observer
+	vpaClient           vpa_api.VerticalPodAutoscalersGetter
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
 	clusterState        *model.ClusterState
@@ -321,7 +298,7 @@ Loop:
 				},
 				ContainerName: oomInfo.Container,
 			}
-			feeder.clusterState.RecordOOM(container, oomInfo.Timestamp, model.ResourceAmount(oomInfo.Memory.Value()))
+			feeder.clusterState.RecordOOM(container, oomInfo.Timestamp, model.ResourceAmount(oomInfo.MemoryRequest.Value()))
 		default:
 			break Loop
 		}

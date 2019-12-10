@@ -22,7 +22,6 @@ go_library(
         "doc.go",
         "etcd_util.go",
     ],
-    importmap = "k8s.io/kubernetes/vendor/k8s.io/apiserver/pkg/storage/etcd/util",
     importpath = "k8s.io/apiserver/pkg/storage/etcd/util",
     deps = ["//vendor/github.com/coreos/etcd/client:go_default_library"],
 )

@@ -10,7 +10,7 @@ import (
 )
 
 type baseLayerWriter struct {
-	root         *os.File
+	root         string
 	f            *os.File
 	bw           *winio.BackupFileWriter
 	err          error
@@ -26,10 +26,10 @@ type dirInfo struct {
 // reapplyDirectoryTimes reapplies directory modification, creation, etc. times
 // after processing of the directory tree has completed. The times are expected
 // to be ordered such that parent directories come before child directories.
-func reapplyDirectoryTimes(root *os.File, dis []dirInfo) error {
+func reapplyDirectoryTimes(dis []dirInfo) error {
 	for i := range dis {
 		di := &dis[len(dis)-i-1] // reverse order: process child directories first
-		f, err := openRelative(di.path, root, syscall.GENERIC_READ|syscall.GENERIC_WRITE, syscall.FILE_SHARE_READ, _FILE_OPEN, _FILE_DIRECTORY_FILE)
+		f, err := winio.OpenForBackup(di.path, syscall.GENERIC_READ|syscall.GENERIC_WRITE, syscall.FILE_SHARE_READ, syscall.OPEN_EXISTING)
 		if err != nil {
 			return err
 		}
@@ -75,6 +75,12 @@ func (w *baseLayerWriter) Add(name string, fileInfo *winio.FileBasicInfo) (err e
 		w.hasUtilityVM = true
 	}
 
+	path := filepath.Join(w.root, name)
+	path, err = makeLongAbsPath(path)
+	if err != nil {
+		return err
+	}
+
 	var f *os.File
 	defer func() {
 		if f != nil {
@@ -82,23 +88,27 @@ func (w *baseLayerWriter) Add(name string, fileInfo *winio.FileBasicInfo) (err e
 		}
 	}()
 
-	extraFlags := uint32(0)
+	createmode := uint32(syscall.CREATE_NEW)
 	if fileInfo.FileAttributes&syscall.FILE_ATTRIBUTE_DIRECTORY != 0 {
-		extraFlags |= _FILE_DIRECTORY_FILE
+		err := os.Mkdir(path, 0)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
+		createmode = syscall.OPEN_EXISTING
 		if fileInfo.FileAttributes&syscall.FILE_ATTRIBUTE_REPARSE_POINT == 0 {
-			w.dirInfo = append(w.dirInfo, dirInfo{name, *fileInfo})
+			w.dirInfo = append(w.dirInfo, dirInfo{path, *fileInfo})
 		}
 	}
 
 	mode := uint32(syscall.GENERIC_READ | syscall.GENERIC_WRITE | winio.WRITE_DAC | winio.WRITE_OWNER | winio.ACCESS_SYSTEM_SECURITY)
-	f, err = openRelative(name, w.root, mode, syscall.FILE_SHARE_READ, _FILE_CREATE, extraFlags)
+	f, err = winio.OpenForBackup(path, mode, syscall.FILE_SHARE_READ, createmode)
 	if err != nil {
-		return makeError(err, "Failed to openRelative", name)
+		return makeError(err, "Failed to OpenForBackup", path)
 	}
 
 	err = winio.SetFileBasicInfo(f, fileInfo)
 	if err != nil {
-		return makeError(err, "Failed to SetFileBasicInfo", name)
+		return makeError(err, "Failed to SetFileBasicInfo", path)
 	}
 
 	w.f = f
@@ -119,7 +129,17 @@ func (w *baseLayerWriter) AddLink(name string, target string) (err error) {
 		return err
 	}
 
-	return linkRelative(target, w.root, name, w.root)
+	linkpath, err := makeLongAbsPath(filepath.Join(w.root, name))
+	if err != nil {
+		return err
+	}
+
+	linktarget, err := makeLongAbsPath(filepath.Join(w.root, target))
+	if err != nil {
+		return err
+	}
+
+	return os.Link(linktarget, linkpath)
 }
 
 func (w *baseLayerWriter) Remove(name string) error {
@@ -135,10 +155,6 @@ func (w *baseLayerWriter) Write(b []byte) (int, error) {
 }
 
 func (w *baseLayerWriter) Close() error {
-	defer func() {
-		w.root.Close()
-		w.root = nil
-	}()
 	err := w.closeCurrentFile()
 	if err != nil {
 		return err
@@ -146,22 +162,18 @@ func (w *baseLayerWriter) Close() error {
 	if w.err == nil {
 		// Restore the file times of all the directories, since they may have
 		// been modified by creating child directories.
-		err = reapplyDirectoryTimes(w.root, w.dirInfo)
+		err = reapplyDirectoryTimes(w.dirInfo)
 		if err != nil {
 			return err
 		}
 
-		err = ProcessBaseLayer(w.root.Name())
+		err = ProcessBaseLayer(w.root)
 		if err != nil {
 			return err
 		}
 
 		if w.hasUtilityVM {
-			err := ensureNotReparsePointRelative("UtilityVM", w.root)
-			if err != nil {
-				return err
-			}
-			err = ProcessUtilityVMImage(filepath.Join(w.root.Name(), "UtilityVM"))
+			err = ProcessUtilityVMImage(filepath.Join(w.root, "UtilityVM"))
 			if err != nil {
 				return err
 			}

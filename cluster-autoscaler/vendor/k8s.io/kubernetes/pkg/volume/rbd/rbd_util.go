@@ -399,10 +399,6 @@ func (util *RBDUtil) AttachDisk(b rbdMounter) (string, error) {
 					break
 				}
 			}
-		} else {
-			// ReadOnly rbd volume should not check rbd status of being used to
-			// support mounted as read-only by multiple consumers simultaneously.
-			needValidUsed = !b.rbd.ReadOnly
 		}
 		err := wait.ExponentialBackoff(backoff, func() (bool, error) {
 			used, rbdOutput, err := util.rbdStatus(&b)

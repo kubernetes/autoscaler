@@ -15,10 +15,6 @@ Cluster autoscaler supports four VM types with Azure cloud provider:
 
 Only **vmss** vmType supports scaling to zero nodes.
 
-## CA Version
-
-You need to replace a placeholder, '{{ ca_version }}' in manifests with CA Version such as v1.2.2.
-
 ## Permissions
 
 Get azure credentials by running the following command

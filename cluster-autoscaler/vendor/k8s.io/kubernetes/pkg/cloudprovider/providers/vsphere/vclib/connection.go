@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/pem"
-	"fmt"
 	"net"
 	neturl "net/url"
 	"sync"
@@ -30,7 +29,6 @@ import (
 	"github.com/vmware/govmomi/sts"
 	"github.com/vmware/govmomi/vim25"
 	"github.com/vmware/govmomi/vim25/soap"
-	"k8s.io/kubernetes/pkg/version"
 )
 
 // VSphereConnection contains information for connecting to vCenter
@@ -40,8 +38,6 @@ type VSphereConnection struct {
 	Password          string
 	Hostname          string
 	Port              string
-	CACert            string
-	Thumbprint        string
 	Insecure          bool
 	RoundTripperCount uint
 	credentialsLock   sync.Mutex
@@ -133,24 +129,7 @@ func (connection *VSphereConnection) login(ctx context.Context, client *vim25.Cl
 
 // Logout calls SessionManager.Logout for the given connection.
 func (connection *VSphereConnection) Logout(ctx context.Context) {
-	clientLock.Lock()
-	c := connection.Client
-	clientLock.Unlock()
-	if c == nil {
-		return
-	}
-
-	m := session.NewManager(c)
-
-	hasActiveSession, err := m.SessionIsActive(ctx)
-	if err != nil {
-		glog.Errorf("Logout failed: %s", err)
-		return
-	}
-	if !hasActiveSession {
-		glog.Errorf("No active session, cannot logout")
-		return
-	}
+	m := session.NewManager(connection.Client)
 	if err := m.Logout(ctx); err != nil {
 		glog.Errorf("Logout failed: %s", err)
 	}
@@ -165,25 +144,11 @@ func (connection *VSphereConnection) NewClient(ctx context.Context) (*vim25.Clie
 	}
 
 	sc := soap.NewClient(url, connection.Insecure)
-
-	if ca := connection.CACert; ca != "" {
-		if err := sc.SetRootCAs(ca); err != nil {
-			return nil, err
-		}
-	}
-
-	tpHost := connection.Hostname + ":" + connection.Port
-	sc.SetThumbprint(tpHost, connection.Thumbprint)
-
 	client, err := vim25.NewClient(ctx, sc)
 	if err != nil {
 		glog.Errorf("Failed to create new client. err: %+v", err)
 		return nil, err
 	}
-
-	k8sVersion := version.Get().GitVersion
-	client.UserAgent = fmt.Sprintf("kubernetes-cloudprovider/%s", k8sVersion)
-
 	err = connection.login(ctx, client)
 	if err != nil {
 		return nil, err

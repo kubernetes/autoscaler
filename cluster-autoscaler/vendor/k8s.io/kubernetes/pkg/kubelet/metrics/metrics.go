@@ -84,7 +84,7 @@ var (
 		prometheus.SummaryOpts{
 			Subsystem: KubeletSubsystem,
 			Name:      PodStartLatencyKey,
-			Help:      "Latency in microseconds for a single pod to go from pending to running.",
+			Help:      "Latency in microseconds for a single pod to go from pending to running. Broken down by podname.",
 		},
 	)
 	CgroupManagerLatency = prometheus.NewSummaryVec(

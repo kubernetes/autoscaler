@@ -7,7 +7,12 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["service.go"],
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "service.go",
+        ],
+        "//conditions:default": [],
+    }),
     importpath = "k8s.io/kubernetes/pkg/windows/service",
     deps = select({
         "@io_bazel_rules_go//go/platform:windows": [

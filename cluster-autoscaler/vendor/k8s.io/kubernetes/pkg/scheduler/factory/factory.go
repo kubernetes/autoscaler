@@ -61,7 +61,6 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/api/validation"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 	"k8s.io/kubernetes/pkg/scheduler/core"
-	"k8s.io/kubernetes/pkg/scheduler/core/equivalence"
 	"k8s.io/kubernetes/pkg/scheduler/util"
 	"k8s.io/kubernetes/pkg/scheduler/volumebinder"
 )
@@ -124,7 +123,7 @@ type configFactory struct {
 	hardPodAffinitySymmetricWeight int32
 
 	// Equivalence class cache
-	equivalencePodCache *equivalence.Cache
+	equivalencePodCache *core.EquivalenceCache
 
 	// Enable equivalence class cache
 	enableEquivalenceClassCache bool
@@ -404,11 +403,6 @@ func (c *configFactory) onPvUpdate(old, new interface{}) {
 
 func (c *configFactory) invalidatePredicatesForPvUpdate(oldPV, newPV *v1.PersistentVolume) {
 	invalidPredicates := sets.NewString()
-	// CheckVolumeBinding predicate calls SchedulerVolumeBinder.FindPodVolumes
-	// which will cache PVs in PodBindingCache. When PV got updated, we should
-	// invalidate cache, otherwise PVAssumeCache.Assume will fail with out of sync
-	// error.
-	invalidPredicates.Insert(predicates.CheckVolumeBindingPred)
 	for k, v := range newPV.Labels {
 		// If PV update modifies the zone/region labels.
 		if isZoneRegionLabel(k) && !reflect.DeepEqual(v, oldPV.Labels[k]) {
@@ -416,7 +410,7 @@ func (c *configFactory) invalidatePredicatesForPvUpdate(oldPV, newPV *v1.Persist
 			break
 		}
 	}
-	c.equivalencePodCache.InvalidatePredicates(invalidPredicates)
+	c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(invalidPredicates)
 }
 
 // isZoneRegionLabel check if given key of label is zone or region label.
@@ -474,7 +468,7 @@ func (c *configFactory) invalidatePredicatesForPv(pv *v1.PersistentVolume) {
 		invalidPredicates.Insert(predicates.CheckVolumeBindingPred)
 	}
 
-	c.equivalencePodCache.InvalidatePredicates(invalidPredicates)
+	c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(invalidPredicates)
 }
 
 func (c *configFactory) onPvcAdd(obj interface{}) {
@@ -544,7 +538,7 @@ func (c *configFactory) invalidatePredicatesForPvc(pvc *v1.PersistentVolumeClaim
 		// Add/delete impacts the available PVs to choose from
 		invalidPredicates.Insert(predicates.CheckVolumeBindingPred)
 	}
-	c.equivalencePodCache.InvalidatePredicates(invalidPredicates)
+	c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(invalidPredicates)
 }
 
 func (c *configFactory) invalidatePredicatesForPvcUpdate(old, new *v1.PersistentVolumeClaim) {
@@ -559,12 +553,12 @@ func (c *configFactory) invalidatePredicatesForPvcUpdate(old, new *v1.Persistent
 		invalidPredicates.Insert(maxPDVolumeCountPredicateKeys...)
 	}
 
-	c.equivalencePodCache.InvalidatePredicates(invalidPredicates)
+	c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(invalidPredicates)
 }
 
 func (c *configFactory) onServiceAdd(obj interface{}) {
 	if c.enableEquivalenceClassCache {
-		c.equivalencePodCache.InvalidatePredicates(serviceAffinitySet)
+		c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(serviceAffinitySet)
 	}
 	c.podQueue.MoveAllToActiveQueue()
 }
@@ -575,7 +569,7 @@ func (c *configFactory) onServiceUpdate(oldObj interface{}, newObj interface{}) 
 		oldService := oldObj.(*v1.Service)
 		newService := newObj.(*v1.Service)
 		if !reflect.DeepEqual(oldService.Spec.Selector, newService.Spec.Selector) {
-			c.equivalencePodCache.InvalidatePredicates(serviceAffinitySet)
+			c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(serviceAffinitySet)
 		}
 	}
 	c.podQueue.MoveAllToActiveQueue()
@@ -583,7 +577,7 @@ func (c *configFactory) onServiceUpdate(oldObj interface{}, newObj interface{}) 
 
 func (c *configFactory) onServiceDelete(obj interface{}) {
 	if c.enableEquivalenceClassCache {
-		c.equivalencePodCache.InvalidatePredicates(serviceAffinitySet)
+		c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(serviceAffinitySet)
 	}
 	c.podQueue.MoveAllToActiveQueue()
 }
@@ -700,13 +694,13 @@ func (c *configFactory) invalidateCachedPredicatesOnUpdatePod(newPod *v1.Pod, ol
 			if !reflect.DeepEqual(oldPod.GetLabels(), newPod.GetLabels()) {
 				// MatchInterPodAffinity need to be reconsidered for this node,
 				// as well as all nodes in its same failure domain.
-				c.equivalencePodCache.InvalidatePredicates(
+				c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(
 					matchInterPodAffinitySet)
 			}
 			// if requested container resource changed, invalidate GeneralPredicates of this node
 			if !reflect.DeepEqual(predicates.GetResourceRequest(newPod),
 				predicates.GetResourceRequest(oldPod)) {
-				c.equivalencePodCache.InvalidatePredicatesOnNode(
+				c.equivalencePodCache.InvalidateCachedPredicateItem(
 					newPod.Spec.NodeName, generalPredicatesSets)
 			}
 		}
@@ -747,14 +741,14 @@ func (c *configFactory) invalidateCachedPredicatesOnDeletePod(pod *v1.Pod) {
 		// MatchInterPodAffinity need to be reconsidered for this node,
 		// as well as all nodes in its same failure domain.
 		// TODO(resouer) can we just do this for nodes in the same failure domain
-		c.equivalencePodCache.InvalidatePredicates(
+		c.equivalencePodCache.InvalidateCachedPredicateItemOfAllNodes(
 			matchInterPodAffinitySet)
 
 		// if this pod have these PV, cached result of disk conflict will become invalid.
 		for _, volume := range pod.Spec.Volumes {
 			if volume.GCEPersistentDisk != nil || volume.AWSElasticBlockStore != nil ||
 				volume.RBD != nil || volume.ISCSI != nil {
-				c.equivalencePodCache.InvalidatePredicatesOnNode(
+				c.equivalencePodCache.InvalidateCachedPredicateItem(
 					pod.Spec.NodeName, noDiskConflictSet)
 			}
 		}
@@ -864,7 +858,7 @@ func (c *configFactory) invalidateCachedPredicatesOnNodeUpdate(newNode *v1.Node,
 		if newNode.Spec.Unschedulable != oldNode.Spec.Unschedulable {
 			invalidPredicates.Insert(predicates.CheckNodeConditionPred)
 		}
-		c.equivalencePodCache.InvalidatePredicatesOnNode(newNode.GetName(), invalidPredicates)
+		c.equivalencePodCache.InvalidateCachedPredicateItem(newNode.GetName(), invalidPredicates)
 	}
 }
 
@@ -891,7 +885,7 @@ func (c *configFactory) deleteNodeFromCache(obj interface{}) {
 		glog.Errorf("scheduler cache RemoveNode failed: %v", err)
 	}
 	if c.enableEquivalenceClassCache {
-		c.equivalencePodCache.InvalidateAllPredicatesOnNode(node.GetName())
+		c.equivalencePodCache.InvalidateAllCachedPredicateItemOfNode(node.GetName())
 	}
 }
 
@@ -1080,7 +1074,7 @@ func (c *configFactory) CreateFromKeys(predicateKeys, priorityKeys sets.String, 
 
 	// Init equivalence class cache
 	if c.enableEquivalenceClassCache {
-		c.equivalencePodCache = equivalence.NewCache()
+		c.equivalencePodCache = core.NewEquivalenceCache()
 		glog.Info("Created equivalence class cache")
 	}
 
@@ -1303,10 +1297,10 @@ func NewPodInformer(client clientset.Interface, resyncPeriod time.Duration) core
 func (c *configFactory) MakeDefaultErrorFunc(backoff *util.PodBackoff, podQueue core.SchedulingQueue) func(pod *v1.Pod, err error) {
 	return func(pod *v1.Pod, err error) {
 		if err == core.ErrNoNodesAvailable {
-			glog.V(4).Infof("Unable to schedule %v/%v: no nodes are registered to the cluster; waiting", pod.Namespace, pod.Name)
+			glog.V(4).Infof("Unable to schedule %v %v: no nodes are registered to the cluster; waiting", pod.Namespace, pod.Name)
 		} else {
 			if _, ok := err.(*core.FitError); ok {
-				glog.V(4).Infof("Unable to schedule %v/%v: no fit: %v; waiting", pod.Namespace, pod.Name, err)
+				glog.V(4).Infof("Unable to schedule %v %v: no fit: %v; waiting", pod.Namespace, pod.Name, err)
 			} else if errors.IsNotFound(err) {
 				if errStatus, ok := err.(errors.APIStatus); ok && errStatus.Status().Details.Kind == "node" {
 					nodeName := errStatus.Status().Details.Name
@@ -1321,12 +1315,12 @@ func (c *configFactory) MakeDefaultErrorFunc(backoff *util.PodBackoff, podQueue 
 						c.schedulerCache.RemoveNode(&node)
 						// invalidate cached predicate for the node
 						if c.enableEquivalenceClassCache {
-							c.equivalencePodCache.InvalidateAllPredicatesOnNode(nodeName)
+							c.equivalencePodCache.InvalidateAllCachedPredicateItemOfNode(nodeName)
 						}
 					}
 				}
 			} else {
-				glog.Errorf("Error scheduling %v/%v: %v; retrying", pod.Namespace, pod.Name, err)
+				glog.Errorf("Error scheduling %v %v: %v; retrying", pod.Namespace, pod.Name, err)
 			}
 		}
 
@@ -1419,7 +1413,7 @@ type podConditionUpdater struct {
 }
 
 func (p *podConditionUpdater) Update(pod *v1.Pod, condition *v1.PodCondition) error {
-	glog.V(3).Infof("Updating pod condition for %s/%s to (%s==%s)", pod.Namespace, pod.Name, condition.Type, condition.Status)
+	glog.V(2).Infof("Updating pod condition for %s/%s to (%s==%s)", pod.Namespace, pod.Name, condition.Type, condition.Status)
 	if podutil.UpdatePodCondition(&pod.Status, condition) {
 		_, err := p.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(pod)
 		return err

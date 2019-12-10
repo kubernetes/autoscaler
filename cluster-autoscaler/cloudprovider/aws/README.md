@@ -114,7 +114,7 @@ And for a taint of `"dedicated": "foo:NoSchedule"` you would tag the ASG with:
 }
 ```
 
-If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigurations` or `ec2:DescribeLaunchTemplateVersions` permission is required depending on if you made your ASG with Launch Configuration or Launch Template:
+If you'd like to scale node groups from 0, a `DescribeLaunchConfigurations` permission is also required:
 
 ```json
 {
@@ -128,8 +128,7 @@ If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigu
                 "autoscaling:DescribeTags",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup",
-                "ec2:DescribeLaunchTemplateVersions"
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
             "Resource": "*"
         }

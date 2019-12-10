@@ -256,7 +256,6 @@ func (s *Server) InstallAuthFilter() {
 func (s *Server) InstallDefaultHandlers() {
 	healthz.InstallHandler(s.restfulCont,
 		healthz.PingHealthz,
-		healthz.LogHealthz,
 		healthz.NamedCheck("syncloop", s.syncLoopHealthCheck),
 	)
 	ws := new(restful.WebService)

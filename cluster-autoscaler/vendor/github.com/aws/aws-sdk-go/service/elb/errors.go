@@ -91,12 +91,6 @@ const (
 	// The specified load balancer attribute does not exist.
 	ErrCodeLoadBalancerAttributeNotFoundException = "LoadBalancerAttributeNotFound"
 
-	// ErrCodeOperationNotPermittedException for service response error code
-	// "OperationNotPermitted".
-	//
-	// This operation is not allowed.
-	ErrCodeOperationNotPermittedException = "OperationNotPermitted"
-
 	// ErrCodePolicyNotFoundException for service response error code
 	// "PolicyNotFound".
 	//

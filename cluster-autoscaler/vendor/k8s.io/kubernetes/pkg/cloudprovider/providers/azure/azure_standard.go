@@ -52,8 +52,7 @@ const (
 	InternalLoadBalancerNameSuffix = "-internal"
 
 	// nodeLabelRole specifies the role of a node
-	nodeLabelRole  = "kubernetes.io/role"
-	nicFailedState = "Failed"
+	nodeLabelRole = "kubernetes.io/role"
 
 	storageAccountNameMaxLength = 24
 )
@@ -618,11 +617,6 @@ func (as *availabilitySet) ensureHostInPool(serviceName string, nodeName types.N
 
 		glog.Errorf("error: az.ensureHostInPool(%s), az.vmSet.GetPrimaryInterface.Get(%s, %s), err=%v", nodeName, vmName, vmSetName, err)
 		return err
-	}
-
-	if nic.ProvisioningState != nil && *nic.ProvisioningState == nicFailedState {
-		glog.V(3).Infof("ensureHostInPool skips node %s because its primdary nic %s is in Failed state", nodeName, nic.Name)
-		return nil
 	}
 
 	var primaryIPConfig *network.InterfaceIPConfiguration

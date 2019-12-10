@@ -65,7 +65,7 @@ type KubeProxyIPVSConfiguration struct {
 	Scheduler string `json:"scheduler"`
 	// excludeCIDRs is a list of CIDR's which the ipvs proxier should not touch
 	// when cleaning up ipvs services.
-	ExcludeCIDRs []string `json:"excludeCIDRs"`
+	ExcludeCIDRs []string
 }
 
 // KubeProxyConntrackConfiguration contains conntrack settings for

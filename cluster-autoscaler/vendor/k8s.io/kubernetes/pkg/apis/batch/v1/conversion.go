@@ -37,7 +37,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 		return err
 	}
 
-	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("Job"),
+	return scheme.AddFieldLabelConversionFunc("batch/v1", "Job",
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "metadata.name", "metadata.namespace", "status.successful":

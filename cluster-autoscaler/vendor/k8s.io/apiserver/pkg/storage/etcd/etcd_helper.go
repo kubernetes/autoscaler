@@ -231,7 +231,7 @@ func (h *etcdHelper) Watch(ctx context.Context, key string, resourceVersion stri
 	if ctx == nil {
 		glog.Errorf("Context is nil")
 	}
-	watchRV, err := h.versioner.ParseResourceVersion(resourceVersion)
+	watchRV, err := h.versioner.ParseWatchResourceVersion(resourceVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (h *etcdHelper) WatchList(ctx context.Context, key string, resourceVersion 
 	if ctx == nil {
 		glog.Errorf("Context is nil")
 	}
-	watchRV, err := h.versioner.ParseResourceVersion(resourceVersion)
+	watchRV, err := h.versioner.ParseWatchResourceVersion(resourceVersion)
 	if err != nil {
 		return nil, err
 	}

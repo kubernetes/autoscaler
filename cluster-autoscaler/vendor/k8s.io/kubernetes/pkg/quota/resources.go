@@ -27,10 +27,6 @@ import (
 
 // Equals returns true if the two lists are equivalent
 func Equals(a api.ResourceList, b api.ResourceList) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
 	for key, value1 := range a {
 		value2, found := b[key]
 		if !found {
@@ -40,16 +36,20 @@ func Equals(a api.ResourceList, b api.ResourceList) bool {
 			return false
 		}
 	}
-
+	for key, value1 := range b {
+		value2, found := a[key]
+		if !found {
+			return false
+		}
+		if value1.Cmp(value2) != 0 {
+			return false
+		}
+	}
 	return true
 }
 
 // V1Equals returns true if the two lists are equivalent
 func V1Equals(a v1.ResourceList, b v1.ResourceList) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
 	for key, value1 := range a {
 		value2, found := b[key]
 		if !found {
@@ -59,7 +59,15 @@ func V1Equals(a v1.ResourceList, b v1.ResourceList) bool {
 			return false
 		}
 	}
-
+	for key, value1 := range b {
+		value2, found := a[key]
+		if !found {
+			return false
+		}
+		if value1.Cmp(value2) != 0 {
+			return false
+		}
+	}
 	return true
 }
 

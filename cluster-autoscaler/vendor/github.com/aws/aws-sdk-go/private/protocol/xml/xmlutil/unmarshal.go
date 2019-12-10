@@ -52,15 +52,9 @@ func parse(r reflect.Value, node *XMLNode, tag reflect.StructTag) error {
 	if t == "" {
 		switch rtype.Kind() {
 		case reflect.Struct:
-			// also it can't be a time object
-			if _, ok := r.Interface().(*time.Time); !ok {
-				t = "structure"
-			}
+			t = "structure"
 		case reflect.Slice:
-			// also it can't be a byte slice
-			if _, ok := r.Interface().([]byte); !ok {
-				t = "list"
-			}
+			t = "list"
 		case reflect.Map:
 			t = "map"
 		}

@@ -182,7 +182,7 @@ func (attacher *photonPersistentDiskAttacher) GetDeviceMountPath(spec *volume.Sp
 // by deviceMountPath; returns a list of paths.
 func (plugin *photonPersistentDiskPlugin) GetDeviceMountRefs(deviceMountPath string) ([]string, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	return mounter.GetMountRefs(deviceMountPath)
+	return mount.GetMountRefs(mounter, deviceMountPath)
 }
 
 // MountDevice mounts device to global mount point.

@@ -1,6 +1,7 @@
 package jsoniter
 
 import (
+	"bytes"
 	"encoding/base64"
 	"reflect"
 	"strconv"
@@ -417,11 +418,20 @@ func (codec *base64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
 	}
 	switch iter.WhatIsNext() {
 	case StringValue:
-		src := iter.ReadString()
-		dst, err := base64.StdEncoding.DecodeString(src)
+		encoding := base64.StdEncoding
+		src := iter.SkipAndReturnBytes()
+		// New line characters (\r and \n) are ignored.
+		// Refer to https://golang.org/pkg/encoding/base64/#Encoding.Decode
+		src = bytes.Replace(src, []byte(`\r`), []byte{}, -1)
+		src = bytes.Replace(src, []byte(`\n`), []byte{}, -1)
+		src = src[1 : len(src)-1]
+		decodedLen := encoding.DecodedLen(len(src))
+		dst := make([]byte, decodedLen)
+		len, err := encoding.Decode(dst, src)
 		if err != nil {
 			iter.ReportError("decode base64", err.Error())
 		} else {
+			dst = dst[:len]
 			codec.sliceType.UnsafeSet(ptr, unsafe.Pointer(&dst))
 		}
 	case ArrayValue:

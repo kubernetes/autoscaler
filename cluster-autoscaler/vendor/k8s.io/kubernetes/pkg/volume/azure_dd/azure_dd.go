@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/azure"
+	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util"
 )
@@ -35,7 +36,7 @@ type DiskController interface {
 	CreateBlobDisk(dataDiskName string, storageAccountType storage.SkuName, sizeGB int) (string, error)
 	DeleteBlobDisk(diskUri string) error
 
-	CreateManagedDisk(diskName string, storageAccountType storage.SkuName, resourceGroup string, sizeGB int, tags map[string]string) (string, error)
+	CreateManagedDisk(diskName string, storageAccountType storage.SkuName, sizeGB int, tags map[string]string) (string, error)
 	DeleteManagedDisk(diskURI string) error
 
 	// Attaches the disk to the host machine.
@@ -57,7 +58,7 @@ type DiskController interface {
 	DeleteVolume(diskURI string) error
 
 	// Expand the disk to new size
-	ResizeDisk(diskURI string, oldSize resource.Quantity, newSize resource.Quantity) (resource.Quantity, error)
+	ResizeDisk(diskName string, oldSize resource.Quantity, newSize resource.Quantity) (resource.Quantity, error)
 }
 
 type azureDataDiskPlugin struct {
@@ -241,7 +242,7 @@ func (plugin *azureDataDiskPlugin) ExpandVolumeDevice(
 		return oldSize, err
 	}
 
-	return diskController.ResizeDisk(spec.PersistentVolume.Spec.AzureDisk.DataDiskURI, oldSize, newSize)
+	return diskController.ResizeDisk(spec.PersistentVolume.Spec.AzureDisk.DiskName, oldSize, newSize)
 }
 
 func (plugin *azureDataDiskPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*volume.Spec, error) {
@@ -266,5 +267,5 @@ func (plugin *azureDataDiskPlugin) ConstructVolumeSpec(volumeName, mountPath str
 
 func (plugin *azureDataDiskPlugin) GetDeviceMountRefs(deviceMountPath string) ([]string, error) {
 	m := plugin.host.GetMounter(plugin.GetPluginName())
-	return m.GetMountRefs(deviceMountPath)
+	return mount.GetMountRefs(m, deviceMountPath)
 }

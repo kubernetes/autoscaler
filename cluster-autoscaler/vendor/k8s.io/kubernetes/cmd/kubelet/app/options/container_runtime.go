@@ -53,9 +53,5 @@ func NewContainerRuntimeOptions() *config.ContainerRuntimeOptions {
 		PodSandboxImage:            defaultPodSandboxImage,
 		ImagePullProgressDeadline:  metav1.Duration{Duration: 1 * time.Minute},
 		ExperimentalDockershim:     false,
-
-		//Alpha feature
-		CNIBinDir:  "/opt/cni/bin",
-		CNIConfDir: "/etc/cni/net.d",
 	}
 }

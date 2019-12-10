@@ -20,12 +20,13 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path"
+	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
@@ -33,17 +34,17 @@ import (
 )
 
 // RegisterCallbackFn is the type of the callback function that handlers will provide
-type RegisterCallbackFn func(pluginName string, endpoint string, versions []string, socketPath string) (chan bool, error)
+type RegisterCallbackFn func(pluginName string, endpoint string, versions []string, socketPath string) (error, chan bool)
 
 // Watcher is the plugin watcher
 type Watcher struct {
-	path      string
-	handlers  map[string]RegisterCallbackFn
-	stopCh    chan interface{}
-	fs        utilfs.Filesystem
-	fsWatcher *fsnotify.Watcher
-	wg        sync.WaitGroup
-	mutex     sync.Mutex
+	path     string
+	handlers map[string]RegisterCallbackFn
+	stopCh   chan interface{}
+	fs       utilfs.Filesystem
+	watcher  *fsnotify.Watcher
+	wg       sync.WaitGroup
+	mutex    sync.Mutex
 }
 
 // NewWatcher provides a new watcher
@@ -56,45 +57,40 @@ func NewWatcher(sockDir string) Watcher {
 }
 
 // AddHandler registers a callback to be invoked for a particular type of plugin
-func (w *Watcher) AddHandler(pluginType string, handlerCbkFn RegisterCallbackFn) {
+func (w *Watcher) AddHandler(handlerType string, handlerCbkFn RegisterCallbackFn) {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	w.handlers[pluginType] = handlerCbkFn
+	w.handlers[handlerType] = handlerCbkFn
 }
 
 // Creates the plugin directory, if it doesn't already exist.
 func (w *Watcher) createPluginDir() error {
 	glog.V(4).Infof("Ensuring Plugin directory at %s ", w.path)
 	if err := w.fs.MkdirAll(w.path, 0755); err != nil {
-		return fmt.Errorf("error (re-)creating root %s: %v", w.path, err)
+		return fmt.Errorf("error (re-)creating driver directory: %s", err)
 	}
-
 	return nil
 }
 
-// Walks through the plugin directory discover any existing plugin sockets.
-func (w *Watcher) traversePluginDir(dir string) error {
-	return w.fs.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("error accessing path: %s error: %v", path, err)
-		}
-
-		switch mode := info.Mode(); {
-		case mode.IsDir():
-			if err := w.fsWatcher.Add(path); err != nil {
-				return fmt.Errorf("failed to watch %s, err: %v", path, err)
-			}
-		case mode&os.ModeSocket != 0:
-			go func() {
-				w.fsWatcher.Events <- fsnotify.Event{
-					Name: path,
-					Op:   fsnotify.Create,
+// Walks through the plugin directory to discover any existing plugin sockets.
+func (w *Watcher) traversePluginDir() error {
+	files, err := w.fs.ReadDir(w.path)
+	if err != nil {
+		return fmt.Errorf("error reading the plugin directory: %v", err)
+	}
+	for _, f := range files {
+		// Currently only supports flat fs namespace under the plugin directory.
+		// TODO: adds support for hierarchical fs namespace.
+		if !f.IsDir() && filepath.Base(f.Name())[0] != '.' {
+			go func(sockName string) {
+				w.watcher.Events <- fsnotify.Event{
+					Name: sockName,
+					Op:   fsnotify.Op(uint32(1)),
 				}
-			}()
+			}(path.Join(w.path, f.Name()))
 		}
-
-		return nil
-	})
+	}
+	return nil
 }
 
 func (w *Watcher) init() error {
@@ -106,6 +102,7 @@ func (w *Watcher) init() error {
 
 func (w *Watcher) registerPlugin(socketPath string) error {
 	//TODO: Implement rate limiting to mitigate any DOS kind of attacks.
+	glog.V(4).Infof("registerPlugin called for socketPath: %s", socketPath)
 	client, conn, err := dial(socketPath)
 	if err != nil {
 		return fmt.Errorf("dial failed at socket %s, err: %v", socketPath, err)
@@ -118,8 +115,11 @@ func (w *Watcher) registerPlugin(socketPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get plugin info using RPC GetInfo at socket %s, err: %v", socketPath, err)
 	}
-
-	return w.invokeRegistrationCallbackAtHandler(ctx, client, infoResp, socketPath)
+	if err := w.invokeRegistrationCallbackAtHandler(ctx, client, infoResp, socketPath); err != nil {
+		return fmt.Errorf("failed to register plugin. Callback handler returned err: %v", err)
+	}
+	glog.V(4).Infof("Successfully registered plugin for plugin type: %s, name: %s, socket: %s", infoResp.Type, infoResp.Name, socketPath)
+	return nil
 }
 
 func (w *Watcher) invokeRegistrationCallbackAtHandler(ctx context.Context, client registerapi.RegistrationClient, infoResp *registerapi.PluginInfo, socketPath string) error {
@@ -127,14 +127,13 @@ func (w *Watcher) invokeRegistrationCallbackAtHandler(ctx context.Context, clien
 	var ok bool
 	handlerCbkFn, ok = w.handlers[infoResp.Type]
 	if !ok {
-		errStr := fmt.Sprintf("no handler registered for plugin type: %s at socket %s", infoResp.Type, socketPath)
 		if _, err := client.NotifyRegistrationStatus(ctx, &registerapi.RegistrationStatus{
 			PluginRegistered: false,
-			Error:            errStr,
+			Error:            fmt.Sprintf("No handler found registered for plugin type: %s, socket: %s", infoResp.Type, socketPath),
 		}); err != nil {
-			return errors.Wrap(err, errStr)
+			glog.Errorf("Failed to send registration status at socket %s, err: %v", socketPath, err)
 		}
-		return errors.New(errStr)
+		return fmt.Errorf("no handler found registered for plugin type: %s, socket: %s", infoResp.Type, socketPath)
 	}
 
 	var versions []string
@@ -142,48 +141,24 @@ func (w *Watcher) invokeRegistrationCallbackAtHandler(ctx context.Context, clien
 		versions = append(versions, version)
 	}
 	// calls handler callback to verify registration request
-	chanForAckOfNotification, err := handlerCbkFn(infoResp.Name, infoResp.Endpoint, versions, socketPath)
+	err, chanForAckOfNotification := handlerCbkFn(infoResp.Name, infoResp.Endpoint, versions, socketPath)
 	if err != nil {
-		errStr := fmt.Sprintf("plugin registration failed with err: %v", err)
 		if _, err := client.NotifyRegistrationStatus(ctx, &registerapi.RegistrationStatus{
 			PluginRegistered: false,
-			Error:            errStr,
+			Error:            fmt.Sprintf("Plugin registration failed with err: %v", err),
 		}); err != nil {
-			return errors.Wrap(err, errStr)
+			glog.Errorf("Failed to send registration status at socket %s, err: %v", socketPath, err)
 		}
-		return errors.New(errStr)
+		chanForAckOfNotification <- false
+		return fmt.Errorf("plugin registration failed with err: %v", err)
 	}
 
 	if _, err := client.NotifyRegistrationStatus(ctx, &registerapi.RegistrationStatus{
 		PluginRegistered: true,
 	}); err != nil {
-		chanForAckOfNotification <- false
 		return fmt.Errorf("failed to send registration status at socket %s, err: %v", socketPath, err)
 	}
-
 	chanForAckOfNotification <- true
-	return nil
-}
-
-// Handle filesystem notify event.
-func (w *Watcher) handleFsNotifyEvent(event fsnotify.Event) error {
-	if event.Op&fsnotify.Create != fsnotify.Create {
-		return nil
-	}
-
-	fi, err := os.Stat(event.Name)
-	if err != nil {
-		return fmt.Errorf("stat file %s failed: %v", event.Name, err)
-	}
-
-	if !fi.IsDir() {
-		return w.registerPlugin(event.Name)
-	}
-
-	if err := w.traversePluginDir(event.Name); err != nil {
-		return fmt.Errorf("failed to traverse plugin path %s, err: %v", event.Name, err)
-	}
-
 	return nil
 }
 
@@ -198,42 +173,52 @@ func (w *Watcher) Start() error {
 		return err
 	}
 
-	fsWatcher, err := fsnotify.NewWatcher()
+	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return fmt.Errorf("failed to start plugin fsWatcher, err: %v", err)
+		return fmt.Errorf("failed to start plugin watcher, err: %v", err)
 	}
-	w.fsWatcher = fsWatcher
 
-	if err := w.traversePluginDir(w.path); err != nil {
-		fsWatcher.Close()
+	if err := watcher.Add(w.path); err != nil {
+		watcher.Close()
+		return fmt.Errorf("failed to start plugin watcher, err: %v", err)
+	}
+
+	w.watcher = watcher
+
+	if err := w.traversePluginDir(); err != nil {
+		watcher.Close()
 		return fmt.Errorf("failed to traverse plugin socket path, err: %v", err)
 	}
 
 	w.wg.Add(1)
-	go func(fsWatcher *fsnotify.Watcher) {
+	go func(watcher *fsnotify.Watcher) {
 		defer w.wg.Done()
 		for {
 			select {
-			case event := <-fsWatcher.Events:
-				//TODO: Handle errors by taking corrective measures
-				go func() {
-					err := w.handleFsNotifyEvent(event)
-					if err != nil {
-						glog.Errorf("error %v when handle event: %s", err, event)
-					}
-				}()
-				continue
-			case err := <-fsWatcher.Errors:
-				if err != nil {
-					glog.Errorf("fsWatcher received error: %v", err)
+			case event := <-watcher.Events:
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					go func(eventName string) {
+						err := w.registerPlugin(eventName)
+						if err != nil {
+							glog.Errorf("Plugin %s registration failed with error: %v", eventName, err)
+						}
+					}(event.Name)
 				}
 				continue
+			case err := <-watcher.Errors:
+				//TODO: Handle errors by taking corrective measures
+				if err != nil {
+					glog.Errorf("Watcher received error: %v", err)
+				}
+				continue
+
 			case <-w.stopCh:
-				fsWatcher.Close()
-				return
+				watcher.Close()
+				break
 			}
+			break
 		}
-	}(fsWatcher)
+	}(watcher)
 	return nil
 }
 

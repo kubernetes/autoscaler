@@ -49,7 +49,7 @@ func (plugin *iscsiPlugin) NewAttacher() (volume.Attacher, error) {
 
 func (plugin *iscsiPlugin) GetDeviceMountRefs(deviceMountPath string) ([]string, error) {
 	mounter := plugin.host.GetMounter(iscsiPluginName)
-	return mounter.GetMountRefs(deviceMountPath)
+	return mount.GetMountRefs(mounter, deviceMountPath)
 }
 
 func (attacher *iscsiAttacher) Attach(spec *volume.Spec, nodeName types.NodeName) (string, error) {

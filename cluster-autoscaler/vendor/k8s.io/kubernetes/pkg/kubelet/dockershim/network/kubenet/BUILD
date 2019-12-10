@@ -10,9 +10,42 @@ go_library(
     name = "go_default_library",
     srcs = [
         "kubenet.go",
-        "kubenet_linux.go",
-        "kubenet_unsupported.go",
-    ],
+    ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "kubenet_linux.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "kubenet_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "kubenet_unsupported.go",
+        ],
+        "//conditions:default": [],
+    }),
     importpath = "k8s.io/kubernetes/pkg/kubelet/dockershim/network/kubenet",
     deps = select({
         "@io_bazel_rules_go//go/platform:android": [
@@ -45,15 +78,15 @@ go_library(
             "//pkg/util/ebtables:go_default_library",
             "//pkg/util/iptables:go_default_library",
             "//pkg/util/sysctl:go_default_library",
-            "//staging/src/k8s.io/apimachinery/pkg/util/errors:go_default_library",
-            "//staging/src/k8s.io/apimachinery/pkg/util/net:go_default_library",
-            "//staging/src/k8s.io/apimachinery/pkg/util/sets:go_default_library",
             "//vendor/github.com/containernetworking/cni/libcni:go_default_library",
             "//vendor/github.com/containernetworking/cni/pkg/types:go_default_library",
             "//vendor/github.com/containernetworking/cni/pkg/types/020:go_default_library",
             "//vendor/github.com/golang/glog:go_default_library",
             "//vendor/github.com/vishvananda/netlink:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
             "//vendor/k8s.io/utils/exec:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:nacl": [
@@ -92,7 +125,12 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["kubenet_linux_test.go"],
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "kubenet_linux_test.go",
+        ],
+        "//conditions:default": [],
+    }),
     embed = [":go_default_library"],
     deps = select({
         "@io_bazel_rules_go//go/platform:linux": [

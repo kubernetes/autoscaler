@@ -8,9 +8,8 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["kube_features.go"],
-    importmap = "k8s.io/kubernetes/vendor/k8s.io/apiextensions-apiserver/pkg/features",
     importpath = "k8s.io/apiextensions-apiserver/pkg/features",
-    deps = ["//staging/src/k8s.io/apiserver/pkg/util/feature:go_default_library"],
+    deps = ["//vendor/k8s.io/apiserver/pkg/util/feature:go_default_library"],
 )
 
 filegroup(

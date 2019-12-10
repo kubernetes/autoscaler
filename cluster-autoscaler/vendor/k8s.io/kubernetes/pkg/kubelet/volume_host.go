@@ -36,6 +36,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/mountpod"
 	"k8s.io/kubernetes/pkg/kubelet/secret"
 	"k8s.io/kubernetes/pkg/kubelet/token"
+	"k8s.io/kubernetes/pkg/util/io"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util"
@@ -165,6 +166,10 @@ func (kvh *kubeletVolumeHost) GetMounter(pluginName string) mount.Interface {
 		return kvh.kubelet.mounter
 	}
 	return mount.NewExecMounter(exec, kvh.kubelet.mounter)
+}
+
+func (kvh *kubeletVolumeHost) GetWriter() io.Writer {
+	return kvh.kubelet.writer
 }
 
 func (kvh *kubeletVolumeHost) GetHostName() string {

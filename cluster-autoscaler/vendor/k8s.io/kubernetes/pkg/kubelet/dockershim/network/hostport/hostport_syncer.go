@@ -137,11 +137,6 @@ func writeLine(buf *bytes.Buffer, words ...string) {
 	buf.WriteString(strings.Join(words, " ") + "\n")
 }
 
-func writeBytesLine(buf *bytes.Buffer, bytes []byte) {
-	buf.Write(bytes)
-	buf.WriteByte('\n')
-}
-
 //hostportChainName takes containerPort for a pod and returns associated iptables chain.
 // This is computed by hashing (sha256)
 // then encoding to base32 and truncating with the prefix "KUBE-SVC-".  We do
@@ -194,7 +189,7 @@ func (h *hostportSyncer) SyncHostports(natInterfaceName string, activePodPortMap
 
 	// Get iptables-save output so we can check for existing chains and rules.
 	// This will be a map of chain name to chain with rules as stored in iptables-save/iptables-restore
-	existingNATChains := make(map[utiliptables.Chain][]byte)
+	existingNATChains := make(map[utiliptables.Chain]string)
 	iptablesData := bytes.NewBuffer(nil)
 	err = h.iptables.SaveInto(utiliptables.TableNAT, iptablesData)
 	if err != nil { // if we failed to get any rules
@@ -209,7 +204,7 @@ func (h *hostportSyncer) SyncHostports(natInterfaceName string, activePodPortMap
 	// Make sure we keep stats for the top-level chains, if they existed
 	// (which most should have because we created them above).
 	if chain, ok := existingNATChains[kubeHostportsChain]; ok {
-		writeBytesLine(natChains, chain)
+		writeLine(natChains, chain)
 	} else {
 		writeLine(natChains, utiliptables.MakeChainLine(kubeHostportsChain))
 	}
@@ -221,7 +216,7 @@ func (h *hostportSyncer) SyncHostports(natInterfaceName string, activePodPortMap
 		protocol := strings.ToLower(string(port.Protocol))
 		hostportChain := hostportChainName(port, target.podFullName)
 		if chain, ok := existingNATChains[hostportChain]; ok {
-			writeBytesLine(natChains, chain)
+			writeLine(natChains, chain)
 		} else {
 			writeLine(natChains, utiliptables.MakeChainLine(hostportChain))
 		}
@@ -269,7 +264,7 @@ func (h *hostportSyncer) SyncHostports(natInterfaceName string, activePodPortMap
 			// We must (as per iptables) write a chain-line for it, which has
 			// the nice effect of flushing the chain.  Then we can remove the
 			// chain.
-			writeBytesLine(natChains, existingNATChains[chain])
+			writeLine(natChains, existingNATChains[chain])
 			writeLine(natRules, "-X", chainString)
 		}
 	}

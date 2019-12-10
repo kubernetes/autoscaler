@@ -72,22 +72,6 @@ var (
 	ErrPlatformNotSupported = errors.New("unsupported platform request")
 )
 
-type EndpointNotFoundError struct {
-	EndpointName string
-}
-
-func (e EndpointNotFoundError) Error() string {
-	return fmt.Sprintf("Endpoint %s not found", e.EndpointName)
-}
-
-type NetworkNotFoundError struct {
-	NetworkName string
-}
-
-func (e NetworkNotFoundError) Error() string {
-	return fmt.Sprintf("Network %s not found", e.NetworkName)
-}
-
 // ProcessError is an error encountered in HCS during an operation on a Process object
 type ProcessError struct {
 	Process   *process
@@ -190,12 +174,6 @@ func makeProcessError(process *process, operation string, extraInfo string, err 
 // will currently return true when the error is ErrElementNotFound or ErrProcNotFound.
 func IsNotExist(err error) bool {
 	err = getInnerError(err)
-	if _, ok := err.(EndpointNotFoundError); ok {
-		return true
-	}
-	if _, ok := err.(NetworkNotFoundError); ok {
-		return true
-	}
 	return err == ErrComputeSystemDoesNotExist ||
 		err == ErrElementNotFound ||
 		err == ErrProcNotFound

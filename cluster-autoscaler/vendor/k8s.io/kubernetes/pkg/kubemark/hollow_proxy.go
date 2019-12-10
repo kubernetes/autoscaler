@@ -70,8 +70,6 @@ func NewHollowProxyOrDie(
 	broadcaster record.EventBroadcaster,
 	recorder record.EventRecorder,
 	useRealProxier bool,
-	proxierSyncPeriod time.Duration,
-	proxierMinSyncPeriod time.Duration,
 ) (*HollowProxy, error) {
 	// Create proxier and service/endpoint handlers.
 	var proxier proxy.ProxyProvider
@@ -85,8 +83,8 @@ func NewHollowProxyOrDie(
 			iptInterface,
 			sysctl,
 			execer,
-			proxierSyncPeriod,
-			proxierMinSyncPeriod,
+			30*time.Second,
+			5*time.Second,
 			false,
 			0,
 			"10.0.0.0/8",
