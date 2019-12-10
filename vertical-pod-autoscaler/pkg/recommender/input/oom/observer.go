@@ -17,6 +17,7 @@ limitations under the License.
 package oom
 
 import (
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -27,7 +28,7 @@ import (
 // OomInfo contains data of the OOM event occurrence
 type OomInfo struct {
 	Timestamp                 time.Time
-	MemoryRequest             resource.Quantity
+	Memory                    resource.Quantity
 	Namespace, Pod, Container string
 }
 
@@ -40,6 +41,60 @@ type Observer struct {
 func NewObserver() Observer {
 	return Observer{
 		ObservedOomsChannel: make(chan OomInfo),
+	}
+}
+
+func parseEvictionEvent(event *apiv1.Event) []OomInfo {
+	if event.Reason != "Evicted" ||
+		event.InvolvedObject.Kind != "Pod" {
+		return []OomInfo{}
+	}
+	extractArray := func(annotationsKey string) []string {
+		str, found := event.Annotations[annotationsKey]
+		if !found {
+			return []string{}
+		}
+		return strings.Split(str, ",")
+	}
+	offendingContainers := extractArray("offending_containers")
+	offendingContainersUsage := extractArray("offending_containers_usage")
+	starvedResource := extractArray("starved_resource")
+	if len(offendingContainers) != len(offendingContainersUsage) ||
+		len(offendingContainers) != len(starvedResource) {
+		return []OomInfo{}
+	}
+
+	result := make([]OomInfo, 0, len(offendingContainers))
+
+	for i, container := range offendingContainers {
+		if starvedResource[i] != "memory" {
+			continue
+		}
+		memory, err := resource.ParseQuantity(offendingContainersUsage[i])
+		if err != nil {
+			glog.Errorf("Cannot parse resource quantity in eviction event %v. Error: %v", offendingContainersUsage[i], err)
+			continue
+		}
+		oomInfo := OomInfo{
+			Timestamp: event.CreationTimestamp.Time.UTC(),
+			Memory:    memory,
+			Namespace: event.InvolvedObject.Namespace,
+			Pod:       event.InvolvedObject.Name,
+			Container: container,
+		}
+		result = append(result, oomInfo)
+	}
+	return result
+}
+
+// OnEvent inspects k8s eviction events and translates them to OomInfo.
+func (o *Observer) OnEvent(event *apiv1.Event) {
+	glog.V(1).Infof("OOM Obeserver processing event: %+v", event)
+	for _, oomInfo := range parseEvictionEvent(event) {
+		info := oomInfo
+		go func() {
+			o.ObservedOomsChannel <- info
+		}()
 	}
 }
 
@@ -76,11 +131,11 @@ func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
 			if spec, ok := oldContainersSpecMap[containerStatus.Name]; ok {
 				oomInfo := OomInfo{
-					Namespace:     newPod.ObjectMeta.Namespace,
-					Pod:           newPod.ObjectMeta.Name,
-					Container:     containerStatus.Name,
-					MemoryRequest: spec.Resources.Requests[apiv1.ResourceMemory],
-					Timestamp:     containerStatus.LastTerminationState.Terminated.FinishedAt.Time,
+					Namespace: newPod.ObjectMeta.Namespace,
+					Pod:       newPod.ObjectMeta.Name,
+					Container: containerStatus.Name,
+					Memory:    spec.Resources.Requests[apiv1.ResourceMemory],
+					Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
 				}
 				go func() {
 					o.ObservedOomsChannel <- oomInfo

@@ -59,6 +59,51 @@ func TestClusterAddSample(t *testing.T) {
 	assert.Equal(t, testTimestamp, containerStats.LastCPUSampleStart)
 }
 
+func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	usageSample := makeTestUsageSample()
+
+	// Add a usage sample to the container.
+	assert.NoError(t, cluster.AddSample(usageSample))
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	// AggegateContainerState are valid for 8 days since last sample
+	cluster.GrabageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9 * 24 * time.Hour))
+
+	// AggegateContainerState should be deleted from both cluster and vpa
+	assert.Empty(t, cluster.aggregateStateMap)
+	assert.Empty(t, vpa.aggregateContainerStates)
+}
+
+func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	usageSample := makeTestUsageSample()
+
+	// Add a usage sample to the container.
+	assert.NoError(t, cluster.AddSample(usageSample))
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	// AggegateContainerState are valid for 8 days since last sample
+	cluster.GrabageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7 * 24 * time.Hour))
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+}
+
 func TestClusterRecordOOM(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
