@@ -104,6 +104,11 @@ func (vpa *Vpa) UsesAggregation(aggregationKey AggregateStateKey) bool {
 	return exists
 }
 
+// DeleteAggregation deletes aggregation used by this container
+func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
+	delete(vpa.aggregateContainerStates, aggregationKey)
+}
+
 // MergeCheckpointedState adds checkpointed VPA aggregations to the given aggregateStateMap.
 func (vpa *Vpa) MergeCheckpointedState(aggregateContainerStateMap ContainerNameToAggregateStateMap) {
 	for containerName, aggregation := range vpa.ContainersInitialAggregateState {

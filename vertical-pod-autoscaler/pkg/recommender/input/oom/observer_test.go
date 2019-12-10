@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	_ "k8s.io/kubernetes/pkg/apis/core/install"       //to decode yaml
 	_ "k8s.io/kubernetes/pkg/apis/extensions/install" //to decode yaml
@@ -76,6 +77,15 @@ func newPod(yaml string) (*v1.Pod, error) {
 	return obj.(*v1.Pod), nil
 }
 
+func newEvent(yaml string) (*v1.Event, error) {
+	decode := legacyscheme.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(yaml), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*v1.Event), nil
+}
+
 func TestOOMReceived(t *testing.T) {
 	p1, err := newPod(pod1Yaml)
 	assert.NoError(t, err)
@@ -88,8 +98,143 @@ func TestOOMReceived(t *testing.T) {
 	assert.Equal(t, "mockNamespace", info.Namespace)
 	assert.Equal(t, "Pod1", info.Pod)
 	assert.Equal(t, "Name11", info.Container)
-	assert.Equal(t, int64(1024), info.MemoryRequest.Value())
+	assert.Equal(t, int64(1024), info.Memory.Value())
 	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
 	assert.NoError(t, err)
 	assert.Equal(t, timestamp.Unix(), info.Timestamp.Unix())
+}
+
+func TestParseEvictionEvent(t *testing.T) {
+	parseTimestamp := func(str string) time.Time {
+		timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
+		assert.NoError(t, err)
+		return timestamp.UTC()
+	}
+	parseResources := func(str string) resource.Quantity {
+		memory, err := resource.ParseQuantity(str)
+		assert.NoError(t, err)
+		return memory
+	}
+
+	testCases := []struct {
+		event   string
+		oomInfo []OomInfo
+	}{
+		{
+			event: `
+apiVersion: v1
+kind: Event
+metadata:
+  annotations:
+    offending_containers: test-container
+    offending_containers_usage: 1024Ki
+    starved_resource: memory
+  creationTimestamp: 2018-02-23T13:38:48Z
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: pod1
+  namespace: test-namespace
+reason: Evicted
+`,
+			oomInfo: []OomInfo{
+				{
+					Timestamp: parseTimestamp("2018-02-23T13:38:48Z "),
+					Memory:    parseResources("1024Ki"),
+					Pod:       "pod1",
+					Container: "test-container",
+					Namespace: "test-namespace",
+				},
+			},
+		},
+		{
+			event: `
+apiVersion: v1
+kind: Event
+metadata:
+  annotations:
+    offending_containers: test-container,other-container
+    offending_containers_usage: 1024Ki,2048Ki
+    starved_resource: memory,memory
+  creationTimestamp: 2018-02-23T13:38:48Z
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: pod1
+  namespace: test-namespace
+reason: Evicted
+`,
+			oomInfo: []OomInfo{
+				{
+					Timestamp: parseTimestamp("2018-02-23T13:38:48Z "),
+					Memory:    parseResources("1024Ki"),
+					Pod:       "pod1",
+					Container: "test-container",
+					Namespace: "test-namespace",
+				},
+				{
+					Timestamp: parseTimestamp("2018-02-23T13:38:48Z "),
+					Memory:    parseResources("2048Ki"),
+					Pod:       "pod1",
+					Container: "other-container",
+					Namespace: "test-namespace",
+				},
+			},
+		},
+		{
+			event: `
+apiVersion: v1
+kind: Event
+metadata:
+  annotations:
+    offending_containers: test-container,other-container
+    offending_containers_usage: 1024Ki,2048Ki
+    starved_resource: memory,evictable                       # invalid resource skipped
+  creationTimestamp: 2018-02-23T13:38:48Z
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: pod1
+  namespace: test-namespace
+reason: Evicted
+`,
+			oomInfo: []OomInfo{
+				{
+					Timestamp: parseTimestamp("2018-02-23T13:38:48Z "),
+					Memory:    parseResources("1024Ki"),
+					Pod:       "pod1",
+					Container: "test-container",
+					Namespace: "test-namespace",
+				},
+			},
+		},
+		{
+			event: `
+apiVersion: v1
+kind: Event
+metadata:
+  annotations:
+    offending_containers: test-container,other-container
+    offending_containers_usage: 1024Ki,2048Ki
+    starved_resource: memory                              # missing resource invalids all event
+  creationTimestamp: 2018-02-23T13:38:48Z
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: pod1
+  namespace: test-namespace
+reason: Evicted
+`,
+			oomInfo: []OomInfo{},
+		},
+	}
+
+	for _, tc := range testCases {
+		event, err := newEvent(tc.event)
+		assert.NoError(t, err)
+		assert.NotNil(t, event)
+
+		oomInfoArray := parseEvictionEvent(event)
+		assert.Equal(t, tc.oomInfo, oomInfoArray)
+	}
 }
