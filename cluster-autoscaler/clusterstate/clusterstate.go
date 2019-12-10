@@ -432,6 +432,11 @@ func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroup cloudprovide
 }
 
 func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
+	if len(csr.acceptableRanges) == 0 {
+		klog.Warningf("AcceptableRanges have not been populated yet. Skip checking")
+		return 0, 0, false
+	}
+
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
