@@ -226,7 +226,7 @@ func getCronJob(c clientset.Interface, ns, name string) (*batchv1beta1.CronJob, 
 // SetupHamsterCronJob creates and sets up a new CronJob
 func SetupHamsterCronJob(f *framework.Framework, schedule, cpu, memory string, replicas int32) {
 	cronJob := NewTestCronJob("hamster-cronjob", schedule)
-	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = []apiv1.Container{SetupHamsterContainer(cpu, memory)}
 	for label, value := range hamsterLabels {
 		cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
 	}
