@@ -18,6 +18,7 @@ package autoscaling
 
 import (
 	"fmt"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -516,6 +517,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 })
 
 func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
+	// Apiserver watch can lag depending on cached object count and apiserver resource usage.
+	// We assume that watch can lag up to 5 seconds.
+	const apiserverWatchLag = 5 * time.Second
 	// In admission controller e2e tests a recommendation is created before deployment.
 	// Creating deployment with size greater than 0 would create a race between information
 	// about pods and information about deployment getting to the admission controller.
@@ -531,6 +535,15 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for empty deployment to create")
+	// If admission controller receives pod before controller it will not apply recommendation and test will fail.
+	// Wait after creating deployment to ensure VPA knows about it, then scale up.
+	// Normally watch lag is not a problem in terms of correctness:
+	// - Mode "Auto": created pod without assigned resources will be handled by the eviction loop.
+	// - Mode "Initial": calculating recommendations takes more than potential ectd lag.
+	// - Mode "Off": pods are not handled by the admission controller.
+	// In e2e admission controller tests we want to focus on scenarios without considering watch lag.
+	// TODO(#2631): Remove sleep when issue is fixed.
+	time.Sleep(apiserverWatchLag)
 
 	scale := autoscalingv1.Scale{
 		ObjectMeta: metav1.ObjectMeta{
