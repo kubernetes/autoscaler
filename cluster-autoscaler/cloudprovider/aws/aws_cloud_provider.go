@@ -161,7 +161,7 @@ type AwsInstanceRef struct {
 
 var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*$|aws\:\/\/\/[-0-9a-z]*\/%s.*$`, placeholderInstanceNamePrefix))
 
-// AwsRefFromProviderId creates InstanceConfig object from provider id which
+// AwsRefFromProviderId creates AwsInstanceRef object from provider id which
 // must be in format: aws:///zone/name
 func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
 	if validAwsRefIdRegex.FindStringSubmatch(id) == nil {
