@@ -21,6 +21,8 @@ import (
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
+const gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
+
 // TaintKeySet is a set of taint key
 type TaintKeySet map[string]bool
 
@@ -36,5 +38,6 @@ var (
 		v1.TaintNodePIDPressure:                 true,
 		schedulerapi.TaintExternalCloudProvider: true,
 		schedulerapi.TaintNodeShutdown:          true,
+		gkeNodeTerminationHandlerTaint:          true,
 	}
 )
