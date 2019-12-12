@@ -101,6 +101,18 @@ func ActuationSuiteE2eDescribe(name string, body func()) bool {
 	return E2eDescribe(actuationSuite, name, body)
 }
 
+// GetHamsterContainerNameByIndex returns name of i-th hamster container.
+func GetHamsterContainerNameByIndex(i int) string {
+	switch {
+	case i < 0:
+		panic("negative index")
+	case i == 0:
+		return "hamster"
+	default:
+		return fmt.Sprintf("hamster%d", i+1)
+	}
+}
+
 // SetupHamsterDeployment creates and installs a simple hamster deployment
 // for e2e test purposes, then makes sure the deployment is running.
 func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas int32) *appsv1.Deployment {
@@ -116,13 +128,32 @@ func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas
 	return d
 }
 
-// NewHamsterDeployment creates a simple hamster deployment for e2e test
-// purposes.
+// NewHamsterDeployment creates a simple hamster deployment for e2e test purposes.
 func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
-	d := framework_deployment.NewDeployment("hamster-deployment", defaultHamsterReplicas, hamsterLabels, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
+	return NewNHamstersDeployment(f, 1)
+}
+
+// NewNHamstersDeployment creates a simple hamster deployment with n containers
+// for e2e test purposes.
+func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
+	if n < 1 {
+		panic("container count should be greater than 0")
+	}
+	d := framework_deployment.NewDeployment(
+		"hamster-deployment",                       /*deploymentName*/
+		defaultHamsterReplicas,                     /*replicas*/
+		hamsterLabels,                              /*podLabels*/
+		GetHamsterContainerNameByIndex(0),          /*imageName*/
+		"k8s.gcr.io/ubuntu-slim:0.1",               /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
 	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
+	for i := 1; i < n; i++ {
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
+		d.Spec.Template.Spec.Containers[i].Name = GetHamsterContainerNameByIndex(i)
+	}
 	return d
 }
 
@@ -257,47 +288,32 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
 func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
-	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
-	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
-
-	cpuQuantity := ParseQuantityOrDie(cpu)
-	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
-
-	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
-			ContainerName: "hamster",
-			Target:        resourceList,
-			LowerBound:    resourceList,
-			UpperBound:    resourceList,
-		}},
-	}
-	InstallVPA(f, vpaCRD)
+	SetupVPAForNHamsters(f, 1, cpu, mode, targetRef)
 }
 
-// SetupVPAForTwoHamsters creates and installs a simple pod with two hamster containers for e2e test purposes.
-func SetupVPAForTwoHamsters(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
+// SetupVPAForNHamsters creates and installs a simple pod with n hamster containers for e2e test purposes.
+func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
 	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
 	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 
 	cpuQuantity := ParseQuantityOrDie(cpu)
 	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
 
-	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-			{
-				ContainerName: "hamster",
+	containerRecommendations := []vpa_types.RecommendedContainerResources{}
+	for i := 0; i < n; i++ {
+		containerRecommendations = append(containerRecommendations,
+			vpa_types.RecommendedContainerResources{
+				ContainerName: GetHamsterContainerNameByIndex(i),
 				Target:        resourceList,
 				LowerBound:    resourceList,
 				UpperBound:    resourceList,
 			},
-			{
-				ContainerName: "hamster2",
-				Target:        resourceList,
-				LowerBound:    resourceList,
-				UpperBound:    resourceList,
-			},
-		},
+		)
 	}
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: containerRecommendations,
+	}
+
 	InstallVPA(f, vpaCRD)
 }
 
@@ -482,7 +498,7 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 
 // WaitForVPAMatch pools VPA object until match function returns true. Returns
 // polled vpa object. On timeout returns error.
-func WaitForVPAMatch(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler, match func(vpa *vpa_types.VerticalPodAutoscaler) bool) (*vpa_types.VerticalPodAutoscaler, error) {
+func WaitForVPAMatch(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler, match func(vpa *vpa_types.VerticalPodAutoscaler) bool) (*vpa_types.VerticalPodAutoscaler, error) {
 	var polledVpa *vpa_types.VerticalPodAutoscaler
 	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
 		var err error
@@ -506,7 +522,7 @@ func WaitForVPAMatch(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutos
 
 // WaitForRecommendationPresent pools VPA object until recommendations are not empty. Returns
 // polled vpa object. On timeout returns error.
-func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+func WaitForRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
 	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
 		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
 	})
