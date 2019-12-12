@@ -274,18 +274,56 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 }
 
 func TestAwsRefFromProviderId(t *testing.T) {
-	_, err := AwsRefFromProviderId("aws123")
-	assert.Error(t, err)
-	_, err = AwsRefFromProviderId("aws://test-az/test-instance-id")
-	assert.Error(t, err)
+	tests := []struct {
+		provID string
+		expErr bool
+		expRef *AwsInstanceRef
+	}{
+		{
+			provID: "aws123",
+			expErr: true,
+		},
+		{
+			provID: "aws://test-az/test-instance-id",
+			expErr: true,
+		},
+		{
 
-	awsRef, err := AwsRefFromProviderId("aws:///us-east-1a/i-260942b3")
-	assert.NoError(t, err)
-	assert.Equal(t, awsRef, &AwsInstanceRef{Name: "i-260942b3", ProviderID: "aws:///us-east-1a/i-260942b3"})
+			provID: "aws:///us-east-1a/i-260942b3",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-260942b3",
+				ProviderID: "aws:///us-east-1a/i-260942b3",
+			},
+		},
+		{
+			provID: "aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-placeholder-some.arbitrary.cluster.local",
+				ProviderID: "aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local",
+			},
+		},
+		{
+			// ref: https://github.com/kubernetes/autoscaler/issues/2285
+			provID: "aws:///eu-central-1c/i-placeholder-K3-EKS-spotr5xlasgsubnet02af43b02922e710f-10QH9H0C8PG7O-14",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-placeholder-K3-EKS-spotr5xlasgsubnet02af43b02922e710f-10QH9H0C8PG7O-14",
+				ProviderID: "aws:///eu-central-1c/i-placeholder-K3-EKS-spotr5xlasgsubnet02af43b02922e710f-10QH9H0C8PG7O-14",
+			},
+		},
+	}
 
-	placeholderRef, err := AwsRefFromProviderId("aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local")
-	assert.NoError(t, err)
-	assert.Equal(t, placeholderRef, &AwsInstanceRef{Name: "i-placeholder-some.arbitrary.cluster.local", ProviderID: "aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local"})
+	for _, test := range tests {
+		got, err := AwsRefFromProviderId(test.provID)
+		if test.expErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, got, test.expRef)
+		}
+	}
 }
 
 func TestTargetSize(t *testing.T) {
