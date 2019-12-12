@@ -180,7 +180,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		podList := startDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		SetupVPAForTwoHamsters(f, "200m", vpa_types.UpdateModeAuto, hamsterTargetRef)
+		SetupVPAForNHamsters(f, 2, "200m", vpa_types.UpdateModeAuto, hamsterTargetRef)
 
 		// Max CPU limit is 600m per pod, 300m per container and ratio is 3., so max request is 100m,
 		// while recommendation is 200m
@@ -201,7 +201,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		podList := startDeploymentPods(f, d)
 
 		ginkgo.By("Setting up a VPA CRD")
-		SetupVPAForTwoHamsters(f, "50m", vpa_types.UpdateModeAuto, hamsterTargetRef)
+		SetupVPAForNHamsters(f, 2, "50m", vpa_types.UpdateModeAuto, hamsterTargetRef)
 
 		// Min CPU from limit range is 200m per pod, 100m per container and ratio is 3. Min applies both
 		// to limit and request so min request is 100m request and 300m limit
