@@ -100,6 +100,21 @@ func (t *GceTemplateBuilder) CalculateAllocatable(capacity, kubeReserved apiv1.R
 	return allocatable
 }
 
+func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string, error) {
+	if template.Properties.Metadata == nil {
+		return "", fmt.Errorf("instance template %s has no metadata", template.Name)
+	}
+	for _, item := range template.Properties.Metadata.Items {
+		if item.Key == "kube-env" {
+			if item.Value == nil {
+				return "", fmt.Errorf("no kube-env content in metadata")
+			}
+		}
+		return *item.Value, nil
+	}
+	return "", nil
+}
+
 // BuildNodeFromTemplate builds node from provided GCE template.
 func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
 
@@ -109,6 +124,11 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-template-%d", template.Name, rand.Int63())
+
+	kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
+	if err != nil {
+		return nil, fmt.Errorf("could not obtain kube-env from template metadata; %v", err)
+	}
 
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
@@ -123,35 +143,25 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	node.Status = apiv1.NodeStatus{
 		Capacity: capacity,
 	}
-
 	var nodeAllocatable apiv1.ResourceList
-	// KubeEnv labels & taints
-	if template.Properties.Metadata == nil {
-		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
-	}
-	for _, item := range template.Properties.Metadata.Items {
-		if item.Key == "kube-env" {
-			if item.Value == nil {
-				return nil, fmt.Errorf("no kube-env content in metadata")
-			}
-			// Extract labels
-			kubeEnvLabels, err := extractLabelsFromKubeEnv(*item.Value)
-			if err != nil {
-				return nil, err
-			}
-			node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
-			// Extract taints
-			kubeEnvTaints, err := extractTaintsFromKubeEnv(*item.Value)
-			if err != nil {
-				return nil, err
-			}
-			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
-			if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, *item.Value); err == nil {
-				nodeAllocatable = allocatable
-			}
-		}
+	// Extract labels
+	kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		return nil, err
 	}
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+	// Extract taints
+	kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		return nil, err
+	}
+	node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
+
+	if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue); err == nil {
+		nodeAllocatable = allocatable
+	}
+
 	if nodeAllocatable == nil {
 		klog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.GceRef().Name)
 		node.Status.Allocatable = node.Status.Capacity
