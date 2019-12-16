@@ -397,7 +397,8 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
 				"DNS_SERVER_IP: '10.0.0.10'\n",
 			expect: expectedLabels,
 			err:    nil,
@@ -460,7 +461,8 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n",
+				"kube_reserved=cpu=1000m,memory=3000`00Mi;" +
+				"os=linux\n",
 			expect: expectedTaints,
 		},
 		{
@@ -513,7 +515,8 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
 				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
 			expectedReserved: "cpu=1000m,memory=300000Mi",
 			expectedErr:      false,
@@ -557,6 +560,87 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 		}
+	}
+}
+
+func TestExtractOperatingSystemFromKubeEnv(t *testing.T) {
+	type testCase struct {
+		name                    string
+		kubeEnv                 string
+		expectedOperatingSystem OperatingSystem
+	}
+
+	testCases := []testCase{
+		{
+			name: "linux",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemLinux,
+		},
+		{
+			name: "windows",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=windows\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemWindows,
+		},
+		{
+			name: "no AUTOSCALER_ENV_VARS",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedOperatingSystem: OperatingSystemDefault,
+		},
+		{
+			name: "no os defined",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemDefault,
+		},
+		{
+			name: "os is empty",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemUnknown,
+		},
+		{
+			name: "unknown (macos)",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=macos\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemUnknown,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualOperatingSystem := extractOperatingSystemFromKubeEnv(tc.kubeEnv)
+			assert.Equal(t, tc.expectedOperatingSystem, actualOperatingSystem)
+		})
 	}
 }
 
