@@ -16,6 +16,8 @@ limitations under the License.
 
 package gce
 
+import "k8s.io/klog"
+
 // There should be no imports as it is used standalone in e2e tests
 
 const (
@@ -41,13 +43,21 @@ const (
 
 // CalculateKernelReserved computes how much memory Linux kernel will reserve.
 // TODO(jkaniuk): account for crashkernel reservation on RHEL / CentOS
-func CalculateKernelReserved(physicalMemory int64) int64 {
-	// Account for memory reserved by kernel
-	reserved := int64(physicalMemory / kernelReservedRatio)
-	reserved += kernelReservedMemory
-	// Account for software IO TLB allocation if memory requires 64bit addressing
-	if physicalMemory > swiotlbThresholdMemory {
-		reserved += swiotlbReservedMemory
+func CalculateKernelReserved(physicalMemory int64, os OperatingSystem) int64 {
+	switch os {
+	case OperatingSystemLinux:
+		// Account for memory reserved by kernel
+		reserved := int64(physicalMemory / kernelReservedRatio)
+		reserved += kernelReservedMemory
+		// Account for software IO TLB allocation if memory requires 64bit addressing
+		if physicalMemory > swiotlbThresholdMemory {
+			reserved += swiotlbReservedMemory
+		}
+		return reserved
+	case OperatingSystemWindows:
+		return 0
+	default:
+		klog.Errorf("CalculateKernelReserved called for unknown operatin system %v", os)
+		return 0
 	}
-	return reserved
 }

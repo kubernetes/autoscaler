@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCalculateKernelReserved(t *testing.T) {
+func TestCalculateKernelReservedLinux(t *testing.T) {
 	type testCase struct {
 		physicalMemory int64
 		reservedMemory int64
@@ -56,7 +56,7 @@ func TestCalculateKernelReserved(t *testing.T) {
 	}
 	for idx, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
-			reserved := CalculateKernelReserved(tc.physicalMemory)
+			reserved := CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux)
 			assert.Equal(t, tc.reservedMemory, reserved)
 		})
 	}
