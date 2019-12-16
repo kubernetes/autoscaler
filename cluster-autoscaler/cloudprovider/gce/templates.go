@@ -267,12 +267,56 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	return kubeReserved, nil
 }
 
+// OperatingSystem denotes operating system used by nodes coming from node group
+type OperatingSystem string
+
+const (
+	// OperatingSystemUnknown is used if operating system is unknown
+	OperatingSystemUnknown OperatingSystem = ""
+	// OperatingSystemLinux is used if operating system is Linux
+	OperatingSystemLinux OperatingSystem = "linux"
+	// OperatingSystemWindows is used if operating system is Windows
+	OperatingSystemWindows OperatingSystem = "windows"
+
+	// OperatingSystemDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
+	OperatingSystemDefault = OperatingSystemLinux
+)
+
+func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
+	osValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os")
+	if err != nil {
+		klog.Errorf("error while obtaining os from AUTOSCALER_ENV_VARS; %v", err)
+		return OperatingSystemUnknown
+	}
+
+	if !found {
+		klog.Warningf("no os defined in AUTOSCALER_ENV_VARS; using default %v", OperatingSystemDefault)
+		return OperatingSystemDefault
+	}
+
+	switch osValue {
+	case string(OperatingSystemLinux):
+		return OperatingSystemLinux
+	case string(OperatingSystemWindows):
+		return OperatingSystemWindows
+	default:
+		klog.Errorf("unexpected os=%v passed via AUTOSCALER_ENV_VARS", osValue)
+		return OperatingSystemUnknown
+	}
+}
+
 func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found bool, err error) {
 	const autoscalerVars = "AUTOSCALER_ENV_VARS"
 	autoscalerVals, err := extractFromKubeEnv(kubeEnv, autoscalerVars)
 	if err != nil {
 		return "", false, err
 	}
+
+	if strings.Trim(autoscalerVals, " ") == "" {
+		// empty or not present AUTOSCALER_ENV_VARS
+		return "", false, nil
+	}
+
 	for _, val := range strings.Split(autoscalerVals, ";") {
 		val = strings.Trim(val, " ")
 		items := strings.SplitN(val, "=", 2)
