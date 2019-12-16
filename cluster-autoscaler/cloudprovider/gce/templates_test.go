@@ -110,7 +110,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators)
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -276,35 +276,46 @@ func TestGetAcceleratorCount(t *testing.T) {
 
 func TestBuildCapacityMemory(t *testing.T) {
 	type testCase struct {
-		physicalMemory int64
-		capacityMemory int64
-		physicalCpu    int64
+		physicalCpu            int64
+		physicalMemory         int64
+		os                     OperatingSystem
+		expectedCapacityMemory int64
 	}
 	testCases := []testCase{
 		{
-			physicalMemory: 2 * units.GiB,
-			capacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory,
-			physicalCpu:    1,
+			physicalCpu:            1,
+			physicalMemory:         2 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory,
 		},
 		{
-			physicalMemory: 4 * units.GiB,
-			capacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory,
-			physicalCpu:    2,
+			physicalCpu:            2,
+			physicalMemory:         4 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory,
 		},
 		{
-			physicalMemory: 128 * units.GiB,
-			capacityMemory: 128*units.GiB - 2*units.GiB - kernelReservedMemory - swiotlbReservedMemory,
-			physicalCpu:    32,
+			physicalCpu:            32,
+			physicalMemory:         128 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 128*units.GiB - 2*units.GiB - kernelReservedMemory - swiotlbReservedMemory,
+		},
+		{
+			physicalCpu:            2,
+			physicalMemory:         4 * units.GiB,
+			os:                     OperatingSystemWindows,
+			expectedCapacityMemory: 4 * units.GiB,
 		},
 	}
 	for idx, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
-			capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, make([]*gce.AcceleratorConfig, 0))
+			noAccelerators := make([]*gce.AcceleratorConfig, 0)
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os)
 			assert.NoError(t, err)
-			expected, err := makeResourceList2(tc.physicalCpu, tc.capacityMemory, 0, 110)
+			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
-			assertEqualResourceLists(t, "Capacity", capacity, expected)
+			assertEqualResourceLists(t, "Capacity", expectedCapacity, buildCapacity)
 		})
 	}
 }
