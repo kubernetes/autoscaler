@@ -558,6 +558,9 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	gomega.Expect(afterScale.Spec.Replicas).To(gomega.Equal(desiredPodCount), fmt.Sprintf("expected %d replicas after scaling", desiredPodCount))
 
+	// After scaling deployment we need to retrieve current version with updated replicas count.
+	deployment, err = c.AppsV1().Deployments(ns).Get(deployment.Name, metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when getting scaled deployment")
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for deployment to resize")
 
