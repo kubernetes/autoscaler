@@ -156,6 +156,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, err
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+
 	// Extract taints
 	kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
 	if err != nil {
@@ -174,7 +175,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName)
+	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, os)
 	if err != nil {
 		return nil, err
 	}
@@ -187,14 +188,18 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 
 // BuildGenericLabels builds basic labels that should be present on every GCE node,
 // including hostname, zone etc.
-func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
+func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os OperatingSystem) (map[string]string, error) {
 	result := make(map[string]string)
+
+	if os == OperatingSystemUnknown {
+		return nil, fmt.Errorf("unknown operating system passed")
+	}
 
 	// TODO: extract it somehow
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
-	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
+	result[kubeletapis.LabelOS] = string(os)
+	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")

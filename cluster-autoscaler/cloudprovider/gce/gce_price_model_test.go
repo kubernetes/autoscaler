@@ -34,13 +34,17 @@ func TestGetNodePrice(t *testing.T) {
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
-		"n1-standard-8", "sillyname")
+		"n1-standard-8",
+		"sillyname",
+		OperatingSystemLinux)
 
 	labels2, _ := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
-		"n1-standard-8", "sillyname")
+		"n1-standard-8",
+		"sillyname",
+		OperatingSystemLinux)
 	labels2[preemptibleLabel] = "true"
 
 	model := &GcePriceModel{}

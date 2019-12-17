@@ -127,23 +127,60 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 }
 
 func TestBuildGenericLabels(t *testing.T) {
-	expectedLabels := map[string]string{
-		apiv1.LabelZoneRegion:        "us-central1",
-		apiv1.LabelZoneFailureDomain: "us-central1-b",
-		apiv1.LabelHostname:          "sillyname",
-		apiv1.LabelInstanceType:      "n1-standard-8",
-		kubeletapis.LabelArch:        cloudprovider.DefaultArch,
-		kubeletapis.LabelOS:          cloudprovider.DefaultOS,
-		apiv1.LabelArchStable:        cloudprovider.DefaultArch,
-		apiv1.LabelOSStable:          cloudprovider.DefaultOS,
+	type testCase struct {
+		name            string
+		os              OperatingSystem
+		expectedOsLabel string
+		expectedError   bool
 	}
-	labels, err := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-standard-8", "sillyname")
-	assert.NoError(t, err)
-	assert.Equal(t, expectedLabels, labels)
+	testCases := []testCase{
+		{
+			name:            "os linux",
+			os:              OperatingSystemLinux,
+			expectedOsLabel: "linux",
+			expectedError:   false,
+		},
+		{
+			name:            "os windows",
+			os:              OperatingSystemWindows,
+			expectedOsLabel: "windows",
+			expectedError:   false,
+		},
+		{
+			name:            "os unknown",
+			os:              OperatingSystemUnknown,
+			expectedOsLabel: "",
+			expectedError:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectedLabels := map[string]string{
+				apiv1.LabelZoneRegion:        "us-central1",
+				apiv1.LabelZoneFailureDomain: "us-central1-b",
+				apiv1.LabelHostname:          "sillyname",
+				apiv1.LabelInstanceType:      "n1-standard-8",
+				kubeletapis.LabelArch:        cloudprovider.DefaultArch,
+				kubeletapis.LabelOS:          tc.expectedOsLabel,
+				apiv1.LabelArchStable:        cloudprovider.DefaultArch,
+				apiv1.LabelOSStable:          tc.expectedOsLabel,
+			}
+			labels, err := BuildGenericLabels(GceRef{
+				Name:    "kubernetes-minion-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b"},
+				"n1-standard-8",
+				"sillyname",
+				tc.os)
+			if tc.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, expectedLabels, labels)
+			}
+		})
+	}
 }
 
 func TestCalculateAllocatable(t *testing.T) {
