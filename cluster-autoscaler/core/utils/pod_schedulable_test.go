@@ -24,7 +24,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/testapi"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +33,7 @@ func TestPodSchedulableMap(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc1",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc1",
 			UID:       "12345678-1234-1234-1234-123456789012",
 		},
 	}
@@ -43,7 +42,7 @@ func TestPodSchedulableMap(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc2",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc2",
 			UID:       "12345678-1234-1234-1234-12345678901a",
 		},
 	}
