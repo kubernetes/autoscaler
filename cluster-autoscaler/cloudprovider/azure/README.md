@@ -75,7 +75,7 @@ Make a copy of [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.y
 
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 
-> **_NOTE_** (optional) to specify the TTL of VMSS ASG cache to prevent throttling issue, please provide the env `AZURE_ASG_CACHE_TTL` in seconds which is set 900s by default.
+> **_NOTE_** (optional) to specify the TTL of VMSS ASG cache to prevent throttling issue, please provide the env `AZURE_ASG_CACHE_TTL` in seconds which is set to one hour by default.
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
