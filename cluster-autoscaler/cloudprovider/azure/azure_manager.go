@@ -17,15 +17,16 @@ limitations under the License.
 package azure
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/klog"
@@ -126,12 +127,16 @@ func (c *Config) TrimSpace() {
 // CreateAzureManager creates Azure Manager object to work with Azure.
 func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
 	var err error
-	var cfg Config
+	cfg := &Config{}
 
 	if configReader != nil {
-		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			klog.Errorf("Couldn't read config: %v", err)
-			return nil, err
+		body, err := ioutil.ReadAll(configReader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config: %v", err)
+		}
+		err = json.Unmarshal(body, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal config body: %v", err)
 		}
 	} else {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
@@ -198,20 +203,20 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		}
 	}
 
-	if err := validateConfig(&cfg); err != nil {
+	if err := validateConfig(cfg); err != nil {
 		return nil, err
 	}
 
 	klog.Infof("Starting azure manager with subscription ID %q", cfg.SubscriptionID)
 
-	azClient, err := newAzClient(&cfg, &env)
+	azClient, err := newAzClient(cfg, &env)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create azure manager.
 	manager := &AzureManager{
-		config:               &cfg,
+		config:               cfg,
 		env:                  env,
 		azClient:             azClient,
 		explicitlyConfigured: make(map[string]bool),
