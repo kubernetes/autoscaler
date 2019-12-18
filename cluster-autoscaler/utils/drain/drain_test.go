@@ -29,7 +29,6 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
-	"k8s.io/kubernetes/pkg/api/testapi"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +40,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
@@ -63,7 +62,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "kube-system",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			SelfLink:  "api/v1/namespaces/kube-system/replicationcontrollers/rc",
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
@@ -153,7 +152,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rs",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicasets", "rs"),
+			SelfLink:  "api/v1/namespaces/default/replicasets/rs",
 		},
 		Spec: appsv1.ReplicaSetSpec{
 			Replicas: &replicas,
