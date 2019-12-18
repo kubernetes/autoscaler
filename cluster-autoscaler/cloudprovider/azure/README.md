@@ -48,6 +48,10 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.y
 
 > Note that all data above should be encoded with base64.
 
+> **_NOTE_** (optional) to specify the TTL of VMSS ASG cache to prevent throttling issue, please provide the env `AZURE_ASG_CACHE_TTL` in seconds which is set to one hour by default.
+
+In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
+
 And fill the node groups in container command by `--nodes`, e.g.
 
 ```yaml
