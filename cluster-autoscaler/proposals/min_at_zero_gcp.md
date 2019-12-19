@@ -177,7 +177,7 @@ with a method TemplateNodeInfo, taking no parameters and returning NodeInfo (con
 
 On GCP the method will get the MIG template and perform analysis needed to estimate the node shape.
 
-The method will be called here: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/core/utils.go#L132
+The method will be called here: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/core/utils/utils.go#L132
 
 only if the current size of the node group is 0 or all of the nodes are unready/broken. Otherwise CA will try to estimate the shape of the node using live examples to avoid repeating any mis-estimation errors.
 
