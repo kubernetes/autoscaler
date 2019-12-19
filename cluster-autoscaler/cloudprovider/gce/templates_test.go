@@ -311,39 +311,60 @@ func TestBuildCapacityMemory(t *testing.T) {
 
 func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 	cases := []struct {
-		desc   string
-		name   string
-		env    string
-		expect string
-		err    error
+		desc          string
+		name          string
+		env           string
+		expectedValue string
+		expectedFound bool
+		expectedErr   error
 	}{
 		{
-			desc:   "node_labels",
-			name:   "node_labels",
-			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: "a=b,c=d",
+			desc:          "node_labels",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "a=b,c=d",
+			expectedFound: true,
+			expectedErr:   nil,
 		},
 		{
-			desc:   "node_taints",
-			name:   "node_taints",
-			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: "a=b:c,d=e:f",
+			desc:          "node_labels not found",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: false,
+			expectedErr:   nil,
 		},
 		{
-			desc: "malformed node_labels",
-			name: "node_labels",
-			env:  "AUTOSCALER_ENV_VARS: node_labels;node_taints=a=b:c,d=e:f\n",
-			err:  fmt.Errorf("malformed autoscaler var: node_labels"),
+			desc:          "node_labels empty",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: true,
+			expectedErr:   nil,
+		},
+		{
+			desc:          "node_taints",
+			name:          "node_taints",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "a=b:c,d=e:f",
+			expectedFound: true,
+			expectedErr:   nil,
+		},
+		{
+			desc:          "malformed node_labels",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: false,
+			expectedErr:   fmt.Errorf("malformed autoscaler var: node_labels"),
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
-			vals, err := extractAutoscalerVarFromKubeEnv(c.env, c.name)
-			assert.Equal(t, c.err, err)
-			if err != nil {
-				return
-			}
-			assert.Equal(t, c.expect, vals)
+			value, found, err := extractAutoscalerVarFromKubeEnv(c.env, c.name)
+			assert.Equal(t, c.expectedValue, value)
+			assert.Equal(t, c.expectedFound, found)
+			assert.Equal(t, c.expectedErr, err)
 		})
 	}
 }
