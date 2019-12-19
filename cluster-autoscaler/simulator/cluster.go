@@ -33,7 +33,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/klog"
@@ -233,7 +232,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta predicates.Metadata) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
 			if nodeInfo.Node() == nil {
@@ -243,7 +242,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				klog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
 				return false
 			}
-			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo)
+			err := predicateChecker.CheckPredicates(pod, nodeInfo)
 			if err != nil {
 				glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseError())
 			} else {
@@ -273,14 +272,13 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 		foundPlace := false
 		targetNode := ""
-		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
 		loggingQuota.Reset()
 
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {
-			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod, predicateMeta) {
+			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod) {
 				foundPlace = true
 				targetNode = hintedNode
 			}
@@ -290,7 +288,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				if node.Name == removedNode {
 					continue
 				}
-				if tryNodeForPod(node.Name, pod, predicateMeta) {
+				if tryNodeForPod(node.Name, pod) {
 					foundPlace = true
 					targetNode = node.Name
 					break
