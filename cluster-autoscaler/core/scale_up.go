@@ -373,7 +373,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		for _, eg := range podEquivalenceGroups {
 			samplePod := eg.pods[0]
-			if err := context.PredicateChecker.CheckPredicates(samplePod, nil, nodeInfo); err == nil {
+			if err := context.PredicateChecker.CheckPredicates(samplePod, nodeInfo); err == nil {
 				// add pods to option
 				option.Pods = append(option.Pods, eg.pods...)
 				// mark pod group as (theoretically) schedulable
