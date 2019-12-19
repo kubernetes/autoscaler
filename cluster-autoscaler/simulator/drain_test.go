@@ -163,7 +163,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 		Status: policyv1.PodDisruptionBudgetStatus{
-			PodDisruptionsAllowed: 0,
+			DisruptionsAllowed: 0,
 		},
 	}
 
@@ -196,7 +196,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 		Status: policyv1.PodDisruptionBudgetStatus{
-			PodDisruptionsAllowed: 1,
+			DisruptionsAllowed: 1,
 		},
 	}
 
