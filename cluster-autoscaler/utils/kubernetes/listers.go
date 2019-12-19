@@ -264,9 +264,8 @@ func (l *nodeListerImpl) List() ([]*apiv1.Node, error) {
 	if err != nil {
 		return []*apiv1.Node{}, err
 	}
-	results := make([]*apiv1.Node, 0, len(nodes))
-	results = append(results, nodes...)
-	return results, nil
+
+	return nodes, nil
 }
 
 // Get returns the node with the given name.
