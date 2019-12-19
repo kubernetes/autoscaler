@@ -168,7 +168,7 @@ func IsNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.Metadata
 	[]predicates.PredicateFailureReason, error) {
 	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
 	if !ready {
-		return false, []predicates.PredicateFailureReason{predicates.NewFailureReason("node is unready")}, nil
+		return false, []predicates.PredicateFailureReason{predicates.NewPredicateFailureError("IsNodeReadyAndSchedulablePredicate", "node is unready")}, nil
 	}
 	return true, []predicates.PredicateFailureReason{}, nil
 }
