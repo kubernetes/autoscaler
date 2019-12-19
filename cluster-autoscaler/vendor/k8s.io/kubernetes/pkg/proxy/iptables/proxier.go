@@ -43,6 +43,7 @@ import (
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/proxy"
 	"k8s.io/kubernetes/pkg/proxy/healthcheck"
+	"k8s.io/kubernetes/pkg/proxy/metaproxier"
 	"k8s.io/kubernetes/pkg/proxy/metrics"
 	utilproxy "k8s.io/kubernetes/pkg/proxy/util"
 	"k8s.io/kubernetes/pkg/util/async"
@@ -90,6 +91,8 @@ func CanUseIPTablesProxier(kcompat KernelCompatTester) (bool, error) {
 	}
 	return true, nil
 }
+
+var _ KernelCompatTester = LinuxKernelCompatTester{}
 
 // LinuxKernelCompatTester is the Linux implementation of KernelCompatTester
 type LinuxKernelCompatTester struct{}
@@ -288,7 +291,7 @@ func NewProxier(ipt utiliptables.Interface,
 		return nil, fmt.Errorf("clusterCIDR %s has incorrect IP version: expect isIPv6=%t", clusterCIDR, ipt.IsIpv6())
 	}
 
-	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSlice)
+	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying)
 
 	serviceHealthServer := healthcheck.NewServiceHealthServer(hostname, recorder)
 
@@ -331,6 +334,42 @@ func NewProxier(ipt utiliptables.Interface,
 		[]utiliptables.Table{utiliptables.TableMangle, utiliptables.TableNAT, utiliptables.TableFilter},
 		proxier.syncProxyRules, syncPeriod, wait.NeverStop)
 	return proxier, nil
+}
+
+// NewDualStackProxier creates a MetaProxier instance, with IPv4 and IPv6 proxies.
+func NewDualStackProxier(
+	ipt [2]utiliptables.Interface,
+	sysctl utilsysctl.Interface,
+	exec utilexec.Interface,
+	syncPeriod time.Duration,
+	minSyncPeriod time.Duration,
+	masqueradeAll bool,
+	masqueradeBit int,
+	clusterCIDR [2]string,
+	hostname string,
+	nodeIP [2]net.IP,
+	recorder record.EventRecorder,
+	healthzServer healthcheck.ProxierHealthUpdater,
+	nodePortAddresses []string,
+) (proxy.Provider, error) {
+	// Create an ipv4 instance of the single-stack proxier
+	ipv4Proxier, err := NewProxier(ipt[0], sysctl,
+		exec, syncPeriod, minSyncPeriod,
+		masqueradeAll, masqueradeBit, clusterCIDR[0], hostname, nodeIP[0],
+		recorder, healthzServer, nodePortAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create ipv4 proxier: %v", err)
+	}
+
+	ipv6Proxier, err := NewProxier(ipt[1], sysctl,
+		exec, syncPeriod, minSyncPeriod,
+		masqueradeAll, masqueradeBit, clusterCIDR[1], hostname, nodeIP[1],
+		recorder, healthzServer, nodePortAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create ipv6 proxier: %v", err)
+	}
+
+	return metaproxier.NewMetaProxier(ipv4Proxier, ipv6Proxier), nil // TODO move meta-proxier to mode-neutral package
 }
 
 type iptablesJumpChain struct {
@@ -514,7 +553,7 @@ func (proxier *Proxier) OnServiceDelete(service *v1.Service) {
 func (proxier *Proxier) OnServiceSynced() {
 	proxier.mu.Lock()
 	proxier.servicesSynced = true
-	if utilfeature.DefaultFeatureGate.Enabled(features.EndpointSlice) {
+	if utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying) {
 		proxier.setInitialized(proxier.endpointSlicesSynced)
 	} else {
 		proxier.setInitialized(proxier.endpointsSynced)
@@ -727,14 +766,14 @@ func (proxier *Proxier) deleteEndpointConnections(connectionMap []proxy.ServiceE
 const endpointChainsNumberThreshold = 1000
 
 // Assumes proxier.mu is held.
-func (proxier *Proxier) appendServiceCommentLocked(args []string, svcName string) {
+func (proxier *Proxier) appendServiceCommentLocked(args []string, svcName string) []string {
 	// Not printing these comments, can reduce size of iptables (in case of large
 	// number of endpoints) even by 40%+. So if total number of endpoint chains
 	// is large enough, we simply drop those comments.
 	if proxier.endpointChainsNumber > endpointChainsNumberThreshold {
-		return
+		return args
 	}
-	args = append(args, "-m", "comment", "--comment", svcName)
+	return append(args, "-m", "comment", "--comment", svcName)
 }
 
 // This is where all of the iptables-save/restore calls happen.
@@ -754,7 +793,6 @@ func (proxier *Proxier) syncProxyRules() {
 	start := time.Now()
 	defer func() {
 		metrics.SyncProxyRulesLatency.Observe(metrics.SinceInSeconds(start))
-		metrics.DeprecatedSyncProxyRulesLatency.Observe(metrics.SinceInMicroseconds(start))
 		klog.V(4).Infof("syncProxyRules took %v", time.Since(start))
 	}()
 
@@ -869,7 +907,7 @@ func (proxier *Proxier) syncProxyRules() {
 		masqRule = append(masqRule, "--random-fully")
 		klog.V(3).Info("Using `--random-fully` in the MASQUERADE rule for iptables")
 	} else {
-		klog.V(2).Info("Not using `--random-fully` in the MASQUERADE rule for iptables because the local version of iptables does not support it")
+		klog.V(3).Info("Not using `--random-fully` in the MASQUERADE rule for iptables because the local version of iptables does not support it")
 	}
 	writeLine(proxier.natRules, masqRule...)
 
@@ -927,7 +965,7 @@ func (proxier *Proxier) syncProxyRules() {
 		// 2. ServiceTopology is not enabled.
 		// 3. EndpointSlice is not enabled (service topology depends on endpoint slice
 		// to get topology information).
-		if !svcInfo.OnlyNodeLocalEndpoints() && utilfeature.DefaultFeatureGate.Enabled(features.ServiceTopology) && utilfeature.DefaultFeatureGate.Enabled(features.EndpointSlice) {
+		if !svcInfo.OnlyNodeLocalEndpoints() && utilfeature.DefaultFeatureGate.Enabled(features.ServiceTopology) && utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying) {
 			allEndpoints = proxy.FilterTopologyEndpoint(proxier.nodeLabels, svcInfo.TopologyKeys(), allEndpoints)
 			hasEndpoints = len(allEndpoints) > 0
 		}
@@ -1266,7 +1304,7 @@ func (proxier *Proxier) syncProxyRules() {
 				args = append(args[:0],
 					"-A", string(svcChain),
 				)
-				proxier.appendServiceCommentLocked(args, svcNameString)
+				args = proxier.appendServiceCommentLocked(args, svcNameString)
 				args = append(args,
 					"-m", "recent", "--name", string(endpointChain),
 					"--rcheck", "--seconds", strconv.Itoa(svcInfo.StickyMaxAgeSeconds()), "--reap",
@@ -1278,13 +1316,10 @@ func (proxier *Proxier) syncProxyRules() {
 
 		// Now write loadbalancing & DNAT rules.
 		n := len(endpointChains)
-		localEndpoints := make([]*endpointsInfo, 0)
 		localEndpointChains := make([]utiliptables.Chain, 0)
 		for i, endpointChain := range endpointChains {
 			// Write ingress loadbalancing & DNAT rules only for services that request OnlyLocal traffic.
 			if svcInfo.OnlyNodeLocalEndpoints() && endpoints[i].IsLocal {
-				// These slices parallel each other; must be kept in sync
-				localEndpoints = append(localEndpoints, endpoints[i])
 				localEndpointChains = append(localEndpointChains, endpointChains[i])
 			}
 
@@ -1296,7 +1331,7 @@ func (proxier *Proxier) syncProxyRules() {
 
 			// Balancing rules in the per-service chain.
 			args = append(args[:0], "-A", string(svcChain))
-			proxier.appendServiceCommentLocked(args, svcNameString)
+			args = proxier.appendServiceCommentLocked(args, svcNameString)
 			if i < (n - 1) {
 				// Each rule is a probabilistic match.
 				args = append(args,
@@ -1310,7 +1345,7 @@ func (proxier *Proxier) syncProxyRules() {
 
 			// Rules in the per-endpoint chain.
 			args = append(args[:0], "-A", string(endpointChain))
-			proxier.appendServiceCommentLocked(args, svcNameString)
+			args = proxier.appendServiceCommentLocked(args, svcNameString)
 			// Handle traffic that loops back to the originator with SNAT.
 			writeLine(proxier.natRules, append(args,
 				"-s", utilproxy.ToCIDR(net.ParseIP(epIP)),

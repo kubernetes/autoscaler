@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -35,15 +35,17 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/metrics"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	schedutil "k8s.io/kubernetes/pkg/scheduler/util"
+	"k8s.io/kubernetes/pkg/scheduler/volumebinder"
 )
 
 const (
+	// Filter is the name of the filter extension point.
+	Filter = "Filter"
 	// Specifies the maximum timeout a permit plugin can return.
 	maxTimeout                  time.Duration = 15 * time.Minute
 	preFilter                                 = "PreFilter"
 	preFilterExtensionAddPod                  = "PreFilterExtensionAddPod"
 	preFilterExtensionRemovePod               = "PreFilterExtensionRemovePod"
-	filter                                    = "Filter"
 	postFilter                                = "PostFilter"
 	score                                     = "Score"
 	scoreExtensionNormalize                   = "ScoreExtensionNormalize"
@@ -76,8 +78,13 @@ type framework struct {
 
 	clientSet       clientset.Interface
 	informerFactory informers.SharedInformerFactory
+	volumeBinder    *volumebinder.VolumeBinder
 
 	metricsRecorder *metricsRecorder
+
+	// Indicates that RunFilterPlugins should accumulate all failed statuses and not return
+	// after the first failure.
+	runAllFilters bool
 }
 
 // extensionPoint encapsulates desired and applied set of plugins at a specific extension
@@ -87,7 +94,7 @@ type extensionPoint struct {
 	// the set of plugins to be configured at this extension point.
 	plugins *config.PluginSet
 	// a pointer to the slice storing plugins implementations that will run at this
-	// extenstion point.
+	// extension point.
 	slicePtr interface{}
 }
 
@@ -112,6 +119,8 @@ type frameworkOptions struct {
 	informerFactory      informers.SharedInformerFactory
 	snapshotSharedLister schedulerlisters.SharedLister
 	metricsRecorder      *metricsRecorder
+	volumeBinder         *volumebinder.VolumeBinder
+	runAllFilters        bool
 }
 
 // Option for the framework.
@@ -138,10 +147,25 @@ func WithSnapshotSharedLister(snapshotSharedLister schedulerlisters.SharedLister
 	}
 }
 
+// WithRunAllFilters sets the runAllFilters flag, which means RunFilterPlugins accumulates
+// all failure Statuses.
+func WithRunAllFilters(runAllFilters bool) Option {
+	return func(o *frameworkOptions) {
+		o.runAllFilters = runAllFilters
+	}
+}
+
 // withMetricsRecorder is only used in tests.
 func withMetricsRecorder(recorder *metricsRecorder) Option {
 	return func(o *frameworkOptions) {
 		o.metricsRecorder = recorder
+	}
+}
+
+// WithVolumeBinder sets volume binder for the scheduling framework.
+func WithVolumeBinder(binder *volumebinder.VolumeBinder) Option {
+	return func(o *frameworkOptions) {
+		o.volumeBinder = binder
 	}
 }
 
@@ -165,7 +189,9 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 		waitingPods:           newWaitingPodsMap(),
 		clientSet:             options.clientSet,
 		informerFactory:       options.informerFactory,
+		volumeBinder:          options.volumeBinder,
 		metricsRecorder:       options.metricsRecorder,
+		runAllFilters:         options.runAllFilters,
 	}
 	if plugins == nil {
 		return f, nil
@@ -183,6 +209,7 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 	}
 
 	pluginsMap := make(map[string]Plugin)
+	var totalPriority int64
 	for name, factory := range r {
 		// initialize only needed plugins.
 		if _, ok := pg[name]; !ok {
@@ -201,6 +228,11 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 		if f.pluginNameToWeightMap[name] == 0 {
 			f.pluginNameToWeightMap[name] = 1
 		}
+		// Checks totalPriority against MaxTotalScore to avoid overflow
+		if int64(f.pluginNameToWeightMap[name])*MaxNodeScore > MaxTotalScore-totalPriority {
+			return nil, fmt.Errorf("total score of Score plugins could overflow")
+		}
+		totalPriority += int64(f.pluginNameToWeightMap[name]) * MaxNodeScore
 	}
 
 	for _, e := range f.getExtensionPoints(plugins) {
@@ -217,8 +249,14 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 		}
 	}
 
+	if len(f.queueSortPlugins) == 0 {
+		return nil, fmt.Errorf("no queue sort plugin is enabled")
+	}
 	if len(f.queueSortPlugins) > 1 {
 		return nil, fmt.Errorf("only one queue sort plugin can be enabled")
+	}
+	if len(f.bindPlugins) == 0 {
+		return nil, fmt.Errorf("at least one bind plugin is needed")
 	}
 
 	return f, nil
@@ -256,8 +294,14 @@ func updatePluginList(pluginList interface{}, pluginSet *config.PluginSet, plugi
 
 // QueueSortFunc returns the function to sort pods in scheduling queue
 func (f *framework) QueueSortFunc() LessFunc {
+	if f == nil {
+		// If framework is nil, simply keep their order unchanged.
+		// NOTE: this is primarily for tests.
+		return func(_, _ *PodInfo) bool { return false }
+	}
+
 	if len(f.queueSortPlugins) == 0 {
-		return nil
+		panic("No QueueSort plugin is registered in the framework.")
 	}
 
 	// Only one QueueSort plugin can be enabled.
@@ -269,12 +313,10 @@ func (f *framework) QueueSortFunc() LessFunc {
 // anything but Success. If a non-success status is returned, then the scheduling
 // cycle is aborted.
 func (f *framework) RunPreFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(preFilter, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(preFilter, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.preFilterPlugins {
 		status = f.runPreFilterPlugin(ctx, pl, state, pod)
 		if !status.IsSuccess() {
@@ -293,7 +335,7 @@ func (f *framework) RunPreFilterPlugins(ctx context.Context, state *CycleState, 
 }
 
 func (f *framework) runPreFilterPlugin(ctx context.Context, pl PreFilterPlugin, state *CycleState, pod *v1.Pod) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.PreFilter(ctx, state, pod)
 	}
 	startTime := time.Now()
@@ -312,12 +354,6 @@ func (f *framework) RunPreFilterExtensionAddPod(
 	podToAdd *v1.Pod,
 	nodeInfo *schedulernodeinfo.NodeInfo,
 ) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(preFilterExtensionAddPod, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
 	for _, pl := range f.preFilterPlugins {
 		if pl.PreFilterExtensions() == nil {
 			continue
@@ -335,7 +371,7 @@ func (f *framework) RunPreFilterExtensionAddPod(
 }
 
 func (f *framework) runPreFilterExtensionAddPod(ctx context.Context, pl PreFilterPlugin, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.PreFilterExtensions().AddPod(ctx, state, podToSchedule, podToAdd, nodeInfo)
 	}
 	startTime := time.Now()
@@ -354,12 +390,6 @@ func (f *framework) RunPreFilterExtensionRemovePod(
 	podToRemove *v1.Pod,
 	nodeInfo *schedulernodeinfo.NodeInfo,
 ) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(preFilterExtensionRemovePod, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
 	for _, pl := range f.preFilterPlugins {
 		if pl.PreFilterExtensions() == nil {
 			continue
@@ -377,7 +407,7 @@ func (f *framework) RunPreFilterExtensionRemovePod(
 }
 
 func (f *framework) runPreFilterExtensionRemovePod(ctx context.Context, pl PreFilterPlugin, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.PreFilterExtensions().RemovePod(ctx, state, podToSchedule, podToAdd, nodeInfo)
 	}
 	startTime := time.Now()
@@ -395,36 +425,39 @@ func (f *framework) RunFilterPlugins(
 	state *CycleState,
 	pod *v1.Pod,
 	nodeInfo *schedulernodeinfo.NodeInfo,
-) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(filter, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+) PluginToStatus {
+	var firstFailedStatus *Status
+	statuses := make(PluginToStatus)
 	for _, pl := range f.filterPlugins {
-		status = f.runFilterPlugin(ctx, pl, state, pod, nodeInfo)
-		if !status.IsSuccess() {
-			if !status.IsUnschedulable() {
-				errMsg := fmt.Sprintf("error while running %q filter plugin for pod %q: %v",
-					pl.Name(), pod.Name, status.Message())
-				klog.Error(errMsg)
-				return NewStatus(Error, errMsg)
+		pluginStatus := f.runFilterPlugin(ctx, pl, state, pod, nodeInfo)
+		if len(statuses) == 0 {
+			firstFailedStatus = pluginStatus
+		}
+		if !pluginStatus.IsSuccess() {
+			if !pluginStatus.IsUnschedulable() {
+				// Filter plugins are not supposed to return any status other than
+				// Success or Unschedulable.
+				firstFailedStatus = NewStatus(Error, fmt.Sprintf("running %q filter plugin for pod %q: %v", pl.Name(), pod.Name, pluginStatus.Message()))
+				return map[string]*Status{pl.Name(): firstFailedStatus}
 			}
-			return status
+			statuses[pl.Name()] = pluginStatus
+			if !f.runAllFilters {
+				// Exit early if we don't need to run all filters.
+				return statuses
+			}
 		}
 	}
 
-	return nil
+	return statuses
 }
 
 func (f *framework) runFilterPlugin(ctx context.Context, pl FilterPlugin, state *CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.Filter(ctx, state, pod, nodeInfo)
 	}
 	startTime := time.Now()
 	status := pl.Filter(ctx, state, pod, nodeInfo)
-	f.metricsRecorder.observePluginDurationAsync(filter, pl.Name(), status, metrics.SinceInSeconds(startTime))
+	f.metricsRecorder.observePluginDurationAsync(Filter, pl.Name(), status, metrics.SinceInSeconds(startTime))
 	return status
 }
 
@@ -438,12 +471,10 @@ func (f *framework) RunPostFilterPlugins(
 	nodes []*v1.Node,
 	filteredNodesStatuses NodeToStatusMap,
 ) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(postFilter, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(postFilter, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.postFilterPlugins {
 		status = f.runPostFilterPlugin(ctx, pl, state, pod, nodes, filteredNodesStatuses)
 		if !status.IsSuccess() {
@@ -457,7 +488,7 @@ func (f *framework) RunPostFilterPlugins(
 }
 
 func (f *framework) runPostFilterPlugin(ctx context.Context, pl PostFilterPlugin, state *CycleState, pod *v1.Pod, nodes []*v1.Node, filteredNodesStatuses NodeToStatusMap) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.PostFilter(ctx, state, pod, nodes, filteredNodesStatuses)
 	}
 	startTime := time.Now()
@@ -471,12 +502,10 @@ func (f *framework) runPostFilterPlugin(ctx context.Context, pl PostFilterPlugin
 // It also returns *Status, which is set to non-success if any of the plugins returns
 // a non-success status.
 func (f *framework) RunScorePlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodes []*v1.Node) (ps PluginToNodeScores, status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(score, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(score, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	pluginToNodeScores := make(PluginToNodeScores, len(f.scorePlugins))
 	for _, pl := range f.scorePlugins {
 		pluginToNodeScores[pl.Name()] = make(NodeScoreList, len(nodes))
@@ -552,7 +581,7 @@ func (f *framework) RunScorePlugins(ctx context.Context, state *CycleState, pod 
 }
 
 func (f *framework) runScorePlugin(ctx context.Context, pl ScorePlugin, state *CycleState, pod *v1.Pod, nodeName string) (int64, *Status) {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.Score(ctx, state, pod, nodeName)
 	}
 	startTime := time.Now()
@@ -562,7 +591,7 @@ func (f *framework) runScorePlugin(ctx context.Context, pl ScorePlugin, state *C
 }
 
 func (f *framework) runScoreExtension(ctx context.Context, pl ScorePlugin, state *CycleState, pod *v1.Pod, nodeScoreList NodeScoreList) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.ScoreExtensions().NormalizeScore(ctx, state, pod, nodeScoreList)
 	}
 	startTime := time.Now()
@@ -575,12 +604,10 @@ func (f *framework) runScoreExtension(ctx context.Context, pl ScorePlugin, state
 // failure (bool) if any of the plugins returns an error. It also returns an
 // error containing the rejection message or the error occurred in the plugin.
 func (f *framework) RunPreBindPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(preBind, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(preBind, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.preBindPlugins {
 		status = f.runPreBindPlugin(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
@@ -593,7 +620,7 @@ func (f *framework) RunPreBindPlugins(ctx context.Context, state *CycleState, po
 }
 
 func (f *framework) runPreBindPlugin(ctx context.Context, pl PreBindPlugin, state *CycleState, pod *v1.Pod, nodeName string) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.PreBind(ctx, state, pod, nodeName)
 	}
 	startTime := time.Now()
@@ -604,12 +631,10 @@ func (f *framework) runPreBindPlugin(ctx context.Context, pl PreBindPlugin, stat
 
 // RunBindPlugins runs the set of configured bind plugins until one returns a non `Skip` status.
 func (f *framework) RunBindPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(bind, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(bind, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	if len(f.bindPlugins) == 0 {
 		return NewStatus(Skip, "")
 	}
@@ -619,7 +644,7 @@ func (f *framework) RunBindPlugins(ctx context.Context, state *CycleState, pod *
 			continue
 		}
 		if !status.IsSuccess() {
-			msg := fmt.Sprintf("bind plugin %q failed to bind pod \"%v/%v\": %v", bp.Name(), pod.Namespace, pod.Name, status.Message())
+			msg := fmt.Sprintf("plugin %q failed to bind pod \"%v/%v\": %v", bp.Name(), pod.Namespace, pod.Name, status.Message())
 			klog.Error(msg)
 			return NewStatus(Error, msg)
 		}
@@ -629,7 +654,7 @@ func (f *framework) RunBindPlugins(ctx context.Context, state *CycleState, pod *
 }
 
 func (f *framework) runBindPlugin(ctx context.Context, bp BindPlugin, state *CycleState, pod *v1.Pod, nodeName string) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return bp.Bind(ctx, state, pod, nodeName)
 	}
 	startTime := time.Now()
@@ -640,19 +665,17 @@ func (f *framework) runBindPlugin(ctx context.Context, bp BindPlugin, state *Cyc
 
 // RunPostBindPlugins runs the set of configured postbind plugins.
 func (f *framework) RunPostBindPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(postBind, nil, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(postBind, Success.String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.postBindPlugins {
 		f.runPostBindPlugin(ctx, pl, state, pod, nodeName)
 	}
 }
 
 func (f *framework) runPostBindPlugin(ctx context.Context, pl PostBindPlugin, state *CycleState, pod *v1.Pod, nodeName string) {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		pl.PostBind(ctx, state, pod, nodeName)
 		return
 	}
@@ -665,12 +688,10 @@ func (f *framework) runPostBindPlugin(ctx context.Context, pl PostBindPlugin, st
 // plugins returns an error, it does not continue running the remaining ones and
 // returns the error. In such case, pod will not be scheduled.
 func (f *framework) RunReservePlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(reserve, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(reserve, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.reservePlugins {
 		status = f.runReservePlugin(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
@@ -683,7 +704,7 @@ func (f *framework) RunReservePlugins(ctx context.Context, state *CycleState, po
 }
 
 func (f *framework) runReservePlugin(ctx context.Context, pl ReservePlugin, state *CycleState, pod *v1.Pod, nodeName string) *Status {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.Reserve(ctx, state, pod, nodeName)
 	}
 	startTime := time.Now()
@@ -694,19 +715,17 @@ func (f *framework) runReservePlugin(ctx context.Context, pl ReservePlugin, stat
 
 // RunUnreservePlugins runs the set of configured unreserve plugins.
 func (f *framework) RunUnreservePlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(unreserve, nil, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(unreserve, Success.String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	for _, pl := range f.unreservePlugins {
 		f.runUnreservePlugin(ctx, pl, state, pod, nodeName)
 	}
 }
 
 func (f *framework) runUnreservePlugin(ctx context.Context, pl UnreservePlugin, state *CycleState, pod *v1.Pod, nodeName string) {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		pl.Unreserve(ctx, state, pod, nodeName)
 		return
 	}
@@ -723,12 +742,10 @@ func (f *framework) runUnreservePlugin(ctx context.Context, pl UnreservePlugin, 
 // Note that if multiple plugins asked to wait, then we wait for the minimum
 // timeout duration.
 func (f *framework) RunPermitPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) (status *Status) {
-	if state.ShouldRecordFrameworkMetrics() {
-		startTime := time.Now()
-		defer func() {
-			f.metricsRecorder.observeExtensionPointDurationAsync(permit, status, metrics.SinceInSeconds(startTime))
-		}()
-	}
+	startTime := time.Now()
+	defer func() {
+		metrics.FrameworkExtensionPointDuration.WithLabelValues(permit, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+	}()
 	pluginsWaitTime := make(map[string]time.Duration)
 	statusCode := Success
 	for _, pl := range f.permitPlugins {
@@ -780,7 +797,7 @@ func (f *framework) RunPermitPlugins(ctx context.Context, state *CycleState, pod
 }
 
 func (f *framework) runPermitPlugin(ctx context.Context, pl PermitPlugin, state *CycleState, pod *v1.Pod, nodeName string) (*Status, time.Duration) {
-	if !state.ShouldRecordFrameworkMetrics() {
+	if !state.ShouldRecordPluginMetrics() {
 		return pl.Permit(ctx, state, pod, nodeName)
 	}
 	startTime := time.Now()
@@ -861,6 +878,11 @@ func (f *framework) ClientSet() clientset.Interface {
 // SharedInformerFactory returns a shared informer factory.
 func (f *framework) SharedInformerFactory() informers.SharedInformerFactory {
 	return f.informerFactory
+}
+
+// VolumeBinder returns the volume binder used by scheduler.
+func (f *framework) VolumeBinder() *volumebinder.VolumeBinder {
+	return f.volumeBinder
 }
 
 func (f *framework) pluginsNeeded(plugins *config.Plugins) map[string]config.Plugin {

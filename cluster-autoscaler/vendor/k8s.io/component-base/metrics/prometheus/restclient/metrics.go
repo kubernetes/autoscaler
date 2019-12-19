@@ -38,17 +38,6 @@ var (
 		[]string{"verb", "url"},
 	)
 
-	// deprecatedRequestLatency is deprecated, please use requestLatency.
-	deprecatedRequestLatency = k8smetrics.NewHistogramVec(
-		&k8smetrics.HistogramOpts{
-			Name:              "rest_client_request_latency_seconds",
-			Help:              "Request latency in seconds. Broken down by verb and URL.",
-			Buckets:           k8smetrics.ExponentialBuckets(0.001, 2, 10),
-			DeprecatedVersion: "1.14.0",
-		},
-		[]string{"verb", "url"},
-	)
-
 	requestResult = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Name: "rest_client_requests_total",
@@ -57,14 +46,23 @@ var (
 		[]string{"code", "method", "host"},
 	)
 
-	execPluginCertTTL = k8smetrics.NewGauge(
-		&k8smetrics.GaugeOpts{
+	execPluginCertTTLAdapter = &expiryToTTLAdapter{}
+
+	execPluginCertTTL = k8smetrics.NewGaugeFunc(
+		k8smetrics.GaugeOpts{
 			Name: "rest_client_exec_plugin_ttl_seconds",
 			Help: "Gauge of the shortest TTL (time-to-live) of the client " +
 				"certificate(s) managed by the auth exec plugin. The value " +
-				"is in seconds until certificate expiry. If auth exec " +
-				"plugins are unused or manage no TLS certificates, the " +
-				"value will be +INF.",
+				"is in seconds until certificate expiry (negative if " +
+				"already expired). If auth exec plugins are unused or manage no " +
+				"TLS certificates, the value will be +INF.",
+			StabilityLevel: k8smetrics.ALPHA,
+		},
+		func() float64 {
+			if execPluginCertTTLAdapter.e == nil {
+				return math.Inf(1)
+			}
+			return execPluginCertTTLAdapter.e.Sub(time.Now()).Seconds()
 		},
 	)
 
@@ -99,29 +97,25 @@ var (
 )
 
 func init() {
-	execPluginCertTTL.Set(math.Inf(1)) // Initialize TTL to +INF
 
 	legacyregistry.MustRegister(requestLatency)
-	legacyregistry.MustRegister(deprecatedRequestLatency)
 	legacyregistry.MustRegister(requestResult)
-	legacyregistry.MustRegister(execPluginCertTTL)
+	legacyregistry.RawMustRegister(execPluginCertTTL)
 	legacyregistry.MustRegister(execPluginCertRotation)
 	metrics.Register(metrics.RegisterOpts{
-		ClientCertTTL:         &ttlAdapter{m: execPluginCertTTL},
+		ClientCertExpiry:      execPluginCertTTLAdapter,
 		ClientCertRotationAge: &rotationAdapter{m: execPluginCertRotation},
-		RequestLatency:        &latencyAdapter{m: requestLatency, dm: deprecatedRequestLatency},
+		RequestLatency:        &latencyAdapter{m: requestLatency},
 		RequestResult:         &resultAdapter{requestResult},
 	})
 }
 
 type latencyAdapter struct {
-	m  *k8smetrics.HistogramVec
-	dm *k8smetrics.HistogramVec
+	m *k8smetrics.HistogramVec
 }
 
 func (l *latencyAdapter) Observe(verb string, u url.URL, latency time.Duration) {
 	l.m.WithLabelValues(verb, u.String()).Observe(latency.Seconds())
-	l.dm.WithLabelValues(verb, u.String()).Observe(latency.Seconds())
 }
 
 type resultAdapter struct {
@@ -132,16 +126,12 @@ func (r *resultAdapter) Increment(code, method, host string) {
 	r.m.WithLabelValues(code, method, host).Inc()
 }
 
-type ttlAdapter struct {
-	m *k8smetrics.Gauge
+type expiryToTTLAdapter struct {
+	e *time.Time
 }
 
-func (e *ttlAdapter) Set(ttl *time.Duration) {
-	if ttl == nil {
-		e.m.Set(math.Inf(1))
-	} else {
-		e.m.Set(float64(ttl.Seconds()))
-	}
+func (e *expiryToTTLAdapter) Set(expiry *time.Time) {
+	e.e = expiry
 }
 
 type rotationAdapter struct {

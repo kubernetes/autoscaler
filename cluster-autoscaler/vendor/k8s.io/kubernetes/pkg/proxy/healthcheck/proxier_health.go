@@ -44,6 +44,8 @@ type ProxierHealthUpdater interface {
 	Updated()
 }
 
+var _ ProxierHealthUpdater = &ProxierHealthServer{}
+
 // ProxierHealthServer returns 200 "OK" by default. It verifies that the delay between
 // QueuedUpdate() calls and Updated() calls never exceeds healthTimeout.
 type ProxierHealthServer struct {
@@ -52,7 +54,6 @@ type ProxierHealthServer struct {
 	clock       clock.Clock
 
 	addr          string
-	port          int32
 	healthTimeout time.Duration
 	recorder      record.EventRecorder
 	nodeRef       *v1.ObjectReference
@@ -159,5 +160,5 @@ func (h healthzHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		lastUpdated = currentTime
 
 	}
-	fmt.Fprintf(resp, fmt.Sprintf(`{"lastUpdated": %q,"currentTime": %q}`, lastUpdated, currentTime))
+	fmt.Fprintf(resp, `{"lastUpdated": %q,"currentTime": %q}`, lastUpdated, currentTime)
 }

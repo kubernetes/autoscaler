@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -55,7 +55,10 @@ type Reflector struct {
 	// stringification of expectedType otherwise. It is for display
 	// only, and should not be used for parsing or comparison.
 	expectedTypeName string
-	// The type of object we expect to place in the store.
+	// An example object of the type we expect to place in the store.
+	// Only the type needs to be right, except that when that is
+	// `unstructured.Unstructured` the object's `"apiVersion"` and
+	// `"kind"` must also be right.
 	expectedType reflect.Type
 	// The GVK of the object we expect to place in the store if unstructured.
 	expectedGVK *schema.GroupVersionKind
@@ -63,10 +66,12 @@ type Reflector struct {
 	store Store
 	// listerWatcher is used to perform lists and watches.
 	listerWatcher ListerWatcher
-	// period controls timing between one watch ending and
-	// the beginning of the next one.
-	period       time.Duration
+	// period controls timing between an unsuccessful watch ending and
+	// the beginning of the next list.
+	period time.Duration
+	// The period at which ShouldResync is invoked
 	resyncPeriod time.Duration
+	// ShouldResync is invoked periodically and whenever it returns `true` the Store's Resync operation is invoked
 	ShouldResync func() bool
 	// clock allows tests to manipulate time
 	clock clock.Clock
@@ -98,12 +103,16 @@ func NewNamespaceKeyedIndexerAndReflector(lw ListerWatcher, expectedType interfa
 	return indexer, reflector
 }
 
-// NewReflector creates a new Reflector object which will keep the given store up to
-// date with the server's contents for the given resource. Reflector promises to
-// only put things in the store that have the type of expectedType, unless expectedType
-// is nil. If resyncPeriod is non-zero, then lists will be executed after every
-// resyncPeriod, so that you can use reflectors to periodically process everything as
-// well as incrementally processing the things that change.
+// NewReflector creates a new Reflector object which will keep the
+// given store up to date with the server's contents for the given
+// resource. Reflector promises to only put things in the store that
+// have the type of expectedType, unless expectedType is nil. If
+// resyncPeriod is non-zero, then the reflector will periodically
+// consult its ShouldResync function to determine whether to invoke
+// the Store's Resync operation; `ShouldResync==nil` means always
+// "yes".  This enables you to use reflectors to periodically process
+// everything as well as incrementally processing the things that
+// change.
 func NewReflector(lw ListerWatcher, expectedType interface{}, store Store, resyncPeriod time.Duration) *Reflector {
 	return NewNamedReflector(naming.GetNameFromCallsite(internalPackages...), lw, expectedType, store, resyncPeriod)
 }
@@ -147,7 +156,8 @@ func (r *Reflector) setExpectedType(expectedType interface{}) {
 // call chains to NewReflector, so they'd be low entropy names for reflectors
 var internalPackages = []string{"client-go/tools/cache/"}
 
-// Run starts a watch and handles watch events. Will restart the watch if it is closed.
+// Run repeatedly uses the reflector's ListAndWatch to fetch all the
+// objects and subsequent deltas.
 // Run will exit when stopCh is closed.
 func (r *Reflector) Run(stopCh <-chan struct{}) {
 	klog.V(3).Infof("Starting reflector %v (%s) from %s", r.expectedTypeName, r.resyncPeriod, r.name)
@@ -375,7 +385,7 @@ loop:
 				break loop
 			}
 			if event.Type == watch.Error {
-				return apierrs.FromObject(event.Object)
+				return apierrors.FromObject(event.Object)
 			}
 			if r.expectedType != nil {
 				if e, a := r.expectedType, reflect.TypeOf(event.Object); e != a {
@@ -479,9 +489,9 @@ func (r *Reflector) setIsLastSyncResourceVersionExpired(isExpired bool) {
 }
 
 func isExpiredError(err error) bool {
-	// In Kubernetes 1.17 and earlier, the api server returns both apierrs.StatusReasonExpired and
-	// apierrs.StatusReasonGone for HTTP 410 (Gone) status code responses. In 1.18 the kube server is more consistent
-	// and always returns apierrs.StatusReasonExpired. For backward compatibility we can only remove the apierrs.IsGone
+	// In Kubernetes 1.17 and earlier, the api server returns both apierrors.StatusReasonExpired and
+	// apierrors.StatusReasonGone for HTTP 410 (Gone) status code responses. In 1.18 the kube server is more consistent
+	// and always returns apierrors.StatusReasonExpired. For backward compatibility we can only remove the apierrors.IsGone
 	// check when we fully drop support for Kubernetes 1.17 servers from reflectors.
-	return apierrs.IsResourceExpired(err) || apierrs.IsGone(err)
+	return apierrors.IsResourceExpired(err) || apierrors.IsGone(err)
 }
