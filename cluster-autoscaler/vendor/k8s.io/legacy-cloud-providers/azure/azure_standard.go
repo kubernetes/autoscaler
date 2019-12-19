@@ -65,14 +65,15 @@ const (
 	nodeLabelRole  = "kubernetes.io/role"
 	nicFailedState = "Failed"
 
-	storageAccountNameMaxLength = 24
+	storageAccountNameMaxLength   = 24
+	frontendIPConfigNameMaxLength = 80
+	loadBalancerRuleNameMaxLength = 80
 )
 
 var errNotInVMSet = errors.New("vm is not in the vmset")
 var providerIDRE = regexp.MustCompile(`^` + CloudProviderName + `://(?:.*)/Microsoft.Compute/virtualMachines/(.+)$`)
 var backendPoolIDRE = regexp.MustCompile(`^/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Network/loadBalancers/(.+)/backendAddressPools/(?:.*)`)
 var nicResourceGroupRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/networkInterfaces/(?:.*)`)
-var publicIPResourceGroupRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/publicIPAddresses/(?:.*)`)
 
 // getStandardMachineID returns the full identifier of a virtual machine.
 func (az *Cloud) getStandardMachineID(subscriptionID, resourceGroup, machineName string) string {
@@ -93,31 +94,31 @@ func (az *Cloud) getAvailabilitySetID(resourceGroup, availabilitySetName string)
 }
 
 // returns the full identifier of a loadbalancer frontendipconfiguration.
-func (az *Cloud) getFrontendIPConfigID(lbName, fipConfigName string) string {
+func (az *Cloud) getFrontendIPConfigID(lbName, rgName, fipConfigName string) string {
 	return fmt.Sprintf(
 		frontendIPConfigIDTemplate,
 		az.SubscriptionID,
-		az.ResourceGroup,
+		rgName,
 		lbName,
 		fipConfigName)
 }
 
 // returns the full identifier of a loadbalancer backendpool.
-func (az *Cloud) getBackendPoolID(lbName, backendPoolName string) string {
+func (az *Cloud) getBackendPoolID(lbName, rgName, backendPoolName string) string {
 	return fmt.Sprintf(
 		backendPoolIDTemplate,
 		az.SubscriptionID,
-		az.ResourceGroup,
+		rgName,
 		lbName,
 		backendPoolName)
 }
 
 // returns the full identifier of a loadbalancer probe.
-func (az *Cloud) getLoadBalancerProbeID(lbName, lbRuleName string) string {
+func (az *Cloud) getLoadBalancerProbeID(lbName, rgName, lbRuleName string) string {
 	return fmt.Sprintf(
 		loadBalancerProbeIDTemplate,
 		az.SubscriptionID,
-		az.ResourceGroup,
+		rgName,
 		lbName,
 		lbRuleName)
 }
@@ -274,12 +275,21 @@ func getBackendPoolName(ipv6DualStackEnabled bool, clusterName string, service *
 	return clusterName
 }
 
-func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protocol, port int32, subnetName *string) string {
+func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protocol, port int32) string {
 	prefix := az.getRulePrefix(service)
-	if subnetName == nil {
-		return fmt.Sprintf("%s-%s-%d", prefix, protocol, port)
+	ruleName := fmt.Sprintf("%s-%s-%d", prefix, protocol, port)
+	subnet := subnet(service)
+	if subnet == nil {
+		return ruleName
 	}
-	return fmt.Sprintf("%s-%s-%s-%d", prefix, *subnetName, protocol, port)
+
+	// Load balancer rule name must be less or equal to 80 characters, so excluding the hyphen two segments cannot exceed 79
+	subnetSegment := *subnet
+	if len(ruleName)+len(subnetSegment)+1 > loadBalancerRuleNameMaxLength {
+		subnetSegment = subnetSegment[:loadBalancerRuleNameMaxLength-len(ruleName)-1]
+	}
+
+	return fmt.Sprintf("%s-%s-%s-%d", prefix, subnetSegment, protocol, port)
 }
 
 func (az *Cloud) getSecurityRuleName(service *v1.Service, port v1.ServicePort, sourceAddrPrefix string) string {
@@ -317,10 +327,17 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 	return strings.HasPrefix(*fip.Name, baseName)
 }
 
-func (az *Cloud) getFrontendIPConfigName(service *v1.Service, subnetName *string) string {
+func (az *Cloud) getFrontendIPConfigName(service *v1.Service) string {
 	baseName := az.GetLoadBalancerName(context.TODO(), "", service)
+	subnetName := subnet(service)
 	if subnetName != nil {
-		return fmt.Sprintf("%s-%s", baseName, *subnetName)
+		ipcName := fmt.Sprintf("%s-%s", baseName, *subnetName)
+
+		// Azure lb front end configuration name must not exceed 80 characters
+		if len(ipcName) > frontendIPConfigNameMaxLength {
+			ipcName = ipcName[:frontendIPConfigNameMaxLength]
+		}
+		return ipcName
 	}
 	return baseName
 }
@@ -464,7 +481,7 @@ func (as *availabilitySet) GetZoneByNodeName(name string) (cloudprovider.Zone, e
 		failureDomain = as.makeZone(to.String(vm.Location), zoneID)
 	} else {
 		// Availability zone is not used for the node, falling back to fault domain.
-		failureDomain = strconv.Itoa(int(*vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain))
+		failureDomain = strconv.Itoa(int(to.Int32(vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain)))
 	}
 
 	zone := cloudprovider.Zone{
@@ -690,9 +707,9 @@ func (as *availabilitySet) getPrimaryInterfaceWithVMSet(nodeName, vmSetName stri
 
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	nic, err := as.InterfacesClient.Get(ctx, nicResourceGroup, nicName, "")
-	if err != nil {
-		return network.Interface{}, err
+	nic, rerr := as.InterfacesClient.Get(ctx, nicResourceGroup, nicName, "")
+	if rerr != nil {
+		return network.Interface{}, rerr.Error()
 	}
 
 	return nic, nil

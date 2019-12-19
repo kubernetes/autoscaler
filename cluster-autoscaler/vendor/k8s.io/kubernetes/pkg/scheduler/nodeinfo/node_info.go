@@ -28,7 +28,7 @@ import (
 	"k8s.io/klog"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	"k8s.io/kubernetes/pkg/features"
-	priorityutil "k8s.io/kubernetes/pkg/scheduler/algorithm/priorities/util"
+	schedutil "k8s.io/kubernetes/pkg/scheduler/util"
 )
 
 var (
@@ -570,7 +570,7 @@ func calculateResource(pod *v1.Pod) (res Resource, non0CPU int64, non0Mem int64)
 	for _, c := range pod.Spec.Containers {
 		resPtr.Add(c.Resources.Requests)
 
-		non0CPUReq, non0MemReq := priorityutil.GetNonzeroRequests(&c.Resources.Requests)
+		non0CPUReq, non0MemReq := schedutil.GetNonzeroRequests(&c.Resources.Requests)
 		non0CPU += non0CPUReq
 		non0Mem += non0MemReq
 		// No non-zero resources for GPUs or opaque resources.
@@ -628,23 +628,6 @@ func (n *NodeInfo) SetNode(node *v1.Node) error {
 		}
 	}
 	n.TransientInfo = NewTransientSchedulerInfo()
-	n.generation = nextGeneration()
-	return nil
-}
-
-// RemoveNode removes the overall information about the node.
-func (n *NodeInfo) RemoveNode(node *v1.Node) error {
-	// We don't remove NodeInfo for because there can still be some pods on this node -
-	// this is because notifications about pods are delivered in a different watch,
-	// and thus can potentially be observed later, even though they happened before
-	// node removal. This is handled correctly in cache.go file.
-	n.node = nil
-	n.allocatableResource = &Resource{}
-	n.taints, n.taintsErr = nil, nil
-	n.memoryPressureCondition = v1.ConditionUnknown
-	n.diskPressureCondition = v1.ConditionUnknown
-	n.pidPressureCondition = v1.ConditionUnknown
-	n.imageStates = make(map[string]*ImageStateSummary)
 	n.generation = nextGeneration()
 	return nil
 }

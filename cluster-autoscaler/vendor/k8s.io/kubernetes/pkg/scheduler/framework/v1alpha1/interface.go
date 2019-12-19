@@ -22,6 +22,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -31,6 +32,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	"k8s.io/kubernetes/pkg/scheduler/volumebinder"
 )
 
 // NodeScoreList declares a list of nodes and their scores.
@@ -93,12 +95,11 @@ const (
 )
 
 // Status indicates the result of running a plugin. It consists of a code and a
-// message. When the status code is not `Success`, the status message should
-// explain why.
+// message. When the status code is not `Success`, the reasons should explain why.
 // NOTE: A nil Status is also considered as Success.
 type Status struct {
 	code    Code
-	message string
+	reasons []string
 }
 
 // Code returns code of the Status.
@@ -109,12 +110,22 @@ func (s *Status) Code() Code {
 	return s.code
 }
 
-// Message returns message of the Status.
+// Message returns a concatenated message on reasons of the Status.
 func (s *Status) Message() string {
 	if s == nil {
 		return ""
 	}
-	return s.message
+	return strings.Join(s.reasons, ", ")
+}
+
+// Reasons returns reasons of the Status.
+func (s *Status) Reasons() []string {
+	return s.reasons
+}
+
+// AppendReason appends given reason to the Status.
+func (s *Status) AppendReason(reason string) {
+	s.reasons = append(s.reasons, reason)
 }
 
 // IsSuccess returns true if and only if "Status" is nil or Code is "Success".
@@ -128,20 +139,58 @@ func (s *Status) IsUnschedulable() bool {
 	return code == Unschedulable || code == UnschedulableAndUnresolvable
 }
 
-// AsError returns an "error" object with the same message as that of the Status.
+// AsError returns nil if the status is a success; otherwise returns an "error" object
+// with a concatenated message on reasons of the Status.
 func (s *Status) AsError() error {
 	if s.IsSuccess() {
 		return nil
 	}
-	return errors.New(s.message)
+	return errors.New(s.Message())
 }
 
 // NewStatus makes a Status out of the given arguments and returns its pointer.
-func NewStatus(code Code, msg string) *Status {
+func NewStatus(code Code, reasons ...string) *Status {
 	return &Status{
 		code:    code,
-		message: msg,
+		reasons: reasons,
 	}
+}
+
+// PluginToStatus maps plugin name to status. Currently used to identify which Filter plugin
+// returned which status.
+type PluginToStatus map[string]*Status
+
+// Merge merges the statuses in the map into one. The resulting status code have the following
+// precedence: Error, UnschedulableAndUnresolvable, Unschedulable.
+func (p PluginToStatus) Merge() *Status {
+	if len(p) == 0 {
+		return nil
+	}
+
+	finalStatus := NewStatus(Success)
+	var hasError, hasUnschedulableAndUnresolvable, hasUnschedulable bool
+	for _, s := range p {
+		if s.Code() == Error {
+			hasError = true
+		} else if s.Code() == UnschedulableAndUnresolvable {
+			hasUnschedulableAndUnresolvable = true
+		} else if s.Code() == Unschedulable {
+			hasUnschedulable = true
+		}
+		finalStatus.code = s.Code()
+		for _, r := range s.reasons {
+			finalStatus.AppendReason(r)
+		}
+	}
+
+	if hasError {
+		finalStatus.code = Error
+	} else if hasUnschedulableAndUnresolvable {
+		finalStatus.code = UnschedulableAndUnresolvable
+	} else if hasUnschedulable {
+		finalStatus.code = Unschedulable
+	}
+	return finalStatus
 }
 
 // WaitingPod represents a pod currently waiting in the permit phase.
@@ -373,15 +422,13 @@ type Framework interface {
 	RunPreFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod) *Status
 
 	// RunFilterPlugins runs the set of configured filter plugins for pod on
-	// the given node. It returns directly if any of the filter plugins
-	// return any status other than "Success". Note that for the node being
-	// evaluated, the passed nodeInfo reference could be different from the
-	// one in NodeInfoSnapshot map (e.g., pods considered to be running on
-	// the node could be different). For example, during preemption, we may
-	// pass a copy of the original nodeInfo object that has some pods
+	// the given node. Note that for the node being evaluated, the passed nodeInfo
+	// reference could be different from the one in NodeInfoSnapshot map (e.g., pods
+	// considered to be running on the node could be different). For example, during
+	// preemption, we may pass a copy of the original nodeInfo object that has some pods
 	// removed from it to evaluate the possibility of preempting them to
 	// schedule the target pod.
-	RunFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	RunFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) PluginToStatus
 
 	// RunPreFilterExtensionAddPod calls the AddPod interface for the set of configured
 	// PreFilter plugins. It returns directly if any of the plugins return any
@@ -433,9 +480,9 @@ type Framework interface {
 
 	// RunBindPlugins runs the set of configured bind plugins. A bind plugin may choose
 	// whether or not to handle the given Pod. If a bind plugin chooses to skip the
-	// binding, it should return code=4("skip") status. Otherwise, it should return "Error"
+	// binding, it should return code=5("skip") status. Otherwise, it should return "Error"
 	// or "Success". If none of the plugins handled binding, RunBindPlugins returns
-	// code=4("skip") status.
+	// code=5("skip") status.
 	RunBindPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) *Status
 
 	// HasFilterPlugins returns true if at least one filter plugin is defined.
@@ -474,4 +521,7 @@ type FrameworkHandle interface {
 	ClientSet() clientset.Interface
 
 	SharedInformerFactory() informers.SharedInformerFactory
+
+	// VolumeBinder returns the volume binder used by scheduler.
+	VolumeBinder() *volumebinder.VolumeBinder
 }
