@@ -17,70 +17,36 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"fmt"
-	"sync"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/klog"
 
-	"k8s.io/kubernetes/pkg/scheduler"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	scheduler_framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	scheduler_listers "k8s.io/kubernetes/pkg/scheduler/listers"
+	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	scheduler_volumebinder "k8s.io/kubernetes/pkg/scheduler/volumebinder"
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 )
 
-const (
-	// We want to disable affinity predicate for performance reasons if no pod
-	// requires it.
-	affinityPredicateName = "MatchInterPodAffinity"
-)
-
-var (
-	// initMutex is used for guarding static initialization.
-	staticInitMutex sync.Mutex
-	// statiInitHappened denotes if static initialization happened.
-	staticInitDone bool
-)
-
-// PredicateInfo assigns a name to a predicate
-type PredicateInfo struct {
-	Name      string
-	Predicate predicates.FitPredicate
-}
-
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker struct {
-	predicates              []PredicateInfo
-	enableAffinityPredicate bool
-	scheduler               *scheduler.Scheduler
+	framework scheduler_framework.Framework
+	snapshot  scheduler_listers.SharedLister
 }
 
 // We run some predicates first as they are cheap to check and they should be enough
 // to fail predicates in most of our simulations (especially binpacking).
 // There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
-
-func staticInitIfNeeded() {
-	staticInitMutex.Lock()
-	defer staticInitMutex.Unlock()
-
-	if staticInitDone {
-		return
-	}
-
-	// This results in filtering out some predicate functions registered by defaults.init() method.
-	// In scheduler this method is run from app.runCommand().
-	// We also need to call it in CA to have simulation behaviour consistent with scheduler.
-	// Note: the logic of method is conditional and depends on feature gates enabled. To have same
-	//       behaviour in CA and scheduler both need to be run with same set of feature gates.
-	algorithmprovider.ApplyFeatureGates()
-	staticInitDone = true
-}
 
 // NoOpEventRecorder is a noop implementation of EventRecorder
 type NoOpEventRecorder struct{}
@@ -103,85 +69,56 @@ func (NoOpEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
-	staticInitIfNeeded()
-
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	podInformer := informerFactory.Core().V1().Pods()
+	providerRegistry := algorithmprovider.NewRegistry(1) // 1 here is hardPodAffinityWeight not relevant for CA
+	config := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
+	snapshot := NewEmptySnapshot()
 
-	sched, err := scheduler.New(
+	volumeBinder := scheduler_volumebinder.NewVolumeBinder(
 		kubeClient,
-		informerFactory,
-		podInformer,
-		NoOpEventRecorder{},
-		stop,
-		scheduler.WithFrameworkConfigProducerRegistry(nil),
+		informerFactory.Core().V1().Nodes(),
+		informerFactory.Storage().V1().CSINodes(),
+		informerFactory.Core().V1().PersistentVolumeClaims(),
+		informerFactory.Core().V1().PersistentVolumes(),
+		informerFactory.Storage().V1().StorageClasses(),
+		time.Duration(10)*time.Second,
 	)
+
+	framework, err := scheduler_framework.NewFramework(
+		scheduler_plugins.NewInTreeRegistry(),
+		config.FrameworkPlugins,
+		config.FrameworkPluginConfig,
+		scheduler_framework.WithInformerFactory(informerFactory),
+		scheduler_framework.WithSnapshotSharedLister(snapshot),
+		scheduler_framework.WithVolumeBinder(volumeBinder),
+	)
+
 	if err != nil {
-		return nil, fmt.Errorf("couldn't create scheduler; %v", err)
+		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
 	}
 
-	predicateMap := map[string]predicates.FitPredicate{}
-	for predicateName, predicateFunc := range sched.Algorithm.Predicates() {
-		predicateMap[predicateName] = predicateFunc
-	}
-	// We want to make sure that some predicates are present to run them first
-	// as they are cheap to check and they should be enough to fail predicates
-	// in most of our simulations (especially binpacking).
-	if _, found := predicateMap["PodFitsResources"]; !found {
-		predicateMap["PodFitsResources"] = predicates.PodFitsResources
-	}
-	if _, found := predicateMap["PodToleratesNodeTaints"]; !found {
-		predicateMap["PodToleratesNodeTaints"] = predicates.PodToleratesNodeTaints
-	}
+	// TODO(scheduler_framework) How do I update the snapshot? Every loop?
 
-	predicateList := make([]PredicateInfo, 0, len(predicateMap))
-	for _, predicateName := range priorityPredicates {
-		if predicate, found := predicateMap[predicateName]; found {
-			predicateList = append(predicateList, PredicateInfo{Name: predicateName, Predicate: predicate})
-			delete(predicateMap, predicateName)
-		}
-	}
-
-	for predicateName, predicate := range predicateMap {
-		predicateList = append(predicateList, PredicateInfo{Name: predicateName, Predicate: predicate})
-	}
-
-	for _, predInfo := range predicateList {
-		klog.V(1).Infof("Using predicate %s", predInfo.Name)
-	}
-
+	// this MUST be called after all the informers/listers are acquired via the
+	// informerFactory....Lister()/informerFactory....Informer() methods
 	informerFactory.Start(stop)
 
 	return &PredicateChecker{
-		predicates:              predicateList,
-		enableAffinityPredicate: true,
-		scheduler:               sched,
+		framework: framework,
+		snapshot:  snapshot,
 	}, nil
 }
 
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() *PredicateChecker {
-	return &PredicateChecker{
-		predicates: []PredicateInfo{
-			{Name: "default", Predicate: predicates.GeneralPredicates},
-		},
-	}
-}
-
-// NewCustomTestPredicateChecker builds test version of PredicateChecker with additional predicates.
-// Helps with benchmarking different ordering of predicates.
-func NewCustomTestPredicateChecker(predicateInfos []PredicateInfo) *PredicateChecker {
-	return &PredicateChecker{
-		predicates: predicateInfos,
-	}
+	// TODO(scheduler_framework)
+	return nil
 }
 
 // SnapshotClusterState updates cluster snapshot used by the predicate checker.
 // It should be called every CA loop iteration.
 func (p *PredicateChecker) SnapshotClusterState() error {
-	if p.scheduler != nil {
-		return p.scheduler.Algorithm.Snapshot()
-	}
+	// TODO(scheduler_framework rebuild snapshot
 	return nil
 }
 
@@ -190,16 +127,18 @@ func (p *PredicateChecker) SnapshotClusterState() error {
 // cluster using affinity/antiaffinity. However, checking affinity predicate is extremely
 // costly even if no pod is using it, so it may be worth disabling it in such situation.
 func (p *PredicateChecker) SetAffinityPredicateEnabled(enable bool) {
-	p.enableAffinityPredicate = enable
+	// TODO(scheduler_framework)
 }
 
 // IsAffinityPredicateEnabled checks if affinity predicate is enabled.
 func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
-	return p.enableAffinityPredicate
+	// TODO(scheduler_framework)
+	return false
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
-func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedulernodeinfo.NodeInfo) (string, error) {
+func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
+	// TODO(scheduler_framework) run prefilter only once
 	for name, nodeInfo := range nodeInfos {
 		// Be sure that the node is schedulable.
 		if nodeInfo.Node().Spec.Unschedulable {
@@ -213,29 +152,43 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) PredicateError {
-	for _, predInfo := range p.predicates {
-		// Skip affinity predicate if it has been disabled.
-		if !p.enableAffinityPredicate && predInfo.Name == affinityPredicateName {
-			continue
-		}
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *scheduler_nodeinfo.NodeInfo) *PredicateError {
+	state := scheduler_framework.NewCycleState()
+	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	if !preFilterStatus.IsSuccess() {
+		return NewPredicateError(
+			InternalPredicateError,
+			"",
+			preFilterStatus.Message(),
+			preFilterStatus.Reasons(),
+			emptyString)
+	}
 
-		match, failureReasons, err := predInfo.Predicate(pod, nil, nodeInfo)
-		if err != nil || !match {
+	filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+	for filterName, filterStatus := range filterStatuses {
+		if !filterStatus.IsSuccess() {
+			if filterStatus.IsUnschedulable() {
+				return NewPredicateError(
+					NotSchedulablePredicateError,
+					filterName,
+					filterStatus.Message(),
+					filterStatus.Reasons(),
+					p.buildDebugInfo(filterName, nodeInfo))
+			}
 			return NewPredicateError(
-				NotSchedulablePredicateError,
-				predInfo.Name,
-				"",
-				nil, // dropping here due to upcoming rework for scheduler framework
-				p.buildDebugInfo(predInfo, nodeInfo))
+				InternalPredicateError,
+				filterName,
+				filterStatus.Message(),
+				filterStatus.Reasons(),
+				p.buildDebugInfo(filterName, nodeInfo))
 		}
 	}
 	return nil
 }
 
-func (p *PredicateChecker) buildDebugInfo(predInfo PredicateInfo, nodeInfo *schedulernodeinfo.NodeInfo) func() string {
-	switch predInfo.Name {
-	case "PodToleratesNodeTaints":
+func (p *PredicateChecker) buildDebugInfo(filterName string, nodeInfo *scheduler_nodeinfo.NodeInfo) func() string {
+	switch filterName {
+	case "TaintToleration":
 		taints := nodeInfo.Node().Spec.Taints
 		return func() string {
 			return fmt.Sprintf("taints on node: %#v", taints)

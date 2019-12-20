@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
@@ -91,10 +90,6 @@ func TestDebugInfo(t *testing.T) {
 	ni1.SetNode(node1)
 
 	predicateChecker := NewTestPredicateChecker()
-	predicateChecker.predicates = append(predicateChecker.predicates, PredicateInfo{
-		Name:      "PodToleratesNodeTaints",
-		Predicate: predicates.PodToleratesNodeTaints,
-	})
 
 	predicateErr := predicateChecker.CheckPredicates(p1, ni1)
 	assert.NotNil(t, predicateErr)
