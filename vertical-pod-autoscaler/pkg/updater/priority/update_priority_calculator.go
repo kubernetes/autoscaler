@@ -37,9 +37,9 @@ const (
 )
 
 var (
-	evictAfterOOMThreshold = flag.Duration("evict-after-oom-treshold", 10*time.Minute,
+	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
 		`Evict pod that has only one container and it OOMed in less than
-		evict-after-oom-treshold since start.`)
+		evict-after-oom-threshold since start.`)
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
