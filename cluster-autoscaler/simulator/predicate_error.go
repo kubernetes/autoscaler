@@ -21,15 +21,14 @@ import (
 	"strings"
 )
 
-// ErrorCode is the API error code type.
+// PredicateErrorType is type of predicate error
 type PredicateErrorType int
 
-// API error codes.
 const (
-	// Factory errors
+	// NotSchedulablePredicateError means that one of the filters retuned that pod does not fit a node
 	NotSchedulablePredicateError PredicateErrorType = iota
+	// InternalPredicateError denotes internal unexpected error while calling PredicateChecker
 	InternalPredicateError
-	GenericError
 )
 
 // PredicateError represents an error during predicate checking.
@@ -66,9 +65,8 @@ func (pe *simplePredicateError) PredicateName() string {
 func (pe *simplePredicateError) Message() string {
 	if pe.errorMessage == "" {
 		return "unknown error"
-	} else {
-		return pe.errorMessage
 	}
+	return pe.errorMessage
 }
 
 // VerboseMessage generates verbose error message. Building verbose message may be expensive so number of calls should be
@@ -108,11 +106,10 @@ func NewPredicateError(
 // unknown (hack - to be removed)
 func GenericPredicateError() PredicateError {
 	return &simplePredicateError{
-		errorType:    GenericError,
+		errorType:    NotSchedulablePredicateError,
 		errorMessage: "generic error",
 	}
 }
-
 func emptyString() string {
 	return ""
 }
