@@ -21,8 +21,6 @@ import (
 	"strings"
 	"sync"
 
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -130,7 +128,6 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	// We want to make sure that some predicates are present to run them first
 	// as they are cheap to check and they should be enough to fail predicates
 	// in most of our simulations (especially binpacking).
-	predicateMap["ready"] = IsNodeReadyAndSchedulablePredicate
 	if _, found := predicateMap["PodFitsResources"]; !found {
 		predicateMap["PodFitsResources"] = predicates.PodFitsResources
 	}
@@ -163,22 +160,11 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}, nil
 }
 
-// IsNodeReadyAndSchedulablePredicate checks if node is ready.
-func IsNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.Metadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
-	[]predicates.PredicateFailureReason, error) {
-	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
-	if !ready {
-		return false, []predicates.PredicateFailureReason{predicates.NewPredicateFailureError("IsNodeReadyAndSchedulablePredicate", "node is unready")}, nil
-	}
-	return true, []predicates.PredicateFailureReason{}, nil
-}
-
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() *PredicateChecker {
 	return &PredicateChecker{
 		predicates: []PredicateInfo{
 			{Name: "default", Predicate: predicates.GeneralPredicates},
-			{Name: "ready", Predicate: IsNodeReadyAndSchedulablePredicate},
 		},
 	}
 }
