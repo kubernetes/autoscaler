@@ -124,7 +124,7 @@ func TestFindPlaceAllOk(t *testing.T) {
 		[]*apiv1.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
 		oldHints, newHints, tracker, time.Now(),
-		[]*apiv1.Node{})
+		map[string]bool{})
 
 	assert.Len(t, newHints, 2)
 	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
@@ -158,7 +158,7 @@ func TestFindPlaceNotOnEmptyNode(t *testing.T) {
 		[]*apiv1.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
 		oldHints, newHints, tracker, time.Now(),
-		[]*apiv1.Node{node2})
+		map[string]bool{node2.Name: true})
 
 	assert.Error(t, err)
 	assert.Len(t, newHints, 1)
@@ -197,7 +197,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 		[]*apiv1.Node{nodebad, node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
 		oldHints, newHints, tracker, time.Now(),
-		[]*apiv1.Node{})
+		map[string]bool{})
 
 	assert.Error(t, err)
 	assert.True(t, len(newHints) == 2)
@@ -230,7 +230,7 @@ func TestFindNone(t *testing.T) {
 		make(map[string]string),
 		NewUsageTracker(),
 		time.Now(),
-		[]*apiv1.Node{})
+		map[string]bool{})
 	assert.NoError(t, err)
 }
 
@@ -277,7 +277,7 @@ type findNodesToRemoveTestConfig struct {
 	name        string
 	candidates  []*apiv1.Node
 	allNodes    []*apiv1.Node
-	emptyNodes  []*apiv1.Node
+	emptyNodes  map[string]bool
 	toRemove    []NodeToBeRemoved
 	unremovable []*apiv1.Node
 }
@@ -331,7 +331,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "just an empty node, should be removed",
 			candidates:  []*apiv1.Node{emptyNode},
 			allNodes:    []*apiv1.Node{emptyNode},
-			emptyNodes:  []*apiv1.Node{emptyNode},
+			emptyNodes:  map[string]bool{emptyNode.Name: true},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*apiv1.Node{},
 		},
@@ -364,7 +364,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "4 nodes, 1 empty, 1 drainable",
 			candidates:  []*apiv1.Node{emptyNode, drainableNode},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			emptyNodes:  []*apiv1.Node{emptyNode},
+			emptyNodes:  map[string]bool{emptyNode.Name: true},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 			unremovable: []*apiv1.Node{},
 		},
@@ -373,7 +373,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "empty node, drainable node and full node",
 			candidates:  []*apiv1.Node{emptyNode, drainableNode},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode},
-			emptyNodes:  []*apiv1.Node{emptyNode},
+			emptyNodes:  map[string]bool{emptyNode.Name: true},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*apiv1.Node{drainableNode},
 		},

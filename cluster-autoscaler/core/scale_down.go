@@ -489,7 +489,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
 		currentCandidates, destinationNodes, nonExpendablePods, nil, sd.context.PredicateChecker,
-		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodesList)
+		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodes)
 	if simulatorErr != nil {
 		return sd.markSimulationError(simulatorErr, timestamp)
 	}
@@ -512,7 +512,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
 			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], destinationNodes, nonExpendablePods, nil,
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
-				sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodesList)
+				sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodes)
 		if simulatorErr != nil {
 			return sd.markSimulationError(simulatorErr, timestamp)
 		}
@@ -781,10 +781,10 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := sd.getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
-	if len(emptyNodes) > 0 {
+	emptyNodesList := sd.getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
+	if len(emptyNodesList) > 0 {
 		nodeDeletionStart := time.Now()
-		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
+		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodesList, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 
 		// TODO: Give the processor some information about the nodes that failed to be deleted.
@@ -798,6 +798,11 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			return scaleDownStatus, err.AddPrefix("failed to delete at least one empty node: ")
 		}
 		return scaleDownStatus, nil
+	}
+
+	emptyNodes := make(map[string]bool)
+	for _, node := range emptyNodesList {
+		emptyNodes[node.Name] = true
 	}
 
 	findNodesToRemoveStart := time.Now()

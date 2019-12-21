@@ -76,7 +76,7 @@ func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
-	emptyNodes []*apiv1.Node,
+	emptyNodes map[string]bool,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*apiv1.Node, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, destinationNodes)
@@ -221,7 +221,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
 	predicateChecker *PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
-	timestamp time.Time, emptyNodes []*apiv1.Node) error {
+	timestamp time.Time, emptyNodes map[string]bool) error {
 
 	newNodeInfos := make(map[string]*schedulernodeinfo.NodeInfo)
 	for k, v := range nodeInfos {
@@ -291,14 +291,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				if node.Name == removedNode {
 					continue
 				}
-				nodeEmpty := false
-				for _, emptyNode := range emptyNodes {
-					if emptyNode.Name == node.Name {
-						nodeEmpty = true
-						break
-					}
-				}
-				if nodeEmpty {
+				if emptyNodes[node.Name] {
 					// don't consider empty, unneeded nodes because they will be removed soon anyways and doesn't make much sense to move pods there
 					continue
 				}
