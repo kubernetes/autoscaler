@@ -174,7 +174,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		return asg, nil
 	}
 
-	klog.Warningf("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
+	klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
 	return nil, nil
 }
 
