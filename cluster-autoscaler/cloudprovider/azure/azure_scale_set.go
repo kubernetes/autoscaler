@@ -157,6 +157,10 @@ func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) 
 	scaleSetStatusCache.lastRefresh = time.Now()
 	scaleSetStatusCache.scaleSets = newStatus
 
+	if _, exists := scaleSetStatusCache.scaleSets[scaleSet.Name]; !exists {
+		return compute.VirtualMachineScaleSet{}, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
+	}
+
 	return scaleSetStatusCache.scaleSets[scaleSet.Name], nil
 }
 
