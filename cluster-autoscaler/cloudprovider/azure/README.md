@@ -103,7 +103,8 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standa
 
 > Note that all data above should be encoded with base64.
 
-And fill the node groups in container command by `--nodes`, e.g.
+Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name (tips: node pool name is NOT availability set name, e.g., the corresponding node pool name of the availability set 
+`agentpool1-availabilitySet-xxxxxxxx` would be `agentpool1`). For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
 
 ```yaml
         - --nodes=1:10:agentpool1
