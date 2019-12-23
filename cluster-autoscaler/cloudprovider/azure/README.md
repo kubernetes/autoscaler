@@ -151,7 +151,8 @@ Make a copy of [cluster-autoscaler-standard-master.yaml](examples/cluster-autosc
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
-Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name. For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
+Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name (tips: node pool name is NOT availability set name, e.g., the corresponding node pool name of the availability set 
+`agentpool1-availabilitySet-xxxxxxxx` would be `agentpool1`). For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
 
 ```yaml
         - --nodes=1:10:k8s-nodepool-1
