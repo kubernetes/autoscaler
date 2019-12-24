@@ -37,8 +37,9 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
-			ResourceGroup: "test",
-			VMType:        vmTypeVMSS,
+			ResourceGroup:       "test",
+			VMType:              vmTypeVMSS,
+			MaxDeploymentsCount: 2,
 		},
 
 		azClient: &azClient{

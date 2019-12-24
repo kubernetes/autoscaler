@@ -63,8 +63,10 @@ type InterfacesClient interface {
 // DeploymentsClient defines needed functions for azure network.DeploymentsClient.
 type DeploymentsClient interface {
 	Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error)
+	List(ctx context.Context, resourceGroupName string, filter string, top *int32) (result []resources.DeploymentExtended, err error)
 	ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error)
 	CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error)
+	Delete(ctx context.Context, resourceGroupName string, deploymentName string) (resp *http.Response, err error)
 }
 
 // DisksClient defines needed functions for azure disk.DisksClient.
@@ -341,6 +343,44 @@ func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroup
 	}()
 
 	future, err := az.client.CreateOrUpdate(ctx, resourceGroupName, deploymentName, parameters)
+	if err != nil {
+		return future.Response(), err
+	}
+
+	err = future.WaitForCompletionRef(ctx, az.client.Client)
+	return future.Response(), err
+}
+
+func (az *azDeploymentsClient) List(ctx context.Context, resourceGroupName, filter string, top *int32) (result []resources.DeploymentExtended, err error) {
+	klog.V(10).Infof("azDeploymentsClient.List(%q): start", resourceGroupName)
+	defer func() {
+		klog.V(10).Infof("azDeploymentsClient.List(%q): end", resourceGroupName)
+	}()
+
+	iterator, err := az.client.ListByResourceGroupComplete(ctx, resourceGroupName, filter, top)
+	if err != nil {
+		return nil, err
+	}
+
+	result = make([]resources.DeploymentExtended, 0)
+	for ; iterator.NotDone(); err = iterator.Next() {
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, iterator.Value())
+	}
+
+	return result, err
+}
+
+func (az *azDeploymentsClient) Delete(ctx context.Context, resourceGroupName, deploymentName string) (resp *http.Response, err error) {
+	klog.V(10).Infof("azDeploymentsClient.Delete(%q,%q): start", resourceGroupName, deploymentName)
+	defer func() {
+		klog.V(10).Infof("azDeploymentsClient.Delete(%q,%q): end", resourceGroupName, deploymentName)
+	}()
+
+	future, err := az.client.Delete(ctx, resourceGroupName, deploymentName)
 	if err != nil {
 		return future.Response(), err
 	}

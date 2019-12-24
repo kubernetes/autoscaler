@@ -30,14 +30,17 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 
 	apiv1 "k8s.io/api/core/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
-var (
-	vmInstancesRefreshPeriod = 5 * time.Minute
+const (
+	vmInstancesRefreshPeriod          = 5 * time.Minute
+	clusterAutoscalerDeploymentPrefix = `cluster-autoscaler-`
+	defaultMaxDeploymentsCount        = 10
 )
 
 var virtualMachinesStatusCache struct {
@@ -209,6 +212,62 @@ func (as *AgentPool) TargetSize() (int, error) {
 	return int(size), nil
 }
 
+func (as *AgentPool) getAllSucceededAndFailedDeployments() (succeededAndFailedDeployments []resources.DeploymentExtended, err error) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	deploymentsFilter := "provisioningState eq 'Succeeded' or provisioningState eq 'Failed'"
+	succeededAndFailedDeployments, err = as.manager.azClient.deploymentsClient.List(ctx, as.manager.config.ResourceGroup, deploymentsFilter, nil)
+	if err != nil {
+		klog.Errorf("getAllSucceededAndFailedDeployments: failed to list succeeded or failed deployments with error: %v", err)
+		return nil, err
+	}
+
+	return succeededAndFailedDeployments, err
+}
+
+// deleteOutdatedDeployments keeps the newest deployments in the resource group and delete others,
+// since Azure resource group deployments have a hard cap of 800, outdated deployments must be deleted
+// to prevent the `DeploymentQuotaExceeded` error. see: issue #2154.
+func (as *AgentPool) deleteOutdatedDeployments() (err error) {
+	deployments, err := as.getAllSucceededAndFailedDeployments()
+	if err != nil {
+		return err
+	}
+
+	for i := len(deployments) - 1; i >= 0; i-- {
+		klog.V(4).Infof("deleteOutdatedDeployments: found deployments[i].Name: %s", *deployments[i].Name)
+		if deployments[i].Name != nil && !strings.HasPrefix(*deployments[i].Name, clusterAutoscalerDeploymentPrefix) {
+			deployments = append(deployments[:i], deployments[i+1:]...)
+		}
+	}
+
+	if int64(len(deployments)) <= as.manager.config.MaxDeploymentsCount {
+		klog.V(4).Infof("deleteOutdatedDeployments: the number of deployments (%d) is under threshold, skip deleting", len(deployments))
+		return err
+	}
+
+	sort.Slice(deployments, func(i, j int) bool {
+		return deployments[i].Properties.Timestamp.Time.After(deployments[j].Properties.Timestamp.Time)
+	})
+
+	toBeDeleted := deployments[as.manager.config.MaxDeploymentsCount:]
+
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	errList := make([]error, 0)
+	for _, deployment := range toBeDeleted {
+		klog.V(4).Infof("deleteOutdatedDeployments: starts deleting outdated deployment (%s)", *deployment.Name)
+		_, err := as.manager.azClient.deploymentsClient.Delete(ctx, as.manager.config.ResourceGroup, *deployment.Name)
+		if err != nil {
+			errList = append(errList, err)
+		}
+	}
+
+	return utilerrors.NewAggregate(errList)
+}
+
 // IncreaseSize increases agent pool size
 func (as *AgentPool) IncreaseSize(delta int) error {
 	as.mutex.Lock()
@@ -216,6 +275,11 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
+	}
+
+	err := as.deleteOutdatedDeployments()
+	if err != nil {
+		klog.Warningf("IncreaseSize: failed to cleanup outdated deployments with err: %v.", err)
 	}
 
 	indexes, _, err := as.GetVMIndexes()
@@ -402,6 +466,11 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
+	}
+
+	err = as.deleteOutdatedDeployments()
+	if err != nil {
+		klog.Warningf("DeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
 	}
 
 	return as.DeleteInstances(refs)
