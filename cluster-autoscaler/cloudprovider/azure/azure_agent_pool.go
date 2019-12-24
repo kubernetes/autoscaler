@@ -36,6 +36,16 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
+var (
+	vmInstancesRefreshPeriod = 5 * time.Minute
+)
+
+var virtualMachinesStatusCache struct {
+	lastRefresh     time.Time
+	mutex           sync.Mutex
+	virtualMachines []compute.VirtualMachine
+}
+
 // AgentPool implements NodeGroup interface for agent pools deployed by aks-engine.
 type AgentPool struct {
 	azureRef
@@ -117,9 +127,32 @@ func (as *AgentPool) MaxSize() int {
 	return as.maxSize
 }
 
+func (as *AgentPool) getVirtualMachinesFromCache() ([]compute.VirtualMachine, error) {
+	virtualMachinesStatusCache.mutex.Lock()
+	defer virtualMachinesStatusCache.mutex.Unlock()
+
+	if virtualMachinesStatusCache.lastRefresh.Add(vmInstancesRefreshPeriod).After(time.Now()) {
+		return virtualMachinesStatusCache.virtualMachines, nil
+	}
+
+	vms, err := as.GetVirtualMachines()
+	if err != nil {
+		if isAzureRequestsThrottled(err) {
+			klog.Warningf("getAllVirtualMachines: throttling with message %v, would return the cached vms", err)
+			return virtualMachinesStatusCache.virtualMachines, nil
+		}
+
+		return []compute.VirtualMachine{}, err
+	}
+	virtualMachinesStatusCache.virtualMachines = vms
+	virtualMachinesStatusCache.lastRefresh = time.Now()
+
+	return vms, err
+}
+
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
 func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
-	instances, err := as.GetVirtualMachines()
+	instances, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -266,7 +299,7 @@ func (as *AgentPool) DecreaseTargetSize(delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
-	nodes, err := as.GetVirtualMachines()
+	nodes, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return err
 	}
@@ -391,7 +424,7 @@ func (as *AgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
-	instances, err := as.GetVirtualMachines()
+	instances, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return nil, err
 	}
