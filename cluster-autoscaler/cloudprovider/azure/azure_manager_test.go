@@ -37,26 +37,28 @@ const validAzureCfg = `{
 	"vnetName": "fakeName",
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
-	"asgCacheTTL": 900}`
+	"asgCacheTTL": 900,
+	"maxDeploymentsCount": 8}`
 
 const invalidAzureCfg = `{{}"cloud": "AzurePublicCloud",}`
 
 func TestCreateAzureManagerValidConfig(t *testing.T) {
 	manager, err := CreateAzureManager(strings.NewReader(validAzureCfg), cloudprovider.NodeGroupDiscoveryOptions{})
 
-	expectdConfig := &Config{
-		Cloud:           "AzurePublicCloud",
-		TenantID:        "fakeId",
-		SubscriptionID:  "fakeId",
-		ResourceGroup:   "fakeId",
-		VMType:          "vmss",
-		AADClientID:     "fakeId",
-		AADClientSecret: "fakeId",
-		AsgCacheTTL:     900,
+	expectedConfig := &Config{
+		Cloud:               "AzurePublicCloud",
+		TenantID:            "fakeId",
+		SubscriptionID:      "fakeId",
+		ResourceGroup:       "fakeId",
+		VMType:              "vmss",
+		AADClientID:         "fakeId",
+		AADClientSecret:     "fakeId",
+		AsgCacheTTL:         900,
+		MaxDeploymentsCount: 8,
 	}
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectdConfig, manager.config, "unexpected azure manager configuration")
+	assert.Equal(t, expectedConfig, manager.config, "unexpected azure manager configuration")
 }
 
 func TestCreateAzureManagerInvalidConfig(t *testing.T) {
