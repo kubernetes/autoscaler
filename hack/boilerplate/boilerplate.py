@@ -154,7 +154,8 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
 # list all the files contain 'DO NOT EDIT', but are not generated
 skipped_ungenerated_files = ['hack/build-ui.sh', 'hack/lib/swagger.sh',
                              'hack/boilerplate/boilerplate.py',
-                             'cluster-autoscaler/cloudprovider/aws/ec2_instance_types/gen.go']
+                             'cluster-autoscaler/cloudprovider/aws/ec2_instance_types/gen.go',
+                             'cluster-autoscaler/cloudprovider/azure/azure_instance_types/gen.go']
 
 def normalize_files(files):
     newfiles = []
