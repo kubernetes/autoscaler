@@ -519,7 +519,6 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 }
 
 // Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
-// Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
 func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *context.AutoscalingContext,
 	csr *clusterstate.ClusterStateRegistry, currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 	removedAny := false
