@@ -552,7 +552,7 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 		Capacity: apiv1.ResourceList{},
 	}
 
-	var vmssType *instanceType
+	var vmssType *InstanceType
 	for k := range InstanceTypes {
 		if strings.EqualFold(k, *template.Sku.Name) {
 			vmssType = InstanceTypes[k]
