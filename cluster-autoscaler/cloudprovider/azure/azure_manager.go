@@ -106,6 +106,9 @@ type Config struct {
 
 	// ASG cache TTL in seconds
 	AsgCacheTTL int64 `json:"asgCacheTTL" yaml:"asgCacheTTL"`
+
+	// number of latest deployments that will not be deleted
+	MaxDeploymentsCount int64 `json:"maxDeploymentsCount" yaml:"maxDeploymentsCount"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -171,6 +174,13 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 				return nil, fmt.Errorf("failed to parse AZURE_ASG_CACHE_TTL %q: %v", asgCacheTTL, err)
 			}
 		}
+
+		if threshold := os.Getenv("AZURE_MAX_DEPLOYMENT_COUNT"); threshold != "" {
+			cfg.MaxDeploymentsCount, err = strconv.ParseInt(threshold, 10, 0)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_MAX_DEPLOYMENT_COUNT %q: %v", threshold, err)
+			}
+		}
 	}
 	cfg.TrimSpace()
 
@@ -192,6 +202,10 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 
 	if cfg.AsgCacheTTL == 0 {
 		cfg.AsgCacheTTL = int64(defaultAsgCacheTTL)
+	}
+
+	if cfg.MaxDeploymentsCount == 0 {
+		cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	}
 
 	// Defaulting env to Azure Public Cloud.
