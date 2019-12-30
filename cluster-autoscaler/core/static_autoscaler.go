@@ -319,8 +319,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// scheduledPods will be mutated over this method. We keep original list of pods on originalScheduledPods.
 	scheduledPods := append([]*apiv1.Pod{}, originalScheduledPods...)
 
-	core_utils.ConfigurePredicateCheckerForLoop(unschedulablePods, scheduledPods, a.PredicateChecker)
-
 	unschedulablePods = tpu.ClearTPURequests(unschedulablePods)
 
 	// todo: move split and append below to separate PodListProcessor
