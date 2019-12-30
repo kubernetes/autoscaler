@@ -81,7 +81,7 @@ In particular we define "similar" node groups as having:
    kube-proxy) for each resource within 5% of each other (this number can depend on a
    few different factors and so it's good to have some minor slack).
  * The same set of labels, except for zone and hostname labels (defined in
-   https://github.com/kubernetes/kube-state-metrics/blob/master/vendor/k8s.io/client-go/pkg/api/unversioned/well_known_labels.go)
+   https://github.com/kubernetes/kube-state-metrics/blob/master/vendor/k8s.io/api/core/v1/well_known_labels.go)
 
 ---
 
