@@ -322,19 +322,6 @@ func anyPodHasHardInterPodAffinity(pods []*apiv1.Pod) bool {
 	return false
 }
 
-// ConfigurePredicateCheckerForLoop can be run to update predicateChecker configuration
-// based on current state of the cluster.
-func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulablePods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) {
-	podsWithAffinityFound := anyPodHasHardInterPodAffinity(unschedulablePods)
-	if !podsWithAffinityFound {
-		podsWithAffinityFound = anyPodHasHardInterPodAffinity(schedulablePods)
-	}
-	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
-	if !podsWithAffinityFound {
-		klog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
-	}
-}
-
 // GetNodeCoresAndMemory extracts cpu and memory resources out of Node object
 func GetNodeCoresAndMemory(node *apiv1.Node) (int64, int64) {
 	cores := getNodeResource(node, apiv1.ResourceCPU)
