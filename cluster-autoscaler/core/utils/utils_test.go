@@ -289,59 +289,6 @@ func TestSanitizeTaints(t *testing.T) {
 	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
 }
 
-func TestConfigurePredicateCheckerForLoop(t *testing.T) {
-	testCases := []struct {
-		affinity         *apiv1.Affinity
-		predicateEnabled bool
-	}{
-		{
-			&apiv1.Affinity{
-				PodAffinity: &apiv1.PodAffinity{
-					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
-						{},
-					},
-				},
-			}, true},
-		{
-			&apiv1.Affinity{
-				PodAffinity: &apiv1.PodAffinity{
-					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-						{},
-					},
-				},
-			}, false},
-		{
-			&apiv1.Affinity{
-				PodAntiAffinity: &apiv1.PodAntiAffinity{
-					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
-						{},
-					},
-				},
-			}, true},
-		{
-			&apiv1.Affinity{
-				PodAntiAffinity: &apiv1.PodAntiAffinity{
-					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-						{},
-					},
-				},
-			}, false},
-		{
-			&apiv1.Affinity{
-				NodeAffinity: &apiv1.NodeAffinity{},
-			}, false},
-	}
-
-	for _, tc := range testCases {
-		p := BuildTestPod("p", 500, 1000)
-		p.Spec.Affinity = tc.affinity
-		predicateChecker := simulator.NewTestPredicateChecker()
-		predicateChecker.SetAffinityPredicateEnabled(false)
-		ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p}, []*apiv1.Pod{}, predicateChecker)
-		assert.Equal(t, tc.predicateEnabled, predicateChecker.IsAffinityPredicateEnabled())
-	}
-}
-
 func TestGetNodeResource(t *testing.T) {
 	node := BuildTestNode("n1", 1000, 2*MiB)
 

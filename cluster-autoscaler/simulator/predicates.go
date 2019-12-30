@@ -122,20 +122,6 @@ func (p *PredicateChecker) SnapshotClusterState() error {
 	return nil
 }
 
-// SetAffinityPredicateEnabled can be used to enable or disable checking MatchInterPodAffinity
-// predicate. This will cause incorrect CA behavior if there is at least a single pod in
-// cluster using affinity/antiaffinity. However, checking affinity predicate is extremely
-// costly even if no pod is using it, so it may be worth disabling it in such situation.
-func (p *PredicateChecker) SetAffinityPredicateEnabled(enable bool) {
-	// TODO(scheduler_framework)
-}
-
-// IsAffinityPredicateEnabled checks if affinity predicate is enabled.
-func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
-	// TODO(scheduler_framework)
-	return false
-}
-
 // FitsAny checks if the given pod can be place on any of the given nodes.
 func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
 	// TODO(scheduler_framework) run prefilter only once
