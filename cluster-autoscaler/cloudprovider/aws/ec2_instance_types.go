@@ -439,7 +439,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"g4dn": {
 		InstanceType: "g4dn",
 		VCPU:         96,
-		MemoryMb:     393216,
+		MemoryMb:     0,
 		GPU:          8,
 	},
 	"g4dn.12xlarge": {
@@ -650,6 +650,30 @@ var InstanceTypes = map[string]*InstanceType{
 		InstanceType: "i3en.xlarge",
 		VCPU:         4,
 		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"inf1.24xlarge": {
+		InstanceType: "inf1.24xlarge",
+		VCPU:         96,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"inf1.2xlarge": {
+		InstanceType: "inf1.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"inf1.6xlarge": {
+		InstanceType: "inf1.6xlarge",
+		VCPU:         24,
+		MemoryMb:     49152,
+		GPU:          0,
+	},
+	"inf1.xlarge": {
+		InstanceType: "inf1.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
 		GPU:          0,
 	},
 	"m1.large": {
@@ -1102,6 +1126,54 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 	},
+	"m6g.12xlarge": {
+		InstanceType: "m6g.12xlarge",
+		VCPU:         48,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"m6g.16xlarge": {
+		InstanceType: "m6g.16xlarge",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m6g.2xlarge": {
+		InstanceType: "m6g.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"m6g.4xlarge": {
+		InstanceType: "m6g.4xlarge",
+		VCPU:         16,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"m6g.8xlarge": {
+		InstanceType: "m6g.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"m6g.large": {
+		InstanceType: "m6g.large",
+		VCPU:         2,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"m6g.medium": {
+		InstanceType: "m6g.medium",
+		VCPU:         1,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"m6g.xlarge": {
+		InstanceType: "m6g.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
 	"p2": {
 		InstanceType: "p2",
 		VCPU:         64,
@@ -1111,7 +1183,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"p2.16xlarge": {
 		InstanceType: "p2.16xlarge",
 		VCPU:         64,
-		MemoryMb:     786432,
+		MemoryMb:     749568,
 		GPU:          16,
 	},
 	"p2.8xlarge": {
@@ -1129,7 +1201,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"p3": {
 		InstanceType: "p3",
 		VCPU:         64,
-		MemoryMb:     499712,
+		MemoryMb:     0,
 		GPU:          8,
 	},
 	"p3.16xlarge": {
@@ -1711,7 +1783,7 @@ var InstanceTypes = map[string]*InstanceType{
 	"u-12tb1": {
 		InstanceType: "u-12tb1",
 		VCPU:         448,
-		MemoryMb:     12582912,
+		MemoryMb:     0,
 		GPU:          0,
 	},
 	"u-18tb1": {
@@ -1741,13 +1813,13 @@ var InstanceTypes = map[string]*InstanceType{
 	"u-6tb1": {
 		InstanceType: "u-6tb1",
 		VCPU:         448,
-		MemoryMb:     6291456,
+		MemoryMb:     0,
 		GPU:          0,
 	},
 	"u-9tb1": {
 		InstanceType: "u-9tb1",
 		VCPU:         448,
-		MemoryMb:     9437184,
+		MemoryMb:     0,
 		GPU:          0,
 	},
 	"x1": {
