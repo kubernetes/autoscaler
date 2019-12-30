@@ -19,7 +19,7 @@
 # K8S_TAG - k8s version to use for the dependencies update.
 # Suggested format is K8S_TAG=v1.10.3
 
-set -eou errexit pipefail nounset
+set -euo pipefail
 
 K8S_TAG=${K8S_TAG:-v1.16.2}
 K8S_TAG=${K8S_TAG#v}
