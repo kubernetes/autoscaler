@@ -48,7 +48,7 @@ func TestPredicates(t *testing.T) {
 	ni1.SetNode(node1)
 	ni2.SetNode(node2)
 
-	predicateChecker := NewTestPredicateChecker()
+	predicateChecker, _ := NewTestPredicateChecker()
 
 	r1, err := predicateChecker.FitsAny(p2, nodeInfos)
 	assert.NoError(t, err)
@@ -89,7 +89,7 @@ func TestDebugInfo(t *testing.T) {
 	SetNodeReadyState(node1, true, time.Time{})
 	ni1.SetNode(node1)
 
-	predicateChecker := NewTestPredicateChecker()
+	predicateChecker, _ := NewTestPredicateChecker()
 
 	predicateErr := predicateChecker.CheckPredicates(p1, ni1)
 	assert.NotNil(t, predicateErr)

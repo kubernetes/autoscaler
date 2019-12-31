@@ -16,23 +16,12 @@ limitations under the License.
 
 package simulator
 
-import scheduler_predicates "k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
-
-// PredicateInfo assigns a name to a predicate
-type PredicateInfo struct {
-	Name      string
-	Predicate scheduler_predicates.FitPredicate
-}
+import (
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
+)
 
 // NewTestPredicateChecker builds test version of PredicateChecker.
-func NewTestPredicateChecker() PredicateChecker {
-	// TODO(scheduler_framework)
-	return nil
-}
-
-// NewCustomTestPredicateChecker builds test version of PredicateChecker with additional predicates.
-// Helps with benchmarking different ordering of predicates.
-func NewCustomTestPredicateChecker(predicateInfos []PredicateInfo) PredicateChecker {
-	// TODO(scheduler_framework)
-	return nil
+func NewTestPredicateChecker() (PredicateChecker, error) {
+	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
+	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), make(chan struct{}))
 }
