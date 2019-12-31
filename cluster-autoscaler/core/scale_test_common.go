@@ -57,11 +57,12 @@ type nodeConfig struct {
 }
 
 type podConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	gpu    int64
-	node   string
+	name         string
+	cpu          int64
+	memory       int64
+	gpu          int64
+	node         string
+	toleratesGpu bool
 }
 
 type groupSizeChange struct {
