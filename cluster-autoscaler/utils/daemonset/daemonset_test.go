@@ -38,7 +38,8 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 	ds1 := newDaemonSet("ds1")
 	ds2 := newDaemonSet("ds2")
 	ds2.Spec.Template.Spec.NodeSelector = map[string]string{"foo": "bar"}
