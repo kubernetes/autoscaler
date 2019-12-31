@@ -110,7 +110,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators)
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -127,23 +127,60 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 }
 
 func TestBuildGenericLabels(t *testing.T) {
-	expectedLabels := map[string]string{
-		apiv1.LabelZoneRegion:        "us-central1",
-		apiv1.LabelZoneFailureDomain: "us-central1-b",
-		apiv1.LabelHostname:          "sillyname",
-		apiv1.LabelInstanceType:      "n1-standard-8",
-		kubeletapis.LabelArch:        cloudprovider.DefaultArch,
-		kubeletapis.LabelOS:          cloudprovider.DefaultOS,
-		apiv1.LabelArchStable:        cloudprovider.DefaultArch,
-		apiv1.LabelOSStable:          cloudprovider.DefaultOS,
+	type testCase struct {
+		name            string
+		os              OperatingSystem
+		expectedOsLabel string
+		expectedError   bool
 	}
-	labels, err := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-standard-8", "sillyname")
-	assert.NoError(t, err)
-	assert.Equal(t, expectedLabels, labels)
+	testCases := []testCase{
+		{
+			name:            "os linux",
+			os:              OperatingSystemLinux,
+			expectedOsLabel: "linux",
+			expectedError:   false,
+		},
+		{
+			name:            "os windows",
+			os:              OperatingSystemWindows,
+			expectedOsLabel: "windows",
+			expectedError:   false,
+		},
+		{
+			name:            "os unknown",
+			os:              OperatingSystemUnknown,
+			expectedOsLabel: "",
+			expectedError:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectedLabels := map[string]string{
+				apiv1.LabelZoneRegion:        "us-central1",
+				apiv1.LabelZoneFailureDomain: "us-central1-b",
+				apiv1.LabelHostname:          "sillyname",
+				apiv1.LabelInstanceType:      "n1-standard-8",
+				kubeletapis.LabelArch:        cloudprovider.DefaultArch,
+				kubeletapis.LabelOS:          tc.expectedOsLabel,
+				apiv1.LabelArchStable:        cloudprovider.DefaultArch,
+				apiv1.LabelOSStable:          tc.expectedOsLabel,
+			}
+			labels, err := BuildGenericLabels(GceRef{
+				Name:    "kubernetes-minion-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b"},
+				"n1-standard-8",
+				"sillyname",
+				tc.os)
+			if tc.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, expectedLabels, labels)
+			}
+		})
+	}
 }
 
 func TestCalculateAllocatable(t *testing.T) {
@@ -276,74 +313,106 @@ func TestGetAcceleratorCount(t *testing.T) {
 
 func TestBuildCapacityMemory(t *testing.T) {
 	type testCase struct {
-		physicalMemory int64
-		capacityMemory int64
-		physicalCpu    int64
+		physicalCpu            int64
+		physicalMemory         int64
+		os                     OperatingSystem
+		expectedCapacityMemory int64
 	}
 	testCases := []testCase{
 		{
-			physicalMemory: 2 * units.GiB,
-			capacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory,
-			physicalCpu:    1,
+			physicalCpu:            1,
+			physicalMemory:         2 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory,
 		},
 		{
-			physicalMemory: 4 * units.GiB,
-			capacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory,
-			physicalCpu:    2,
+			physicalCpu:            2,
+			physicalMemory:         4 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory,
 		},
 		{
-			physicalMemory: 128 * units.GiB,
-			capacityMemory: 128*units.GiB - 2*units.GiB - kernelReservedMemory - swiotlbReservedMemory,
-			physicalCpu:    32,
+			physicalCpu:            32,
+			physicalMemory:         128 * units.GiB,
+			os:                     OperatingSystemLinux,
+			expectedCapacityMemory: 128*units.GiB - 2*units.GiB - kernelReservedMemory - swiotlbReservedMemory,
+		},
+		{
+			physicalCpu:            2,
+			physicalMemory:         4 * units.GiB,
+			os:                     OperatingSystemWindows,
+			expectedCapacityMemory: 4 * units.GiB,
 		},
 	}
 	for idx, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
-			capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, make([]*gce.AcceleratorConfig, 0))
+			noAccelerators := make([]*gce.AcceleratorConfig, 0)
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os)
 			assert.NoError(t, err)
-			expected, err := makeResourceList2(tc.physicalCpu, tc.capacityMemory, 0, 110)
+			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
-			assertEqualResourceLists(t, "Capacity", capacity, expected)
+			assertEqualResourceLists(t, "Capacity", expectedCapacity, buildCapacity)
 		})
 	}
 }
 
 func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 	cases := []struct {
-		desc   string
-		name   string
-		env    string
-		expect string
-		err    error
+		desc          string
+		name          string
+		env           string
+		expectedValue string
+		expectedFound bool
+		expectedErr   error
 	}{
 		{
-			desc:   "node_labels",
-			name:   "node_labels",
-			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: "a=b,c=d",
+			desc:          "node_labels",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "a=b,c=d",
+			expectedFound: true,
+			expectedErr:   nil,
 		},
 		{
-			desc:   "node_taints",
-			name:   "node_taints",
-			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: "a=b:c,d=e:f",
+			desc:          "node_labels not found",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: false,
+			expectedErr:   nil,
 		},
 		{
-			desc: "malformed node_labels",
-			name: "node_labels",
-			env:  "AUTOSCALER_ENV_VARS: node_labels;node_taints=a=b:c,d=e:f\n",
-			err:  fmt.Errorf("malformed autoscaler var: node_labels"),
+			desc:          "node_labels empty",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: true,
+			expectedErr:   nil,
+		},
+		{
+			desc:          "node_taints",
+			name:          "node_taints",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "a=b:c,d=e:f",
+			expectedFound: true,
+			expectedErr:   nil,
+		},
+		{
+			desc:          "malformed node_labels",
+			name:          "node_labels",
+			env:           "AUTOSCALER_ENV_VARS: node_labels;node_taints=a=b:c,d=e:f\n",
+			expectedValue: "",
+			expectedFound: false,
+			expectedErr:   fmt.Errorf("malformed autoscaler var: node_labels"),
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
-			vals, err := extractAutoscalerVarFromKubeEnv(c.env, c.name)
-			assert.Equal(t, c.err, err)
-			if err != nil {
-				return
-			}
-			assert.Equal(t, c.expect, vals)
+			value, found, err := extractAutoscalerVarFromKubeEnv(c.env, c.name)
+			assert.Equal(t, c.expectedValue, value)
+			assert.Equal(t, c.expectedFound, found)
+			assert.Equal(t, c.expectedErr, err)
 		})
 	}
 }
@@ -376,7 +445,8 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
 				"DNS_SERVER_IP: '10.0.0.10'\n",
 			expect: expectedLabels,
 			err:    nil,
@@ -439,7 +509,8 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n",
+				"kube_reserved=cpu=1000m,memory=3000`00Mi;" +
+				"os=linux\n",
 			expect: expectedTaints,
 		},
 		{
@@ -492,7 +563,8 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
-				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
 				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
 			expectedReserved: "cpu=1000m,memory=300000Mi",
 			expectedErr:      false,
@@ -536,6 +608,87 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 		}
+	}
+}
+
+func TestExtractOperatingSystemFromKubeEnv(t *testing.T) {
+	type testCase struct {
+		name                    string
+		kubeEnv                 string
+		expectedOperatingSystem OperatingSystem
+	}
+
+	testCases := []testCase{
+		{
+			name: "linux",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=linux\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemLinux,
+		},
+		{
+			name: "windows",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=windows\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemWindows,
+		},
+		{
+			name: "no AUTOSCALER_ENV_VARS",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedOperatingSystem: OperatingSystemDefault,
+		},
+		{
+			name: "no os defined",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemDefault,
+		},
+		{
+			name: "os is empty",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemUnknown,
+		},
+		{
+			name: "unknown (macos)",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os=macos\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystem: OperatingSystemUnknown,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualOperatingSystem := extractOperatingSystemFromKubeEnv(tc.kubeEnv)
+			assert.Equal(t, tc.expectedOperatingSystem, actualOperatingSystem)
+		})
 	}
 }
 
