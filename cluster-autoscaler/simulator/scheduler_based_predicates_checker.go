@@ -42,11 +42,6 @@ type SchedulerBasedPredicateChecker struct {
 	snapshot  scheduler_listers.SharedLister
 }
 
-// We run some predicates first as they are cheap to check and they should be enough
-// to fail predicates in most of our simulations (especially binpacking).
-// There are no const arrays in Go, this is meant to be used as a const.
-var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
-
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
 func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
