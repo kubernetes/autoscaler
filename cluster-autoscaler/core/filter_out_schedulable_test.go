@@ -79,7 +79,8 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 
 	res := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10, true)
 	assert.Equal(t, 3, len(res))
