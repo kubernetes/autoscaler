@@ -119,11 +119,13 @@ func TestFindPlaceAllOk(t *testing.T) {
 	newHints := make(map[string]string)
 	tracker := NewUsageTracker()
 
-	err := findPlaceFor(
+	predicateChecker, err := NewTestPredicateChecker()
+	assert.NoError(t, err)
+	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{new1, new2},
 		[]*apiv1.Node{node1, node2},
-		nodeInfos, NewTestPredicateChecker(),
+		nodeInfos, predicateChecker,
 		oldHints, newHints, tracker, time.Now())
 
 	assert.Len(t, newHints, 2)
@@ -158,11 +160,13 @@ func TestFindPlaceAllBas(t *testing.T) {
 	newHints := make(map[string]string)
 	tracker := NewUsageTracker()
 
-	err := findPlaceFor(
+	predicateChecker, err := NewTestPredicateChecker()
+	assert.NoError(t, err)
+	err = findPlaceFor(
 		"nbad",
 		[]*apiv1.Pod{new1, new2, new3},
 		[]*apiv1.Node{nodebad, node1, node2},
-		nodeInfos, NewTestPredicateChecker(),
+		nodeInfos, predicateChecker,
 		oldHints, newHints, tracker, time.Now())
 
 	assert.Error(t, err)
@@ -187,11 +191,13 @@ func TestFindNone(t *testing.T) {
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
-	err := findPlaceFor(
+	predicateChecker, err := NewTestPredicateChecker()
+	assert.NoError(t, err)
+	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{},
 		[]*apiv1.Node{node1, node2},
-		nodeInfos, NewTestPredicateChecker(),
+		nodeInfos, predicateChecker,
 		make(map[string]string),
 		make(map[string]string),
 		NewUsageTracker(),
@@ -286,7 +292,8 @@ func TestFindNodesToRemove(t *testing.T) {
 	}
 
 	pods := []*apiv1.Pod{pod1, pod2, pod3, pod4}
-	predicateChecker := NewTestPredicateChecker()
+	predicateChecker, err := NewTestPredicateChecker()
+	assert.NoError(t, err)
 	tracker := NewUsageTracker()
 
 	tests := []findNodesToRemoveTestConfig{
