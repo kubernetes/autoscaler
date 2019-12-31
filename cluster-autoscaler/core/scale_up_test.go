@@ -59,11 +59,11 @@ func TestScaleUpOK(t *testing.T) {
 			{"n2", 1000, 1000, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 80, 0, 0, "n1"},
-			{"p2", 800, 0, 0, "n2"},
+			{"p1", 80, 0, 0, "n1", false},
+			{"p2", 800, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new", 500, 0, 0, ""},
+			{"p-new", 500, 0, 0, "", false},
 		},
 		options:                 defaultOptions,
 		expansionOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 1},
@@ -84,12 +84,12 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 			{"n2", 4000, 1000, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 0, 0, ""},
-			{"p-new-2", 2000, 0, 0, ""},
+			{"p-new-1", 2000, 0, 0, "", false},
+			{"p-new-2", 2000, 0, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
 		options:                 options,
@@ -110,12 +110,12 @@ func TestScaleUpMaxCoresLimitHitWithNotAutoscaledGroup(t *testing.T) {
 			{"n2", 4000, 1000, 0, true, ""},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 0, 0, ""},
-			{"p-new-2", 2000, 0, 0, ""},
+			{"p-new-1", 2000, 0, 0, "", false},
+			{"p-new-2", 2000, 0, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
 		options:                 options,
@@ -136,13 +136,13 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 			{"n2", 4000, 1000 * utils.MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * utils.MiB, 0, ""},
-			{"p-new-2", 2000, 100 * utils.MiB, 0, ""},
-			{"p-new-3", 2000, 100 * utils.MiB, 0, ""},
+			{"p-new-1", 2000, 100 * utils.MiB, 0, "", false},
+			{"p-new-2", 2000, 100 * utils.MiB, 0, "", false},
+			{"p-new-3", 2000, 100 * utils.MiB, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
 		options:                 options,
@@ -163,13 +163,13 @@ func TestScaleUpMaxMemoryLimitHitWithNotAutoscaledGroup(t *testing.T) {
 			{"n2", 4000, 1000 * utils.MiB, 0, true, ""},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * utils.MiB, 0, ""},
-			{"p-new-2", 2000, 100 * utils.MiB, 0, ""},
-			{"p-new-3", 2000, 100 * utils.MiB, 0, ""},
+			{"p-new-1", 2000, 100 * utils.MiB, 0, "", false},
+			{"p-new-2", 2000, 100 * utils.MiB, 0, "", false},
+			{"p-new-3", 2000, 100 * utils.MiB, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
 		options:                 options,
@@ -190,13 +190,13 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 			{"n2", 4000, 1000 * utils.MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * utils.MiB, 0, ""},
-			{"p-new-2", 4000, 100 * utils.MiB, 0, ""},
-			{"p-new-3", 4000, 100 * utils.MiB, 0, ""},
+			{"p-new-1", 4000, 100 * utils.MiB, 0, "", false},
+			{"p-new-2", 4000, 100 * utils.MiB, 0, "", false},
+			{"p-new-3", 4000, 100 * utils.MiB, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
 		options:                 options,
@@ -217,13 +217,13 @@ func TestScaleUpCapToMaxTotalNodesLimitWithNotAutoscaledGroup(t *testing.T) {
 			{"n2", 4000, 1000 * utils.MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * utils.MiB, 0, ""},
-			{"p-new-2", 4000, 100 * utils.MiB, 0, ""},
-			{"p-new-3", 4000, 100 * utils.MiB, 0, ""},
+			{"p-new-1", 4000, 100 * utils.MiB, 0, "", false},
+			{"p-new-2", 4000, 100 * utils.MiB, 0, "", false},
+			{"p-new-3", 4000, 100 * utils.MiB, 0, "", false},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
 		options:                 options,
@@ -244,11 +244,11 @@ func TestWillConsiderGpuAndStandardPoolForPodWhichDoesNotRequireGpu(t *testing.T
 			{"std-node-1", 2000, 1000 * utils.MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-node-1"},
-			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-node-1", true},
+			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1", false},
 		},
 		extraPods: []podConfig{
-			{"extra-std-pod", 2000, 1000 * utils.MiB, 0, ""},
+			{"extra-std-pod", 2000, 1000 * utils.MiB, 0, "", true},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "std-pool", sizeChange: 1},
 		options:                 options,
@@ -273,11 +273,11 @@ func TestWillConsiderOnlyGpuPoolForPodWhichDoesRequiresGpu(t *testing.T) {
 			{"std-node-1", 2000, 1000 * utils.MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-node-1"},
-			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-node-1", true},
+			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1", false},
 		},
 		extraPods: []podConfig{
-			{"extra-gpu-pod", 2000, 1000 * utils.MiB, 1, ""},
+			{"extra-gpu-pod", 2000, 1000 * utils.MiB, 1, "", true},
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "gpu-pool", sizeChange: 1},
 		options:                 options,
@@ -303,15 +303,15 @@ func TestWillConsiderAllPoolsWhichFitTwoPodsRequiringGpus(t *testing.T) {
 			{"std-node-1", 2000, 1000 * utils.MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-1-node-1"},
-			{"gpu-pod-2", 2000, 1000 * utils.MiB, 2, "gpu-2-node-1"},
-			{"gpu-pod-3", 2000, 1000 * utils.MiB, 4, "gpu-4-node-1"},
-			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * utils.MiB, 1, "gpu-1-node-1", true},
+			{"gpu-pod-2", 2000, 1000 * utils.MiB, 2, "gpu-2-node-1", true},
+			{"gpu-pod-3", 2000, 1000 * utils.MiB, 4, "gpu-4-node-1", true},
+			{"std-pod-1", 2000, 1000 * utils.MiB, 0, "std-node-1", false},
 		},
 		extraPods: []podConfig{
-			{"extra-gpu-pod-1", 1, 1 * utils.MiB, 1, ""}, // CPU and mem negligible
-			{"extra-gpu-pod-2", 1, 1 * utils.MiB, 1, ""}, // CPU and mem negligible
-			{"extra-gpu-pod-3", 1, 1 * utils.MiB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-1", 1, 1 * utils.MiB, 1, "", true}, // CPU and mem negligible
+			{"extra-gpu-pod-2", 1, 1 * utils.MiB, 1, "", true}, // CPU and mem negligible
+			{"extra-gpu-pod-3", 1, 1 * utils.MiB, 1, "", true}, // CPU and mem negligible
 		},
 		expansionOptionToChoose: groupSizeChange{groupName: "gpu-1-pool", sizeChange: 3},
 		options:                 options,
@@ -339,12 +339,12 @@ func TestNoScaleUpMaxCoresLimitHit(t *testing.T) {
 			{"n2", 4000, 1000, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, 0, "n1"},
-			{"p2", 3000, 0, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1", false},
+			{"p2", 3000, 0, 0, "n2", false},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 0, 0, ""},
-			{"p-new-2", 2000, 0, 0, ""},
+			{"p-new-1", 2000, 0, 0, "", false},
+			{"p-new-2", 2000, 0, 0, "", false},
 		},
 		options: options,
 	}
@@ -558,6 +558,9 @@ func buildTestPod(p podConfig) *apiv1.Pod {
 	pod := BuildTestPod(p.name, p.cpu, p.memory)
 	if p.gpu > 0 {
 		RequestGpuForPod(pod, p.gpu)
+	}
+	if p.toleratesGpu {
+		TolerateGpuForPod(pod)
 	}
 	if p.node != "" {
 		pod.Spec.NodeName = p.node
