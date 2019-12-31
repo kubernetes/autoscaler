@@ -124,13 +124,27 @@ func (p *PredicateChecker) SnapshotClusterState() error {
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
 func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
-	// TODO(scheduler_framework) run prefilter only once
+	state := scheduler_framework.NewCycleState()
+	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	if !preFilterStatus.IsSuccess() {
+		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
+	}
+
 	for name, nodeInfo := range nodeInfos {
 		// Be sure that the node is schedulable.
 		if nodeInfo.Node().Spec.Unschedulable {
 			continue
 		}
-		if err := p.CheckPredicates(pod, nodeInfo); err == nil {
+
+		filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+		ok := true
+		for _, filterStatus := range filterStatuses {
+			if !filterStatus.IsSuccess() {
+				ok = false
+				break
+			}
+		}
+		if ok {
 			return name, nil
 		}
 	}
