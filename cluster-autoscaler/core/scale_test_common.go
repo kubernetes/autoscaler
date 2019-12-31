@@ -150,6 +150,10 @@ func NewScaleTestAutoscalingContext(
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	if err != nil {
+		return context.AutoscalingContext{}, err
+	}
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -159,7 +163,7 @@ func NewScaleTestAutoscalingContext(
 			ListerRegistry: listers,
 		},
 		CloudProvider:      provider,
-		PredicateChecker:   simulator.NewTestPredicateChecker(),
+		PredicateChecker:   predicateChecker,
 		ExpanderStrategy:   random.NewStrategy(),
 		EstimatorBuilder:   estimatorBuilder,
 		ProcessorCallbacks: processorCallbacks,

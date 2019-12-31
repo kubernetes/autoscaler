@@ -67,7 +67,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
@@ -135,7 +136,8 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 
 	nodeInfoCache := make(map[string]*schedulernodeinfo.NodeInfo)
 
