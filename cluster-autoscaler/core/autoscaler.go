@@ -41,7 +41,7 @@ type AutoscalerOptions struct {
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       *simulator.PredicateChecker
+	PredicateChecker       simulator.PredicateChecker
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
@@ -86,7 +86,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	}
 	if opts.PredicateChecker == nil {
 		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := simulator.NewPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
+		predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
 		if err != nil {
 			return err
 		}

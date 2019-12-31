@@ -101,7 +101,7 @@ func (filterOutSchedulablePodListProcessor) CleanUp() {
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
 func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node,
-	allScheduled []*apiv1.Pod, predicateChecker *simulator.PredicateChecker,
+	allScheduled []*apiv1.Pod, predicateChecker simulator.PredicateChecker,
 	expendablePodsPriorityCutoff int, nodesExist bool) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
 	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
@@ -137,7 +137,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 // by Scheduler actually can't be scheduled on any node and filter out the ones that can.
 // It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
 func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod,
-	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
+	predicateChecker simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
 	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)

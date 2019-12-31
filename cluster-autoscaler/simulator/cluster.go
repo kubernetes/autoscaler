@@ -71,7 +71,7 @@ type UtilizationInfo struct {
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node, pods []*apiv1.Pod,
-	listers kube_util.ListerRegistry, predicateChecker *PredicateChecker, maxCount int,
+	listers kube_util.ListerRegistry, predicateChecker PredicateChecker, maxCount int,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
@@ -218,7 +218,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
-	predicateChecker *PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
+	predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time) error {
 
 	newNodeInfos := make(map[string]*schedulernodeinfo.NodeInfo)
