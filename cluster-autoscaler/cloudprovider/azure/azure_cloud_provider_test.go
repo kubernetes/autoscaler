@@ -143,3 +143,21 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, group)
 }
+
+func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "",
+		},
+	}
+	group, err := provider.NodeGroupForNode(node)
+
+	assert.NoError(t, err)
+	assert.Equal(t, group, nil)
+}
