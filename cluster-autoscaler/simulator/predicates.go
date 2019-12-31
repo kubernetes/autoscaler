@@ -22,8 +22,6 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 
@@ -47,25 +45,6 @@ type PredicateChecker struct {
 // to fail predicates in most of our simulations (especially binpacking).
 // There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
-
-// NoOpEventRecorder is a noop implementation of EventRecorder
-type NoOpEventRecorder struct{}
-
-// Event is a noop method implementation
-func (NoOpEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {
-}
-
-// Eventf is a noop method implementation
-func (NoOpEventRecorder) Eventf(regarding runtime.Object, related runtime.Object, eventtype, reason, action, note string, args ...interface{}) {
-}
-
-// PastEventf is a noop method implementation
-func (NoOpEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
-}
-
-// AnnotatedEventf is a noop method implementation
-func (NoOpEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
-}
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
