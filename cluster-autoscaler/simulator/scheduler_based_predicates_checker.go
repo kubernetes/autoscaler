@@ -35,8 +35,9 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 )
 
-// PredicateChecker checks whether all required predicates pass for given Pod and Node.
-type PredicateChecker struct {
+// SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
+// The verification is done by calling out to scheduler code.
+type SchedulerBasedPredicateChecker struct {
 	framework scheduler_framework.Framework
 	snapshot  scheduler_listers.SharedLister
 }
@@ -46,8 +47,8 @@ type PredicateChecker struct {
 // There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
 
-// NewPredicateChecker builds PredicateChecker.
-func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
+// NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
+func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 	providerRegistry := algorithmprovider.NewRegistry(1) // 1 here is hardPodAffinityWeight not relevant for CA
 	config := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
@@ -82,27 +83,21 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	// informerFactory....Lister()/informerFactory....Informer() methods
 	informerFactory.Start(stop)
 
-	return &PredicateChecker{
+	return &SchedulerBasedPredicateChecker{
 		framework: framework,
 		snapshot:  snapshot,
 	}, nil
 }
 
-// NewTestPredicateChecker builds test version of PredicateChecker.
-func NewTestPredicateChecker() *PredicateChecker {
-	// TODO(scheduler_framework)
-	return nil
-}
-
 // SnapshotClusterState updates cluster snapshot used by the predicate checker.
 // It should be called every CA loop iteration.
-func (p *PredicateChecker) SnapshotClusterState() error {
+func (p *SchedulerBasedPredicateChecker) SnapshotClusterState() error {
 	// TODO(scheduler_framework rebuild snapshot
 	return nil
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
-func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
 	state := scheduler_framework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
@@ -131,7 +126,7 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *scheduler_nodeinfo.NodeInfo) *PredicateError {
+func (p *SchedulerBasedPredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *scheduler_nodeinfo.NodeInfo) *PredicateError {
 	state := scheduler_framework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
@@ -165,7 +160,7 @@ func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *scheduler_n
 	return nil
 }
 
-func (p *PredicateChecker) buildDebugInfo(filterName string, nodeInfo *scheduler_nodeinfo.NodeInfo) func() string {
+func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *scheduler_nodeinfo.NodeInfo) func() string {
 	switch filterName {
 	case "TaintToleration":
 		taints := nodeInfo.Node().Spec.Taints

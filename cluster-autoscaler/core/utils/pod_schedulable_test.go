@@ -63,7 +63,7 @@ func TestPodSchedulableMap(t *testing.T) {
 	assert.True(t, found)
 	assert.Nil(t, err)
 
-	cpuErr := &simulator.PredicateError{}
+	cpuErr := simulator.GenericPredicateError()
 
 	// Pod in different RC
 	_, found = pMap.Get(podInRc2)

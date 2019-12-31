@@ -109,7 +109,7 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
-	predicateChecker *simulator.PredicateChecker,
+	predicateChecker simulator.PredicateChecker,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
 	cloudProvider cloudprovider.CloudProvider,

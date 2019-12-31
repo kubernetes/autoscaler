@@ -34,11 +34,11 @@ type podInfo struct {
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
-	predicateChecker *simulator.PredicateChecker
+	predicateChecker simulator.PredicateChecker
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
-func NewBinpackingNodeEstimator(predicateChecker *simulator.PredicateChecker) *BinpackingNodeEstimator {
+func NewBinpackingNodeEstimator(predicateChecker simulator.PredicateChecker) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
 	}
