@@ -48,12 +48,12 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
 	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - CalculateKernelReserved(mem)
+	memTotal := mem - CalculateKernelReserved(mem, os)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -100,6 +100,21 @@ func (t *GceTemplateBuilder) CalculateAllocatable(capacity, kubeReserved apiv1.R
 	return allocatable
 }
 
+func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string, error) {
+	if template.Properties.Metadata == nil {
+		return "", fmt.Errorf("instance template %s has no metadata", template.Name)
+	}
+	for _, item := range template.Properties.Metadata.Items {
+		if item.Key == "kube-env" {
+			if item.Value == nil {
+				return "", fmt.Errorf("no kube-env content in metadata")
+			}
+		}
+		return *item.Value, nil
+	}
+	return "", nil
+}
+
 // BuildNodeFromTemplate builds node from provided GCE template.
 func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
 
@@ -110,48 +125,49 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-template-%d", template.Name, rand.Int63())
 
+	kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
+	if err != nil {
+		return nil, fmt.Errorf("could not obtain kube-env from template metadata; %v", err)
+	}
+
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators)
+	os := extractOperatingSystemFromKubeEnv(kubeEnvValue)
+	if os == OperatingSystemUnknown {
+		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
+	}
+
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os)
 	if err != nil {
 		return nil, err
 	}
 	node.Status = apiv1.NodeStatus{
 		Capacity: capacity,
 	}
-
 	var nodeAllocatable apiv1.ResourceList
-	// KubeEnv labels & taints
-	if template.Properties.Metadata == nil {
-		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
-	}
-	for _, item := range template.Properties.Metadata.Items {
-		if item.Key == "kube-env" {
-			if item.Value == nil {
-				return nil, fmt.Errorf("no kube-env content in metadata")
-			}
-			// Extract labels
-			kubeEnvLabels, err := extractLabelsFromKubeEnv(*item.Value)
-			if err != nil {
-				return nil, err
-			}
-			node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
-			// Extract taints
-			kubeEnvTaints, err := extractTaintsFromKubeEnv(*item.Value)
-			if err != nil {
-				return nil, err
-			}
-			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
-			if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, *item.Value); err == nil {
-				nodeAllocatable = allocatable
-			}
-		}
+	// Extract labels
+	kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		return nil, err
 	}
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+
+	// Extract taints
+	kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		return nil, err
+	}
+	node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
+
+	if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue); err == nil {
+		nodeAllocatable = allocatable
+	}
+
 	if nodeAllocatable == nil {
 		klog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.GceRef().Name)
 		node.Status.Allocatable = node.Status.Capacity
@@ -159,7 +175,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName)
+	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, os)
 	if err != nil {
 		return nil, err
 	}
@@ -172,14 +188,18 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 
 // BuildGenericLabels builds basic labels that should be present on every GCE node,
 // including hostname, zone etc.
-func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
+func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os OperatingSystem) (map[string]string, error) {
 	result := make(map[string]string)
+
+	if os == OperatingSystemUnknown {
+		return nil, fmt.Errorf("unknown operating system passed")
+	}
 
 	// TODO: extract it somehow
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
-	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
+	result[kubeletapis.LabelOS] = string(os)
+	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
@@ -215,9 +235,9 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 	// In v1.10+, labels are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
-	labels, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_labels")
-	if err != nil {
-		klog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS due to error, will try NODE_LABELS: %v", err)
+	labels, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_labels")
+	if !found || err != nil {
+		klog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS, will try NODE_LABELS; found=%v,  err=%v", found, err)
 		labels, err = extractFromKubeEnv(kubeEnv, "NODE_LABELS")
 		if err != nil {
 			return nil, err
@@ -230,9 +250,9 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 	// In v1.10+, taints are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
-	taints, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_taints")
-	if err != nil {
-		klog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS due to error, will try NODE_TAINTS: %v", err)
+	taints, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_taints")
+	if !found || err != nil {
+		klog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS, will try NODE_TAINTS; found=%v, err=%v", found, err)
 		taints, err = extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
 		if err != nil {
 			return nil, err
@@ -249,9 +269,9 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	// In v1.10+, kube-reserved is only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
-	kubeReserved, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "kube_reserved")
-	if err != nil {
-		klog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS due to error, will try kube-reserved in KUBELET_TEST_ARGS: %v", err)
+	kubeReserved, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "kube_reserved")
+	if !found || err != nil {
+		klog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS, will try kube-reserved in KUBELET_TEST_ARGS; found=%v, err=%v", found, err)
 		kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
 		if err != nil {
 			return "", err
@@ -267,23 +287,68 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	return kubeReserved, nil
 }
 
-func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (string, error) {
+// OperatingSystem denotes operating system used by nodes coming from node group
+type OperatingSystem string
+
+const (
+	// OperatingSystemUnknown is used if operating system is unknown
+	OperatingSystemUnknown OperatingSystem = ""
+	// OperatingSystemLinux is used if operating system is Linux
+	OperatingSystemLinux OperatingSystem = "linux"
+	// OperatingSystemWindows is used if operating system is Windows
+	OperatingSystemWindows OperatingSystem = "windows"
+
+	// OperatingSystemDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
+	OperatingSystemDefault = OperatingSystemLinux
+)
+
+func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
+	osValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os")
+	if err != nil {
+		klog.Errorf("error while obtaining os from AUTOSCALER_ENV_VARS; %v", err)
+		return OperatingSystemUnknown
+	}
+
+	if !found {
+		klog.Warningf("no os defined in AUTOSCALER_ENV_VARS; using default %v", OperatingSystemDefault)
+		return OperatingSystemDefault
+	}
+
+	switch osValue {
+	case string(OperatingSystemLinux):
+		return OperatingSystemLinux
+	case string(OperatingSystemWindows):
+		return OperatingSystemWindows
+	default:
+		klog.Errorf("unexpected os=%v passed via AUTOSCALER_ENV_VARS", osValue)
+		return OperatingSystemUnknown
+	}
+}
+
+func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found bool, err error) {
 	const autoscalerVars = "AUTOSCALER_ENV_VARS"
 	autoscalerVals, err := extractFromKubeEnv(kubeEnv, autoscalerVars)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
+
+	if strings.Trim(autoscalerVals, " ") == "" {
+		// empty or not present AUTOSCALER_ENV_VARS
+		return "", false, nil
+	}
+
 	for _, val := range strings.Split(autoscalerVals, ";") {
 		val = strings.Trim(val, " ")
 		items := strings.SplitN(val, "=", 2)
 		if len(items) != 2 {
-			return "", fmt.Errorf("malformed autoscaler var: %s", val)
+			return "", false, fmt.Errorf("malformed autoscaler var: %s", val)
 		}
 		if strings.Trim(items[0], " ") == name {
-			return strings.Trim(items[1], " \"'"), nil
+			return strings.Trim(items[1], " \"'"), true, nil
 		}
 	}
-	return "", fmt.Errorf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
+	klog.Warningf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
+	return "", false, nil
 }
 
 func extractFromKubeEnv(kubeEnv, resource string) (string, error) {
