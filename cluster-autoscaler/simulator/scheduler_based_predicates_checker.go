@@ -22,8 +22,10 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	v1listers "k8s.io/client-go/listers/core/v1"
 
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
@@ -38,8 +40,38 @@ import (
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
 // The verification is done by calling out to scheduler code.
 type SchedulerBasedPredicateChecker struct {
-	framework scheduler_framework.Framework
-	snapshot  scheduler_listers.SharedLister
+	framework              scheduler_framework.Framework
+	delegatingSharedLister *DelegatingSchedulerSharedLister
+	nodeLister             v1listers.NodeLister
+	podLister              v1listers.PodLister
+}
+
+// DelegatingSchedulerSharedLister is an implementation of scheduler.SharedLister which
+// passes logic to delegate. Delegate can be updated.
+type DelegatingSchedulerSharedLister struct {
+	delegate scheduler_listers.SharedLister
+}
+
+// NewDelegatingSchedulerSharedLister creates new NewDelegatingSchedulerSharedLister
+func NewDelegatingSchedulerSharedLister(delegate scheduler_listers.SharedLister) *DelegatingSchedulerSharedLister {
+	return &DelegatingSchedulerSharedLister{
+		delegate: delegate,
+	}
+}
+
+// Pods returns a PodLister
+func (lister *DelegatingSchedulerSharedLister) Pods() scheduler_listers.PodLister {
+	return lister.delegate.Pods()
+}
+
+// NodeInfos returns a NodeInfoLister.
+func (lister *DelegatingSchedulerSharedLister) NodeInfos() scheduler_listers.NodeInfoLister {
+	return lister.delegate.NodeInfos()
+}
+
+// UpdateDelegate updates the delegate
+func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate scheduler_listers.SharedLister) {
+	lister.delegate = delegate
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
@@ -47,7 +79,7 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 	providerRegistry := algorithmprovider.NewRegistry(1) // 1 here is hardPodAffinityWeight not relevant for CA
 	config := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
-	snapshot := NewEmptySnapshot()
+	sharedLister := NewDelegatingSchedulerSharedLister(NewEmptySnapshot())
 
 	volumeBinder := scheduler_volumebinder.NewVolumeBinder(
 		kubeClient,
@@ -64,7 +96,7 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 		config.FrameworkPlugins,
 		config.FrameworkPluginConfig,
 		scheduler_framework.WithInformerFactory(informerFactory),
-		scheduler_framework.WithSnapshotSharedLister(snapshot),
+		scheduler_framework.WithSnapshotSharedLister(sharedLister),
 		scheduler_framework.WithVolumeBinder(volumeBinder),
 	)
 
@@ -72,22 +104,34 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
 	}
 
-	// TODO(scheduler_framework) How do I update the snapshot? Every loop?
+	checker := &SchedulerBasedPredicateChecker{
+		framework:              framework,
+		delegatingSharedLister: sharedLister,
+		nodeLister:             informerFactory.Core().V1().Nodes().Lister(),
+		podLister:              informerFactory.Core().V1().Pods().Lister(),
+	}
 
 	// this MUST be called after all the informers/listers are acquired via the
 	// informerFactory....Lister()/informerFactory....Informer() methods
 	informerFactory.Start(stop)
 
-	return &SchedulerBasedPredicateChecker{
-		framework: framework,
-		snapshot:  snapshot,
-	}, nil
+	return checker, nil
 }
 
 // SnapshotClusterState updates cluster snapshot used by the predicate checker.
 // It should be called every CA loop iteration.
 func (p *SchedulerBasedPredicateChecker) SnapshotClusterState() error {
-	// TODO(scheduler_framework rebuild snapshot
+	nodes, err := p.nodeLister.List(labels.Everything())
+	if err != nil {
+		return fmt.Errorf("could not list Nodes; %v", err)
+	}
+	pods, err := p.podLister.List(labels.Everything())
+	if err != nil {
+		return fmt.Errorf("could not list Pods; %v", err)
+	}
+	nodeInfoMap := CreateNodeInfoMap(pods, nodes)
+	newSnapshot := NewSnapshot(nodeInfoMap)
+	p.delegatingSharedLister.UpdateDelegate(newSnapshot)
 	return nil
 }
 
