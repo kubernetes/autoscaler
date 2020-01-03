@@ -84,6 +84,7 @@ func TestUtilization(t *testing.T) {
 	AddGpusToNode(gpuNode, 1)
 	gpuPod := BuildTestPod("gpu_pod", 100, 200000)
 	RequestGpuForPod(gpuPod, 1)
+	TolerateGpuForPod(gpuPod)
 	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, gpuPod)
 	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)

@@ -184,17 +184,20 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	p1.Spec.NodeName = "n1"
 	p1.OwnerReferences = ownerRef
 	RequestGpuForPod(p1, 1)
+	TolerateGpuForPod(p1)
 
 	p2 := BuildTestPod("p2", 400, 0)
 	p2.Spec.NodeName = "n2"
 	p2.OwnerReferences = ownerRef
 	RequestGpuForPod(p2, 1)
+	TolerateGpuForPod(p2)
 
 	p3 := BuildTestPod("p3", 300, 0)
 	p3.Spec.NodeName = "n3"
 	p3.OwnerReferences = ownerRef
 	p3.ObjectMeta.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "false"
 	RequestGpuForPod(p3, 1)
+	TolerateGpuForPod(p3)
 
 	// Node with low cpu utilization and high gpu utilization
 	n1 := BuildTestNode("n1", 1000, 10)
