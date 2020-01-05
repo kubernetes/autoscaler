@@ -213,6 +213,9 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 		groupResource := mapping.Resource.GroupResource()
 		scale, err := f.scaleNamespacer.Scales(namespace).Get(groupResource, name)
 		if err == nil {
+			if scale.Status.Selector == "" {
+				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)
+			}
 			selector, err := labels.Parse(scale.Status.Selector)
 			if err != nil {
 				return nil, err
