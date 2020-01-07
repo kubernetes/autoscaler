@@ -21,7 +21,9 @@ import (
 	"testing"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
@@ -66,4 +68,36 @@ func TestPredicates(t *testing.T) {
 	assert.Nil(t, predicateChecker.CheckPredicates(p2, nil, ni2))
 	assert.Nil(t, predicateChecker.CheckPredicates(p4, nil, ni2))
 	assert.NotNil(t, predicateChecker.CheckPredicates(p3, nil, ni2))
+}
+
+func TestDebugInfo(t *testing.T) {
+	p1 := BuildTestPod("p1", 0, 0)
+
+	ni1 := schedulernodeinfo.NewNodeInfo()
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	node1.Spec.Taints = []apiv1.Taint{
+		{
+			Key:    "SomeTaint",
+			Value:  "WhyNot?",
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+		{
+			Key:    "RandomTaint",
+			Value:  "JustBecause",
+			Effect: apiv1.TaintEffectNoExecute,
+		},
+	}
+	SetNodeReadyState(node1, true, time.Time{})
+	ni1.SetNode(node1)
+
+	predicateChecker := NewTestPredicateChecker()
+	predicateChecker.predicates = append(predicateChecker.predicates, PredicateInfo{
+		Name:      "PodToleratesNodeTaints",
+		Predicate: predicates.PodToleratesNodeTaints,
+	})
+
+	predicateErr := predicateChecker.CheckPredicates(p1, nil, ni1)
+	assert.NotNil(t, predicateErr)
+	assert.True(t, strings.Contains(predicateErr.Error(), "Predicates failed"))
+	assert.True(t, strings.Contains(predicateErr.VerboseError(), "RandomTaint"), "got: %v, want: %v", predicateErr.VerboseError(), "RandomTaint")
 }
