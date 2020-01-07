@@ -458,15 +458,15 @@ func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAu
 		},
 		ApiVersion: vpa.Spec.TargetRef.APIVersion,
 	}
-	top, err := feeder.controllerFetcher.FindTopLevel(&k)
+	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(&k)
 	if err != nil {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target is a top level controller: %s", err)}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target is a topmost well-known or scalable controller: %s", err)}
 	}
 	if top == nil {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Unknown error during checking if target is a top level controller: %s", err)}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Unknown error during checking if target is a topmost well-known or scalable controller: %s", err)}
 	}
 	if *top != k {
-		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "The targetRef controller has a parent but it should point to a top-level controller"}
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"}
 	}
 	return true, condition{}
 }
