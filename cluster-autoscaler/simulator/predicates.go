@@ -283,6 +283,9 @@ type PredicateError struct {
 	predicateName  string
 	failureReasons []predicates.PredicateFailureReason
 	err            error
+	// debugInfo contains additional info that predicate doesn't include,
+	// but may be useful for debugging (e.g. taints on node blocking scale-up)
+	debugInfo string
 
 	reasons []string
 	message string
@@ -307,10 +310,10 @@ func (pe *PredicateError) VerboseError() string {
 	}
 	// Generate verbose message.
 	if pe.err != nil {
-		pe.message = fmt.Sprintf("%s predicate error: %v", pe.predicateName, pe.err)
+		pe.message = fmt.Sprintf("%s predicate error: %v, %v", pe.predicateName, pe.err, pe.debugInfo)
 		return pe.message
 	}
-	pe.message = fmt.Sprintf("%s predicate mismatch, reason: %s", pe.predicateName, strings.Join(pe.Reasons(), ", "))
+	pe.message = fmt.Sprintf("%s predicate mismatch, reason: %s, %v", pe.predicateName, strings.Join(pe.Reasons(), ", "), pe.debugInfo)
 	return pe.message
 }
 
@@ -366,8 +369,18 @@ func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata pre
 				predicateName:  predInfo.Name,
 				failureReasons: failureReasons,
 				err:            err,
+				debugInfo:      p.addDebugInfo(predInfo, nodeInfo),
 			}
 		}
 	}
 	return nil
+}
+
+func (p *PredicateChecker) addDebugInfo(predInfo PredicateInfo, nodeInfo *schedulernodeinfo.NodeInfo) string {
+	switch predInfo.Name {
+	case "PodToleratesNodeTaints":
+		return fmt.Sprintf("taints on node: %#v", nodeInfo.Node().Spec.Taints)
+	default:
+		return ""
+	}
 }
