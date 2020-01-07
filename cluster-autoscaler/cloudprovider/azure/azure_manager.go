@@ -65,10 +65,6 @@ var validLabelAutoDiscovererKeys = strings.Join([]string{
 type labelAutoDiscoveryConfig struct {
 	// Key-values to match on.
 	Selector map[string]string
-	// MinSize specifies the minimum size for all MIGs that match Re.
-	MinSize int
-	// MaxSize specifies the maximum size for all MIGs that match Re.
-	MaxSize int
 }
 
 // AzureManager handles Azure communication and data caching.
@@ -456,7 +452,10 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) (asgs []
 				return asgs, fmt.Errorf("invalid minimum size specified for vmss: %s", err)
 			}
 		} else {
-			return asgs, fmt.Errorf("no minimum size specified for vmss: %s", err)
+			return asgs, fmt.Errorf("no minimum size specified for vmss: %s", *scaleSet.Name)
+		}
+		if spec.MinSize < 0 {
+			return asgs, fmt.Errorf("minimum size must be a non-negative number of nodes")
 		}
 		if val, ok := scaleSet.Tags["max"]; ok {
 			if maxSize, err := strconv.Atoi(*val); err == nil {
@@ -465,7 +464,7 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) (asgs []
 				return asgs, fmt.Errorf("invalid maximum size specified for vmss: %s", err)
 			}
 		} else {
-			return asgs, fmt.Errorf("no maximum size specified for vmss: %s", err)
+			return asgs, fmt.Errorf("no maximum size specified for vmss: %s", *scaleSet.Name)
 		}
 		if spec.MaxSize < 1 {
 			return asgs, fmt.Errorf("maximum size must be greater than 1 node")
@@ -530,8 +529,6 @@ func parseLabelAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]
 func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) {
 	cfg := labelAutoDiscoveryConfig{
 		Selector: make(map[string]string),
-		MinSize:  1,
-		MaxSize:  -1,
 	}
 
 	tokens := strings.Split(spec, ":")
@@ -548,31 +545,11 @@ func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) 
 		if len(kv) != 2 {
 			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
 		}
-
 		k, v := kv[0], kv[1]
-
-		switch k {
-		case labelAutoDiscovererKeyMinNodes:
-			if minSize, err := strconv.Atoi(v); err == nil {
-				cfg.MinSize = minSize
-			} else {
-				return cfg, fmt.Errorf("invalid minimum nodes: %s", v)
-			}
-		case labelAutoDiscovererKeyMaxNodes:
-			if maxSize, err := strconv.Atoi(v); err == nil {
-				cfg.MaxSize = maxSize
-			} else {
-				return cfg, fmt.Errorf("invalid maximum nodes: %s", v)
-			}
-		default:
-			cfg.Selector[k] = v
+		if k == "" || v == "" {
+			return cfg, fmt.Errorf("empty value not allowed in key=value tag pairs")
 		}
-	}
-	if cfg.MaxSize < 1 {
-		return cfg, fmt.Errorf("maximum size must be greater than 1 node")
-	}
-	if cfg.MaxSize < cfg.MinSize {
-		return cfg, fmt.Errorf("maximum size must be greater than minimum size")
+		cfg.Selector[k] = v
 	}
 	return cfg, nil
 }
