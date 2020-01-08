@@ -51,23 +51,23 @@ func TestPredicates(t *testing.T) {
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	r1, err := predicateChecker.FitsAny(p2, nodeInfos)
+	r1, err := predicateChecker.FitsAnyNode(nil, p2, nodeInfos)
 	assert.NoError(t, err)
 	assert.Equal(t, "n2", r1)
 
-	_, err = predicateChecker.FitsAny(p3, nodeInfos)
+	_, err = predicateChecker.FitsAnyNode(nil, p3, nodeInfos)
 	assert.Error(t, err)
 
-	predicateErr := predicateChecker.CheckPredicates(p2, ni1)
+	predicateErr := predicateChecker.CheckPredicates(nil, p2, ni1)
 	assert.NotNil(t, predicateErr)
 	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
 	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "Insufficient cpu"))
 
-	assert.NotNil(t, predicateChecker.CheckPredicates(p2, ni1))
-	assert.Nil(t, predicateChecker.CheckPredicates(p4, ni1))
-	assert.Nil(t, predicateChecker.CheckPredicates(p2, ni2))
-	assert.Nil(t, predicateChecker.CheckPredicates(p4, ni2))
-	assert.NotNil(t, predicateChecker.CheckPredicates(p3, ni2))
+	assert.NotNil(t, predicateChecker.CheckPredicates(nil, p2, ni1))
+	assert.Nil(t, predicateChecker.CheckPredicates(nil, p4, ni1))
+	assert.Nil(t, predicateChecker.CheckPredicates(nil, p2, ni2))
+	assert.Nil(t, predicateChecker.CheckPredicates(nil, p4, ni2))
+	assert.NotNil(t, predicateChecker.CheckPredicates(nil, p3, ni2))
 }
 
 func TestDebugInfo(t *testing.T) {
@@ -93,7 +93,7 @@ func TestDebugInfo(t *testing.T) {
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	predicateErr := predicateChecker.CheckPredicates(p1, ni1)
+	predicateErr := predicateChecker.CheckPredicates(nil, p1, ni1)
 	assert.NotNil(t, predicateErr)
 	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
 	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "RandomTaint"), "got: %v, want: %v", predicateErr.VerboseMessage(), "RandomTaint")
