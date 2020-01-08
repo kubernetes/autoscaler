@@ -92,6 +92,7 @@ type Config struct {
 	AADClientCertPath           string `json:"aadClientCertPath" yaml:"aadClientCertPath"`
 	AADClientCertPassword       string `json:"aadClientCertPassword" yaml:"aadClientCertPassword"`
 	UseManagedIdentityExtension bool   `json:"useManagedIdentityExtension" yaml:"useManagedIdentityExtension"`
+	UserAssignedIdentityID      string `json:"userAssignedIdentityID" yaml:"userAssignedIdentityID"`
 
 	// Configs only for standard vmType (agent pools).
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
@@ -164,6 +165,11 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 			if err != nil {
 				return nil, err
 			}
+		}
+
+		userAssignedIdentityIDFromEnv := os.Getenv("ARM_USER_ASSIGNED_IDENTITY_ID")
+		if userAssignedIdentityIDFromEnv != "" {
+			cfg.UserAssignedIdentityID = userAssignedIdentityIDFromEnv
 		}
 
 		if asgCacheTTL := os.Getenv("AZURE_ASG_CACHE_TTL"); asgCacheTTL != "" {

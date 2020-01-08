@@ -471,6 +471,13 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		if err != nil {
 			return nil, fmt.Errorf("getting the managed service identity endpoint: %v", err)
 		}
+		if len(config.UserAssignedIdentityID) > 0 {
+			klog.V(4).Info("azure: using User Assigned MSI ID to retrieve access token")
+			return adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint,
+				env.ServiceManagementEndpoint,
+				config.UserAssignedIdentityID)
+		}
+		klog.V(4).Info("azure: using System Assigned MSI to retrieve access token")
 		return adal.NewServicePrincipalTokenFromMSI(
 			msiEndpoint,
 			env.ServiceManagementEndpoint)
