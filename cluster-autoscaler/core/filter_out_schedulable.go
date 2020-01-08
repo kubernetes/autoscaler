@@ -112,7 +112,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	})
 
 	for _, pod := range unschedulableCandidates {
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
+		nodeName, err := predicateChecker.FitsAnyNode(nil, pod, nodeNameToNodeInfo)
 		if err != nil {
 			unschedulablePods = append(unschedulablePods, pod)
 		} else {
@@ -157,7 +157,7 @@ func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*a
 		}
 
 		// Not found in cache, have to run the predicates.
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
+		nodeName, err := predicateChecker.FitsAnyNode(nil, pod, nodeNameToNodeInfo)
 		var predicateError simulator.PredicateError
 		if err != nil {
 			// Hello, ugly hack. I wish you weren't here.
