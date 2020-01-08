@@ -103,7 +103,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	})
 
 	for _, pod := range unschedulableCandidates {
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
+		nodeName, err := predicateChecker.FitsAnyNode(nil, pod, nodeNameToNodeInfo)
 		if err != nil {
 			unschedulablePods = append(unschedulablePods, pod)
 		} else {
