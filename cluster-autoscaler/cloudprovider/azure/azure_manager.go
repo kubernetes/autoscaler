@@ -38,7 +38,6 @@ import (
 const (
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
-	vmTypeACS      = "acs"
 	vmTypeAKS      = "aks"
 
 	scaleToZeroSupportedStandard = false
@@ -98,7 +97,7 @@ type Config struct {
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 
-	//Configs only for ACS/AKS
+	//Configs only for AKS
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
 	//Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
@@ -299,10 +298,8 @@ func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, e
 		return NewAgentPool(s, m)
 	case vmTypeVMSS:
 		return NewScaleSet(s, m)
-	case vmTypeACS:
-		fallthrough
 	case vmTypeAKS:
-		return NewContainerServiceAgentPool(s, m)
+		return NewAKSAgentPool(s, m)
 	default:
 		return nil, fmt.Errorf("vmtype %s not supported", m.config.VMType)
 	}
@@ -410,7 +407,6 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []labelAutoDiscoveryC
 		asgs, err = m.listScaleSets(filter)
 	case vmTypeStandard:
 		asgs, err = m.listAgentPools(filter)
-	case vmTypeACS:
 	case vmTypeAKS:
 		return nil, nil
 	default:

@@ -90,7 +90,7 @@ func TestWindowsVMNameParts(t *testing.T) {
 			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
 		}
 		if orch != d.expectedOrch {
-			t.Fatalf("incorrect acs string. expected=%s actual=%s", d.expectedOrch, orch)
+			t.Fatalf("incorrect aks string. expected=%s actual=%s", d.expectedOrch, orch)
 		}
 		if poolIndex != d.expectedPoolIndex {
 			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)
