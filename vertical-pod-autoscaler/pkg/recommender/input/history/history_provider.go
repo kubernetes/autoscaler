@@ -242,8 +242,8 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 		}
 		podLabels := p.getPodLabelsMap(ts.Metric)
 
-		// time series results will always be sorted chronologically from oldest to 
-        // newest, so the last element is the latest sample
+		// time series results will always be sorted chronologically from oldest to
+		// newest, so the last element is the latest sample
 		lastSample := ts.Values[len(ts.Values)-1]
 		if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
 			podHistory.LastSeen = lastSample.Timestamp.Time()
