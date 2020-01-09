@@ -271,6 +271,37 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{pod}, result, "Pod should be updated")
 }
 
+func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, nil, &UpdateConfig{MinChangePriority: 0.1}, &test.FakeRecommendationProcessor{})
+	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "8Gi")).Get()
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+		{
+			LastTerminationState: apiv1.ContainerState{
+				Terminated: &apiv1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	// Pod is within the recommended range.
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("4", "8Gi").
+		WithLowerBound("2", "5Gi").
+		WithUpperBound("5", "10Gi").Get()
+
+	calculator.AddPod(pod, recommendation, timestampNow)
+	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
+}
+
 func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
