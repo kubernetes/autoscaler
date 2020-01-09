@@ -31,15 +31,14 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
-//ContainerServiceAgentPool implements NodeGroup interface for agent pool deployed in ACS/AKS
-type ContainerServiceAgentPool struct {
+//AKSAgentPool implements NodeGroup interface for agent pool deployed in AKS
+type AKSAgentPool struct {
 	azureRef
 	manager *AzureManager
 	util    *AzUtil
 
 	minSize           int
 	maxSize           int
-	serviceType       string
 	clusterName       string
 	resourceGroup     string
 	nodeResourceGroup string
@@ -49,10 +48,10 @@ type ContainerServiceAgentPool struct {
 	mutex       sync.Mutex
 }
 
-//NewContainerServiceAgentPool constructs ContainerServiceAgentPool from the --node param
+//NewAKSAgentPool constructs AKSAgentPool from the --node param
 //and azure manager
-func NewContainerServiceAgentPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*ContainerServiceAgentPool, error) {
-	asg := &ContainerServiceAgentPool{
+func NewAKSAgentPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*AKSAgentPool, error) {
+	asg := &AKSAgentPool{
 		azureRef: azureRef{
 			Name: spec.Name,
 		},
@@ -65,23 +64,16 @@ func NewContainerServiceAgentPool(spec *dynamic.NodeGroupSpec, am *AzureManager)
 	asg.util = &AzUtil{
 		manager: am,
 	}
-	asg.serviceType = am.config.VMType
 	asg.clusterName = am.config.ClusterName
 	asg.resourceGroup = am.config.ResourceGroup
+	asg.nodeResourceGroup = am.config.NodeResourceGroup
 
-	// In case of AKS there is a different resource group for the worker nodes, where as for
-	// ACS the vms are in the same group as that of the service.
-	if am.config.VMType == vmTypeAKS {
-		asg.nodeResourceGroup = am.config.NodeResourceGroup
-	} else {
-		asg.nodeResourceGroup = am.config.ResourceGroup
-	}
 	return asg, nil
 }
 
 //GetAKSAgentPool is an internal function which figures out ManagedClusterAgentPoolProfile from the list based on the pool name provided in the --node parameter passed
 //to the autoscaler main
-func (agentPool *ContainerServiceAgentPool) GetAKSAgentPool(agentProfiles *[]containerservice.ManagedClusterAgentPoolProfile) (ret *containerservice.ManagedClusterAgentPoolProfile) {
+func (agentPool *AKSAgentPool) GetAKSAgentPool(agentProfiles *[]containerservice.ManagedClusterAgentPoolProfile) (ret *containerservice.ManagedClusterAgentPoolProfile) {
 	for _, value := range *agentProfiles {
 		profileName := *value.Name
 		klog.V(5).Infof("AKS AgentPool profile name: %s", profileName)
@@ -93,35 +85,8 @@ func (agentPool *ContainerServiceAgentPool) GetAKSAgentPool(agentProfiles *[]con
 	return nil
 }
 
-//GetACSAgentPool is an internal function which figures out AgentPoolProfile from the list based on the pool name provided in the --node parameter passed
-//to the autoscaler main
-func (agentPool *ContainerServiceAgentPool) GetACSAgentPool(agentProfiles *[]containerservice.AgentPoolProfile) (ret *containerservice.AgentPoolProfile) {
-	for _, value := range *agentProfiles {
-		profileName := *value.Name
-		klog.V(5).Infof("ACS AgentPool profile name: %s", profileName)
-		if strings.EqualFold(profileName, agentPool.azureRef.Name) {
-			return &value
-		}
-	}
-
-	// Note: In some older ACS clusters, the name of the agentProfile can be different from kubernetes
-	// label and vm pool tag. It can be have a "pool0" appended.
-	// In the above loop we would check the normal case and if not returned yet, we will try matching
-	// the node pool name with "pool0" and try a match as a workaround.
-	for _, value := range *agentProfiles {
-		profileName := *value.Name
-		poolName := agentPool.azureRef.Name + "pool0"
-		klog.V(5).Infof("Workaround match check - ACS AgentPool Profile: %s <=> Poolname: %s", profileName, poolName)
-		if strings.EqualFold(profileName, poolName) {
-			return &value
-		}
-	}
-
-	return nil
-}
-
 // getAKSNodeCount gets node count for AKS agent pool.
-func (agentPool *ContainerServiceAgentPool) getAKSNodeCount() (count int, err error) {
+func (agentPool *AKSAgentPool) getAKSNodeCount() (count int, err error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
@@ -145,33 +110,8 @@ func (agentPool *ContainerServiceAgentPool) getAKSNodeCount() (count int, err er
 	return 0, nil
 }
 
-// getACSNodeCount gets node count for ACS agent pool.
-func (agentPool *ContainerServiceAgentPool) getACSNodeCount() (count int, err error) {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
-	acsCluster, err := agentPool.manager.azClient.containerServicesClient.Get(ctx,
-		agentPool.resourceGroup,
-		agentPool.clusterName)
-	if err != nil {
-		klog.Errorf("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
-		return -1, err
-	}
-
-	pool := agentPool.GetACSAgentPool(acsCluster.AgentPoolProfiles)
-	if pool == nil {
-		return -1, fmt.Errorf("could not find pool with name: %s", agentPool.azureRef)
-	}
-
-	if pool.Count != nil {
-		return int(*pool.Count), nil
-	}
-
-	return 0, nil
-}
-
 // setAKSNodeCount sets node count for AKS agent pool.
-func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
+func (agentPool *AKSAgentPool) setAKSNodeCount(count int) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
@@ -212,69 +152,19 @@ func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
 	return realError
 }
 
-// setACSNodeCount sets node count for ACS agent pool.
-func (agentPool *ContainerServiceAgentPool) setACSNodeCount(count int) error {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
-	acsCluster, err := agentPool.manager.azClient.containerServicesClient.Get(ctx,
-		agentPool.resourceGroup,
-		agentPool.clusterName)
-	if err != nil {
-		klog.Errorf("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
-		return err
-	}
-
-	pool := agentPool.GetACSAgentPool(acsCluster.AgentPoolProfiles)
-	if pool == nil {
-		return fmt.Errorf("could not find pool with name: %s", agentPool.azureRef)
-	}
-
-	klog.Infof("Current size: %d, Target size requested: %d", *pool.Count, count)
-
-	updateCtx, updateCancel := getContextWithCancel()
-	defer updateCancel()
-	*pool.Count = int32(count)
-	acsClient := agentPool.manager.azClient.containerServicesClient
-	future, err := acsClient.CreateOrUpdate(updateCtx, agentPool.resourceGroup,
-		agentPool.clusterName, acsCluster)
-	if err != nil {
-		klog.Errorf("Failed to update ACS cluster (%q): %v", agentPool.clusterName, err)
-		return err
-	}
-
-	err = future.WaitForCompletionRef(updateCtx, acsClient.Client)
-	isSuccess, realError := isSuccessHTTPResponse(future.Response(), err)
-	if isSuccess {
-		klog.V(3).Infof("acsClient.CreateOrUpdate for acs cluster %q success", agentPool.clusterName)
-		return nil
-	}
-
-	klog.Errorf("acsClient.CreateOrUpdate for acs cluster %q failed: %v", agentPool.clusterName, realError)
-	return realError
-}
-
 //GetNodeCount returns the count of nodes from the managed agent pool profile
-func (agentPool *ContainerServiceAgentPool) GetNodeCount() (count int, err error) {
-	if agentPool.serviceType == vmTypeAKS {
-		return agentPool.getAKSNodeCount()
-	}
-
-	return agentPool.getACSNodeCount()
+func (agentPool *AKSAgentPool) GetNodeCount() (count int, err error) {
+	return agentPool.getAKSNodeCount()
 }
 
 //SetNodeCount sets the count of nodes in the in memory pool profile
-func (agentPool *ContainerServiceAgentPool) SetNodeCount(count int) (err error) {
-	if agentPool.serviceType == vmTypeAKS {
-		return agentPool.setAKSNodeCount(count)
-	}
-
-	return agentPool.setACSNodeCount(count)
+func (agentPool *AKSAgentPool) SetNodeCount(count int) (err error) {
+	return agentPool.setAKSNodeCount(count)
 }
 
 //GetProviderID converts the name of a node into the form that kubernetes cloud
 //provider id is presented in.
-func (agentPool *ContainerServiceAgentPool) GetProviderID(name string) string {
+func (agentPool *AKSAgentPool) GetProviderID(name string) string {
 	//TODO: come with a generic way to make it work with provider id formats
 	// in different version of k8s.
 	return "azure://" + name
@@ -282,7 +172,7 @@ func (agentPool *ContainerServiceAgentPool) GetProviderID(name string) string {
 
 //GetName extracts the name of the node (a format which underlying cloud service understands)
 //from the cloud providerID (format which kubernetes understands)
-func (agentPool *ContainerServiceAgentPool) GetName(providerID string) (string, error) {
+func (agentPool *AKSAgentPool) GetName(providerID string) (string, error) {
 	// Remove the "azure://" string from it
 	providerID = strings.TrimPrefix(providerID, "azure://")
 	ctx, cancel := getContextWithCancel()
@@ -301,19 +191,19 @@ func (agentPool *ContainerServiceAgentPool) GetName(providerID string) (string, 
 
 //MaxSize returns the maximum size scale limit provided by --node
 //parameter to the autoscaler main
-func (agentPool *ContainerServiceAgentPool) MaxSize() int {
+func (agentPool *AKSAgentPool) MaxSize() int {
 	return agentPool.maxSize
 }
 
 //MinSize returns the minimum size the cluster is allowed to scaled down
 //to as provided by the node spec in --node parameter.
-func (agentPool *ContainerServiceAgentPool) MinSize() int {
+func (agentPool *AKSAgentPool) MinSize() int {
 	return agentPool.minSize
 }
 
 //TargetSize gathers the target node count set for the cluster by
 //querying the underlying service.
-func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
+func (agentPool *AKSAgentPool) TargetSize() (int, error) {
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
@@ -335,7 +225,7 @@ func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
 //SetSize contacts the underlying service and sets the size of the pool.
 //This will be called when a scale up occurs and will be called just after
 //a delete is performed from a scale down.
-func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int, isScalingDown bool) (err error) {
+func (agentPool *AKSAgentPool) SetSize(targetSize int, isScalingDown bool) (err error) {
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
@@ -344,18 +234,15 @@ func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int, isScalingDow
 
 // setSizeInternal contacts the underlying service and sets the size of the pool.
 // It should be called under lock protected.
-func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int, isScalingDown bool) (err error) {
+func (agentPool *AKSAgentPool) setSizeInternal(targetSize int, isScalingDown bool) (err error) {
 	if isScalingDown && targetSize < agentPool.MinSize() {
 		klog.Errorf("size-decreasing request of %d is smaller than min size %d", targetSize, agentPool.MinSize())
 		return fmt.Errorf("size-decreasing request of %d is smaller than min size %d", targetSize, agentPool.MinSize())
 	}
 
 	klog.V(2).Infof("Setting size for cluster (%q) with new count (%d)", agentPool.clusterName, targetSize)
-	if agentPool.serviceType == vmTypeAKS {
-		err = agentPool.setAKSNodeCount(targetSize)
-	} else {
-		err = agentPool.setACSNodeCount(targetSize)
-	}
+
+	err = agentPool.setAKSNodeCount(targetSize)
 	if err != nil {
 		return err
 	}
@@ -368,7 +255,7 @@ func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int, isSc
 //IncreaseSize calls in the underlying SetSize to increase the size in response
 //to a scale up. It calculates the expected size based on a delta provided as
 //parameter
-func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
+func (agentPool *AKSAgentPool) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be +ve")
 	}
@@ -385,7 +272,7 @@ func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
 
 // deleteNodesInternal calls the underlying vm service to delete the node.
 // It should be called within lock protected.
-func (agentPool *ContainerServiceAgentPool) deleteNodesInternal(providerIDs []string) (deleted int, err error) {
+func (agentPool *AKSAgentPool) deleteNodesInternal(providerIDs []string) (deleted int, err error) {
 	for _, providerID := range providerIDs {
 		klog.Infof("ProviderID got to delete: %s", providerID)
 		nodeName, err := agentPool.GetName(providerID)
@@ -409,7 +296,7 @@ func (agentPool *ContainerServiceAgentPool) deleteNodesInternal(providerIDs []st
 
 //DeleteNodes extracts the providerIDs from the node spec and calls into the internal
 //delete method.
-func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) error {
+func (agentPool *AKSAgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
@@ -432,8 +319,8 @@ func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) err
 	return deleteError
 }
 
-//IsContainerServiceNode checks if the tag from the vm matches the agentPool name
-func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags map[string]*string) bool {
+//IsAKSNode checks if the tag from the vm matches the agentPool name
+func (agentPool *AKSAgentPool) IsAKSNode(tags map[string]*string) bool {
 	poolName := tags["poolName"]
 	if poolName != nil {
 		klog.V(5).Infof("Matching agentPool name: %s with tag name: %s", agentPool.azureRef.Name, *poolName)
@@ -446,7 +333,7 @@ func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags map[stri
 
 //GetNodes extracts the node list from the underlying vm service and returns back
 //equivalent providerIDs  as list.
-func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
+func (agentPool *AKSAgentPool) GetNodes() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	vmList, err := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
@@ -457,7 +344,7 @@ func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
 	var nodeArray []string
 	for _, node := range vmList {
 		klog.V(5).Infof("Node Name: %s, ID: %s", *node.Name, *node.ID)
-		if agentPool.IsContainerServiceNode(node.Tags) {
+		if agentPool.IsAKSNode(node.Tags) {
 			providerID, err := convertResourceGroupNameToLower(agentPool.GetProviderID(*node.ID))
 			if err != nil {
 				// This shouldn't happen. Log a waring message for tracking.
@@ -473,7 +360,7 @@ func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
 }
 
 //DecreaseTargetSize requests the underlying service to decrease the node count.
-func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error {
+func (agentPool *AKSAgentPool) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
 		klog.Errorf("Size decrease error: %d", delta)
 		return fmt.Errorf("size decrease must be negative")
@@ -502,17 +389,17 @@ func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error 
 }
 
 //Id returns the name of the agentPool
-func (agentPool *ContainerServiceAgentPool) Id() string {
+func (agentPool *AKSAgentPool) Id() string {
 	return agentPool.azureRef.Name
 }
 
 //Debug returns a string with basic details of the agentPool
-func (agentPool *ContainerServiceAgentPool) Debug() string {
+func (agentPool *AKSAgentPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", agentPool.Id(), agentPool.MinSize(), agentPool.MaxSize())
 }
 
 //Nodes returns the list of nodes in the agentPool.
-func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, error) {
+func (agentPool *AKSAgentPool) Nodes() ([]cloudprovider.Instance, error) {
 	instanceNames, err := agentPool.GetNodes()
 	if err != nil {
 		return nil, err
@@ -525,29 +412,29 @@ func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, e
 }
 
 //TemplateNodeInfo is not implemented.
-func (agentPool *ContainerServiceAgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (agentPool *AKSAgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 //Exist is always true since we are initialized with an existing agentpool
-func (agentPool *ContainerServiceAgentPool) Exist() bool {
+func (agentPool *AKSAgentPool) Exist() bool {
 	return true
 }
 
 //Create is returns already exists since we don't support the
 //agent pool creation.
-func (agentPool *ContainerServiceAgentPool) Create() (cloudprovider.NodeGroup, error) {
+func (agentPool *AKSAgentPool) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 //Delete is not implemented since we don't support agent pool
 //deletion.
-func (agentPool *ContainerServiceAgentPool) Delete() error {
+func (agentPool *AKSAgentPool) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
 //Autoprovisioned is set to false to indicate that this code
 //does not create agentPools by itself.
-func (agentPool *ContainerServiceAgentPool) Autoprovisioned() bool {
+func (agentPool *AKSAgentPool) Autoprovisioned() bool {
 	return false
 }
