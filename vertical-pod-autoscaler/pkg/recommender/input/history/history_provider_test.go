@@ -135,7 +135,6 @@ func TestGetCPUSamples(t *testing.T) {
 		prommodel.Matrix{
 			{
 				Metric: map[prommodel.LabelName]prommodel.LabelValue{
-
 					"namespace": "default",
 					"pod_name":  "pod",
 					"name":      "container",

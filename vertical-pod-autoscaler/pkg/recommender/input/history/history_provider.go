@@ -32,11 +32,13 @@ import (
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
-	Address                                                               string
-	HistoryLength, HistoryResolution, PodLabelPrefix, PodLabelsMetricName string
-	PodNamespaceLabel, PodNameLabel                                       string
-	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel                      string
-	CadvisorMetricsJobName                                                string
+	Address                                          string
+	QueryTimeout                                     time.Duration
+	HistoryLength, HistoryResolution                 string
+	PodLabelPrefix, PodLabelsMetricName              string
+	PodNamespaceLabel, PodNameLabel                  string
+	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
+	CadvisorMetricsJobName                           string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -61,24 +63,40 @@ type HistoryProvider interface {
 }
 
 type prometheusHistoryProvider struct {
-	prometheusClient prometheusv1.API
-	config           PrometheusHistoryProviderConfig
-	queryTimeout     time.Duration
+	prometheusClient  prometheusv1.API
+	config            PrometheusHistoryProviderConfig
+	queryTimeout      time.Duration
+	historyDuration   prommodel.Duration
+	historyResolution prommodel.Duration
 }
 
 // NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
-func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) HistoryProvider {
+func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
 	promClient, err := promapi.NewClient(promapi.Config{
 		Address: config.Address,
 	})
 	if err != nil {
-		panic(err)
+		return &prometheusHistoryProvider{}, err
 	}
+
+	// Use Prometheus's model.Duration; this can additionally parse durations in days, weeks and years (as well as seconds, minutes, hours etc)
+	historyDuration, err := prommodel.ParseDuration(config.HistoryLength)
+	if err != nil {
+		return &prometheusHistoryProvider{}, fmt.Errorf("history length %s is not a valid duration: %v", config.HistoryLength, err)
+	}
+
+	historyResolution, err := prommodel.ParseDuration(config.HistoryResolution)
+	if err != nil {
+		return &prometheusHistoryProvider{}, fmt.Errorf("history resolution %s is not a valid duration: %v", config.HistoryResolution, err)
+	}
+
 	return &prometheusHistoryProvider{
-		prometheusClient: prometheusv1.NewAPI(promClient),
-		config:           config,
-		queryTimeout:     5 * time.Minute,
-	}
+		prometheusClient:  prometheusv1.NewAPI(promClient),
+		config:            config,
+		queryTimeout:      config.QueryTimeout,
+		historyDuration:   historyDuration,
+		historyResolution: historyResolution,
+	}, nil
 }
 
 func (p *prometheusHistoryProvider) getContainerIDFromLabels(metric prommodel.Metric) (*model.ContainerID, error) {
@@ -158,36 +176,25 @@ func getContainerUsageSamplesFromSamples(samples []prommodel.SamplePair, resourc
 }
 
 func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*PodHistory, query string, resource model.ResourceName) error {
-	// Use Prometheus's model.Duration; this can parse durations in days, weeks and years
-	historyDuration, err := prommodel.ParseDuration(p.config.HistoryLength)
-	if err != nil {
-		return fmt.Errorf("history length %s is not a valid duration: %v", p.config.HistoryLength, err)
-	}
-
 	end := time.Now()
-	start := end.Add(-time.Duration(historyDuration))
+	start := end.Add(-time.Duration(p.historyDuration))
 
 	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
 	defer cancel()
 
-	step, err := prommodel.ParseDuration(p.config.HistoryResolution)
-	if err != nil {
-		return fmt.Errorf("history resolution %s is not a valid duration: %v", p.config.HistoryResolution, err)
-	}
-
-	v, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
+	result, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
 		Start: start,
 		End:   end,
-		Step:  time.Duration(step),
+		Step:  time.Duration(p.historyResolution),
 	})
 
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 	}
 
-	matrix, ok := v.(prommodel.Matrix)
+	matrix, ok := result.(prommodel.Matrix)
 	if !ok {
-		return fmt.Errorf("expected query to return a matrix; got result type %T", v)
+		return fmt.Errorf("expected query to return a matrix; got result type %T", result)
 	}
 
 	for _, ts := range matrix {
@@ -234,6 +241,9 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 			res[*podID] = podHistory
 		}
 		podLabels := p.getPodLabelsMap(ts.Metric)
+
+		// time series results will always be sorted chronologically from oldest to 
+        // newest, so the last element is the latest sample
 		lastSample := ts.Values[len(ts.Values)-1]
 		if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
 			podHistory.LastSeen = lastSample.Timestamp.Time()
