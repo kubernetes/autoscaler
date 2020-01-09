@@ -52,7 +52,6 @@ Cluster autoscaler supports four Kubernetes cluster options on Azure:
 - [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss` or to an empty string. This supports clusters deployed with [aks-engine][].
 - [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
 - [**aks**](#aks-deployment): Supports an Azure Kubernetes Service ([AKS][]) cluster.
-- *DEPRECATED* [**acs**](#acs-deployment): Supports an Azure Container Service ([ACS][]) cluster.
 
 > **_NOTE_**: only the `vmss` option supports scaling down to zero nodes.
 
@@ -183,6 +182,8 @@ To run a cluster autoscaler pod with Azure managed service identity (MSI), use [
 
 ### AKS deployment
 
+#### AKS + VMSS
+
 Autoscaling VM scale sets with AKS is supported for Kubernetes v1.12.4 and later. The option to enable cluster autoscaler is available in the [Azure Portal][] or with the [Azure CLI][]:
 
 ```sh
@@ -197,23 +198,22 @@ az aks create \
   --max-count 3
 ```
 
-Please see the [AKS autoscaler documentation][] for details.
+#### AKS + Availability Set
 
-### ACS deployment
-
-> **_NOTE_**: [ACS will retire on January 31, 2020][ACS].
+The CLI based deployment only support VMSS and manual deployment is needed if availability set is used. 
 
 Prerequisites:
 
 - Get Azure credentials from the [**Permissions**](#permissions) step above.
-- Get the cluster name with the `az acs list` command.
+- Get the cluster name with the `az aks list` command.
 - Get the name of a node pool from the value of the label **agentpool**
 
 ```sh
 kubectl get nodes --show-labels
 ```
 
-Make a copy of [cluster-autoscaler-containerservice](examples/cluster-autoscaler-containerservice.yaml). Fill in the placeholder values for the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
+Make a copy of [cluster-autoscaler-aks.yaml](examples/cluster-autoscaler-aks.yaml). Fill in the placeholder values for 
+the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -243,11 +243,11 @@ or to autoscale multiple VM scale sets:
 Then deploy cluster-autoscaler by running
 
 ```sh
-kubectl create -f cluster-autoscaler-containerservice.yaml
+kubectl create -f cluster-autoscaler-aks.yaml
 ```
 
+Please see the [AKS autoscaler documentation][] for details.
 
-[ACS]: https://azure.microsoft.com/updates/azure-container-service-will-retire-on-january-31-2020/
 [AKS]: https://docs.microsoft.com/azure/aks/
 [AKS autoscaler documentation]: https://docs.microsoft.com/azure/aks/autoscaler
 [aks-engine]: https://github.com/Azure/aks-engine
