@@ -708,7 +708,7 @@ CA doesn't remove underutilized nodes if they are running pods [that it shouldn'
 By default, kube-system pods prevent CA from removing nodes on which they are running. Users can manually add PDBs for the kube-system pods that can be safely rescheduled elsewhere:
 
 ```
-kubectl create poddisruptionbudget <pdb name> --namespace=kube-system --selector app:<app name> --max-unavailable 1
+kubectl create poddisruptionbudget <pdb name> --namespace=kube-system --selector app=<app name> --max-unavailable 1
 ```
 
 Here's how to do it for some common pods:
