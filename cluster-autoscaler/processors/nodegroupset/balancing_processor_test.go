@@ -72,12 +72,12 @@ func basicSimilarNodeGroupsTest(t *testing.T, processor NodeGroupSetProcessor) {
 }
 
 func TestFindSimilarNodeGroups(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{}
+	processor := NewDefaultNodeGroupSetProcessor()
 	basicSimilarNodeGroupsTest(t, processor)
 }
 
 func TestBalanceSingleGroup(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{}
+	processor := NewDefaultNodeGroupSetProcessor()
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -97,7 +97,7 @@ func TestBalanceSingleGroup(t *testing.T) {
 }
 
 func TestBalanceUnderMaxSize(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{}
+	processor := NewDefaultNodeGroupSetProcessor()
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -147,7 +147,7 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 }
 
 func TestBalanceHittingMaxSize(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{}
+	processor := NewDefaultNodeGroupSetProcessor()
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
