@@ -246,6 +246,8 @@ Then deploy cluster-autoscaler by running
 kubectl create -f cluster-autoscaler-aks.yaml
 ```
 
+To deploy in AKS with `Helm 3`, please refer to [this tutorial](https://github.com/helm/charts/tree/master/stable/cluster-autoscaler#azure-aks).
+
 Please see the [AKS autoscaler documentation][] for details.
 
 [AKS]: https://docs.microsoft.com/azure/aks/
