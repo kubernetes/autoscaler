@@ -20,8 +20,7 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
-// IsAwsNodeInfoSimilar adds AWS specific node labels to the list of ignored labels.
-func IsAwsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+func CreateAwsNodeInfoComparator() NodeInfoComparator {
 	awsIgnoredLabels := map[string]bool{
 		"alpha.eksctl.io/instance-id":    true, // this is a label used by eksctl to identify instances.
 		"alpha.eksctl.io/nodegroup-name": true, // this is a label used by eksctl to identify "node group" names.
@@ -33,5 +32,8 @@ func IsAwsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	for k, v := range BasicIgnoredLabels {
 		awsIgnoredLabels[k] = v
 	}
-	return IsCloudProviderNodeInfoSimilar(n1, n2, awsIgnoredLabels)
+
+	return func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+		return IsCloudProviderNodeInfoSimilar(n1, n2, awsIgnoredLabels)
+	}
 }
