@@ -29,17 +29,20 @@ func nodesFromSameAzureNodePool(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return n1AzureNodePool != "" && n1AzureNodePool == n2AzureNodePool
 }
 
-// IsAzureNodeInfoSimilar compares if two nodes should be considered part of the
+// Returned NodeInfoComparator compares if two nodes should be considered part of the
 // same NodeGroupSet. This is true if they either belong to the same Azure agentpool
-// or match usual conditions checked by IsAzureNodeInfoSimilar, even if they have different agentpool labels.
-func IsAzureNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
-	if nodesFromSameAzureNodePool(n1, n2) {
-		return true
-	}
+// or match usual conditions checked by IsCloudProviderNodeInfoSimilar, even if they have different agentpool labels.
+func CreateAzureNodeInfoComparator() NodeInfoComparator {
 	azureIgnoredLabels := make(map[string]bool)
 	for k, v := range BasicIgnoredLabels {
 		azureIgnoredLabels[k] = v
 	}
 	azureIgnoredLabels[AzureNodepoolLabel] = true
-	return IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels)
+
+	return func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+		if nodesFromSameAzureNodePool(n1, n2) {
+			return true
+		}
+		return IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels)
+	}
 }

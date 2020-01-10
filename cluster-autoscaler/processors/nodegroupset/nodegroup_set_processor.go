@@ -71,5 +71,7 @@ func (n *NoOpNodeGroupSetProcessor) CleanUp() {}
 
 // NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
 func NewDefaultNodeGroupSetProcessor() NodeGroupSetProcessor {
-	return &BalancingNodeGroupSetProcessor{}
+	return &BalancingNodeGroupSetProcessor{
+		Comparator: CreateGenericNodeInfoComparator(),
+	}
 }

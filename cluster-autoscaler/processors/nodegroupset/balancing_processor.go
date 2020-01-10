@@ -32,8 +32,8 @@ type BalancingNodeGroupSetProcessor struct {
 	Comparator NodeInfoComparator
 }
 
-// FindSimilarNodeGroups returns a list of NodeGroups similar to the given one.
-// Two groups are similar if the NodeInfos for them compare equal using IsNodeInfoSimilar.
+// FindSimilarNodeGroups returns a list of NodeGroups similar to the given one using the
+// BalancingNodeGroupSetProcessor's comparator function.
 func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 
@@ -58,7 +58,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 		}
 		comparator := b.Comparator
 		if comparator == nil {
-			comparator = IsNodeInfoSimilar
+			panic("BalancingNodeGroupSetProcessor comparator not set")
 		}
 		if comparator(nodeInfo, ngNodeInfo) {
 			result = append(result, ng)

@@ -293,10 +293,10 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
 	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
 		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-			Comparator: nodegroupset.IsAzureNodeInfoSimilar}
+			Comparator: nodegroupset.CreateAzureNodeInfoComparator()}
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
 		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-			Comparator: nodegroupset.IsAwsNodeInfoSimilar}
+			Comparator: nodegroupset.CreateAwsNodeInfoComparator()}
 	}
 
 	opts := core.AutoscalerOptions{
