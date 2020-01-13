@@ -143,6 +143,6 @@ type EndpointObj struct {
 	Type        string
 	Namespace   string
 	Id          string
-	SerivceCode string
+	ServiceCode string
 	Endpoint    string
 }
