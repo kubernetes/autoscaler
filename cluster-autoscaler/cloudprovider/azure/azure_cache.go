@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -153,27 +152,12 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		}
 	}
 
-	klog.V(4).Infof("FindForInstance: cache before refresh %v", m.instanceToAsg)
-
 	// Look up caches for the instance.
+	klog.V(4).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToAsg)
 	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
-		klog.V(4).Infof("FindForInstance: returns before refresh, asg: %s", asg.Id())
+		klog.V(4).Infof("FindForInstance: found asg %s in cache", asg.Id())
 		return asg, nil
 	}
-
-	// Not found, regenerate the cache and try again.
-	if err := m.regenerate(); err != nil {
-		klog.Errorf("FindForInstance: error while looking for ASG for instance %q, error: %v", instance.Name, err)
-		return nil, fmt.Errorf("error while looking for ASG for instance %q, error: %v", instance.Name, err)
-	}
-
-	klog.V(4).Infof("FindForInstance: cache after refresh %v", m.instanceToAsg)
-
-	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
-		klog.V(4).Infof("FindForInstance: returns after refresh, asg: %s", asg.Id())
-		return asg, nil
-	}
-
 	klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
 	return nil, nil
 }
