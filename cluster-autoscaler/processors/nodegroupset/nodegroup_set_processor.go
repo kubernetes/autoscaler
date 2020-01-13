@@ -70,8 +70,8 @@ func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context
 func (n *NoOpNodeGroupSetProcessor) CleanUp() {}
 
 // NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
-func NewDefaultNodeGroupSetProcessor() NodeGroupSetProcessor {
+func NewDefaultNodeGroupSetProcessor(ignoredLabels []string) NodeGroupSetProcessor {
 	return &BalancingNodeGroupSetProcessor{
-		Comparator: CreateGenericNodeInfoComparator(),
+		Comparator: CreateGenericNodeInfoComparator(ignoredLabels),
 	}
 }
