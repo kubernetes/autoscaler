@@ -19,18 +19,17 @@ package nodegroupset
 import (
 	"testing"
 
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func basicSimilarNodeGroupsTest(t *testing.T, processor NodeGroupSetProcessor) {
-	context := &context.AutoscalingContext{}
-
+func buildBasicNodeGroups(context *context.AutoscalingContext) (*schedulernodeinfo.NodeInfo, *schedulernodeinfo.NodeInfo, *schedulernodeinfo.NodeInfo) {
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n2 := BuildTestNode("n2", 1000, 1000)
 	n3 := BuildTestNode("n3", 2000, 2000)
@@ -49,35 +48,71 @@ func basicSimilarNodeGroupsTest(t *testing.T, processor NodeGroupSetProcessor) {
 	ni3 := schedulernodeinfo.NewNodeInfo()
 	ni3.SetNode(n3)
 
+	context.CloudProvider = provider
+	return ni1, ni2, ni3
+}
+
+func basicSimilarNodeGroupsTest(
+	t *testing.T,
+	context *context.AutoscalingContext,
+	processor NodeGroupSetProcessor,
+	ni1 *schedulernodeinfo.NodeInfo,
+	ni2 *schedulernodeinfo.NodeInfo,
+	ni3 *schedulernodeinfo.NodeInfo,
+) {
 	nodeInfosForGroups := map[string]*schedulernodeinfo.NodeInfo{
 		"ng1": ni1, "ng2": ni2, "ng3": ni3,
 	}
 
-	ng1, _ := provider.NodeGroupForNode(n1)
-	ng2, _ := provider.NodeGroupForNode(n2)
-	ng3, _ := provider.NodeGroupForNode(n3)
-	context.CloudProvider = provider
+	ng1, _ := context.CloudProvider.NodeGroupForNode(ni1.Node())
+	ng2, _ := context.CloudProvider.NodeGroupForNode(ni2.Node())
+	ng3, _ := context.CloudProvider.NodeGroupForNode(ni3.Node())
 
 	similar, err := processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
-	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng2})
+	assert.Equal(t, []cloudprovider.NodeGroup{ng2}, similar)
 
 	similar, err = processor.FindSimilarNodeGroups(context, ng2, nodeInfosForGroups)
 	assert.NoError(t, err)
-	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng1})
+	assert.Equal(t, []cloudprovider.NodeGroup{ng1}, similar)
 
 	similar, err = processor.FindSimilarNodeGroups(context, ng3, nodeInfosForGroups)
 	assert.NoError(t, err)
-	assert.Equal(t, similar, []cloudprovider.NodeGroup{})
+	assert.Equal(t, []cloudprovider.NodeGroup{}, similar)
 }
 
 func TestFindSimilarNodeGroups(t *testing.T) {
-	processor := NewDefaultNodeGroupSetProcessor()
-	basicSimilarNodeGroupsTest(t, processor)
+	context := &context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+	processor := NewDefaultNodeGroupSetProcessor([]string{})
+	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
+}
+
+func TestFindSimilarNodeGroupsCustomLabels(t *testing.T) {
+	context := &context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+	ni1.Node().Labels["example.com/ready"] = "true"
+	ni2.Node().Labels["example.com/ready"] = "false"
+
+	processor := NewDefaultNodeGroupSetProcessor([]string{"example.com/ready"})
+	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
+}
+
+func TestFindSimilarNodeGroupsCustomComparator(t *testing.T) {
+	context := &context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+
+	processor := &BalancingNodeGroupSetProcessor{
+		Comparator: func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+			return (n1.Node().Name == "n1" && n2.Node().Name == "n2") ||
+				(n1.Node().Name == "n2" && n2.Node().Name == "n1")
+		},
+	}
+	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
 }
 
 func TestBalanceSingleGroup(t *testing.T) {
-	processor := NewDefaultNodeGroupSetProcessor()
+	processor := NewDefaultNodeGroupSetProcessor([]string{})
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -97,7 +132,7 @@ func TestBalanceSingleGroup(t *testing.T) {
 }
 
 func TestBalanceUnderMaxSize(t *testing.T) {
-	processor := NewDefaultNodeGroupSetProcessor()
+	processor := NewDefaultNodeGroupSetProcessor([]string{})
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
@@ -147,7 +182,7 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 }
 
 func TestBalanceHittingMaxSize(t *testing.T) {
-	processor := NewDefaultNodeGroupSetProcessor()
+	processor := NewDefaultNodeGroupSetProcessor([]string{})
 	context := &context.AutoscalingContext{}
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)

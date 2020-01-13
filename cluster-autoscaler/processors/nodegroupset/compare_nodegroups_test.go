@@ -41,14 +41,14 @@ func checkNodesSimilarWithPods(t *testing.T, n1, n2 *apiv1.Node, pods1, pods2 []
 }
 
 func TestIdenticalNodesSimilar(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator()
+	comparator := CreateGenericNodeInfoComparator([]string{})
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n2 := BuildTestNode("node2", 1000, 2000)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
 func TestNodesSimilarVariousRequirements(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator()
+	comparator := CreateGenericNodeInfoComparator([]string{})
 	n1 := BuildTestNode("node1", 1000, 2000)
 
 	// Different CPU capacity
@@ -74,7 +74,7 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 }
 
 func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator()
+	comparator := CreateGenericNodeInfoComparator([]string{})
 	n1 := BuildTestNode("node1", 1000, 2000)
 	p1 := BuildTestPod("pod1", 500, 1000)
 	p1.Spec.NodeName = "node1"
@@ -100,7 +100,7 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 }
 
 func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator()
+	comparator := CreateGenericNodeInfoComparator([]string{})
 	n1 := BuildTestNode("node1", 1000, MaxMemoryDifferenceInKiloBytes)
 
 	// Different memory capacity within tolerance
@@ -115,7 +115,7 @@ func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
 }
 
 func TestNodesSimilarVariousLabels(t *testing.T) {
-	comparator := CreateGenericNodeInfoComparator()
+	comparator := CreateGenericNodeInfoComparator([]string{"example.com/ready"})
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
 	n1.ObjectMeta.Labels["character"] = "winnie the pooh"
@@ -146,5 +146,10 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 
 	n1.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "true"
 	delete(n2.ObjectMeta.Labels, "beta.kubernetes.io/fluentd-ds-ready")
+	checkNodesSimilar(t, n1, n2, comparator, true)
+
+	// Different custom labels should not matter
+	n1.ObjectMeta.Labels["example.com/ready"] = "true"
+	n2.ObjectMeta.Labels["example.com/ready"] = "false"
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }

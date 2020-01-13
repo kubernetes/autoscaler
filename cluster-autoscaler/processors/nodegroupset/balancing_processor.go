@@ -58,7 +58,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 		}
 		comparator := b.Comparator
 		if comparator == nil {
-			panic("BalancingNodeGroupSetProcessor comparator not set")
+			klog.Fatal("BalancingNodeGroupSetProcessor comparator not set")
 		}
 		if comparator(nodeInfo, ngNodeInfo) {
 			result = append(result, ng)

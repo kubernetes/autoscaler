@@ -29,7 +29,7 @@ import (
 )
 
 func TestIsAzureNodeInfoSimilar(t *testing.T) {
-	comparator := CreateAzureNodeInfoComparator()
+	comparator := CreateAzureNodeInfoComparator([]string{"example.com/ready"})
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
 	n1.ObjectMeta.Labels["character"] = "thing"
@@ -62,15 +62,21 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 	n1.ObjectMeta.Labels["agentpool"] = "foo"
 	n2.ObjectMeta.Labels["agentpool"] = "bar"
 	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Custom label
+	n1.ObjectMeta.Labels["example.com/ready"] = "true"
+	n2.ObjectMeta.Labels["example.com/ready"] = "false"
+	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
 func TestFindSimilarNodeGroupsAzureBasic(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator()}
-	basicSimilarNodeGroupsTest(t, processor)
+	context := &context.AutoscalingContext{}
+	ni1, ni2, ni3 := buildBasicNodeGroups(context)
+	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{})}
+	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
 }
 
 func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator()}
+	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAzureNodeInfoComparator([]string{})}
 	context := &context.AutoscalingContext{}
 
 	n1 := BuildTestNode("n1", 1000, 1000)
