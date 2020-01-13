@@ -85,11 +85,19 @@ func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string
 	}
 	return true
 }
+
 // CreateGenericNodeInfoComparator returns a generic comparator that checks for node group similarity
-// based on a standard set of widely-applicable ignore labels
-func CreateGenericNodeInfoComparator() NodeInfoComparator {
+func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+	genericIgnoredLabels := make(map[string]bool)
+	for k, v := range BasicIgnoredLabels {
+		genericIgnoredLabels[k] = v
+	}
+	for _, k := range extraIgnoredLabels {
+		genericIgnoredLabels[k] = true
+	}
+
 	return func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, BasicIgnoredLabels)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
 	}
 }
 

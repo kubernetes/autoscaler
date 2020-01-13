@@ -50,7 +50,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:           pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor:     nodegroups.NewDefaultNodeGroupListProcessor(),
-		NodeGroupSetProcessor:      nodegroupset.NewDefaultNodeGroupSetProcessor(),
+		NodeGroupSetProcessor:      nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
 		ScaleUpStatusProcessor:     status.NewDefaultScaleUpStatusProcessor(),
 		ScaleDownNodeProcessor:     nodes.NewPreFilteringScaleDownNodeProcessor(),
 		ScaleDownStatusProcessor:   status.NewDefaultScaleDownStatusProcessor(),
