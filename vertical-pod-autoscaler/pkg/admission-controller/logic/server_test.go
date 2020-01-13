@@ -19,14 +19,15 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -124,6 +125,16 @@ func addAnnotationRequest(updateResources [][]string, kind string) patchRecord {
 	}
 }
 
+func addVpaObservedContainersPatch(conetinerNames []string) patchRecord {
+	return patchRecord{
+		"add",
+		"/metadata/annotations",
+		map[string]string{
+			annotations.VpaObservedContainersLabel: strings.Join(conetinerNames, ", "),
+		},
+	}
+}
+
 func eqPatch(a, b patchRecord) bool {
 	aJson, aErr := json.Marshal(a)
 	bJson, bErr := json.Marshal(b)
@@ -186,6 +197,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
+				addVpaObservedContainersPatch([]string{}),
 			},
 		},
 		{
@@ -217,6 +229,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			expectPatches: []patchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
+				addVpaObservedContainersPatch([]string{}),
 			},
 		},
 		{
@@ -257,6 +270,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addRequestsPatch(1),
 				addResourceRequestPatch(1, cpu, "2"),
 				addAnnotationRequest([][]string{{cpu}, {cpu}}, request),
+				addVpaObservedContainersPatch([]string{"", ""}),
 			},
 		},
 		{
@@ -282,6 +296,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addLimitsPatch(0),
 				addResourceLimitPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, limit),
+				addVpaObservedContainersPatch([]string{}),
 			},
 		},
 		{
@@ -313,6 +328,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			expectPatches: []patchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, limit),
+				addVpaObservedContainersPatch([]string{}),
 			},
 		},
 	}
@@ -374,13 +390,72 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
-	if assert.Equal(t, len(patches), 3) {
+	if assert.Equal(t, len(patches), 4) {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
 		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
 		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
 		assert.False(t, eqPatch(patches[0], patches[1]))
 		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}}, request)) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}}, request)))
+		assert.True(t, eqPatch(patches[3], addVpaObservedContainersPatch([]string{})))
+	}
+}
+
+func TestGetPatchesForResourceRequest_VpaObservedContainers(t *testing.T) {
+	tests := []struct {
+		name          string
+		podJson       []byte
+		expectPatches []patchRecord
+	}{
+		{
+			name: "create vpa observed containers annotation",
+			podJson: []byte(
+				`{
+					"spec": {
+						"containers": [
+							{
+								"Name": "test1"
+							},
+							{
+								"Name": "test2"
+							}
+						]
+					}
+				}`),
+			expectPatches: []patchRecord{
+				addVpaObservedContainersPatch([]string{"test1", "test2"}),
+			},
+		},
+		{
+			name: "create vpa observed containers annotation with no containers",
+			podJson: []byte(
+				`{
+					"spec": {
+						"containers": []
+					}
+				}`),
+			expectPatches: []patchRecord{
+				addVpaObservedContainersPatch([]string{}),
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			fppp := fakePodPreProcessor{}
+			fvpp := fakeVpaPreProcessor{}
+			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, "RecomenderName", nil}
+			lc := limitrange.NewNoopLimitsCalculator()
+			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, "default")
+			assert.NoError(t, err)
+			if assert.Len(t, patches, len(tc.expectPatches)) {
+				for i, gotPatch := range patches {
+					if !eqPatch(gotPatch, tc.expectPatches[i]) {
+						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
+					}
+				}
+			}
+		})
 	}
 }
 
