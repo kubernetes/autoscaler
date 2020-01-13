@@ -315,8 +315,13 @@ func (m *AzureManager) Refresh() error {
 }
 
 func (m *AzureManager) forceRefresh() error {
+	// TODO: Refactor some of this logic out of forceRefresh and
+	// consider merging the list call with the Nodes() call
 	if err := m.fetchAutoAsgs(); err != nil {
 		klog.Errorf("Failed to fetch ASGs: %v", err)
+	}
+	if err := m.regenerateCache(); err != nil {
+		klog.Errorf("Failed to regenerate ASG cache: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()

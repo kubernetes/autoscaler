@@ -126,6 +126,8 @@ func TestNodeGroupForNode(t *testing.T) {
 			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
+	// refresh cache
+	provider.azureManager.regenerateCache()
 	group, err := provider.NodeGroupForNode(node)
 	assert.NoError(t, err)
 	assert.NotNil(t, group, "Group should not be nil")
