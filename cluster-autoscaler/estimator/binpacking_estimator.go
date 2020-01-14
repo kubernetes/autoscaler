@@ -35,12 +35,16 @@ type podInfo struct {
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
 	predicateChecker simulator.PredicateChecker
+	clusterSnapshot  simulator.ClusterSnapshot
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
-func NewBinpackingNodeEstimator(predicateChecker simulator.PredicateChecker) *BinpackingNodeEstimator {
+func NewBinpackingNodeEstimator(
+	predicateChecker simulator.PredicateChecker,
+	clusterSnapshot simulator.ClusterSnapshot) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
+		clusterSnapshot:  clusterSnapshot,
 	}
 }
 
@@ -51,7 +55,9 @@ func NewBinpackingNodeEstimator(predicateChecker simulator.PredicateChecker) *Bi
 // still be maintained.
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
-func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTemplate *schedulernodeinfo.NodeInfo,
+func (estimator *BinpackingNodeEstimator) Estimate(
+	pods []*apiv1.Pod,
+	nodeTemplate *schedulernodeinfo.NodeInfo,
 	upcomingNodes []*schedulernodeinfo.NodeInfo) int {
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })

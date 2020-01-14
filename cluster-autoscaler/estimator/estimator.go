@@ -38,14 +38,16 @@ type Estimator interface {
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(simulator.PredicateChecker) Estimator
+type EstimatorBuilder func(simulator.PredicateChecker, simulator.ClusterSnapshot) Estimator
 
 // NewEstimatorBuilder creates a new estimator object from flag.
 func NewEstimatorBuilder(name string) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
-		return func(predicateChecker simulator.PredicateChecker) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker)
+		return func(
+			predicateChecker simulator.PredicateChecker,
+			clusterSnapshot simulator.ClusterSnapshot) Estimator {
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
