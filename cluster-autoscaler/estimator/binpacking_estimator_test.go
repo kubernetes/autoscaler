@@ -111,7 +111,8 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 func newBinPackingEstimator(t *testing.T) *BinpackingNodeEstimator {
 	predicateChecker, err := simulator.NewTestPredicateChecker()
+	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 	assert.NoError(t, err)
-	estimator := NewBinpackingNodeEstimator(predicateChecker)
+	estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot)
 	return estimator
 }
