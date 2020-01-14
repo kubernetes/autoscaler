@@ -154,6 +154,7 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
+	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -164,6 +165,7 @@ func NewScaleTestAutoscalingContext(
 		},
 		CloudProvider:      provider,
 		PredicateChecker:   predicateChecker,
+		ClusterSnapshot:    clusterSnapshot,
 		ExpanderStrategy:   random.NewStrategy(),
 		EstimatorBuilder:   estimatorBuilder,
 		ProcessorCallbacks: processorCallbacks,
