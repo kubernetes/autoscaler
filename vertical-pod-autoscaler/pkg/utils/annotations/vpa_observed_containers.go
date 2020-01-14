@@ -42,6 +42,9 @@ func GetVpaObservedContainersValue(pod *v1.Pod) string {
 // ParseVpaObservedContainersValue returns list of containers
 // based on a given vpa observed containers annotation value.
 func ParseVpaObservedContainersValue(value string) ([]string, error) {
+	if value == "" {
+		return []string{}, nil
+	}
 	containerNames := strings.Split(value, listSeparator)
 	for i := range containerNames {
 		if errs := validation.IsDNS1123Label(containerNames[i]); len(errs) != 0 {
