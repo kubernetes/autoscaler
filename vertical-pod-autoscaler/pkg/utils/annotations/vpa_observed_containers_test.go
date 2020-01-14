@@ -64,9 +64,15 @@ func TestParseVpaObservedContainersValue(t *testing.T) {
 		},
 		{
 			name:       "parsing vpa observed containers annotation with incorrect container name",
-			annotation: "[test1, test2, test3_;';s]",
+			annotation: "test1, test2, test3_;';s",
 			want:       []string(nil),
 			wantErr:    true,
+		},
+		{
+			name:       "parsing empty vpa observed containers annotation",
+			annotation: "",
+			want:       []string{},
+			wantErr:    false,
 		},
 	}
 	for _, tc := range tests {
