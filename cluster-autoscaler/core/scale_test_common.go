@@ -148,6 +148,7 @@ func NewScaleTestAutoscalingContext(
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
 	predicateChecker, _ := simulator.NewTestPredicateChecker()
+	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -158,6 +159,7 @@ func NewScaleTestAutoscalingContext(
 		},
 		CloudProvider:      provider,
 		PredicateChecker:   predicateChecker,
+		ClusterSnapshot:    clusterSnapshot,
 		ExpanderStrategy:   random.NewStrategy(),
 		EstimatorBuilder:   estimatorBuilder,
 		ProcessorCallbacks: processorCallbacks,

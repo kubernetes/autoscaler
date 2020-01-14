@@ -110,6 +110,7 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
 	predicateChecker simulator.PredicateChecker,
+	clusterSnapshot simulator.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
 	cloudProvider cloudprovider.CloudProvider,
@@ -118,7 +119,15 @@ func NewStaticAutoscaler(
 	backoff backoff.Backoff) *StaticAutoscaler {
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder, processorCallbacks)
+	autoscalingContext := context.NewAutoscalingContext(
+		opts,
+		predicateChecker,
+		clusterSnapshot,
+		autoscalingKubeClients,
+		cloudProvider,
+		expanderStrategy,
+		estimatorBuilder,
+		processorCallbacks)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
