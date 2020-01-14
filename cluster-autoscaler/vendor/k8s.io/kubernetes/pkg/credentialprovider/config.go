@@ -287,7 +287,8 @@ func decodeDockerConfigFieldAuth(field string) (username, password string, err e
 
 	// StdEncoding can only decode padded string
 	// RawStdEncoding can only decode unpadded string
-	if strings.HasSuffix(strings.TrimSpace(field), "=") {
+	// a string is correctly padded if and only if its length is a multiple of 4
+	if (len(field) % 4) == 0 {
 		// decode padded data
 		decoded, err = base64.StdEncoding.DecodeString(field)
 	} else {
