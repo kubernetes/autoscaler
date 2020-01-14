@@ -274,6 +274,11 @@ func TestSanitizeTaints(t *testing.T) {
 		Value:  "1",
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
+	taints = append(taints, apiv1.Taint{
+		Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
+		Value:  "I-am-the-invisible-man-Incredible-how-you-can",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
 
 	ignoredTaints := map[string]bool{"ignore-me": true}
 

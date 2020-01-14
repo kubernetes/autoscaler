@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -41,6 +42,8 @@ import (
 const (
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
+	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
+	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
 )
 
 type equivalenceGroupId int
@@ -281,6 +284,11 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints Tain
 
 		if exists := ignoredTaints[taint.Key]; exists {
 			klog.V(4).Infof("Removing ignored taint %s, when creating template from node %s", taint.Key, node.Name)
+			continue
+		}
+
+		if strings.HasPrefix(taint.Key, IgnoreTaintPrefix) {
+			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node %s", taint.Key, node.Name)
 			continue
 		}
 
