@@ -42,6 +42,8 @@ type AutoscalingContext struct {
 	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
 	PredicateChecker simulator.PredicateChecker
+	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
+	ClusterSnapshot simulator.ClusterSnapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
 	// EstimatorBuilder is the builder function for node count estimator to be used.
@@ -83,15 +85,21 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
-func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker simulator.PredicateChecker,
-	autoscalingKubeClients *AutoscalingKubeClients, cloudProvider cloudprovider.CloudProvider,
-	expanderStrategy expander.Strategy, estimatorBuilder estimator.EstimatorBuilder,
+func NewAutoscalingContext(
+	options config.AutoscalingOptions,
+	predicateChecker simulator.PredicateChecker,
+	clusterSnapshot simulator.ClusterSnapshot,
+	autoscalingKubeClients *AutoscalingKubeClients,
+	cloudProvider cloudprovider.CloudProvider,
+	expanderStrategy expander.Strategy,
+	estimatorBuilder estimator.EstimatorBuilder,
 	processorCallbacks processor_callbacks.ProcessorCallbacks) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
 		AutoscalingKubeClients: *autoscalingKubeClients,
 		PredicateChecker:       predicateChecker,
+		ClusterSnapshot:        clusterSnapshot,
 		ExpanderStrategy:       expanderStrategy,
 		EstimatorBuilder:       estimatorBuilder,
 		ProcessorCallbacks:     processorCallbacks,

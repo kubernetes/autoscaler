@@ -42,6 +42,7 @@ type AutoscalerOptions struct {
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       simulator.PredicateChecker
+	ClusterSnapshot        simulator.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
@@ -68,6 +69,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 	return NewStaticAutoscaler(
 		opts.AutoscalingOptions,
 		opts.PredicateChecker,
+		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,
 		opts.CloudProvider,
@@ -91,6 +93,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 			return err
 		}
 		opts.PredicateChecker = predicateChecker
+	}
+	if opts.ClusterSnapshot == nil {
+		opts.ClusterSnapshot = simulator.NewBasicClusterSnapshot()
 	}
 	if opts.CloudProvider == nil {
 		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
