@@ -17,10 +17,12 @@ limitations under the License.
 package priority
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -409,4 +411,61 @@ func TestNoRecommendationForContainer(t *testing.T) {
 
 	result := calculator.getUpdatePriority(pod, nil)
 	assert.NotNil(t, result)
+}
+
+func TestGetUpdatePriority_VpaObservedContainers(t *testing.T) {
+	const (
+		// There is no VpaObservedContainers annotation
+		// or the container is listed in the annotation.
+		optedInContainerDiff = 9
+		// There is VpaObservedContainers annotation
+		// and the container is not listed in.
+		optedOutContainerDiff = 0
+	)
+	tests := []struct {
+		name           string
+		pod            *apiv1.Pod
+		recommendation *vpa_types.RecommendedPodResources
+		want           float64
+	}{
+		{
+			name:           "with no VpaObservedContainers annotation",
+			pod:            test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get(),
+			recommendation: test.Recommendation().WithContainer(containerName).WithTarget("10", "").Get(),
+			want:           optedInContainerDiff,
+		},
+		{
+			name: "with container listed in VpaObservedContainers annotation",
+			pod: test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: containerName}).
+				WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get(),
+			recommendation: test.Recommendation().WithContainer(containerName).WithTarget("10", "").Get(),
+			want:           optedInContainerDiff,
+		},
+		{
+			name: "with container not listed in VpaObservedContainers annotation",
+			pod: test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: ""}).
+				WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get(),
+			recommendation: test.Recommendation().WithContainer(containerName).WithTarget("10", "").Get(),
+			want:           optedOutContainerDiff,
+		},
+		{
+			name: "with incorrect VpaObservedContainers annotation",
+			pod: test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: "abcd;';"}).
+				WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get(),
+			recommendation: test.Recommendation().WithContainer(containerName).WithTarget("10", "").Get(),
+			want:           optedInContainerDiff,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
+			result := calculator.getUpdatePriority(tc.pod, tc.recommendation)
+			assert.NotNil(t, result)
+			// The resourceDiff should be a difference between container resources
+			// and container resource recommendations. Containers not listed
+			// in an existing vpaObservedContainers annotations shouldn't be taken
+			// into account during calculations.
+			assert.InDelta(t, result.resourceDiff, tc.want, 0.0001)
+		})
+	}
 }

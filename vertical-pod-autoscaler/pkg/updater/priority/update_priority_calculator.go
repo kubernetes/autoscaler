@@ -23,7 +23,9 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
 )
@@ -149,7 +151,23 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	// Sum of recommendations over all containers, per resource type.
 	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
+	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+	vpaContainerSet := sets.NewString()
+	if hasObservedContainers {
+		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
+			klog.Errorf("Vpa annotation %s failed to parse: %v", observedContainers, err)
+			hasObservedContainers = false
+		} else {
+			vpaContainerSet.Insert(containers...)
+		}
+	}
+
 	for _, podContainer := range pod.Spec.Containers {
+		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
+			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s priority calculations",
+				annotations.VpaObservedContainersLabel, observedContainers, podContainer.Name)
+			continue
+		}
 		recommendedRequest := vpa_api_util.GetRecommendationForContainer(podContainer.Name, recommendation)
 		if recommendedRequest == nil {
 			continue
