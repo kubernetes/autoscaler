@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -96,6 +97,13 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 				Value: vpaAnnotationValue})
 		}
 	}
+	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(&pod)
+	patches = append(patches, patchRecord{
+		Op:    "add",
+		Path:  "/metadata/annotations",
+		Value: map[string]string{annotations.VpaObservedContainersLabel: vpaObservedContainersValue},
+	})
+
 	return patches, nil
 }
 
