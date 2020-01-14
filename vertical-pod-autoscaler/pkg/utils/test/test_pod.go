@@ -27,6 +27,7 @@ type PodBuilder interface {
 	AddContainer(container apiv1.Container) PodBuilder
 	WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder
 	WithLabels(labels map[string]string) PodBuilder
+	WithAnnotations(annotations map[string]string) PodBuilder
 	WithPhase(phase apiv1.PodPhase) PodBuilder
 	Get() *apiv1.Pod
 }
@@ -44,12 +45,19 @@ type podBuilderImpl struct {
 	creatorObjectMeta *metav1.ObjectMeta
 	creatorTypeMeta   *metav1.TypeMeta
 	labels            map[string]string
+	annotations       map[string]string
 	phase             apiv1.PodPhase
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
 	r := *pb
 	r.labels = labels
+	return &r
+}
+
+func (pb *podBuilderImpl) WithAnnotations(annotations map[string]string) PodBuilder {
+	r := *pb
+	r.annotations = annotations
 	return &r
 }
 
@@ -95,6 +103,10 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 
 	if pb.labels != nil {
 		pod.ObjectMeta.Labels = pb.labels
+	}
+
+	if pb.annotations != nil {
+		pod.ObjectMeta.Annotations = pb.annotations
 	}
 
 	if pb.creatorObjectMeta != nil && pb.creatorTypeMeta != nil {
