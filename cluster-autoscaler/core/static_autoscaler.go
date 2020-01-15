@@ -188,6 +188,31 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	a.initialized = true
 }
 
+func (a *StaticAutoscaler) propagateClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) errors.AutoscalerError {
+	var err error
+	err = a.ClusterSnapshot.Clear()
+	if err != nil {
+		klog.Errorf("Failed to clear cluster snapshot: %v", err)
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+
+	for _, node := range nodes {
+		err = a.ClusterSnapshot.AddNode(node)
+		if err != nil {
+			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
+			return errors.ToAutoscalerError(errors.InternalError, err)
+		}
+	}
+	for _, pod := range scheduledPods {
+		err = a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+		if err != nil {
+			klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
+			return errors.ToAutoscalerError(errors.InternalError, err)
+		}
+	}
+	return nil
+}
+
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
@@ -220,25 +245,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	// Propagate cluster state to ClusterSnapshot
-	err = a.ClusterSnapshot.Clear()
-	if err != nil {
-		klog.Errorf("Failed to clear cluster snapshot: %v", err)
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
-
-	for _, node := range allNodes {
-		err = a.ClusterSnapshot.AddNode(node)
-		if err != nil {
-			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
-			return errors.ToAutoscalerError(errors.InternalError, err)
-		}
-	}
-	for _, pod := range originalScheduledPods {
-		err = a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-		if err != nil {
-			klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
-			return errors.ToAutoscalerError(errors.InternalError, err)
-		}
+	typedErr = a.propagateClusterSnapshot(allNodes, originalScheduledPods)
+	if typedErr != nil {
+		return typedErr.AddPrefix("Propagate ClusterSnapshot before scale-up")
 	}
 
 	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
@@ -408,6 +417,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	if a.ScaleDownEnabled {
+
+		// TODO(scheduler_framework migration) should we repropagate ClusterSnaphshot before scaled down?
+		// If we follow old logic it seems we should not.
+
 		pdbs, err := pdbLister.List()
 		if err != nil {
 			scaleDownStatus.Result = status.ScaleDownError
