@@ -86,5 +86,22 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	assert.Equal(t, p1, res[0])
 	assert.Equal(t, p2, res[1])
 	assert.Equal(t, podWaitingForPreemption2, res[2])
+}
+
+func TestIsExpendablePod(t *testing.T) {
+	pod1 := BuildTestPod("p1", 1500, 200000)
+	pod2 := BuildTestPod("w1", 1500, 200000)
+	var priority1 int32 = -10
+	pod2.Spec.Priority = &priority1
+	pod2.Status.NominatedNodeName = "node1"
+
+	assert.False(t, IsExpendablePod(pod1, 0))
+	assert.False(t, IsExpendablePod(pod1, -9))
+	assert.False(t, IsExpendablePod(pod1, -10))
+	assert.False(t, IsExpendablePod(pod1, -11))
+	assert.True(t, IsExpendablePod(pod2, 0))
+	assert.True(t, IsExpendablePod(pod2, -9))
+	assert.False(t, IsExpendablePod(pod2, -10))
+	assert.False(t, IsExpendablePod(pod2, -11))
 
 }
