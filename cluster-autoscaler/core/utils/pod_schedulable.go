@@ -17,6 +17,8 @@ limitations under the License.
 package utils
 
 import (
+	"reflect"
+
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	"reflect"
 
 	"k8s.io/klog"
 )
@@ -107,12 +108,12 @@ func NewPodsSchedulableOnNodeChecker(context *context.AutoscalingContext, pods [
 
 	// compute the podsEquivalenceGroups
 	var nextGroupId equivalenceGroupId
-	type equivalanceGroup struct {
+	type equivalenceGroup struct {
 		id           equivalenceGroupId
 		representant *apiv1.Pod
 	}
 
-	equivalenceGroupsByController := make(map[types.UID][]equivalanceGroup)
+	equivalenceGroupsByController := make(map[types.UID][]equivalenceGroup)
 
 	for _, pod := range pods {
 		controllerRef := drain.ControllerRef(pod)
@@ -132,7 +133,7 @@ func NewPodsSchedulableOnNodeChecker(context *context.AutoscalingContext, pods [
 		}
 
 		if !matchingFound {
-			newGroup := equivalanceGroup{
+			newGroup := equivalenceGroup{
 				id:           nextGroupId,
 				representant: pod,
 			}
