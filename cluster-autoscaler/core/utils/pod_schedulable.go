@@ -21,14 +21,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-
-	"k8s.io/klog"
 )
 
 // PodSchedulableInfo data structure is used to avoid running predicates #pending_pods * #nodes
@@ -88,90 +82,4 @@ func (podMap PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateErro
 		labels:          pod.Labels,
 		schedulingError: err,
 	})
-}
-
-// PodsSchedulableOnNodeChecker allows for querying what subset of pods from a set is schedulable on given node.
-// Pods set is give at creation time and then multiple nodes can be used for querying.
-type PodsSchedulableOnNodeChecker struct {
-	context               *context.AutoscalingContext
-	pods                  []*apiv1.Pod
-	podsEquivalenceGroups map[types.UID]equivalenceGroupId
-}
-
-// NewPodsSchedulableOnNodeChecker creates an instance of PodsSchedulableOnNodeChecker
-func NewPodsSchedulableOnNodeChecker(context *context.AutoscalingContext, pods []*apiv1.Pod) *PodsSchedulableOnNodeChecker {
-	checker := PodsSchedulableOnNodeChecker{
-		context:               context,
-		pods:                  pods,
-		podsEquivalenceGroups: make(map[types.UID]equivalenceGroupId),
-	}
-
-	// compute the podsEquivalenceGroups
-	var nextGroupId equivalenceGroupId
-	type equivalenceGroup struct {
-		id           equivalenceGroupId
-		representant *apiv1.Pod
-	}
-
-	equivalenceGroupsByController := make(map[types.UID][]equivalenceGroup)
-
-	for _, pod := range pods {
-		controllerRef := drain.ControllerRef(pod)
-		if controllerRef == nil {
-			checker.podsEquivalenceGroups[pod.UID] = nextGroupId
-			nextGroupId++
-			continue
-		}
-
-		matchingFound := false
-		for _, g := range equivalenceGroupsByController[controllerRef.UID] {
-			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && apiequality.Semantic.DeepEqual(pod.Spec, g.representant.Spec) {
-				matchingFound = true
-				checker.podsEquivalenceGroups[pod.UID] = g.id
-				break
-			}
-		}
-
-		if !matchingFound {
-			newGroup := equivalenceGroup{
-				id:           nextGroupId,
-				representant: pod,
-			}
-			equivalenceGroupsByController[controllerRef.UID] = append(equivalenceGroupsByController[controllerRef.UID], newGroup)
-			checker.podsEquivalenceGroups[pod.UID] = newGroup.id
-			nextGroupId++
-		}
-	}
-
-	return &checker
-}
-
-// CheckPodsSchedulableOnNode checks if pods can be scheduled on the given node.
-func (c *PodsSchedulableOnNodeChecker) CheckPodsSchedulableOnNode(nodeGroupId string, nodeInfo *schedulernodeinfo.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
-	loggingQuota := glogx.PodsLoggingQuota()
-	schedulingErrors := make(map[equivalenceGroupId]*simulator.PredicateError)
-
-	for _, pod := range c.pods {
-		equivalenceGroup := c.podsEquivalenceGroups[pod.UID]
-		err, found := schedulingErrors[equivalenceGroup]
-		if found && err != nil {
-			glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
-		}
-		// Not found in cache, have to run the predicates.
-		if !found {
-			err = c.context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo)
-			schedulingErrors[equivalenceGroup] = err
-			if err != nil {
-				// Always log for the first pod in a controller.
-				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
-			}
-		}
-	}
-	glogx.V(2).Over(loggingQuota).Infof("%v other pods can't be scheduled on %s.", -loggingQuota.Left(), nodeGroupId)
-
-	schedulingErrorsByPod := make(map[*apiv1.Pod]*simulator.PredicateError)
-	for _, pod := range c.pods {
-		schedulingErrorsByPod[pod] = schedulingErrors[c.podsEquivalenceGroups[pod.UID]]
-	}
-	return schedulingErrorsByPod
 }
