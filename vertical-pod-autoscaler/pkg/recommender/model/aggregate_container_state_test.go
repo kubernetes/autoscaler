@@ -208,3 +208,42 @@ func TestAggregateContainerStateIsExpired(t *testing.T) {
 	assert.False(t, csEmpty.isExpired(testTimestamp.Add(7*24*time.Hour)))
 	assert.True(t, csEmpty.isExpired(testTimestamp.Add(8*24*time.Hour)))
 }
+
+func TestUpdateFromPolicy(t *testing.T) {
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	scalingModeOff := vpa_types.ContainerScalingModeOff
+	testCases := []struct {
+		name     string
+		policy   *vpa_types.ContainerResourcePolicy
+		expected *vpa_types.ContainerScalingMode
+	}{
+		{
+			name: "Explicit auto scaling mode",
+			policy: &vpa_types.ContainerResourcePolicy{
+				Mode: &scalingModeAuto,
+			},
+			expected: &scalingModeAuto,
+		}, {
+			name: "Off scaling mode",
+			policy: &vpa_types.ContainerResourcePolicy{
+				Mode: &scalingModeOff,
+			},
+			expected: &scalingModeOff,
+		}, {
+			name:     "No mode specified - default to Auto",
+			policy:   &vpa_types.ContainerResourcePolicy{},
+			expected: &scalingModeAuto,
+		}, {
+			name:     "Nil policy - default to Auto",
+			policy:   nil,
+			expected: &scalingModeAuto,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			assert.Equal(t, tc.expected, cs.GetScalingMode())
+		})
+	}
+}
