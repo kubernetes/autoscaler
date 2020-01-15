@@ -163,14 +163,10 @@ var (
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
-	unremovableNodeRecheckTimeout       = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
-	expendablePodsPriorityCutoff        = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
-	regional                            = flag.Bool("regional", false, "Cluster is regional.")
-	newPodScaleUpDelay                  = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
-	filterOutSchedulablePodsUsesPacking = flag.Bool("filter-out-schedulable-pods-uses-packing", true,
-		"Filtering out schedulable pods before CA scale up by trying to pack the schedulable pods on free capacity on existing nodes."+
-			"Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes."+
-			"Pods with nominatedNodeName set are always filtered out.")
+	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
+	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
+	regional                      = flag.Bool("regional", false, "Cluster is regional.")
+	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
 
 	ignoreTaintsFlag         = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 	awsUseStaticInstanceList = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
@@ -195,53 +191,52 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	return config.AutoscalingOptions{
-		CloudConfig:                         *cloudConfig,
-		CloudProviderName:                   *cloudProviderFlag,
-		NodeGroupAutoDiscovery:              *nodeGroupAutoDiscoveryFlag,
-		MaxTotalUnreadyPercentage:           *maxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:                 *okTotalUnreadyCount,
-		ScaleUpFromZero:                     *scaleUpFromZero,
-		EstimatorName:                       *estimatorFlag,
-		ExpanderName:                        *expanderFlag,
-		IgnoreDaemonSetsUtilization:         *ignoreDaemonSetsUtilization,
-		IgnoreMirrorPodsUtilization:         *ignoreMirrorPodsUtilization,
-		MaxBulkSoftTaintCount:               *maxBulkSoftTaintCount,
-		MaxBulkSoftTaintTime:                *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:                  *maxEmptyBulkDeleteFlag,
-		MaxGracefulTerminationSec:           *maxGracefulTerminationFlag,
-		MaxNodeProvisionTime:                *maxNodeProvisionTime,
-		MaxNodesTotal:                       *maxNodesTotal,
-		MaxCoresTotal:                       maxCoresTotal,
-		MinCoresTotal:                       minCoresTotal,
-		MaxMemoryTotal:                      maxMemoryTotal,
-		MinMemoryTotal:                      minMemoryTotal,
-		GpuTotal:                            parsedGpuTotal,
-		NodeGroups:                          *nodeGroupsFlag,
-		ScaleDownDelayAfterAdd:              *scaleDownDelayAfterAdd,
-		ScaleDownDelayAfterDelete:           *scaleDownDelayAfterDelete,
-		ScaleDownDelayAfterFailure:          *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                    *scaleDownEnabled,
-		ScaleDownUnneededTime:               *scaleDownUnneededTime,
-		ScaleDownUnreadyTime:                *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold:       *scaleDownUtilizationThreshold,
-		ScaleDownGpuUtilizationThreshold:    *scaleDownGpuUtilizationThreshold,
-		ScaleDownNonEmptyCandidatesCount:    *scaleDownNonEmptyCandidatesCount,
-		ScaleDownCandidatesPoolRatio:        *scaleDownCandidatesPoolRatio,
-		ScaleDownCandidatesPoolMinCount:     *scaleDownCandidatesPoolMinCount,
-		WriteStatusConfigMap:                *writeStatusConfigMapFlag,
-		BalanceSimilarNodeGroups:            *balanceSimilarNodeGroupsFlag,
-		ConfigNamespace:                     *namespace,
-		ClusterName:                         *clusterName,
-		NodeAutoprovisioningEnabled:         *nodeAutoprovisioningEnabled,
-		MaxAutoprovisionedNodeGroupCount:    *maxAutoprovisionedNodeGroupCount,
-		UnremovableNodeRecheckTimeout:       *unremovableNodeRecheckTimeout,
-		ExpendablePodsPriorityCutoff:        *expendablePodsPriorityCutoff,
-		Regional:                            *regional,
-		NewPodScaleUpDelay:                  *newPodScaleUpDelay,
-		FilterOutSchedulablePodsUsesPacking: *filterOutSchedulablePodsUsesPacking,
-		IgnoredTaints:                       *ignoreTaintsFlag,
-		NodeDeletionDelayTimeout:            *nodeDeletionDelayTimeout,
-		AWSUseStaticInstanceList:            *awsUseStaticInstanceList,
+		CloudConfig:                      *cloudConfig,
+		CloudProviderName:                *cloudProviderFlag,
+		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
+		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:              *okTotalUnreadyCount,
+		ScaleUpFromZero:                  *scaleUpFromZero,
+		EstimatorName:                    *estimatorFlag,
+		ExpanderName:                     *expanderFlag,
+		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
+		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
+		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,
+		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
+		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
+		MaxNodeProvisionTime:             *maxNodeProvisionTime,
+		MaxNodesTotal:                    *maxNodesTotal,
+		MaxCoresTotal:                    maxCoresTotal,
+		MinCoresTotal:                    minCoresTotal,
+		MaxMemoryTotal:                   maxMemoryTotal,
+		MinMemoryTotal:                   minMemoryTotal,
+		GpuTotal:                         parsedGpuTotal,
+		NodeGroups:                       *nodeGroupsFlag,
+		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
+		ScaleDownEnabled:                 *scaleDownEnabled,
+		ScaleDownUnneededTime:            *scaleDownUnneededTime,
+		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
+		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
+		ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
+		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
+		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
+		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:                  *namespace,
+		ClusterName:                      *clusterName,
+		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
+		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
+		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
+		Regional:                         *regional,
+		NewPodScaleUpDelay:               *newPodScaleUpDelay,
+		IgnoredTaints:                    *ignoreTaintsFlag,
+		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
+		AWSUseStaticInstanceList:         *awsUseStaticInstanceList,
 	}
 }
 
