@@ -34,6 +34,11 @@ type ClusterSnapshot interface {
 	// RemovePod removes pod from the snapshot.
 	RemovePod(namespace string, podName string) error
 
+	// GetAllPods returns list of all the pods in snapshot
+	GetAllPods() ([]*apiv1.Pod, error)
+	// GetAllNodes returns list of ll the nodes in snapshot
+	GetAllNodes() ([]*apiv1.Node, error)
+
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 	// Forking already forked snapshot is not allowed and will result with an error.
 	Fork() error
