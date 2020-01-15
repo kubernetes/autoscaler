@@ -370,9 +370,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
+	// add upcoming nodes to ClusterSnapshot
+	upcomingNodes := getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups)
+	for _, upcomingNode := range upcomingNodes {
+		err = a.ClusterSnapshot.AddNode(upcomingNode)
+		if err != nil {
+			klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Name, err)
+			return errors.ToAutoscalerError(errors.InternalError, err)
+		}
+	}
+
 	unschedulablePodsToHelp, scheduledPods, _ := a.processors.PodListProcessor.Process(
 		a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes,
-		getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups))
+		upcomingNodes)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
