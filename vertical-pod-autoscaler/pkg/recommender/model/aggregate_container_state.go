@@ -90,13 +90,20 @@ type AggregateContainerState struct {
 	// each container should add one peak per memory aggregation interval (e.g. once every 24h).
 	AggregateMemoryPeaks util.Histogram
 	// Note: first/last sample timestamps as well as the sample count are based only on CPU samples.
-	FirstSampleStart   time.Time
-	LastSampleStart    time.Time
-	TotalSamplesCount  int
-	CreationTime       time.Time
+	FirstSampleStart  time.Time
+	LastSampleStart   time.Time
+	TotalSamplesCount int
+	CreationTime      time.Time
+
+	// Following fields are needed to correctly report quality metrics
+	// for VPA. When we record a new sample in an AggregateContainerState
+	// we want to know if it needs recommendation, if the recommendation
+	// is present and if the automatic updates are on (are we able to
+	// apply the recommendation to the pods).
 	LastRecommendation corev1.ResourceList
 	IsUnderVPA         bool
 	UpdateMode         *vpa_types.UpdateMode
+	ScalingMode        *vpa_types.ContainerScalingMode
 }
 
 // GetLastRecommendation returns last recorded recommendation.
@@ -106,7 +113,7 @@ func (a *AggregateContainerState) GetLastRecommendation() corev1.ResourceList {
 
 // NeedsRecommendation returns true if the state should have recommendation calculated.
 func (a *AggregateContainerState) NeedsRecommendation() bool {
-	return a.IsUnderVPA
+	return a.IsUnderVPA && a.ScalingMode != nil && *a.ScalingMode != vpa_types.ContainerScalingModeOff
 }
 
 // GetUpdateMode returns the update mode of VPA controlling this aggregator,
@@ -115,12 +122,19 @@ func (a *AggregateContainerState) GetUpdateMode() *vpa_types.UpdateMode {
 	return a.UpdateMode
 }
 
-// MarkNotAutoscaled registers that this container state is not contorled by
+// GetScalingMode returns the container scaling mode of the container
+// represented byt his aggregator, nil if aggregator is not autoscaled.
+func (a *AggregateContainerState) GetScalingMode() *vpa_types.ContainerScalingMode {
+	return a.ScalingMode
+}
+
+// MarkNotAutoscaled registers that this container state is not controlled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
 	a.IsUnderVPA = false
 	a.LastRecommendation = nil
 	a.UpdateMode = nil
+	a.ScalingMode = nil
 }
 
 // MergeContainerState merges two AggregateContainerStates.
@@ -241,6 +255,17 @@ func (a *AggregateContainerState) isEmpty() bool {
 	return a.TotalSamplesCount == 0
 }
 
+// UpdateFromPolicy updates container state scaling mode based on resource
+// policy of the VPA object.
+func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.ContainerResourcePolicy) {
+	// ContainerScalingModeAuto is the default scaling mode
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	a.ScalingMode = &scalingModeAuto
+	if resourcePolicy != nil && resourcePolicy.Mode != nil {
+		a.ScalingMode = resourcePolicy.Mode
+	}
+}
+
 // AggregateStateByContainerName takes a set of AggregateContainerStates and merge them
 // grouping by the container name. The result is a map from the container name to the aggregation
 // from all input containers with the given name.
@@ -300,4 +325,10 @@ func (p *ContainerStateAggregatorProxy) NeedsRecommendation() bool {
 func (p *ContainerStateAggregatorProxy) GetUpdateMode() *vpa_types.UpdateMode {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetUpdateMode()
+}
+
+// GetScalingMode returns scaling mode of container represented by the aggregator.
+func (p *ContainerStateAggregatorProxy) GetScalingMode() *vpa_types.ContainerScalingMode {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetScalingMode()
 }
