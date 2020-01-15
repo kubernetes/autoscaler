@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -66,12 +65,8 @@ func (filterOutSchedulablePodListProcessor) Process(
 	filterOutSchedulableStart := time.Now()
 	var unschedulablePodsToHelp []*apiv1.Pod
 
-	if context.EstimatorName == estimator.BinpackingEstimatorName {
-		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
-			context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
-	} else {
-		unschedulablePodsToHelp = unschedulablePods
-	}
+	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
+		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
 
 	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePodsToHelp, readyNodes, allScheduledPods,
 		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, true)
