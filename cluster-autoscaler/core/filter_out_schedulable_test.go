@@ -24,49 +24,29 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFilterOutSchedulableByPacking(t *testing.T) {
-	rc1 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc1",
-			Namespace: "default",
-			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
-			UID:       "12345678-1234-1234-1234-123456789012",
-		},
-	}
-
-	rc2 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc2",
-			Namespace: "default",
-			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
-			UID:       "12345678-1234-1234-1234-12345678901a",
-		},
-	}
+	// TODO(scheduler_framework_integration) extend/cleanup the test
+	// - add more nodes
+	// - add better naming for pods/scenarios
 
 	p1 := BuildTestPod("p1", 1500, 200000)
 	p2_1 := BuildTestPod("p2_2", 3000, 200000)
-	p2_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	p2_2 := BuildTestPod("p2_2", 3000, 200000)
-	p2_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p3_1 := BuildTestPod("p3", 300, 200000)
-	p3_1.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	p3_2 := BuildTestPod("p3", 300, 200000)
-	p3_2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	unschedulablePods := []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2}
+	p3_1 := BuildTestPod("p3_1", 300, 200000)
+	p3_2 := BuildTestPod("p3_2", 300, 200000)
 
 	scheduledPod1 := BuildTestPod("s1", 100, 200000)
+	scheduledPod1.Spec.NodeName = "node1"
 	scheduledPod2 := BuildTestPod("s2", 1500, 200000)
+	scheduledPod2.Spec.NodeName = "node1"
 	scheduledPod3 := BuildTestPod("s3", 4000, 200000)
+	scheduledPod3.Spec.NodeName = "node1"
 	var priority1 int32 = 1
 	scheduledPod3.Spec.Priority = &priority1
-	scheduledPod1.Spec.NodeName = "node1"
-	scheduledPod2.Spec.NodeName = "node1"
-	scheduledPod2.Spec.NodeName = "node1"
 
 	podWaitingForPreemption := BuildTestPod("w1", 1500, 200000)
 	var priority100 int32 = 100
@@ -79,27 +59,61 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
-	predicateChecker, err := simulator.NewTestPredicateChecker()
-	assert.NoError(t, err)
+	tests := []struct {
+		name                   string
+		nodes                  []*apiv1.Node
+		scheduledPods          []*apiv1.Pod
+		pendingPods            []*apiv1.Pod
+		expectedPendingPods    []*apiv1.Pod
+		expectedPodsInSnapshot []*apiv1.Pod
+	}{
+		{
+			name:                   "scenario 1",
+			nodes:                  []*apiv1.Node{node},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod3},
+			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
+			expectedPendingPods:    []*apiv1.Pod{p2_1, p2_2, p3_2},
+			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, p1, p3_1},
+		},
+		{
+			name:                   "scenario 2",
+			nodes:                  []*apiv1.Node{node},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3},
+			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
+			expectedPendingPods:    []*apiv1.Pod{p1, p2_1, p2_2, p3_2},
+			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, scheduledPod2, p3_1},
+		},
+		{
+			name:                   "scenario 3",
+			nodes:                  []*apiv1.Node{node},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod3},
+			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2, p4},
+			expectedPendingPods:    []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
+			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, p4},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			predicateChecker, err := simulator.NewTestPredicateChecker()
+			clusterSnapshot := simulator.NewBasicClusterSnapshot()
 
-	res := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10, true)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, p2_1, res[0])
-	assert.Equal(t, p2_2, res[1])
-	assert.Equal(t, p3_2, res[2])
+			for _, node := range tt.nodes {
+				err := clusterSnapshot.AddNode(node)
+				assert.NoError(t, err)
+			}
 
-	res2 := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3}, predicateChecker, 10, true)
-	assert.Equal(t, 4, len(res2))
-	assert.Equal(t, p1, res2[0])
-	assert.Equal(t, p2_1, res2[1])
-	assert.Equal(t, p2_2, res2[2])
-	assert.Equal(t, p3_2, res2[3])
+			for _, pod := range tt.scheduledPods {
+				err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+				assert.NoError(t, err)
+			}
 
-	res4 := filterOutSchedulableByPacking(append(unschedulablePods, p4), []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10, true)
-	assert.Equal(t, 5, len(res4))
-	assert.Equal(t, p1, res4[0])
-	assert.Equal(t, p2_1, res4[1])
-	assert.Equal(t, p2_2, res4[2])
-	assert.Equal(t, p3_1, res4[3])
-	assert.Equal(t, p3_2, res4[4])
+			stillPendingPods, err := filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker, 10)
+			assert.NoError(t, err)
+			assert.ElementsMatch(t, stillPendingPods, tt.expectedPendingPods)
+
+			// Check if snapshot was correctly modified
+			podsInSnapshot, _ := clusterSnapshot.GetAllPods()
+			assert.ElementsMatch(t, podsInSnapshot, tt.expectedPodsInSnapshot)
+		})
+	}
 }
