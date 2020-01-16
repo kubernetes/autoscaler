@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -25,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	schedulerutil "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
@@ -65,13 +65,12 @@ func (filterOutSchedulablePodListProcessor) Process(
 	filterOutSchedulableStart := time.Now()
 	var unschedulablePodsToHelp []*apiv1.Pod
 
-	// first try to fill in upcoming nodes
-	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
-		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
+	unschedulablePodsToHelp, err := filterOutSchedulableByPacking(unschedulablePods, context.ClusterSnapshot,
+		context.PredicateChecker, context.ExpendablePodsPriorityCutoff)
 
-	// then see if we can put some pods to nodes in the cluster
-	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePodsToHelp, readyNodes, allScheduledPods,
-		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, true)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
@@ -91,37 +90,52 @@ func (filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node,
-	allScheduled []*apiv1.Pod, predicateChecker simulator.PredicateChecker,
-	expendablePodsPriorityCutoff int, nodesExist bool) []*apiv1.Pod {
-	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
-	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
+func filterOutSchedulableByPacking(
+	unschedulableCandidates []*apiv1.Pod,
+	clusterSnapshot simulator.ClusterSnapshot,
+	predicateChecker simulator.PredicateChecker,
+	expendablePodsPriorityCutoff int) ([]*apiv1.Pod, error) {
 
+	allScheduled, err := clusterSnapshot.GetAllPods()
+	if err != nil {
+		return nil, fmt.Errorf("could not list all pods from snapshot; %v", err)
+	}
+
+	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return moreImportantPod(unschedulableCandidates[i], unschedulableCandidates[j])
 	})
 
-	for _, pod := range unschedulableCandidates {
-		nodeName, err := predicateChecker.FitsAnyNode(nil, pod, nodeNameToNodeInfo)
-		if err != nil {
-			unschedulablePods = append(unschedulablePods, pod)
-		} else {
-			var nodeType string
-			if nodesExist {
-				nodeType = "existing"
-			} else {
-				nodeType = "upcoming"
+	// Remove all expendable pods snapshot
+	// TODO(scheduler_framework_integration) distinguish move to separate pod list processor
+	for _, pod := range allScheduled {
+		if utils.IsExpendablePod(pod, expendablePodsPriorityCutoff) {
+			klog.V(4).Infof("Removing expandable pod %s.%s", pod.Namespace, pod.Name)
+			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+				return nil, err
 			}
-			klog.V(4).Infof("Pod %s marked as unschedulable can be scheduled on %s node %s. Ignoring"+
-				" in scale up.", pod.Name, nodeType, nodeName)
-			nodeNameToNodeInfo[nodeName].AddPod(pod)
 		}
 	}
 
-	klog.V(4).Infof("%v other pods marked as unschedulable can be scheduled.",
-		len(unschedulableCandidates)-len(unschedulablePods))
-	return unschedulablePods
+	// Pods which remain unschedulable
+	var unschedulablePods []*apiv1.Pod
+
+	// Bin pack
+	for _, pod := range unschedulableCandidates {
+		nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, pod, nil)
+		if err == nil {
+			klog.V(4).Infof("Pod %s.%s marked as unschedulable can be scheduled on node %s. Ignoring"+
+				" in scale up.", pod.Namespace, pod.Name, nodeName)
+			if err := clusterSnapshot.AddPod(pod, nodeName); err != nil {
+				return nil, err
+			}
+		} else {
+			unschedulablePods = append(unschedulablePods, pod)
+		}
+	}
+
+	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
+	return unschedulablePods, nil
 }
 
 func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
