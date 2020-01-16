@@ -109,8 +109,8 @@ func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string
 			if item.Value == nil {
 				return "", fmt.Errorf("no kube-env content in metadata")
 			}
+			return *item.Value, nil
 		}
-		return *item.Value, nil
 	}
 	return "", nil
 }
