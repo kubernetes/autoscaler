@@ -36,17 +36,16 @@ import (
 
 func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 	type testCase struct {
-		scenario         string
-		kubeEnv          string
-		accelerators     []*gce.AcceleratorConfig
-		mig              Mig
-		physicalCpu      int64
-		physicalMemory   int64
-		kubeReserved     bool
-		reservedCpu      string
-		reservedMemory   string
-		expectedGpuCount int64
-		expectedErr      bool
+		scenario       string
+		kubeEnv        string
+		accelerators   []*gce.AcceleratorConfig
+		mig            Mig
+		physicalCpu    int64
+		physicalMemory int64
+		kubeReserved   bool
+		reservedCpu    string
+		reservedMemory string
+		expectedErr    bool
 	}
 	testCases := []testCase{
 		{
@@ -60,13 +59,12 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
 				{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
 			},
-			physicalCpu:      8,
-			physicalMemory:   200 * units.MiB,
-			kubeReserved:     true,
-			reservedCpu:      "1000m",
-			reservedMemory:   fmt.Sprintf("%v", 1*units.MiB),
-			expectedGpuCount: 11,
-			expectedErr:      false,
+			physicalCpu:    8,
+			physicalMemory: 200 * units.MiB,
+			kubeReserved:   true,
+			reservedCpu:    "1000m",
+			reservedMemory: fmt.Sprintf("%v", 1*units.MiB),
+			expectedErr:    false,
 		},
 		{
 			scenario: "no kube-reserved in kube-env",
@@ -74,11 +72,17 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-			physicalCpu:      8,
-			physicalMemory:   200 * units.MiB,
-			kubeReserved:     false,
-			expectedGpuCount: 11,
-			expectedErr:      false,
+			physicalCpu:    8,
+			physicalMemory: 200 * units.MiB,
+			kubeReserved:   false,
+			expectedErr:    false,
+		}, {
+			scenario:       "no kube-env at all",
+			kubeEnv:        "",
+			physicalCpu:    8,
+			physicalMemory: 200 * units.MiB,
+			kubeReserved:   false,
+			expectedErr:    false,
 		}, {
 			scenario:    "totally messed up kube-env",
 			kubeEnv:     "This kube-env is totally messed up",
@@ -99,17 +103,22 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				Name: "node-name",
 				Properties: &gce.InstanceProperties{
 					GuestAccelerators: tc.accelerators,
-					Metadata: &gce.Metadata{
-						Items: []*gce.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}},
-					},
-					MachineType: "irrelevant-type",
+					Metadata:          &gce.Metadata{},
+					MachineType:       "irrelevant-type",
 				},
+			}
+			if tc.kubeEnv != "" {
+				template.Properties.Metadata.Items = []*gce.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}}
 			}
 			node, err := tb.BuildNodeFromTemplate(mig, template, tc.physicalCpu, tc.physicalMemory)
 			if tc.expectedErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+				assert.NotNil(t, node)
+				assert.NotNil(t, node.Status)
+				assert.NotNil(t, node.Status.Capacity)
+				assert.NotNil(t, node.Status.Allocatable)
 				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
