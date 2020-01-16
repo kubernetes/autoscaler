@@ -18,4 +18,5 @@ require (
 	k8s.io/component-base v0.0.0-20191016111319-039242c015a9
 	k8s.io/klog v1.0.0
 	k8s.io/metrics v0.0.0-20191109111301-80b462294217
+	k8s.io/utils v0.0.0-20200109141947-94aeca20bf09
 )
