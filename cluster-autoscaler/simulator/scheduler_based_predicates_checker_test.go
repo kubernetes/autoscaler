@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,59 +20,112 @@ import (
 	"testing"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
+
+	apiv1 "k8s.io/api/core/v1"
 )
 
-func TestPredicates(t *testing.T) {
-	p1 := BuildTestPod("p1", 450, 500000)
-	p2 := BuildTestPod("p2", 600, 500000)
-	p3 := BuildTestPod("p3", 8000, 0)
-	p4 := BuildTestPod("p4", 500, 500000)
+func TestCheckPredicate(t *testing.T) {
+	p450 := BuildTestPod("p450", 450, 500000)
+	p600 := BuildTestPod("p600", 600, 500000)
+	p8000 := BuildTestPod("p8000", 8000, 0)
+	p500 := BuildTestPod("p500", 500, 500000)
 
-	ni1 := schedulernodeinfo.NewNodeInfo(p1)
-	ni2 := schedulernodeinfo.NewNodeInfo()
-	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
-		"n1": ni1,
-		"n2": ni2,
+	n1000 := BuildTestNode("n1000", 1000, 2000000)
+	SetNodeReadyState(n1000, true, time.Time{})
+
+	tests := []struct {
+		name          string
+		node          *apiv1.Node
+		scheduledPods []*apiv1.Pod
+		testPod       *apiv1.Pod
+		expectError   bool
+	}{
+		{
+			name:          "other pod - insuficient cpu",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p600,
+			expectError:   true,
+		},
+		{
+			name:          "other pod - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p500,
+			expectError:   false,
+		},
+		{
+			name:          "empty - insuficient cpu",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p8000,
+			expectError:   true,
+		},
+		{
+			name:          "empty - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p600,
+			expectError:   false,
+		},
 	}
-	node1 := BuildTestNode("n1", 1000, 2000000)
-	node2 := BuildTestNode("n2", 1000, 2000000)
-	SetNodeReadyState(node1, true, time.Time{})
-	SetNodeReadyState(node2, true, time.Time{})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			predicateChecker, err := NewTestPredicateChecker()
+			clusterSnapshot := NewBasicClusterSnapshot()
+			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
+			assert.NoError(t, err)
 
-	ni1.SetNode(node1)
-	ni2.SetNode(node2)
+			predicateError := predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, FakeNodeInfoForNodeName(tt.node.Name))
+			if tt.expectError {
+				assert.NotNil(t, predicateError)
+				assert.Equal(t, NotSchedulablePredicateError, predicateError.ErrorType())
+				assert.Equal(t, "Insufficient cpu", predicateError.Message())
+				assert.Contains(t, predicateError.VerboseMessage(), "Insufficient cpu; predicateName=NodeResourcesFit")
+			} else {
+				assert.Nil(t, predicateError)
+			}
+		})
+	}
+}
+
+func TestFitsAnyNode(t *testing.T) {
+	p900 := BuildTestPod("p900", 900, 1000)
+	p1900 := BuildTestPod("p1900", 1900, 1000)
+	p2100 := BuildTestPod("p2100", 2100, 1000)
+
+	n1000 := BuildTestNode("n1000", 1000, 2000000)
+	n2000 := BuildTestNode("n2000", 2000, 2000000)
+
+	var err error
+
+	clusterSnapshot := NewBasicClusterSnapshot()
+	err = clusterSnapshot.AddNode(n1000)
+	assert.NoError(t, err)
+	err = clusterSnapshot.AddNode(n2000)
+	assert.NoError(t, err)
 
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	r1, err := predicateChecker.FitsAnyNode(nil, p2, nodeInfos)
+	nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, p900, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "n2", r1)
+	assert.True(t, nodeName == "n1000" || nodeName == "n2000")
 
-	_, err = predicateChecker.FitsAnyNode(nil, p3, nodeInfos)
+	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p1900, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "n2000", nodeName)
+
+	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p2100, nil)
 	assert.Error(t, err)
-
-	predicateErr := predicateChecker.CheckPredicates(nil, p2, ni1)
-	assert.NotNil(t, predicateErr)
-	assert.Equal(t, "Insufficient cpu", predicateErr.Message())
-	assert.Contains(t, predicateErr.VerboseMessage(), "Insufficient cpu; predicateName=NodeResourcesFit")
-
-	assert.NotNil(t, predicateChecker.CheckPredicates(nil, p2, ni1))
-	assert.Nil(t, predicateChecker.CheckPredicates(nil, p4, ni1))
-	assert.Nil(t, predicateChecker.CheckPredicates(nil, p2, ni2))
-	assert.Nil(t, predicateChecker.CheckPredicates(nil, p4, ni2))
-	assert.NotNil(t, predicateChecker.CheckPredicates(nil, p3, ni2))
 }
 
 func TestDebugInfo(t *testing.T) {
 	p1 := BuildTestPod("p1", 0, 0)
-
-	ni1 := schedulernodeinfo.NewNodeInfo()
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	node1.Spec.Taints = []apiv1.Taint{
 		{
@@ -87,12 +140,16 @@ func TestDebugInfo(t *testing.T) {
 		},
 	}
 	SetNodeReadyState(node1, true, time.Time{})
-	ni1.SetNode(node1)
 
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	predicateErr := predicateChecker.CheckPredicates(nil, p1, ni1)
+	clusterSnapshot := NewBasicClusterSnapshot()
+
+	err = clusterSnapshot.AddNode(node1)
+	assert.NoError(t, err)
+
+	predicateErr := predicateChecker.CheckPredicates(clusterSnapshot, p1, FakeNodeInfoForNodeName("n1"))
 	assert.NotNil(t, predicateErr)
 	assert.Equal(t, "node(s) had taints that the pod didn't tolerate", predicateErr.Message())
 	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
