@@ -42,9 +42,7 @@ func NewFilterOutSchedulablePodListProcessor() pods.PodListProcessor {
 // Process filters out pods which are schedulable from list of unschedulable pods.
 func (filterOutSchedulablePodListProcessor) Process(
 	context *context.AutoscalingContext,
-	unschedulablePods []*apiv1.Pod, allScheduledPods []*apiv1.Pod,
-	allNodes []*apiv1.Node, readyNodes []*apiv1.Node,
-	upcomingNodes []*apiv1.Node) ([]*apiv1.Pod, []*apiv1.Pod, error) {
+	unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// It's likely we added a new node and the scheduler just haven't managed to put the
 	// pod on in yet. In this situation we don't want to trigger another scale-up.
@@ -69,7 +67,7 @@ func (filterOutSchedulablePodListProcessor) Process(
 		context.PredicateChecker, context.ExpendablePodsPriorityCutoff)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
@@ -80,7 +78,7 @@ func (filterOutSchedulablePodListProcessor) Process(
 	} else {
 		klog.V(4).Info("No schedulable pods")
 	}
-	return unschedulablePodsToHelp, allScheduledPods, nil
+	return unschedulablePodsToHelp, nil
 }
 
 func (filterOutSchedulablePodListProcessor) CleanUp() {
