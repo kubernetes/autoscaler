@@ -104,6 +104,9 @@ func TestBelongs(t *testing.T) {
 
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
+	// TODO: this should call manager.Refresh() once the fetchAutoASG
+	// logic is refactored out
+	provider.azureManager.regenerateCache()
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -146,6 +149,9 @@ func TestDeleteNodes(t *testing.T) {
 	}
 	scaleSetClient.On("DeleteInstances", mock.Anything, "test-asg", mock.Anything, mock.Anything).Return(response, nil)
 	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
+	// TODO: this should call manager.Refresh() once the fetchAutoASG
+	// logic is refactored out
+	manager.regenerateCache()
 
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
@@ -156,6 +162,9 @@ func TestDeleteNodes(t *testing.T) {
 	registered := manager.RegisterAsg(
 		newTestScaleSet(manager, "test-asg"))
 	assert.True(t, registered)
+	// TODO: this should call manager.Refresh() once the fetchAutoASG
+	// logic is refactored out
+	manager.regenerateCache()
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -192,6 +201,9 @@ func TestScaleSetNodes(t *testing.T) {
 	provider := newTestProvider(t)
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
+	// TODO: this should call manager.Refresh() once the fetchAutoASG
+	// logic is refactored out
+	provider.azureManager.regenerateCache()
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
