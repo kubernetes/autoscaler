@@ -380,9 +380,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 
-	unschedulablePodsToHelp, scheduledPods, _ := a.processors.PodListProcessor.Process(
-		a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes,
-		upcomingNodes)
+	unschedulablePodsToHelp, _ := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
