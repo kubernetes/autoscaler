@@ -136,6 +136,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		Labels:   map[string]string{},
 	}
 
+	// This call is safe even if kubeEnvValue is empty
 	os := extractOperatingSystemFromKubeEnv(kubeEnvValue)
 	if os == OperatingSystemUnknown {
 		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
@@ -150,22 +151,24 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	}
 	var nodeAllocatable apiv1.ResourceList
 
-	// Extract labels
-	kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnvValue)
-	if err != nil {
-		return nil, err
-	}
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+	if kubeEnvValue != "" {
+		// Extract labels
+		kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnvValue)
+		if err != nil {
+			return nil, err
+		}
+		node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
 
-	// Extract taints
-	kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
-	if err != nil {
-		return nil, err
-	}
-	node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
+		// Extract taints
+		kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
+		if err != nil {
+			return nil, err
+		}
+		node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
-	if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue); err == nil {
-		nodeAllocatable = allocatable
+		if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue); err == nil {
+			nodeAllocatable = allocatable
+		}
 	}
 
 	if nodeAllocatable == nil {
