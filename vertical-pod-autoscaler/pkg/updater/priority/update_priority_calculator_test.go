@@ -336,37 +336,154 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
 }
 
-func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(
-		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
-
-	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
-
-	// Pretend that the test pod started 11 hours ago.
-	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
-
-	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
+	tests := []struct {
+		name       string
+		annotation map[string]string
+		want       bool
+	}{
 		{
-			LastTerminationState: apiv1.ContainerState{
-				Terminated: &apiv1.ContainerStateTerminated{
-					Reason:     "OOMKilled",
-					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
-					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
-				},
-			},
+			name:       "no VpaOvservedContainers annotation",
+			annotation: map[string]string{},
+			want:       true,
 		},
-		{},
+		{
+			name:       "container listed in VpaOvservedContainers annotation",
+			annotation: map[string]string{annotations.VpaObservedContainersLabel: containerName},
+			want:       true,
+		},
+		{
+			// Containers not listed in VpaOvservedContainers annotation
+			// shouldn't trigger the quick OOM.
+			name:       "container not listed in VpaOvservedContainers annotation",
+			annotation: map[string]string{annotations.VpaObservedContainersLabel: ""},
+			want:       false,
+		},
 	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			calculator := NewUpdatePriorityCalculator(
+				nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
-	// Pod is within the recommended range.
-	recommendation := test.Recommendation().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+			pod := test.Pod().WithAnnotations(tc.annotation).
+				WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 
-	calculator.AddPod(pod, recommendation, timestampNow)
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
-	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
+			// Pretend that the test pod started 11 hours ago.
+			timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+			pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+				{
+					Name: containerName,
+					LastTerminationState: apiv1.ContainerState{
+						Terminated: &apiv1.ContainerStateTerminated{
+							Reason:     "OOMKilled",
+							FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+							StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
+						},
+					},
+				},
+			}
+
+			// Pod is within the recommended range.
+			recommendation := test.Recommendation().WithContainer(containerName).
+				WithTarget("5", "").
+				WithLowerBound("1", "").
+				WithUpperBound("6", "").Get()
+
+			calculator.AddPod(pod, recommendation, timestampNow)
+			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+			isUpdate := len(result) != 0
+			assert.Equal(t, tc.want, isUpdate)
+		})
+	}
+}
+
+func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	scalingModeOff := vpa_types.ContainerScalingModeOff
+	tests := []struct {
+		name           string
+		resourcePolicy vpa_types.ContainerResourcePolicy
+		want           bool
+	}{
+		{
+			name: "ContainerScalingModeAuto",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeAuto,
+			},
+			want: true,
+		},
+		{
+			// Containers with ContainerScalingModeOff
+			// shouldn't trigger the quick OOM.
+			name: "ContainerScalingModeOff",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeOff,
+			},
+			want: false,
+		},
+		{
+			name: "ContainerScalingModeAuto as default",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeAuto,
+			},
+			want: true,
+		},
+		{
+			// When ContainerScalingModeOff is default
+			// container shouldn't trigger the quick OOM.
+			name: "ContainerScalingModeOff as default",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeOff,
+			},
+			want: false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			resourcePolicy := &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					tc.resourcePolicy,
+				},
+			}
+			calculator := NewUpdatePriorityCalculator(
+				resourcePolicy, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+
+			pod := test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: containerName}).
+				WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
+
+			// Pretend that the test pod started 11 hours ago.
+			timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+			pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+				{
+					Name: containerName,
+					LastTerminationState: apiv1.ContainerState{
+						Terminated: &apiv1.ContainerStateTerminated{
+							Reason:     "OOMKilled",
+							FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+							StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
+						},
+					},
+				},
+			}
+
+			// Pod is within the recommended range.
+			recommendation := test.Recommendation().WithContainer(containerName).
+				WithTarget("5", "").
+				WithLowerBound("1", "").
+				WithUpperBound("6", "").Get()
+
+			calculator.AddPod(pod, recommendation, timestampNow)
+			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+			isUpdate := len(result) != 0
+			assert.Equal(t, tc.want, isUpdate)
+		})
+	}
 }
 
 func TestNoPods(t *testing.T) {
