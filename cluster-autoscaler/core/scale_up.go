@@ -379,7 +379,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				// mark pod group as (theoretically) schedulable
 				eg.schedulable = true
 			} else {
-				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", samplePod.Name, nodeGroup.Id(), err.VerboseError())
+				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", samplePod.Name, nodeGroup.Id(), err.VerboseMessage())
 				if podCount := len(eg.pods); podCount > 1 {
 					klog.V(2).Infof("%d other pods similar to %s can't be scheduled on %s", podCount-1, samplePod.Name, nodeGroup.Id())
 				}
