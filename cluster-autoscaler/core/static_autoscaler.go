@@ -367,6 +367,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Such pods don't require scale up but should be considered during scale down.
 	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := core_utils.FilterOutExpendableAndSplit(unschedulablePods, allNodes, a.ExpendablePodsPriorityCutoff)
 
+	// modify the snapshot simulating scheduling of pods waiting for preemption.
+	// this is not strictly correct as we are not simulating preemption itself but it matches
+	// CA logic from before migration to scheduler framework. So let's keep it for now
+	for _, p := range unschedulableWaitingForLowerPriorityPreemption {
+		if err := a.ClusterSnapshot.AddPod(p, p.Status.NominatedNodeName); err != nil {
+			klog.Errorf("Failed to update snapshot with pod %s waiting for preemption", err)
+			return errors.ToAutoscalerError(errors.InternalError, err)
+		}
+	}
+
 	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
