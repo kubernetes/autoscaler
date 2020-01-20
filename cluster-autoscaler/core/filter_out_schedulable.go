@@ -158,11 +158,11 @@ func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*a
 
 		// Not found in cache, have to run the predicates.
 		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
-		// err returned from FitsAny isn't a PredicateError.
-		// Hello, ugly hack. I wish you weren't here.
-		var predicateError *simulator.PredicateError
+		var predicateError simulator.PredicateError
 		if err != nil {
-			predicateError = simulator.NewPredicateError("FitsAny", err, nil, nil)
+			// Hello, ugly hack. I wish you weren't here.
+			// We are using GenericPredicateError so we can make use of PodSchedulableMap
+			predicateError = simulator.GenericPredicateError()
 			unschedulablePods = append(unschedulablePods, pod)
 		} else {
 			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)

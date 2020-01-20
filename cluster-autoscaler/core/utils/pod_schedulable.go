@@ -42,7 +42,7 @@ import (
 type PodSchedulableInfo struct {
 	spec            apiv1.PodSpec
 	labels          map[string]string
-	schedulingError *simulator.PredicateError
+	schedulingError simulator.PredicateError
 }
 
 // PodSchedulableMap stores mapping from controller ref to PodSchedulableInfo
@@ -54,7 +54,7 @@ func (psi *PodSchedulableInfo) Match(pod *apiv1.Pod) bool {
 }
 
 // Get returns scheduling info for given pod if matching one exists in PodSchedulableMap
-func (podMap PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool) {
+func (podMap PodSchedulableMap) Get(pod *apiv1.Pod) (simulator.PredicateError, bool) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
 		return nil, false
@@ -71,7 +71,7 @@ func (podMap PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, 
 }
 
 // Set sets scheduling info for given pod in PodSchedulableMap
-func (podMap PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateError) {
+func (podMap PodSchedulableMap) Set(pod *apiv1.Pod, err simulator.PredicateError) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
 		return
