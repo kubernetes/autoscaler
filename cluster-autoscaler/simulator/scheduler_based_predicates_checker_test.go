@@ -17,7 +17,6 @@ limitations under the License.
 package simulator
 
 import (
-	"strings"
 	"testing"
 	"time"
 
@@ -60,8 +59,8 @@ func TestPredicates(t *testing.T) {
 
 	predicateErr := predicateChecker.CheckPredicates(nil, p2, ni1)
 	assert.NotNil(t, predicateErr)
-	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
-	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "Insufficient cpu"))
+	assert.Equal(t, "Insufficient cpu", predicateErr.Message())
+	assert.Contains(t, predicateErr.VerboseMessage(), "Insufficient cpu; predicateName=NodeResourcesFit")
 
 	assert.NotNil(t, predicateChecker.CheckPredicates(nil, p2, ni1))
 	assert.Nil(t, predicateChecker.CheckPredicates(nil, p4, ni1))
@@ -95,6 +94,6 @@ func TestDebugInfo(t *testing.T) {
 
 	predicateErr := predicateChecker.CheckPredicates(nil, p1, ni1)
 	assert.NotNil(t, predicateErr)
-	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
-	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "RandomTaint"), "got: %v, want: %v", predicateErr.VerboseMessage(), "RandomTaint")
+	assert.Equal(t, "node(s) had taints that the pod didn't tolerate", predicateErr.Message())
+	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
 }
