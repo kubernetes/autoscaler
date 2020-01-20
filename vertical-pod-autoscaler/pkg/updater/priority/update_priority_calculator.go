@@ -85,23 +85,40 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 		return
 	}
 
+	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
+
 	updatePriority := calc.getUpdatePriority(pod, processedRecommendation)
 
 	quickOOM := false
-	if len(pod.Status.ContainerStatuses) == 1 {
-		terminationState := pod.Status.ContainerStatuses[0].LastTerminationState
+	for i := range pod.Status.ContainerStatuses {
+		cs := &pod.Status.ContainerStatuses[i]
+		if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
+			// Containers not observed by Admission Controller are not supported
+			// by the quick OOM logic.
+			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s quick OOM calculations",
+				annotations.VpaObservedContainersLabel, pod.GetAnnotations()[annotations.VpaObservedContainersLabel], cs.Name)
+			continue
+		}
+		crp := vpa_api_util.GetContainerResourcePolicy(cs.Name, calc.resourcesPolicy)
+		if crp != nil && crp.Mode != nil && *crp.Mode == vpa_types.ContainerScalingModeOff {
+			// Containers with ContainerScalingModeOff are not considered
+			// during the quick OOM calculation.
+			klog.V(4).Infof("Container with ContainerScalingModeOff. Skipping container %s quick OOM calculations", cs.Name)
+			continue
+		}
+		terminationState := &cs.LastTerminationState
 		if terminationState.Terminated != nil &&
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
-			klog.V(2).Infof("quick OOM detected in pod %v/%v", pod.Namespace, pod.Name)
+			klog.V(2).Infof("quick OOM detected in pod %v/%v, container %v", pod.Namespace, pod.Name, cs.Name)
 		}
 	}
 
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
 	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
-	// - there is only one container in a pod and it OOMed in less than evictAfterOOMThreshold
+	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold.
 	if !updatePriority.outsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
@@ -151,21 +168,12 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	// Sum of recommendations over all containers, per resource type.
 	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
-	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
-	vpaContainerSet := sets.NewString()
-	if hasObservedContainers {
-		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
-			klog.Errorf("Vpa annotation %s failed to parse: %v", observedContainers, err)
-			hasObservedContainers = false
-		} else {
-			vpaContainerSet.Insert(containers...)
-		}
-	}
+	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
 	for _, podContainer := range pod.Spec.Containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s priority calculations",
-				annotations.VpaObservedContainersLabel, observedContainers, podContainer.Name)
+				annotations.VpaObservedContainersLabel, pod.GetAnnotations()[annotations.VpaObservedContainersLabel], podContainer.Name)
 			continue
 		}
 		recommendedRequest := vpa_api_util.GetRecommendationForContainer(podContainer.Name, recommendation)
@@ -207,6 +215,20 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		resourceDiff:            resourceDiff,
 		recommendation:          recommendation,
 	}
+}
+
+func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
+	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+	vpaContainerSet := sets.NewString()
+	if hasObservedContainers {
+		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
+			klog.Errorf("Vpa annotation %s failed to parse: %v", observedContainers, err)
+			hasObservedContainers = false
+		} else {
+			vpaContainerSet.Insert(containers...)
+		}
+	}
+	return hasObservedContainers, vpaContainerSet
 }
 
 type podPriority struct {
