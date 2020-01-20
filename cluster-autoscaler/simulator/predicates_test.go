@@ -60,8 +60,8 @@ func TestPredicates(t *testing.T) {
 
 	predicateErr := predicateChecker.CheckPredicates(p2, ni1)
 	assert.NotNil(t, predicateErr)
-	assert.True(t, strings.Contains(predicateErr.Error(), "Predicates failed"))
-	assert.True(t, strings.Contains(predicateErr.VerboseError(), "Insufficient cpu"))
+	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
+	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "Insufficient cpu"))
 
 	assert.NotNil(t, predicateChecker.CheckPredicates(p2, ni1))
 	assert.Nil(t, predicateChecker.CheckPredicates(p4, ni1))
@@ -96,8 +96,8 @@ func TestDebugInfo(t *testing.T) {
 		Predicate: predicates.PodToleratesNodeTaints,
 	})
 
-	predicateErr := predicateChecker.CheckPredicates(p1, nil, ni1)
+	predicateErr := predicateChecker.CheckPredicates(p1, ni1)
 	assert.NotNil(t, predicateErr)
-	assert.True(t, strings.Contains(predicateErr.Error(), "Predicates failed"))
-	assert.True(t, strings.Contains(predicateErr.VerboseError(), "RandomTaint"), "got: %v, want: %v", predicateErr.VerboseError(), "RandomTaint")
+	assert.True(t, strings.Contains(predicateErr.Message(), "Predicates failed"))
+	assert.True(t, strings.Contains(predicateErr.VerboseMessage(), "RandomTaint"), "got: %v, want: %v", predicateErr.VerboseMessage(), "RandomTaint")
 }

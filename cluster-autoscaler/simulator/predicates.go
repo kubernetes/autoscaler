@@ -18,7 +18,6 @@ package simulator
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -213,79 +212,8 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
 }
 
-// PredicateError implements error, preserving the original error information from scheduler predicate.
-type PredicateError struct {
-	predicateName  string
-	failureReasons []predicates.PredicateFailureReason
-	err            error
-	// debugInfo contains additional info that predicate doesn't include,
-	// but may be useful for debugging (e.g. taints on node blocking scale-up)
-	debugInfo func() string
-
-	reasons []string
-	message string
-}
-
-// Error returns a predefined error message.
-func (pe *PredicateError) Error() string {
-	if pe.message != "" {
-		return pe.message
-	}
-	// Don't generate verbose message.
-	return "Predicates failed"
-}
-
-// VerboseError generates verbose error message if it isn't yet done.
-// We're running a ton of predicates and more often than not we only care whether
-// they pass or not and don't care for a reason. Turns out formatting nice error
-// messages gets very expensive, so we only do it if explicitly requested.
-func (pe *PredicateError) VerboseError() string {
-	if pe.message != "" {
-		return pe.message
-	}
-	// Generate verbose message.
-	if pe.err != nil {
-		pe.message = fmt.Sprintf("%s predicate error: %v, %v", pe.predicateName, pe.err, pe.debugInfo())
-		return pe.message
-	}
-	pe.message = fmt.Sprintf("%s predicate mismatch, reason: %s, %v", pe.predicateName, strings.Join(pe.Reasons(), ", "), pe.debugInfo())
-	return pe.message
-}
-
-// NewPredicateError creates a new predicate error from error and reasons.
-func NewPredicateError(name string, err error, reasons []string, originalReasons []predicates.PredicateFailureReason) *PredicateError {
-	return &PredicateError{
-		predicateName:  name,
-		err:            err,
-		reasons:        reasons,
-		failureReasons: originalReasons,
-	}
-}
-
-// Reasons returns original failure reasons from failed predicate as a slice of strings.
-func (pe *PredicateError) Reasons() []string {
-	if pe.reasons != nil {
-		return pe.reasons
-	}
-	pe.reasons = make([]string, len(pe.failureReasons))
-	for i, reason := range pe.failureReasons {
-		pe.reasons[i] = reason.GetReason()
-	}
-	return pe.reasons
-}
-
-// OriginalReasons returns original failure reasons from failed predicate as a slice of PredicateFailureReason.
-func (pe *PredicateError) OriginalReasons() []predicates.PredicateFailureReason {
-	return pe.failureReasons
-}
-
-// PredicateName returns the name of failed predicate.
-func (pe *PredicateError) PredicateName() string {
-	return pe.predicateName
-}
-
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *PredicateError {
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) PredicateError {
 	for _, predInfo := range p.predicates {
 		// Skip affinity predicate if it has been disabled.
 		if !p.enableAffinityPredicate && predInfo.Name == affinityPredicateName {
@@ -294,19 +222,15 @@ func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulerno
 
 		match, failureReasons, err := predInfo.Predicate(pod, nil, nodeInfo)
 		if err != nil || !match {
-			return &PredicateError{
-				predicateName:  predInfo.Name,
-				failureReasons: failureReasons,
-				err:            err,
-				debugInfo:      p.buildDebugInfo(predInfo, nodeInfo),
-			}
+			return NewPredicateError(
+				NotSchedulablePredicateError,
+				predInfo.Name,
+				"",
+				nil, // dropping here due to upcoming rework for scheduler framework
+				p.buildDebugInfo(predInfo, nodeInfo))
 		}
 	}
 	return nil
-}
-
-func emptyString() string {
-	return ""
 }
 
 func (p *PredicateChecker) buildDebugInfo(predInfo PredicateInfo, nodeInfo *schedulernodeinfo.NodeInfo) func() string {
