@@ -78,18 +78,49 @@ type scaleTestConfig struct {
 	nodeDeletionTracker     *NodeDeletionTracker
 	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
 
-	//expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
-	//expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns []string
 }
 
 type scaleTestResults struct {
 	expansionOptions []groupSizeChange
 	finalOption      groupSizeChange
-	scaleUpStatus    *status.ScaleUpStatus
 	noScaleUpReason  string
 	finalScaleDowns  []string
 	events           []string
+	scaleUpStatus    scaleUpStatusInfo
+}
+
+// scaleUpStatusInfo is a simplified form of a ScaleUpStatus, to avoid mocking actual NodeGroup and Pod objects in test config.
+type scaleUpStatusInfo struct {
+	result                  status.ScaleUpResult
+	podsTriggeredScaleUp    []string
+	podsRemainUnschedulable []string
+	podsAwaitEvaluation     []string
+}
+
+func (s *scaleUpStatusInfo) WasSuccessful() bool {
+	return s.result == status.ScaleUpSuccessful
+}
+
+func extractPodNames(pods []*apiv1.Pod) []string {
+	podNames := []string{}
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames
+}
+
+func simplifyScaleUpStatus(scaleUpStatus *status.ScaleUpStatus) scaleUpStatusInfo {
+	remainUnschedulable := []string{}
+	for _, nsi := range scaleUpStatus.PodsRemainUnschedulable {
+		remainUnschedulable = append(remainUnschedulable, nsi.Pod.Name)
+	}
+	return scaleUpStatusInfo{
+		result:                  scaleUpStatus.Result,
+		podsTriggeredScaleUp:    extractPodNames(scaleUpStatus.PodsTriggeredScaleUp),
+		podsRemainUnschedulable: remainUnschedulable,
+		podsAwaitEvaluation:     extractPodNames(scaleUpStatus.PodsAwaitEvaluation),
+	}
 }
 
 // NewTestProcessors returns a set of simple processors for use in tests.

@@ -18,11 +18,12 @@ package core
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -70,6 +71,43 @@ func TestScaleUpOK(t *testing.T) {
 	}
 	expectedResults := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new"},
+		},
+	}
+
+	simpleScaleUpTest(t, config, expectedResults)
+}
+
+// There are triggering, remaining & awaiting pods.
+func TestMixedScaleUp(t *testing.T) {
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 100, 1000, 0, true, "ng1"},
+			{"n2", 1000, 100, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 80, 0, 0, "n1", false},
+			{"p2", 800, 0, 0, "n2", false},
+		},
+		extraPods: []podConfig{
+			// can only be scheduled on ng2
+			{"triggering", 900, 0, 0, "", false},
+			// can't be scheduled
+			{"remaining", 2000, 0, 0, "", false},
+			// can only be scheduled on ng1
+			{"awaiting", 0, 200, 0, "", false},
+		},
+		options:                 defaultOptions,
+		expansionOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 1},
+	}
+	expectedResults := &scaleTestResults{
+		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp:    []string{"triggering"},
+			podsRemainUnschedulable: []string{"remaining"},
+			podsAwaitEvaluation:     []string{"awaiting"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, expectedResults)
@@ -96,6 +134,9 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng1", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -122,6 +163,9 @@ func TestScaleUpMaxCoresLimitHitWithNotAutoscaledGroup(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng1", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -149,6 +193,9 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2", "p-new-3"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -176,6 +223,9 @@ func TestScaleUpMaxMemoryLimitHitWithNotAutoscaledGroup(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2", "p-new-3"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -203,6 +253,9 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2", "p-new-3"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -230,6 +283,9 @@ func TestScaleUpCapToMaxTotalNodesLimitWithNotAutoscaledGroup(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"p-new-1", "p-new-2", "p-new-3"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -259,6 +315,9 @@ func TestWillConsiderGpuAndStandardPoolForPodWhichDoesNotRequireGpu(t *testing.T
 			{groupName: "std-pool", sizeChange: 1},
 			{groupName: "gpu-pool", sizeChange: 1},
 		},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"extra-std-pod"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -286,6 +345,9 @@ func TestWillConsiderOnlyGpuPoolForPodWhichDoesRequiresGpu(t *testing.T) {
 		finalOption: groupSizeChange{groupName: "gpu-pool", sizeChange: 1},
 		expansionOptions: []groupSizeChange{
 			{groupName: "gpu-pool", sizeChange: 1},
+		},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"extra-gpu-pod"},
 		},
 	}
 
@@ -323,6 +385,9 @@ func TestWillConsiderAllPoolsWhichFitTwoPodsRequiringGpus(t *testing.T) {
 			{groupName: "gpu-2-pool", sizeChange: 2},
 			{groupName: "gpu-4-pool", sizeChange: 1},
 		},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp: []string{"extra-gpu-pod-1", "extra-gpu-pod-2", "extra-gpu-pod-3"},
+		},
 	}
 
 	simpleScaleUpTest(t, config, results)
@@ -350,6 +415,9 @@ func TestNoScaleUpMaxCoresLimitHit(t *testing.T) {
 	}
 	results := &scaleTestResults{
 		noScaleUpReason: "max cluster cpu, memory limit reached",
+		scaleUpStatus: scaleUpStatusInfo{
+			podsRemainUnschedulable: []string{"p-new-1", "p-new-2"},
+		},
 	}
 
 	simpleNoScaleUpTest(t, config, results)
@@ -488,7 +556,7 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 	return &scaleTestResults{
 		expansionOptions: expander.results.inputOptions,
 		finalOption:      expandedGroupStruct,
-		scaleUpStatus:    scaleUpStatus,
+		scaleUpStatus:    simplifyScaleUpStatus(scaleUpStatus),
 		events:           events,
 	}
 }
@@ -511,6 +579,12 @@ func simpleNoScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults 
 		assert.NotRegexp(t, regexp.MustCompile("TriggeredScaleUp"), event)
 	}
 	assert.True(t, noScaleUpEventSeen)
+	assert.ElementsMatch(t, results.scaleUpStatus.podsTriggeredScaleUp, expectedResults.scaleUpStatus.podsTriggeredScaleUp,
+		"actual and expected triggering pods should be the same")
+	assert.ElementsMatch(t, results.scaleUpStatus.podsRemainUnschedulable, expectedResults.scaleUpStatus.podsRemainUnschedulable,
+		"actual and expected remaining pods should be the same")
+	assert.ElementsMatch(t, results.scaleUpStatus.podsAwaitEvaluation, expectedResults.scaleUpStatus.podsAwaitEvaluation,
+		"actual and expected awaiting evaluation pods should be the same")
 }
 
 func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *scaleTestResults) {
@@ -524,7 +598,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *s
 		if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, expectedResults.finalOption.groupName) {
 			nodeEventSeen = true
 		}
-		assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+		if len(expectedResults.scaleUpStatus.podsRemainUnschedulable) == 0 {
+			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+		}
 	}
 	assert.True(t, nodeEventSeen)
 
@@ -536,13 +612,16 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *s
 		assert.Contains(t, expectedResults.expansionOptions, config.expansionOptionToChoose, "final expected expansion option must be in expected expansion options")
 		assert.Contains(t, results.expansionOptions, config.expansionOptionToChoose, "final expected expansion option must be in expected expansion options")
 
-		assert.Subset(t, results.expansionOptions, expectedResults.expansionOptions,
-			"actual and expected expansion options should be the same")
-		assert.Subset(t, expectedResults.expansionOptions, results.expansionOptions,
-			"actual and expected expansion options should be the same")
-		assert.Equal(t, len(expectedResults.expansionOptions), len(results.expansionOptions),
+		assert.ElementsMatch(t, results.expansionOptions, expectedResults.expansionOptions,
 			"actual and expected expansion options should be the same")
 	}
+
+	assert.ElementsMatch(t, results.scaleUpStatus.podsTriggeredScaleUp, expectedResults.scaleUpStatus.podsTriggeredScaleUp,
+		"actual and expected triggering pods should be the same")
+	assert.ElementsMatch(t, results.scaleUpStatus.podsRemainUnschedulable, expectedResults.scaleUpStatus.podsRemainUnschedulable,
+		"actual and expected remaining pods should be the same")
+	assert.ElementsMatch(t, results.scaleUpStatus.podsAwaitEvaluation, expectedResults.scaleUpStatus.podsAwaitEvaluation,
+		"actual and expected awaiting evaluation pods should be the same")
 }
 
 func getGroupSizeChangeFromChan(c chan groupSizeChange) *groupSizeChange {
