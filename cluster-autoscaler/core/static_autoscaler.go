@@ -381,6 +381,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
 	// add upcoming nodes to ClusterSnapshot
+	// TODO(scheduler_framework_migration) this should also schedule daemonsets to upcoming nodes.
 	upcomingNodes := getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups)
 	for _, upcomingNode := range upcomingNodes {
 		err = a.ClusterSnapshot.AddNode(upcomingNode)
