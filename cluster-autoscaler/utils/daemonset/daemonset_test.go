@@ -44,13 +44,28 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 	ds2 := newDaemonSet("ds2")
 	ds2.Spec.Template.Spec.NodeSelector = map[string]string{"foo": "bar"}
 
-	pods := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1, ds2}, predicateChecker)
+	{
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1, ds2}, predicateChecker)
 
-	assert.Equal(t, 1, len(pods))
-	assert.True(t, strings.HasPrefix(pods[0].Name, "ds1"))
-	assert.Equal(t, 1, len(GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1}, predicateChecker)))
-	assert.Equal(t, 0, len(GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds2}, predicateChecker)))
-	assert.Equal(t, 0, len(GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{}, predicateChecker)))
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(daemonSets))
+		assert.True(t, strings.HasPrefix(daemonSets[0].Name, "ds1"))
+	}
+	{
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1}, predicateChecker)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(daemonSets))
+	}
+	{
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds2}, predicateChecker)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(daemonSets))
+	}
+	{
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{}, predicateChecker)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(daemonSets))
+	}
 }
 
 func newDaemonSet(name string) *appsv1.DaemonSet {
