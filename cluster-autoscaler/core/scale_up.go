@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -371,20 +372,41 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			Pods:      make([]*apiv1.Pod, 0),
 		}
 
+		if err := context.ClusterSnapshot.Fork(); err != nil {
+			klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
+			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, err)
+		}
+
+		// add test node to snapshot
+		if err := context.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), nodeInfo.Pods()); err != nil {
+			klog.Errorf("Error while adding test Node; %v", err)
+			if err := context.ClusterSnapshot.Revert(); err != nil {
+				klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+			}
+			// TODO: Or should I just skip the node group? specifically if Revert fails it is fatal error.
+			//       Maybe we should not return error from Revert as we cannot handle it in any way on the caller side?
+			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, err)
+		}
+
 		for _, eg := range podEquivalenceGroups {
 			samplePod := eg.pods[0]
-			if err := context.PredicateChecker.CheckPredicates(nil, samplePod, nodeInfo); err == nil {
+			if err := context.PredicateChecker.CheckPredicates(context.ClusterSnapshot, samplePod, simulator.FakeNodeInfoForNodeName(nodeInfo.Node().Name)); err == nil {
 				// add pods to option
 				option.Pods = append(option.Pods, eg.pods...)
 				// mark pod group as (theoretically) schedulable
 				eg.schedulable = true
 			} else {
-				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", samplePod.Name, nodeGroup.Id(), err.VerboseMessage())
+				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate checking error: %v", samplePod.Name, nodeGroup.Id(), err.VerboseMessage())
 				if podCount := len(eg.pods); podCount > 1 {
 					klog.V(2).Infof("%d other pods similar to %s can't be scheduled on %s", podCount-1, samplePod.Name, nodeGroup.Id())
 				}
 				eg.schedulingErrors[nodeGroup.Id()] = err
 			}
+		}
+
+		if err := context.ClusterSnapshot.Revert(); err != nil {
+			klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, err)
 		}
 
 		if len(option.Pods) > 0 {
