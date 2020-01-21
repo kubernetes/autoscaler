@@ -17,12 +17,14 @@ limitations under the License.
 package estimator
 
 import (
+	"fmt"
 	"sort"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	schedulerUtils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
+	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -62,22 +64,63 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
-	newNodes := make([]*schedulernodeinfo.NodeInfo, 0)
+	newNodeNames := make([]string, 0)
+
+	if err := estimator.clusterSnapshot.Fork(); err != nil {
+		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
+		return 0
+	}
+	defer func() {
+		if err := estimator.clusterSnapshot.Revert(); err != nil {
+			klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+		}
+	}()
+
+	newNodeNameTimestamp := time.Now()
+	newNodeNameIndex := 0
 
 	for _, podInfo := range podInfos {
 		found := false
-		for i, nodeInfo := range newNodes {
-			if err := estimator.predicateChecker.CheckPredicates(nil, podInfo.pod, nodeInfo); err == nil {
+		for _, nodeName := range newNodeNames {
+			if err := estimator.predicateChecker.CheckPredicates(estimator.clusterSnapshot, podInfo.pod, simulator.FakeNodeInfoForNodeName(nodeName)); err == nil {
 				found = true
-				newNodes[i] = schedulerUtils.NodeWithPod(nodeInfo, podInfo.pod)
+				if err := estimator.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
+					klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
+					return 0
+				}
 				break
 			}
 		}
 		if !found {
-			newNodes = append(newNodes, schedulerUtils.NodeWithPod(nodeTemplate, podInfo.pod))
+			// Add new node
+			newNodeName, err := estimator.addNewNodeToSnapshot(nodeTemplate, newNodeNameTimestamp, newNodeNameIndex)
+			if err != nil {
+				klog.Errorf("Error while adding new node for template to ClusterSnapshot; %v", err)
+				return 0
+			}
+			newNodeNameIndex++
+			// And schedule pod to it
+			if err := estimator.clusterSnapshot.AddPod(podInfo.pod, newNodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
+				return 0
+			}
+			newNodeNames = append(newNodeNames, newNodeName)
 		}
 	}
-	return len(newNodes)
+	return len(newNodeNames)
+}
+
+func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
+	template *schedulernodeinfo.NodeInfo,
+	nameTimestamp time.Time,
+	nameIndex int) (string, error) {
+
+	newNode := template.Node().DeepCopy()
+	newNode.Name = fmt.Sprintf("%s-%d-%d", newNode.Name, nameTimestamp.Unix(), nameIndex)
+	if err := estimator.clusterSnapshot.AddNodeWithPods(newNode, template.Pods()); err != nil {
+		return "", err
+	}
+	return newNode.Name, nil
 }
 
 // Calculates score for all pods and returns podInfo structure.
