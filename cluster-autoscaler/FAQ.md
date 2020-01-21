@@ -679,6 +679,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only | false
 | `skip-nodes-with-system-pods` | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods | true
 | `skip-nodes-with-local-storage`| If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true
+| `skip-daemon-set-pods` | If true cluster autoscaler will never evict daemon sets controlled pods in nodes | true
 | `min-replica-count` | Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down | 0
 
 # Troubleshooting:
