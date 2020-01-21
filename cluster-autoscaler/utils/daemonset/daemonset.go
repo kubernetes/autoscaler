@@ -28,15 +28,25 @@ import (
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
-func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker) []*apiv1.Pod {
+func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
 	result := make([]*apiv1.Pod, 0)
+
+	// here we can use empty snapshot
+	clusterSnapshot := simulator.NewBasicClusterSnapshot()
+
+	// add a node with pods
+	// TODO(scheduler framework migration) are we expecting any pods on passed nodeInfo?
+	if err := clusterSnapshot.AddNodeWithPods(nodeInfo.Node(), nodeInfo.Pods()); err != nil {
+		return nil, err
+	}
+
 	for _, ds := range daemonsets {
 		pod := newPod(ds, nodeInfo.Node().Name)
-		if err := predicateChecker.CheckPredicates(nil, pod, nodeInfo); err == nil {
+		if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, simulator.FakeNodeInfoForNodeName(nodeInfo.Node().Name)); err == nil {
 			result = append(result, pod)
 		}
 	}
-	return result
+	return result, nil
 }
 
 func newPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
