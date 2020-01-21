@@ -117,6 +117,10 @@ func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
 
 	newNode := template.Node().DeepCopy()
 	newNode.Name = fmt.Sprintf("%s-%d-%d", newNode.Name, nameTimestamp.Unix(), nameIndex)
+	if newNode.Labels == nil {
+		newNode.Labels = make(map[string]string)
+	}
+	newNode.Labels["kubernetes.io/hostname"] = newNode.Name
 	if err := estimator.clusterSnapshot.AddNodeWithPods(newNode, template.Pods()); err != nil {
 		return "", err
 	}
