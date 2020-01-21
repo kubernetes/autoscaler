@@ -173,6 +173,19 @@ func (snapshot *BasicClusterSnapshot) AddNode(node *apiv1.Node) error {
 	return snapshot.getInternalData().addNode(node)
 }
 
+// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
+func (snapshot *BasicClusterSnapshot) AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error {
+	if err := snapshot.AddNode(node); err != nil {
+		return err
+	}
+	for _, pod := range pods {
+		if err := snapshot.AddPod(pod, node.Name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *BasicClusterSnapshot) RemoveNode(nodeName string) error {
 	return snapshot.getInternalData().removeNode(nodeName)
