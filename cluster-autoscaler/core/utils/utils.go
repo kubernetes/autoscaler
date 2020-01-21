@@ -180,7 +180,10 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
-	pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	pods, err := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+	}
 	pods = append(pods, baseNodeInfo.Pods()...)
 	fullNodeInfo := schedulernodeinfo.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
