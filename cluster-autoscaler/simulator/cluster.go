@@ -44,6 +44,9 @@ var (
 	skipNodesWithLocalStorage = flag.Bool("skip-nodes-with-local-storage", true,
 		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 
+	skipDaemonSetPods = flag.Bool("skip-daemon-set-pods", true,
+		"If true cluster autoscaler will never evict daemon sets controlled pods in nodes")
+
 	minReplicaCount = flag.Int("min-replica-count", 0,
 		"Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 )
@@ -54,6 +57,8 @@ type NodeToBeRemoved struct {
 	Node *apiv1.Node
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
+	// DaemonSetPodsToDelete contains pods on the node that controlled by daemon sets should be delete.
+	DaemonSetPodsToDelete []*apiv1.Pod
 }
 
 // UnremovableNode represents a node that can't be removed by CA.
@@ -147,9 +152,11 @@ candidateloop:
 		}
 		klog.V(2).Infof("%s: %s for removal", evaluationType, nodeName)
 
-		var podsToRemove []*apiv1.Pod
-		var blockingPod *drain.BlockingPod
-
+		var (
+			podsToRemove  []*apiv1.Pod
+			daemonSetPodsToRemove []*apiv1.Pod
+			blockingPod *drain.BlockingPod
+		)
 		if _, found := destinationMap[nodeName]; !found {
 			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, nodeName)
 			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
@@ -157,10 +164,13 @@ candidateloop:
 		}
 
 		if fastCheck {
-			podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
+			podsToRemove, daemonSetPodsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo,
+				*skipNodesWithSystemPods, *skipNodesWithLocalStorage,*skipDaemonSetPods,
 				podDisruptionBudgets)
 		} else {
-			podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
+			podsToRemove, daemonSetPodsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo,
+				*skipNodesWithSystemPods, *skipNodesWithLocalStorage, *skipDaemonSetPods,
+				listers, int32(*minReplicaCount),
 				podDisruptionBudgets)
 		}
 
@@ -181,6 +191,7 @@ candidateloop:
 			result = append(result, NodeToBeRemoved{
 				Node:             nodeInfo.Node(),
 				PodsToReschedule: podsToRemove,
+				DaemonSetPodsToDelete: daemonSetPodsToRemove,
 			})
 			klog.V(2).Infof("%s: node %s may be removed", evaluationType, nodeName)
 			if len(result) >= maxCount {
@@ -204,7 +215,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 			continue
 		}
 		// Should block on all pods.
-		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+		podsToRemove, _, _, err := FastGetPodsToMove(nodeInfo, true, true, true, nil)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}

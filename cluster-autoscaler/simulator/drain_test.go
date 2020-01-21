@@ -40,7 +40,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	_, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod1), true, true, nil)
+	_, _,blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod1), true, true, true, nil)
 	assert.Error(t, err)
 	assert.Equal(t, &drain.BlockingPod{Pod: pod1, Reason: drain.NotReplicated}, blockingPod)
 
@@ -52,11 +52,12 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
-	r2, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod2), true, true, nil)
+	r2, d2, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod2), true, true, true, nil)
 	assert.NoError(t, err)
 	assert.Nil(t, blockingPod)
 	assert.Equal(t, 1, len(r2))
 	assert.Equal(t, pod2, r2[0])
+	assert.Equal(t, 0, len(d2))
 
 	// Manifest pod
 	pod3 := &apiv1.Pod{
@@ -68,10 +69,12 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r3, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod3), true, true, nil)
+
+	r3, d3,blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod3), true, true, true, nil)
 	assert.NoError(t, err)
 	assert.Nil(t, blockingPod)
 	assert.Equal(t, 0, len(r3))
+	assert.Equal(t, 0, len(d3))
 
 	// DaemonSet pod
 	pod4 := &apiv1.Pod{
@@ -81,11 +84,20 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("ds", "DaemonSet", "extensions/v1beta1", ""),
 		},
 	}
-	r4, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod2, pod3, pod4), true, true, nil)
+
+	r4, d4,blockingPod,  err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod2, pod3, pod4), true, true, true, nil)
 	assert.NoError(t, err)
 	assert.Nil(t, blockingPod)
 	assert.Equal(t, 1, len(r4))
 	assert.Equal(t, pod2, r4[0])
+	assert.Equal(t, 0, len(d4))
+
+	r41, d41, _, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod2, pod3, pod4), true, true, false, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(r41))
+	assert.Equal(t, pod2, r41[0])
+	assert.Equal(t, 1, len(d41))
+	assert.Equal(t, pod4, d41[0])
 
 	// Kube-system
 	pod5 := &apiv1.Pod{
@@ -95,7 +107,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
-	_, blockingPod, err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod5), true, true, nil)
+	_, _,blockingPod, err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod5), true, true, true, nil)
 	assert.Error(t, err)
 	assert.Equal(t, &drain.BlockingPod{Pod: pod5, Reason: drain.UnmovableKubeSystemPod}, blockingPod)
 
@@ -116,7 +128,8 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, blockingPod, err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod6), true, true, nil)
+
+	_, _,blockingPod,  err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod6), true, true, true, nil)
 	assert.Error(t, err)
 	assert.Equal(t, &drain.BlockingPod{Pod: pod6, Reason: drain.LocalStorageRequested}, blockingPod)
 
@@ -139,10 +152,11 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r7, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod7), true, true, nil)
+	r7, d7, blockingPod,err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod7), true, true, true, nil)
 	assert.NoError(t, err)
 	assert.Nil(t, blockingPod)
 	assert.Equal(t, 1, len(r7))
+	assert.Equal(t, 0, len(d7))
 
 	// Pdb blocking
 	pod8 := &apiv1.Pod{
@@ -175,7 +189,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 		},
 	}
 
-	_, blockingPod, err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod8), true, true, []*policyv1.PodDisruptionBudget{pdb8})
+	_, _, blockingPod, err = FastGetPodsToMove(schedulerframework.NewNodeInfo(pod8), true, true, true, []*policyv1.PodDisruptionBudget{pdb8})
 	assert.Error(t, err)
 	assert.Equal(t, &drain.BlockingPod{Pod: pod8, Reason: drain.NotEnoughPdb}, blockingPod)
 
@@ -208,9 +222,10 @@ func TestFastGetPodsToMove(t *testing.T) {
 			DisruptionsAllowed: 1,
 		},
 	}
-
-	r9, blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod9), true, true, []*policyv1.PodDisruptionBudget{pdb9})
+	
+	r9, d9,blockingPod, err := FastGetPodsToMove(schedulerframework.NewNodeInfo(pod9), true, true, true, []*policyv1.PodDisruptionBudget{pdb9})
 	assert.NoError(t, err)
 	assert.Nil(t, blockingPod)
 	assert.Equal(t, 1, len(r9))
+	assert.Equal(t, 0, len(d9))
 }

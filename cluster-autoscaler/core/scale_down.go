@@ -565,7 +565,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	for _, node := range emptyNodesList {
-		nodesToRemove = append(nodesToRemove, simulator.NodeToBeRemoved{Node: node, PodsToReschedule: []*apiv1.Pod{}})
+		nodesToRemove = append(nodesToRemove, simulator.NodeToBeRemoved{Node: node, PodsToReschedule: []*apiv1.Pod{}, DaemonSetPodsToDelete: []*apiv1.Pod{}})
 	}
 
 	// Update the timestamp map.
@@ -923,8 +923,11 @@ func (sd *ScaleDown) TryToScaleDown(
 	}
 	toRemove := nodesToRemove[0]
 	utilization := sd.nodeUtilizationMap[toRemove.Node.Name]
-	podNames := make([]string, 0, len(toRemove.PodsToReschedule))
+	podNames := make([]string, 0, len(toRemove.PodsToReschedule)+len(toRemove.DaemonSetPodsToDelete))
 	for _, pod := range toRemove.PodsToReschedule {
+		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
+	}
+	for _, pod := range toRemove.DaemonSetPodsToDelete {
 		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
 	}
 	klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
@@ -951,7 +954,10 @@ func (sd *ScaleDown) TryToScaleDown(
 				errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)}
 			return
 		}
-		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, nodeGroup)
+		var podsToDelete []*apiv1.Pod
+		podsToDelete = append(podsToDelete, toRemove.PodsToReschedule...)
+		podsToDelete = append(podsToDelete, toRemove.DaemonSetPodsToDelete...)
+		result = sd.deleteNode(toRemove.Node, podsToDelete, nodeGroup)
 		if result.ResultType != status.NodeDeleteOk {
 			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
 			return
@@ -963,7 +969,8 @@ func (sd *ScaleDown) TryToScaleDown(
 		}
 	}()
 
-	scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups, map[string][]*apiv1.Pod{toRemove.Node.Name: toRemove.PodsToReschedule})
+	scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups,
+		map[string][]*apiv1.Pod{toRemove.Node.Name: append(toRemove.PodsToReschedule, toRemove.DaemonSetPodsToDelete...)})
 	scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
 	return scaleDownStatus, nil
 }

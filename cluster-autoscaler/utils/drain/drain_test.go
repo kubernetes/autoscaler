@@ -25,10 +25,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
+
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -278,6 +279,20 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	unsafeDsPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ""),
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
 	unsafeJobPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            "bar",
@@ -368,6 +383,7 @@ func TestDrain(t *testing.T) {
 		pdbs              []*policyv1.PodDisruptionBudget
 		rcs               []*apiv1.ReplicationController
 		replicaSets       []*appsv1.ReplicaSet
+		skipDaemonSetPods bool
 		expectFatal       bool
 		expectPods        []*apiv1.Pod
 		expectBlockingPod *BlockingPod
@@ -381,16 +397,18 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{rcPod},
 		},
 		{
-			description: "DS-managed pod",
+			description: "DS-managed pod with skip",
 			pods:        []*apiv1.Pod{dsPod},
 			pdbs:        []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: true,
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
-			description: "DS-managed pod by a custom Daemonset",
+			description: "DS-managed pod by a custom Daemonset with skip",
 			pods:        []*apiv1.Pod{cdsPod},
 			pdbs:        []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: true,
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{},
 		},
@@ -545,6 +563,39 @@ func TestDrain(t *testing.T) {
 			expectPods:        []*apiv1.Pod{},
 			expectBlockingPod: &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
 		},
+		{
+			description:       "DS-managed pod without skip daemon set pods",
+			pods:              []*apiv1.Pod{dsPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: false,
+			expectFatal:       false,
+			expectPods:        []*apiv1.Pod{dsPod},
+		},
+		{
+			description:       "DS-managed pod without skip daemon set pods",
+			pods:              []*apiv1.Pod{dsPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: false,
+			expectFatal:       false,
+			expectPods:        []*apiv1.Pod{dsPod},
+		},
+		{
+			description:       "DS-managed pod by a custom Daemonset without skip daemon set pods",
+			pods:              []*apiv1.Pod{cdsPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: false,
+			expectFatal:       false,
+			expectPods:        []*apiv1.Pod{cdsPod},
+		},
+		{
+			description:       "DS-managed pod with PodSafeToEvict=false annotation",
+			pods:              []*apiv1.Pod{unsafeDsPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			skipDaemonSetPods: false,
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: unsafeDsPod, Reason: NotSafeToEvictAnnotation},
+		},
 	}
 
 	for _, test := range tests {
@@ -567,12 +618,16 @@ func TestDrain(t *testing.T) {
 		ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
 		assert.NoError(t, err)
 
-		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
+		registry := kube_util.NewListerRegistry(
+			nil, nil, nil, nil, nil,
+			dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
+		replicatedPods, daemonsetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs,
+			true, true, test.skipDaemonSetPods,
+			true, registry, 0, time.Now())
 
 		if test.expectFatal {
-			assert.Equal(t, test.expectBlockingPod, blockingPod)
+			assert.Equal(t, test.expectBlockingPod, blockingPod, test.description)
 			if err == nil {
 				t.Fatalf("%s: unexpected non-error", test.description)
 			}
@@ -585,8 +640,9 @@ func TestDrain(t *testing.T) {
 			}
 		}
 
-		if len(pods) != len(test.expectPods) {
-			t.Fatalf("Wrong pod list content: %v", test.description)
+		if len(replicatedPods)+len(daemonsetPods) != len(test.expectPods) {
+			t.Fatalf("Wrong pod list content: %v, got replicated pods: %d daemonset pods: %d",
+				test.description, len(replicatedPods), len(daemonsetPods))
 		}
 	}
 }

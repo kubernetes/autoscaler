@@ -34,60 +34,67 @@ import (
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
-func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo,
+	skipNodesWithSystemPods , skipNodesWithLocalStorage ,skipDaemonSetPods bool,
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, []*apiv1.Pod, *drain.BlockingPod, error) {
 	var pods []*apiv1.Pod
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
+	replicatedPods, daemonSetPods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		pdbs,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
+		skipDaemonSetPods,
 		false,
 		nil,
 		0,
 		time.Now())
 
 	if err != nil {
-		return pods, blockingPod, err
-	}
-	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, pdbBlockingPod, err
+		return pods, pods, blockingPod, err
 	}
 
-	return pods, nil, nil
+	if pdbBlockingPod, err := checkPdbs(append(replicatedPods, daemonSetPods...), pdbs); err != nil {
+		return pods, pods,pdbBlockingPod, err
+	}
+
+	return replicatedPods, daemonSetPods, nil, nil
 }
 
 // DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
 // is drained. Raises error if there is an unreplicated pod.
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
-func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool,
-	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo,
+	skipNodesWithSystemPods , skipNodesWithLocalStorage , skipDaemonSetPods bool,
+	listers kube_util.ListerRegistry, minReplicaCount int32,
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, []*apiv1.Pod, *drain.BlockingPod, error) {
 	var pods []*apiv1.Pod
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
+	replicatedPods,daemonSetPods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		pdbs,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
+		skipDaemonSetPods,
 		true,
 		listers,
 		minReplicaCount,
 		time.Now())
+
 	if err != nil {
-		return pods, blockingPod, err
-	}
-	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, pdbBlockingPod, err
+		return pods, pods, blockingPod, err
 	}
 
-	return pods, nil, nil
+	if pdbBlockingPod, err := checkPdbs(append(replicatedPods, daemonSetPods...), pdbs); err != nil {
+		return pods, pods,pdbBlockingPod, err
+	}
+
+	return replicatedPods, daemonSetPods, nil, nil
 }
 
 func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {
