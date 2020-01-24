@@ -70,6 +70,7 @@ func (c *Client) UpdateStatus() error {
 			return err
 		}
 		lease.Spec.RenewTime = &metav1.MicroTime{Time: time.Now()}
+		lease.Spec.HolderIdentity = pointer.StringPtr(c.holderIdentity)
 		_, err = c.client.Update(lease)
 		if apierrors.IsConflict(err) {
 			// Lease was updated by an another replica of the component.
