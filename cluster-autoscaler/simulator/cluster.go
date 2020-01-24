@@ -71,7 +71,7 @@ type UtilizationInfo struct {
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node, pods []*apiv1.Pod,
-	listers kube_util.ListerRegistry, predicateChecker PredicateChecker, maxCount int,
+	listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, maxCount int,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
@@ -112,8 +112,8 @@ candidateloop:
 			unremovable = append(unremovable, node)
 			continue candidateloop
 		}
-		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
-			usageTracker, timestamp)
+		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, clusterSnapshot,
+			predicateChecker, oldHints, newHints, usageTracker, timestamp)
 
 		if findProblems == nil {
 			result = append(result, NodeToBeRemoved{
@@ -216,15 +216,19 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
 }
 
-// TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
-func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
-	predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
+func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
+	clusterSnaphost ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time) error {
 
-	newNodeInfos := make(map[string]*schedulernodeinfo.NodeInfo)
-	for k, v := range nodeInfos {
-		newNodeInfos[k] = v
+	if err := clusterSnaphost.Fork(); err != nil {
+		return err
 	}
+	defer func() {
+		err := clusterSnaphost.Revert()
+		if err != nil {
+			klog.Errorf("Got error when calling ClusterSnapshot.Revert(); %v", err)
+		}
+	}()
 
 	podKey := func(pod *apiv1.Pod) string {
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
@@ -233,31 +237,19 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 	loggingQuota := glogx.PodsLoggingQuota()
 
 	tryNodeForPod := func(nodename string, pod *apiv1.Pod) bool {
-		nodeInfo, found := newNodeInfos[nodename]
-		if found {
-			if nodeInfo.Node() == nil {
-				// NodeInfo is generated based on pods. It is possible that node is removed from
-				// an api server faster than the pod that were running on them. In such a case
-				// we have to skip this nodeInfo. It should go away pretty soon.
-				klog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
-				return false
-			}
-			err := predicateChecker.CheckPredicates(nil, pod, nodeInfo)
-			if err != nil {
-				glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseMessage())
-			} else {
-				// TODO(mwielgus): Optimize it.
-				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
-				podsOnNode := nodeInfo.Pods()
-				podsOnNode = append(podsOnNode, pod)
-				newNodeInfo := schedulernodeinfo.NewNodeInfo(podsOnNode...)
-				newNodeInfo.SetNode(nodeInfo.Node())
-				newNodeInfos[nodename] = newNodeInfo
-				newHints[podKey(pod)] = nodename
-				return true
-			}
+		err := predicateChecker.CheckPredicates(clusterSnaphost, pod, FakeNodeInfoForNodeName(nodename))
+		if err != nil {
+			glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseMessage())
+			return false
 		}
-		return false
+
+		klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
+		if err := clusterSnaphost.AddPod(pod, nodename); err != nil {
+			klog.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, nodename, err)
+			return false
+		}
+		newHints[podKey(pod)] = nodename
+		return true
 	}
 
 	// TODO: come up with a better semi-random semi-utilization sorted
@@ -265,6 +257,15 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 	shuffledNodes := shuffleNodes(nodes)
 
 	pods = tpu.ClearTPURequests(pods)
+
+	// remove pods from clusterSnaphot first
+	for _, pod := range pods {
+		if err := clusterSnaphost.RemovePod(pod.Namespace, pod.Name); err != nil {
+			// just log error
+			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
+		}
+	}
+
 	for _, podptr := range pods {
 		newpod := *podptr
 		newpod.Spec.NodeName = ""
