@@ -35,7 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -401,17 +401,53 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // * timestamp is the current timestamp.
 // * pdbs is a list of pod disruption budgets.
 func (sd *ScaleDown) UpdateUnneededNodes(
-	allNodes []*apiv1.Node,
 	destinationNodes []*apiv1.Node,
 	scaleDownCandidates []*apiv1.Node,
-	pods []*apiv1.Pod,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
 
 	currentlyUnneededNodes := make([]*apiv1.Node, 0)
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
-	nonExpendablePods := core_utils.FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(nonExpendablePods, destinationNodes)
+
+	// Extract cluster state from snapshot for initial analysis
+	pods, err := sd.context.ClusterSnapshot.GetAllPods()
+	if err != nil {
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	allNodes, err := sd.context.ClusterSnapshot.GetAllNodes()
+	if err != nil {
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	schedulerLister, err := sd.context.ClusterSnapshot.GetSchedulerLister()
+	if err != nil {
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	allNodeInfos, err := schedulerLister.NodeInfos().List()
+	if err != nil {
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	nodeNameToNodeInfo := make(map[string]*schedulernodeinfo.NodeInfo)
+	for _, nodeInfo := range allNodeInfos {
+		node := nodeInfo.Node()
+		if node != nil {
+			nodeNameToNodeInfo[node.Name] = nodeInfo
+		}
+	}
+
+	// TODO(scheduler_framework migration) We should have already remove those from cluster snapshot.
+	// Validate if that is actually needed. It is needed for tests for sure as those are testing UpdateUnneededNodes in
+	// separation.
+	var nonExpendablePods []*apiv1.Pod
+	for _, pod := range pods {
+		if core_utils.IsExpendablePod(pod, sd.context.ExpendablePodsPriorityCutoff) {
+			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+				klog.Errorf("Could not remove expendable pod %s/%s from ClusterSnaphshot; %v", pod.Namespace, pod.Name, err)
+			}
+		} else {
+			nonExpendablePods = append(nonExpendablePods, pod)
+		}
+	}
+
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
 
 	sd.updateUnremovableNodes(allNodes)
@@ -488,8 +524,18 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
-		currentCandidates, destinationNodes, nonExpendablePods, nil, sd.context.PredicateChecker,
-		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+		currentCandidates,
+		destinationNodes,
+		nonExpendablePods,
+		nil,
+		sd.context.ClusterSnapshot,
+		sd.context.PredicateChecker,
+		len(currentCandidates),
+		true,
+		sd.podLocationHints,
+		sd.usageTracker,
+		timestamp,
+		pdbs)
 	if simulatorErr != nil {
 		return sd.markSimulationError(simulatorErr, timestamp)
 	}
@@ -510,9 +556,19 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// Look for additional nodes to remove among the rest of nodes.
 		klog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
-			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], destinationNodes, nonExpendablePods, nil,
-				sd.context.PredicateChecker, additionalCandidatesCount, true,
-				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+			simulator.FindNodesToRemove(
+				currentNonCandidates[:additionalCandidatesPoolSize],
+				destinationNodes,
+				nonExpendablePods,
+				nil,
+				sd.context.ClusterSnapshot,
+				sd.context.PredicateChecker,
+				additionalCandidatesCount,
+				true,
+				sd.podLocationHints,
+				sd.usageTracker,
+				timestamp,
+				pdbs)
 		if simulatorErr != nil {
 			return sd.markSimulationError(simulatorErr, timestamp)
 		}
@@ -804,9 +860,19 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Only scheduled non expendable pods are taken into account and have to be moved.
 	nonExpendablePods := core_utils.FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, nonExpendablePods, sd.context.ListerRegistry,
-		sd.context.PredicateChecker, 1, false,
-		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
+	nodesToRemove, _, _, err := simulator.FindNodesToRemove(
+		candidates,
+		nodesWithoutMaster,
+		nonExpendablePods,
+		sd.context.ListerRegistry,
+		sd.context.ClusterSnapshot,
+		sd.context.PredicateChecker,
+		1,
+		false,
+		sd.podLocationHints,
+		sd.usageTracker,
+		time.Now(),
+		pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	if err != nil {
