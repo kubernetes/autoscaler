@@ -357,9 +357,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods))
 
-	// scheduledPods will be mutated over this method. We keep original list of pods on originalScheduledPods.
-	scheduledPods := append([]*apiv1.Pod{}, originalScheduledPods...)
-
 	unschedulablePods = tpu.ClearTPURequests(unschedulablePods)
 
 	// todo: move split and append below to separate PodListProcessor
@@ -376,9 +373,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return errors.ToAutoscalerError(errors.InternalError, err)
 		}
 	}
-
-	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
-	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
 	// add upcoming nodes to ClusterSnapshot
 	// TODO(scheduler_framework_migration) this should also schedule daemonsets to upcoming nodes.
@@ -476,7 +470,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		// We use scheduledPods (not originalScheduledPods) here, so artificial scheduled pods introduced by processors
 		// (e.g unscheduled pods with nominated node name) can block scaledown of given node.
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, podDestinations, scaleDownCandidates, scheduledPods, currentTime, pdbs)
+		typedErr := scaleDown.UpdateUnneededNodes(podDestinations, scaleDownCandidates, currentTime, pdbs)
 		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
