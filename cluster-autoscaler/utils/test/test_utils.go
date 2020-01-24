@@ -154,6 +154,11 @@ func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 		SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionTrue, lastTransition)
 	} else {
 		SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionFalse, lastTransition)
+		node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
+			Key:    "node.kubernetes.io/not-ready",
+			Value:  "true",
+			Effect: apiv1.TaintEffectNoSchedule,
+		})
 	}
 }
 
