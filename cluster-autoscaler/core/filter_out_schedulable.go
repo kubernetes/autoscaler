@@ -31,7 +31,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/scheduler/util"
+	"k8s.io/kubernetes/pkg/api/v1/pod"
 )
 
 type filterOutSchedulablePodListProcessor struct{}
@@ -108,7 +108,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
 
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
-		return util.MoreImportantPod(unschedulableCandidates[i], unschedulableCandidates[j])
+		return moreImportantPod(unschedulableCandidates[i], unschedulableCandidates[j])
 	})
 
 	for _, pod := range unschedulableCandidates {
@@ -131,6 +131,14 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	klog.V(4).Infof("%v other pods marked as unschedulable can be scheduled.",
 		len(unschedulableCandidates)-len(unschedulablePods))
 	return unschedulablePods
+}
+
+func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
+	// based on schedulers MoreImportantPod but does not compare Pod.Status.StartTime which does not make sense
+	// for unschedulable pods
+	p1 := pod.GetPodPriority(pod1)
+	p2 := pod.GetPodPriority(pod2)
+	return p1 > p2
 }
 
 // filterOutSchedulableSimple checks whether pods from <unschedulableCandidates> marked as unschedulable
