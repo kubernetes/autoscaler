@@ -196,18 +196,22 @@ func (a *StaticAutoscaler) propagateClusterSnapshot(nodes []*apiv1.Node, schedul
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
+	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
 		err = a.ClusterSnapshot.AddNode(node)
 		if err != nil {
 			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
 			return errors.ToAutoscalerError(errors.InternalError, err)
 		}
+		knownNodes[node.Name] = true
 	}
 	for _, pod := range scheduledPods {
-		err = a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-		if err != nil {
-			klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
-			return errors.ToAutoscalerError(errors.InternalError, err)
+		if knownNodes[pod.Spec.NodeName] {
+			err = a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+			if err != nil {
+				klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
+				return errors.ToAutoscalerError(errors.InternalError, err)
+			}
 		}
 	}
 	return nil
