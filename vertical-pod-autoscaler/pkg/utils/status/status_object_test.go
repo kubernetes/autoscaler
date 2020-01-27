@@ -231,6 +231,16 @@ func TestIsStatusValid(t *testing.T) {
 			expectedValid: true,
 		},
 		{
+			name: "Outdated CreationTimestamp with no RenewTime",
+			lease: &apicoordinationv1.Lease{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Time{Time: now.Add(-time.Minute)},
+				},
+			},
+			leaseTimeout:  10 * time.Second,
+			expectedValid: false,
+		},
+		{
 			name: "Valid RenewTime",
 			lease: &apicoordinationv1.Lease{
 				ObjectMeta: metav1.ObjectMeta{

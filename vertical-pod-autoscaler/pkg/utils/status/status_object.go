@@ -124,7 +124,8 @@ func IsStatusValid(status *apicoordinationv1.Lease, leaseTimeout time.Duration) 
 
 func isStatusValid(status *apicoordinationv1.Lease, leaseTimeout time.Duration, now time.Time) bool {
 	return status.CreationTimestamp.Add(leaseTimeout).After(now) ||
-		status.Spec.RenewTime.Add(leaseTimeout).After(now)
+		(status.Spec.RenewTime != nil &&
+			status.Spec.RenewTime.Add(leaseTimeout).After(now))
 }
 
 func isRetryableAPIError(err error) bool {
