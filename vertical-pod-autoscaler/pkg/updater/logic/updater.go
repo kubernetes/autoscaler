@@ -83,6 +83,7 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce(ctx context.Context) {
 	timer := metrics_updater.NewExecutionTimer()
+	defer timer.ObserveTotal()
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
@@ -115,14 +116,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 		if u.evictionAdmission != nil {
 			u.evictionAdmission.CleanUp()
 		}
-		timer.ObserveTotal()
 		return
 	}
 
 	podsList, err := u.podLister.List(labels.Everything())
 	if err != nil {
 		klog.Errorf("failed to get pods list: %v", err)
-		timer.ObserveTotal()
 		return
 	}
 	timer.ObserveStep("ListPods")
@@ -163,7 +162,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 	}
 	timer.ObserveStep("EvictPods")
-	timer.ObserveTotal()
 }
 
 func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate.Limiter {
