@@ -89,6 +89,14 @@ func main() {
 	}
 	recommendationProvider := logic.NewRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), targetSelectorFetcher, vpaLister)
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		klog.Fatalf("Unable to get hostname: %v", err)
+	}
+	stopCh := make(chan struct{})
+	statusUpdater := logic.NewStatusUpdater(kubeClient, hostname)
+	defer close(stopCh)
+
 	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, vpaPreprocessor, limitRangeCalculator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
@@ -100,6 +108,10 @@ func main() {
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
-	go selfRegistration(clientset, certs.caCert, &namespace, url, *registerByURL)
+	go func() {
+		selfRegistration(clientset, certs.caCert, &namespace, url, *registerByURL)
+		// Start status updates after the webhook is initialized.
+		statusUpdater.Run(stopCh)
+	}()
 	server.ListenAndServeTLS("", "")
 }
