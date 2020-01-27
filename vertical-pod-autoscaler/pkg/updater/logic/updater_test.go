@@ -20,6 +20,7 @@ import (
 	"context"
 	"strconv"
 	"testing"
+	"time"
 
 	"golang.org/x/time/rate"
 
@@ -31,6 +32,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -88,12 +90,14 @@ func TestRunOnce(t *testing.T) {
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
-		vpaLister:               vpaLister,
-		podLister:               podLister,
-		evictionFactory:         factory,
-		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
-		recommendationProcessor: &test.FakeRecommendationProcessor{},
-		selectorFetcher:         mockSelectorFetcher,
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		evictionFactory:              factory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		selectorFetcher:              mockSelectorFetcher,
+		useAdmissionControllerStatus: true,
+		statusValidator:              newFakeValidator(true),
 	}
 
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
@@ -136,12 +140,76 @@ func TestVPAOff(t *testing.T) {
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
-		vpaLister:               vpaLister,
-		podLister:               podLister,
-		evictionFactory:         factory,
-		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
-		recommendationProcessor: &test.FakeRecommendationProcessor{},
-		selectorFetcher:         target_mock.NewMockVpaTargetSelectorFetcher(ctrl),
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		evictionFactory:              factory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		selectorFetcher:              target_mock.NewMockVpaTargetSelectorFetcher(ctrl),
+		useAdmissionControllerStatus: true,
+		statusValidator:              newFakeValidator(true),
+	}
+
+	updater.RunOnce(context.Background())
+	eviction.AssertNumberOfCalls(t, "Evict", 0)
+}
+
+// TODO(krzysied): Merge tests so there is less copy-pasted code.
+func TestRunOnce_InvalidStatus(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	replicas := int32(5)
+	livePods := 5
+	labels := map[string]string{"app": "testingApp"}
+	containerName := "container1"
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+	pods := make([]*apiv1.Pod, livePods)
+	eviction := &test.PodsEvictionRestrictionMock{}
+
+	for i := range pods {
+		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).AddContainer(test.BuildTestContainer(containerName, "1", "100M")).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+
+		pods[i].Labels = labels
+		eviction.On("CanEvict", pods[i]).Return(true)
+		eviction.On("Evict", pods[i], nil).Return(nil)
+	}
+
+	factory := &fakeEvictFactory{eviction}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+
+	podLister := &test.PodListerMock{}
+	podLister.On("List").Return(pods, nil)
+
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		Get()
+	updateMode := vpa_types.UpdateModeAuto
+	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+
+	updater := &updater{
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		evictionFactory:              factory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		selectorFetcher:              mockSelectorFetcher,
+		useAdmissionControllerStatus: true,
+		statusValidator:              newFakeValidator(false),
 	}
 
 	updater.RunOnce(context.Background())
@@ -156,11 +224,13 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 	vpaLister.On("List").Return(nil, nil).Once()
 
 	updater := &updater{
-		vpaLister:               vpaLister,
-		podLister:               podLister,
-		evictionFactory:         factory,
-		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
-		recommendationProcessor: &test.FakeRecommendationProcessor{},
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		evictionFactory:              factory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		useAdmissionControllerStatus: true,
+		statusValidator:              newFakeValidator(true),
 	}
 	updater.RunOnce(context.Background())
 }
@@ -188,4 +258,16 @@ type fakeEvictFactory struct {
 
 func (f fakeEvictFactory) NewPodsEvictionRestriction(pods []*apiv1.Pod) eviction.PodsEvictionRestriction {
 	return f.evict
+}
+
+type fakeValidator struct {
+	isValid bool
+}
+
+func newFakeValidator(isValid bool) status.Validator {
+	return &fakeValidator{isValid}
+}
+
+func (f *fakeValidator) IsStatusValid(statusTimeout time.Duration) (bool, error) {
+	return f.isValid, nil
 }

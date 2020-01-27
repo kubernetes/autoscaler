@@ -53,6 +53,9 @@ var (
 	evictionRateBurst = flag.Int("eviction-rate-burst", 1, `Burst of pods that can be evicted.`)
 
 	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
+
+	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
+		"If true, updater will only evict pods when admission controller status is valid.")
 )
 
 const (
@@ -83,7 +86,18 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	// TODO: use SharedInformerFactory in updater
-	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionRateLimit, *evictionRateBurst, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), nil, targetSelectorFetcher)
+	updater, err := updater.NewUpdater(
+		kubeClient,
+		vpaClient,
+		*minReplicas,
+		*evictionRateLimit,
+		*evictionRateBurst,
+		*evictionToleranceFraction,
+		*useAdmissionControllerStatus,
+		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
+		nil,
+		targetSelectorFetcher,
+	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
