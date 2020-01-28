@@ -32,6 +32,8 @@ import (
 	"github.com/spf13/pflag"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apiserver/pkg/server/mux"
+	"k8s.io/apiserver/pkg/server/routes"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -172,6 +174,7 @@ var (
 
 	ignoreTaintsFlag         = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 	awsUseStaticInstanceList = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
+	enableProfiling          = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -368,9 +371,16 @@ func main() {
 	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)
 
 	go func() {
-		http.Handle("/metrics", legacyregistry.Handler())
-		http.Handle("/health-check", healthCheck)
-		err := http.ListenAndServe(*address, nil)
+		pathRecorderMux := mux.NewPathRecorderMux("cluster-autoscaler")
+		defaultMetricsHandler := legacyregistry.Handler().ServeHTTP
+		pathRecorderMux.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+			defaultMetricsHandler(w, req)
+		})
+		pathRecorderMux.HandleFunc("/health-check", healthCheck.ServeHTTP)
+		if *enableProfiling {
+			routes.Profiling{}.Install(pathRecorderMux)
+		}
+		err := http.ListenAndServe(*address, pathRecorderMux)
 		klog.Fatalf("Failed to start metrics: %v", err)
 	}()
 
