@@ -25,6 +25,7 @@ import (
 // It exposes efficient mutation methods and can be viewed as scheduler's SharedLister
 // via GetSchedulerLister() method.
 type ClusterSnapshot interface {
+	schedulerlisters.SharedLister
 	// AddNode adds node to the snapshot.
 	AddNode(node *apiv1.Node) error
 	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
@@ -50,7 +51,4 @@ type ClusterSnapshot interface {
 	Commit() error
 	// Clear reset cluster snapshot to empty, unforked state
 	Clear() error
-
-	// GetSchedulerLister exposes snapshot state as scheduler's SharedLister.
-	GetSchedulerLister() (schedulerlisters.SharedLister, error)
 }
