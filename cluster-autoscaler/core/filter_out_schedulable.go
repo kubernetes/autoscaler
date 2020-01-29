@@ -22,11 +22,9 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	schedulerutil "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -67,20 +65,13 @@ func (filterOutSchedulablePodListProcessor) Process(
 	filterOutSchedulableStart := time.Now()
 	var unschedulablePodsToHelp []*apiv1.Pod
 
-	if context.EstimatorName == estimator.BinpackingEstimatorName {
-		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
-			context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
-	} else {
-		unschedulablePodsToHelp = unschedulablePods
-	}
+	// first try to fill in upcoming nodes
+	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
+		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
 
-	if context.FilterOutSchedulablePodsUsesPacking {
-		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePodsToHelp, readyNodes, allScheduledPods,
-			context.PredicateChecker, context.ExpendablePodsPriorityCutoff, true)
-	} else {
-		unschedulablePodsToHelp = filterOutSchedulableSimple(unschedulablePodsToHelp, readyNodes, allScheduledPods,
-			context.PredicateChecker, context.ExpendablePodsPriorityCutoff)
-	}
+	// then see if we can put some pods to nodes in the cluster
+	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePodsToHelp, readyNodes, allScheduledPods,
+		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, true)
 
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
@@ -139,45 +130,4 @@ func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
 	p1 := pod.GetPodPriority(pod1)
 	p2 := pod.GetPodPriority(pod2)
 	return p1 > p2
-}
-
-// filterOutSchedulableSimple checks whether pods from <unschedulableCandidates> marked as unschedulable
-// by Scheduler actually can't be scheduled on any node and filter out the ones that can.
-// It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
-func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod,
-	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
-	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
-	podSchedulable := make(utils.PodSchedulableMap)
-	loggingQuota := glogx.PodsLoggingQuota()
-
-	for _, pod := range unschedulableCandidates {
-		cachedError, found := podSchedulable.Get(pod)
-		// Try to get result from cache.
-		if found {
-			if cachedError != nil {
-				unschedulablePods = append(unschedulablePods, pod)
-			} else {
-				glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
-			}
-			continue
-		}
-
-		// Not found in cache, have to run the predicates.
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
-		// err returned from FitsAny isn't a PredicateError.
-		// Hello, ugly hack. I wish you weren't here.
-		var predicateError *simulator.PredicateError
-		if err != nil {
-			predicateError = simulator.NewPredicateError("FitsAny", err, nil, nil)
-			unschedulablePods = append(unschedulablePods, pod)
-		} else {
-			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
-		}
-		podSchedulable.Set(pod, predicateError)
-	}
-
-	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())
-	return unschedulablePods
 }
