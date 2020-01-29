@@ -20,6 +20,7 @@ K8S_FORK="git@github.com:kubernetes/kubernetes.git"
 K8S_REV="master"
 BATCH_MODE="false"
 TARGET_MODULE=${TARGET_MODULE:-k8s.io/autoscaler/cluster-autoscaler}
+VERIFY_COMMAND=${VERIFY_COMMAND:-"go test -mod=vendor ./..."}
 
 ARGS="$@"
 OPTS=`getopt -o f::r::d::v::b:: --long k8sfork::,k8srev::,workdir::,batch:: -n $SCRIPT_NAME -- "$@"`
@@ -130,8 +131,9 @@ set +o errexit
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
   }
 
+  GO_MOD_EXTRA_FILES="$(shopt -s nullglob;echo go.mod-extra*)"
   OLD_EXTRA_FOUND="false"
-  for go_mod_extra in go.mod-extra*; do
+  for go_mod_extra in ${GO_MOD_EXTRA_FILES}; do
     list_dependencies ${go_mod_extra} | while read extra_path extra_version; do
       list_dependencies go.mod | while read source_path source_version; do
         if [[ "${source_path}" == "${extra_path}" ]]; then
@@ -149,7 +151,7 @@ set +o errexit
 
   # Add dependencies from go.mod-extra to go.mod
   # Propagate require entries to both require and replace
-  for go_mod_extra in go.mod-extra*; do
+  for go_mod_extra in ${GO_MOD_EXTRA_FILES}; do
     go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-require \(.Path)@\(.Version)"' | xargs -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
     go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-replace \(.Path)=\(.Path)@\(.Version)"' | xargs -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
     # And add explicit replace entries
@@ -179,9 +181,9 @@ set +o errexit
   echo "Running go mod vendor"
   go mod vendor
 
-  echo "Running go test -mod=vendor ./..."
-  if ! go test -mod=vendor ./... >&${BASH_XTRACEFD} 2>&1; then
-    err_rerun "Test run failed"
+  echo "Running ${VERIFY_COMMAND}"
+  if ! ${VERIFY_COMMAND} >&${BASH_XTRACEFD} 2>&1; then
+    err_rerun "Verify command failed"
   fi
 
   # Commit go.mod* and vendor
