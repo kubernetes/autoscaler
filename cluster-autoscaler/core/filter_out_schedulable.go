@@ -65,9 +65,11 @@ func (filterOutSchedulablePodListProcessor) Process(
 	filterOutSchedulableStart := time.Now()
 	var unschedulablePodsToHelp []*apiv1.Pod
 
+	// first try to fill in upcoming nodes
 	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, upcomingNodes, allScheduledPods,
 		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, false)
 
+	// then see if we can put some pods to nodes in the cluster
 	unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePodsToHelp, readyNodes, allScheduledPods,
 		context.PredicateChecker, context.ExpendablePodsPriorityCutoff, true)
 
