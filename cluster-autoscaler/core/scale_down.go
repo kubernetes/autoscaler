@@ -418,11 +418,8 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	if err != nil {
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	schedulerLister, err := sd.context.ClusterSnapshot.GetSchedulerLister()
-	if err != nil {
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
-	allNodeInfos, err := schedulerLister.NodeInfos().List()
+
+	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
 	if err != nil {
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
