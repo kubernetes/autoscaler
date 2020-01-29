@@ -190,19 +190,14 @@ func (p *SchedulerBasedPredicateChecker) fitsAnyNodeDeprecated(pod *apiv1.Pod, n
 
 func (p *SchedulerBasedPredicateChecker) fitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	var nodeInfosList []*scheduler_nodeinfo.NodeInfo
-	schedulerLister, err := clusterSnapshot.GetSchedulerLister()
-	if err != nil {
-		// TODO(scheduler_framework_integration) distinguish from internal error and predicate error
-		klog.Errorf("Error obtaining SharedLister from clusterSnapshot")
-		return "", fmt.Errorf("error obtaining SharedLister from clusterSnapshot")
-	}
-	nodeInfosList, err = schedulerLister.NodeInfos().List()
+
+	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
 	if err != nil {
 		// TODO(scheduler_framework_integration) distinguish from internal error and predicate error
 		klog.Errorf("Error obtaining nodeInfos from schedulerLister")
 		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
 	}
-	p.delegatingSharedLister.UpdateDelegate(schedulerLister)
+	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 	state := scheduler_framework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
@@ -277,14 +272,7 @@ func (p *SchedulerBasedPredicateChecker) checkPredicatesDeprecated(pod *apiv1.Po
 }
 
 func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
-	schedulerLister, err := clusterSnapshot.GetSchedulerLister()
-	if err != nil {
-		// // TODO(scheduler_framework_integration) distinguish from internal error and predicate error
-		klog.Errorf("Error obtaining SharedLister from clusterSnapshot ")
-		return GenericPredicateError()
-	}
-
-	p.delegatingSharedLister.UpdateDelegate(schedulerLister)
+	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
 	state := scheduler_framework.NewCycleState()
@@ -298,7 +286,7 @@ func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot Cluster
 			emptyString)
 	}
 
-	nodeInfo, err := schedulerLister.NodeInfos().Get(nodeName)
+	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
 		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
