@@ -141,9 +141,12 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 func NewScaleTestAutoscalingContext(
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
-	processorCallbacks processor_callbacks.ProcessorCallbacks) context.AutoscalingContext {
+	processorCallbacks processor_callbacks.ProcessorCallbacks) (context.AutoscalingContext, error) {
 	fakeRecorder := kube_record.NewFakeRecorder(5)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	fakeLogRecorder, err := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	if err != nil {
+		return context.AutoscalingContext{}, err
+	}
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
@@ -160,7 +163,7 @@ func NewScaleTestAutoscalingContext(
 		ExpanderStrategy:   random.NewStrategy(),
 		EstimatorBuilder:   estimatorBuilder,
 		ProcessorCallbacks: processorCallbacks,
-	}
+	}, nil
 }
 
 type mockAutoprovisioningNodeGroupManager struct {

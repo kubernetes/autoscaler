@@ -511,7 +511,9 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 	assert.NotNil(t, provider)
 
 	// Create context with non-random expander strategy.
-	context := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil)
+	assert.NoError(t, err)
+
 	expander := reportingStrategy{
 		initialNodeConfigs: config.nodes,
 		optionToChoose:     config.expansionOptionToChoose,
@@ -675,7 +677,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := utils.GetNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker, nil)
@@ -714,7 +717,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1}
 	nodeInfos, _ := utils.GetNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker, nil)
@@ -779,7 +783,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		MaxCoresTotal:            config.DefaultMaxClusterCores,
 		MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	assert.NoError(t, err)
 
 	nodeInfos, _ := utils.GetNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker, nil)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -839,7 +844,8 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
-	context := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
+	assert.NoError(t, err)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 
