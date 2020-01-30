@@ -31,6 +31,16 @@ import (
 )
 
 const (
+	// AdmissionControllerStatusName is the name of
+	// the Admission Controller status object.
+	AdmissionControllerStatusName = "vpa-admission-controller"
+	// AdmissionControllerStatusNamespace is the namespace of
+	// the Admission Controller status object.
+	AdmissionControllerStatusNamespace = "kube-system"
+	// AdmissionControllerStatusTimeout is a time after which
+	// if not updated the Admission Controller status is no longer valid.
+	AdmissionControllerStatusTimeout = 1 * time.Minute
+
 	// Parameters for retrying with exponential backoff.
 	retryBackoffInitialDuration = 100 * time.Millisecond
 	retryBackoffFactor          = 3

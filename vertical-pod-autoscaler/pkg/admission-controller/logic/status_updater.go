@@ -25,13 +25,6 @@ import (
 )
 
 const (
-	// VpaAdmissionControllerStatusName is the name of
-	// the Admission Controller status object.
-	VpaAdmissionControllerStatusName = "vpa-admission-controller"
-	// VpaAdmissionControllerStatusNamespace is the namespace of
-	// the Admission Controller status object.
-	VpaAdmissionControllerStatusNamespace = "kube-system"
-
 	updateInterval = 10 * time.Second
 )
 
@@ -45,8 +38,8 @@ func NewStatusUpdater(c clientset.Interface, holderIdentity string) *StatusUpdat
 	return &StatusUpdater{
 		client: status.NewClient(
 			c,
-			VpaAdmissionControllerStatusName,
-			VpaAdmissionControllerStatusNamespace,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
 			updateInterval,
 			holderIdentity,
 		),
