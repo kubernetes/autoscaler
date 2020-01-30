@@ -78,7 +78,6 @@ func (data *internalBasicSnapshotData) filteredListPods(podFilter schedulerliste
 	return pods, nil
 }
 
-// NewEmptySnapshot initializes a Snapshot struct and returns it.
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap: make(map[string]*schedulernodeinfo.NodeInfo),
@@ -86,12 +85,12 @@ func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
-	clonedNodeInforMap := make(map[string]*schedulernodeinfo.NodeInfo)
+	clonedNodeInfoMap := make(map[string]*schedulernodeinfo.NodeInfo)
 	for k, v := range data.nodeInfoMap {
-		clonedNodeInforMap[k] = v.Clone()
+		clonedNodeInfoMap[k] = v.Clone()
 	}
 	return &internalBasicSnapshotData{
-		nodeInfoMap: clonedNodeInforMap,
+		nodeInfoMap: clonedNodeInfoMap,
 	}
 }
 
