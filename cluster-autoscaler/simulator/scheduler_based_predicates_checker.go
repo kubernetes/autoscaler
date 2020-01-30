@@ -125,7 +125,7 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	return checker, nil
 }
 
-// FitsAnyNode checks if the given pod can be place on any of the given nodes.
+// FitsAnyNode checks if the given pod can be placed on any of the given nodes.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
 	if clusterSnapshot != nil {
 		if nodeInfos != nil {
@@ -252,6 +252,12 @@ func (p *SchedulerBasedPredicateChecker) checkPredicatesDeprecated(pod *apiv1.Po
 }
 
 func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
+	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
+	if err != nil {
+		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
+		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
+	}
+
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
@@ -264,12 +270,6 @@ func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot Cluster
 			preFilterStatus.Message(),
 			preFilterStatus.Reasons(),
 			emptyString)
-	}
-
-	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
-	if err != nil {
-		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
-		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
 	}
 
 	filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
