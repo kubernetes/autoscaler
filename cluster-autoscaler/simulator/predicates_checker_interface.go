@@ -24,8 +24,6 @@ import (
 
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker interface {
-	// TODO remove
-	SnapshotClusterState() error
 	// TODO drop "nodeInfos map[string]*scheduler_nodeinfo.NodeInfo" and check against schedulerLister
 	FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error)
 	// TODO replace "*scheduler_nodeinfo.NodeInfo" with node name and expect nodeInfo to be part of schedulerLister
