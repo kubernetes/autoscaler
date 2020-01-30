@@ -232,9 +232,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	klog.V(4).Info("Starting main loop")
 
 	stateUpdateStart := time.Now()
-	if err := a.PredicateChecker.SnapshotClusterState(); err != nil {
-		return errors.ToAutoscalerError(errors.ApiCallError, fmt.Errorf("could not snapshot cluster state in scheduler; %v", err))
-	}
 
 	// Get nodes and pods currently living on cluster
 	allNodes, readyNodes, typedErr := a.obtainNodeLists(a.CloudProvider)
