@@ -151,6 +151,6 @@ func TestDebugInfo(t *testing.T) {
 
 	predicateErr := predicateChecker.CheckPredicates(clusterSnapshot, p1, FakeNodeInfoForNodeName("n1"))
 	assert.NotNil(t, predicateErr)
-	assert.Equal(t, "node(s) had taints that the pod didn't tolerate", predicateErr.Message())
+	assert.Equal(t, "node(s) had taint {SomeTaint: WhyNot?}, that the pod didn't tolerate", predicateErr.Message())
 	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
 }
