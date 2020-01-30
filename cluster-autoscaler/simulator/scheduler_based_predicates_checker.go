@@ -166,45 +166,13 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
-	if clusterSnapshot != nil {
-		if nodeInfos != nil {
-			klog.Errorf("clusterSnapshot and nodeInfos are mutually exclusive!!!!")
-		}
-		return p.fitsAnyNode(clusterSnapshot, pod)
+	if clusterSnapshot == nil {
+		return "", fmt.Errorf("ClusterSnapshot not provided")
 	}
-	return p.fitsAnyNodeDeprecated(pod, nodeInfos)
-}
-
-// FitsAnyNode checks if the given pod can be place on any of the given nodes.
-func (p *SchedulerBasedPredicateChecker) fitsAnyNodeDeprecated(pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
-	p.delegatingSharedLister.UpdateDelegate(p.informerBasedShardLister)
-	defer p.delegatingSharedLister.ResetDelegate()
-
-	state := scheduler_framework.NewCycleState()
-	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
-	if !preFilterStatus.IsSuccess() {
-		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
+	if nodeInfos != nil {
+		klog.Errorf("clusterSnapshot and nodeInfos are mutually exclusive!!!!")
 	}
-
-	for _, nodeInfo := range nodeInfos {
-		// Be sure that the node is schedulable.
-		if nodeInfo.Node().Spec.Unschedulable {
-			continue
-		}
-
-		filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
-		ok := true
-		for _, filterStatus := range filterStatuses {
-			if !filterStatus.IsSuccess() {
-				ok = false
-				break
-			}
-		}
-		if ok {
-			return nodeInfo.Node().Name, nil
-		}
-	}
-	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
+	return p.fitsAnyNode(clusterSnapshot, pod)
 }
 
 func (p *SchedulerBasedPredicateChecker) fitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
@@ -247,47 +215,10 @@ func (p *SchedulerBasedPredicateChecker) fitsAnyNode(clusterSnapshot ClusterSnap
 
 // CheckPredicates checks if the given pod can be placed on the given node.
 func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfo *scheduler_nodeinfo.NodeInfo) *PredicateError {
-	if clusterSnapshot != nil {
-		return p.checkPredicates(clusterSnapshot, pod, nodeInfo.Node().Name)
+	if clusterSnapshot == nil {
+		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
 	}
-	return p.checkPredicatesDeprecated(pod, nodeInfo)
-}
-
-func (p *SchedulerBasedPredicateChecker) checkPredicatesDeprecated(pod *apiv1.Pod, nodeInfo *scheduler_nodeinfo.NodeInfo) *PredicateError {
-	p.delegatingSharedLister.UpdateDelegate(p.informerBasedShardLister)
-	defer p.delegatingSharedLister.ResetDelegate()
-
-	state := scheduler_framework.NewCycleState()
-	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
-	if !preFilterStatus.IsSuccess() {
-		return NewPredicateError(
-			InternalPredicateError,
-			"",
-			preFilterStatus.Message(),
-			preFilterStatus.Reasons(),
-			emptyString)
-	}
-
-	filterStatuses := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
-	for filterName, filterStatus := range filterStatuses {
-		if !filterStatus.IsSuccess() {
-			if filterStatus.IsUnschedulable() {
-				return NewPredicateError(
-					NotSchedulablePredicateError,
-					filterName,
-					filterStatus.Message(),
-					filterStatus.Reasons(),
-					p.buildDebugInfo(filterName, nodeInfo))
-			}
-			return NewPredicateError(
-				InternalPredicateError,
-				filterName,
-				filterStatus.Message(),
-				filterStatus.Reasons(),
-				p.buildDebugInfo(filterName, nodeInfo))
-		}
-	}
-	return nil
+	return p.checkPredicates(clusterSnapshot, pod, nodeInfo.Node().Name)
 }
 
 func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
