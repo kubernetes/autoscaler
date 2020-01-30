@@ -22,7 +22,6 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
@@ -117,8 +116,6 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 		framework:                framework,
 		delegatingSharedLister:   sharedLister,
 		informerBasedShardLister: NewEmptySnapshot(),
-		nodeLister:               informerFactory.Core().V1().Nodes().Lister(),
-		podLister:                informerFactory.Core().V1().Pods().Lister(),
 	}
 
 	// this MUST be called after all the informers/listers are acquired via the
@@ -126,23 +123,6 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	informerFactory.Start(stop)
 
 	return checker, nil
-}
-
-// SnapshotClusterState updates cluster snapshot used by the predicate checker.
-// It should be called every CA loop iteration.
-func (p *SchedulerBasedPredicateChecker) SnapshotClusterState() error {
-	nodes, err := p.nodeLister.List(labels.Everything())
-	if err != nil {
-		return fmt.Errorf("could not list Nodes; %v", err)
-	}
-	pods, err := p.podLister.List(labels.Everything())
-	if err != nil {
-		return fmt.Errorf("could not list Pods; %v", err)
-	}
-	nodeInfoMap := CreateNodeInfoMap(pods, nodes)
-	newSnapshot := NewSnapshot(nodeInfoMap)
-	p.delegatingSharedLister.UpdateDelegate(newSnapshot)
-	return nil
 }
 
 // FitsAnyNode checks if the given pod can be place on any of the given nodes.
