@@ -193,7 +193,7 @@ func (snapshot *BasicClusterSnapshot) GetAllPods() ([]*apiv1.Pod, error) {
 	return snapshot.getInternalData().getAllPods()
 }
 
-// GetAllNodes returns list of ll the nodes in snapshot
+// GetAllNodes returns list of all the nodes in snapshot
 func (snapshot *BasicClusterSnapshot) GetAllNodes() ([]*apiv1.Node, error) {
 	return snapshot.getInternalData().getAllNodes()
 }
