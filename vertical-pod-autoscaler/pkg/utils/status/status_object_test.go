@@ -206,7 +206,7 @@ func TestGetStatus(t *testing.T) {
 			fc := fake.NewSimpleClientset()
 			fc.PrependReactor("get", "leases", tc.getReactor)
 			client := NewClient(fc, leaseName, leaseNamespace, 10*time.Second, leaseName)
-			_, err := client.GetStatus()
+			_, err := client.getStatus()
 			assert.True(t, (err != nil) == tc.wantErr)
 		})
 	}
