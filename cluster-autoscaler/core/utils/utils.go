@@ -42,7 +42,7 @@ import (
 const (
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
-	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
+	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler nodes.
 	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
 )
 

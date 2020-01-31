@@ -72,3 +72,21 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 	}
 	return canNodeBeReady, lastTransitionTime, nil
 }
+
+// GetUnreadyNodeCopy create a copy of the given node and override its NodeReady condition to False
+func GetUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
+	newNode := node.DeepCopy()
+	newReadyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionFalse,
+		LastTransitionTime: node.CreationTimestamp,
+	}
+	newNodeConditions := []apiv1.NodeCondition{newReadyCondition}
+	for _, condition := range newNode.Status.Conditions {
+		if condition.Type != apiv1.NodeReady {
+			newNodeConditions = append(newNodeConditions, condition)
+		}
+	}
+	newNode.Status.Conditions = newNodeConditions
+	return newNode
+}
