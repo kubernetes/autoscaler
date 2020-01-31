@@ -57,6 +57,11 @@ type Client struct {
 	holderIdentity       string
 }
 
+// Validator for the status object.
+type Validator interface {
+	IsStatusValid(statusTimeout time.Duration) (bool, error)
+}
+
 // NewClient returns a client for the status object.
 func NewClient(c clientset.Interface, leaseName, leaseNamespace string, leaseDuration time.Duration, holderIdentity string) *Client {
 	return &Client{
@@ -65,6 +70,17 @@ func NewClient(c clientset.Interface, leaseName, leaseNamespace string, leaseDur
 		leaseNamespace:       leaseNamespace,
 		leaseDurationSeconds: int32(leaseDuration.Seconds()),
 		holderIdentity:       holderIdentity,
+	}
+}
+
+// NewValidator returns a validator for the status object.
+func NewValidator(c clientset.Interface, leaseName, leaseNamespace string) Validator {
+	return &Client{
+		client:               c.CoordinationV1().Leases(leaseNamespace),
+		leaseName:            leaseName,
+		leaseNamespace:       leaseNamespace,
+		leaseDurationSeconds: 0,
+		holderIdentity:       "",
 	}
 }
 
@@ -115,8 +131,17 @@ func (c *Client) newLease() *apicoordinationv1.Lease {
 	}
 }
 
-// GetStatus returns status object.
-func (c *Client) GetStatus() (*apicoordinationv1.Lease, error) {
+// IsStatusValid verifies if the current status object
+// was updated before lease timing out.
+func (c *Client) IsStatusValid(statusTimeout time.Duration) (bool, error) {
+	status, err := c.getStatus()
+	if err != nil {
+		return false, err
+	}
+	return isStatusValid(status, statusTimeout, time.Now()), nil
+}
+
+func (c *Client) getStatus() (*apicoordinationv1.Lease, error) {
 	var lease *apicoordinationv1.Lease
 	getFn := func() error {
 		var err error
@@ -125,11 +150,6 @@ func (c *Client) GetStatus() (*apicoordinationv1.Lease, error) {
 	}
 	err := retryWithExponentialBackOff(getFn)
 	return lease, err
-}
-
-// IsStatusValid verifies if status was updated before lease timing out.
-func IsStatusValid(status *apicoordinationv1.Lease, leaseTimeout time.Duration) bool {
-	return isStatusValid(status, leaseTimeout, time.Now())
 }
 
 func isStatusValid(status *apicoordinationv1.Lease, leaseTimeout time.Duration, now time.Time) bool {
