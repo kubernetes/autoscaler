@@ -20,6 +20,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	"k8s.io/klog"
 )
@@ -64,7 +65,7 @@ func FilterOutNodesWithUnreadyGpus(GPULabel string, allNodes, readyNodes []*apiv
 		if hasGpuLabel && (!hasGpuAllocatable || gpuAllocatable.IsZero()) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
-			nodesWithUnreadyGpu[node.Name] = getUnreadyNodeCopy(node)
+			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node)
 		} else {
 			newReadyNodes = append(newReadyNodes, node)
 		}
@@ -128,23 +129,6 @@ func validateGpuType(availableGPUTypes map[string]struct{}, gpu string) string {
 		return gpu
 	}
 	return MetricsUnknownGPU
-}
-
-func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
-	newNode := node.DeepCopy()
-	newReadyCondition := apiv1.NodeCondition{
-		Type:               apiv1.NodeReady,
-		Status:             apiv1.ConditionFalse,
-		LastTransitionTime: node.CreationTimestamp,
-	}
-	newNodeConditions := []apiv1.NodeCondition{newReadyCondition}
-	for _, condition := range newNode.Status.Conditions {
-		if condition.Type != apiv1.NodeReady {
-			newNodeConditions = append(newNodeConditions, condition)
-		}
-	}
-	newNode.Status.Conditions = newNodeConditions
-	return newNode
 }
 
 // NodeHasGpu returns true if a given node has GPU hardware.
