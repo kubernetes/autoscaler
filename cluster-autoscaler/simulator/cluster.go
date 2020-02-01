@@ -309,12 +309,9 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 func shuffleNodes(nodes []*apiv1.Node) []*apiv1.Node {
 	result := make([]*apiv1.Node, len(nodes))
-	for i := range nodes {
-		result[i] = nodes[i]
-	}
-	for i := range result {
-		j := rand.Intn(len(result))
+	copy(result, nodes)
+	rand.Shuffle(len(result), func(i, j int) {
 		result[i], result[j] = result[j], result[i]
-	}
+	})
 	return result
 }
