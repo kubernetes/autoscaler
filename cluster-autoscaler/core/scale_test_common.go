@@ -17,10 +17,13 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	testcloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -167,15 +170,41 @@ func NewScaleTestAutoscalingContext(
 }
 
 type mockAutoprovisioningNodeGroupManager struct {
-	t *testing.T
+	t           *testing.T
+	extraGroups int
 }
 
 func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.t, err)
 	metrics.RegisterNodeGroupCreation()
+	extraGroups := []cloudprovider.NodeGroup{}
+	testGroup, ok := nodeGroup.(*testcloudprovider.TestNodeGroup)
+	if !ok {
+		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test node group, found %v", reflect.TypeOf(nodeGroup)))
+	}
+	testCloudProvider, ok := context.CloudProvider.(*testcloudprovider.TestCloudProvider)
+	if !ok {
+		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test CloudProvider, found %v", reflect.TypeOf(context.CloudProvider)))
+	}
+	for i := 0; i < p.extraGroups; i++ {
+		extraNodeGroup, err := testCloudProvider.NewNodeGroupWithId(
+			testGroup.MachineType(),
+			testGroup.Labels(),
+			map[string]string{},
+			[]apiv1.Taint{},
+			map[string]resource.Quantity{},
+			fmt.Sprintf("%d", i+1),
+		)
+		assert.NoError(p.t, err)
+		extraGroup, err := extraNodeGroup.Create()
+		assert.NoError(p.t, err)
+		metrics.RegisterNodeGroupCreation()
+		extraGroups = append(extraGroups, extraGroup)
+	}
 	result := nodegroups.CreateNodeGroupResult{
-		MainCreatedNodeGroup: newNodeGroup,
+		MainCreatedNodeGroup:   newNodeGroup,
+		ExtraCreatedNodeGroups: extraGroups,
 	}
 	return result, nil
 }
