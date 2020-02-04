@@ -72,7 +72,7 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, nil)
+	estimate := estimator.Estimate(pods, nodeInfo)
 	assert.Equal(t, 5, estimate)
 }
 
@@ -105,7 +105,7 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, nil)
+	estimate := estimator.Estimate(pods, nodeInfo)
 	assert.Equal(t, 8, estimate)
 }
 
