@@ -411,7 +411,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		if len(option.Pods) > 0 {
 			estimator := context.EstimatorBuilder(context.PredicateChecker, context.ClusterSnapshot)
-			option.NodeCount = estimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
+			option.NodeCount = estimator.Estimate(option.Pods, nodeInfo)
 			if option.NodeCount > 0 {
 				expansionOptions[nodeGroup.Id()] = option
 			} else {
