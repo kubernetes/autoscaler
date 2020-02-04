@@ -266,7 +266,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 	if err := context.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), nodeInfo.Pods()); err != nil {
 		klog.Errorf("Error while adding test Node; %v", err)
 		if err := context.ClusterSnapshot.Revert(); err != nil {
-			klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
 		}
 		// TODO: Or should I just skip the node group? specifically if Revert fails it is fatal error.
 		//       Maybe we should not return error from Revert as we cannot handle it in any way on the caller side?
@@ -290,7 +290,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 	}
 
 	if err := context.ClusterSnapshot.Revert(); err != nil {
-		klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+		klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
 		return expander.Option{}, err
 	}
 
