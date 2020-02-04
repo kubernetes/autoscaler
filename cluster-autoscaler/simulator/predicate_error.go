@@ -31,6 +31,7 @@ const (
 	InternalPredicateError
 )
 
+// PredicateError is a structure representing error returned from predicate checking simulation.
 type PredicateError struct {
 	errorType     PredicateErrorType
 	predicateName string
@@ -41,7 +42,7 @@ type PredicateError struct {
 	debugInfo func() string
 }
 
-// PredicateName return name of predicate which failed.
+// ErrorType returns if error was internal of names predicate failure.
 func (pe *PredicateError) ErrorType() PredicateErrorType {
 	return pe.errorType
 }
@@ -100,6 +101,7 @@ func GenericPredicateError() *PredicateError {
 		errorMessage: "generic predicate failure",
 	}
 }
+
 func emptyString() string {
 	return ""
 }
