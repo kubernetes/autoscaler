@@ -29,7 +29,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -277,6 +279,86 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+
+	ginkgo.It("does not act on injected sidecars", func() {
+		const (
+			// TODO(krzysied): Update the image url when the agnhost:2.10 image
+			// is promoted to the k8s-e2e-test-images repository.
+			agnhostImage  = "gcr.io/k8s-staging-e2e-test-images/agnhost:2.10"
+			sidecarParam  = "--sidecar-image=k8s.gcr.io/pause:3.1"
+			sidecarName   = "webhook-added-sidecar"
+			servicePort   = int32(8443)
+			containerPort = int32(8444)
+		)
+
+		ginkgo.By("Setting up Webhook for sidecar injection")
+
+		client := f.ClientSet
+		namespaceName := f.Namespace.Name
+		defer utils.CleanWebhookTest(client, namespaceName)
+
+		// Make sure the namespace created for the test is labeled to be selected by the webhooks.
+		utils.LabelNamespace(f, f.Namespace.Name)
+		utils.CreateWebhookConfigurationReadyNamespace(f)
+
+		ginkgo.By("Setting up server cert")
+		context := utils.SetupWebhookCert(namespaceName)
+		utils.CreateAuthReaderRoleBinding(f, namespaceName)
+
+		utils.DeployWebhookAndService(f, agnhostImage, context, servicePort, containerPort, sidecarParam)
+
+		// Webhook must be placed after vpa webhook. Webhooks are registered alphabetically.
+		// Use name that starts with "z".
+		webhookCleanup := utils.RegisterMutatingWebhookForPod(f, "z-sidecar-injection-webhook", context, servicePort)
+		defer webhookCleanup()
+
+		ginkgo.By("Setting up a hamster vpa")
+
+		mode := vpa_types.UpdateModeAuto
+		hamsterResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("100m")}
+		sidecarResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("5000m")}
+
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: GetHamsterContainerNameByIndex(0),
+					Target:        hamsterResourceList,
+					LowerBound:    hamsterResourceList,
+					UpperBound:    hamsterResourceList,
+				},
+				{
+					ContainerName: sidecarName,
+					Target:        sidecarResourceList,
+					LowerBound:    sidecarResourceList,
+					UpperBound:    sidecarResourceList,
+				},
+			},
+		}
+
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+
+		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		for _, pod := range podList.Items {
+			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+			gomega.Expect(ok).To(gomega.Equal(true))
+			containers, err := annotations.ParseVpaObservedContainersValue(observedContainers)
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			gomega.Expect(containers).To(gomega.HaveLen(1))
+			gomega.Expect(pod.Spec.Containers).To(gomega.HaveLen(2))
+		}
+
+		podSet := MakePodSet(podList)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
 	})
 })
 
