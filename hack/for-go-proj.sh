@@ -43,6 +43,10 @@ esac
 
 for project_name in ${PROJECT_NAMES[*]}; do
   (
+    if [[ $project_name == cluster-autoscaler ]];then
+      export GO111MODULE=off
+    fi
+
     project=${CONTRIB_ROOT}/${project_name}
     echo "${CMD}ing ${project}"
     cd "${project}"
