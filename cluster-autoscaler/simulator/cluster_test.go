@@ -117,7 +117,7 @@ func TestFindPlaceAllOk(t *testing.T) {
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
-	InitializeClusterSnapshot(t, clusterSnapshot,
+	InitializeClusterSnapshotOrDie(t, clusterSnapshot,
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 	err = findPlaceFor(
@@ -154,7 +154,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
-	InitializeClusterSnapshot(t, clusterSnapshot,
+	InitializeClusterSnapshotOrDie(t, clusterSnapshot,
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 
@@ -183,7 +183,7 @@ func TestFindNone(t *testing.T) {
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
-	InitializeClusterSnapshot(t, clusterSnapshot,
+	InitializeClusterSnapshotOrDie(t, clusterSnapshot,
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
 
@@ -240,6 +240,7 @@ func TestFindEmptyNodes(t *testing.T) {
 
 type findNodesToRemoveTestConfig struct {
 	name        string
+	pods        []*apiv1.Pod
 	candidates  []*apiv1.Node
 	allNodes    []*apiv1.Node
 	toRemove    []NodeToBeRemoved
@@ -285,7 +286,6 @@ func TestFindNodesToRemove(t *testing.T) {
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
 	}
 
-	pods := []*apiv1.Pod{pod1, pod2, pod3, pod4}
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
@@ -295,6 +295,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		// just an empty node, should be removed
 		{
 			name:        "just an empty node, should be removed",
+			pods:        []*apiv1.Pod{},
 			candidates:  []*apiv1.Node{emptyNode},
 			allNodes:    []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
@@ -303,6 +304,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		// just a drainable node, but nowhere for pods to go to
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
+			pods:        []*apiv1.Pod{pod1, pod2},
 			candidates:  []*apiv1.Node{drainableNode},
 			allNodes:    []*apiv1.Node{drainableNode},
 			toRemove:    []NodeToBeRemoved{},
@@ -311,6 +313,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		// drainable node, and a mostly empty node that can take its pods
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
+			pods:        []*apiv1.Pod{pod1, pod2, pod3},
 			candidates:  []*apiv1.Node{drainableNode, nonDrainableNode},
 			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
@@ -319,6 +322,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		// drainable node, and a full node that cannot fit anymore pods
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
+			pods:        []*apiv1.Pod{pod1, pod2, pod4},
 			candidates:  []*apiv1.Node{drainableNode},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
 			toRemove:    []NodeToBeRemoved{},
@@ -327,6 +331,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		// 4 nodes, 1 empty, 1 drainable
 		{
 			name:        "4 nodes, 1 empty, 1 drainable",
+			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
 			candidates:  []*apiv1.Node{emptyNode, drainableNode},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
@@ -335,9 +340,9 @@ func TestFindNodesToRemove(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		InitializeClusterSnapshotNoError(t, clusterSnapshot, test.allNodes, pods)
+		InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 		toRemove, unremovable, _, err := FindNodesToRemove(
-			test.candidates, test.allNodes, pods, nil,
+			test.candidates, test.allNodes, test.pods, nil,
 			clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
 			tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
 		assert.NoError(t, err)
