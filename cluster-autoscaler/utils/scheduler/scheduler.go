@@ -18,7 +18,6 @@ package scheduler
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -57,15 +56,4 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	}
 
 	return nodeNameToNodeInfo
-}
-
-// NodeWithPod function returns NodeInfo, which is a copy of nodeInfo argument with an additional pod scheduled on it.
-func NodeWithPod(nodeInfo *schedulernodeinfo.NodeInfo, pod *apiv1.Pod) *schedulernodeinfo.NodeInfo {
-	podsOnNode := nodeInfo.Pods()
-	podsOnNode = append(podsOnNode, pod)
-	newNodeInfo := schedulernodeinfo.NewNodeInfo(podsOnNode...)
-	if err := newNodeInfo.SetNode(nodeInfo.Node()); err != nil {
-		klog.Errorf("error setting node for NodeInfo %s, because of %s", nodeInfo.Node().Name, err.Error())
-	}
-	return newNodeInfo
 }
