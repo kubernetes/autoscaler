@@ -23,7 +23,6 @@ function print_help {
   echo "ERROR! Usage: run-e2e-tests.sh <suite>"
   echo "<suite> should be one of:"
   echo " - recommender"
-  echo " - updater"
   echo " - admission-controller"
   echo " - actuation"
   echo " - full-vpa"
@@ -45,7 +44,7 @@ SUITE=$1
 export GO111MODULE=on
 
 case ${SUITE} in
-  recommender|updater|admission-controller|actuation|full-vpa)
+  recommender|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
     go test -mod vendor ./v1beta2/*go -v --test.timeout=60m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
