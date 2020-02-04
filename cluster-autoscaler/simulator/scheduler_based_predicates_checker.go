@@ -32,7 +32,6 @@ import (
 	scheduler_listers "k8s.io/kubernetes/pkg/scheduler/listers"
 	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	scheduler_volumebinder "k8s.io/kubernetes/pkg/scheduler/volumebinder"
-	"k8s.io/apimachinery/pkg/labels"
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 )
@@ -45,80 +44,6 @@ type SchedulerBasedPredicateChecker struct {
 	informerBasedShardLister scheduler_listers.SharedLister
 	nodeLister               v1listers.NodeLister
 	podLister                v1listers.PodLister
-}
-
-// DelegatingSchedulerSharedLister is an implementation of scheduler.SharedLister which
-// passes logic to delegate. Delegate can be updated.
-type DelegatingSchedulerSharedLister struct {
-	delegate      scheduler_listers.SharedLister
-}
-
-type unsetSharedLister struct{}
-type unsetPodLister unsetSharedLister
-type unsetNodeInfoLister unsetSharedLister
-
-// List always returns an error
-func (lister *unsetPodLister) List(labels.Selector) ([]*apiv1.Pod, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// FilteredList always returns an error
-func (lister *unsetPodLister) FilteredList(podFilter scheduler_listers.PodFilter, selector labels.Selector) ([]*apiv1.Pod, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// List always returns an error
-func (lister *unsetNodeInfoLister) List() ([]*scheduler_nodeinfo.NodeInfo, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// HavePodsWithAffinityList always returns an error
-func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]*scheduler_nodeinfo.NodeInfo, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// Get always returns an error
-func (lister *unsetNodeInfoLister) Get(nodeName string) (*scheduler_nodeinfo.NodeInfo, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// Pods returns a fake PodLister which always returns an error
-func (lister *unsetSharedLister) Pods() scheduler_listers.PodLister {
-	return (*unsetPodLister)(lister)
-}
-
-// Pods returns a fake NodeInfoLister which always returns an error
-func (lister *unsetSharedLister) NodeInfos() scheduler_listers.NodeInfoLister {
-	return (*unsetNodeInfoLister)(lister)
-}
-
-var unsetSharedListerSingleton *unsetSharedLister
-
-// NewDelegatingSchedulerSharedLister creates new NewDelegatingSchedulerSharedLister
-func NewDelegatingSchedulerSharedLister() *DelegatingSchedulerSharedLister {
-	return &DelegatingSchedulerSharedLister{
-		delegate:      unsetSharedListerSingleton,
-	}
-}
-
-// Pods returns a PodLister
-func (lister *DelegatingSchedulerSharedLister) Pods() scheduler_listers.PodLister {
-	return lister.delegate.Pods()
-}
-
-// NodeInfos returns a NodeInfoLister.
-func (lister *DelegatingSchedulerSharedLister) NodeInfos() scheduler_listers.NodeInfoLister {
-	return lister.delegate.NodeInfos()
-}
-
-// UpdateDelegate updates the delegate
-func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate scheduler_listers.SharedLister) {
-	lister.delegate = delegate
-}
-
-// ResetDelegate resets delegate to
-func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
-	lister.delegate = unsetSharedListerSingleton
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
