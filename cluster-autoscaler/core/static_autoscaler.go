@@ -188,7 +188,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	a.initialized = true
 }
 
-func (a *StaticAutoscaler) propagateClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) errors.AutoscalerError {
+func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) errors.AutoscalerError {
 	var err error
 	err = a.ClusterSnapshot.Clear()
 	if err != nil {
@@ -246,7 +246,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	// Propagate cluster state to ClusterSnapshot
-	typedErr = a.propagateClusterSnapshot(allNodes, originalScheduledPods)
+	typedErr = a.initializeClusterSnapshot(allNodes, originalScheduledPods)
 	if typedErr != nil {
 		return typedErr.AddPrefix("Propagate ClusterSnapshot before scale-up")
 	}
