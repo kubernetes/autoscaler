@@ -851,7 +851,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	processors := NewTestProcessors()
 	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
-	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
+	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t, 0}
 
 	nodes := []*apiv1.Node{}
 	nodeInfos, _ := utils.GetNodeInfosForGroups(nodes, nil, provider, context.ListerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker, nil)
@@ -861,6 +861,65 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
 	assert.Equal(t, "autoprovisioned-T1-1", utils.GetStringFromChan(expandedGroups))
+}
+
+func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
+	createdGroups := make(chan string, 10)
+	expandedGroups := make(chan string, 10)
+
+	p1 := BuildTestPod("p1", 80, 0)
+	p2 := BuildTestPod("p2", 80, 0)
+	p3 := BuildTestPod("p3", 80, 0)
+
+	fakeClient := &fake.Clientset{}
+
+	t1 := BuildTestNode("t1", 100, 1000000)
+	SetNodeReadyState(t1, true, time.Time{})
+	ti1 := schedulernodeinfo.NewNodeInfo()
+	ti1.SetNode(t1)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		func(nodeGroup string, increase int) error {
+			expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+			return nil
+		}, nil, func(nodeGroup string) error {
+			createdGroups <- nodeGroup
+			return nil
+		}, nil, []string{"T1"}, map[string]*schedulernodeinfo.NodeInfo{"T1": ti1})
+
+	options := config.AutoscalingOptions{
+		BalanceSimilarNodeGroups:         true,
+		EstimatorName:                    estimator.BinpackingEstimatorName,
+		MaxCoresTotal:                    5000 * 64,
+		MaxMemoryTotal:                   5000 * 64 * 20,
+		NodeAutoprovisioningEnabled:      true,
+		MaxAutoprovisionedNodeGroupCount: 10,
+	}
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
+	assert.NoError(t, err)
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+
+	processors := NewTestProcessors()
+	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
+	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t, 2}
+
+	nodes := []*apiv1.Node{}
+	nodeInfos, _ := utils.GetNodeInfosForGroups(nodes, nil, provider, context.ListerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker, nil)
+
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
+	assert.NoError(t, err)
+	assert.True(t, scaleUpStatus.WasSuccessful())
+	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
+	expandedGroupMap := map[string]bool{}
+	for i := 0; i < 3; i++ {
+		expandedGroupMap[utils.GetStringFromChan(expandedGroups)] = true
+	}
+	assert.True(t, expandedGroupMap["autoprovisioned-T1-1"])
+	assert.True(t, expandedGroupMap["autoprovisioned-T1-1-1"])
+	assert.True(t, expandedGroupMap["autoprovisioned-T1-2-1"])
 }
 
 func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
