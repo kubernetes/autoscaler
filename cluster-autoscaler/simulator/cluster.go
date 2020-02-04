@@ -226,7 +226,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
 	defer func() {
 		err := clusterSnaphost.Revert()
 		if err != nil {
-			klog.Errorf("Got error when calling ClusterSnapshot.Revert(); %v", err)
+			klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", err)
 		}
 	}()
 
