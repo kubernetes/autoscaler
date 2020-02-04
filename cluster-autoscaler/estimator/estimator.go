@@ -34,7 +34,7 @@ var AvailableEstimators = []string{BinpackingEstimatorName}
 
 // Estimator calculates the number of nodes of given type needed to schedule pods.
 type Estimator interface {
-	Estimate([]*apiv1.Pod, *schedulernodeinfo.NodeInfo, []*schedulernodeinfo.NodeInfo) int
+	Estimate([]*apiv1.Pod, *schedulernodeinfo.NodeInfo) int
 }
 
 // EstimatorBuilder creates a new estimator object.
