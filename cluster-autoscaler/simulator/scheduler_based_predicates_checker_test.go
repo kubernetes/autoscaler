@@ -101,9 +101,13 @@ func TestFitsAnyNode(t *testing.T) {
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	n2000 := BuildTestNode("n2000", 2000, 2000000)
 
+	var err error
+
 	clusterSnapshot := NewBasicClusterSnapshot()
-	_ = clusterSnapshot.AddNode(n1000)
-	_ = clusterSnapshot.AddNode(n2000)
+	err = clusterSnapshot.AddNode(n1000)
+	assert.NoError(t, err)
+	err = clusterSnapshot.AddNode(n2000)
+	assert.NoError(t, err)
 
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
