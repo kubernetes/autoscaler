@@ -71,7 +71,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 	}
 	defer func() {
 		if err := estimator.clusterSnapshot.Revert(); err != nil {
-			klog.Errorf("Error while calling ClusterSnapshot.Revert; %v", err)
+			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
 		}
 	}()
 
