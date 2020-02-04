@@ -23,7 +23,6 @@ function print_help {
   echo "ERROR! Usage: run-e2e.sh <suite>"
   echo "<suite> should be one of:"
   echo " - recommender"
-  echo " - updater"
   echo " - admission-controller"
   echo " - actuation"
   echo " - full-vpa"
