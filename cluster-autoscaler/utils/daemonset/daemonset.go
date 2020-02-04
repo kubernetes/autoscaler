@@ -42,8 +42,14 @@ func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []
 
 	for _, ds := range daemonsets {
 		pod := newPod(ds, nodeInfo.Node().Name)
-		if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, simulator.FakeNodeInfoForNodeName(nodeInfo.Node().Name)); err == nil {
+		err := predicateChecker.CheckPredicates(clusterSnapshot, pod, simulator.FakeNodeInfoForNodeName(nodeInfo.Node().Name))
+		if err == nil {
 			result = append(result, pod)
+		} else if err.ErrorType() == simulator.NotSchedulablePredicateError {
+			// ok; we are just skipping this daemonset
+		} else {
+			// unexpected error
+			return nil, fmt.Errorf("unexpected error while calling PredicateChecker; %v", err)
 		}
 	}
 	return result, nil
