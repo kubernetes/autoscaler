@@ -97,10 +97,6 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnap
 	if nodeInfos != nil {
 		klog.Errorf("clusterSnapshot and nodeInfos are mutually exclusive!!!!")
 	}
-	return p.fitsAnyNode(clusterSnapshot, pod)
-}
-
-func (p *SchedulerBasedPredicateChecker) fitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	var nodeInfosList []*scheduler_nodeinfo.NodeInfo
 
 	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
@@ -143,10 +139,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot Cluster
 	if clusterSnapshot == nil {
 		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
 	}
-	return p.checkPredicates(clusterSnapshot, pod, nodeInfo.Node().Name)
-}
-
-func (p *SchedulerBasedPredicateChecker) checkPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
+	nodeName := nodeInfo.Node().Name
 	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
