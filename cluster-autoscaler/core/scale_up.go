@@ -250,6 +250,36 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 	return &skippedReasons{[]string{fmt.Sprintf("max cluster %s limit reached", strings.Join(resources, ", "))}}
 }
 
+func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceGroups []*podEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulernodeinfo.NodeInfo, upcomingNodes []*schedulernodeinfo.NodeInfo) expander.Option {
+	option := expander.Option{
+		NodeGroup: nodeGroup,
+		Pods:      make([]*apiv1.Pod, 0),
+	}
+
+	for _, eg := range podEquivalenceGroups {
+		samplePod := eg.pods[0]
+		if err := context.PredicateChecker.CheckPredicates(samplePod, nil, nodeInfo); err == nil {
+			// add pods to option
+			option.Pods = append(option.Pods, eg.pods...)
+			// mark pod group as (theoretically) schedulable
+			eg.schedulable = true
+		} else {
+			klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", samplePod.Name, nodeGroup.Id(), err.VerboseError())
+			if podCount := len(eg.pods); podCount > 1 {
+				klog.V(2).Infof("%d other pods similar to %s can't be scheduled on %s", podCount-1, samplePod.Name, nodeGroup.Id())
+			}
+			eg.schedulingErrors[nodeGroup.Id()] = err
+		}
+	}
+
+	if len(option.Pods) > 0 {
+		estimator := context.EstimatorBuilder(context.PredicateChecker)
+		option.NodeCount = estimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
+	}
+
+	return option
+}
+
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
@@ -366,40 +396,18 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
-		option := expander.Option{
-			NodeGroup: nodeGroup,
-			Pods:      make([]*apiv1.Pod, 0),
-		}
-
-		for _, eg := range podEquivalenceGroups {
-			samplePod := eg.pods[0]
-			if err := context.PredicateChecker.CheckPredicates(samplePod, nil, nodeInfo); err == nil {
-				// add pods to option
-				option.Pods = append(option.Pods, eg.pods...)
-				// mark pod group as (theoretically) schedulable
-				eg.schedulable = true
-			} else {
-				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", samplePod.Name, nodeGroup.Id(), err.VerboseError())
-				if podCount := len(eg.pods); podCount > 1 {
-					klog.V(2).Infof("%d other pods similar to %s can't be scheduled on %s", podCount-1, samplePod.Name, nodeGroup.Id())
-				}
-				eg.schedulingErrors[nodeGroup.Id()] = err
-			}
-		}
+		option := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 
 		if len(option.Pods) > 0 {
-			estimator := context.EstimatorBuilder(context.PredicateChecker)
-			option.NodeCount = estimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
 			if option.NodeCount > 0 {
 				expansionOptions[nodeGroup.Id()] = option
 			} else {
-				klog.V(2).Infof("No need for any nodes in %s", nodeGroup.Id())
+				klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
 			}
 		} else {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
 		}
 	}
-
 	if len(expansionOptions) == 0 {
 		klog.V(1).Info("No expansion options")
 		return &status.ScaleUpStatus{
@@ -467,6 +475,12 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 					continue
 				}
 				nodeInfos[nodeGroup.Id()] = nodeInfo
+
+				option := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
+
+				if len(option.Pods) > 0 && option.NodeCount > 0 {
+					expansionOptions[nodeGroup.Id()] = option
+				}
 			}
 
 			// Update ClusterStateRegistry so similar nodegroups rebalancing works.

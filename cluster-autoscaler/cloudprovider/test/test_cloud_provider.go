@@ -176,6 +176,23 @@ func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string
 	}, nil
 }
 
+// NewNodeGroupWithId creates a new node group with custom ID suffix.
+func (tcp *TestCloudProvider) NewNodeGroupWithId(machineType string, labels map[string]string, systemLabels map[string]string,
+	taints []apiv1.Taint, extraResources map[string]resource.Quantity, id string) (cloudprovider.NodeGroup, error) {
+	return &TestNodeGroup{
+		cloudProvider:   tcp,
+		id:              "autoprovisioned-" + machineType + "-" + id,
+		minSize:         0,
+		maxSize:         1000,
+		targetSize:      0,
+		exist:           false,
+		autoprovisioned: true,
+		machineType:     machineType,
+		labels:          labels,
+		taints:          taints,
+	}, nil
+}
+
 // InsertNodeGroup adds already created node group to test cloud provider.
 func (tcp *TestCloudProvider) InsertNodeGroup(nodeGroup cloudprovider.NodeGroup) {
 	tcp.Lock()
@@ -442,4 +459,9 @@ func (tng *TestNodeGroup) Labels() map[string]string {
 // Taints returns taintspassed to the test node group when it was created.
 func (tng *TestNodeGroup) Taints() []apiv1.Taint {
 	return tng.taints
+}
+
+// MachineType returns machine type passed to the test node group when it was created.
+func (tng *TestNodeGroup) MachineType() string {
+	return tng.machineType
 }
