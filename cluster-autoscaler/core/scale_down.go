@@ -414,19 +414,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 
 	// Extract cluster state from snapshot for initial analysis
-	pods, err := sd.context.ClusterSnapshot.GetAllPods()
-	if err != nil {
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
-	allNodes, err := sd.context.ClusterSnapshot.GetAllNodes()
-	if err != nil {
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	pods := sd.context.ClusterSnapshot.GetAllPods()
+	allNodeInfos := sd.context.ClusterSnapshot.GetAllNodes()
 
-	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
-	if err != nil {
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
 	nodeNameToNodeInfo := make(map[string]*schedulernodeinfo.NodeInfo)
 	for _, nodeInfo := range allNodeInfos {
 		node := nodeInfo.Node()
@@ -451,7 +441,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
 
-	sd.updateUnremovableNodes(allNodes)
+	sd.updateUnremovableNodes(allNodeInfos)
 	// Filter out nodes that were recently checked
 	filteredNodesToCheck := make([]*apiv1.Node, 0)
 	for _, node := range scaleDownCandidates {
@@ -551,7 +541,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalCandidatesCount = len(currentNonCandidates)
 	}
 	// Limit the additional candidates pool size for better performance.
-	additionalCandidatesPoolSize := int(math.Ceil(float64(len(allNodes)) * sd.context.ScaleDownCandidatesPoolRatio))
+	additionalCandidatesPoolSize := int(math.Ceil(float64(len(allNodeInfos)) * sd.context.ScaleDownCandidatesPoolRatio))
 	if additionalCandidatesPoolSize < sd.context.ScaleDownCandidatesPoolMinCount {
 		additionalCandidatesPoolSize = sd.context.ScaleDownCandidatesPoolMinCount
 	}
@@ -647,7 +637,7 @@ func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo s
 // updateUnremovableNodes updates unremovableNodes map according to current
 // state of the cluster. Removes from the map nodes that are no longer in the
 // nodes list.
-func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
+func (sd *ScaleDown) updateUnremovableNodes(nodes []*schedulernodeinfo.NodeInfo) {
 	if len(sd.unremovableNodes) <= 0 {
 		return
 	}
@@ -658,8 +648,8 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 	}
 	// Nodes that are in the cluster should not be deleted.
 	for _, node := range nodes {
-		if _, ok := nodesToDelete[node.Name]; ok {
-			delete(nodesToDelete, node.Name)
+		if _, ok := nodesToDelete[node.Node().Name]; ok {
+			delete(nodesToDelete, node.Node().Name)
 		}
 	}
 	for nodeName := range nodesToDelete {
