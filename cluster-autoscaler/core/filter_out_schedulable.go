@@ -17,7 +17,6 @@ limitations under the License.
 package core
 
 import (
-	"fmt"
 	"sort"
 	"time"
 
@@ -94,10 +93,7 @@ func filterOutSchedulableByPacking(
 	predicateChecker simulator.PredicateChecker,
 	expendablePodsPriorityCutoff int) ([]*apiv1.Pod, error) {
 
-	allScheduled, err := clusterSnapshot.GetAllPods()
-	if err != nil {
-		return nil, fmt.Errorf("could not list all pods from snapshot; %v", err)
-	}
+	allScheduled := clusterSnapshot.GetAllPods()
 
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
