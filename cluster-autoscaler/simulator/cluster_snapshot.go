@@ -19,12 +19,10 @@ package simulator
 import (
 	apiv1 "k8s.io/api/core/v1"
 	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
-// It exposes efficient mutation methods and can be viewed as scheduler's SharedLister
-// via GetSchedulerLister() method.
+// It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
 	schedulerlisters.SharedLister
 	// AddNode adds node to the snapshot.
@@ -39,11 +37,6 @@ type ClusterSnapshot interface {
 	RemovePod(namespace string, podName string) error
 	// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
 	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
-
-	// GetAllPods returns list of all the pods in snapshot
-	GetAllPods() []*apiv1.Pod
-	// GetAllNodes returns list of all the nodes in snapshot
-	GetAllNodes() []*schedulernodeinfo.NodeInfo
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 	// Forking already forked snapshot is not allowed and will result with an error.

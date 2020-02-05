@@ -148,22 +148,6 @@ func (data *internalBasicSnapshotData) removePod(namespace string, podName strin
 	return fmt.Errorf("pod %s/%s not in snapshot", namespace, podName)
 }
 
-func (data *internalBasicSnapshotData) getAllPods() []*apiv1.Pod {
-	var pods []*apiv1.Pod
-	for _, nodeInfo := range data.nodeInfoMap {
-		pods = append(pods, nodeInfo.Pods()...)
-	}
-	return pods
-}
-
-func (data *internalBasicSnapshotData) getAllNodes() []*schedulernodeinfo.NodeInfo {
-	nodeInfoList := make([]*schedulernodeinfo.NodeInfo, 0, len(data.nodeInfoMap))
-	for _, v := range data.nodeInfoMap {
-		nodeInfoList = append(nodeInfoList, v)
-	}
-	return nodeInfoList
-}
-
 // NewBasicClusterSnapshot creates instances of BasicClusterSnapshot.
 func NewBasicClusterSnapshot() *BasicClusterSnapshot {
 	snapshot := &BasicClusterSnapshot{}
@@ -214,16 +198,6 @@ func (snapshot *BasicClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) er
 // RemovePod removes pod from the snapshot.
 func (snapshot *BasicClusterSnapshot) RemovePod(namespace string, podName string) error {
 	return snapshot.getInternalData().removePod(namespace, podName)
-}
-
-// GetAllPods returns list of all the pods in snapshot
-func (snapshot *BasicClusterSnapshot) GetAllPods() []*apiv1.Pod {
-	return snapshot.getInternalData().getAllPods()
-}
-
-// GetAllNodes returns list of all the nodes in snapshot
-func (snapshot *BasicClusterSnapshot) GetAllNodes() []*schedulernodeinfo.NodeInfo {
-	return snapshot.getInternalData().getAllNodes()
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
