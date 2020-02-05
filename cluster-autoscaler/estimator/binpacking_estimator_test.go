@@ -48,7 +48,7 @@ func makePod(cpuPerPod, memoryPerPod int64) *apiv1.Pod {
 }
 
 func TestBinpackingEstimate(t *testing.T) {
-	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
+	estimator := newBinPackingEstimator(t)
 
 	cpuPerPod := int64(350)
 	memoryPerPod := int64(1000 * units.MiB)
@@ -72,12 +72,12 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, nil)
+	estimate := estimator.Estimate(pods, nodeInfo)
 	assert.Equal(t, 5, estimate)
 }
 
 func TestBinpackingEstimateWithPorts(t *testing.T) {
-	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
+	estimator := newBinPackingEstimator(t)
 
 	cpuPerPod := int64(200)
 	memoryPerPod := int64(1000 * units.MiB)
@@ -105,6 +105,14 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, nil)
+	estimate := estimator.Estimate(pods, nodeInfo)
 	assert.Equal(t, 8, estimate)
+}
+
+func newBinPackingEstimator(t *testing.T) *BinpackingNodeEstimator {
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	clusterSnapshot := simulator.NewBasicClusterSnapshot()
+	assert.NoError(t, err)
+	estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot)
+	return estimator
 }
