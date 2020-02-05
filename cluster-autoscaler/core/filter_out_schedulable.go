@@ -109,7 +109,7 @@ func filterOutSchedulableByPacking(
 	for _, pod := range allScheduled {
 		if utils.IsExpendablePod(pod, expendablePodsPriorityCutoff) {
 			klog.V(4).Infof("Removing expandable pod %s.%s", pod.Namespace, pod.Name)
-			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
 				return nil, err
 			}
 		}

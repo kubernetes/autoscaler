@@ -439,7 +439,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	var nonExpendablePods []*apiv1.Pod
 	for _, pod := range pods {
 		if core_utils.IsExpendablePod(pod, sd.context.ExpendablePodsPriorityCutoff) {
-			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
 				klog.Errorf("Could not remove expendable pod %s/%s from ClusterSnaphshot; %v", pod.Namespace, pod.Name, err)
 			}
 		} else {

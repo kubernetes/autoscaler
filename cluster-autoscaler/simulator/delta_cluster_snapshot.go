@@ -234,42 +234,7 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	return nil
 }
 
-func (data *internalDeltaSnapshotData) getNodeForPod(namespace, name string) (string, error) {
-	if data == nil {
-		return "", fmt.Errorf("pod %s/%s not in snapshot", namespace, name)
-	}
-
-	for nodeName, nodeInfo := range data.addedNodeInfoMap {
-		for _, pod := range nodeInfo.Pods() {
-			if pod.Name == name && pod.Namespace == namespace {
-				return nodeName, nil
-			}
-		}
-	}
-	for nodeName, nodeInfo := range data.modifiedNodeInfoMap {
-		for _, pod := range nodeInfo.Pods() {
-			if pod.Name == name && pod.Namespace == namespace {
-				return nodeName, nil
-			}
-		}
-	}
-
-	nodeName, err := data.baseData.getNodeForPod(namespace, name)
-	if err != nil {
-		return "", err
-	}
-	if data.deletedNodeInfos[nodeName] {
-		return "", fmt.Errorf("pod %s/%s not in snapshot", namespace, name)
-	}
-	return nodeName, nil
-}
-
-func (data *internalDeltaSnapshotData) removePod(namespace string, name string) error {
-	nodeName, err := data.getNodeForPod(namespace, name)
-	if err != nil {
-		return err
-	}
-
+func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName string) error {
 	dni, found := data.getNodeInfoLocal(nodeName)
 	if !found {
 		bni, found := data.baseData.getNodeInfo(nodeName)
@@ -479,8 +444,8 @@ func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) er
 }
 
 // RemovePod removes pod from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemovePod(namespace string, podName string) error {
-	return snapshot.data.removePod(namespace, podName)
+func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
+	return snapshot.data.removePod(namespace, podName, nodeName)
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()

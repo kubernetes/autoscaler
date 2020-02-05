@@ -156,7 +156,7 @@ func TestForkRemovePods(t *testing.T) {
 				assert.NoError(t, err)
 
 				for _, pod := range pods[:deletedPodCount] {
-					err = clusterSnapshot.RemovePod(pod.Namespace, pod.Name)
+					err = clusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName)
 					assert.NoError(t, err)
 				}
 
