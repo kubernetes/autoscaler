@@ -21,12 +21,38 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 var snapshots = map[string]func() ClusterSnapshot{
 	"basic": func() ClusterSnapshot { return NewBasicClusterSnapshot() },
 	"delta": func() ClusterSnapshot { return NewDeltaClusterSnapshot() },
+}
+
+func nodeNames(nodes []*apiv1.Node) []string {
+	names := make([]string, len(nodes), len(nodes))
+	for i, node := range nodes {
+		names[i] = node.Name
+	}
+	return names
+}
+
+func nodeInfoNames(nodeInfos []*schedulernodeinfo.NodeInfo) []string {
+	names := make([]string, len(nodeInfos), len(nodeInfos))
+	for i, node := range nodeInfos {
+		names[i] = node.Node().Name
+	}
+	return names
+}
+
+func nodeInfoPods(nodeInfos []*schedulernodeinfo.NodeInfo) []*apiv1.Pod {
+	pods := []*apiv1.Pod{}
+	for _, node := range nodeInfos {
+		pods = append(pods, node.Pods()...)
+	}
+	return pods
 }
 
 func TestForkAddNode(t *testing.T) {
@@ -51,14 +77,14 @@ func TestForkAddNode(t *testing.T) {
 				}
 				forkNodes, err := clusterSnapshot.NodeInfos().List()
 				assert.NoError(t, err)
-				assert.Equal(t, nodeCount+len(extraNodes), len(forkNodes))
+				assert.ElementsMatch(t, append(nodeNames(nodes), nodeNames(extraNodes)...), nodeInfoNames(forkNodes))
 
 				err = clusterSnapshot.Revert()
 				assert.NoError(t, err)
 
 				baseNodes, err := clusterSnapshot.NodeInfos().List()
 				assert.NoError(t, err)
-				assert.Equal(t, nodeCount, len(baseNodes))
+				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
 			})
 	}
 }
@@ -88,6 +114,9 @@ func TestForkAddPods(t *testing.T) {
 				forkPods, err := clusterSnapshot.Pods().List(labels.Everything())
 				assert.NoError(t, err)
 				assert.ElementsMatch(t, pods, forkPods)
+				forkNodes, err := clusterSnapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(forkNodes))
 
 				err = clusterSnapshot.Revert()
 				assert.NoError(t, err)
@@ -95,6 +124,60 @@ func TestForkAddPods(t *testing.T) {
 				basePods, err := clusterSnapshot.Pods().List(labels.Everything())
 				assert.NoError(t, err)
 				assert.Equal(t, 0, len(basePods))
+				baseNodes, err := clusterSnapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
+			})
+	}
+}
+
+func TestForkRemovePods(t *testing.T) {
+	nodeCount := 3
+	podCount := 90
+	deletedPodCount := 10
+
+	nodes := createTestNodes(nodeCount)
+	pods := createTestPods(podCount)
+	assignPodsToNodes(pods, nodes)
+
+	for name, snapshotFactory := range snapshots {
+		t.Run(fmt.Sprintf("%s: fork should not affect base data: removing pods", name),
+			func(t *testing.T) {
+				clusterSnapshot := snapshotFactory()
+				err := clusterSnapshot.AddNodes(nodes)
+				assert.NoError(t, err)
+
+				for _, pod := range pods {
+					err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+					assert.NoError(t, err)
+				}
+
+				err = clusterSnapshot.Fork()
+				assert.NoError(t, err)
+
+				for _, pod := range pods[:deletedPodCount] {
+					err = clusterSnapshot.RemovePod(pod.Namespace, pod.Name)
+					assert.NoError(t, err)
+				}
+
+				forkPods, err := clusterSnapshot.Pods().List(labels.Everything())
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, pods[deletedPodCount:], forkPods)
+				forkNodes, err := clusterSnapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(forkNodes))
+				assert.ElementsMatch(t, pods[deletedPodCount:], nodeInfoPods(forkNodes))
+
+				err = clusterSnapshot.Revert()
+				assert.NoError(t, err)
+
+				basePods, err := clusterSnapshot.Pods().List(labels.Everything())
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, pods, basePods)
+				baseNodes, err := clusterSnapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
+				assert.ElementsMatch(t, pods, nodeInfoPods(baseNodes))
 			})
 	}
 }
