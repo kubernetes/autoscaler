@@ -133,16 +133,18 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	return nil
 }
 
-func (data *internalBasicSnapshotData) removePod(namespace string, podName string) error {
-	for _, nodeInfo := range data.nodeInfoMap {
-		for _, pod := range nodeInfo.Pods() {
-			if pod.Namespace == namespace && pod.Name == podName {
-				err := nodeInfo.RemovePod(pod)
-				if err != nil {
-					return fmt.Errorf("cannot remove pod; %v", err)
-				}
-				return nil
+func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName string) error {
+	nodeInfo, found := data.nodeInfoMap[nodeName]
+	if !found {
+		return fmt.Errorf("node not found")
+	}
+	for _, pod := range nodeInfo.Pods() {
+		if pod.Namespace == namespace && pod.Name == podName {
+			err := nodeInfo.RemovePod(pod)
+			if err != nil {
+				return fmt.Errorf("cannot remove pod; %v", err)
 			}
+			return nil
 		}
 	}
 	return fmt.Errorf("pod %s/%s not in snapshot", namespace, podName)
@@ -196,8 +198,8 @@ func (snapshot *BasicClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) er
 }
 
 // RemovePod removes pod from the snapshot.
-func (snapshot *BasicClusterSnapshot) RemovePod(namespace string, podName string) error {
-	return snapshot.getInternalData().removePod(namespace, podName)
+func (snapshot *BasicClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
+	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()

@@ -34,7 +34,7 @@ type ClusterSnapshot interface {
 	// AddPod adds pod to the snapshot and schedules it to given node.
 	AddPod(pod *apiv1.Pod, nodeName string) error
 	// RemovePod removes pod from the snapshot.
-	RemovePod(namespace string, podName string) error
+	RemovePod(namespace string, podName string, nodeName string) error
 	// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
 	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
 
