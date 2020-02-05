@@ -20,6 +20,7 @@ import (
 	"sort"
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -93,7 +94,10 @@ func filterOutSchedulableByPacking(
 	predicateChecker simulator.PredicateChecker,
 	expendablePodsPriorityCutoff int) ([]*apiv1.Pod, error) {
 
-	allScheduled := clusterSnapshot.GetAllPods()
+	allScheduled, err := clusterSnapshot.Pods().List(labels.Everything())
+	if err != nil {
+		return nil, err
+	}
 
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
