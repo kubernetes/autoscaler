@@ -393,7 +393,6 @@ func (m *ManagerImpl) Allocate(node *schedulernodeinfo.NodeInfo, attrs *lifecycl
 func (m *ManagerImpl) Register(ctx context.Context, r *pluginapi.RegisterRequest) (*pluginapi.Empty, error) {
 	klog.Infof("Got registration request from device plugin with resource name %q", r.ResourceName)
 	metrics.DevicePluginRegistrationCount.WithLabelValues(r.ResourceName).Inc()
-	metrics.DeprecatedDevicePluginRegistrationCount.WithLabelValues(r.ResourceName).Inc()
 	var versionCompatible bool
 	for _, v := range pluginapi.SupportedVersions {
 		if r.Version == v {
@@ -606,12 +605,10 @@ func (m *ManagerImpl) updateAllocatedDevices(activePods []*v1.Pod) {
 	}
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	activePodUids := sets.NewString()
+	podsToBeRemoved := m.podDevices.pods()
 	for _, pod := range activePods {
-		activePodUids.Insert(string(pod.UID))
+		podsToBeRemoved.Delete(string(pod.UID))
 	}
-	allocatedPodUids := m.podDevices.pods()
-	podsToBeRemoved := allocatedPodUids.Difference(activePodUids)
 	if len(podsToBeRemoved) <= 0 {
 		return
 	}
@@ -692,21 +689,21 @@ func (m *ManagerImpl) takeByTopology(resource string, available sets.String, aff
 	// available device does not have any NUMA Nodes associated with it, add it
 	// to a list of NUMA Nodes for the fake NUMANode -1.
 	perNodeDevices := make(map[int]sets.String)
+	nodeWithoutTopology := -1
 	for d := range available {
-		var nodes []int
-		if m.allDevices[resource][d].Topology != nil {
-			for _, node := range m.allDevices[resource][d].Topology.Nodes {
-				nodes = append(nodes, int(node.ID))
+		if m.allDevices[resource][d].Topology == nil || len(m.allDevices[resource][d].Topology.Nodes) == 0 {
+			if _, ok := perNodeDevices[nodeWithoutTopology]; !ok {
+				perNodeDevices[nodeWithoutTopology] = sets.NewString()
 			}
+			perNodeDevices[nodeWithoutTopology].Insert(d)
+			continue
 		}
-		if len(nodes) == 0 {
-			nodes = []int{-1}
-		}
-		for _, node := range nodes {
-			if _, ok := perNodeDevices[node]; !ok {
-				perNodeDevices[node] = sets.NewString()
+
+		for _, node := range m.allDevices[resource][d].Topology.Nodes {
+			if _, ok := perNodeDevices[int(node.ID)]; !ok {
+				perNodeDevices[int(node.ID)] = sets.NewString()
 			}
-			perNodeDevices[node].Insert(d)
+			perNodeDevices[int(node.ID)].Insert(d)
 		}
 	}
 
@@ -738,7 +735,7 @@ func (m *ManagerImpl) takeByTopology(resource string, available sets.String, aff
 		// has the device is encountered.
 		for _, n := range nodes {
 			if perNodeDevices[n].Has(d) {
-				if n == -1 {
+				if n == nodeWithoutTopology {
 					withoutTopology = append(withoutTopology, d)
 				} else if affinity.IsSet(n) {
 					fromAffinity = append(fromAffinity, d)
@@ -816,7 +813,6 @@ func (m *ManagerImpl) allocateContainerResources(pod *v1.Pod, container *v1.Cont
 		klog.V(3).Infof("Making allocation request for devices %v for device plugin %s", devs, resource)
 		resp, err := eI.e.allocate(devs)
 		metrics.DevicePluginAllocationDuration.WithLabelValues(resource).Observe(metrics.SinceInSeconds(startRPCTime))
-		metrics.DeprecatedDevicePluginAllocationLatency.WithLabelValues(resource).Observe(metrics.SinceInMicroseconds(startRPCTime))
 		if err != nil {
 			// In case of allocation failure, we want to restore m.allocatedDevices
 			// to the actual allocated state from m.podDevices.

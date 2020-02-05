@@ -67,7 +67,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
@@ -135,7 +136,8 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
 
 	nodeInfoCache := make(map[string]*schedulernodeinfo.NodeInfo)
 
@@ -287,59 +289,6 @@ func TestSanitizeTaints(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(node.Spec.Taints), 1)
 	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
-}
-
-func TestConfigurePredicateCheckerForLoop(t *testing.T) {
-	testCases := []struct {
-		affinity         *apiv1.Affinity
-		predicateEnabled bool
-	}{
-		{
-			&apiv1.Affinity{
-				PodAffinity: &apiv1.PodAffinity{
-					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
-						{},
-					},
-				},
-			}, true},
-		{
-			&apiv1.Affinity{
-				PodAffinity: &apiv1.PodAffinity{
-					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-						{},
-					},
-				},
-			}, false},
-		{
-			&apiv1.Affinity{
-				PodAntiAffinity: &apiv1.PodAntiAffinity{
-					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
-						{},
-					},
-				},
-			}, true},
-		{
-			&apiv1.Affinity{
-				PodAntiAffinity: &apiv1.PodAntiAffinity{
-					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
-						{},
-					},
-				},
-			}, false},
-		{
-			&apiv1.Affinity{
-				NodeAffinity: &apiv1.NodeAffinity{},
-			}, false},
-	}
-
-	for _, tc := range testCases {
-		p := BuildTestPod("p", 500, 1000)
-		p.Spec.Affinity = tc.affinity
-		predicateChecker := simulator.NewTestPredicateChecker()
-		predicateChecker.SetAffinityPredicateEnabled(false)
-		ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p}, []*apiv1.Pod{}, predicateChecker)
-		assert.Equal(t, tc.predicateEnabled, predicateChecker.IsAffinityPredicateEnabled())
-	}
 }
 
 func TestGetNodeResource(t *testing.T) {

@@ -50,7 +50,7 @@ const (
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulernodeinfo.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints TaintKeySet) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints TaintKeySet) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulernodeinfo.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -173,14 +173,17 @@ func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod,
 }
 
 // GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints TaintKeySet) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints TaintKeySet) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
-	pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	pods, err := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+	}
 	pods = append(pods, baseNodeInfo.Pods()...)
 	fullNodeInfo := schedulernodeinfo.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
@@ -311,28 +314,6 @@ func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
 		}
 	}
 	return false
-}
-
-func anyPodHasHardInterPodAffinity(pods []*apiv1.Pod) bool {
-	for _, pod := range pods {
-		if hasHardInterPodAffinity(pod.Spec.Affinity) {
-			return true
-		}
-	}
-	return false
-}
-
-// ConfigurePredicateCheckerForLoop can be run to update predicateChecker configuration
-// based on current state of the cluster.
-func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulablePods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) {
-	podsWithAffinityFound := anyPodHasHardInterPodAffinity(unschedulablePods)
-	if !podsWithAffinityFound {
-		podsWithAffinityFound = anyPodHasHardInterPodAffinity(schedulablePods)
-	}
-	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
-	if !podsWithAffinityFound {
-		klog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
-	}
 }
 
 // GetNodeCoresAndMemory extracts cpu and memory resources out of Node object
