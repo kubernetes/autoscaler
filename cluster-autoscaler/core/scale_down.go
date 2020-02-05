@@ -42,13 +42,13 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_record "k8s.io/client-go/tools/record"
-
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/klog"
 )
 
@@ -414,8 +414,16 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 
 	// Extract cluster state from snapshot for initial analysis
-	pods := sd.context.ClusterSnapshot.GetAllPods()
-	allNodeInfos := sd.context.ClusterSnapshot.GetAllNodes()
+	pods, err := sd.context.ClusterSnapshot.Pods().List(labels.Everything())
+	if err != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
+	if err != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
 
 	nodeNameToNodeInfo := make(map[string]*schedulernodeinfo.NodeInfo)
 	for _, nodeInfo := range allNodeInfos {
