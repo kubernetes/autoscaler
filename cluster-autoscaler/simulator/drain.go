@@ -35,8 +35,8 @@ import (
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
-	pods, err := drain.GetPodsForDeletionOnNodeDrain(
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
 		skipNodesWithSystemPods,
@@ -47,13 +47,13 @@ func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystem
 		time.Now())
 
 	if err != nil {
-		return pods, err
+		return pods, blockingPod, err
 	}
-	if err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, err
+	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
+		return []*apiv1.Pod{}, pdbBlockingPod, err
 	}
 
-	return pods, nil
+	return pods, nil, nil
 }
 
 // DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
@@ -62,8 +62,8 @@ func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystem
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
-	pods, err := drain.GetPodsForDeletionOnNodeDrain(
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
 		skipNodesWithSystemPods,
@@ -73,29 +73,29 @@ func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithS
 		minReplicaCount,
 		time.Now())
 	if err != nil {
-		return pods, err
+		return pods, blockingPod, err
 	}
-	if err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, err
+	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
+		return []*apiv1.Pod{}, pdbBlockingPod, err
 	}
 
-	return pods, nil
+	return pods, nil, nil
 }
 
-func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) error {
+func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {
 	// TODO: make it more efficient.
 	for _, pdb := range pdbs {
 		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		for _, pod := range pods {
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
 				if pdb.Status.DisruptionsAllowed < 1 {
-					return fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
+					return &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
 				}
 			}
 		}
 	}
-	return nil
+	return nil, nil
 }

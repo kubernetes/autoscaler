@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
@@ -244,7 +245,7 @@ type findNodesToRemoveTestConfig struct {
 	candidates  []*apiv1.Node
 	allNodes    []*apiv1.Node
 	toRemove    []NodeToBeRemoved
-	unremovable []*apiv1.Node
+	unremovable []*UnremovableNode
 }
 
 func TestFindNodesToRemove(t *testing.T) {
@@ -299,7 +300,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates:  []*apiv1.Node{emptyNode},
 			allNodes:    []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
-			unremovable: []*apiv1.Node{},
+			unremovable: []*UnremovableNode{},
 		},
 		// just a drainable node, but nowhere for pods to go to
 		{
@@ -308,7 +309,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates:  []*apiv1.Node{drainableNode},
 			allNodes:    []*apiv1.Node{drainableNode},
 			toRemove:    []NodeToBeRemoved{},
-			unremovable: []*apiv1.Node{drainableNode},
+			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
 		// drainable node, and a mostly empty node that can take its pods
 		{
@@ -317,7 +318,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates:  []*apiv1.Node{drainableNode, nonDrainableNode},
 			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
-			unremovable: []*apiv1.Node{nonDrainableNode},
+			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
 		},
 		// drainable node, and a full node that cannot fit anymore pods
 		{
@@ -326,7 +327,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates:  []*apiv1.Node{drainableNode},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
 			toRemove:    []NodeToBeRemoved{},
-			unremovable: []*apiv1.Node{drainableNode},
+			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
 		// 4 nodes, 1 empty, 1 drainable
 		{
@@ -335,7 +336,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			candidates:  []*apiv1.Node{emptyNode, drainableNode},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
-			unremovable: []*apiv1.Node{},
+			unremovable: []*UnremovableNode{},
 		},
 	}
 
