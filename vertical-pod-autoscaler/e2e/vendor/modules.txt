@@ -923,7 +923,7 @@ k8s.io/apiserver/pkg/util/webhook
 k8s.io/apiserver/pkg/util/wsstream
 k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
-# k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200204104326-563f253401ee => ../
+# k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200207133143-e7988a6dd041 => ../
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2
@@ -935,6 +935,7 @@ k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/a
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status
 # k8s.io/client-go v11.0.0+incompatible => k8s.io/client-go v0.0.0-20191016111102-bec269661e48
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/cached/memory
