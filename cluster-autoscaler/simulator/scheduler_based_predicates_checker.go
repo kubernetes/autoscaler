@@ -29,7 +29,6 @@ import (
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	scheduler_framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	scheduler_listers "k8s.io/kubernetes/pkg/scheduler/listers"
 	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	scheduler_volumebinder "k8s.io/kubernetes/pkg/scheduler/volumebinder"
 
@@ -40,11 +39,10 @@ import (
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
 // The verification is done by calling out to scheduler code.
 type SchedulerBasedPredicateChecker struct {
-	framework                scheduler_framework.Framework
-	delegatingSharedLister   *DelegatingSchedulerSharedLister
-	informerBasedShardLister scheduler_listers.SharedLister
-	nodeLister               v1listers.NodeLister
-	podLister                v1listers.PodLister
+	framework              scheduler_framework.Framework
+	delegatingSharedLister *DelegatingSchedulerSharedLister
+	nodeLister             v1listers.NodeLister
+	podLister              v1listers.PodLister
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
@@ -78,9 +76,8 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	}
 
 	checker := &SchedulerBasedPredicateChecker{
-		framework:                framework,
-		delegatingSharedLister:   sharedLister,
-		informerBasedShardLister: NewEmptySnapshot(),
+		framework:              framework,
+		delegatingSharedLister: sharedLister,
 	}
 
 	// this MUST be called after all the informers/listers are acquired via the
