@@ -17,7 +17,6 @@ limitations under the License.
 package simulator
 
 import (
-	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -60,8 +59,6 @@ type internalDeltaSnapshotData struct {
 	podList              []*apiv1.Pod
 	havePodsWithAffinity []*schedulernodeinfo.NodeInfo
 }
-
-var errNodeNotFound = errors.New("node not found")
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
 	return &internalDeltaSnapshotData{
