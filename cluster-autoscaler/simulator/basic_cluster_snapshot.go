@@ -59,7 +59,7 @@ func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulern
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
-	return nil, fmt.Errorf("node %s not in snapshot", nodeName)
+	return nil, errNodeNotFound
 }
 
 func (data *internalBasicSnapshotData) listPods(selector labels.Selector) ([]*apiv1.Pod, error) {
@@ -119,7 +119,7 @@ func (data *internalBasicSnapshotData) addNodes(nodes []*apiv1.Node) error {
 
 func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return fmt.Errorf("node %s not in snapshot", nodeName)
+		return errNodeNotFound
 	}
 	delete(data.nodeInfoMap, nodeName)
 	return nil
@@ -127,7 +127,7 @@ func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 
 func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return fmt.Errorf("node %s not in snapshot", nodeName)
+		return errNodeNotFound
 	}
 	data.nodeInfoMap[nodeName].AddPod(pod)
 	return nil
@@ -136,7 +136,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName string) error {
 	nodeInfo, found := data.nodeInfoMap[nodeName]
 	if !found {
-		return fmt.Errorf("node not found")
+		return errNodeNotFound
 	}
 	for _, pod := range nodeInfo.Pods() {
 		if pod.Namespace == namespace && pod.Name == podName {
