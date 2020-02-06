@@ -14,48 +14,46 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package status
 
 import (
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 )
 
-const (
-	updateInterval = 10 * time.Second
-)
-
-// StatusUpdater periodically updates Admission Controller status.
-type StatusUpdater struct {
-	client *status.Client
+// Updater periodically updates status object.
+type Updater struct {
+	client         *Client
+	updateInterval time.Duration
 }
 
-// NewStatusUpdater returns a new status updater.
-func NewStatusUpdater(c clientset.Interface, holderIdentity string) *StatusUpdater {
-	return &StatusUpdater{
-		client: status.NewClient(
+// NewUpdater returns a new status updater.
+func NewUpdater(c clientset.Interface, statusName, statusNamespace string,
+	updateInterval time.Duration, holderIdentity string) *Updater {
+	return &Updater{
+		client: NewClient(
 			c,
-			status.AdmissionControllerStatusName,
-			status.AdmissionControllerStatusNamespace,
+			statusName,
+			statusNamespace,
 			updateInterval,
 			holderIdentity,
 		),
+		updateInterval: updateInterval,
 	}
 }
 
 // Run starts status updates.
-func (su *StatusUpdater) Run(stopCh <-chan struct{}) {
+func (su *Updater) Run(stopCh <-chan struct{}) {
 	go func() {
 		for {
 			select {
 			case <-stopCh:
 				return
-			case <-time.After(updateInterval):
+			case <-time.After(su.updateInterval):
 				if err := su.client.UpdateStatus(); err != nil {
-					klog.Errorf("Admission Controller status update failed: %v", err)
+					klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
 				}
 			}
 		}
