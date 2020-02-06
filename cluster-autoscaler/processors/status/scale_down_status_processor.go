@@ -21,14 +21,53 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/klog"
 )
 
 // ScaleDownStatus represents the state of scale down.
 type ScaleDownStatus struct {
 	Result            ScaleDownResult
 	ScaledDownNodes   []*ScaleDownNode
+	UnremovableNodes  []*UnremovableNode
 	RemovedNodeGroups []cloudprovider.NodeGroup
 	NodeDeleteResults map[string]NodeDeleteResult
+}
+
+// SetUnremovableNodesInfo sets the status of nodes that were found to be unremovable.
+func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string]*simulator.UnremovableNode, nodeUtilizationMap map[string]simulator.UtilizationInfo, cp cloudprovider.CloudProvider) {
+	s.UnremovableNodes = make([]*UnremovableNode, 0, len(unremovableNodesMap))
+
+	for _, unremovableNode := range unremovableNodesMap {
+		nodeGroup, err := cp.NodeGroupForNode(unremovableNode.Node)
+		if err != nil {
+			klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
+			continue
+		}
+
+		var utilInfoPtr *simulator.UtilizationInfo
+		if utilInfo, found := nodeUtilizationMap[unremovableNode.Node.Name]; found {
+			utilInfoPtr = &utilInfo
+			// It's okay if we don't find the util info, it's not computed for some unremovable nodes that are skipped early in the loop.
+		}
+
+		s.UnremovableNodes = append(s.UnremovableNodes, &UnremovableNode{
+			Node:        unremovableNode.Node,
+			NodeGroup:   nodeGroup,
+			UtilInfo:    utilInfoPtr,
+			Reason:      unremovableNode.Reason,
+			BlockingPod: unremovableNode.BlockingPod,
+		})
+	}
+}
+
+// UnremovableNode represents the state of a node that couldn't be removed.
+type UnremovableNode struct {
+	Node        *apiv1.Node
+	NodeGroup   cloudprovider.NodeGroup
+	UtilInfo    *simulator.UtilizationInfo
+	Reason      simulator.UnremovableReason
+	BlockingPod *drain.BlockingPod
 }
 
 // ScaleDownNode represents the state of a node that's being scaled down.

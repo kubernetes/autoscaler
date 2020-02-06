@@ -194,8 +194,9 @@ func TestDrain(t *testing.T) {
 
 	emptydirPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bar",
-			Namespace: "default",
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -362,13 +363,14 @@ func TestDrain(t *testing.T) {
 	}
 
 	tests := []struct {
-		description string
-		pods        []*apiv1.Pod
-		pdbs        []*policyv1.PodDisruptionBudget
-		rcs         []*apiv1.ReplicationController
-		replicaSets []*appsv1.ReplicaSet
-		expectFatal bool
-		expectPods  []*apiv1.Pod
+		description       string
+		pods              []*apiv1.Pod
+		pdbs              []*policyv1.PodDisruptionBudget
+		rcs               []*apiv1.ReplicationController
+		replicaSets       []*appsv1.ReplicaSet
+		expectFatal       bool
+		expectPods        []*apiv1.Pod
+		expectBlockingPod *BlockingPod
 	}{
 		{
 			description: "RC-managed pod",
@@ -425,18 +427,21 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
-			description: "naked pod",
-			pods:        []*apiv1.Pod{nakedPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "naked pod",
+			pods:              []*apiv1.Pod{nakedPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: nakedPod, Reason: NotReplicated},
 		},
 		{
-			description: "pod with EmptyDir",
-			pods:        []*apiv1.Pod{emptydirPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "pod with EmptyDir",
+			pods:              []*apiv1.Pod{emptydirPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			rcs:               []*apiv1.ReplicationController{&rc},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: emptydirPod, Reason: LocalStorageRequested},
 		},
 		{
 			description: "failed pod",
@@ -481,20 +486,22 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{emptydirSafePod},
 		},
 		{
-			description: "RC-managed pod with PodSafeToEvict=false annotation",
-			pods:        []*apiv1.Pod{unsafeRcPod},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "RC-managed pod with PodSafeToEvict=false annotation",
+			pods:              []*apiv1.Pod{unsafeRcPod},
+			rcs:               []*apiv1.ReplicationController{&rc},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: unsafeRcPod, Reason: NotSafeToEvictAnnotation},
 		},
 		{
-			description: "Job-managed pod with PodSafeToEvict=false annotation",
-			pods:        []*apiv1.Pod{unsafeJobPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "Job-managed pod with PodSafeToEvict=false annotation",
+			pods:              []*apiv1.Pod{unsafeJobPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{},
+			rcs:               []*apiv1.ReplicationController{&rc},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: unsafeJobPod, Reason: NotSafeToEvictAnnotation},
 		},
 		{
 			description: "empty PDB with RC-managed pod",
@@ -513,12 +520,13 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{kubeSystemRcPod},
 		},
 		{
-			description: "kube-system PDB with non-matching kube-system pod",
-			pods:        []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
-			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "kube-system PDB with non-matching kube-system pod",
+			pods:              []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
+			rcs:               []*apiv1.ReplicationController{&kubeSystemRc},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
 		},
 		{
 			description: "kube-system PDB with default namespace pod",
@@ -529,12 +537,13 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{rcPod},
 		},
 		{
-			description: "default namespace PDB with matching labels kube-system pod",
-			pods:        []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
-			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal: true,
-			expectPods:  []*apiv1.Pod{},
+			description:       "default namespace PDB with matching labels kube-system pod",
+			pods:              []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:              []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
+			rcs:               []*apiv1.ReplicationController{&kubeSystemRc},
+			expectFatal:       true,
+			expectPods:        []*apiv1.Pod{},
+			expectBlockingPod: &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
 		},
 	}
 
@@ -560,15 +569,17 @@ func TestDrain(t *testing.T) {
 
 		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
+		pods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
 
 		if test.expectFatal {
+			assert.Equal(t, test.expectBlockingPod, blockingPod)
 			if err == nil {
 				t.Fatalf("%s: unexpected non-error", test.description)
 			}
 		}
 
 		if !test.expectFatal {
+			assert.Nil(t, blockingPod)
 			if err != nil {
 				t.Fatalf("%s: error occurred: %v", test.description, err)
 			}

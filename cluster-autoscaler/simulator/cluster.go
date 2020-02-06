@@ -22,6 +22,7 @@ import (
 	"math/rand"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -57,6 +58,48 @@ type NodeToBeRemoved struct {
 	PodsToReschedule []*apiv1.Pod
 }
 
+// UnremovableNode represents a node that can't be removed by CA.
+type UnremovableNode struct {
+	Node        *apiv1.Node
+	Reason      UnremovableReason
+	BlockingPod *drain.BlockingPod
+}
+
+// UnremovableReason represents a reason why a node can't be removed by CA.
+type UnremovableReason int
+
+const (
+	// NoReason - sanity check, this should never be set explicitly. If this is found in the wild, it means that it was
+	// implicitly initialized and might indicate a bug.
+	NoReason UnremovableReason = iota
+	// ScaleDownDisabledAnnotation - node can't be removed because it has a "scale down disabled" annotation.
+	ScaleDownDisabledAnnotation
+	// NotAutoscaled - node can't be removed because it doesn't belong to an autoscaled node group.
+	NotAutoscaled
+	// NotUnneededLongEnough - node can't be removed because it wasn't unneeded for long enough.
+	NotUnneededLongEnough
+	// NotUnreadyLongEnough - node can't be removed because it wasn't unready for long enough.
+	NotUnreadyLongEnough
+	// NodeGroupMinSizeReached - node can't be removed because its node group is at its minimal size already.
+	NodeGroupMinSizeReached
+	// MinimalResourceLimitExceeded - node can't be removed because it would violate cluster-wide minimal resource limits.
+	MinimalResourceLimitExceeded
+	// CurrentlyBeingDeleted - node can't be removed because it's already in the process of being deleted.
+	CurrentlyBeingDeleted
+	// NotUnderutilized - node can't be removed because it's not underutilized.
+	NotUnderutilized
+	// NotUnneededOtherReason - node can't be removed because it's not marked as unneeded for other reasons (e.g. it wasn't inspected at all in a given autoscaler loop).
+	NotUnneededOtherReason
+	// RecentlyUnremovable - node can't be removed because it was recently found to be unremovable.
+	RecentlyUnremovable
+	// NoPlaceToMovePods - node can't be removed because there's no place to move its pods to.
+	NoPlaceToMovePods
+	// BlockedByPod - node can't be removed because a pod running on it can't be moved. The reason why should be in BlockingPod.
+	BlockedByPod
+	// UnexpectedError - node can't be removed because of an unexpected error.
+	UnexpectedError
+)
+
 // UtilizationInfo contains utilization information for a node.
 type UtilizationInfo struct {
 	CpuUtil float64
@@ -75,11 +118,11 @@ func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
-) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*apiv1.Node, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
+) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, destinationNodes)
 	result := make([]NodeToBeRemoved, 0)
-	unremovable := make([]*apiv1.Node, 0)
+	unremovable := make([]*UnremovableNode, 0)
 
 	evaluationType := "Detailed evaluation"
 	if fastCheck {
@@ -92,24 +135,29 @@ candidateloop:
 		klog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
 
 		var podsToRemove []*apiv1.Pod
+		var blockingPod *drain.BlockingPod
 		var err error
 
 		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
 			if fastCheck {
-				podsToRemove, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
+				podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
 					podDisruptionBudgets)
 			} else {
-				podsToRemove, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
+				podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
 					podDisruptionBudgets)
 			}
 			if err != nil {
 				klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
-				unremovable = append(unremovable, node)
+				if blockingPod != nil {
+					unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: BlockedByPod, BlockingPod: blockingPod})
+				} else {
+					unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
+				}
 				continue candidateloop
 			}
 		} else {
 			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
-			unremovable = append(unremovable, node)
+			unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
 			continue candidateloop
 		}
 		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, clusterSnapshot,
@@ -126,7 +174,7 @@ candidateloop:
 			}
 		} else {
 			klog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
-			unremovable = append(unremovable, node)
+			unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: NoPlaceToMovePods})
 		}
 	}
 	return result, unremovable, newHints, nil
@@ -139,7 +187,7 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 	for _, node := range candidates {
 		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
 			// Should block on all pods.
-			podsToRemove, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+			podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
 			if err == nil && len(podsToRemove) == 0 {
 				result = append(result, node)
 			}
