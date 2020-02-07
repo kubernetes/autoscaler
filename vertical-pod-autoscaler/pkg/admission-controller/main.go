@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -40,7 +41,8 @@ import (
 )
 
 const (
-	defaultResyncPeriod time.Duration = 10 * time.Minute
+	defaultResyncPeriod  = 10 * time.Minute
+	statusUpdateInterval = 10 * time.Second
 )
 
 var (
@@ -94,7 +96,13 @@ func main() {
 		klog.Fatalf("Unable to get hostname: %v", err)
 	}
 	stopCh := make(chan struct{})
-	statusUpdater := logic.NewStatusUpdater(kubeClient, hostname)
+	statusUpdater := status.NewUpdater(
+		kubeClient,
+		status.AdmissionControllerStatusName,
+		status.AdmissionControllerStatusNamespace,
+		statusUpdateInterval,
+		hostname,
+	)
 	defer close(stopCh)
 
 	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, vpaPreprocessor, limitRangeCalculator)
