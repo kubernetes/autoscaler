@@ -36,26 +36,6 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework/viperconfig"
 	"k8s.io/kubernetes/test/e2e/generated"
 	"k8s.io/kubernetes/test/utils/image"
-
-	// test sources
-	_ "k8s.io/kubernetes/test/e2e/apimachinery"
-	_ "k8s.io/kubernetes/test/e2e/apps"
-	_ "k8s.io/kubernetes/test/e2e/auth"
-	_ "k8s.io/kubernetes/test/e2e/autoscaling"
-	_ "k8s.io/kubernetes/test/e2e/cloud"
-	_ "k8s.io/kubernetes/test/e2e/common"
-	_ "k8s.io/kubernetes/test/e2e/instrumentation"
-	_ "k8s.io/kubernetes/test/e2e/kubectl"
-	_ "k8s.io/kubernetes/test/e2e/lifecycle"
-	_ "k8s.io/kubernetes/test/e2e/lifecycle/bootstrap"
-	_ "k8s.io/kubernetes/test/e2e/network"
-	_ "k8s.io/kubernetes/test/e2e/node"
-	_ "k8s.io/kubernetes/test/e2e/scheduling"
-	_ "k8s.io/kubernetes/test/e2e/servicecatalog"
-	_ "k8s.io/kubernetes/test/e2e/storage"
-	_ "k8s.io/kubernetes/test/e2e/storage/external"
-	_ "k8s.io/kubernetes/test/e2e/ui"
-	_ "k8s.io/kubernetes/test/e2e/windows"
 )
 
 var viperConfig = flag.String("viper-config", "", "The name of a viper config file (https://github.com/spf13/viper#what-is-viper). All e2e command line parameters can also be configured in such a file. May contain a path and may or may not contain the file suffix. The default is to look for an optional file with `e2e` as base name. If a file is specified explicitly, it must be present.")
