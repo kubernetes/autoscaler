@@ -31,7 +31,6 @@ import (
 
 	runtimeutils "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/component-base/logs"
-	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2elog "k8s.io/kubernetes/test/e2e/framework/log"
 
@@ -48,8 +47,6 @@ import (
 )
 
 var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
-	// Reference common test to make the import valid.
-	commontest.CurrentSuite = commontest.E2E
 	framework.SetupSuite()
 	return nil
 }, func(data []byte) {
