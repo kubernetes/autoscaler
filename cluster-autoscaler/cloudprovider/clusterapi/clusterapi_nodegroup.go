@@ -179,6 +179,7 @@ func (ng *nodegroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
+// This includes instances that might have not become a kubernetes node yet.
 func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	nodes, err := ng.scalableResource.Nodes()
 	if err != nil {
