@@ -61,11 +61,11 @@ func (r machineDeploymentScalableResource) Nodes() ([]string, error) {
 
 	if err := r.controller.filterAllMachineSets(func(machineSet *MachineSet) error {
 		if machineSetIsOwnedByMachineDeployment(machineSet, r.machineDeployment) {
-			names, err := r.controller.machineSetNodeNames(machineSet)
+			providerIDs, err := r.controller.machineSetProviderIDs(machineSet)
 			if err != nil {
 				return err
 			}
-			result = append(result, names...)
+			result = append(result, providerIDs...)
 		}
 		return nil
 	}); err != nil {

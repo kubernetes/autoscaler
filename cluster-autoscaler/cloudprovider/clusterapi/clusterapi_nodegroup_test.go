@@ -401,10 +401,12 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 
 func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 	type testCase struct {
-		description string
-		delta       int
-		initial     int32
-		expected    int32
+		description         string
+		delta               int
+		initial             int32
+		targetSizeIncrement int32
+		expected            int32
+		expectedError       bool
 	}
 
 	test := func(t *testing.T, tc *testCase, testConfig *testConfig) {
@@ -421,16 +423,48 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		}
 
 		ng := nodegroups[0]
-		currReplicas, err := ng.TargetSize()
-			if err := controller.machineSetInformer.Informer().GetStore().Add(newUnstructuredFromMachineSet(testConfig.machineSet)); err != nil {
-		}
+		// DecreaseTargetSize should only decrease the size when the current target size of the nodeGroup
+		// is bigger than the number existing instances for that group. We force such a scenario with targetSizeIncrement.
+		switch v := (ng.scalableResource).(type) {
+		case *machineSetScalableResource:
+			testConfig.machineSet.Spec.Replicas = int32ptr(*testConfig.machineSet.Spec.Replicas + tc.targetSizeIncrement)
+			ms, err := ng.machineapiClient.MachineSets(ng.Namespace()).Update(testConfig.machineSet)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 
-		if err := controller.nodeInformer.GetStore().Delete(testConfig.nodes[0]); err != nil {
-			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(newUnstructuredFromMachineDeployment(testConfig.machineDeployment)); err != nil {
+			if err := controller.machineSetInformer.Informer().GetStore().Add(ms); err != nil {
+				t.Fatalf("failed to add new machine: %v", err)
+			}
+		case *machineDeploymentScalableResource:
+			testConfig.machineDeployment.Spec.Replicas = int32ptr(*testConfig.machineDeployment.Spec.Replicas + tc.targetSizeIncrement)
+			md, err := ng.machineapiClient.MachineDeployments(ng.Namespace()).Update(testConfig.machineDeployment)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(md); err != nil {
+				t.Fatalf("failed to add new machine: %v", err)
+			}
+		default:
+			t.Errorf("unexpected type: %T", v)
 		}
-
-		if err := ng.DecreaseTargetSize(tc.delta); err != nil {
+		// A nodegroup is immutable; get a fresh copy after adding targetSizeIncrement.
+		nodegroups, err = controller.nodeGroups()
+		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+		}
+		ng = nodegroups[0]
+
+		currReplicas, err := ng.TargetSize()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if currReplicas != int(tc.initial)+int(tc.targetSizeIncrement) {
+			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
+		}
+
+		if err := ng.DecreaseTargetSize(tc.delta); (err != nil) != tc.expectedError {
+			t.Fatalf("expected error: %v, got: %v", tc.expectedError, err)
 		}
 
 		switch v := (ng.scalableResource).(type) {
@@ -464,20 +498,35 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 
 	t.Run("MachineSet", func(t *testing.T) {
 		tc := testCase{
-			description: "decrease by 1",
-			initial:     3,
-			expected:    2,
-			delta:       -1,
+			description:         "Same number of existing instances and node group target size should error",
+			initial:             3,
+			targetSizeIncrement: 0,
+			expected:            3,
+			delta:               -1,
+			expectedError:       true,
+		}
+		test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+	})
+
+	t.Run("MachineSet", func(t *testing.T) {
+		tc := testCase{
+			description:         "A node group with targe size 4 but only 3 existing instances should decrease by 1",
+			initial:             3,
+			targetSizeIncrement: 1,
+			expected:            3,
+			delta:               -1,
 		}
 		test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
 		tc := testCase{
-			description: "decrease by 1",
-			initial:     3,
-			expected:    2,
-			delta:       -1,
+			description:         "Same number of existing instances and node group target size should error",
+			initial:             3,
+			targetSizeIncrement: 0,
+			expected:            3,
+			delta:               -1,
+			expectedError:       true,
 		}
 		test(t, &tc, createMachineDeploymentTestConfig(testNamespace, int(tc.initial), annotations))
 	})
