@@ -31,7 +31,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 	"k8s.io/kubernetes/test/e2e/framework"
-	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -100,7 +99,7 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	go func() { o.channel <- result }()
 }
 
-func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
+func getVpaObserver(vpaClientSet vpa_clientset.Interface) *observer {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClientSet.AutoscalingV1beta2().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
 	vpaObserver := observer{channel: make(chan recommendationChange)}
 	_, controller := cache.NewIndexerInformer(vpaListWatch,
@@ -122,8 +121,7 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
 		ns := f.Namespace.Name
-		config, err := framework.LoadConfig()
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		vpaClientSet := getVpaClientSet(f)
 
 		checkpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
 			ObjectMeta: metav1.ObjectMeta{
@@ -135,8 +133,7 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 			},
 		}
 
-		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-		_, err = vpaClientSet.AutoscalingV1beta2().VerticalPodAutoscalerCheckpoints(ns).Create(&checkpoint)
+		_, err := vpaClientSet.AutoscalingV1beta2().VerticalPodAutoscalerCheckpoints(ns).Create(&checkpoint)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		time.Sleep(15 * time.Minute)
@@ -154,9 +151,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		ginkgo.By("Setting up hamster CronJob")
 		SetupHamsterCronJob(f, "*/5 * * * *", "100m", "100Mi", defaultHamsterReplicas)
 
-		config, err := framework.LoadConfig()
-		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.AutoscalingV1beta2()
+		vpaClientSet := getVpaClientSet(f)
 
 		ginkgo.By("Setting up VPA")
 		vpaCRD := NewVPA(f, "hamster-cronjob-vpa", &autoscaling.CrossVersionObjectReference{
@@ -165,11 +160,10 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			Name:       "hamster-cronjob",
 		})
 
-		_, err = vpaClient.VerticalPodAutoscalers(f.Namespace.Name).Create(vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		_, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
@@ -179,33 +173,23 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 	var (
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
-		vpaClientSet *vpa_clientset.Clientset
+		vpaClientSet vpa_clientset.Interface
 	)
 
 	ginkgo.BeforeEach(func() {
 		ginkgo.By("Setting up a hamster deployment")
-		c := f.ClientSet
-		ns := f.Namespace.Name
-
-		cpuQuantity := ParseQuantityOrDie("100m")
-		memoryQuantity := ParseQuantityOrDie("100Mi")
-
-		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		_, err := c.AppsV1().Deployments(ns).Create(d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		err = framework_deployment.WaitForDeploymentComplete(c, d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		_ = SetupHamsterDeployment(
+			f,       /* framework */
+			"100m",  /* cpu */
+			"100Mi", /* memeory */
+			1,       /* number of replicas */
+		)
 
 		ginkgo.By("Setting up a VPA CRD")
-		config, err := framework.LoadConfig()
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
 		vpaCRD = NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		InstallVPA(f, vpaCRD)
 
-		vpaClientSet = vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.AutoscalingV1beta2()
-		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		vpaClientSet = getVpaClientSet(f)
 	})
 
 	ginkgo.It("serves recommendation", func() {
