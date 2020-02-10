@@ -141,6 +141,7 @@ type NodeGroup interface {
 	// Nodes returns a list of all nodes that belong to this node group.
 	// It is required that Instance objects returned by this method have Id field set.
 	// Other fields are optional.
+	// This list should include also instances that might have not become a kubernetes node yet.
 	Nodes() ([]Instance, error)
 
 	// TemplateNodeInfo returns a schedulernodeinfo.NodeInfo structure of an empty
