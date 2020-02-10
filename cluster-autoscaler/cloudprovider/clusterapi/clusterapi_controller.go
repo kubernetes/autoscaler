@@ -336,25 +336,22 @@ func (c *machineController) machineSetProviderIDs(machineSet *MachineSet) ([]str
 		return nil, fmt.Errorf("error listing machines: %v", err)
 	}
 
-	var nodes []string
-
+	var providerIDs []string
 	for _, machine := range machines {
+		if machine.Spec.ProviderID == nil || *machine.Spec.ProviderID == "" {
+			klog.Warningf("Machine %q has no providerID", machine.Name)
+		}
+
 		if machine.Spec.ProviderID != nil && *machine.Spec.ProviderID != "" {
-			// Prefer machine<=>node mapping using ProviderID
-			node, err := c.findNodeByProviderID(*machine.Spec.ProviderID)
-			if err != nil {
-				return nil, err
-			}
-			if node != nil {
-				nodes = append(nodes, node.Spec.ProviderID)
-				continue
-			}
+			providerIDs = append(providerIDs, *machine.Spec.ProviderID)
+			continue
 		}
 
 		if machine.Status.NodeRef == nil {
 			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.Name)
 			continue
 		}
+
 		if machine.Status.NodeRef.Kind != "Node" {
 			klog.Errorf("Status.NodeRef of machine %q does not reference a node (rather %q)", machine.Name, machine.Status.NodeRef.Kind)
 			continue
@@ -366,13 +363,12 @@ func (c *machineController) machineSetProviderIDs(machineSet *MachineSet) ([]str
 		}
 
 		if node != nil {
-			nodes = append(nodes, node.Spec.ProviderID)
+			providerIDs = append(providerIDs, node.Spec.ProviderID)
 		}
 	}
 
-	klog.V(4).Infof("nodegroup %s has nodes %v", machineSet.Name, nodes)
-
-	return nodes, nil
+	klog.V(4).Infof("nodegroup %s has nodes %v", machineSet.Name, providerIDs)
+	return providerIDs, nil
 }
 
 func (c *machineController) filterAllMachineSets(f machineSetFilterFunc) error {

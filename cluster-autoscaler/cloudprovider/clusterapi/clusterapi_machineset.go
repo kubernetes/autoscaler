@@ -57,7 +57,7 @@ func (r machineSetScalableResource) Namespace() string {
 }
 
 func (r machineSetScalableResource) Nodes() ([]string, error) {
-	return r.controller.machineSetNodeNames(r.machineSet)
+	return r.controller.machineSetProviderIDs(r.machineSet)
 }
 
 func (r machineSetScalableResource) Replicas() int32 {
