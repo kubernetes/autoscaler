@@ -34,7 +34,7 @@ type scalableResource interface {
 	// Namespace returns the namespace the resource is in
 	Namespace() string
 
-	// Nodes returns a list of all nodes that belong to this
+	// Nodes returns a list of all machines that already have or should become nodes that belong to this
 	// resource
 	Nodes() ([]string, error)
 
