@@ -204,6 +204,11 @@ func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
 		delete(data.modifiedNodeInfoMap, nodeName)
 	}
 
+	if _, deleted := data.deletedNodeInfos[nodeName]; deleted {
+		// If node was deleted within this delta, fail with error.
+		return errNodeNotFound
+	}
+
 	_, foundInBase := data.baseData.getNodeInfo(nodeName)
 	if foundInBase {
 		// If node was found in the underlying data, mark it as deleted in delta.
@@ -223,6 +228,9 @@ func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
 func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
 	dni, found := data.getNodeInfoLocal(nodeName)
 	if !found {
+		if _, found := data.deletedNodeInfos[nodeName]; found {
+			return errNodeNotFound
+		}
 		bni, found := data.baseData.getNodeInfo(nodeName)
 		if !found {
 			return errNodeNotFound
@@ -242,6 +250,9 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName string) error {
 	dni, found := data.getNodeInfoLocal(nodeName)
 	if !found {
+		if _, found := data.deletedNodeInfos[nodeName]; found {
+			return errNodeNotFound
+		}
 		bni, found := data.baseData.getNodeInfo(nodeName)
 		if !found {
 			return errNodeNotFound
