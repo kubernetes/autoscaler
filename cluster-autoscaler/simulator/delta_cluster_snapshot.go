@@ -294,18 +294,20 @@ func (data *internalDeltaSnapshotData) getPodList() []*apiv1.Pod {
 }
 
 func (data *internalDeltaSnapshotData) buildPodList() []*apiv1.Pod {
-	podList := []*apiv1.Pod{}
 	if len(data.deletedNodeInfos) > 0 || len(data.modifiedNodeInfoMap) > 0 {
+		podList := []*apiv1.Pod{}
 		nodeInfos := data.getNodeInfoList()
 		for _, ni := range nodeInfos {
 			podList = append(podList, ni.Pods()...)
 		}
-	} else {
-		basePodList := data.baseData.getPodList()
-		copy(podList, basePodList)
-		for _, ni := range data.addedNodeInfoMap {
-			podList = append(podList, ni.Pods()...)
-		}
+		return podList
+	}
+
+	basePodList := data.baseData.getPodList()
+	podList := make([]*apiv1.Pod, len(basePodList), len(basePodList))
+	copy(podList, basePodList)
+	for _, ni := range data.addedNodeInfoMap {
+		podList = append(podList, ni.Pods()...)
 	}
 	return podList
 }
