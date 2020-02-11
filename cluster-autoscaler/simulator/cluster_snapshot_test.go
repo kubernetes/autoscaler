@@ -20,10 +20,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var snapshots = map[string]func() ClusterSnapshot{
@@ -178,6 +181,45 @@ func TestForkRemovePods(t *testing.T) {
 				assert.NoError(t, err)
 				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
 				assert.ElementsMatch(t, pods, nodeInfoPods(baseNodes))
+			})
+	}
+}
+
+func extractNodes(nodeInfos []*schedulernodeinfo.NodeInfo) []*apiv1.Node {
+	nodes := []*apiv1.Node{}
+	for _, ni := range nodeInfos {
+		nodes = append(nodes, ni.Node())
+	}
+	return nodes
+}
+
+func TestReAddNode(t *testing.T) {
+	for name, snapshotFactory := range snapshots {
+		t.Run(fmt.Sprintf("%s: re-add node", name),
+			func(t *testing.T) {
+				snapshot := snapshotFactory()
+
+				node := BuildTestNode("node", 10, 100)
+				err := snapshot.AddNode(node)
+				assert.NoError(t, err)
+
+				err = snapshot.Fork()
+				assert.NoError(t, err)
+
+				err = snapshot.RemoveNode("node")
+				assert.NoError(t, err)
+
+				err = snapshot.AddNode(node)
+				assert.NoError(t, err)
+
+				forkNodes, err := snapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, []*apiv1.Node{node}, extractNodes(forkNodes))
+
+				err = snapshot.Commit()
+				committedNodes, err := snapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				assert.ElementsMatch(t, []*apiv1.Node{node}, extractNodes(committedNodes))
 			})
 	}
 }
