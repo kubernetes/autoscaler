@@ -241,6 +241,88 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
+	var (
+		vpaClientSet vpa_clientset.Interface
+	)
+
+	ginkgo.BeforeEach(func() {
+		ginkgo.By("Setting up a hamster deployment")
+		_ = SetupHamsterDeployment(
+			f,       /* framework */
+			"100m",  /* cpu */
+			"100Mi", /* memeory */
+			1,       /* number of replicas */
+		)
+
+		vpaClientSet = getVpaClientSet(f)
+	})
+
+	ginkgo.It("respects min allowed recommendation", func() {
+		const minMilliCpu = 10000
+		ginkgo.By("Setting up a VPA CRD")
+		minAllowed := apiv1.ResourceList{
+			apiv1.ResourceCPU: ParseQuantityOrDie(fmt.Sprintf("%dm", minMilliCpu)),
+		}
+		vpaCRD := createVpaCRDWithMinMaxAllowed(f, minAllowed, nil)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+		cpu := getMilliCpu(vpa.Status.Recommendation.ContainerRecommendations[0].Target)
+		gomega.Expect(cpu).Should(gomega.BeNumerically(">=", minMilliCpu),
+			fmt.Sprintf("target cpu recommendation should be greater than or equal to %dm", minMilliCpu))
+		cpuUncapped := getMilliCpu(vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget)
+		gomega.Expect(cpuUncapped).Should(gomega.BeNumerically("<", minMilliCpu),
+			fmt.Sprintf("uncapped target cpu recommendation should be less than %dm", minMilliCpu))
+	})
+
+	ginkgo.It("respects max allowed recommendation", func() {
+		const maxMilliCpu = 1
+		ginkgo.By("Setting up a VPA CRD")
+		maxAllowed := apiv1.ResourceList{
+			apiv1.ResourceCPU: ParseQuantityOrDie(fmt.Sprintf("%dm", maxMilliCpu)),
+		}
+		vpaCRD := createVpaCRDWithMinMaxAllowed(f, nil, maxAllowed)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+		cpu := getMilliCpu(vpa.Status.Recommendation.ContainerRecommendations[0].Target)
+		gomega.Expect(cpu).Should(gomega.BeNumerically("<=", maxMilliCpu),
+			fmt.Sprintf("target cpu recommendation should be less than or equal to %dm", maxMilliCpu))
+		cpuUncapped := getMilliCpu(vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget)
+		gomega.Expect(cpuUncapped).Should(gomega.BeNumerically(">", maxMilliCpu),
+			fmt.Sprintf("uncapped target cpu recommendation should be greater than %dm", maxMilliCpu))
+	})
+})
+
+func getMilliCpu(resources apiv1.ResourceList) int64 {
+	cpu := resources[apiv1.ResourceCPU]
+	return cpu.MilliValue()
+}
+
+// createVpaCRDWithMinMaxAllowed creates vpa object with min and max resources allowed.
+func createVpaCRDWithMinMaxAllowed(f *framework.Framework, minAllowed, maxAllowed apiv1.ResourceList) *vpa_types.VerticalPodAutoscaler {
+	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+	containerResourcePolicies := []vpa_types.ContainerResourcePolicy{
+		{
+			ContainerName: GetHamsterContainerNameByIndex(0),
+			MinAllowed:    minAllowed,
+			MaxAllowed:    maxAllowed,
+		},
+	}
+	vpaCRD.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{
+		ContainerPolicies: containerResourcePolicies,
+	}
+	InstallVPA(f, vpaCRD)
+	return vpaCRD
+}
+
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+
 	var vpaClientSet vpa_clientset.Interface
 
 	ginkgo.BeforeEach(func() {
