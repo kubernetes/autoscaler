@@ -159,15 +159,18 @@ func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo *schedulernodeinfo.N
 	if _, found := data.getNodeInfo(nodeInfo.Node().Name); found {
 		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
+
 	if _, found := data.deletedNodeInfos[nodeInfo.Node().Name]; found {
 		delete(data.deletedNodeInfos, nodeInfo.Node().Name)
 		data.modifiedNodeInfoMap[nodeInfo.Node().Name] = nodeInfo
 	} else {
 		data.addedNodeInfoMap[nodeInfo.Node().Name] = nodeInfo
 	}
+
 	if data.nodeInfoList != nil {
 		data.nodeInfoList = append(data.nodeInfoList, nodeInfo)
 	}
+
 	return nil
 }
 
@@ -179,17 +182,6 @@ func (data *internalDeltaSnapshotData) clearCaches() {
 func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.podList = nil
 	data.havePodsWithAffinity = nil
-}
-
-func (data *internalDeltaSnapshotData) updateNode(node *schedulernodeinfo.NodeInfo) error {
-	if _, found := data.addedNodeInfoMap[node.Node().Name]; found {
-		data.removeNode(node.Node().Name)
-	}
-	if _, found := data.modifiedNodeInfoMap[node.Node().Name]; found {
-		data.removeNode(node.Node().Name)
-	}
-
-	return data.addNodeInfo(node)
 }
 
 func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
@@ -318,17 +310,26 @@ func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	return forkedData
 }
 
-func (data *internalDeltaSnapshotData) commit() *internalDeltaSnapshotData {
+func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, error) {
 	for node := range data.deletedNodeInfos {
-		data.baseData.removeNode(node)
+		if err := data.baseData.removeNode(node); err != nil {
+			return nil, err
+		}
 	}
 	for _, node := range data.modifiedNodeInfoMap {
-		data.baseData.updateNode(node)
+		if err := data.baseData.removeNode(node.Node().Name); err != nil {
+			return nil, err
+		}
+		if err := data.baseData.addNodeInfo(node); err != nil {
+			return nil, err
+		}
 	}
 	for _, node := range data.addedNodeInfoMap {
-		data.baseData.addNodeInfo(node)
+		if err := data.baseData.addNodeInfo(node); err != nil {
+			return nil, err
+		}
 	}
-	return data.baseData
+	return data.baseData, nil
 }
 
 // List returns list of all node infos.
@@ -485,8 +486,9 @@ func (snapshot *DeltaClusterSnapshot) Revert() error {
 // Commit commits changes done after forking.
 // Time: O(n), where n = size of delta (number of nodes added, modified or deleted since forking)
 func (snapshot *DeltaClusterSnapshot) Commit() error {
-	snapshot.data = snapshot.data.commit()
-	return nil
+	newData, err := snapshot.data.commit()
+	snapshot.data = newData
+	return err
 }
 
 // Clear reset cluster snapshot to empty, unforked state
