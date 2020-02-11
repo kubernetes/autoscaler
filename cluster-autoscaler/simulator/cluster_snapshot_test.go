@@ -223,3 +223,80 @@ func TestReAddNode(t *testing.T) {
 			})
 	}
 }
+
+func TestNode404(t *testing.T) {
+	// Anything and everything that returns errNodeNotFound should be tested here.
+	ops := []struct {
+		name string
+		op   func(ClusterSnapshot) error
+	}{
+		{"add pod", func(snapshot ClusterSnapshot) error {
+			return snapshot.AddPod(BuildTestPod("p1", 0, 0), "node")
+		}},
+		{"remove pod", func(snapshot ClusterSnapshot) error {
+			return snapshot.RemovePod("default", "p1", "node")
+		}},
+		{"get node", func(snapshot ClusterSnapshot) error {
+			_, err := snapshot.NodeInfos().Get("node")
+			return err
+		}},
+		{"remove node", func(snapshot ClusterSnapshot) error {
+			return snapshot.RemoveNode("node")
+		}},
+	}
+
+	for name, snapshotFactory := range snapshots {
+		for _, op := range ops {
+			t.Run(fmt.Sprintf("%s: %s empty", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					// Empty snapshot - shouldn't be able to operate on nodes that are not here.
+					err := op.op(snapshot)
+					assert.Error(t, err)
+				})
+
+			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					node := BuildTestNode("node", 10, 100)
+					err := snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					err = snapshot.Fork()
+					assert.NoError(t, err)
+
+					err = snapshot.RemoveNode("node")
+					assert.NoError(t, err)
+
+					// Node deleted after fork - shouldn't be able to operate on it.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+
+					err = snapshot.Commit()
+					assert.NoError(t, err)
+
+					// Node deleted before commit - shouldn't be able to operate on it.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+
+			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					node := BuildTestNode("node", 10, 100)
+					err := snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					err = snapshot.RemoveNode("node")
+					assert.NoError(t, err)
+
+					// Node deleted from base - shouldn't be able to operate on it.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+		}
+	}
+}
