@@ -246,8 +246,6 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 		data.clearCaches()
 	}
 
-	preAffinityPods := len(dni.PodsWithAffinity())
-
 	podFound := false
 	for _, pod := range dni.Pods() {
 		if pod.Namespace == namespace && pod.Name == name {
@@ -263,13 +261,7 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 	}
 
 	// Maybe consider deleting from the list in the future. Maybe not.
-	postAffinityPods := len(dni.PodsWithAffinity())
-	if preAffinityPods == 1 && postAffinityPods == 0 {
-		data.havePodsWithAffinity = nil
-	}
-	if data.podList != nil {
-		data.clearPodCaches()
-	}
+	data.clearCaches()
 	return nil
 }
 
