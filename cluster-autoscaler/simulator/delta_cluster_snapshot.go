@@ -159,7 +159,12 @@ func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo *schedulernodeinfo.N
 	if _, found := data.getNodeInfo(nodeInfo.Node().Name); found {
 		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
 	}
-	data.addedNodeInfoMap[nodeInfo.Node().Name] = nodeInfo
+	if _, found := data.deletedNodeInfos[nodeInfo.Node().Name]; found {
+		delete(data.deletedNodeInfos, nodeInfo.Node().Name)
+		data.modifiedNodeInfoMap[nodeInfo.Node().Name] = nodeInfo
+	} else {
+		data.addedNodeInfoMap[nodeInfo.Node().Name] = nodeInfo
+	}
 	if data.nodeInfoList != nil {
 		data.nodeInfoList = append(data.nodeInfoList, nodeInfo)
 	}
@@ -299,14 +304,14 @@ func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 }
 
 func (data *internalDeltaSnapshotData) commit() *internalDeltaSnapshotData {
+	for node := range data.deletedNodeInfos {
+		data.baseData.removeNode(node)
+	}
 	for _, node := range data.modifiedNodeInfoMap {
 		data.baseData.updateNode(node)
 	}
 	for _, node := range data.addedNodeInfoMap {
 		data.baseData.addNodeInfo(node)
-	}
-	for node := range data.deletedNodeInfos {
-		data.baseData.removeNode(node)
 	}
 	return data.baseData
 }
