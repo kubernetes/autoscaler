@@ -225,47 +225,49 @@ func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
 	return nil
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (*schedulernodeinfo.NodeInfo, bool) {
 	dni, found := data.getNodeInfoLocal(nodeName)
 	if !found {
 		if _, found := data.deletedNodeInfos[nodeName]; found {
-			return errNodeNotFound
+			return nil, false
 		}
 		bni, found := data.baseData.getNodeInfo(nodeName)
 		if !found {
-			return errNodeNotFound
+			return nil, false
 		}
 		dni = bni.Clone()
 		data.modifiedNodeInfoMap[nodeName] = dni
 		data.clearCaches()
 	}
+	return dni, true
+}
 
-	dni.AddPod(pod)
-	if data.podList != nil || data.havePodsWithAffinity != nil {
-		data.clearPodCaches()
+func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+	ni, found := data.nodeInfoToModify(nodeName)
+	if !found {
+		return errNodeNotFound
 	}
+
+	ni.AddPod(pod)
+
+	// Maybe consider deleting from the list in the future. Maybe not.
+	data.clearCaches()
 	return nil
 }
 
 func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName string) error {
-	dni, found := data.getNodeInfoLocal(nodeName)
+	// This always clones node info, even if the pod is actually missing.
+	// Not sure if we mind, since removing non-existent pod
+	// probably means things are very bad anyway.
+	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
-		if _, found := data.deletedNodeInfos[nodeName]; found {
-			return errNodeNotFound
-		}
-		bni, found := data.baseData.getNodeInfo(nodeName)
-		if !found {
-			return errNodeNotFound
-		}
-		dni = bni.Clone()
-		data.modifiedNodeInfoMap[nodeName] = dni
-		data.clearCaches()
+		return errNodeNotFound
 	}
 
 	podFound := false
-	for _, pod := range dni.Pods() {
+	for _, pod := range ni.Pods() {
 		if pod.Namespace == namespace && pod.Name == name {
-			if err := dni.RemovePod(pod); err != nil {
+			if err := ni.RemovePod(pod); err != nil {
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
 			podFound = true
