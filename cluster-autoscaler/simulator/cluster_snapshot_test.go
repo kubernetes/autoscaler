@@ -224,6 +224,132 @@ func TestReAddNode(t *testing.T) {
 	}
 }
 
+type snapshotState struct {
+	nodes []*apiv1.Node
+	pods  []*apiv1.Pod
+}
+
+func compareStates(t *testing.T, a, b snapshotState) {
+	assert.ElementsMatch(t, a.nodes, b.nodes)
+	assert.ElementsMatch(t, a.pods, b.pods)
+}
+
+func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
+	nodes, err := snapshot.NodeInfos().List()
+	assert.NoError(t, err)
+	pods, err := snapshot.Pods().List(labels.Everything())
+	assert.NoError(t, err)
+	return snapshotState{extractNodes(nodes), pods}
+}
+
+func startSnapshot(t *testing.T, snapshotFactory func() ClusterSnapshot, state snapshotState) ClusterSnapshot {
+	snapshot := snapshotFactory()
+	err := snapshot.AddNodes(state.nodes)
+	assert.NoError(t, err)
+	for _, pod := range state.pods {
+		err := snapshot.AddPod(pod, pod.Spec.NodeName)
+		assert.NoError(t, err)
+	}
+	return snapshot
+}
+
+func TestForking(t *testing.T) {
+	node := BuildTestNode("specialNode", 10, 100)
+	pod := BuildTestPod("specialPod", 1, 1)
+	pod.Spec.NodeName = node.Name
+
+	testCases := []struct {
+		name          string
+		op            func(ClusterSnapshot)
+		state         snapshotState
+		modifiedState snapshotState
+	}{
+		{
+			name: "add node",
+			op: func(snapshot ClusterSnapshot) {
+				err := snapshot.AddNode(node)
+				assert.NoError(t, err)
+			},
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{node},
+			},
+		},
+		{
+			name: "remove node",
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+			},
+			op: func(snapshot ClusterSnapshot) {
+				err := snapshot.RemoveNode(node.Name)
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "add pod, then remove node",
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+			},
+			op: func(snapshot ClusterSnapshot) {
+				err := snapshot.AddPod(pod, node.Name)
+				assert.NoError(t, err)
+				err = snapshot.RemoveNode(node.Name)
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	for name, snapshotFactory := range snapshots {
+		for _, tc := range testCases {
+			t.Run(fmt.Sprintf("%s: %s base", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+				tc.op(snapshot)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s fork", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				err := snapshot.Fork()
+				assert.NoError(t, err)
+
+				tc.op(snapshot)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s fork & revert", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				err := snapshot.Fork()
+				assert.NoError(t, err)
+
+				tc.op(snapshot)
+
+				err = snapshot.Revert()
+				assert.NoError(t, err)
+
+				// Modifications should no longer be applied.
+				compareStates(t, tc.state, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s fork & commit", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				err := snapshot.Fork()
+				assert.NoError(t, err)
+
+				tc.op(snapshot)
+
+				err = snapshot.Commit()
+				assert.NoError(t, err)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+		}
+	}
+}
+
 func TestNode404(t *testing.T) {
 	// Anything and everything that returns errNodeNotFound should be tested here.
 	ops := []struct {
