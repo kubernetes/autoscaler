@@ -114,7 +114,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulernodeinfo.
 	var nodeInfoList []*schedulernodeinfo.NodeInfo
 
 	if len(data.deletedNodeInfos) > 0 || len(data.modifiedNodeInfoMap) > 0 {
-		nodeInfoList = make([]*schedulernodeinfo.NodeInfo, 0, totalLen+100)
+		nodeInfoList = make([]*schedulernodeinfo.NodeInfo, 0, totalLen)
 		for _, bni := range baseList {
 			if data.deletedNodeInfos[bni.Node().Name] {
 				continue
@@ -126,7 +126,7 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulernodeinfo.
 			nodeInfoList = append(nodeInfoList, bni)
 		}
 	} else {
-		nodeInfoList = make([]*schedulernodeinfo.NodeInfo, len(baseList), totalLen+100)
+		nodeInfoList = make([]*schedulernodeinfo.NodeInfo, len(baseList), totalLen)
 		copy(nodeInfoList, baseList)
 	}
 
