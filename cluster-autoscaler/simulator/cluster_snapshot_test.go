@@ -18,7 +18,9 @@ package simulator
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -189,6 +191,77 @@ func TestForking(t *testing.T) {
 				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
 			})
 		}
+	}
+}
+
+func TestClear(t *testing.T) {
+	// Run with -count=1 to avoid caching.
+	localRand := rand.New(rand.NewSource(time.Now().Unix()))
+
+	nodeCount := localRand.Intn(100)
+	podCount := localRand.Intn(1000)
+	extraNodeCount := localRand.Intn(100)
+	extraPodCount := localRand.Intn(1000)
+
+	nodes := createTestNodes(nodeCount)
+	pods := createTestPods(podCount)
+	assignPodsToNodes(pods, nodes)
+
+	state := snapshotState{nodes, pods}
+
+	extraNodes := createTestNodesWithPrefix("extra", extraNodeCount)
+
+	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes), len(nodes)+len(extraNodes))
+	copy(allNodes, nodes)
+	copy(allNodes[len(nodes):], extraNodes)
+
+	extraPods := createTestPodsWithPrefix("extra", extraPodCount)
+	assignPodsToNodes(extraPods, allNodes)
+
+	allPods := make([]*apiv1.Pod, len(pods)+len(extraPods), len(pods)+len(extraPods))
+	copy(allPods, pods)
+	copy(allPods[len(pods):], extraPods)
+
+	for name, snapshotFactory := range snapshots {
+		t.Run(fmt.Sprintf("%s: clear base %d nodes %d pods", name, nodeCount, podCount),
+			func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, state)
+				compareStates(t, state, getSnapshotState(t, snapshot))
+
+				snapshot.Clear()
+
+				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
+			})
+		t.Run(fmt.Sprintf("%s: clear fork %d nodes %d pods %d extra nodes %d extra pods", name, nodeCount, podCount, extraNodeCount, extraPodCount),
+			func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, state)
+				compareStates(t, state, getSnapshotState(t, snapshot))
+
+				err := snapshot.Fork()
+				assert.NoError(t, err)
+
+				err = snapshot.AddNodes(extraNodes)
+				assert.NoError(t, err)
+
+				for _, pod := range extraPods {
+					err := snapshot.AddPod(pod, pod.Spec.NodeName)
+					assert.NoError(t, err)
+				}
+
+				compareStates(t, snapshotState{allNodes, allPods}, getSnapshotState(t, snapshot))
+
+				// Fork()ing twice is not allowed.
+				err = snapshot.Fork()
+				assert.Error(t, err)
+
+				snapshot.Clear()
+
+				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
+
+				// Clear() should break out of forked state.
+				err = snapshot.Fork()
+				assert.NoError(t, err)
+			})
 	}
 }
 
