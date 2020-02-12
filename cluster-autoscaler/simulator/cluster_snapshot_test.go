@@ -42,186 +42,12 @@ func nodeNames(nodes []*apiv1.Node) []string {
 	return names
 }
 
-func nodeInfoNames(nodeInfos []*schedulernodeinfo.NodeInfo) []string {
-	names := make([]string, len(nodeInfos), len(nodeInfos))
-	for i, node := range nodeInfos {
-		names[i] = node.Node().Name
-	}
-	return names
-}
-
-func nodeInfoPods(nodeInfos []*schedulernodeinfo.NodeInfo) []*apiv1.Pod {
-	pods := []*apiv1.Pod{}
-	for _, node := range nodeInfos {
-		pods = append(pods, node.Pods()...)
-	}
-	return pods
-}
-
-func TestForkAddNode(t *testing.T) {
-	nodeCount := 3
-
-	nodes := createTestNodes(nodeCount)
-	extraNodes := createTestNodesWithPrefix("tmp", 2)
-
-	for name, snapshotFactory := range snapshots {
-		t.Run(fmt.Sprintf("%s: fork should not affect base data: adding nodes", name),
-			func(t *testing.T) {
-				clusterSnapshot := snapshotFactory()
-				err := clusterSnapshot.AddNodes(nodes)
-				assert.NoError(t, err)
-
-				err = clusterSnapshot.Fork()
-				assert.NoError(t, err)
-
-				for _, node := range extraNodes {
-					err = clusterSnapshot.AddNode(node)
-					assert.NoError(t, err)
-				}
-				forkNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, append(nodeNames(nodes), nodeNames(extraNodes)...), nodeInfoNames(forkNodes))
-
-				err = clusterSnapshot.Revert()
-				assert.NoError(t, err)
-
-				baseNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
-			})
-	}
-}
-
-func TestForkAddPods(t *testing.T) {
-	nodeCount := 3
-	podCount := 90
-
-	nodes := createTestNodes(nodeCount)
-	pods := createTestPods(podCount)
-	assignPodsToNodes(pods, nodes)
-
-	for name, snapshotFactory := range snapshots {
-		t.Run(fmt.Sprintf("%s: fork should not affect base data: adding pods", name),
-			func(t *testing.T) {
-				clusterSnapshot := snapshotFactory()
-				err := clusterSnapshot.AddNodes(nodes)
-				assert.NoError(t, err)
-
-				err = clusterSnapshot.Fork()
-				assert.NoError(t, err)
-
-				for _, pod := range pods {
-					err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-					assert.NoError(t, err)
-				}
-				forkPods, err := clusterSnapshot.Pods().List(labels.Everything())
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, pods, forkPods)
-				forkNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(forkNodes))
-
-				err = clusterSnapshot.Revert()
-				assert.NoError(t, err)
-
-				basePods, err := clusterSnapshot.Pods().List(labels.Everything())
-				assert.NoError(t, err)
-				assert.Equal(t, 0, len(basePods))
-				baseNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
-			})
-	}
-}
-
-func TestForkRemovePods(t *testing.T) {
-	nodeCount := 3
-	podCount := 90
-	deletedPodCount := 10
-
-	nodes := createTestNodes(nodeCount)
-	pods := createTestPods(podCount)
-	assignPodsToNodes(pods, nodes)
-
-	for name, snapshotFactory := range snapshots {
-		t.Run(fmt.Sprintf("%s: fork should not affect base data: removing pods", name),
-			func(t *testing.T) {
-				clusterSnapshot := snapshotFactory()
-				err := clusterSnapshot.AddNodes(nodes)
-				assert.NoError(t, err)
-
-				for _, pod := range pods {
-					err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-					assert.NoError(t, err)
-				}
-
-				err = clusterSnapshot.Fork()
-				assert.NoError(t, err)
-
-				for _, pod := range pods[:deletedPodCount] {
-					err = clusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName)
-					assert.NoError(t, err)
-				}
-
-				forkPods, err := clusterSnapshot.Pods().List(labels.Everything())
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, pods[deletedPodCount:], forkPods)
-				forkNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(forkNodes))
-				assert.ElementsMatch(t, pods[deletedPodCount:], nodeInfoPods(forkNodes))
-
-				err = clusterSnapshot.Revert()
-				assert.NoError(t, err)
-
-				basePods, err := clusterSnapshot.Pods().List(labels.Everything())
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, pods, basePods)
-				baseNodes, err := clusterSnapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, nodeNames(nodes), nodeInfoNames(baseNodes))
-				assert.ElementsMatch(t, pods, nodeInfoPods(baseNodes))
-			})
-	}
-}
-
 func extractNodes(nodeInfos []*schedulernodeinfo.NodeInfo) []*apiv1.Node {
 	nodes := []*apiv1.Node{}
 	for _, ni := range nodeInfos {
 		nodes = append(nodes, ni.Node())
 	}
 	return nodes
-}
-
-func TestReAddNode(t *testing.T) {
-	for name, snapshotFactory := range snapshots {
-		t.Run(fmt.Sprintf("%s: re-add node", name),
-			func(t *testing.T) {
-				snapshot := snapshotFactory()
-
-				node := BuildTestNode("node", 10, 100)
-				err := snapshot.AddNode(node)
-				assert.NoError(t, err)
-
-				err = snapshot.Fork()
-				assert.NoError(t, err)
-
-				err = snapshot.RemoveNode("node")
-				assert.NoError(t, err)
-
-				err = snapshot.AddNode(node)
-				assert.NoError(t, err)
-
-				forkNodes, err := snapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, []*apiv1.Node{node}, extractNodes(forkNodes))
-
-				err = snapshot.Commit()
-				committedNodes, err := snapshot.NodeInfos().List()
-				assert.NoError(t, err)
-				assert.ElementsMatch(t, []*apiv1.Node{node}, extractNodes(committedNodes))
-			})
-	}
 }
 
 type snapshotState struct {
@@ -282,6 +108,22 @@ func TestForking(t *testing.T) {
 			op: func(snapshot ClusterSnapshot) {
 				err := snapshot.RemoveNode(node.Name)
 				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "remove node, then add it back",
+			state: snapshotState{
+				nodes: []*apiv1.Node{node},
+			},
+			op: func(snapshot ClusterSnapshot) {
+				err := snapshot.RemoveNode(node.Name)
+				assert.NoError(t, err)
+
+				err = snapshot.AddNode(node)
+				assert.NoError(t, err)
+			},
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{node},
 			},
 		},
 		{
