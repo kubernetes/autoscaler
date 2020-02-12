@@ -27,10 +27,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
-func createTestNodesWithPrefix(name string, n int) []*apiv1.Node {
+func createTestNodesWithPrefix(prefix string, n int) []*apiv1.Node {
 	nodes := make([]*apiv1.Node, n, n)
 	for i := 0; i < n; i++ {
-		nodes[i] = BuildTestNode(fmt.Sprintf("%s-%d", name, i), 2000, 2000000)
+		nodes[i] = BuildTestNode(fmt.Sprintf("%s-%d", prefix, i), 2000, 2000000)
 		SetNodeReadyState(nodes[i], true, time.Time{})
 	}
 	return nodes
@@ -40,12 +40,16 @@ func createTestNodes(n int) []*apiv1.Node {
 	return createTestNodesWithPrefix("n", n)
 }
 
-func createTestPods(n int) []*apiv1.Pod {
+func createTestPodsWithPrefix(prefix string, n int) []*apiv1.Pod {
 	pods := make([]*apiv1.Pod, n, n)
 	for i := 0; i < n; i++ {
-		pods[i] = BuildTestPod(fmt.Sprintf("p-%d", i), 1000, 2000000)
+		pods[i] = BuildTestPod(fmt.Sprintf("%s-%d", prefix, i), 1000, 2000000)
 	}
 	return pods
+}
+
+func createTestPods(n int) []*apiv1.Pod {
+	return createTestPodsWithPrefix("p", n)
 }
 
 func assignPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) {
