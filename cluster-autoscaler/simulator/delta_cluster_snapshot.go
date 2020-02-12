@@ -311,6 +311,10 @@ func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 }
 
 func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, error) {
+	if data.baseData == nil {
+		// do nothing... as in basic snapshot.
+		return data, nil
+	}
 	for node := range data.deletedNodeInfos {
 		if err := data.baseData.removeNode(node); err != nil {
 			return nil, err
@@ -475,10 +479,9 @@ func (snapshot *DeltaClusterSnapshot) Fork() error {
 // Revert reverts snapshot state to moment of forking.
 // Time: O(1)
 func (snapshot *DeltaClusterSnapshot) Revert() error {
-	if snapshot.data.baseData == nil {
-		return fmt.Errorf("snapshot not forked")
+	if snapshot.data.baseData != nil {
+		snapshot.data = snapshot.data.baseData
 	}
-	snapshot.data = snapshot.data.baseData
 	return nil
 
 }
@@ -487,8 +490,11 @@ func (snapshot *DeltaClusterSnapshot) Revert() error {
 // Time: O(n), where n = size of delta (number of nodes added, modified or deleted since forking)
 func (snapshot *DeltaClusterSnapshot) Commit() error {
 	newData, err := snapshot.data.commit()
+	if err != nil {
+		return err
+	}
 	snapshot.data = newData
-	return err
+	return nil
 }
 
 // Clear reset cluster snapshot to empty, unforked state
