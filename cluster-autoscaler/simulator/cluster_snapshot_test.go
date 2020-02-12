@@ -352,3 +352,84 @@ func TestNode404(t *testing.T) {
 		}
 	}
 }
+
+func TestNodeAlreadyExists(t *testing.T) {
+	node := BuildTestNode("node", 10, 100)
+	pod := BuildTestPod("pod", 1, 1)
+	pod.Spec.NodeName = node.Name
+
+	ops := []struct {
+		name string
+		op   func(ClusterSnapshot) error
+	}{
+		{"add node", func(snapshot ClusterSnapshot) error {
+			return snapshot.AddNode(node)
+		}},
+		{"add node with pod", func(snapshot ClusterSnapshot) error {
+			return snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod})
+		}},
+	}
+
+	for name, snapshotFactory := range snapshots {
+		for _, op := range ops {
+			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					err := snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					// Node already in base.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+
+			t.Run(fmt.Sprintf("%s: %s base, forked", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					err := snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					err = snapshot.Fork()
+					assert.NoError(t, err)
+
+					// Node already in base, shouldn't be able to add in fork.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+
+			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					err := snapshot.Fork()
+					assert.NoError(t, err)
+
+					err = snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					// Node already in fork.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+			t.Run(fmt.Sprintf("%s: %s committed", name, op.name),
+				func(t *testing.T) {
+					snapshot := snapshotFactory()
+
+					err := snapshot.Fork()
+					assert.NoError(t, err)
+
+					err = snapshot.AddNode(node)
+					assert.NoError(t, err)
+
+					err = snapshot.Commit()
+					assert.NoError(t, err)
+
+					// Node already in new base.
+					err = op.op(snapshot)
+					assert.Error(t, err)
+				})
+		}
+	}
+}
