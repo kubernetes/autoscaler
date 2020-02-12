@@ -103,6 +103,17 @@ func TestForking(t *testing.T) {
 			},
 		},
 		{
+			name: "add node with pods",
+			op: func(snapshot ClusterSnapshot) {
+				err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod})
+				assert.NoError(t, err)
+			},
+			modifiedState: snapshotState{
+				nodes: []*apiv1.Node{node},
+				pods:  []*apiv1.Pod{pod},
+			},
+		},
+		{
 			name: "remove node",
 			state: snapshotState{
 				nodes: []*apiv1.Node{node},
