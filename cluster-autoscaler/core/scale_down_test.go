@@ -17,12 +17,14 @@ limitations under the License.
 package core
 
 import (
+	ctx "context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"sort"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -1582,7 +1584,7 @@ func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 
 func getNode(t *testing.T, client kube_client.Interface, name string) *apiv1.Node {
 	t.Helper()
-	node, err := client.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+	node, err := client.CoreV1().Nodes().Get(ctx.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve node %v: %v", name, err)
 	}
@@ -1596,7 +1598,7 @@ func hasDeletionCandidateTaint(t *testing.T, client kube_client.Interface, name 
 
 func getAllNodes(t *testing.T, client kube_client.Interface) []*apiv1.Node {
 	t.Helper()
-	nodeList, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := client.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve list of nodes: %v", err)
 	}
@@ -1641,9 +1643,9 @@ func TestSoftTaint(t *testing.T) {
 	p1200.Spec.NodeName = "n2000"
 
 	fakeClient := fake.NewSimpleClientset()
-	_, err = fakeClient.CoreV1().Nodes().Create(n1000)
+	_, err = fakeClient.CoreV1().Nodes().Create(ctx.TODO(), n1000, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	_, err = fakeClient.CoreV1().Nodes().Create(n2000)
+	_, err = fakeClient.CoreV1().Nodes().Create(ctx.TODO(), n2000, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
@@ -1757,9 +1759,9 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	}()
 
 	fakeClient := fake.NewSimpleClientset()
-	_, err := fakeClient.CoreV1().Nodes().Create(n1)
+	_, err := fakeClient.CoreV1().Nodes().Create(ctx.TODO(), n1, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	_, err = fakeClient.CoreV1().Nodes().Create(n2)
+	_, err = fakeClient.CoreV1().Nodes().Create(ctx.TODO(), n2, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// Move time forward when updating
