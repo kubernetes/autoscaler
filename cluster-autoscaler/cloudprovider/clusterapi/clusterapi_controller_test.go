@@ -472,7 +472,17 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 		t.Fatalf("expected machines to be equal - expected %+v, got %+v", testConfig.machines[0], machine)
 	}
 
-	// Test #2: Verify machine is not found if it has a
+	// Test #2: Verify machine returned by fake provider ID is correct machine
+	fakeProviderID := fmt.Sprintf("%s$s/%s", testConfig.machines[0].Namespace, testConfig.machines[0].Name)
+	machine, err = controller.findMachineByProviderID(normalizedProviderID(fakeProviderID))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if machine != nil {
+		t.Fatal("expected find to fail")
+	}
+
+	// Test #3: Verify machine is not found if it has a
 	// non-existent or different provider ID.
 	machine = testConfig.machines[0].DeepCopy()
 	machine.Spec.ProviderID = pointer.StringPtr("does-not-match")
