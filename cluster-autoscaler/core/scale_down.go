@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	ctx "context"
 	"fmt"
 	"math"
 	"reflect"
@@ -1230,7 +1231,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGracefulTerminationSec)*time.Second+podEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
-			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(ctx.TODO(), pod.Name, metav1.GetOptions{})
 			if err == nil && (podreturned == nil || podreturned.Spec.NodeName == node.Name) {
 				klog.Errorf("Not deleted yet %s/%s", pod.Namespace, pod.Name)
 				allGone = false
@@ -1250,7 +1251,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	}
 
 	for _, pod := range pods {
-		podReturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+		podReturned, err := client.CoreV1().Pods(pod.Namespace).Get(ctx.TODO(), pod.Name, metav1.GetOptions{})
 		if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		} else if err != nil && !kube_errors.IsNotFound(err) {
