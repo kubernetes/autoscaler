@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,6 +47,7 @@ const (
 	resourceNameMachine           = "machines"
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
+	failedMachinePrefix           = "failed-machine-"
 )
 
 // machineController watches for Nodes, Machines, MachineSets and
@@ -221,6 +223,16 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 		}
 	}
 
+	if isFailedMachineProviderID(providerID) {
+		machine, err := c.findMachine(machineKeyFromFailedProviderID(providerID))
+		if err != nil {
+			return nil, err
+		}
+		if machine != nil {
+			return machine.DeepCopy(), nil
+		}
+	}
+
 	// If the machine object has no providerID--maybe actuator
 	// does not set this value (e.g., OpenStack)--then first
 	// lookup the node using ProviderID. If that is successful
@@ -234,6 +246,15 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 		return nil, nil
 	}
 	return c.findMachine(node.Annotations[machineAnnotationKey])
+}
+
+func isFailedMachineProviderID(providerID normalizedProviderID) bool {
+	return strings.HasPrefix(string(providerID), failedMachinePrefix)
+}
+
+func machineKeyFromFailedProviderID(providerID normalizedProviderID) string {
+	namespaceName := strings.TrimPrefix(string(providerID), failedMachinePrefix)
+	return strings.Replace(namespaceName, "_", "/", 1)
 }
 
 // findNodeByNodeName finds the Node object keyed by name.. Returns
@@ -419,6 +440,17 @@ func (c *machineController) machineSetProviderIDs(machineSet *MachineSet) ([]str
 
 		if machine.Spec.ProviderID != nil && *machine.Spec.ProviderID != "" {
 			providerIDs = append(providerIDs, *machine.Spec.ProviderID)
+			continue
+		}
+
+		if machine.Status.FailureMessage != nil {
+			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.Name, *machine.Status.FailureMessage)
+			// Provide a fake ID to allow the autoscaler to track machines that will never
+			// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
+			// Fake ID needs to be recognised later and converted into a machine key.
+			// Use an underscore as a separator between namespace and name as it is not a
+			// valid character within a namespace name.
+			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.Namespace, machine.Name))
 			continue
 		}
 
