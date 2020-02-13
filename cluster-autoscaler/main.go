@@ -390,7 +390,7 @@ func main() {
 		kubeClient := createKubeClient(getKubeConfig())
 
 		// Validate that the client is ok.
-		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
 		if err != nil {
 			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}

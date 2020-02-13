@@ -32,6 +32,7 @@ import (
 	scheduler_listers "k8s.io/kubernetes/pkg/scheduler/listers"
 	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	scheduler_volumebinder "k8s.io/kubernetes/pkg/scheduler/volumebinder"
+
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 )
@@ -49,8 +50,8 @@ type SchedulerBasedPredicateChecker struct {
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
 func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	providerRegistry := algorithmprovider.NewRegistry(1) // 1 here is hardPodAffinityWeight not relevant for CA
-	config := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
+	providerRegistry := algorithmprovider.NewRegistry()
+	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
 	volumeBinder := scheduler_volumebinder.NewVolumeBinder(
@@ -65,8 +66,8 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 
 	framework, err := scheduler_framework.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
-		config.FrameworkPlugins,
-		config.FrameworkPluginConfig,
+		plugins,
+		nil, // This is fine.
 		scheduler_framework.WithInformerFactory(informerFactory),
 		scheduler_framework.WithSnapshotSharedLister(sharedLister),
 		scheduler_framework.WithVolumeBinder(volumeBinder),
