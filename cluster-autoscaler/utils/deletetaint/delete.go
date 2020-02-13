@@ -17,6 +17,7 @@ limitations under the License.
 package deletetaint
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
@@ -73,7 +74,7 @@ func addTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 	for {
 		if refresh {
 			// Get the newest version of the node.
-			freshNode, err = client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
 				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
 				return fmt.Errorf("failed to get node %v: %v", node.Name, err)
@@ -88,7 +89,7 @@ func addTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 			}
 			return nil
 		}
-		_, err = client.CoreV1().Nodes().Update(freshNode)
+		_, err = client.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
 		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
 			refresh = true
 			time.Sleep(conflictRetryInterval)
@@ -180,7 +181,7 @@ func cleanTaint(node *apiv1.Node, client kube_client.Interface, taintKey string)
 	for {
 		if refresh {
 			// Get the newest version of the node.
-			freshNode, err = client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
 				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
 				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
@@ -204,7 +205,7 @@ func cleanTaint(node *apiv1.Node, client kube_client.Interface, taintKey string)
 		}
 
 		freshNode.Spec.Taints = newTaints
-		_, err = client.CoreV1().Nodes().Update(freshNode)
+		_, err = client.CoreV1().Nodes().Update(context.TODO(), freshNode, metav1.UpdateOptions{})
 
 		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
 			refresh = true

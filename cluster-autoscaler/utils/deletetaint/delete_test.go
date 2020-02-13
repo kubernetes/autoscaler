@@ -17,6 +17,7 @@ limitations under the License.
 package deletetaint
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"sync/atomic"
@@ -191,7 +192,7 @@ func setConflictRetryInterval(interval time.Duration) time.Duration {
 
 func getNode(t *testing.T, client kube_client.Interface, name string) *apiv1.Node {
 	t.Helper()
-	node, err := client.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+	node, err := client.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve node %v: %v", name, err)
 	}
@@ -203,7 +204,7 @@ func buildFakeClient(t *testing.T, nodes ...*apiv1.Node) *fake.Clientset {
 	fakeClient := fake.NewSimpleClientset()
 
 	for _, node := range nodes {
-		_, err := fakeClient.CoreV1().Nodes().Create(node)
+		_, err := fakeClient.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 		assert.NoError(t, err)
 	}
 
