@@ -118,7 +118,7 @@ func main() {
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
-		selfRegistration(clientset, certs.caCert, &namespace, *serviceName, url, *registerByURL)
+		selfRegistration(clientset, certs.caCert, namespace, *serviceName, url, *registerByURL)
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
 	}()
