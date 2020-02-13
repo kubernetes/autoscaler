@@ -354,35 +354,38 @@ func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDow
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
-	context              *context.AutoscalingContext
-	clusterStateRegistry *clusterstate.ClusterStateRegistry
-	unneededNodes        map[string]time.Time
-	unneededNodesList    []*apiv1.Node
-	unremovableNodes     map[string]time.Time
-	podLocationHints     map[string]string
-	nodeUtilizationMap   map[string]simulator.UtilizationInfo
-	usageTracker         *simulator.UsageTracker
-	nodeDeletionTracker  *NodeDeletionTracker
+	context                *context.AutoscalingContext
+	clusterStateRegistry   *clusterstate.ClusterStateRegistry
+	unneededNodes          map[string]time.Time
+	unneededNodesList      []*apiv1.Node
+	unremovableNodes       map[string]time.Time
+	podLocationHints       map[string]string
+	nodeUtilizationMap     map[string]simulator.UtilizationInfo
+	usageTracker           *simulator.UsageTracker
+	nodeDeletionTracker    *NodeDeletionTracker
+	unremovableNodeReasons map[string]*simulator.UnremovableNode
 }
 
 // NewScaleDown builds new ScaleDown object.
 func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
 	return &ScaleDown{
-		context:              context,
-		clusterStateRegistry: clusterStateRegistry,
-		unneededNodes:        make(map[string]time.Time),
-		unremovableNodes:     make(map[string]time.Time),
-		podLocationHints:     make(map[string]string),
-		nodeUtilizationMap:   make(map[string]simulator.UtilizationInfo),
-		usageTracker:         simulator.NewUsageTracker(),
-		unneededNodesList:    make([]*apiv1.Node, 0),
-		nodeDeletionTracker:  NewNodeDeletionTracker(),
+		context:                context,
+		clusterStateRegistry:   clusterStateRegistry,
+		unneededNodes:          make(map[string]time.Time),
+		unremovableNodes:       make(map[string]time.Time),
+		podLocationHints:       make(map[string]string),
+		nodeUtilizationMap:     make(map[string]simulator.UtilizationInfo),
+		usageTracker:           simulator.NewUsageTracker(),
+		unneededNodesList:      make([]*apiv1.Node, 0),
+		nodeDeletionTracker:    NewNodeDeletionTracker(),
+		unremovableNodeReasons: make(map[string]*simulator.UnremovableNode),
 	}
 }
 
 // CleanUp cleans up the internal ScaleDown state.
 func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
+	sd.clearUnremovableNodeReasons()
 }
 
 // CleanUpUnneededNodes clears the list of unneeded nodes.
@@ -453,6 +456,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	for _, node := range scaleDownCandidates {
 		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
 			if unremovableTimestamp.After(timestamp) {
+				sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
 				continue
 			}
 			delete(sd.unremovableNodes, node.Name)
@@ -473,18 +477,21 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// and they have not been deleted.
 		if isNodeBeingDeleted(node, timestamp) {
 			klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.CurrentlyBeingDeleted)
 			continue
 		}
 
 		// Skip nodes marked with no scale down annotation
 		if hasNoScaleDownAnnotation(node) {
 			klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
 			continue
 		}
 
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
 			klog.Errorf("Node info for %s not found", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 			continue
 		}
 
@@ -497,6 +504,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 		if !sd.isNodeBelowUtilzationThreshold(node, utilInfo) {
 			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
 			continue
 		}
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
@@ -595,10 +603,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Add nodes to unremovable map
 	if len(unremovable) > 0 {
 		unremovableTimeout := timestamp.Add(sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
-		for _, node := range unremovable {
-			sd.unremovableNodes[node.Name] = unremovableTimeout
+		for _, unremovableNode := range unremovable {
+			sd.unremovableNodes[unremovableNode.Node.Name] = unremovableTimeout
+			sd.addUnremovableNode(unremovableNode)
 		}
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
+	}
+
+	// This method won't always check all nodes, so let's give a generic reason for all nodes that weren't checked.
+	for _, node := range scaleDownCandidates {
+		_, unremovableReasonProvided := sd.unremovableNodeReasons[node.Name]
+		_, unneeded := result[node.Name]
+		if !unneeded && !unremovableReasonProvided {
+			sd.addUnremovableNodeReason(node, simulator.NotUnneededOtherReason)
+		}
 	}
 
 	// Update state and metrics
@@ -646,6 +664,18 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 	for nodeName := range nodesToDelete {
 		delete(sd.unremovableNodes, nodeName)
 	}
+}
+
+func (sd *ScaleDown) clearUnremovableNodeReasons() {
+	sd.unremovableNodeReasons = make(map[string]*simulator.UnremovableNode)
+}
+
+func (sd *ScaleDown) addUnremovableNodeReason(node *apiv1.Node, reason simulator.UnremovableReason) {
+	sd.unremovableNodeReasons[node.Name] = &simulator.UnremovableNode{Node: node, Reason: reason, BlockingPod: nil}
+}
+
+func (sd *ScaleDown) addUnremovableNode(unremovableNode *simulator.UnremovableNode) {
+	sd.unremovableNodeReasons[unremovableNode.Node.Name] = unremovableNode
 }
 
 // markSimulationError indicates a simulation error by clearing  relevant scale
@@ -771,6 +801,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			// Check if node is marked with no scale down annotation.
 			if hasNoScaleDownAnnotation(node) {
 				klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
+				sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
 				continue
 			}
 
@@ -779,45 +810,53 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 			// Check how long the node was underutilized.
 			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
+				sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
 				continue
 			}
 
 			// Unready nodes may be deleted after a different time than underutilized nodes.
 			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
+				sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
 				continue
 			}
 
 			nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 			if err != nil {
 				klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
+				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 				continue
 			}
 			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 				klog.V(4).Infof("Skipping %s - no node group config", node.Name)
+				sd.addUnremovableNodeReason(node, simulator.NotAutoscaled)
 				continue
 			}
 
 			size, found := nodeGroupSize[nodeGroup.Id()]
 			if !found {
 				klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
+				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 				continue
 			}
 
 			deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
 			if size-deletionsInProgress <= nodeGroup.MinSize() {
 				klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+				sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
 				continue
 			}
 
 			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
 			if err != nil {
 				klog.Errorf("Error getting node resources: %v", err)
+				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 				continue
 			}
 
 			checkResult := scaleDownResourcesLeft.checkScaleDownDeltaWithinLimits(scaleDownResourcesDelta)
 			if checkResult.exceeded {
 				klog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
+				sd.addUnremovableNodeReason(node, simulator.MinimalResourceLimitExceeded)
 				continue
 			}
 
@@ -857,7 +896,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Only scheduled non expendable pods are taken into account and have to be moved.
 	nonExpendablePods := core_utils.FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, _, err := simulator.FindNodesToRemove(
+	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
 		candidates,
 		nodesWithoutMaster,
 		nonExpendablePods,
@@ -871,6 +910,10 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		time.Now(),
 		pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
+
+	for _, unremovableNode := range unremovable {
+		sd.addUnremovableNode(unremovableNode)
+	}
 
 	if err != nil {
 		scaleDownStatus.Result = status.ScaleDownError
