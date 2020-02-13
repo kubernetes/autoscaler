@@ -17,6 +17,7 @@ limitations under the License.
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -90,14 +91,14 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 	var getStatusError, writeStatusError error
 	var errMsg string
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
-	configMap, getStatusError = maps.Get(StatusConfigMapName, metav1.GetOptions{})
+	configMap, getStatusError = maps.Get(context.TODO(), StatusConfigMapName, metav1.GetOptions{})
 	if getStatusError == nil {
 		configMap.Data["status"] = statusMsg
 		if configMap.ObjectMeta.Annotations == nil {
 			configMap.ObjectMeta.Annotations = make(map[string]string)
 		}
 		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = statusUpdateTime
-		configMap, writeStatusError = maps.Update(configMap)
+		configMap, writeStatusError = maps.Update(context.TODO(), configMap, metav1.UpdateOptions{})
 	} else if kube_errors.IsNotFound(getStatusError) {
 		configMap = &apiv1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
@@ -111,7 +112,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 				"status": statusMsg,
 			},
 		}
-		configMap, writeStatusError = maps.Create(configMap)
+		configMap, writeStatusError = maps.Create(context.TODO(), configMap, metav1.CreateOptions{})
 	} else {
 		errMsg = fmt.Sprintf("Failed to retrieve status configmap for update: %v", getStatusError)
 	}
@@ -134,7 +135,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 // DeleteStatusConfigMap deletes status configmap
 func DeleteStatusConfigMap(kubeClient kube_client.Interface, namespace string) error {
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
-	err := maps.Delete(StatusConfigMapName, &metav1.DeleteOptions{})
+	err := maps.Delete(context.TODO(), StatusConfigMapName, &metav1.DeleteOptions{})
 	if err != nil {
 		klog.Error("Failed to delete status configmap")
 	}
