@@ -189,17 +189,11 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 }
 
 func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) errors.AutoscalerError {
-	var err error
-	err = a.ClusterSnapshot.Clear()
-	if err != nil {
-		klog.Errorf("Failed to clear cluster snapshot: %v", err)
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	a.ClusterSnapshot.Clear()
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
-		err = a.ClusterSnapshot.AddNode(node)
-		if err != nil {
+		if err := a.ClusterSnapshot.AddNode(node); err != nil {
 			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
 			return errors.ToAutoscalerError(errors.InternalError, err)
 		}
@@ -207,8 +201,7 @@ func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, schedu
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			err = a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName)
-			if err != nil {
+			if err := a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
 				klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
 				return errors.ToAutoscalerError(errors.InternalError, err)
 			}

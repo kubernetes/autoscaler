@@ -308,7 +308,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
 
 	// remove pods from clusterSnaphot first
 	for _, pod := range pods {
-		if err := clusterSnaphost.RemovePod(pod.Namespace, pod.Name); err != nil {
+		if err := clusterSnaphost.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}

@@ -95,10 +95,10 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnap
 	if clusterSnapshot == nil {
 		return "", fmt.Errorf("ClusterSnapshot not provided")
 	}
+
 	if nodeInfos != nil {
 		klog.Errorf("clusterSnapshot and nodeInfos are mutually exclusive!!!!")
 	}
-	var nodeInfosList []*scheduler_nodeinfo.NodeInfo
 
 	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
 	if err != nil {
@@ -106,6 +106,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnap
 		klog.Errorf("Error obtaining nodeInfos from schedulerLister")
 		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
 	}
+
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 	state := scheduler_framework.NewCycleState()
