@@ -17,9 +17,11 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -109,11 +111,105 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 
 			stillPendingPods, err := filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker, 10)
 			assert.NoError(t, err)
-			assert.ElementsMatch(t, stillPendingPods, tt.expectedPendingPods)
+			assert.ElementsMatch(t, stillPendingPods, tt.expectedPendingPods, "pending pods differ")
 
 			// Check if snapshot was correctly modified
-			podsInSnapshot, _ := clusterSnapshot.GetAllPods()
-			assert.ElementsMatch(t, podsInSnapshot, tt.expectedPodsInSnapshot)
+			podsInSnapshot, err := clusterSnapshot.Pods().List(labels.Everything())
+			assert.NoError(t, err)
+			assert.ElementsMatch(t, podsInSnapshot, tt.expectedPodsInSnapshot, "pods in snapshot differ")
 		})
+	}
+}
+
+func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
+	// All pending pods in this scenario are unschedulable - predicates will fail.
+	tests := []struct {
+		name          string
+		nodes         int
+		scheduledPods int
+		pendingPods   int
+	}{
+		{
+			name:          "nothing",
+			nodes:         1,
+			scheduledPods: 30,
+			pendingPods:   1000,
+		},
+		{
+			name:          "small",
+			nodes:         10,
+			scheduledPods: 300,
+			pendingPods:   1000,
+		},
+		{
+			name:          "medium",
+			nodes:         100,
+			scheduledPods: 3000,
+			pendingPods:   1000,
+		},
+		{
+			name:          "large",
+			nodes:         200,
+			scheduledPods: 200,
+			pendingPods:   60000,
+		},
+		{
+			name:          "1k",
+			nodes:         1000,
+			scheduledPods: 1000,
+			pendingPods:   12000,
+		},
+	}
+	snapshots := map[string]func() simulator.ClusterSnapshot{
+		"basic": func() simulator.ClusterSnapshot { return simulator.NewBasicClusterSnapshot() },
+		"delta": func() simulator.ClusterSnapshot { return simulator.NewDeltaClusterSnapshot() },
+	}
+	for snapshotName, snapshotFactory := range snapshots {
+		for _, tc := range tests {
+			b.Run(fmt.Sprintf("%s: %d nodes %d scheduled %d pending", snapshotName, tc.nodes, tc.scheduledPods, tc.pendingPods), func(b *testing.B) {
+				pendingPods := make([]*apiv1.Pod, tc.pendingPods, tc.pendingPods)
+				for i := 0; i < tc.pendingPods; i++ {
+					pendingPods[i] = BuildTestPod(fmt.Sprintf("p-%d", i), 1000, 2000000)
+				}
+				nodes := make([]*apiv1.Node, tc.nodes, tc.nodes)
+				for i := 0; i < tc.nodes; i++ {
+					nodes[i] = BuildTestNode(fmt.Sprintf("n-%d", i), 2000, 200000)
+					SetNodeReadyState(nodes[i], true, time.Time{})
+				}
+				scheduledPods := make([]*apiv1.Pod, tc.scheduledPods, tc.scheduledPods)
+				j := 0
+				for i := 0; i < tc.scheduledPods; i++ {
+					scheduledPods[i] = BuildTestPod(fmt.Sprintf("s-%d", i), 1000, 200000)
+					scheduledPods[i].Spec.NodeName = nodes[j].Name
+					j++
+					if j >= tc.nodes {
+						j = 0
+					}
+				}
+
+				predicateChecker, err := simulator.NewTestPredicateChecker()
+				assert.NoError(b, err)
+
+				clusterSnapshot := snapshotFactory()
+				if err := clusterSnapshot.AddNodes(nodes); err != nil {
+					assert.NoError(b, err)
+				}
+
+				for _, pod := range scheduledPods {
+					if err := clusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
+						assert.NoError(b, err)
+					}
+				}
+				b.ResetTimer()
+
+				for i := 0; i < b.N; i++ {
+					if stillPending, err := filterOutSchedulableByPacking(pendingPods, clusterSnapshot, predicateChecker, 10); err != nil {
+						assert.NoError(b, err)
+					} else if len(stillPending) < tc.pendingPods {
+						assert.Equal(b, len(stillPending), tc.pendingPods)
+					}
+				}
+			})
+		}
 	}
 }
