@@ -20,15 +20,84 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
-	coreUtils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 
 	"k8s.io/klog"
 )
 
+const (
+	// ReschedulerTaintKey is the name of the taint created by rescheduler.
+	ReschedulerTaintKey = "CriticalAddonsOnly"
+	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
+	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
+
+	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
+)
+
+// TaintKeySet is a set of taint key
+type TaintKeySet map[string]bool
+
+var (
+	// NodeConditionTaints lists taint keys used as node conditions
+	NodeConditionTaints = TaintKeySet{
+		apiv1.TaintNodeNotReady:                 true,
+		apiv1.TaintNodeUnreachable:              true,
+		apiv1.TaintNodeUnschedulable:            true,
+		apiv1.TaintNodeMemoryPressure:           true,
+		apiv1.TaintNodeDiskPressure:             true,
+		apiv1.TaintNodeNetworkUnavailable:       true,
+		apiv1.TaintNodePIDPressure:              true,
+		schedulerapi.TaintExternalCloudProvider: true,
+		schedulerapi.TaintNodeShutdown:          true,
+		gkeNodeTerminationHandlerTaint:          true,
+	}
+)
+
+// SanitizeTaints returns filtered taints
+func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Taint {
+	var newTaints []apiv1.Taint
+	for _, taint := range taints {
+		// Rescheduler can put this taint on a node while evicting non-critical pods.
+		// New nodes will not have this taint and so we should strip it when creating
+		// template node.
+		switch taint.Key {
+		case ReschedulerTaintKey:
+			klog.V(4).Info("Removing rescheduler taint when creating template")
+			continue
+		case deletetaint.ToBeDeletedTaint:
+			klog.V(4).Infof("Removing autoscaler taint when creating template from node")
+			continue
+		case deletetaint.DeletionCandidateTaint:
+			klog.V(4).Infof("Removing autoscaler soft taint when creating template from node")
+			continue
+		}
+
+		// ignore conditional taints as they represent a transient node state.
+		if exists := NodeConditionTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing node condition taint %s, when creating template from node", taint.Key)
+			continue
+		}
+
+		if _, exists := ignoredTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing ignored taint %s, when creating template from node", taint.Key)
+			continue
+		}
+
+		if strings.HasPrefix(taint.Key, IgnoreTaintPrefix) {
+			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
+			continue
+		}
+
+		newTaints = append(newTaints, taint)
+	}
+	return newTaints
+}
+
 // FilterOutNodesWithIgnoredTaints override the condition status of the given nodes to mark them as NotReady when they have
 // filtered taints.
-func FilterOutNodesWithIgnoredTaints(ignoredTaints coreUtils.TaintKeySet, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithIgnoredTaints := make(map[string]*apiv1.Node)
@@ -38,7 +107,7 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints coreUtils.TaintKeySet, allNod
 		}
 		for _, t := range node.Spec.Taints {
 			_, hasIgnoredTaint := ignoredTaints[t.Key]
-			if !hasIgnoredTaint && !strings.HasPrefix(t.Key, coreUtils.IgnoreTaintPrefix) {
+			if !hasIgnoredTaint && !strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
 				newReadyNodes = append(newReadyNodes, node)
 				continue
 			}
