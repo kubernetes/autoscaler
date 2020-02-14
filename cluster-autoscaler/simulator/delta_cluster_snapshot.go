@@ -171,6 +171,10 @@ func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo *schedulernodeinfo.N
 		data.nodeInfoList = append(data.nodeInfoList, nodeInfo)
 	}
 
+	if len(nodeInfo.Pods()) > 0 {
+		data.clearPodCaches()
+	}
+
 	return nil
 }
 
