@@ -22,9 +22,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	coreUtils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
@@ -47,7 +48,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 	for name, tc := range map[string]struct {
 		readyNodes    int
 		allNodes      int
-		ignoredTaints coreUtils.TaintKeySet
+		ignoredTaints TaintKeySet
 		node          *apiv1.Node
 	}{
 		"empty ignored taints, no node": {
@@ -120,7 +121,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				Spec: apiv1.NodeSpec{
 					Taints: []apiv1.Taint{
 						{
-							Key:    coreUtils.IgnoreTaintPrefix + "another-taint",
+							Key:    IgnoreTaintPrefix + "another-taint",
 							Value:  "myValue",
 							Effect: apiv1.TaintEffectNoSchedule,
 						},
@@ -151,4 +152,60 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSanitizeTaints(t *testing.T) {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-sanitize-taints<",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: []apiv1.Taint{
+				{
+					Key:    IgnoreTaintPrefix + "another-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    ReschedulerTaintKey,
+					Value:  "test1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "test-taint",
+					Value:  "test2",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    deletetaint.ToBeDeletedTaint,
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "node.kubernetes.io/memory-pressure",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
+					Value:  "I-am-the-invisible-man-Incredible-how-you-can",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{},
+		},
+	}
+	ignoredTaints := map[string]bool{"ignore-me": true}
+
+	newTaints := SanitizeTaints(node.Spec.Taints, ignoredTaints)
+	require.Equal(t, len(newTaints), 1)
+	assert.Equal(t, newTaints[0].Key, "test-taint")
 }

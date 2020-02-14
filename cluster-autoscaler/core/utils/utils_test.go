@@ -22,7 +22,6 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -246,49 +245,6 @@ func TestSanitizeLabels(t *testing.T) {
 	assert.Equal(t, node.Labels["x"], "y")
 	assert.NotEqual(t, node.Name, oldNode.Name)
 	assert.Equal(t, node.Labels[apiv1.LabelHostname], node.Name)
-}
-
-func TestSanitizeTaints(t *testing.T) {
-	oldNode := BuildTestNode("ng1-1", 1000, 1000)
-	taints := make([]apiv1.Taint, 0)
-	taints = append(taints, apiv1.Taint{
-		Key:    ReschedulerTaintKey,
-		Value:  "test1",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-	taints = append(taints, apiv1.Taint{
-		Key:    "test-taint",
-		Value:  "test2",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-	taints = append(taints, apiv1.Taint{
-		Key:    deletetaint.ToBeDeletedTaint,
-		Value:  "1",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-	taints = append(taints, apiv1.Taint{
-		Key:    "ignore-me",
-		Value:  "1",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-	taints = append(taints, apiv1.Taint{
-		Key:    "node.kubernetes.io/memory-pressure",
-		Value:  "1",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-	taints = append(taints, apiv1.Taint{
-		Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
-		Value:  "I-am-the-invisible-man-Incredible-how-you-can",
-		Effect: apiv1.TaintEffectNoSchedule,
-	})
-
-	ignoredTaints := map[string]bool{"ignore-me": true}
-
-	oldNode.Spec.Taints = taints
-	node, err := sanitizeTemplateNode(oldNode, "bzium", ignoredTaints)
-	assert.NoError(t, err)
-	assert.Equal(t, len(node.Spec.Taints), 1)
-	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
 }
 
 func TestGetNodeResource(t *testing.T) {

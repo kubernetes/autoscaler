@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -45,7 +46,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -75,7 +75,7 @@ type StaticAutoscaler struct {
 	initialized             bool
 	// Caches nodeInfo computed for previously seen nodes
 	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
-	ignoredTaints core_utils.TaintKeySet
+	ignoredTaints taints.TaintKeySet
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -136,7 +136,7 @@ func NewStaticAutoscaler(
 		MaxNodeProvisionTime:      opts.MaxNodeProvisionTime,
 	}
 
-	ignoredTaints := make(core_utils.TaintKeySet)
+	ignoredTaints := make(taints.TaintKeySet)
 	for _, taintKey := range opts.IgnoredTaints {
 		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
 		ignoredTaints[taintKey] = true
