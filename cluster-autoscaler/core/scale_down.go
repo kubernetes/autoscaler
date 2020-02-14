@@ -42,13 +42,13 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_record "k8s.io/client-go/tools/record"
-
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/klog"
 )
 
@@ -414,19 +414,17 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 
 	// Extract cluster state from snapshot for initial analysis
-	pods, err := sd.context.ClusterSnapshot.GetAllPods()
+	pods, err := sd.context.ClusterSnapshot.Pods().List(labels.Everything())
 	if err != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	allNodes, err := sd.context.ClusterSnapshot.GetAllNodes()
+	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
 	if err != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
-	if err != nil {
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
 	nodeNameToNodeInfo := make(map[string]*schedulernodeinfo.NodeInfo)
 	for _, nodeInfo := range allNodeInfos {
 		node := nodeInfo.Node()
@@ -441,7 +439,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	var nonExpendablePods []*apiv1.Pod
 	for _, pod := range pods {
 		if core_utils.IsExpendablePod(pod, sd.context.ExpendablePodsPriorityCutoff) {
-			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
 				klog.Errorf("Could not remove expendable pod %s/%s from ClusterSnaphshot; %v", pod.Namespace, pod.Name, err)
 			}
 		} else {
@@ -451,7 +449,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
 
-	sd.updateUnremovableNodes(allNodes)
+	sd.updateUnremovableNodes(allNodeInfos)
 	// Filter out nodes that were recently checked
 	filteredNodesToCheck := make([]*apiv1.Node, 0)
 	for _, node := range scaleDownCandidates {
@@ -551,7 +549,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalCandidatesCount = len(currentNonCandidates)
 	}
 	// Limit the additional candidates pool size for better performance.
-	additionalCandidatesPoolSize := int(math.Ceil(float64(len(allNodes)) * sd.context.ScaleDownCandidatesPoolRatio))
+	additionalCandidatesPoolSize := int(math.Ceil(float64(len(allNodeInfos)) * sd.context.ScaleDownCandidatesPoolRatio))
 	if additionalCandidatesPoolSize < sd.context.ScaleDownCandidatesPoolMinCount {
 		additionalCandidatesPoolSize = sd.context.ScaleDownCandidatesPoolMinCount
 	}
@@ -647,7 +645,7 @@ func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo s
 // updateUnremovableNodes updates unremovableNodes map according to current
 // state of the cluster. Removes from the map nodes that are no longer in the
 // nodes list.
-func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
+func (sd *ScaleDown) updateUnremovableNodes(nodes []*schedulernodeinfo.NodeInfo) {
 	if len(sd.unremovableNodes) <= 0 {
 		return
 	}
@@ -658,8 +656,8 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 	}
 	// Nodes that are in the cluster should not be deleted.
 	for _, node := range nodes {
-		if _, ok := nodesToDelete[node.Name]; ok {
-			delete(nodesToDelete, node.Name)
+		if _, ok := nodesToDelete[node.Node().Name]; ok {
+			delete(nodesToDelete, node.Node().Name)
 		}
 	}
 	for nodeName := range nodesToDelete {

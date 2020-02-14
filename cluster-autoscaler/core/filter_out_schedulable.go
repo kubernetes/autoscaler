@@ -17,10 +17,10 @@ limitations under the License.
 package core
 
 import (
-	"fmt"
 	"sort"
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -94,9 +94,9 @@ func filterOutSchedulableByPacking(
 	predicateChecker simulator.PredicateChecker,
 	expendablePodsPriorityCutoff int) ([]*apiv1.Pod, error) {
 
-	allScheduled, err := clusterSnapshot.GetAllPods()
+	allScheduled, err := clusterSnapshot.Pods().List(labels.Everything())
 	if err != nil {
-		return nil, fmt.Errorf("could not list all pods from snapshot; %v", err)
+		return nil, err
 	}
 
 	// Sort unschedulable pods by importance
@@ -109,7 +109,7 @@ func filterOutSchedulableByPacking(
 	for _, pod := range allScheduled {
 		if utils.IsExpendablePod(pod, expendablePodsPriorityCutoff) {
 			klog.V(4).Infof("Removing expandable pod %s.%s", pod.Namespace, pod.Name)
-			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name); err != nil {
+			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
 				return nil, err
 			}
 		}
