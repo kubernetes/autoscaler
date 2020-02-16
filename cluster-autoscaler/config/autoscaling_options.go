@@ -84,6 +84,8 @@ type AutoscalingOptions struct {
 	CloudProviderName string
 	// NodeGroups is the list of node groups a.k.a autoscaling targets
 	NodeGroups []string
+	// UnregisteredNodeRemovalDelayAfterAttempt sets the duration before the next remove unregister attempt
+	UnregisteredNodeRemovalDelayAfterAttempt time.Duration
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options

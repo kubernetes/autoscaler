@@ -80,12 +80,14 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
-	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
-	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
-	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
-	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
-	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
+	clusterName                              = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
+	address                                  = flag.String("address", ":8085", "The address to expose prometheus metrics.")
+	kubernetes                               = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
+	kubeConfigFile                           = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
+	cloudConfig                              = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
+	namespace                                = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
+	unregisteredNodeRemovalDelayAfterAttempt = flag.Duration("unregistered-node-removal-delay-after-attempt", 0,
+		"How long after remove unregister nodes that remove unregister evaluation resumes")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -191,52 +193,53 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	return config.AutoscalingOptions{
-		CloudConfig:                      *cloudConfig,
-		CloudProviderName:                *cloudProviderFlag,
-		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
-		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:              *okTotalUnreadyCount,
-		ScaleUpFromZero:                  *scaleUpFromZero,
-		EstimatorName:                    *estimatorFlag,
-		ExpanderName:                     *expanderFlag,
-		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
-		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
-		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
-		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
-		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
-		MaxNodeProvisionTime:             *maxNodeProvisionTime,
-		MaxNodesTotal:                    *maxNodesTotal,
-		MaxCoresTotal:                    maxCoresTotal,
-		MinCoresTotal:                    minCoresTotal,
-		MaxMemoryTotal:                   maxMemoryTotal,
-		MinMemoryTotal:                   minMemoryTotal,
-		GpuTotal:                         parsedGpuTotal,
-		NodeGroups:                       *nodeGroupsFlag,
-		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
-		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
-		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                 *scaleDownEnabled,
-		ScaleDownUnneededTime:            *scaleDownUnneededTime,
-		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
-		ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
-		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
-		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
-		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
-		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
-		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
-		ConfigNamespace:                  *namespace,
-		ClusterName:                      *clusterName,
-		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
-		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
-		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
-		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
-		Regional:                         *regional,
-		NewPodScaleUpDelay:               *newPodScaleUpDelay,
-		IgnoredTaints:                    *ignoreTaintsFlag,
-		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
-		AWSUseStaticInstanceList:         *awsUseStaticInstanceList,
+		CloudConfig:                              *cloudConfig,
+		CloudProviderName:                        *cloudProviderFlag,
+		NodeGroupAutoDiscovery:                   *nodeGroupAutoDiscoveryFlag,
+		MaxTotalUnreadyPercentage:                *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:                      *okTotalUnreadyCount,
+		ScaleUpFromZero:                          *scaleUpFromZero,
+		EstimatorName:                            *estimatorFlag,
+		ExpanderName:                             *expanderFlag,
+		IgnoreDaemonSetsUtilization:              *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:              *ignoreMirrorPodsUtilization,
+		MaxBulkSoftTaintCount:                    *maxBulkSoftTaintCount,
+		MaxBulkSoftTaintTime:                     *maxBulkSoftTaintTime,
+		MaxEmptyBulkDelete:                       *maxEmptyBulkDeleteFlag,
+		MaxGracefulTerminationSec:                *maxGracefulTerminationFlag,
+		MaxNodeProvisionTime:                     *maxNodeProvisionTime,
+		MaxNodesTotal:                            *maxNodesTotal,
+		MaxCoresTotal:                            maxCoresTotal,
+		MinCoresTotal:                            minCoresTotal,
+		MaxMemoryTotal:                           maxMemoryTotal,
+		MinMemoryTotal:                           minMemoryTotal,
+		GpuTotal:                                 parsedGpuTotal,
+		NodeGroups:                               *nodeGroupsFlag,
+		ScaleDownDelayAfterAdd:                   *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:                *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:               *scaleDownDelayAfterFailure,
+		ScaleDownEnabled:                         *scaleDownEnabled,
+		ScaleDownUnneededTime:                    *scaleDownUnneededTime,
+		ScaleDownUnreadyTime:                     *scaleDownUnreadyTime,
+		ScaleDownUtilizationThreshold:            *scaleDownUtilizationThreshold,
+		ScaleDownGpuUtilizationThreshold:         *scaleDownGpuUtilizationThreshold,
+		ScaleDownNonEmptyCandidatesCount:         *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:             *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:          *scaleDownCandidatesPoolMinCount,
+		WriteStatusConfigMap:                     *writeStatusConfigMapFlag,
+		BalanceSimilarNodeGroups:                 *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:                          *namespace,
+		ClusterName:                              *clusterName,
+		NodeAutoprovisioningEnabled:              *nodeAutoprovisioningEnabled,
+		MaxAutoprovisionedNodeGroupCount:         *maxAutoprovisionedNodeGroupCount,
+		UnremovableNodeRecheckTimeout:            *unremovableNodeRecheckTimeout,
+		ExpendablePodsPriorityCutoff:             *expendablePodsPriorityCutoff,
+		Regional:                                 *regional,
+		NewPodScaleUpDelay:                       *newPodScaleUpDelay,
+		IgnoredTaints:                            *ignoreTaintsFlag,
+		NodeDeletionDelayTimeout:                 *nodeDeletionDelayTimeout,
+		AWSUseStaticInstanceList:                 *awsUseStaticInstanceList,
+		UnregisteredNodeRemovalDelayAfterAttempt: *unregisteredNodeRemovalDelayAfterAttempt,
 	}
 }
 

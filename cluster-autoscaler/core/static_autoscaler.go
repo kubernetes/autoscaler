@@ -63,15 +63,16 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*context.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
-	clusterStateRegistry    *clusterstate.ClusterStateRegistry
-	startTime               time.Time
-	lastScaleUpTime         time.Time
-	lastScaleDownDeleteTime time.Time
-	lastScaleDownFailTime   time.Time
-	scaleDown               *ScaleDown
-	processors              *ca_processors.AutoscalingProcessors
-	processorCallbacks      *staticAutoscalerProcessorCallbacks
-	initialized             bool
+	clusterStateRegistry        *clusterstate.ClusterStateRegistry
+	startTime                   time.Time
+	lastScaleUpTime             time.Time
+	lastScaleDownDeleteTime     time.Time
+	lastScaleDownFailTime       time.Time
+	lastUnregisteredRemovalTime time.Time
+	scaleDown                   *ScaleDown
+	processors                  *ca_processors.AutoscalingProcessors
+	processorCallbacks          *staticAutoscalerProcessorCallbacks
+	initialized                 bool
 	// Caches nodeInfo computed for previously seen nodes
 	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
 	ignoredTaints core_utils.TaintKeySet
@@ -146,17 +147,18 @@ func NewStaticAutoscaler(
 	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
 
 	return &StaticAutoscaler{
-		AutoscalingContext:      autoscalingContext,
-		startTime:               time.Now(),
-		lastScaleUpTime:         time.Now(),
-		lastScaleDownDeleteTime: time.Now(),
-		lastScaleDownFailTime:   time.Now(),
-		scaleDown:               scaleDown,
-		processors:              processors,
-		processorCallbacks:      processorCallbacks,
-		clusterStateRegistry:    clusterStateRegistry,
-		nodeInfoCache:           make(map[string]*schedulernodeinfo.NodeInfo),
-		ignoredTaints:           ignoredTaints,
+		AutoscalingContext:          autoscalingContext,
+		startTime:                   time.Now(),
+		lastScaleUpTime:             time.Now(),
+		lastScaleDownDeleteTime:     time.Now(),
+		lastScaleDownFailTime:       time.Now(),
+		lastUnregisteredRemovalTime: time.Now(),
+		scaleDown:                   scaleDown,
+		processors:                  processors,
+		processorCallbacks:          processorCallbacks,
+		clusterStateRegistry:        clusterStateRegistry,
+		nodeInfoCache:               make(map[string]*schedulernodeinfo.NodeInfo),
+		ignoredTaints:               ignoredTaints,
 	}
 }
 
@@ -309,15 +311,27 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	unregisteredNodes := a.clusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
 		klog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
-		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext,
-			a.clusterStateRegistry, currentTime, autoscalingContext.LogRecorder)
-		// There was a problem with removing unregistered nodes. Retry in the next loop.
-		if err != nil {
-			klog.Warningf("Failed to remove unregistered nodes: %v", err)
-		}
-		if removedAny {
-			klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
-			return nil
+
+		// UnregisteredNodeRemovalDelay could be optional to reduce the probability of wrong removal
+		// In delay duration, we have chance to trigger some custom behavior eg: monitor alarm (if necessary)
+		if a.lastUnregisteredRemovalTime.Add(a.UnregisteredNodeRemovalDelayAfterAttempt).After(currentTime) {
+			for _, unregisteredNode := range unregisteredNodes {
+				klog.V(4).Infof("Skipping remove unregister node: %v, lastUnregisteredRemovalTime=%s",
+					unregisteredNode.Node.Name, a.lastUnregisteredRemovalTime)
+			}
+		} else {
+			removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext,
+				a.clusterStateRegistry, currentTime, autoscalingContext.LogRecorder)
+			// Set remove unregister time
+			a.lastUnregisteredRemovalTime = currentTime
+			// There was a problem with removing unregistered nodes. Retry in the next loop.
+			if err != nil {
+				klog.Warningf("Failed to remove unregistered nodes: %v", err)
+			}
+			if removedAny {
+				klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
+				return nil
+			}
 		}
 	}
 
