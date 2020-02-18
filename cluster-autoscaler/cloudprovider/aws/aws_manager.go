@@ -196,7 +196,8 @@ func createAWSManagerInternal(
 		}
 
 		if autoScalingService == nil {
-			autoScalingService = &autoScalingWrapper{autoscaling.New(sess), map[string]string{}}
+			c := newLaunchConfigurationInstanceTypeCache()
+			autoScalingService = &autoScalingWrapper{autoscaling.New(sess), c}
 		}
 
 		if ec2Service == nil {
