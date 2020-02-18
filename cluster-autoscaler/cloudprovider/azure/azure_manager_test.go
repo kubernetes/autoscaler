@@ -40,6 +40,7 @@ const validAzureCfg = `{
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
 	"asgCacheTTL": 900,
+	"vmssCacheTTL": 60,
 	"maxDeploymentsCount": 8}`
 
 const invalidAzureCfg = `{{}"cloud": "AzurePublicCloud",}`
@@ -56,6 +57,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		AADClientID:         "fakeId",
 		AADClientSecret:     "fakeId",
 		AsgCacheTTL:         900,
+		VmssCacheTTL:        60,
 		MaxDeploymentsCount: 8,
 	}
 
@@ -165,10 +167,11 @@ func TestListScalesets(t *testing.T) {
 				azureRef: azureRef{
 					Name: vmssName,
 				},
-				minSize: 5,
-				maxSize: 50,
-				manager: manager,
-				curSize: -1,
+				minSize:           5,
+				maxSize:           50,
+				manager:           manager,
+				curSize:           -1,
+				sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
 			}},
 		},
 		{
@@ -270,10 +273,11 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		azureRef: azureRef{
 			Name: vmssName,
 		},
-		minSize: minVal,
-		maxSize: maxVal,
-		manager: manager,
-		curSize: -1,
+		minSize:           minVal,
+		maxSize:           maxVal,
+		manager:           manager,
+		curSize:           -1,
+		sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }

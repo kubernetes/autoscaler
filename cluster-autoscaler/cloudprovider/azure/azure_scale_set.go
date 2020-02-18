@@ -41,9 +41,9 @@ import (
 )
 
 var (
-	vmssSizeRefreshPeriod      = 15 * time.Second
-	vmssInstancesRefreshPeriod = 5 * time.Minute
-	vmssSizeMutex              sync.Mutex
+	defaultVmssSizeRefreshPeriod = 15 * time.Second
+	vmssInstancesRefreshPeriod   = 5 * time.Minute
+	vmssSizeMutex                sync.Mutex
 )
 
 var scaleSetStatusCache struct {
@@ -75,9 +75,10 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
-	sizeMutex       sync.Mutex
-	curSize         int64
-	lastSizeRefresh time.Time
+	sizeMutex         sync.Mutex
+	curSize           int64
+	lastSizeRefresh   time.Time
+	sizeRefreshPeriod time.Duration
 
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
@@ -94,6 +95,12 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, erro
 		maxSize: spec.MaxSize,
 		manager: az,
 		curSize: -1,
+	}
+
+	if az.config.VmssCacheTTL != 0 {
+		scaleSet.sizeRefreshPeriod = time.Duration(az.config.VmssCacheTTL) * time.Second
+	} else {
+		scaleSet.sizeRefreshPeriod = defaultVmssSizeRefreshPeriod
 	}
 
 	return scaleSet, nil
@@ -135,7 +142,7 @@ func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) 
 	scaleSetStatusCache.mutex.Lock()
 	defer scaleSetStatusCache.mutex.Unlock()
 
-	if scaleSetStatusCache.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
+	if scaleSetStatusCache.lastRefresh.Add(scaleSet.sizeRefreshPeriod).After(time.Now()) {
 		if status, exists := scaleSetStatusCache.scaleSets[scaleSet.Name]; exists {
 			return status, nil
 		}
@@ -181,7 +188,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	if scaleSet.lastSizeRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
+	if scaleSet.lastSizeRefresh.Add(scaleSet.sizeRefreshPeriod).After(time.Now()) {
 		return scaleSet.curSize, nil
 	}
 
@@ -189,7 +196,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	set, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		if isAzureRequestsThrottled(err) {
-			// Log a warning and update the size refresh time so that it would retry after next vmssSizeRefreshPeriod.
+			// Log a warning and update the size refresh time so that it would retry after next sizeRefreshPeriod.
 			klog.Warningf("getVMSSInfo() is throttled with message %v, would return the cached vmss size", err)
 			scaleSet.lastSizeRefresh = time.Now()
 			return scaleSet.curSize, nil
@@ -231,7 +238,7 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 			// Invalidate the VMSS size cache in order to fetch the size from the API.
 			scaleSet.sizeMutex.Lock()
 			defer scaleSet.sizeMutex.Unlock()
-			scaleSet.lastSizeRefresh = time.Now().Add(-1 * vmssSizeRefreshPeriod)
+			scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
 		}
 	}()
 
