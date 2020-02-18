@@ -21,16 +21,13 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
 )
 
 var (
-	defaultAsgCacheTTL = 3600 // Seconds
-	virtualMachineRE   = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
+	virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
 )
 
 type asgCache struct {
@@ -41,7 +38,7 @@ type asgCache struct {
 	interrupt          chan struct{}
 }
 
-func newAsgCache(asgCacheTTL int64) (*asgCache, error) {
+func newAsgCache() (*asgCache, error) {
 	cache := &asgCache{
 		registeredAsgs:     make([]cloudprovider.NodeGroup, 0),
 		instanceToAsg:      make(map[azureRef]cloudprovider.NodeGroup),
@@ -49,13 +46,11 @@ func newAsgCache(asgCacheTTL int64) (*asgCache, error) {
 		interrupt:          make(chan struct{}),
 	}
 
-	go wait.Until(func() {
-		cache.mutex.Lock()
-		defer cache.mutex.Unlock()
-		if err := cache.regenerate(); err != nil {
-			klog.Errorf("Error while regenerating Asg cache: %v", err)
-		}
-	}, time.Duration(asgCacheTTL)*time.Second, cache.interrupt)
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+	if err := cache.regenerate(); err != nil {
+		klog.Errorf("Error while regenerating Asg cache: %v", err)
+	}
 
 	return cache, nil
 }

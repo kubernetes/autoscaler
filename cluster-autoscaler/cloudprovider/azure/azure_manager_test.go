@@ -39,7 +39,6 @@ const validAzureCfg = `{
 	"vnetName": "fakeName",
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
-	"asgCacheTTL": 900,
 	"vmssCacheTTL": 60,
 	"maxDeploymentsCount": 8}`
 
@@ -56,7 +55,6 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		VMType:              "vmss",
 		AADClientID:         "fakeId",
 		AADClientSecret:     "fakeId",
-		AsgCacheTTL:         900,
 		VmssCacheTTL:        60,
 		MaxDeploymentsCount: 8,
 	}
