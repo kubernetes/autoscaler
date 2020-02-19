@@ -102,9 +102,6 @@ type Config struct {
 	//Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
 
-	// ASG cache TTL in seconds
-	AsgCacheTTL int64 `json:"asgCacheTTL" yaml:"asgCacheTTL"`
-
 	// VMSS metadata cache TTL in seconds, only applies for vmss type
 	VmssCacheTTL int64 `json:"vmssCacheTTL" yaml:"vmssCacheTTL"`
 
@@ -174,13 +171,6 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 			cfg.UserAssignedIdentityID = userAssignedIdentityIDFromEnv
 		}
 
-		if asgCacheTTL := os.Getenv("AZURE_ASG_CACHE_TTL"); asgCacheTTL != "" {
-			cfg.AsgCacheTTL, err = strconv.ParseInt(asgCacheTTL, 10, 0)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse AZURE_ASG_CACHE_TTL %q: %v", asgCacheTTL, err)
-			}
-		}
-
 		if vmssCacheTTL := os.Getenv("AZURE_VMSS_CACHE_TTL"); vmssCacheTTL != "" {
 			cfg.VmssCacheTTL, err = strconv.ParseInt(vmssCacheTTL, 10, 0)
 			if err != nil {
@@ -211,10 +201,6 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		}
 
 		cfg.DeploymentParameters = parameters
-	}
-
-	if cfg.AsgCacheTTL == 0 {
-		cfg.AsgCacheTTL = int64(defaultAsgCacheTTL)
 	}
 
 	if cfg.MaxDeploymentsCount == 0 {
@@ -249,7 +235,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		explicitlyConfigured: make(map[string]bool),
 	}
 
-	cache, err := newAsgCache(cfg.AsgCacheTTL)
+	cache, err := newAsgCache()
 	if err != nil {
 		return nil, err
 	}
