@@ -35,9 +35,10 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager: manager,
-		minSize: 1,
-		maxSize: 5,
+		manager:           manager,
+		minSize:           1,
+		maxSize:           5,
+		sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
 	}
 }
 
