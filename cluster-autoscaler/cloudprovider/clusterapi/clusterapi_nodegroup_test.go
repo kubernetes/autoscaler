@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -428,22 +429,12 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		switch v := (ng.scalableResource).(type) {
 		case *machineSetScalableResource:
 			testConfig.machineSet.Spec.Replicas = int32ptr(*testConfig.machineSet.Spec.Replicas + tc.targetSizeIncrement)
-			ms, err := ng.machineapiClient.MachineSets(ng.Namespace()).Update(testConfig.machineSet)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-
-			if err := controller.machineSetInformer.Informer().GetStore().Add(ms); err != nil {
+			if err := controller.machineSetInformer.Informer().GetStore().Add(newUnstructuredFromMachineSet(testConfig.machineSet)); err != nil {
 				t.Fatalf("failed to add new machine: %v", err)
 			}
 		case *machineDeploymentScalableResource:
 			testConfig.machineDeployment.Spec.Replicas = int32ptr(*testConfig.machineDeployment.Spec.Replicas + tc.targetSizeIncrement)
-			md, err := ng.machineapiClient.MachineDeployments(ng.Namespace()).Update(testConfig.machineDeployment)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(md); err != nil {
-				t.Fatalf("failed to add new machine: %v", err)
+			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(newUnstructuredFromMachineDeployment(testConfig.machineDeployment)); err != nil {
 			}
 		default:
 			t.Errorf("unexpected type: %T", v)
@@ -815,6 +806,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	})
 }
 
+func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	addDeletionTimestamp := func(t *testing.T, controller *machineController, machine *Machine) error {
 		// Simulate delete that would have happened if the
 		// Machine API controllers were running Don't actually
@@ -825,15 +817,50 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		return controller.machineInformer.Informer().GetStore().Update(newUnstructuredFromMachine(machine))
 	}
 
+	test := func(t *testing.T, testConfig *testConfig) {
+		controller, stop := mustCreateTestController(t, testConfig)
+		defer stop()
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0]
+		nodeNames, err := ng.Nodes()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(nodeNames) != len(testConfig.nodes) {
+			t.Fatalf("expected len=%v, got len=%v", len(testConfig.nodes), len(nodeNames))
+		}
+
+		sort.SliceStable(nodeNames, func(i, j int) bool {
+			return nodeNames[i].Id < nodeNames[j].Id
+		})
+
+		for i := 0; i < len(nodeNames); i++ {
+			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
+			}
+		}
+
 		// Assert that we have no DeletionTimestamp
 		for i := 7; i < len(testConfig.machines); i++ {
 			if !testConfig.machines[i].ObjectMeta.DeletionTimestamp.IsZero() {
 				t.Fatalf("unexpected DeletionTimestamp")
 			}
 		}
+
 		if err := ng.DeleteNodes(testConfig.nodes[7:]); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
+
 		for i := 7; i < len(testConfig.machines); i++ {
 			if err := addDeletionTimestamp(t, controller, testConfig.machines[i]); err != nil {
 				t.Fatalf("unexpected err: %v", err)
@@ -842,6 +869,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 				t.Fatalf("expected a DeletionTimestamp")
 			}
 		}
+
 		// TODO(frobware) We have a flaky test here because we
 		// just called Delete and Update and the next call to
 		// controller.nodeGroups() will sometimes get stale
@@ -855,7 +883,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		//
 		// Running this test with a 500ms duration I see:
 		//
-		// $ ./stress ./clusterapi.test -test.run TestNodeGroupDeleteNodesTwice -test.count 5 | ts | ts -i
+		// $ ./stress ./openshiftmachineapi.test -test.run TestNodeGroupDeleteNodesTwice -test.count 5 | ts | ts -i
 		// 00:00:05 Feb 27 14:29:36 0 runs so far, 0 failures
 		// 00:00:05 Feb 27 14:29:41 8 runs so far, 0 failures
 		// 00:00:05 Feb 27 14:29:46 16 runs so far, 0 failures
@@ -876,6 +904,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
+
 		ng = nodegroups[0]
 
 		// Attempt to delete the nodes again which verifies
@@ -889,7 +918,29 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
+
 		expectedSize := len(testConfig.machines) - len(testConfig.machines[7:])
 		if actualSize != expectedSize {
 			t.Fatalf("expected %d nodes, got %d", expectedSize, actualSize)
 		}
+	}
+
+	// Note: 10 is an upper bound for the number of nodes/replicas
+	// Going beyond 10 will break the sorting that happens in the
+	// test() function because sort.Strings() will not do natural
+	// sorting and the expected semantics in test() will fail.
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, createMachineSetTestConfig(testNamespace, 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		test(t, createMachineDeploymentTestConfig(testNamespace, 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+}
