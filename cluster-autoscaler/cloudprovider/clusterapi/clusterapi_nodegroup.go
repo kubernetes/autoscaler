@@ -89,6 +89,10 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			return nil
 		}
 
+		if actualNodeGroup == nil {
+			return fmt.Errorf("no node group found for node %q", node.Spec.ProviderID)
+		}
+
 		if actualNodeGroup.Id() != ng.Id() {
 			return fmt.Errorf("node %q doesn't belong to node group %q", node.Spec.ProviderID, ng.Id())
 		}
@@ -116,6 +120,11 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		}
 
 		machine = machine.DeepCopy()
+
+		if !machine.GetDeletionTimestamp().IsZero() {
+			// The machine for this node is already being deleted
+			continue
+		}
 
 		if machine.Annotations == nil {
 			machine.Annotations = map[string]string{}
