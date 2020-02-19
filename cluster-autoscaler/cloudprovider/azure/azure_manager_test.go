@@ -37,7 +37,8 @@ const validAzureCfg = `{
 	"vnetName": "fakeName",
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
-	"asgCacheTTL": 900}`
+	"asgCacheTTL": 900,
+	"vmssCacheTTL": 60}`
 
 const invalidAzureCfg = `{{}"cloud": "AzurePublicCloud",}`
 
@@ -53,6 +54,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		AADClientID:     "fakeId",
 		AADClientSecret: "fakeId",
 		AsgCacheTTL:     900,
+		VmssCacheTTL:    60,
 	}
 
 	assert.NoError(t, err)
