@@ -43,6 +43,8 @@ var BasicIgnoredLabels = map[string]bool{
 	apiv1.LabelHostname:                   true,
 	apiv1.LabelZoneFailureDomain:          true,
 	apiv1.LabelZoneRegion:                 true,
+	apiv1.LabelZoneFailureDomainStable:    true,
+	apiv1.LabelZoneRegionStable:           true,
 	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
 	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify "instance group" names. it's value is variable, defeating check of similar node groups
 }
