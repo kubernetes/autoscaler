@@ -116,23 +116,14 @@ func addAnnotationRequest(updateResources [][]string, kind string) patchRecord {
 	}
 
 	vpaUpdates := fmt.Sprintf("Pod resources updated by name: %s", strings.Join(requests, "; "))
-	return patchRecord{
-		"add",
-		"/metadata/annotations",
-		map[string]string{
-			"vpaUpdates": vpaUpdates,
-		},
-	}
+	return getAddAnnotationPatch(vpaAnnotationLabel, vpaUpdates)
 }
 
 func addVpaObservedContainersPatch(conetinerNames []string) patchRecord {
-	return patchRecord{
-		"add",
-		"/metadata/annotations",
-		map[string]string{
-			annotations.VpaObservedContainersLabel: strings.Join(conetinerNames, ", "),
-		},
-	}
+	return getAddAnnotationPatch(
+		annotations.VpaObservedContainersLabel,
+		strings.Join(conetinerNames, ", "),
+	)
 }
 
 func eqPatch(a, b patchRecord) bool {
@@ -196,6 +187,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addResourcesPatch(0),
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
+				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, request),
 				addVpaObservedContainersPatch([]string{}),
 			},
@@ -228,6 +220,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
+				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, request),
 				addVpaObservedContainersPatch([]string{}),
 			},
@@ -269,6 +262,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addResourcesPatch(1),
 				addRequestsPatch(1),
 				addResourceRequestPatch(1, cpu, "2"),
+				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}, {cpu}}, request),
 				addVpaObservedContainersPatch([]string{"", ""}),
 			},
@@ -295,6 +289,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addResourcesPatch(0),
 				addLimitsPatch(0),
 				addResourceLimitPatch(0, cpu, "1"),
+				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, limit),
 				addVpaObservedContainersPatch([]string{}),
 			},
@@ -327,6 +322,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
+				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, limit),
 				addVpaObservedContainersPatch([]string{}),
 			},
@@ -390,14 +386,15 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
-	if assert.Equal(t, len(patches), 4) {
+	if assert.Equal(t, len(patches), 5) {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
 		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
 		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
 		assert.False(t, eqPatch(patches[0], patches[1]))
-		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}}, request)) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}}, request)))
-		assert.True(t, eqPatch(patches[3], addVpaObservedContainersPatch([]string{})))
+		assert.True(t, eqPatch(patches[2], getAddEmptyAnnotationsPatch()))
+		assert.True(t, eqPatch(patches[3], addAnnotationRequest([][]string{{cpu, unobtanium}}, request)) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}}, request)))
+		assert.True(t, eqPatch(patches[4], addVpaObservedContainersPatch([]string{})))
 	}
 }
 
@@ -423,6 +420,7 @@ func TestGetPatchesForResourceRequest_VpaObservedContainers(t *testing.T) {
 					}
 				}`),
 			expectPatches: []patchRecord{
+				getAddEmptyAnnotationsPatch(),
 				addVpaObservedContainersPatch([]string{"test1", "test2"}),
 			},
 		},
@@ -435,6 +433,7 @@ func TestGetPatchesForResourceRequest_VpaObservedContainers(t *testing.T) {
 					}
 				}`),
 			expectPatches: []patchRecord{
+				getAddEmptyAnnotationsPatch(),
 				addVpaObservedContainersPatch([]string{}),
 			},
 		},

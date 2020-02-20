@@ -35,6 +35,10 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	vpaAnnotationLabel = "vpaUpdates"
+)
+
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
@@ -83,28 +87,34 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		patches = append(patches, newPatches...)
 		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
 	}
+
+	if pod.Annotations == nil {
+		patches = append(patches, getAddEmptyAnnotationsPatch())
+	}
 	if len(updatesAnnotation) > 0 {
 		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: %s", vpaName, strings.Join(updatesAnnotation, "; "))
-		if pod.Annotations == nil {
-			patches = append(patches, patchRecord{
-				Op:    "add",
-				Path:  "/metadata/annotations",
-				Value: map[string]string{"vpaUpdates": vpaAnnotationValue}})
-		} else {
-			patches = append(patches, patchRecord{
-				Op:    "add",
-				Path:  "/metadata/annotations/vpaUpdates",
-				Value: vpaAnnotationValue})
-		}
+		patches = append(patches, getAddAnnotationPatch(vpaAnnotationLabel, vpaAnnotationValue))
 	}
 	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(&pod)
-	patches = append(patches, patchRecord{
-		Op:    "add",
-		Path:  "/metadata/annotations",
-		Value: map[string]string{annotations.VpaObservedContainersLabel: vpaObservedContainersValue},
-	})
+	patches = append(patches, getAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue))
 
 	return patches, nil
+}
+
+func getAddEmptyAnnotationsPatch() patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  "/metadata/annotations",
+		Value: map[string]string{},
+	}
+}
+
+func getAddAnnotationPatch(annotationName, annotationValue string) patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
+		Value: annotationValue,
+	}
 }
 
 func getPatchInitializingEmptyResources(i int) patchRecord {
