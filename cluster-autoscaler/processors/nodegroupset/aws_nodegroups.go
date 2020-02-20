@@ -25,6 +25,7 @@ func IsAwsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	awsIgnoredLabels := map[string]bool{
 		"alpha.eksctl.io/instance-id":    true, // this is a label used by eksctl to identify instances.
 		"alpha.eksctl.io/nodegroup-name": true, // this is a label used by eksctl to identify "node group" names.
+		"eks.amazonaws.com/nodegroup":    true, // this is a label used by eks to identify "node group".
 		"k8s.amazonaws.com/eniConfig":    true, // this is a label used by the AWS CNI for custom networking.
 		"lifecycle":                      true, // this is a label used by the AWS for spot.
 	}
