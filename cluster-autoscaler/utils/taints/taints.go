@@ -17,11 +17,11 @@ limitations under the License.
 package taints
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 
 	"k8s.io/klog"
@@ -104,15 +104,20 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 	for _, node := range readyNodes {
 		if len(node.Spec.Taints) == 0 {
 			newReadyNodes = append(newReadyNodes, node)
+			continue
 		}
+		ready := true
 		for _, t := range node.Spec.Taints {
 			_, hasIgnoredTaint := ignoredTaints[t.Key]
-			if !hasIgnoredTaint && !strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
-				newReadyNodes = append(newReadyNodes, node)
-				continue
+			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
+				ready = false
+				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node)
+				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
+				break
 			}
-			nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node)
-			klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
+		}
+		if ready {
+			newReadyNodes = append(newReadyNodes, node)
 		}
 	}
 	// Override any node with ignored taint with its "unready" copy
