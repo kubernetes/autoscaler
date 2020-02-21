@@ -80,7 +80,7 @@ func TestCheckPredicate(t *testing.T) {
 			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
 			assert.NoError(t, err)
 
-			predicateError := predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, FakeNodeInfoForNodeName(tt.node.Name))
+			predicateError := predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)
 			if tt.expectError {
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, NotSchedulablePredicateError, predicateError.ErrorType())
@@ -149,7 +149,7 @@ func TestDebugInfo(t *testing.T) {
 	err = clusterSnapshot.AddNode(node1)
 	assert.NoError(t, err)
 
-	predicateErr := predicateChecker.CheckPredicates(clusterSnapshot, p1, FakeNodeInfoForNodeName("n1"))
+	predicateErr := predicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
 	assert.NotNil(t, predicateErr)
 	assert.Equal(t, "node(s) had taint {SomeTaint: WhyNot?}, that the pod didn't tolerate", predicateErr.Message())
 	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
