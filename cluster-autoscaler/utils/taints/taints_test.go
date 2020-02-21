@@ -132,6 +132,34 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
+		"no ignored taint, two taints": {
+			readyNodes:    1,
+			allNodes:      1,
+			ignoredTaints: map[string]bool{},
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "ReadyTainted",
+					CreationTimestamp: metav1.NewTime(time.Now()),
+				},
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:    "first-taint",
+							Value:  "myValue",
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+						{
+							Key:    "second-taint",
+							Value:  "myValue",
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+					},
+				},
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{readyCondition},
+				},
+			},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			var nodes []*apiv1.Node
@@ -142,11 +170,22 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 
+			allNodesSet := make(map[string]struct{}, len(allNodes))
 			for _, node := range allNodes {
+				_, ok := allNodesSet[node.Name]
+				assert.False(t, ok)
+				allNodesSet[node.Name] = struct{}{}
 				nodeIsReady := isReady(t, node)
 				assert.Equal(t, tc.allNodes == tc.readyNodes, nodeIsReady)
 			}
+
+			readyNodesSet := make(map[string]struct{}, len(allNodes))
 			for _, node := range readyNodes {
+				_, ok := readyNodesSet[node.Name]
+				assert.False(t, ok)
+				readyNodesSet[node.Name] = struct{}{}
+				_, ok = allNodesSet[node.Name]
+				assert.True(t, ok)
 				nodeIsReady := isReady(t, node)
 				assert.True(t, nodeIsReady)
 			}
@@ -157,7 +196,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 func TestSanitizeTaints(t *testing.T) {
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "node-sanitize-taints<",
+			Name:              "node-sanitize-taints",
 			CreationTimestamp: metav1.NewTime(time.Now()),
 		},
 		Spec: apiv1.NodeSpec{
