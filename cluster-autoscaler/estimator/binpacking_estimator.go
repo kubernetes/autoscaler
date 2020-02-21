@@ -81,7 +81,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 	for _, podInfo := range podInfos {
 		found := false
 		for _, nodeName := range newNodeNames {
-			if err := estimator.predicateChecker.CheckPredicates(estimator.clusterSnapshot, podInfo.pod, simulator.FakeNodeInfoForNodeName(nodeName)); err == nil {
+			if err := estimator.predicateChecker.CheckPredicates(estimator.clusterSnapshot, podInfo.pod, nodeName); err == nil {
 				found = true
 				if err := estimator.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
 					klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
