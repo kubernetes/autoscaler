@@ -238,12 +238,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	// Propagate cluster state to ClusterSnapshot
-	typedErr = a.initializeClusterSnapshot(allNodes, originalScheduledPods)
-	if typedErr != nil {
-		return typedErr.AddPrefix("Propagate ClusterSnapshot before scale-up")
-	}
-
 	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
 		return nil
 	}
@@ -259,6 +253,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if err != nil {
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	// Initialize cluster state to ClusterSnapshot
+	if typedErr := a.initializeClusterSnapshot(allNodes, originalScheduledPods); typedErr != nil {
+		return typedErr.AddPrefix("Initialize ClusterSnapshot")
 	}
 
 	nodeInfosForGroups, autoscalerError := core_utils.GetNodeInfosForGroups(
