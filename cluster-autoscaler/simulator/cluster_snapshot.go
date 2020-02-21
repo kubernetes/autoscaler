@@ -17,6 +17,8 @@ limitations under the License.
 package simulator
 
 import (
+	"errors"
+
 	apiv1 "k8s.io/api/core/v1"
 	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
 )
@@ -48,3 +50,5 @@ type ClusterSnapshot interface {
 	// Clear reset cluster snapshot to empty, unforked state
 	Clear()
 }
+
+var errNodeNotFound = errors.New("node not found")
