@@ -58,6 +58,7 @@ type updater struct {
 	evictionFactory              eviction.PodsEvictionRestrictionFactory
 	recommendationProcessor      vpa_api_util.RecommendationProcessor
 	evictionAdmission            priority.PodEvictionAdmission
+	priorityProcessor            priority.PriorityProcessor
 	evictionRateLimiter          *rate.Limiter
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
@@ -76,6 +77,7 @@ func NewUpdater(
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
+	priorityProcessor priority.PriorityProcessor,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -90,6 +92,7 @@ func NewUpdater(
 		recommendationProcessor:      recommendationProcessor,
 		evictionRateLimiter:          evictionRateLimiter,
 		evictionAdmission:            evictionAdmission,
+		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
@@ -212,11 +215,14 @@ func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, vpa.Status.Conditions, nil, u.recommendationProcessor)
-	recommendation := vpa.Status.Recommendation
+	priorityCalculator := priority.NewUpdatePriorityCalculator(
+		vpa,
+		nil,
+		u.recommendationProcessor,
+		u.priorityProcessor)
 
 	for _, pod := range pods {
-		priorityCalculator.AddPod(pod, recommendation, time.Now())
+		priorityCalculator.AddPod(pod, time.Now())
 	}
 
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
