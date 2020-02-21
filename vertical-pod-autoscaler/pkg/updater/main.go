@@ -25,6 +25,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/logic"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
@@ -97,6 +98,7 @@ func main() {
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		nil,
 		targetSelectorFetcher,
+		priority.NewProcessor(),
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

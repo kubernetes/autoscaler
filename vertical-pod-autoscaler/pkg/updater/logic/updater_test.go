@@ -32,6 +32,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -178,6 +179,7 @@ func testRunOnceBase(
 		selectorFetcher:              mockSelectorFetcher,
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
+		priorityProcessor:            priority.NewProcessor(),
 	}
 
 	if expectFetchCalls {
