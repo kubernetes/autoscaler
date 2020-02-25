@@ -115,7 +115,6 @@ type UtilizationInfo struct {
 func FindNodesToRemove(
 	candidates []*schedulernodeinfo.NodeInfo,
 	destinationNodes []*schedulernodeinfo.NodeInfo,
-	pods []*apiv1.Pod,
 	listers kube_util.ListerRegistry,
 	clusterSnapshot ClusterSnapshot,
 	predicateChecker PredicateChecker,
@@ -195,7 +194,7 @@ candidateloop:
 }
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
-func FindEmptyNodesToRemove(candidates []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*apiv1.Node {
+func FindEmptyNodesToRemove(candidates []*schedulernodeinfo.NodeInfo) []*apiv1.Node {
 	result := make([]*apiv1.Node, 0)
 	for _, nodeInfo := range candidates {
 		// Should block on all pods.

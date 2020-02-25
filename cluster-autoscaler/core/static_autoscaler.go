@@ -505,7 +505,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(nonExpendableScheduledPods, pdbs, currentTime)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
