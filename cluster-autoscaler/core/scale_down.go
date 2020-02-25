@@ -416,7 +416,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	sd.updateUnremovableNodes()
+	sd.updateUnremovableNodes(timestamp)
 
 	skipped := 0
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
@@ -433,13 +433,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 
 		// Skip nodes that were recently checked.
-		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
-			if unremovableTimestamp.After(timestamp) {
-				sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
-				skipped++
-				continue
-			}
-			delete(sd.unremovableNodes, node.Name)
+		if _, found := sd.unremovableNodes[node.Name]; found {
+			sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
+			skipped++
+			continue
 		}
 
 		// Skip nodes marked to be deleted, if they were marked recently.
@@ -617,19 +614,21 @@ func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo 
 // updateUnremovableNodes updates unremovableNodes map according to current
 // state of the cluster. Removes from the map nodes that are no longer in the
 // nodes list.
-func (sd *ScaleDown) updateUnremovableNodes() {
+func (sd *ScaleDown) updateUnremovableNodes(timestamp time.Time) {
 	if len(sd.unremovableNodes) <= 0 {
 		return
 	}
 	newUnremovableNodes := make(map[string]time.Time, len(sd.unremovableNodes))
-	for oldUnremovable, since := range sd.unremovableNodes {
+	for oldUnremovable, ttl := range sd.unremovableNodes {
 		if _, err := sd.context.ClusterSnapshot.NodeInfos().Get(oldUnremovable); err != nil {
 			// Not logging on error level as most likely cause is that node is no longer in the cluster.
 			klog.Infof("Can't retrieve node %s from snapshot, removing from unremovable map, err: %v", oldUnremovable, err)
 			continue
 		}
-		// Keep nodes that are still in the cluster.
-		newUnremovableNodes[oldUnremovable] = since
+		if ttl.After(timestamp) {
+			// Keep nodes that are still in the cluster and haven't expired yet.
+			newUnremovableNodes[oldUnremovable] = ttl
+		}
 	}
 	sd.unremovableNodes = newUnremovableNodes
 }
