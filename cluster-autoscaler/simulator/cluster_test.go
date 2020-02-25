@@ -264,14 +264,15 @@ func TestFindEmptyNodes(t *testing.T) {
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
 	nodes[1].AddPod(pod1)
+
 	pod2 := BuildTestPod("p2", 300, 500000)
 	pod2.Spec.NodeName = "n2"
-	nodes[2].AddPod(pod2)
 	pod2.Annotations = map[string]string{
 		types.ConfigMirrorAnnotationKey: "",
 	}
+	nodes[2].AddPod(pod2)
 
-	emptyNodes := FindEmptyNodesToRemove(nodes, []*apiv1.Pod{pod1, pod2})
+	emptyNodes := FindEmptyNodesToRemove(nodes)
 	assert.Equal(t, []*apiv1.Node{nodes[0].Node(), nodes[2].Node(), nodes[3].Node()}, emptyNodes)
 }
 
@@ -399,7 +400,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			}
 			InitializeClusterSnapshotOrDie(t, clusterSnapshot, allNodesForSnapshot, test.pods)
 			toRemove, unremovable, _, err := FindNodesToRemove(
-				test.candidates, test.allNodes, test.pods, nil,
+				test.candidates, test.allNodes, nil,
 				clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
 				tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
 			assert.NoError(t, err)
