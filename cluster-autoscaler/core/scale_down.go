@@ -779,6 +779,10 @@ func (sd *ScaleDown) TryToScaleDown(
 	}
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos, pods)
+	nodes := make([]*apiv1.Node, len(nodesWithoutMaster))
+	for i, nodeInfo := range nodesWithoutMaster {
+		nodes[i] = nodeInfo.Node()
+	}
 
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
@@ -792,11 +796,13 @@ func (sd *ScaleDown) TryToScaleDown(
 		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
-	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
+	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodes, resourceLimiter, sd.context.CloudProvider, currentTime)
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
-	for _, node := range nodesWithoutMaster {
+	for _, nodeInfo := range nodesWithoutMaster {
+		node := nodeInfo.Node()
+
 		unneededSince, found := sd.unneededNodes[node.Name]
 		if !found {
 			// Node is not unneeded.
@@ -905,7 +911,7 @@ func (sd *ScaleDown) TryToScaleDown(
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
 		candidates,
-		nodesWithoutMaster,
+		nodes,
 		pods,
 		sd.context.ListerRegistry,
 		sd.context.ClusterSnapshot,
@@ -1340,8 +1346,8 @@ const (
 	apiServerLabelValue = "kube-apiserver"
 )
 
-func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*apiv1.Node {
-	result := make([]*apiv1.Node, 0, len(nodeInfos))
+func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*schedulernodeinfo.NodeInfo {
+	result := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
 	for _, nodeInfo := range nodeInfos {
 		found := false
 		for _, pod := range nodeInfo.Pods() {
@@ -1351,7 +1357,7 @@ func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod
 			}
 		}
 		if !found {
-			result = append(result, nodeInfo.Node())
+			result = append(result, nodeInfo)
 		}
 	}
 	return result
