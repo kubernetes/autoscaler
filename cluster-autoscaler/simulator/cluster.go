@@ -278,14 +278,14 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 }
 
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
-	clusterSnaphost ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
+	clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time) error {
 
-	if err := clusterSnaphost.Fork(); err != nil {
+	if err := clusterSnapshot.Fork(); err != nil {
 		return err
 	}
 	defer func() {
-		err := clusterSnaphost.Revert()
+		err := clusterSnapshot.Revert()
 		if err != nil {
 			klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", err)
 		}
@@ -298,13 +298,13 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 	loggingQuota := glogx.PodsLoggingQuota()
 
 	tryNodeForPod := func(nodename string, pod *apiv1.Pod) bool {
-		if err := predicateChecker.CheckPredicates(clusterSnaphost, pod, nodename); err != nil {
+		if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, nodename); err != nil {
 			glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseMessage())
 			return false
 		}
 
 		klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
-		if err := clusterSnaphost.AddPod(pod, nodename); err != nil {
+		if err := clusterSnapshot.AddPod(pod, nodename); err != nil {
 			klog.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, nodename, err)
 			return false
 		}
@@ -314,9 +314,9 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 	pods = tpu.ClearTPURequests(pods)
 
-	// remove pods from clusterSnaphot first
+	// remove pods from clusterSnapshot first
 	for _, pod := range pods {
-		if err := clusterSnaphost.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
+		if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
@@ -329,17 +329,18 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 		foundPlace := false
 		targetNode := ""
+
 		loggingQuota.Reset()
 
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
-		hintedNode, hasHint := oldHints[podKey(pod)]
-		if hasHint {
+		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint {
 			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod) {
 				foundPlace = true
 				targetNode = hintedNode
 			}
 		}
+
 		if !foundPlace {
 			for nodeName := range nodes {
 				if nodeName == removedNode {
