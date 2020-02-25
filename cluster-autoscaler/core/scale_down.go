@@ -465,7 +465,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 		utilizationMap[node.Name] = utilInfo
 
-		if !sd.isNodeBelowUtilzationThreshold(node, utilInfo) {
+		if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
 			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
 			continue
@@ -600,8 +600,8 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	return nil
 }
 
-// isNodeBelowUtilzationThreshold determintes if a given node utilization is blow threshold.
-func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
+// isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
+func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
 	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
 		if utilInfo.Utilization >= sd.context.ScaleDownGpuUtilizationThreshold {
 			return false
