@@ -394,6 +394,40 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodes = make(map[string]time.Time)
 }
 
+func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo) (simulator.UnremovableReason, *simulator.UtilizationInfo) {
+	// Skip nodes that were recently checked.
+	if _, found := sd.unremovableNodes[node.Name]; found {
+		return simulator.RecentlyUnremovable, nil
+	}
+
+	// Skip nodes marked to be deleted, if they were marked recently.
+	// Old-time marked nodes are again eligible for deletion - something went wrong with them
+	// and they have not been deleted.
+	if isNodeBeingDeleted(node, timestamp) {
+		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
+		return simulator.CurrentlyBeingDeleted, nil
+	}
+
+	// Skip nodes marked with no scale down annotation
+	if hasNoScaleDownAnnotation(node) {
+		klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
+		return simulator.ScaleDownDisabledAnnotation, nil
+	}
+
+	utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel())
+	if err != nil {
+		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+	}
+	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+
+	if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
+		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+		return simulator.NotUnderutilized, &utilInfo
+	}
+
+	return simulator.NoReason, &utilInfo
+}
+
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
 // node utilization level. The computations are made only for the nodes managed by CA.
@@ -432,41 +466,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
-		// Skip nodes that were recently checked.
-		if _, found := sd.unremovableNodes[node.Name]; found {
-			sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
-			skipped++
+		reason, utilInfo := sd.checkNodeUtilization(timestamp, node, nodeInfo)
+		if utilInfo != nil {
+			utilizationMap[node.Name] = *utilInfo
+		}
+		if reason != simulator.NoReason {
+			// For logging purposes.
+			if reason == simulator.RecentlyUnremovable {
+				skipped++
+			}
+
+			sd.addUnremovableNodeReason(node, reason)
 			continue
 		}
 
-		// Skip nodes marked to be deleted, if they were marked recently.
-		// Old-time marked nodes are again eligible for deletion - something went wrong with them
-		// and they have not been deleted.
-		if isNodeBeingDeleted(node, timestamp) {
-			klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.CurrentlyBeingDeleted)
-			continue
-		}
-
-		// Skip nodes marked with no scale down annotation
-		if hasNoScaleDownAnnotation(node) {
-			klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
-			continue
-		}
-
-		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel())
-		if err != nil {
-			klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
-		}
-		klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-		utilizationMap[node.Name] = utilInfo
-
-		if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
-			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
-			continue
-		}
 		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
 	}
 
