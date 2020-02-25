@@ -1456,14 +1456,16 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 		{"n6", 8000, 6000 * utils.MiB, 0, true, "ng1"},
 		{"n7", 6000, 16000 * utils.MiB, 0, true, "ng1"},
 	}
-	nodes := make([]*apiv1.Node, len(nodeConfigs))
+	nodes := make([]*schedulernodeinfo.NodeInfo, len(nodeConfigs))
 	for i, n := range nodeConfigs {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		SetNodeReadyState(node, n.ready, time.Now())
-		nodes[i] = node
+		nodeInfo := schedulernodeinfo.NewNodeInfo()
+		nodeInfo.SetNode(node)
+		nodes[i] = nodeInfo
 	}
 
-	nodes[6].Spec.Taints = []apiv1.Taint{
+	nodes[6].Node().Spec.Taints = []apiv1.Taint{
 		{
 			Key:    deletetaint.ToBeDeletedTaint,
 			Value:  fmt.Sprint(time.Now().Unix()),
