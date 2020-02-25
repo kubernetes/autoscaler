@@ -977,7 +977,7 @@ func TestScaleDown(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(time.Now(), nil)
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
@@ -1231,7 +1231,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(time.Now(), nil)
 	assert.False(t, scaleDown.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress())
 
 	assert.NoError(t, err)
@@ -1317,7 +1317,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(time.Now(), nil)
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
@@ -1340,7 +1340,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-2*time.Hour), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err = scaleDown.TryToScaleDown(nil, time.Now())
+	scaleDownStatus, err = scaleDown.TryToScaleDown(time.Now(), nil)
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
@@ -1427,7 +1427,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(time.Now(), nil)
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
