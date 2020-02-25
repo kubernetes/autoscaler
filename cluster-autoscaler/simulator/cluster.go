@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -113,14 +112,26 @@ type UtilizationInfo struct {
 
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
-func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node, pods []*apiv1.Pod,
-	listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, maxCount int,
-	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
+func FindNodesToRemove(
+	candidates []*schedulernodeinfo.NodeInfo,
+	destinationNodes []*schedulernodeinfo.NodeInfo,
+	pods []*apiv1.Pod,
+	listers kube_util.ListerRegistry,
+	clusterSnapshot ClusterSnapshot,
+	predicateChecker PredicateChecker,
+	maxCount int,
+	fastCheck bool,
+	oldHints map[string]string,
+	usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, destinationNodes)
+	destinations := make(map[string]bool, len(destinationNodes))
+	for _, node := range destinationNodes {
+		destinations[node.Node().Name] = true
+	}
+
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
 
@@ -131,35 +142,38 @@ func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node,
 	newHints := make(map[string]string, len(oldHints))
 
 candidateloop:
-	for _, node := range candidates {
+	for _, nodeInfo := range candidates {
+		node := nodeInfo.Node()
 		klog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
 
 		var podsToRemove []*apiv1.Pod
 		var blockingPod *drain.BlockingPod
 		var err error
 
-		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-			if fastCheck {
-				podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
-					podDisruptionBudgets)
-			} else {
-				podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
-					podDisruptionBudgets)
-			}
-			if err != nil {
-				klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
-				if blockingPod != nil {
-					unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: BlockedByPod, BlockingPod: blockingPod})
-				} else {
-					unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
-				}
-				continue candidateloop
-			}
-		} else {
+		if _, found := destinations[node.Name]; !found {
 			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
 			unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
 			continue candidateloop
 		}
+
+		if fastCheck {
+			podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
+				podDisruptionBudgets)
+		} else {
+			podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
+				podDisruptionBudgets)
+		}
+
+		if err != nil {
+			klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
+			if blockingPod != nil {
+				unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: BlockedByPod, BlockingPod: blockingPod})
+			} else {
+				unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
+			}
+			continue candidateloop
+		}
+
 		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, clusterSnapshot,
 			predicateChecker, oldHints, newHints, usageTracker, timestamp)
 
@@ -181,19 +195,13 @@ candidateloop:
 }
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
-func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv1.Node {
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, candidates)
+func FindEmptyNodesToRemove(candidates []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*apiv1.Node {
 	result := make([]*apiv1.Node, 0)
-	for _, node := range candidates {
-		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-			// Should block on all pods.
-			podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
-			if err == nil && len(podsToRemove) == 0 {
-				result = append(result, node)
-			}
-		} else {
-			// Node without pods.
-			result = append(result, node)
+	for _, nodeInfo := range candidates {
+		// Should block on all pods.
+		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+		if err == nil && len(podsToRemove) == 0 {
+			result = append(result, nodeInfo.Node())
 		}
 	}
 	return result
@@ -264,7 +272,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
 }
 
-func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
+func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*schedulernodeinfo.NodeInfo,
 	clusterSnaphost ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time) error {
 
@@ -332,7 +340,8 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
 			}
 		}
 		if !foundPlace {
-			for _, node := range shuffledNodes {
+			for _, nodeInfo := range shuffledNodes {
+				node := nodeInfo.Node()
 				if node.Name == removedNode {
 					continue
 				}
@@ -353,8 +362,8 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node,
 	return nil
 }
 
-func shuffleNodes(nodes []*apiv1.Node) []*apiv1.Node {
-	result := make([]*apiv1.Node, len(nodes))
+func shuffleNodes(nodes []*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
+	result := make([]*schedulernodeinfo.NodeInfo, len(nodes))
 	copy(result, nodes)
 	rand.Shuffle(len(result), func(i, j int) {
 		result[i], result[j] = result[j], result[i]
