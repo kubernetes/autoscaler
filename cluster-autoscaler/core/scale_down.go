@@ -410,7 +410,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
 
-	currentlyUnneededNodes := make([]*apiv1.Node, 0)
+	currentlyUnneededNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0)
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 
 	// Extract cluster state from snapshot for initial analysis
@@ -492,20 +492,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
 			continue
 		}
-		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
+		currentlyUnneededNodeInfos = append(currentlyUnneededNodeInfos, nodeInfo)
 	}
 
 	emptyNodes := make(map[string]bool)
 
-	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodes, pods, len(currentlyUnneededNodes))
+	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeInfos, pods, len(currentlyUnneededNodeInfos))
 	for _, node := range emptyNodesList {
 		emptyNodes[node.Name] = true
 	}
 
-	currentlyUnneededNonEmptyNodes := make([]*apiv1.Node, 0, len(currentlyUnneededNodes))
-	for _, node := range currentlyUnneededNodes {
-		if !emptyNodes[node.Name] {
-			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
+	currentlyUnneededNonEmptyNodes := make([]*apiv1.Node, 0, len(currentlyUnneededNodeInfos))
+	for _, node := range currentlyUnneededNodeInfos {
+		if !emptyNodes[node.Node().Name] {
+			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node.Node())
 		}
 	}
 
@@ -965,8 +965,12 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
-func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int) []*apiv1.Node {
-	return sd.getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
+func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod, maxEmptyBulkDelete int) []*apiv1.Node {
+	nodes := make([]*apiv1.Node, 0, len(candidates))
+	for _, nodeInfo := range candidates {
+		nodes = append(nodes, nodeInfo.Node())
+	}
+	return sd.getEmptyNodes(nodes, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
