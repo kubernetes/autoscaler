@@ -763,12 +763,17 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget,
+func (sd *ScaleDown) TryToScaleDown(
+	allNodes []*apiv1.Node,
+	pods []*apiv1.Pod,
+	pdbs []*policyv1.PodDisruptionBudget,
 	currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
 	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
+
 	nodesWithoutMaster := filterOutMasters(allNodes, pods)
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
@@ -787,75 +792,79 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
 	for _, node := range nodesWithoutMaster {
-		if val, found := sd.unneededNodes[node.Name]; found {
-
-			klog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(val).String())
-
-			// Check if node is marked with no scale down annotation.
-			if hasNoScaleDownAnnotation(node) {
-				klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
-				sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
-				continue
-			}
-
-			ready, _, _ := kube_util.GetReadinessState(node)
-			readinessMap[node.Name] = ready
-
-			// Check how long the node was underutilized.
-			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
-				sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
-				continue
-			}
-
-			// Unready nodes may be deleted after a different time than underutilized nodes.
-			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
-				sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
-				continue
-			}
-
-			nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
-			if err != nil {
-				klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
-				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
-				continue
-			}
-			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-				klog.V(4).Infof("Skipping %s - no node group config", node.Name)
-				sd.addUnremovableNodeReason(node, simulator.NotAutoscaled)
-				continue
-			}
-
-			size, found := nodeGroupSize[nodeGroup.Id()]
-			if !found {
-				klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
-				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
-				continue
-			}
-
-			deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
-			if size-deletionsInProgress <= nodeGroup.MinSize() {
-				klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
-				sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
-				continue
-			}
-
-			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
-			if err != nil {
-				klog.Errorf("Error getting node resources: %v", err)
-				sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
-				continue
-			}
-
-			checkResult := scaleDownResourcesLeft.checkScaleDownDeltaWithinLimits(scaleDownResourcesDelta)
-			if checkResult.exceeded {
-				klog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
-				sd.addUnremovableNodeReason(node, simulator.MinimalResourceLimitExceeded)
-				continue
-			}
-
-			candidates = append(candidates, node)
-			candidateNodeGroups[node.Name] = nodeGroup
+		unneededSince, found := sd.unneededNodes[node.Name]
+		if !found {
+			// Node is not unneeded.
+			continue
 		}
+
+		klog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(unneededSince).String())
+
+		// Check if node is marked with no scale down annotation.
+		if hasNoScaleDownAnnotation(node) {
+			klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
+			continue
+		}
+
+		ready, _, _ := kube_util.GetReadinessState(node)
+		readinessMap[node.Name] = ready
+
+		// Check how long a ready node was underutilized.
+		if ready && !unneededSince.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
+			sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
+			continue
+		}
+
+		// Unready nodes may be deleted after a different time than underutilized nodes.
+		if !ready && !unneededSince.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
+			sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
+			continue
+		}
+
+		nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
+			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			klog.V(4).Infof("Skipping %s - no node group config", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.NotAutoscaled)
+			continue
+		}
+
+		size, found := nodeGroupSize[nodeGroup.Id()]
+		if !found {
+			klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
+			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+			continue
+		}
+
+		deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
+		if size-deletionsInProgress <= nodeGroup.MinSize() {
+			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+			sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
+			continue
+		}
+
+		scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
+		if err != nil {
+			klog.Errorf("Error getting node resources: %v", err)
+			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+			continue
+		}
+
+		checkResult := scaleDownResourcesLeft.checkScaleDownDeltaWithinLimits(scaleDownResourcesDelta)
+		if checkResult.exceeded {
+			klog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
+			sd.addUnremovableNodeReason(node, simulator.MinimalResourceLimitExceeded)
+			continue
+		}
+
+		candidates = append(candidates, node)
+		candidateNodeGroups[node.Name] = nodeGroup
+
 	}
 	if len(candidates) == 0 {
 		klog.V(1).Infof("No candidates for scale down")
