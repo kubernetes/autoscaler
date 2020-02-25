@@ -1057,8 +1057,9 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 			{"n11", 1000, 1000, 0, true, "ng1"},
 			{"n12", 1000, 1000, 0, true, "ng1"},
 		},
-		options:            defaultScaleDownOptions,
-		expectedScaleDowns: []string{"n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"},
+		options:                defaultScaleDownOptions,
+		expectedScaleDowns:     []string{"n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10", "n11", "n12"},
+		expectedScaleDownCount: 10,
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -1238,10 +1239,16 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	}
 	assert.Equal(t, expectedScaleDownResult, scaleDownStatus.Result)
 
+	expectedScaleDownCount := config.expectedScaleDownCount
+	if config.expectedScaleDownCount == 0 {
+		// For backwards compatibility.
+		expectedScaleDownCount = len(config.expectedScaleDowns)
+	}
+
 	// Check the channel (and make sure there isn't more than there should be).
 	// Report only up to 10 extra nodes found.
-	deleted := make([]string, 0, len(config.expectedScaleDowns)+10)
-	for i := 0; i < len(config.expectedScaleDowns)+10; i++ {
+	deleted := make([]string, 0, expectedScaleDownCount+10)
+	for i := 0; i < expectedScaleDownCount+10; i++ {
 		d := utils.GetStringFromChan(deletedNodes)
 		if d == utils.NothingReturned { // a closed channel yields empty value
 			break
@@ -1249,7 +1256,8 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 		deleted = append(deleted, d)
 	}
 
-	assertEqualSet(t, config.expectedScaleDowns, deleted)
+	assert.Equal(t, expectedScaleDownCount, len(deleted))
+	assert.Subset(t, config.expectedScaleDowns, deleted)
 }
 
 func TestNoScaleDownUnready(t *testing.T) {

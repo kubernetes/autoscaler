@@ -81,7 +81,8 @@ type scaleTestConfig struct {
 	nodeDeletionTracker     *NodeDeletionTracker
 	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
 
-	expectedScaleDowns []string
+	expectedScaleDowns     []string
+	expectedScaleDownCount int
 }
 
 type scaleTestResults struct {
