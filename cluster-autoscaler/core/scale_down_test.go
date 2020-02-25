@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -976,7 +977,7 @@ func TestScaleDown(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{p1, p2}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Pod{p1, p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
@@ -1035,8 +1036,9 @@ func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 			{"n2_1", 1000, 1000, 0, true, "ng2"},
 			{"n2_2", 1000, 1000, 0, true, "ng2"},
 		},
-		options:            defaultScaleDownOptions,
-		expectedScaleDowns: []string{"n1_1", "n2_1"},
+		options:                defaultScaleDownOptions,
+		expectedScaleDowns:     []string{"n1_1", "n1_2", "n2_1", "n2_2"},
+		expectedScaleDownCount: 2,
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -1088,8 +1090,9 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 			{"n3", 1000, 1000 * utils.MiB, 0, true, "ng1"},
 			{"n4", 1000, 3000 * utils.MiB, 0, true, "ng1"},
 		},
-		options:            options,
-		expectedScaleDowns: []string{"n1", "n2"},
+		options:                options,
+		expectedScaleDowns:     []string{"n1", "n2", "n3"},
+		expectedScaleDownCount: 2,
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -1117,8 +1120,9 @@ func TestScaleDownEmptyMinGpuLimitHit(t *testing.T) {
 			{"n5", 1000, 1000 * utils.MiB, 1, true, "ng1"},
 			{"n6", 1000, 1000 * utils.MiB, 1, true, "ng1"},
 		},
-		options:            options,
-		expectedScaleDowns: []string{"n1", "n2"},
+		options:                options,
+		expectedScaleDowns:     []string{"n1", "n2", "n3", "n4", "n5", "n6"},
+		expectedScaleDownCount: 2,
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -1227,7 +1231,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Pod{}, nil, time.Now())
 	assert.False(t, scaleDown.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress())
 
 	assert.NoError(t, err)
@@ -1313,7 +1317,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Pod{p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
@@ -1336,7 +1340,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-2*time.Hour), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
+	scaleDownStatus, err = scaleDown.TryToScaleDown([]*apiv1.Pod{p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
@@ -1423,7 +1427,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{p1, p2}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Pod{p1, p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
@@ -1483,11 +1487,16 @@ func TestFilterOutMasters(t *testing.T) {
 		{"n6", 2000, 8000, 0, true, ""}, // same machine type, no node group, no api server
 		{"n7", 2000, 8000, 0, true, ""}, // real master
 	}
-	nodes := make([]*apiv1.Node, len(nodeConfigs))
+	nodes := make([]*schedulernodeinfo.NodeInfo, len(nodeConfigs))
+	nodeMap := make(map[string]*schedulernodeinfo.NodeInfo, len(nodeConfigs))
 	for i, n := range nodeConfigs {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		SetNodeReadyState(node, n.ready, time.Now())
-		nodes[i] = node
+		nodeInfo := schedulernodeinfo.NewNodeInfo()
+		err := nodeInfo.SetNode(node)
+		assert.NoError(t, err)
+		nodes[i] = nodeInfo
+		nodeMap[n.name] = nodeInfo
 	}
 
 	BuildTestPodWithExtra := func(name, namespace, node string, labels map[string]string) *apiv1.Pod {
@@ -1505,6 +1514,12 @@ func TestFilterOutMasters(t *testing.T) {
 		BuildTestPodWithExtra("hidden-name", "kube-system", "n7", map[string]string{"component": "kube-apiserver"}),                                  // also a real api server
 		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n1", map[string]string{"component": "kube-apiserver-dev"}),         // wrong label
 		BuildTestPodWithExtra("custom-deployment", "custom", "n5", map[string]string{"component": "custom-component", "custom-key": "custom-value"}), // unrelated pod
+	}
+
+	for _, pod := range pods {
+		if node, found := nodeMap[pod.Spec.NodeName]; found {
+			node.AddPod(pod)
+		}
 	}
 
 	withoutMasters := filterOutMasters(nodes, pods)

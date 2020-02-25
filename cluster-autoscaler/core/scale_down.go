@@ -398,7 +398,6 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
 // node utilization level. The computations are made only for the nodes managed by CA.
-// * allNodes are all the nodes processed by CA.
 // * destinationNodes are the nodes that can potentially take in any pods that are evicted because of a scale down.
 // * scaleDownCandidates are the nodes that are being considered for scale down.
 // * pods are the all scheduled pods.
@@ -764,7 +763,6 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(
-	allNodes []*apiv1.Node,
 	pods []*apiv1.Pod,
 	pdbs []*policyv1.PodDisruptionBudget,
 	currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
@@ -774,7 +772,14 @@ func (sd *ScaleDown) TryToScaleDown(
 	findNodesToRemoveDuration := time.Duration(0)
 	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
 
-	nodesWithoutMaster := filterOutMasters(allNodes, pods)
+	allNodeInfos, errSnapshot := sd.context.ClusterSnapshot.NodeInfos().List()
+	if errSnapshot != nil {
+		// This should never happen, List() returns err only because scheduler interface requires it.
+		return scaleDownStatus, errors.ToAutoscalerError(errors.InternalError, errSnapshot)
+	}
+
+	nodesWithoutMaster := filterOutMasters(allNodeInfos, pods)
+
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
@@ -866,6 +871,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		candidateNodeGroups[node.Name] = nodeGroup
 
 	}
+
 	if len(candidates) == 0 {
 		klog.V(1).Infof("No candidates for scale down")
 		scaleDownStatus.Result = status.ScaleDownNoUnneeded
@@ -1334,21 +1340,19 @@ const (
 	apiServerLabelValue = "kube-apiserver"
 )
 
-func filterOutMasters(nodes []*apiv1.Node, pods []*apiv1.Pod) []*apiv1.Node {
-	masters := make(map[string]bool)
-	for _, pod := range pods {
-		if pod.Namespace == metav1.NamespaceSystem && pod.Labels[apiServerLabelKey] == apiServerLabelValue {
-			masters[pod.Spec.NodeName] = true
+func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*apiv1.Node {
+	result := make([]*apiv1.Node, 0, len(nodeInfos))
+	for _, nodeInfo := range nodeInfos {
+		found := false
+		for _, pod := range nodeInfo.Pods() {
+			if pod.Namespace == metav1.NamespaceSystem && pod.Labels[apiServerLabelKey] == apiServerLabelValue {
+				found = true
+				break
+			}
+		}
+		if !found {
+			result = append(result, nodeInfo.Node())
 		}
 	}
-
-	// if masters aren't on the list of nodes, capacity will be increased on overflowing append
-	others := make([]*apiv1.Node, 0, len(nodes)-len(masters))
-	for _, node := range nodes {
-		if !masters[node.Name] {
-			others = append(others, node)
-		}
-	}
-
-	return others
+	return result
 }
