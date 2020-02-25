@@ -411,8 +411,8 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
 
 	currentlyUnneededNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0)
-	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 
+	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 	// Extract cluster state from snapshot for initial analysis
 	pods, err := sd.context.ClusterSnapshot.Pods().List(labels.Everything())
 	if err != nil {
@@ -425,20 +425,33 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	nodeNameToNodeInfo := make(map[string]*schedulernodeinfo.NodeInfo)
+	candidateNames := make(map[string]bool, len(scaleDownCandidates))
+	for _, candidate := range scaleDownCandidates {
+		if candidate == nil {
+			// Do we need to check this?
+			klog.Errorf("Unexpected nil node in node info")
+			continue
+		}
+		candidateNames[candidate.Name] = true
+	}
+	candidateNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0, len(candidateNames))
 	for _, nodeInfo := range allNodeInfos {
-		node := nodeInfo.Node()
-		if node != nil {
-			nodeNameToNodeInfo[node.Name] = nodeInfo
+		if nodeInfo.Node() == nil {
+			// Do we need to check this?
+			klog.Errorf("Unexpected nil node in node info")
+			continue
+		}
+		if candidateNames[nodeInfo.Node().Name] {
+			candidateNodeInfos = append(candidateNodeInfos, nodeInfo)
 		}
 	}
 
-	utilizationMap := make(map[string]simulator.UtilizationInfo)
-
 	sd.updateUnremovableNodes(allNodeInfos)
+
 	// Filter out nodes that were recently checked
-	filteredNodesToCheck := make([]*apiv1.Node, 0)
-	for _, node := range scaleDownCandidates {
+	filteredNodesToCheck := make([]*schedulernodeinfo.NodeInfo, 0)
+	for _, nodeInfo := range candidateNodeInfos {
+		node := nodeInfo.Node()
 		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
 			if unremovableTimestamp.After(timestamp) {
 				sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
@@ -446,16 +459,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			}
 			delete(sd.unremovableNodes, node.Name)
 		}
-		filteredNodesToCheck = append(filteredNodesToCheck, node)
+		filteredNodesToCheck = append(filteredNodesToCheck, nodeInfo)
 	}
-	skipped := len(scaleDownCandidates) - len(filteredNodesToCheck)
+
+	skipped := len(candidateNodeInfos) - len(filteredNodesToCheck)
 	if skipped > 0 {
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 
+	utilizationMap := make(map[string]simulator.UtilizationInfo)
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	for _, node := range filteredNodesToCheck {
+	for _, nodeInfo := range filteredNodesToCheck {
+
+		node := nodeInfo.Node()
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
@@ -470,13 +487,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		if hasNoScaleDownAnnotation(node) {
 			klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
 			sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
-			continue
-		}
-
-		nodeInfo, found := nodeNameToNodeInfo[node.Name]
-		if !found {
-			klog.Errorf("Node info for %s not found", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 			continue
 		}
 
