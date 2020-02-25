@@ -167,7 +167,7 @@ type scaleDownResourcesDelta map[string]int64
 // used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
 const scaleDownLimitUnknown = math.MinInt64
 
-func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
+func computeScaleDownResourcesLeftLimits(nodes []*schedulernodeinfo.NodeInfo, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
 	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
 
 	var totalGpus map[string]int64
@@ -209,9 +209,10 @@ func computeAboveMin(total int64, min int64) int64 {
 
 }
 
-func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+func calculateScaleDownCoresMemoryTotal(nodes []*schedulernodeinfo.NodeInfo, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
-	for _, node := range nodes {
+	for _, nodeInfo := range nodes {
+		node := nodeInfo.Node()
 		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
@@ -225,7 +226,7 @@ func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time
 	return coresTotal, memoryTotal
 }
 
-func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
+func calculateScaleDownGpusTotal(nodes []*schedulernodeinfo.NodeInfo, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
 	type gpuInfo struct {
 		name  string
 		count int64
@@ -233,7 +234,8 @@ func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProv
 
 	result := make(map[string]int64)
 	ngCache := make(map[string]gpuInfo)
-	for _, node := range nodes {
+	for _, nodeInfo := range nodes {
+		node := nodeInfo.Node()
 		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
@@ -796,7 +798,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
-	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodes, resourceLimiter, sd.context.CloudProvider, currentTime)
+	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
