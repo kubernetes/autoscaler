@@ -419,6 +419,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
+
 	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
 	if err != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
@@ -448,31 +449,23 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	sd.updateUnremovableNodes(allNodeInfos)
 
-	// Filter out nodes that were recently checked
-	filteredNodesToCheck := make([]*schedulernodeinfo.NodeInfo, 0)
+	skipped := 0
+	utilizationMap := make(map[string]simulator.UtilizationInfo)
+
+	// Phase1 - look at the nodes utilization. Calculate the utilization
+	// only for the managed nodes.
 	for _, nodeInfo := range candidateNodeInfos {
 		node := nodeInfo.Node()
+
+		// Skip nodes that were recently checked.
 		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
 			if unremovableTimestamp.After(timestamp) {
 				sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
+				skipped++
 				continue
 			}
 			delete(sd.unremovableNodes, node.Name)
 		}
-		filteredNodesToCheck = append(filteredNodesToCheck, nodeInfo)
-	}
-
-	skipped := len(candidateNodeInfos) - len(filteredNodesToCheck)
-	if skipped > 0 {
-		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
-	}
-
-	utilizationMap := make(map[string]simulator.UtilizationInfo)
-	// Phase1 - look at the nodes utilization. Calculate the utilization
-	// only for the managed nodes.
-	for _, nodeInfo := range filteredNodesToCheck {
-
-		node := nodeInfo.Node()
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
@@ -505,9 +498,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		currentlyUnneededNodeInfos = append(currentlyUnneededNodeInfos, nodeInfo)
 	}
 
-	emptyNodes := make(map[string]bool)
+	if skipped > 0 {
+		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
+	}
 
 	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeInfos, pods, len(currentlyUnneededNodeInfos))
+
+	emptyNodes := make(map[string]bool)
 	for _, node := range emptyNodesList {
 		emptyNodes[node.Name] = true
 	}
@@ -582,6 +579,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	for _, node := range emptyNodesList {
 		nodesToRemove = append(nodesToRemove, simulator.NodeToBeRemoved{Node: node, PodsToReschedule: []*apiv1.Pod{}})
 	}
+
 	// Update the timestamp map.
 	result := make(map[string]time.Time)
 	unneededNodesList := make([]*apiv1.Node, 0, len(nodesToRemove))
