@@ -42,7 +42,6 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -402,25 +401,17 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // node utilization level. The computations are made only for the nodes managed by CA.
 // * destinationNodes are the nodes that can potentially take in any pods that are evicted because of a scale down.
 // * scaleDownCandidates are the nodes that are being considered for scale down.
-// * pods are the all scheduled pods.
 // * timestamp is the current timestamp.
 // * pdbs is a list of pod disruption budgets.
 func (sd *ScaleDown) UpdateUnneededNodes(
 	destinationNodes []*apiv1.Node,
 	scaleDownCandidates []*apiv1.Node,
 	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
-
-	currentlyUnneededNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0)
+	pdbs []*policyv1.PodDisruptionBudget,
+) errors.AutoscalerError {
 
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 	// Extract cluster state from snapshot for initial analysis
-	pods, err := sd.context.ClusterSnapshot.Pods().List(labels.Everything())
-	if err != nil {
-		// This should never happen, List() returns err only because scheduler interface requires it.
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
-
 	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
 	if err != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
@@ -465,6 +456,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	skipped := 0
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
+	currentlyUnneededNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0)
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
@@ -516,7 +508,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 
-	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeInfos, pods, len(currentlyUnneededNodeInfos))
+	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeInfos, len(currentlyUnneededNodeInfos))
 
 	emptyNodes := make(map[string]bool)
 	for _, node := range emptyNodesList {
@@ -537,7 +529,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
 		currentCandidates,
 		destinationNodeInfos,
-		pods,
 		nil,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
@@ -570,7 +561,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			simulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinationNodeInfos,
-				pods,
 				nil,
 				sd.context.ClusterSnapshot,
 				sd.context.PredicateChecker,
@@ -778,10 +768,7 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(
-	pods []*apiv1.Pod,
-	pdbs []*policyv1.PodDisruptionBudget,
-	currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
 
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
@@ -794,7 +781,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		return scaleDownStatus, errors.ToAutoscalerError(errors.InternalError, errSnapshot)
 	}
 
-	nodesWithoutMaster := filterOutMasters(allNodeInfos, pods)
+	nodesWithoutMaster := filterOutMasters(allNodeInfos)
 
 	candidates := make([]*schedulernodeinfo.NodeInfo, 0)
 	readinessMap := make(map[string]bool)
@@ -898,7 +885,7 @@ func (sd *ScaleDown) TryToScaleDown(
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := sd.getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
+	emptyNodes := sd.getEmptyNodes(candidates, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
 		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
@@ -923,7 +910,6 @@ func (sd *ScaleDown) TryToScaleDown(
 	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
 		candidates,
 		nodesWithoutMaster,
-		pods,
 		sd.context.ListerRegistry,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
@@ -1005,16 +991,16 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
-func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod, maxEmptyBulkDelete int) []*apiv1.Node {
-	return sd.getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
+func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []*schedulernodeinfo.NodeInfo, maxEmptyBulkDelete int) []*apiv1.Node {
+	return sd.getEmptyNodes(candidates, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
 // that can be deleted at the same time.
-func (sd *ScaleDown) getEmptyNodes(candidates []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod, maxEmptyBulkDelete int,
+func (sd *ScaleDown) getEmptyNodes(candidates []*schedulernodeinfo.NodeInfo, maxEmptyBulkDelete int,
 	resourcesLimits scaleDownResourcesLimits) []*apiv1.Node {
 
-	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
+	emptyNodes := simulator.FindEmptyNodesToRemove(candidates)
 	availabilityMap := make(map[string]int)
 	result := make([]*apiv1.Node, 0)
 	resourcesLimitsCopy := copyScaleDownResourcesLimits(resourcesLimits) // we do not want to modify input parameter
@@ -1353,7 +1339,7 @@ const (
 	apiServerLabelValue = "kube-apiserver"
 )
 
-func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo, pods []*apiv1.Pod) []*schedulernodeinfo.NodeInfo {
+func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
 	result := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
 	for _, nodeInfo := range nodeInfos {
 		found := false
