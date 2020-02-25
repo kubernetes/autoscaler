@@ -510,10 +510,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		emptyNodes[node.Name] = true
 	}
 
-	currentlyUnneededNonEmptyNodes := make([]*apiv1.Node, 0, len(currentlyUnneededNodeInfos))
+	currentlyUnneededNonEmptyNodes := make([]*schedulernodeinfo.NodeInfo, 0, len(currentlyUnneededNodeInfos))
 	for _, node := range currentlyUnneededNodeInfos {
 		if !emptyNodes[node.Node().Name] {
-			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node.Node())
+			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
 		}
 	}
 
@@ -687,15 +687,20 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 // chooseCandidates splits nodes into current candidates for scale-down and the
 // rest. Current candidates are unneeded nodes from the previous run that are
 // still in the nodes list.
-func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func (sd *ScaleDown) chooseCandidates(nodes []*schedulernodeinfo.NodeInfo) ([]*apiv1.Node, []*apiv1.Node) {
 	// Number of candidates should not be capped. We will look for nodes to remove
 	// from the whole set of nodes.
 	if sd.context.ScaleDownNonEmptyCandidatesCount <= 0 {
-		return nodes, []*apiv1.Node{}
+		candidates := make([]*apiv1.Node, len(nodes))
+		for i, node := range nodes {
+			candidates[i] = node.Node()
+		}
+		return candidates, []*apiv1.Node{}
 	}
 	currentCandidates := make([]*apiv1.Node, 0, len(sd.unneededNodesList))
 	currentNonCandidates := make([]*apiv1.Node, 0, len(nodes))
-	for _, node := range nodes {
+	for _, nodeInfo := range nodes {
+		node := nodeInfo.Node()
 		if _, found := sd.unneededNodes[node.Name]; found {
 			currentCandidates = append(currentCandidates, node)
 		} else {
