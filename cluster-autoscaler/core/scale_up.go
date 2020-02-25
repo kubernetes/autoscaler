@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -275,7 +274,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 
 	for _, eg := range podEquivalenceGroups {
 		samplePod := eg.pods[0]
-		if err := context.PredicateChecker.CheckPredicates(context.ClusterSnapshot, samplePod, simulator.FakeNodeInfoForNodeName(nodeInfo.Node().Name)); err == nil {
+		if err := context.PredicateChecker.CheckPredicates(context.ClusterSnapshot, samplePod, nodeInfo.Node().Name); err == nil {
 			// add pods to option
 			option.Pods = append(option.Pods, eg.pods...)
 			// mark pod group as (theoretically) schedulable
