@@ -1526,7 +1526,7 @@ func TestFilterOutMasters(t *testing.T) {
 
 	withoutMastersNames := make([]string, len(withoutMasters))
 	for i, n := range withoutMasters {
-		withoutMastersNames[i] = n.Name
+		withoutMastersNames[i] = n.Node().Name
 	}
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
