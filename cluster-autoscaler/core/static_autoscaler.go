@@ -423,10 +423,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	if a.ScaleDownEnabled {
-
-		// TODO(scheduler_framework migration) should we repropagate ClusterSnaphshot before scaled down?
-		// If we follow old logic it seems we should not.
-
 		pdbs, err := pdbLister.List()
 		if err != nil {
 			scaleDownStatus.Result = status.ScaleDownError
