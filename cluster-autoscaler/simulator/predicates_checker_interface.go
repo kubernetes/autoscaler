@@ -18,12 +18,10 @@ package simulator
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker interface {
-	// TODO drop "nodeInfos map[string]*scheduler_nodeinfo.NodeInfo" and check against schedulerLister
-	FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error)
+	FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error)
 	CheckPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError
 }
