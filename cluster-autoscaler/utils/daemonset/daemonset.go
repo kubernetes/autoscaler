@@ -34,8 +34,8 @@ func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []
 	// here we can use empty snapshot
 	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 
-	// add a node with pods
-	// TODO(scheduler framework migration) are we expecting any pods on passed nodeInfo?
+	// add a node with pods - node info is created by cloud provider,
+	// we don't know whether it'll have pods or not.
 	if err := clusterSnapshot.AddNodeWithPods(nodeInfo.Node(), nodeInfo.Pods()); err != nil {
 		return nil, err
 	}
