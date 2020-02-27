@@ -88,13 +88,9 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 }
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeInfos map[string]*scheduler_nodeinfo.NodeInfo) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error) {
 	if clusterSnapshot == nil {
 		return "", fmt.Errorf("ClusterSnapshot not provided")
-	}
-
-	if nodeInfos != nil {
-		klog.Errorf("clusterSnapshot and nodeInfos are mutually exclusive!!!!")
 	}
 
 	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
