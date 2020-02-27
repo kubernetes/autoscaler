@@ -369,12 +369,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	// add upcoming nodes to ClusterSnapshot
-	// TODO(scheduler_framework_migration) this should also schedule daemonsets to upcoming nodes.
 	upcomingNodes := getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups)
 	for _, upcomingNode := range upcomingNodes {
-		err = a.ClusterSnapshot.AddNode(upcomingNode)
+		err = a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), upcomingNode.Pods())
 		if err != nil {
-			klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Name, err)
+			klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Node().Name, err)
 			return errors.ToAutoscalerError(errors.InternalError, err)
 		}
 	}
@@ -760,15 +759,23 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func buildNodeForNodeTemplate(nodeTemplate *schedulernodeinfo.NodeInfo, index int) *apiv1.Node {
+func deepCopyNodeInfo(nodeTemplate *schedulernodeinfo.NodeInfo, index int) *schedulernodeinfo.NodeInfo {
 	node := nodeTemplate.Node().DeepCopy()
 	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
 	node.UID = uuid.NewUUID()
-	return node
+	nodeInfo := schedulernodeinfo.NewNodeInfo()
+	nodeInfo.SetNode(node)
+	for _, podTemplate := range nodeTemplate.Pods() {
+		pod := podTemplate.DeepCopy()
+		pod.Name = fmt.Sprintf("%s-%d", podTemplate.Name, index)
+		pod.UID = uuid.NewUUID()
+		nodeInfo.AddPod(pod)
+	}
+	return nodeInfo
 }
 
-func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulernodeinfo.NodeInfo) []*apiv1.Node {
-	upcomingNodes := make([]*apiv1.Node, 0)
+func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
+	upcomingNodes := make([]*schedulernodeinfo.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range registry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
@@ -776,8 +783,10 @@ func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos
 			continue
 		}
 		for i := 0; i < numberOfNodes; i++ {
-			// Ensure new nodes having different names because nodeName would used as a map key.
-			upcomingNodes = append(upcomingNodes, buildNodeForNodeTemplate(nodeTemplate, i))
+			// Ensure new nodes have different names because nodeName
+			// will be used as a map key. Also deep copy pods (daemonsets &
+			// any pods added by cloud provider on template).
+			upcomingNodes = append(upcomingNodes, deepCopyNodeInfo(nodeTemplate, i))
 		}
 	}
 	return upcomingNodes
