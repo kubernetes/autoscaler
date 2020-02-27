@@ -112,15 +112,15 @@ func TestFitsAnyNode(t *testing.T) {
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, p900, nil)
+	nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, p900)
 	assert.NoError(t, err)
 	assert.True(t, nodeName == "n1000" || nodeName == "n2000")
 
-	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p1900, nil)
+	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p1900)
 	assert.NoError(t, err)
 	assert.Equal(t, "n2000", nodeName)
 
-	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p2100, nil)
+	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p2100)
 	assert.Error(t, err)
 }
 
