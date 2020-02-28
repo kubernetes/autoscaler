@@ -10,6 +10,7 @@ require (
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	k8s.io/api v0.0.0-20191112020540-7f9008e52f64
