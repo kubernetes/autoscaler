@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -146,12 +147,17 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatalf("could not generate dynamic client for config")
 	}
 
-	kubeclient, err := kubernetes.NewForConfig(externalConfig)
+	kubeClient, err := kubernetes.NewForConfig(externalConfig)
 	if err != nil {
 		klog.Fatalf("create kube clientset failed: %v", err)
 	}
 
-	controller, err := newMachineController(dc, kubeclient)
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(externalConfig)
+	if err != nil {
+		klog.Fatalf("create discovery client failed: %v", err)
+	}
+
+	controller, err := newMachineController(dc, kubeClient, discoveryClient)
 	if err != nil {
 		klog.Fatal(err)
 	}
