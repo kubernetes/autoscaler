@@ -19,12 +19,14 @@ package clusterapi
 import (
 	"context"
 	"fmt"
+	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
@@ -38,7 +40,9 @@ import (
 const (
 	machineProviderIDIndex = "machineProviderIDIndex"
 	nodeProviderIDIndex    = "nodeProviderIDIndex"
-	defaultMachineAPI      = "v1alpha2.cluster.x-k8s.io"
+	defaultCAPIGroup       = "cluster.x-k8s.io"
+	// CAPIGroupEnvVar contains the environment variable name which allows overriding defaultCAPIGroup.
+	CAPIGroupEnvVar = "CAPI_GROUP"
 )
 
 // machineController watches for Nodes, Machines, MachineSets and
@@ -271,37 +275,58 @@ func (c *machineController) machinesInMachineSet(machineSet *MachineSet) ([]*Mac
 	return result, nil
 }
 
+// getCAPIGroup returns a string that specifies the group for the API.
+// It will return either the value from the
+// CAPI_GROUP environment variable, or the default value i.e cluster.x-k8s.io.
+func getCAPIGroup() string {
+	g := os.Getenv(CAPIGroupEnvVar)
+	if g == "" {
+		g = defaultCAPIGroup
+	}
+	klog.V(4).Infof("Using API Group %q", g)
+	return g
+}
+
 // newMachineController constructs a controller that watches Nodes,
 // Machines and MachineSet as they are added, updated and deleted on
 // the cluster.
 func newMachineController(
 	dynamicclient dynamic.Interface,
 	kubeclient kubeclient.Interface,
+	discoveryclient discovery.DiscoveryInterface,
 ) (*machineController, error) {
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeclient, 0)
 	informerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicclient, 0, metav1.NamespaceAll, nil)
 
-	// TODO(alberto): let environment variable to override defaultMachineAPI
-	machineDeploymentResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinedeployments.%v", defaultMachineAPI))
+	CAPIGroup := getCAPIGroup()
+	CAPIVersion, err := getAPIGroupPreferredVersion(discoveryclient, CAPIGroup)
+	if err != nil {
+		panic("CAPIVersion")
+	}
+	klog.Infof("Using version %q for API group %q", CAPIVersion, CAPIGroup)
 
-	machineSetResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinesets.%v", defaultMachineAPI))
+	machineDeploymentResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinedeployments.%v.%v", CAPIVersion, CAPIGroup))
+	if machineDeploymentResource == nil {
+		panic("MachineDeployment")
+	}
+
+	machineSetResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinesets.%v.%v", CAPIVersion, CAPIGroup))
 	if machineSetResource == nil {
 		panic("MachineSetResource")
 	}
 
-	machineResource, _ := schema.ParseResourceArg(fmt.Sprintf("machines.%v", defaultMachineAPI))
+	machineResource, _ := schema.ParseResourceArg(fmt.Sprintf("machines.%v.%v", CAPIVersion, CAPIGroup))
 	if machineResource == nil {
 		panic("machineResource")
 	}
+
 	machineInformer := informerFactory.ForResource(*machineResource)
 	machineSetInformer := informerFactory.ForResource(*machineSetResource)
-	var machineDeploymentInformer informers.GenericInformer
-
-	machineDeploymentInformer = informerFactory.ForResource(*machineDeploymentResource)
-	machineDeploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	machineDeploymentInformer := informerFactory.ForResource(*machineDeploymentResource)
 
 	machineInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 	machineSetInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	machineDeploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 
 	nodeInformer := kubeInformerFactory.Core().V1().Nodes().Informer()
 	nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{})
@@ -330,6 +355,21 @@ func newMachineController(
 		machineResource:           machineResource,
 		machineDeploymentResource: machineDeploymentResource,
 	}, nil
+}
+
+func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup string) (string, error) {
+	groupList, err := client.ServerGroups()
+	if err != nil {
+		return "", fmt.Errorf("failed to get ServerGroups: %v", err)
+	}
+
+	for _, group := range groupList.Groups {
+		if group.Name == APIGroup {
+			return group.PreferredVersion.Version, nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to find API group %q", APIGroup)
 }
 
 func (c *machineController) machineSetProviderIDs(machineSet *MachineSet) ([]string, error) {
