@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"reflect"
 	"sort"
@@ -29,8 +30,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	fakediscovery "k8s.io/client-go/discovery/fake"
 	fakedynamic "k8s.io/client-go/dynamic/fake"
 	fakekube "k8s.io/client-go/kubernetes/fake"
+	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/utils/pointer"
 )
 
@@ -52,6 +55,8 @@ type testSpec struct {
 	nodeCount               int
 	rootIsMachineDeployment bool
 }
+
+const customCAPIGroup = "custom.x-k8s.io"
 
 func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
 	t.Helper()
@@ -76,7 +81,19 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 
 	kubeclientSet := fakekube.NewSimpleClientset(nodeObjects...)
 	dynamicClientset := fakedynamic.NewSimpleDynamicClient(runtime.NewScheme(), machineObjects...)
-	controller, err := newMachineController(dynamicClientset, kubeclientSet)
+	discoveryClient := &fakediscovery.FakeDiscovery{
+		Fake: &clientgotesting.Fake{
+			Resources: []*v1.APIResourceList{
+				{
+					GroupVersion: fmt.Sprintf("%s/v1beta1", customCAPIGroup),
+				},
+				{
+					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+				},
+			},
+		},
+	}
+	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient)
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}
@@ -136,7 +153,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 
 		config.machineSet = &MachineSet{
 			TypeMeta: v1.TypeMeta{
-				APIVersion: "cluster.x-k8s.io/v1alpha2",
+				APIVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
 				Kind:       "MachineSet",
 			},
 			ObjectMeta: v1.ObjectMeta{
@@ -152,7 +169,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 		} else {
 			config.machineDeployment = &MachineDeployment{
 				TypeMeta: v1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1alpha2",
+					APIVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
 					Kind:       "MachineDeployment",
 				},
 				ObjectMeta: v1.ObjectMeta{
@@ -211,7 +228,7 @@ func makeLinkedNodeAndMachine(i int, namespace string, owner v1.OwnerReference) 
 
 	machine := &Machine{
 		TypeMeta: v1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha2",
+			APIVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
 			Kind:       "Machine",
 		},
 		ObjectMeta: v1.ObjectMeta{
@@ -989,5 +1006,123 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 		if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
 			t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 		}
+	}
+}
+
+func TestControllerGetAPIVersionGroup(t *testing.T) {
+	expected := "mygroup"
+	if err := os.Setenv(CAPIGroupEnvVar, expected); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	observed := getCAPIGroup()
+	if observed != expected {
+		t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
+	}
+
+	expected = defaultCAPIGroup
+	if err := os.Setenv(CAPIGroupEnvVar, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	observed = getCAPIGroup()
+	if observed != expected {
+		t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
+	}
+}
+
+func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
+	testConfig := createMachineDeploymentTestConfig(testNamespace, 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "1",
+	})
+	if err := os.Setenv(CAPIGroupEnvVar, customCAPIGroup); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	testConfig.machineDeployment.TypeMeta.APIVersion = fmt.Sprintf("%s/v1beta1", customCAPIGroup)
+	testConfig.machineSet.TypeMeta.APIVersion = fmt.Sprintf("%s/v1beta1", customCAPIGroup)
+	for _, machine := range testConfig.machines {
+		machine.TypeMeta.APIVersion = fmt.Sprintf("%s/v1beta1", customCAPIGroup)
+	}
+	controller, stop := mustCreateTestController(t, testConfig)
+	defer stop()
+
+	machineDeployments, err := controller.listMachineDeployments(testNamespace, labels.Everything())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if l := len(machineDeployments); l != 1 {
+		t.Fatalf("Incorrect number of MachineDeployments, expected 1, got %d", l)
+	}
+
+	machineSets, err := controller.listMachineSets(testNamespace, labels.Everything())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if l := len(machineSets); l != 1 {
+		t.Fatalf("Incorrect number of MachineSets, expected 1, got %d", l)
+	}
+
+	machines, err := controller.listMachines(testNamespace, labels.Everything())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if l := len(machines); l != 1 {
+		t.Fatalf("Incorrect number of Machines, expected 1, got %d", l)
+	}
+
+	if err := os.Unsetenv(CAPIGroupEnvVar); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestGetAPIGroupPreferredVersion(t *testing.T) {
+	testCases := []struct {
+		description      string
+		APIGroup         string
+		preferredVersion string
+		error            bool
+	}{
+		{
+			description:      "find version for default API group",
+			APIGroup:         defaultCAPIGroup,
+			preferredVersion: "v1alpha3",
+			error:            false,
+		},
+		{
+			description:      "find version for another API group",
+			APIGroup:         customCAPIGroup,
+			preferredVersion: "v1beta1",
+			error:            false,
+		},
+		{
+			description:      "API group does not exist",
+			APIGroup:         "does.not.exist",
+			preferredVersion: "",
+			error:            true,
+		},
+	}
+
+	discoveryClient := &fakediscovery.FakeDiscovery{
+		Fake: &clientgotesting.Fake{
+			Resources: []*v1.APIResourceList{
+				{
+					GroupVersion: fmt.Sprintf("%s/v1beta1", customCAPIGroup),
+				},
+				{
+					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			version, err := getAPIGroupPreferredVersion(discoveryClient, tc.APIGroup)
+			if (err != nil) != tc.error {
+				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
+			}
+			if version != tc.preferredVersion {
+				t.Errorf("expected %v, got: %v", tc.preferredVersion, version)
+			}
+		})
 	}
 }
