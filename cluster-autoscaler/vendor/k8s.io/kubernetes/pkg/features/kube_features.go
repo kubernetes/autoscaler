@@ -432,6 +432,7 @@ const (
 	// owner: @bclau
 	// alpha: v1.16
 	// beta: v1.17
+	// GA: v1.18
 	//
 	// Enables support for running container entrypoints as different usernames than their default ones.
 	WindowsRunAsUserName featuregate.Feature = "WindowsRunAsUserName"
@@ -480,6 +481,7 @@ const (
 
 	// owner: @egernst
 	// alpha: v1.16
+	// beta: v1.18
 	//
 	// Enables PodOverhead, for accounting pod overheads which are specific to a given RuntimeClass
 	PodOverhead featuregate.Feature = "PodOverhead"
@@ -503,7 +505,7 @@ const (
 	EndpointSliceProxying featuregate.Feature = "EndpointSliceProxying"
 
 	// owner: @Huang-Wei
-	// alpha: v1.16
+	// beta: v1.18
 	//
 	// Schedule pods evenly across available topology domains.
 	EvenPodsSpread featuregate.Feature = "EvenPodsSpread"
@@ -534,11 +536,31 @@ const (
 	// Enables topology aware service routing
 	ServiceTopology featuregate.Feature = "ServiceTopology"
 
+	// owner: @robscott
+	// alpha: v1.18
+	//
+	// Enables AppProtocol field for Services and Endpoints.
+	ServiceAppProtocol featuregate.Feature = "ServiceAppProtocol"
+
 	// owner: @wojtek-t
 	// alpha: v1.18
 	//
 	// Enables a feature to make secrets and configmaps data immutable.
 	ImmutableEphemeralVolumes featuregate.Feature = "ImmutableEphemeralVolumes"
+
+	// owner: @robscott
+	// beta: v1.18
+	//
+	// Enables DefaultIngressClass admission controller.
+	DefaultIngressClass featuregate.Feature = "DefaultIngressClass"
+
+	// owner: @bart0sh
+	// alpha: v1.18
+	//
+	// Enables usage of HugePages-<size> in a volume medium,
+	// e.g. emptyDir:
+	//        medium: HugePages-1Gi
+	HugePageStorageMediumSize featuregate.Feature = "HugePageStorageMediumSize"
 )
 
 func init() {
@@ -609,25 +631,28 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	TTLAfterFinished:               {Default: false, PreRelease: featuregate.Alpha},
 	KubeletPodResources:            {Default: true, PreRelease: featuregate.Beta},
 	WindowsGMSA:                    {Default: true, PreRelease: featuregate.Beta},
-	WindowsRunAsUserName:           {Default: true, PreRelease: featuregate.Beta},
+	WindowsRunAsUserName:           {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.20
 	ServiceLoadBalancerFinalizer:   {Default: true, PreRelease: featuregate.GA, LockToDefault: true},
 	LocalStorageCapacityIsolationFSQuotaMonitoring: {Default: false, PreRelease: featuregate.Alpha},
 	NonPreemptingPriority:                          {Default: false, PreRelease: featuregate.Alpha},
 	VolumePVCDataSource:                            {Default: true, PreRelease: featuregate.Beta},
-	PodOverhead:                                    {Default: false, PreRelease: featuregate.Alpha},
+	PodOverhead:                                    {Default: true, PreRelease: featuregate.Beta},
 	IPv6DualStack:                                  {Default: false, PreRelease: featuregate.Alpha},
 	EndpointSlice:                                  {Default: true, PreRelease: featuregate.Beta},
 	EndpointSliceProxying:                          {Default: false, PreRelease: featuregate.Alpha},
-	EvenPodsSpread:                                 {Default: false, PreRelease: featuregate.Alpha},
+	EvenPodsSpread:                                 {Default: true, PreRelease: featuregate.Beta},
 	StartupProbe:                                   {Default: true, PreRelease: featuregate.Beta},
 	AllowInsecureBackendProxy:                      {Default: true, PreRelease: featuregate.Beta},
 	PodDisruptionBudget:                            {Default: true, PreRelease: featuregate.Beta},
 	ServiceTopology:                                {Default: false, PreRelease: featuregate.Alpha},
+	ServiceAppProtocol:                             {Default: false, PreRelease: featuregate.Alpha},
 	ImmutableEphemeralVolumes:                      {Default: false, PreRelease: featuregate.Alpha},
+	DefaultIngressClass:                            {Default: true, PreRelease: featuregate.Beta},
+	HugePageStorageMediumSize:                      {Default: false, PreRelease: featuregate.Alpha},
 
 	// inherited features from generic apiserver, relisted here to get a conflict if it is changed
 	// unintentionally on either side:
-	genericfeatures.StreamingProxyRedirects: {Default: true, PreRelease: featuregate.Beta},
+	genericfeatures.StreamingProxyRedirects: {Default: true, PreRelease: featuregate.Deprecated},
 	genericfeatures.ValidateProxyRedirects:  {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.AdvancedAuditing:        {Default: true, PreRelease: featuregate.GA},
 	genericfeatures.DynamicAuditing:         {Default: false, PreRelease: featuregate.Alpha},
