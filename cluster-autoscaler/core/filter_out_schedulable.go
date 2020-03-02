@@ -120,7 +120,7 @@ func filterOutSchedulableByPacking(
 
 	// Bin pack
 	for _, pod := range unschedulableCandidates {
-		nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, pod, nil)
+		nodeName, err := predicateChecker.FitsAnyNode(clusterSnapshot, pod)
 		if err == nil {
 			klog.V(4).Infof("Pod %s.%s marked as unschedulable can be scheduled on node %s. Ignoring"+
 				" in scale up.", pod.Namespace, pod.Name, nodeName)
