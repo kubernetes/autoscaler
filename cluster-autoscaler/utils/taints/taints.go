@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
-	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
+	cloudproviderapi "k8s.io/cloud-provider/api"
 
 	"k8s.io/klog"
 )
@@ -42,16 +42,16 @@ type TaintKeySet map[string]bool
 var (
 	// NodeConditionTaints lists taint keys used as node conditions
 	NodeConditionTaints = TaintKeySet{
-		apiv1.TaintNodeNotReady:                 true,
-		apiv1.TaintNodeUnreachable:              true,
-		apiv1.TaintNodeUnschedulable:            true,
-		apiv1.TaintNodeMemoryPressure:           true,
-		apiv1.TaintNodeDiskPressure:             true,
-		apiv1.TaintNodeNetworkUnavailable:       true,
-		apiv1.TaintNodePIDPressure:              true,
-		schedulerapi.TaintExternalCloudProvider: true,
-		schedulerapi.TaintNodeShutdown:          true,
-		gkeNodeTerminationHandlerTaint:          true,
+		apiv1.TaintNodeNotReady:                     true,
+		apiv1.TaintNodeUnreachable:                  true,
+		apiv1.TaintNodeUnschedulable:                true,
+		apiv1.TaintNodeMemoryPressure:               true,
+		apiv1.TaintNodeDiskPressure:                 true,
+		apiv1.TaintNodeNetworkUnavailable:           true,
+		apiv1.TaintNodePIDPressure:                  true,
+		cloudproviderapi.TaintExternalCloudProvider: true,
+		cloudproviderapi.TaintNodeShutdown:          true,
+		gkeNodeTerminationHandlerTaint:              true,
 	}
 )
 
