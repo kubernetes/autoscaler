@@ -37,7 +37,6 @@ import (
 
 	"golang.org/x/crypto/pkcs12"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/klog"
 )
@@ -490,7 +489,7 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	return agentIndex, nil
 }
 
-func matchDiscoveryConfig(labels map[string]*string, configs []cloudprovider.LabelAutoDiscoveryConfig) bool {
+func matchDiscoveryConfig(labels map[string]*string, configs []labelAutoDiscoveryConfig) bool {
 	if len(configs) == 0 {
 		return false
 	}
