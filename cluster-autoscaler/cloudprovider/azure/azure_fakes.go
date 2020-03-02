@@ -258,3 +258,18 @@ func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGrou
 	deploy.Properties.Template = parameters.Properties.Template
 	return nil, nil
 }
+
+func fakeVMSSWithTags(vmssName string, tags map[string]*string) compute.VirtualMachineScaleSet {
+	skuName := "Standard_D4_v2"
+	var vmssCapacity int64 = 3
+
+	return compute.VirtualMachineScaleSet{
+		Name: &vmssName,
+		Sku: &compute.Sku{
+			Capacity: &vmssCapacity,
+			Name:     &skuName,
+		},
+		Tags: tags,
+	}
+
+}
