@@ -1,3 +1,5 @@
+// +build !providerless
+
 /*
 Copyright 2019 The Kubernetes Authors.
 
@@ -14,7 +16,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:deepcopy-gen=package
-
-// Package v1 contains scheduler API objects.
-package v1 // import "k8s.io/kubernetes/pkg/scheduler/apis/extender/v1"
+// Package cache is an implementation of Azure caches.
+package cache // import "k8s.io/legacy-cloud-providers/azure/cache"
