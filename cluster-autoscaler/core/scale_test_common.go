@@ -145,7 +145,9 @@ func NewScaleTestAutoscalingContext(
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
 	processorCallbacks processor_callbacks.ProcessorCallbacks) (context.AutoscalingContext, error) {
-	fakeRecorder := kube_record.NewFakeRecorder(5)
+	// Not enough buffer space causes the test to hang without printing any logs.
+	// This is not useful.
+	fakeRecorder := kube_record.NewFakeRecorder(100)
 	fakeLogRecorder, err := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	if err != nil {
 		return context.AutoscalingContext{}, err
