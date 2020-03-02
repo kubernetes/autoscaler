@@ -517,6 +517,22 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 			break
 		}
 	}
+
+	promoRe := regexp.MustCompile(`(?i)_promo`)
+	if promoRe.MatchString(*template.Sku.Name) {
+		if vmssType == nil {
+			// We didn't find an exact match but this is a promo type, check for matching standard
+			klog.V(1).Infof("No exact match found for %s, checking standard types", *template.Sku.Name)
+			skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
+			for k := range InstanceTypes {
+				if strings.EqualFold(k, skuName) {
+					vmssType = InstanceTypes[k]
+					break
+				}
+			}
+		}
+	}
+
 	if vmssType == nil {
 		return nil, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
 	}
