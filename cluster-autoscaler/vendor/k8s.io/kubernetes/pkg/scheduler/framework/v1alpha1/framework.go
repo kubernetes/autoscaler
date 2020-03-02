@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -199,9 +199,6 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 
 	// get needed plugins from config
 	pg := f.pluginsNeeded(plugins)
-	if len(pg) == 0 {
-		return f, nil
-	}
 
 	pluginConfig := make(map[string]*runtime.Unknown, 0)
 	for i := range args {
@@ -462,21 +459,19 @@ func (f *framework) runFilterPlugin(ctx context.Context, pl FilterPlugin, state 
 }
 
 // RunPreScorePlugins runs the set of configured pre-score plugins. If any
-// of these plugins returns any status other than "Success", the given pod is
-// rejected. The filteredNodeStatuses is the set of filtered nodes and their statuses.
+// of these plugins returns any status other than "Success", the given pod is rejected.
 func (f *framework) RunPreScorePlugins(
 	ctx context.Context,
 	state *CycleState,
 	pod *v1.Pod,
 	nodes []*v1.Node,
-	filteredNodesStatuses NodeToStatusMap,
 ) (status *Status) {
 	startTime := time.Now()
 	defer func() {
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(preScore, status.Code().String()).Observe(metrics.SinceInSeconds(startTime))
 	}()
 	for _, pl := range f.preScorePlugins {
-		status = f.runPreScorePlugin(ctx, pl, state, pod, nodes, filteredNodesStatuses)
+		status = f.runPreScorePlugin(ctx, pl, state, pod, nodes)
 		if !status.IsSuccess() {
 			msg := fmt.Sprintf("error while running %q prescore plugin for pod %q: %v", pl.Name(), pod.Name, status.Message())
 			klog.Error(msg)
@@ -487,12 +482,12 @@ func (f *framework) RunPreScorePlugins(
 	return nil
 }
 
-func (f *framework) runPreScorePlugin(ctx context.Context, pl PreScorePlugin, state *CycleState, pod *v1.Pod, nodes []*v1.Node, filteredNodesStatuses NodeToStatusMap) *Status {
+func (f *framework) runPreScorePlugin(ctx context.Context, pl PreScorePlugin, state *CycleState, pod *v1.Pod, nodes []*v1.Node) *Status {
 	if !state.ShouldRecordPluginMetrics() {
-		return pl.PreScore(ctx, state, pod, nodes, filteredNodesStatuses)
+		return pl.PreScore(ctx, state, pod, nodes)
 	}
 	startTime := time.Now()
-	status := pl.PreScore(ctx, state, pod, nodes, filteredNodesStatuses)
+	status := pl.PreScore(ctx, state, pod, nodes)
 	f.metricsRecorder.observePluginDurationAsync(preScore, pl.Name(), status, metrics.SinceInSeconds(startTime))
 	return status
 }
@@ -737,10 +732,9 @@ func (f *framework) runUnreservePlugin(ctx context.Context, pl UnreservePlugin, 
 // RunPermitPlugins runs the set of configured permit plugins. If any of these
 // plugins returns a status other than "Success" or "Wait", it does not continue
 // running the remaining plugins and returns an error. Otherwise, if any of the
-// plugins returns "Wait", then this function will block for the timeout period
-// returned by the plugin, if the time expires, then it will return an error.
-// Note that if multiple plugins asked to wait, then we wait for the minimum
-// timeout duration.
+// plugins returns "Wait", then this function will create and add waiting pod
+// to a map of currently waiting pods and return status with "Wait" code.
+// Pod will remain waiting pod for the minimum duration returned by the permit plugins.
 func (f *framework) RunPermitPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeName string) (status *Status) {
 	startTime := time.Now()
 	defer func() {
@@ -752,7 +746,7 @@ func (f *framework) RunPermitPlugins(ctx context.Context, state *CycleState, pod
 		status, timeout := f.runPermitPlugin(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
 			if status.IsUnschedulable() {
-				msg := fmt.Sprintf("rejected by %q at permit: %v", pl.Name(), status.Message())
+				msg := fmt.Sprintf("rejected pod %q by permit plugin %q: %v", pod.Name, pl.Name(), status.Message())
 				klog.V(4).Infof(msg)
 				return NewStatus(status.Code(), msg)
 			}
@@ -770,29 +764,13 @@ func (f *framework) RunPermitPlugins(ctx context.Context, state *CycleState, pod
 			}
 		}
 	}
-
-	// We now wait for the minimum duration if at least one plugin asked to
-	// wait (and no plugin rejected the pod)
 	if statusCode == Wait {
-		startTime := time.Now()
-		w := newWaitingPod(pod, pluginsWaitTime)
-		f.waitingPods.add(w)
-		defer f.waitingPods.remove(pod.UID)
-		klog.V(4).Infof("waiting for pod %q at permit", pod.Name)
-		s := <-w.s
-		metrics.PermitWaitDuration.WithLabelValues(s.Code().String()).Observe(metrics.SinceInSeconds(startTime))
-		if !s.IsSuccess() {
-			if s.IsUnschedulable() {
-				msg := fmt.Sprintf("pod %q rejected while waiting at permit: %v", pod.Name, s.Message())
-				klog.V(4).Infof(msg)
-				return NewStatus(s.Code(), msg)
-			}
-			msg := fmt.Sprintf("error received while waiting at permit for pod %q: %v", pod.Name, s.Message())
-			klog.Error(msg)
-			return NewStatus(Error, msg)
-		}
+		waitingPod := newWaitingPod(pod, pluginsWaitTime)
+		f.waitingPods.add(waitingPod)
+		msg := fmt.Sprintf("one or more plugins asked to wait and no plugin rejected pod %q", pod.Name)
+		klog.V(4).Infof(msg)
+		return NewStatus(Wait, msg)
 	}
-
 	return nil
 }
 
@@ -804,6 +782,32 @@ func (f *framework) runPermitPlugin(ctx context.Context, pl PermitPlugin, state 
 	status, timeout := pl.Permit(ctx, state, pod, nodeName)
 	f.metricsRecorder.observePluginDurationAsync(permit, pl.Name(), status, metrics.SinceInSeconds(startTime))
 	return status, timeout
+}
+
+// WaitOnPermit will block, if the pod is a waiting pod, until the waiting pod is rejected or allowed.
+func (f *framework) WaitOnPermit(ctx context.Context, pod *v1.Pod) (status *Status) {
+	waitingPod := f.waitingPods.get(pod.UID)
+	if waitingPod == nil {
+		return nil
+	}
+	defer f.waitingPods.remove(pod.UID)
+	klog.V(4).Infof("pod %q waiting on permit", pod.Name)
+
+	startTime := time.Now()
+	s := <-waitingPod.s
+	metrics.PermitWaitDuration.WithLabelValues(s.Code().String()).Observe(metrics.SinceInSeconds(startTime))
+
+	if !s.IsSuccess() {
+		if s.IsUnschedulable() {
+			msg := fmt.Sprintf("pod %q rejected while waiting on permit: %v", pod.Name, s.Message())
+			klog.V(4).Infof(msg)
+			return NewStatus(s.Code(), msg)
+		}
+		msg := fmt.Sprintf("error received while waiting on permit for pod %q: %v", pod.Name, s.Message())
+		klog.Error(msg)
+		return NewStatus(Error, msg)
+	}
+	return nil
 }
 
 // SnapshotSharedLister returns the scheduler's SharedLister of the latest NodeInfo
@@ -821,7 +825,10 @@ func (f *framework) IterateOverWaitingPods(callback func(WaitingPod)) {
 
 // GetWaitingPod returns a reference to a WaitingPod given its UID.
 func (f *framework) GetWaitingPod(uid types.UID) WaitingPod {
-	return f.waitingPods.get(uid)
+	if wp := f.waitingPods.get(uid); wp != nil {
+		return wp
+	}
+	return nil // Returning nil instead of *waitingPod(nil).
 }
 
 // RejectWaitingPod rejects a WaitingPod given its UID.

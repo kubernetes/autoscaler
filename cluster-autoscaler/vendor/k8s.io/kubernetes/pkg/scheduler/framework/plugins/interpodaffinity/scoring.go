@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
@@ -127,7 +127,7 @@ func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod
 		// For every hard pod affinity term of <existingPod>, if <pod> matches the term,
 		// increment <p.counts> for every node in the cluster with the same <term.TopologyKey>
 		// value as that of <existingPod>'s node by the constant <ipa.hardPodAffinityWeight>
-		if pl.hardPodAffinityWeight > 0 {
+		if *pl.HardPodAffinityWeight > 0 {
 			terms := existingPodAffinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution
 			// TODO: Uncomment this block when implement RequiredDuringSchedulingRequiredDuringExecution.
 			//if len(existingPodAffinity.PodAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
@@ -135,7 +135,7 @@ func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod
 			//}
 			for i := range terms {
 				term := &terms[i]
-				processedTerm, err := newWeightedAffinityTerm(existingPod, term, pl.hardPodAffinityWeight)
+				processedTerm, err := newWeightedAffinityTerm(existingPod, term, *pl.HardPodAffinityWeight)
 				if err != nil {
 					return err
 				}
@@ -172,7 +172,6 @@ func (pl *InterPodAffinity) PreScore(
 	cycleState *framework.CycleState,
 	pod *v1.Pod,
 	nodes []*v1.Node,
-	_ framework.NodeToStatusMap,
 ) *framework.Status {
 	if len(nodes) == 0 {
 		// No nodes to score.
