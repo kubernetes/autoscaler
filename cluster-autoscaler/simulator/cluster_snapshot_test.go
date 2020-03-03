@@ -81,17 +81,19 @@ func startSnapshot(t *testing.T, snapshotFactory func() ClusterSnapshot, state s
 	return snapshot
 }
 
-func TestForking(t *testing.T) {
+type modificationTestCase struct {
+	name          string
+	op            func(ClusterSnapshot)
+	state         snapshotState
+	modifiedState snapshotState
+}
+
+func validTestCases(t *testing.T) []modificationTestCase {
 	node := BuildTestNode("specialNode", 10, 100)
 	pod := BuildTestPod("specialPod", 1, 1)
 	pod.Spec.NodeName = node.Name
 
-	testCases := []struct {
-		name          string
-		op            func(ClusterSnapshot)
-		state         snapshotState
-		modifiedState snapshotState
-	}{
+	testCases := []modificationTestCase{
 		{
 			name: "add node",
 			op: func(snapshot ClusterSnapshot) {
@@ -153,6 +155,12 @@ func TestForking(t *testing.T) {
 		},
 	}
 
+	return testCases
+}
+
+func TestForking(t *testing.T) {
+	testCases := validTestCases(t)
+
 	for name, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
 			t.Run(fmt.Sprintf("%s: %s base", name, tc.name), func(t *testing.T) {
@@ -191,6 +199,28 @@ func TestForking(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, tc.state)
 
 				err := snapshot.Fork()
+				assert.NoError(t, err)
+
+				tc.op(snapshot)
+
+				err = snapshot.Commit()
+				assert.NoError(t, err)
+
+				// Modifications should be applied.
+				compareStates(t, tc.modifiedState, getSnapshotState(t, snapshot))
+			})
+			t.Run(fmt.Sprintf("%s: %s cache, fork & commit", name, tc.name), func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, tc.state)
+
+				// Allow caches to be build.
+				_, err := snapshot.Pods().List(labels.Everything())
+				assert.NoError(t, err)
+				_, err = snapshot.NodeInfos().List()
+				assert.NoError(t, err)
+				_, err = snapshot.NodeInfos().HavePodsWithAffinityList()
+				assert.NoError(t, err)
+
+				err = snapshot.Fork()
 				assert.NoError(t, err)
 
 				tc.op(snapshot)
