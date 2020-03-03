@@ -20,9 +20,7 @@ import (
 	"sort"
 	"time"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -64,7 +62,7 @@ func (filterOutSchedulablePodListProcessor) Process(
 	var unschedulablePodsToHelp []*apiv1.Pod
 
 	unschedulablePodsToHelp, err := filterOutSchedulableByPacking(unschedulablePods, context.ClusterSnapshot,
-		context.PredicateChecker, context.ExpendablePodsPriorityCutoff)
+		context.PredicateChecker)
 
 	if err != nil {
 		return nil, err
@@ -91,29 +89,12 @@ func (filterOutSchedulablePodListProcessor) CleanUp() {
 func filterOutSchedulableByPacking(
 	unschedulableCandidates []*apiv1.Pod,
 	clusterSnapshot simulator.ClusterSnapshot,
-	predicateChecker simulator.PredicateChecker,
-	expendablePodsPriorityCutoff int) ([]*apiv1.Pod, error) {
-
-	allScheduled, err := clusterSnapshot.Pods().List(labels.Everything())
-	if err != nil {
-		return nil, err
-	}
+	predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
 
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return moreImportantPod(unschedulableCandidates[i], unschedulableCandidates[j])
 	})
-
-	// Remove all expendable pods snapshot
-	// TODO(scheduler_framework_integration) distinguish move to separate pod list processor
-	for _, pod := range allScheduled {
-		if utils.IsExpendablePod(pod, expendablePodsPriorityCutoff) {
-			klog.V(4).Infof("Removing expandable pod %s.%s", pod.Namespace, pod.Name)
-			if err := clusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
-				return nil, err
-			}
-		}
-	}
 
 	// Pods which remain unschedulable
 	var unschedulablePods []*apiv1.Pod

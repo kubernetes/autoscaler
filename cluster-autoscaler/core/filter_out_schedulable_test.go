@@ -45,10 +45,6 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 	scheduledPod1.Spec.NodeName = "node1"
 	scheduledPod2 := BuildTestPod("s2", 1500, 200000)
 	scheduledPod2.Spec.NodeName = "node1"
-	scheduledPod3 := BuildTestPod("s3", 4000, 200000)
-	scheduledPod3.Spec.NodeName = "node1"
-	var priority1 int32 = 1
-	scheduledPod3.Spec.Priority = &priority1
 
 	podWaitingForPreemption := BuildTestPod("w1", 1500, 200000)
 	var priority100 int32 = 100
@@ -72,7 +68,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 		{
 			name:                   "scenario 1",
 			nodes:                  []*apiv1.Node{node},
-			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod3},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1},
 			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
 			expectedPendingPods:    []*apiv1.Pod{p2_1, p2_2, p3_2},
 			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, p1, p3_1},
@@ -80,7 +76,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 		{
 			name:                   "scenario 2",
 			nodes:                  []*apiv1.Node{node},
-			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod2},
 			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
 			expectedPendingPods:    []*apiv1.Pod{p1, p2_1, p2_2, p3_2},
 			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, scheduledPod2, p3_1},
@@ -88,7 +84,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 		{
 			name:                   "scenario 3",
 			nodes:                  []*apiv1.Node{node},
-			scheduledPods:          []*apiv1.Pod{scheduledPod1, scheduledPod3},
+			scheduledPods:          []*apiv1.Pod{scheduledPod1},
 			pendingPods:            []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2, p4},
 			expectedPendingPods:    []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2},
 			expectedPodsInSnapshot: []*apiv1.Pod{scheduledPod1, p4},
@@ -109,7 +105,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			stillPendingPods, err := filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker, 10)
+			stillPendingPods, err := filterOutSchedulableByPacking(tt.pendingPods, clusterSnapshot, predicateChecker)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, stillPendingPods, tt.expectedPendingPods, "pending pods differ")
 
@@ -203,7 +199,7 @@ func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					if stillPending, err := filterOutSchedulableByPacking(pendingPods, clusterSnapshot, predicateChecker, 10); err != nil {
+					if stillPending, err := filterOutSchedulableByPacking(pendingPods, clusterSnapshot, predicateChecker); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)

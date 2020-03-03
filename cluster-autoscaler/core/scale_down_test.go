@@ -44,6 +44,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	"k8s.io/klog"
 
 	"strconv"
 
@@ -51,7 +52,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/klog"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -130,7 +130,6 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	options := config.AutoscalingOptions{
 		ScaleDownUtilizationThreshold: 0.35,
-		ExpendablePodsPriorityCutoff:  10,
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
@@ -266,54 +265,37 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	assert.Equal(t, 3, len(sd.nodeUtilizationMap))
 }
 
-func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
+func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	var autoscalererr autoscaler_errors.AutoscalerError
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 	var priority100 int32 = 100
-	var priority1 int32 = 1
 
 	p1 := BuildTestPod("p1", 600, 0)
 	p1.OwnerReferences = ownerRef
 	p1.Spec.Priority = &priority100
 	p1.Status.NominatedNodeName = "n1"
 
-	p2 := BuildTestPod("p2", 400, 0)
+	p2 := BuildTestPod("p2", 100, 0)
 	p2.OwnerReferences = ownerRef
 	p2.Spec.NodeName = "n2"
-	p2.Spec.Priority = &priority1
 
 	p3 := BuildTestPod("p3", 100, 0)
 	p3.OwnerReferences = ownerRef
-	p3.Spec.NodeName = "n2"
 	p3.Spec.Priority = &priority100
+	p3.Status.NominatedNodeName = "n2"
 
-	p4 := BuildTestPod("p4", 100, 0)
+	p4 := BuildTestPod("p4", 1200, 0)
 	p4.OwnerReferences = ownerRef
 	p4.Spec.Priority = &priority100
-	p4.Status.NominatedNodeName = "n2"
-
-	p5 := BuildTestPod("p5", 400, 0)
-	p5.OwnerReferences = ownerRef
-	p5.Spec.NodeName = "n3"
-	p5.Spec.Priority = &priority1
-
-	p6 := BuildTestPod("p6", 400, 0)
-	p6.OwnerReferences = ownerRef
-	p6.Spec.NodeName = "n3"
-	p6.Spec.Priority = &priority1
-
-	p7 := BuildTestPod("p7", 1200, 0)
-	p7.OwnerReferences = ownerRef
-	p7.Spec.Priority = &priority100
-	p7.Status.NominatedNodeName = "n4"
+	p4.Status.NominatedNodeName = "n4"
 
 	// Node with pod waiting for lower priority pod preemption, highly utilized. Can't be deleted.
 	n1 := BuildTestNode("n1", 1000, 10)
-	// Node with big expendable pod and two small non expendable pods that can be moved.
+	// Node with two small pods that can be moved.
 	n2 := BuildTestNode("n2", 1000, 10)
-	// Pod with two expendable pods.
+	// Node without pods.
 	n3 := BuildTestNode("n3", 1000, 10)
 	// Node with big pod waiting for lower priority pod preemption. Can't be deleted.
 	n4 := BuildTestNode("n4", 10000, 10)
@@ -332,7 +314,6 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 
 	options := config.AutoscalingOptions{
 		ScaleDownUtilizationThreshold: 0.35,
-		ExpendablePodsPriorityCutoff:  10,
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
 	assert.NoError(t, err)
@@ -341,7 +322,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	sd := NewScaleDown(&context, clusterStateRegistry)
 
 	allNodes := []*apiv1.Node{n1, n2, n3, n4}
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4, p5, p6, p7})
+	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
 	assert.Equal(t, 2, len(sd.unneededNodes))
@@ -350,8 +331,8 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	assert.True(t, found)
 	_, found = sd.unneededNodes["n3"]
 	assert.True(t, found)
+	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
-	assert.Contains(t, sd.podLocationHints, p4.Namespace+"/"+p4.Name)
 	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 }
 
@@ -936,17 +917,12 @@ func TestScaleDown(t *testing.T) {
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "batch/v1", "")
 
 	p2 := BuildTestPod("p2", 800, 0)
-	var priority int32 = 1
-	p2.Spec.Priority = &priority
-
-	p3 := BuildTestPod("p3", 800, 0)
 
 	p1.Spec.NodeName = "n1"
-	p2.Spec.NodeName = "n1"
-	p3.Spec.NodeName = "n2"
+	p2.Spec.NodeName = "n2"
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2, *p3}}, nil
+		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2}}, nil
 	})
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
@@ -986,7 +962,6 @@ func TestScaleDown(t *testing.T) {
 		ScaleDownUtilizationThreshold: 0.5,
 		ScaleDownUnneededTime:         time.Minute,
 		MaxGracefulTerminationSec:     60,
-		ExpendablePodsPriorityCutoff:  10,
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
@@ -998,10 +973,10 @@ func TestScaleDown(t *testing.T) {
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
-	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2, p3})
+	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p1, p2})
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
-	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{p1, p2, p3}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{p1, p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
