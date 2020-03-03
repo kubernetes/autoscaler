@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMoreThen50Groups(t *testing.T) {
@@ -67,4 +68,17 @@ func TestMoreThen50Groups(t *testing.T) {
 	assert.Equal(t, len(asgs), 2)
 	assert.Equal(t, *asgs[0].AutoScalingGroupName, "asg-1")
 	assert.Equal(t, *asgs[1].AutoScalingGroupName, "asg-2")
+}
+
+func TestLaunchConfigurationCache(t *testing.T) {
+	c := newLaunchConfigurationInstanceTypeCache()
+	err := c.Add(instanceTypeCachedObject{
+		name:         "123",
+		instanceType: "t2.medium",
+	})
+	require.NoError(t, err)
+	obj, ok, err := c.GetByKey("123")
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "t2.medium", obj.(instanceTypeCachedObject).instanceType)
 }
