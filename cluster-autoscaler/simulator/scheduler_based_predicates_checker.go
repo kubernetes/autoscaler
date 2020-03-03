@@ -95,13 +95,17 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnap
 
 	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
 	if err != nil {
-		// TODO(scheduler_framework_integration) distinguish from internal error and predicate error
+		// This should never happen.
+		//
+		// Scheduler requires interface returning error, but no implementation
+		// of ClusterSnapshot ever does it.
 		klog.Errorf("Error obtaining nodeInfos from schedulerLister")
 		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
 	}
 
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
+
 	state := scheduler_framework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
