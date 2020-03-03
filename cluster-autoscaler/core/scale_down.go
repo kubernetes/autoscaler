@@ -433,20 +433,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 	}
 
-	// TODO(scheduler_framework migration) We should have already remove those from cluster snapshot.
-	// Validate if that is actually needed. It is needed for tests for sure as those are testing UpdateUnneededNodes in
-	// separation.
-	var nonExpendablePods []*apiv1.Pod
-	for _, pod := range pods {
-		if core_utils.IsExpendablePod(pod, sd.context.ExpendablePodsPriorityCutoff) {
-			if err := sd.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
-				klog.Errorf("Could not remove expendable pod %s/%s from ClusterSnaphshot; %v", pod.Namespace, pod.Name, err)
-			}
-		} else {
-			nonExpendablePods = append(nonExpendablePods, pod)
-		}
-	}
-
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
 
 	sd.updateUnremovableNodes(allNodeInfos)
@@ -530,7 +516,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
 		currentCandidates,
 		destinationNodes,
-		nonExpendablePods,
+		pods,
 		nil,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
@@ -563,7 +549,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			simulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinationNodes,
-				nonExpendablePods,
+				pods,
 				nil,
 				sd.context.ClusterSnapshot,
 				sd.context.PredicateChecker,
@@ -892,13 +878,12 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	}
 
 	findNodesToRemoveStart := time.Now()
-	// Only scheduled non expendable pods are taken into account and have to be moved.
-	nonExpendablePods := core_utils.FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
+
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
 		candidates,
 		nodesWithoutMaster,
-		nonExpendablePods,
+		pods,
 		sd.context.ListerRegistry,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
