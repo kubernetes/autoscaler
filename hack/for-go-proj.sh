@@ -64,3 +64,8 @@ for project_name in ${PROJECT_NAMES[*]}; do
     esac
   )
 done;
+
+if [ "${CMD}" = "build" ] || [ "${CMD}" == "test" ]; then
+  cd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
+  go test -mod vendor -run=None ./...
+fi
