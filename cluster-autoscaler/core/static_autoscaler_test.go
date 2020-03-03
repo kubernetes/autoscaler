@@ -367,7 +367,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		ScaleDownUnreadyTime:             time.Minute,
 		ScaleDownUnneededTime:            time.Minute,
 		NodeAutoprovisioningEnabled:      true,
-		MaxAutoprovisionedNodeGroupCount: 10, // Pods with null priority are always non expendable. Test if it works.
+		MaxAutoprovisionedNodeGroupCount: 10,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
