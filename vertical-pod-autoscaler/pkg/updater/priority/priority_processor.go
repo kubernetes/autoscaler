@@ -29,7 +29,7 @@ import (
 // PriorityProcessor calculates priority for pod updates.
 type PriorityProcessor interface {
 	GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
-		recommendation *vpa_types.RecommendedPodResources) podPriority
+		recommendation *vpa_types.RecommendedPodResources) PodPriority
 }
 
 // NewProcessor creates a new default PriorityProcessor.
@@ -41,7 +41,7 @@ type defaultPriorityProcessor struct {
 }
 
 func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.VerticalPodAutoscaler,
-	recommendation *vpa_types.RecommendedPodResources) podPriority {
+	recommendation *vpa_types.RecommendedPodResources) PodPriority {
 	outsideRecommendedRange := false
 	scaleUp := false
 	// Sum of requests over all containers, per resource type.
@@ -89,9 +89,9 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
-	return podPriority{
-		outsideRecommendedRange: outsideRecommendedRange,
-		scaleUp:                 scaleUp,
-		resourceDiff:            resourceDiff,
+	return PodPriority{
+		OutsideRecommendedRange: outsideRecommendedRange,
+		ScaleUp:                 scaleUp,
+		ResourceDiff:            resourceDiff,
 	}
 }
