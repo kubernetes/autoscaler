@@ -34,43 +34,43 @@ func TestGetUpdatePriority(t *testing.T) {
 		name         string
 		pod          *corev1.Pod
 		vpa          *vpa_types.VerticalPodAutoscaler
-		expectedPrio podPriority
+		expectedPrio PodPriority
 	}{
 		{
 			name: "simple scale up",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            4.0,
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            4.0,
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "simple scale down",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            0.5,
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.5,
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "no resource diff",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            0.0,
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.0,
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "scale up on milliquanitites",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "10m", "")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("900m", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            89.0,
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            89.0,
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "scale up outside recommended range",
@@ -79,10 +79,10 @@ func TestGetUpdatePriority(t *testing.T) {
 				WithTarget("10", "").
 				WithLowerBound("6", "").
 				WithUpperBound("14", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: true,
-				resourceDiff:            1.5,
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            1.5,
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "scale down outside recommended range",
@@ -91,46 +91,46 @@ func TestGetUpdatePriority(t *testing.T) {
 				WithTarget("2", "").
 				WithLowerBound("1", "").
 				WithUpperBound("3", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: true,
-				resourceDiff:            0.75,
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            0.75,
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "scale up with multiple quantities",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            4.0,
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            4.0,
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple resources, both scale up",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "3", "10M")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("6", "20M").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            1.0 + 1.0, // summed relative diffs for resources
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            1.0 + 1.0, // summed relative diffs for resources
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple resources, only one scale up",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "20M").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            1.5 + 0.0, // summed relative diffs for resources
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            1.5 + 0.0, // summed relative diffs for resources
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple resources, both scale down",
 			pod:  test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "20M")).Get(),
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "10M").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            0.5 + 0.5, // summed relative diffs for resources
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.5 + 0.5, // summed relative diffs for resources
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "multiple resources, one outside recommended range",
@@ -139,10 +139,10 @@ func TestGetUpdatePriority(t *testing.T) {
 				WithTarget("2", "10M").
 				WithLowerBound("1", "5M").
 				WithUpperBound("3", "30M").Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: true,
-				resourceDiff:            0.5 + 0.5, // summed relative diffs for resources
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            0.5 + 0.5, // summed relative diffs for resources
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "multiple containers, both scale up",
@@ -153,10 +153,10 @@ func TestGetUpdatePriority(t *testing.T) {
 				test.Recommendation().
 					WithContainer("test-container-2").
 					WithTarget("8", "").GetContainerResources()).Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            3.0, // relative diff between summed requests and summed recommendations
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            3.0, // relative diff between summed requests and summed recommendations
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple containers, both scale down",
@@ -167,10 +167,10 @@ func TestGetUpdatePriority(t *testing.T) {
 				test.Recommendation().
 					WithContainer("test-container-2").
 					WithTarget("2", "").GetContainerResources()).Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
-				resourceDiff:            0.7, // relative diff between summed requests and summed recommendations
-				scaleUp:                 false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.7, // relative diff between summed requests and summed recommendations
+				ScaleUp:                 false,
 			},
 		}, {
 			name: "multiple containers, both scale up, one outside range",
@@ -184,10 +184,10 @@ func TestGetUpdatePriority(t *testing.T) {
 					WithTarget("8", "").
 					WithLowerBound("3", "").
 					WithUpperBound("10", "").GetContainerResources()).Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: true,
-				resourceDiff:            3.0, // relative diff between summed requests and summed recommendations
-				scaleUp:                 true,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            3.0, // relative diff between summed requests and summed recommendations
+				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple containers, multiple resources",
@@ -201,11 +201,11 @@ func TestGetUpdatePriority(t *testing.T) {
 				test.Recommendation().
 					WithContainer("test-container-2").
 					WithTarget("7", "30M").GetContainerResources()).Get(),
-			expectedPrio: podPriority{
-				outsideRecommendedRange: false,
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
 				// relative diff between summed requests and summed recommendations, summed over resources
-				resourceDiff: 0.5 + 0.25,
-				scaleUp:      true,
+				ResourceDiff: 0.5 + 0.25,
+				ScaleUp:      true,
 			},
 		},
 	}
@@ -281,32 +281,32 @@ func TestGetUpdatePriority_VpaObservedContainers(t *testing.T) {
 			// and container resource recommendations. Containers not listed
 			// in an existing vpaObservedContainers annotations shouldn't be taken
 			// into account during calculations.
-			assert.InDelta(t, result.resourceDiff, tc.want, 0.0001)
+			assert.InDelta(t, result.ResourceDiff, tc.want, 0.0001)
 		})
 	}
 }
 
 type fakePriorityProcessor struct {
-	priorities map[string]podPriority
+	priorities map[string]PodPriority
 }
 
 // NewFakeProcessor returns a fake processor for testing that can be initialized
 // with a map from pod name to priority expected to be returned.
-func NewFakeProcessor(priorities map[string]podPriority) PriorityProcessor {
+func NewFakeProcessor(priorities map[string]PodPriority) PriorityProcessor {
 	return &fakePriorityProcessor{
 		priorities: priorities,
 	}
 }
 
 func (f *fakePriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
-	recommendation *vpa_types.RecommendedPodResources) podPriority {
+	recommendation *vpa_types.RecommendedPodResources) PodPriority {
 	prio, ok := f.priorities[pod.Name]
 	if !ok {
 		panic(fmt.Sprintf("Unexpected pod name: %v", pod.Name))
 	}
-	return podPriority{
-		scaleUp:                 prio.scaleUp,
-		resourceDiff:            prio.resourceDiff,
-		outsideRecommendedRange: prio.outsideRecommendedRange,
+	return PodPriority{
+		ScaleUp:                 prio.ScaleUp,
+		ResourceDiff:            prio.ResourceDiff,
+		OutsideRecommendedRange: prio.OutsideRecommendedRange,
 	}
 }

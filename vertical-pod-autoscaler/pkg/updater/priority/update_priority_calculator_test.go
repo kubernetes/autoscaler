@@ -44,11 +44,11 @@ func TestSortPriority(t *testing.T) {
 
 	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {resourceDiff: 4.0},
-		"POD2": {resourceDiff: 1.5},
-		"POD3": {resourceDiff: 9.0},
-		"POD4": {resourceDiff: 2.33},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ResourceDiff: 4.0},
+		"POD2": {ResourceDiff: 1.5},
+		"POD3": {ResourceDiff: 9.0},
+		"POD4": {ResourceDiff: 2.33},
 	})
 	calculator := NewUpdatePriorityCalculator(vpa, nil, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
@@ -69,10 +69,10 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 
 	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("5", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {scaleUp: true, resourceDiff: 0.25},
-		"POD2": {scaleUp: false, resourceDiff: 0.25},
-		"POD3": {scaleUp: false, resourceDiff: 0.5},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
+		"POD2": {ScaleUp: false, ResourceDiff: 0.25},
+		"POD3": {ScaleUp: false, ResourceDiff: 0.5},
 	})
 	calculator := NewUpdatePriorityCalculator(vpa, nil, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
@@ -93,8 +93,8 @@ func TestUpdateNotRequired(t *testing.T) {
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("4", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{"POD1": {
-		resourceDiff: 0.0,
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{"POD1": {
+		ResourceDiff: 0.0,
 	}})
 	calculator := NewUpdatePriorityCalculator(vpa, nil, &test.FakeRecommendationProcessor{},
 		priorityProcessor)
@@ -115,8 +115,8 @@ func TestUseProcessor(t *testing.T) {
 	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("5", "5M").Get()
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {resourceDiff: 0.0},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ResourceDiff: 0.0},
 	})
 	calculator := NewUpdatePriorityCalculator(
 		vpa, nil, recommendationProcessor, priorityProcessor)
@@ -145,10 +145,10 @@ func TestUpdateLonglivedPods(t *testing.T) {
 		WithLowerBound("1", "").
 		WithUpperBound("6", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {outsideRecommendedRange: false, scaleUp: true, resourceDiff: 0.25},
-		"POD2": {outsideRecommendedRange: false, scaleUp: true, resourceDiff: 4.0},
-		"POD3": {outsideRecommendedRange: true, scaleUp: false, resourceDiff: 0.25},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.25},
+		"POD2": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 4.0},
+		"POD3": {OutsideRecommendedRange: true, ScaleUp: false, ResourceDiff: 0.25},
 	})
 
 	calculator := NewUpdatePriorityCalculator(
@@ -179,10 +179,10 @@ func TestUpdateShortlivedPods(t *testing.T) {
 		WithLowerBound("1", "").
 		WithUpperBound("6", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {outsideRecommendedRange: false, scaleUp: true, resourceDiff: 0.25},
-		"POD2": {outsideRecommendedRange: false, scaleUp: true, resourceDiff: 0.0},
-		"POD3": {outsideRecommendedRange: true, scaleUp: false, resourceDiff: 0.9},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.25},
+		"POD2": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.0},
+		"POD3": {OutsideRecommendedRange: true, ScaleUp: false, ResourceDiff: 0.9},
 	})
 
 	calculator := NewUpdatePriorityCalculator(
@@ -221,8 +221,8 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 		WithLowerBound("1", "").
 		WithUpperBound("6", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {scaleUp: true, resourceDiff: 0.25},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
 	})
 
 	calculator := NewUpdatePriorityCalculator(
@@ -257,8 +257,8 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 		WithLowerBound("2", "5Gi").
 		WithUpperBound("5", "10Gi").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {scaleUp: true, resourceDiff: 0.0},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.0},
 	})
 
 	calculator := NewUpdatePriorityCalculator(
@@ -293,8 +293,8 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 		WithLowerBound("1", "").
 		WithUpperBound("6", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {scaleUp: true, resourceDiff: 0.0},
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.0},
 	})
 	calculator := NewUpdatePriorityCalculator(
 		vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
@@ -355,8 +355,8 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 				WithLowerBound("1", "").
 				WithUpperBound("6", "").Get()
 
-			priorityProcessor := NewFakeProcessor(map[string]podPriority{
-				"POD1": {scaleUp: true, resourceDiff: 0.25}})
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+				"POD1": {ScaleUp: true, ResourceDiff: 0.25}})
 			calculator := NewUpdatePriorityCalculator(
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
@@ -445,8 +445,8 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 					tc.resourcePolicy,
 				},
 			}
-			priorityProcessor := NewFakeProcessor(map[string]podPriority{
-				"POD1": {scaleUp: true, resourceDiff: 0.25}})
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+				"POD1": {ScaleUp: true, ResourceDiff: 0.25}})
 			calculator := NewUpdatePriorityCalculator(
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
@@ -460,7 +460,7 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 
 func TestNoPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{},
-		NewFakeProcessor(map[string]podPriority{}))
+		NewFakeProcessor(map[string]PodPriority{}))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result)
 }
@@ -482,11 +482,11 @@ func TestAdmission(t *testing.T) {
 
 	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get()
 
-	priorityProcessor := NewFakeProcessor(map[string]podPriority{
-		"POD1": {scaleUp: true, resourceDiff: 4.0},
-		"POD2": {scaleUp: true, resourceDiff: 1.5},
-		"POD3": {scaleUp: true, resourceDiff: 9.0},
-		"POD4": {scaleUp: true, resourceDiff: 2.33}})
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 4.0},
+		"POD2": {ScaleUp: true, ResourceDiff: 1.5},
+		"POD3": {ScaleUp: true, ResourceDiff: 9.0},
+		"POD4": {ScaleUp: true, ResourceDiff: 2.33}})
 	calculator := NewUpdatePriorityCalculator(vpa, nil,
 		&test.FakeRecommendationProcessor{}, priorityProcessor)
 

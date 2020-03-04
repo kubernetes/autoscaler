@@ -123,7 +123,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	// - the request is outside the recommended range for some container.
 	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
 	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold.
-	if !updatePriority.outsideRecommendedRange && !quickOOM {
+	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
 			klog.V(2).Infof("not updating pod %v/%v, missing field pod.Status.StartTime", pod.Namespace, pod.Name)
@@ -133,18 +133,18 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			klog.V(2).Infof("not updating a short-lived pod %v/%v, request within recommended range", pod.Namespace, pod.Name)
 			return
 		}
-		if updatePriority.resourceDiff < calc.config.MinChangePriority {
+		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
 			klog.V(2).Infof("not updating pod %v/%v, resource diff too low: %v", pod.Namespace, pod.Name, updatePriority)
 			return
 		}
 	}
 
 	// If the pod has quick OOMed then evict only if the resources will change
-	if quickOOM && updatePriority.resourceDiff == 0 {
+	if quickOOM && updatePriority.ResourceDiff == 0 {
 		klog.V(2).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.resourceDiff)
+	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -183,17 +183,18 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 
 type prioritizedPod struct {
 	pod            *apiv1.Pod
-	priority       podPriority
+	priority       PodPriority
 	recommendation *vpa_types.RecommendedPodResources
 }
 
-type podPriority struct {
+// PodPriority contains data for a pod update that can be used to prioritize between updates.
+type PodPriority struct {
 	// Is any container outside of the recommended range.
-	outsideRecommendedRange bool
+	OutsideRecommendedRange bool
 	// Does any container want to grow.
-	scaleUp bool
+	ScaleUp bool
 	// Relative difference between the total requested and total recommended resources.
-	resourceDiff float64
+	ResourceDiff float64
 }
 
 type byPriority []prioritizedPod
@@ -212,9 +213,9 @@ func (list byPriority) Less(i, j int) bool {
 	// (a) the pod is pending
 	// (b) there is general resource shortage
 	// and prioritize scaling up otherwise.
-	if list[i].priority.scaleUp != list[j].priority.scaleUp {
-		return list[i].priority.scaleUp
+	if list[i].priority.ScaleUp != list[j].priority.ScaleUp {
+		return list[i].priority.ScaleUp
 	}
 	// 2. A pod with larger value of resourceDiff takes precedence.
-	return list[i].priority.resourceDiff > list[j].priority.resourceDiff
+	return list[i].priority.ResourceDiff > list[j].priority.ResourceDiff
 }
