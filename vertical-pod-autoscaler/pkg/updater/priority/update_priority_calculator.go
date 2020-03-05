@@ -153,7 +153,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
 func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
-	sort.Sort(byPriority(calc.pods))
+	sort.Sort(byPriorityDesc(calc.pods))
 
 	result := []*apiv1.Pod{}
 	for _, podPrio := range calc.pods {
@@ -197,21 +197,22 @@ type PodPriority struct {
 	ResourceDiff float64
 }
 
-type byPriority []prioritizedPod
+type byPriorityDesc []prioritizedPod
 
-func (list byPriority) Len() int {
+func (list byPriorityDesc) Len() int {
 	return len(list)
 }
-func (list byPriority) Swap(i, j int) {
+func (list byPriorityDesc) Swap(i, j int) {
 	list[i], list[j] = list[j], list[i]
 }
 
 // Less implements reverse ordering by priority (highest priority first).
-func (list byPriority) Less(i, j int) bool {
-	return list[i].priority.Less(list[j].priority)
+// This means we return true if priority at index j is lower than at index i.
+func (list byPriorityDesc) Less(i, j int) bool {
+	return list[j].priority.Less(list[i].priority)
 }
 
-// Less compares pod update priorities.
+// Less returns true if p is lower than other.
 func (p PodPriority) Less(other PodPriority) bool {
 	// 1. If any container wants to grow, the pod takes precedence.
 	// TODO: A better policy would be to prioritize scaling down when
@@ -219,8 +220,8 @@ func (p PodPriority) Less(other PodPriority) bool {
 	// (b) there is general resource shortage
 	// and prioritize scaling up otherwise.
 	if p.ScaleUp != other.ScaleUp {
-		return p.ScaleUp
+		return other.ScaleUp
 	}
 	// 2. A pod with larger value of resourceDiff takes precedence.
-	return p.ResourceDiff > other.ResourceDiff
+	return p.ResourceDiff < other.ResourceDiff
 }
