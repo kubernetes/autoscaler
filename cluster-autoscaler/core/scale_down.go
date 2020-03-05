@@ -417,16 +417,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
-
-	candidateNames := make(map[string]bool, len(scaleDownCandidates))
-	for _, candidate := range scaleDownCandidates {
-		if candidate == nil {
-			// Do we need to check this?
-			klog.Errorf("Unexpected nil node in node info")
-			continue
-		}
-		candidateNames[candidate.Name] = true
-	}
 	destinationNames := make(map[string]bool, len(destinationNodes))
 	for _, destination := range destinationNodes {
 		if destination == nil {
@@ -436,16 +426,12 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 		destinationNames[destination.Name] = true
 	}
-	candidateNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0, len(candidateNames))
 	destinationNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0, len(destinationNames))
 	for _, nodeInfo := range allNodeInfos {
 		if nodeInfo.Node() == nil {
 			// Do we need to check this?
 			klog.Errorf("Unexpected nil node in node info")
 			continue
-		}
-		if candidateNames[nodeInfo.Node().Name] {
-			candidateNodeInfos = append(candidateNodeInfos, nodeInfo)
 		}
 		if destinationNames[nodeInfo.Node().Name] {
 			destinationNodeInfos = append(destinationNodeInfos, nodeInfo)
@@ -460,8 +446,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	for _, nodeInfo := range candidateNodeInfos {
-		node := nodeInfo.Node()
+	for _, node := range scaleDownCandidates {
+		nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(node.Name)
+		if err != nil {
+			klog.Errorf("Can't retrive scale-down candidate %s from snapshot, err: %v", node.Name, err)
+			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+			continue
+		}
 
 		// Skip nodes that were recently checked.
 		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
