@@ -17,7 +17,6 @@ limitations under the License.
 package priority
 
 import (
-	"fmt"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -283,30 +282,5 @@ func TestGetUpdatePriority_VpaObservedContainers(t *testing.T) {
 			// into account during calculations.
 			assert.InDelta(t, result.ResourceDiff, tc.want, 0.0001)
 		})
-	}
-}
-
-type fakePriorityProcessor struct {
-	priorities map[string]PodPriority
-}
-
-// NewFakeProcessor returns a fake processor for testing that can be initialized
-// with a map from pod name to priority expected to be returned.
-func NewFakeProcessor(priorities map[string]PodPriority) PriorityProcessor {
-	return &fakePriorityProcessor{
-		priorities: priorities,
-	}
-}
-
-func (f *fakePriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
-	recommendation *vpa_types.RecommendedPodResources) PodPriority {
-	prio, ok := f.priorities[pod.Name]
-	if !ok {
-		panic(fmt.Sprintf("Unexpected pod name: %v", pod.Name))
-	}
-	return PodPriority{
-		ScaleUp:                 prio.ScaleUp,
-		ResourceDiff:            prio.ResourceDiff,
-		OutsideRecommendedRange: prio.OutsideRecommendedRange,
 	}
 }
