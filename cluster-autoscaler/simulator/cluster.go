@@ -19,7 +19,6 @@ package simulator
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -114,7 +113,7 @@ type UtilizationInfo struct {
 // rescheduling location for each of the pods.
 func FindNodesToRemove(
 	candidates []string,
-	destinationNodes []*schedulernodeinfo.NodeInfo,
+	destinations map[string]bool,
 	listers kube_util.ListerRegistry,
 	clusterSnapshot ClusterSnapshot,
 	predicateChecker PredicateChecker,
@@ -125,11 +124,6 @@ func FindNodesToRemove(
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
-
-	destinations := make(map[string]bool, len(destinationNodes))
-	for _, node := range destinationNodes {
-		destinations[node.Node().Name] = true
-	}
 
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
@@ -175,7 +169,7 @@ candidateloop:
 			continue candidateloop
 		}
 
-		findProblems := findPlaceFor(nodeName, podsToRemove, destinationNodes, clusterSnapshot,
+		findProblems := findPlaceFor(nodeName, podsToRemove, destinations, clusterSnapshot,
 			predicateChecker, oldHints, newHints, usageTracker, timestamp)
 
 		if findProblems == nil {
@@ -277,7 +271,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
 }
 
-func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*schedulernodeinfo.NodeInfo,
+func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 	clusterSnaphost ClusterSnapshot, predicateChecker PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time) error {
 
@@ -312,10 +306,6 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*schedulernodei
 		return true
 	}
 
-	// TODO: come up with a better semi-random semi-utilization sorted
-	// layout.
-	shuffledNodes := shuffleNodes(nodes)
-
 	pods = tpu.ClearTPURequests(pods)
 
 	// remove pods from clusterSnaphot first
@@ -345,14 +335,13 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*schedulernodei
 			}
 		}
 		if !foundPlace {
-			for _, nodeInfo := range shuffledNodes {
-				node := nodeInfo.Node()
-				if node.Name == removedNode {
+			for nodeName := range nodes {
+				if nodeName == removedNode {
 					continue
 				}
-				if tryNodeForPod(node.Name, pod) {
+				if tryNodeForPod(nodeName, pod) {
 					foundPlace = true
-					targetNode = node.Name
+					targetNode = nodeName
 					break
 				}
 			}
@@ -365,13 +354,4 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*schedulernodei
 		usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
 	}
 	return nil
-}
-
-func shuffleNodes(nodes []*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
-	result := make([]*schedulernodeinfo.NodeInfo, len(nodes))
-	copy(result, nodes)
-	rand.Shuffle(len(result), func(i, j int) {
-		result[i], result[j] = result[j], result[i]
-	})
-	return result
 }

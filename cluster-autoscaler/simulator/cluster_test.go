@@ -113,21 +113,20 @@ func nodeInfos(nodes []*apiv1.Node) []*schedulernodeinfo.NodeInfo {
 func TestFindPlaceAllOk(t *testing.T) {
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
-	ni1 := schedulernodeinfo.NewNodeInfo()
-	ni1.SetNode(node1)
 	node2 := BuildTestNode("n2", 1000, 2000000)
 	SetNodeReadyState(node2, true, time.Time{})
-	ni2 := schedulernodeinfo.NewNodeInfo()
-	ni2.SetNode(node2)
 
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
-	ni1.AddPod(pod1)
 	new1 := BuildTestPod("p2", 600, 500000)
 	new2 := BuildTestPod("p3", 500, 500000)
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	destinations := map[string]bool{
+		"n1": true,
+		"n2": true,
+	}
 	tracker := NewUsageTracker()
 
 	clusterSnapshot := NewBasicClusterSnapshot()
@@ -136,10 +135,11 @@ func TestFindPlaceAllOk(t *testing.T) {
 	InitializeClusterSnapshotOrDie(t, clusterSnapshot,
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
+
 	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{new1, new2},
-		[]*schedulernodeinfo.NodeInfo{ni1, ni2},
+		destinations,
 		clusterSnapshot,
 		predicateChecker,
 		oldHints, newHints, tracker, time.Now())
@@ -151,27 +151,24 @@ func TestFindPlaceAllOk(t *testing.T) {
 }
 
 func TestFindPlaceAllBas(t *testing.T) {
-	nodebad := BuildTestNode("nbad", 1000, 2000000)
-	nibad := schedulernodeinfo.NewNodeInfo()
-	nibad.SetNode(nodebad)
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
-	ni1 := schedulernodeinfo.NewNodeInfo()
-	ni1.SetNode(node1)
 	node2 := BuildTestNode("n2", 1000, 2000000)
 	SetNodeReadyState(node2, true, time.Time{})
-	ni2 := schedulernodeinfo.NewNodeInfo()
-	ni2.SetNode(node2)
 
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
-	ni1.AddPod(pod1)
 	new1 := BuildTestPod("p2", 600, 500000)
 	new2 := BuildTestPod("p3", 500, 500000)
 	new3 := BuildTestPod("p4", 700, 500000)
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	destinations := map[string]bool{
+		"nbad": true,
+		"n1":   true,
+		"n2":   true,
+	}
 	tracker := NewUsageTracker()
 
 	clusterSnapshot := NewBasicClusterSnapshot()
@@ -184,7 +181,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 	err = findPlaceFor(
 		"nbad",
 		[]*apiv1.Pod{new1, new2, new3},
-		[]*schedulernodeinfo.NodeInfo{nibad, ni1, ni2},
+		destinations,
 		clusterSnapshot, predicateChecker,
 		oldHints, newHints, tracker, time.Now())
 
@@ -197,16 +194,16 @@ func TestFindPlaceAllBas(t *testing.T) {
 func TestFindNone(t *testing.T) {
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
-	ni1 := schedulernodeinfo.NewNodeInfo()
-	ni1.SetNode(node1)
 	node2 := BuildTestNode("n2", 1000, 2000000)
 	SetNodeReadyState(node2, true, time.Time{})
-	ni2 := schedulernodeinfo.NewNodeInfo()
-	ni2.SetNode(node2)
 
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
-	ni1.AddPod(pod1)
+
+	destinations := map[string]bool{
+		"n1": true,
+		"n2": true,
+	}
 
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
@@ -218,36 +215,13 @@ func TestFindNone(t *testing.T) {
 	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{},
-		[]*schedulernodeinfo.NodeInfo{ni1, ni2},
+		destinations,
 		clusterSnapshot, predicateChecker,
 		make(map[string]string),
 		make(map[string]string),
 		NewUsageTracker(),
 		time.Now())
 	assert.NoError(t, err)
-}
-
-func TestShuffleNodes(t *testing.T) {
-	nodes := []*apiv1.Node{
-		BuildTestNode("n1", 0, 0),
-		BuildTestNode("n2", 0, 0),
-		BuildTestNode("n3", 0, 0),
-	}
-	nodeInfos := []*schedulernodeinfo.NodeInfo{}
-	for _, node := range nodes {
-		ni := schedulernodeinfo.NewNodeInfo()
-		ni.SetNode(node)
-		nodeInfos = append(nodeInfos, ni)
-	}
-	gotPermutation := false
-	for i := 0; i < 10000; i++ {
-		shuffled := shuffleNodes(nodeInfos)
-		if shuffled[0].Node().Name == "n2" && shuffled[1].Node().Name == "n3" && shuffled[2].Node().Name == "n1" {
-			gotPermutation = true
-			break
-		}
-	}
-	assert.True(t, gotPermutation)
 }
 
 func TestFindEmptyNodes(t *testing.T) {
@@ -280,8 +254,8 @@ func TestFindEmptyNodes(t *testing.T) {
 type findNodesToRemoveTestConfig struct {
 	name        string
 	pods        []*apiv1.Pod
+	allNodes    []*apiv1.Node
 	candidates  []string
-	allNodes    []*schedulernodeinfo.NodeInfo
 	toRemove    []NodeToBeRemoved
 	unremovable []*UnremovableNode
 }
@@ -351,7 +325,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "just an empty node, should be removed",
 			pods:        []*apiv1.Pod{},
 			candidates:  []string{emptyNode.Name},
-			allNodes:    []*schedulernodeinfo.NodeInfo{emptyNodeInfo},
+			allNodes:    []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*UnremovableNode{},
 		},
@@ -360,7 +334,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
 			candidates:  []string{drainableNode.Name},
-			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo},
+			allNodes:    []*apiv1.Node{drainableNode},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
@@ -369,7 +343,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
 			candidates:  []string{drainableNode.Name, nonDrainableNode.Name},
-			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo, nonDrainableNodeInfo},
+			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
 			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
 		},
@@ -378,7 +352,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
 			candidates:  []string{drainableNode.Name},
-			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo, fullNodeInfo},
+			allNodes:    []*apiv1.Node{drainableNode, fullNode},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
@@ -387,7 +361,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "4 nodes, 1 empty, 1 drainable",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
 			candidates:  []string{emptyNode.Name, drainableNode.Name},
-			allNodes:    []*schedulernodeinfo.NodeInfo{emptyNodeInfo, drainableNodeInfo, fullNodeInfo, nonDrainableNodeInfo},
+			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 			unremovable: []*UnremovableNode{},
 		},
@@ -395,13 +369,13 @@ func TestFindNodesToRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			allNodesForSnapshot := []*apiv1.Node{}
+			destinations := map[string]bool{}
 			for _, node := range test.allNodes {
-				allNodesForSnapshot = append(allNodesForSnapshot, node.Node())
+				destinations[node.Name] = true
 			}
-			InitializeClusterSnapshotOrDie(t, clusterSnapshot, allNodesForSnapshot, test.pods)
+			InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			toRemove, unremovable, _, err := FindNodesToRemove(
-				test.candidates, test.allNodes, nil,
+				test.candidates, destinations, nil,
 				clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
 				tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
 			assert.NoError(t, err)
