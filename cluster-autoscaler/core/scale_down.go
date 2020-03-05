@@ -452,7 +452,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 	}
 
-	sd.updateUnremovableNodes(allNodeInfos)
+	sd.updateUnremovableNodes()
 
 	skipped := 0
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
@@ -643,24 +643,18 @@ func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo s
 // updateUnremovableNodes updates unremovableNodes map according to current
 // state of the cluster. Removes from the map nodes that are no longer in the
 // nodes list.
-func (sd *ScaleDown) updateUnremovableNodes(nodes []*schedulernodeinfo.NodeInfo) {
+func (sd *ScaleDown) updateUnremovableNodes() {
 	if len(sd.unremovableNodes) <= 0 {
 		return
 	}
-	// A set of nodes to delete from unremovableNodes map.
-	nodesToDelete := make(map[string]struct{}, len(sd.unremovableNodes))
-	for name := range sd.unremovableNodes {
-		nodesToDelete[name] = struct{}{}
-	}
-	// Nodes that are in the cluster should not be deleted.
-	for _, node := range nodes {
-		if _, ok := nodesToDelete[node.Node().Name]; ok {
-			delete(nodesToDelete, node.Node().Name)
+	newUnremovableNodes := make(map[string]time.Time, len(sd.unremovableNodes))
+	for oldUnremovable, since := range sd.unremovableNodes {
+		if _, err := sd.context.ClusterSnapshot.NodeInfos().Get(oldUnremovable); err == nil {
+			// Nodes that are in the cluster should not be deleted.
+			newUnremovableNodes[oldUnremovable] = since
 		}
 	}
-	for nodeName := range nodesToDelete {
-		delete(sd.unremovableNodes, nodeName)
-	}
+	sd.unremovableNodes = newUnremovableNodes
 }
 
 func (sd *ScaleDown) clearUnremovableNodeReasons() {
