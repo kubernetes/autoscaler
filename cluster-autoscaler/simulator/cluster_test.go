@@ -251,35 +251,36 @@ func TestShuffleNodes(t *testing.T) {
 }
 
 func TestFindEmptyNodes(t *testing.T) {
-	nodes := []*schedulernodeinfo.NodeInfo{}
+	nodes := []*apiv1.Node{}
+	nodeNames := []string{}
 	for i := 0; i < 4; i++ {
 		nodeName := fmt.Sprintf("n%d", i)
 		node := BuildTestNode(nodeName, 1000, 2000000)
 		SetNodeReadyState(node, true, time.Time{})
-		nodeInfo := schedulernodeinfo.NewNodeInfo()
-		nodeInfo.SetNode(node)
-		nodes = append(nodes, nodeInfo)
+		nodes = append(nodes, node)
+		nodeNames = append(nodeNames, nodeName)
 	}
 
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
-	nodes[1].AddPod(pod1)
 
 	pod2 := BuildTestPod("p2", 300, 500000)
 	pod2.Spec.NodeName = "n2"
 	pod2.Annotations = map[string]string{
 		types.ConfigMirrorAnnotationKey: "",
 	}
-	nodes[2].AddPod(pod2)
 
-	emptyNodes := FindEmptyNodesToRemove(nodes)
-	assert.Equal(t, []*apiv1.Node{nodes[0].Node(), nodes[2].Node(), nodes[3].Node()}, emptyNodes)
+	clusterSnapshot := NewBasicClusterSnapshot()
+	InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
+
+	emptyNodes := FindEmptyNodesToRemove(clusterSnapshot, nodeNames)
+	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
 
 type findNodesToRemoveTestConfig struct {
 	name        string
 	pods        []*apiv1.Pod
-	candidates  []*schedulernodeinfo.NodeInfo
+	candidates  []string
 	allNodes    []*schedulernodeinfo.NodeInfo
 	toRemove    []NodeToBeRemoved
 	unremovable []*UnremovableNode
@@ -349,7 +350,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "just an empty node, should be removed",
 			pods:        []*apiv1.Pod{},
-			candidates:  []*schedulernodeinfo.NodeInfo{emptyNodeInfo},
+			candidates:  []string{emptyNode.Name},
 			allNodes:    []*schedulernodeinfo.NodeInfo{emptyNodeInfo},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*UnremovableNode{},
@@ -358,7 +359,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
-			candidates:  []*schedulernodeinfo.NodeInfo{drainableNodeInfo},
+			candidates:  []string{drainableNode.Name},
 			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
@@ -367,7 +368,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
-			candidates:  []*schedulernodeinfo.NodeInfo{drainableNodeInfo, nonDrainableNodeInfo},
+			candidates:  []string{drainableNode.Name, nonDrainableNode.Name},
 			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo, nonDrainableNodeInfo},
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
 			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
@@ -376,7 +377,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
-			candidates:  []*schedulernodeinfo.NodeInfo{drainableNodeInfo},
+			candidates:  []string{drainableNode.Name},
 			allNodes:    []*schedulernodeinfo.NodeInfo{drainableNodeInfo, fullNodeInfo},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
@@ -385,7 +386,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "4 nodes, 1 empty, 1 drainable",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates:  []*schedulernodeinfo.NodeInfo{emptyNodeInfo, drainableNodeInfo},
+			candidates:  []string{emptyNode.Name, drainableNode.Name},
 			allNodes:    []*schedulernodeinfo.NodeInfo{emptyNodeInfo, drainableNodeInfo, fullNodeInfo, nonDrainableNodeInfo},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 			unremovable: []*UnremovableNode{},

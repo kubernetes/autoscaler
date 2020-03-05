@@ -113,7 +113,7 @@ type UtilizationInfo struct {
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(
-	candidates []*schedulernodeinfo.NodeInfo,
+	candidates []string,
 	destinationNodes []*schedulernodeinfo.NodeInfo,
 	listers kube_util.ListerRegistry,
 	clusterSnapshot ClusterSnapshot,
@@ -141,17 +141,19 @@ func FindNodesToRemove(
 	newHints := make(map[string]string, len(oldHints))
 
 candidateloop:
-	for _, nodeInfo := range candidates {
-		node := nodeInfo.Node()
-		klog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
+	for _, nodeName := range candidates {
+		nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
+		if err != nil {
+			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+		}
+		klog.V(2).Infof("%s: %s for removal", evaluationType, nodeName)
 
 		var podsToRemove []*apiv1.Pod
 		var blockingPod *drain.BlockingPod
-		var err error
 
-		if _, found := destinations[node.Name]; !found {
-			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
-			unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
+		if _, found := destinations[nodeName]; !found {
+			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, nodeName)
+			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
 			continue candidateloop
 		}
 
@@ -164,43 +166,47 @@ candidateloop:
 		}
 
 		if err != nil {
-			klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
+			klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, nodeName, err)
 			if blockingPod != nil {
-				unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: BlockedByPod, BlockingPod: blockingPod})
+				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod})
 			} else {
-				unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: UnexpectedError})
+				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
 			}
 			continue candidateloop
 		}
 
-		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, clusterSnapshot,
+		findProblems := findPlaceFor(nodeName, podsToRemove, destinationNodes, clusterSnapshot,
 			predicateChecker, oldHints, newHints, usageTracker, timestamp)
 
 		if findProblems == nil {
 			result = append(result, NodeToBeRemoved{
-				Node:             node,
+				Node:             nodeInfo.Node(),
 				PodsToReschedule: podsToRemove,
 			})
-			klog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
+			klog.V(2).Infof("%s: node %s may be removed", evaluationType, nodeName)
 			if len(result) >= maxCount {
 				break candidateloop
 			}
 		} else {
-			klog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
-			unremovable = append(unremovable, &UnremovableNode{Node: node, Reason: NoPlaceToMovePods})
+			klog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, nodeName, findProblems)
+			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods})
 		}
 	}
 	return result, unremovable, newHints, nil
 }
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
-func FindEmptyNodesToRemove(candidates []*schedulernodeinfo.NodeInfo) []*apiv1.Node {
-	result := make([]*apiv1.Node, 0)
-	for _, nodeInfo := range candidates {
+func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []string {
+	result := make([]string, 0)
+	for _, node := range candidates {
+		nodeInfo, err := snapshot.NodeInfos().Get(node)
+		if err != nil {
+			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
+		}
 		// Should block on all pods.
 		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
 		if err == nil && len(podsToRemove) == 0 {
-			result = append(result, nodeInfo.Node())
+			result = append(result, node)
 		}
 	}
 	return result
