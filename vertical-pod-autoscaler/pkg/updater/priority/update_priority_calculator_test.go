@@ -499,3 +499,58 @@ func TestAdmission(t *testing.T) {
 	result := calculator.GetSortedPods(&pod1Admission{})
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Wrong priority order")
 }
+
+func TestLessPodPriority(t *testing.T) {
+	testCases := []struct {
+		name        string
+		prio, other PodPriority
+		isLess      bool
+	}{
+		{
+			name: "scale down more than empty",
+			prio: PodPriority{
+				ScaleUp:      false,
+				ResourceDiff: 0.1,
+			},
+			other:  PodPriority{},
+			isLess: false,
+		}, {
+			name: "scale up more than empty",
+			prio: PodPriority{
+				ScaleUp:      true,
+				ResourceDiff: 0.1,
+			},
+			other:  PodPriority{},
+			isLess: false,
+		}, {
+			name: "two scale ups",
+			prio: PodPriority{
+				ScaleUp:      true,
+				ResourceDiff: 0.1,
+			},
+			other: PodPriority{
+				ScaleUp:      true,
+				ResourceDiff: 1.0,
+			},
+			isLess: true,
+		}, {
+			name: "two scale downs",
+			prio: PodPriority{
+				ScaleUp:      false,
+				ResourceDiff: 0.9,
+			},
+			other: PodPriority{
+				ScaleUp:      false,
+				ResourceDiff: 0.1,
+			},
+			isLess: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.isLess, tc.prio.Less(tc.other))
+			assert.Equal(t, !tc.isLess, tc.other.Less(tc.prio))
+		})
+	}
+
+}
