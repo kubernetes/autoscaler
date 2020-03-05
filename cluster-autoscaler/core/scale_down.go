@@ -417,25 +417,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	destinationNames := make(map[string]bool, len(destinationNodes))
+	destinations := make(map[string]bool, len(destinationNodes))
 	for _, destination := range destinationNodes {
-		if destination == nil {
-			// Do we need to check this?
-			klog.Errorf("Unexpected nil node in node info")
-			continue
-		}
-		destinationNames[destination.Name] = true
-	}
-	destinationNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0, len(destinationNames))
-	for _, nodeInfo := range allNodeInfos {
-		if nodeInfo.Node() == nil {
-			// Do we need to check this?
-			klog.Errorf("Unexpected nil node in node info")
-			continue
-		}
-		if destinationNames[nodeInfo.Node().Name] {
-			destinationNodeInfos = append(destinationNodeInfos, nodeInfo)
-		}
+		destinations[destination.Name] = true
 	}
 
 	sd.updateUnremovableNodes()
@@ -519,7 +503,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
 		currentCandidates,
-		destinationNodeInfos,
+		destinations,
 		nil,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
@@ -551,7 +535,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
 			simulator.FindNodesToRemove(
 				currentNonCandidates[:additionalCandidatesPoolSize],
-				destinationNodeInfos,
+				destinations,
 				nil,
 				sd.context.ClusterSnapshot,
 				sd.context.PredicateChecker,
@@ -766,6 +750,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	}
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
+	nodesWithoutMasterNames := make(map[string]bool, len(nodesWithoutMaster))
 
 	candidates := make([]*schedulernodeinfo.NodeInfo, 0)
 	candidateNames := make([]string, 0)
@@ -786,6 +771,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	resourcesWithLimits := resourceLimiter.GetResources()
 	for _, nodeInfo := range nodesWithoutMaster {
 		node := nodeInfo.Node()
+		nodesWithoutMasterNames[node.Name] = true
 
 		unneededSince, found := sd.unneededNodes[node.Name]
 		if !found {
@@ -895,7 +881,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
 		candidateNames,
-		nodesWithoutMaster,
+		nodesWithoutMasterNames,
 		sd.context.ListerRegistry,
 		sd.context.ClusterSnapshot,
 		sd.context.PredicateChecker,
@@ -1339,17 +1325,19 @@ const (
 	apiServerLabelValue = "kube-apiserver"
 )
 
+func isMasterNode(nodeInfo *schedulernodeinfo.NodeInfo) bool {
+	for _, pod := range nodeInfo.Pods() {
+		if pod.Namespace == metav1.NamespaceSystem && pod.Labels[apiServerLabelKey] == apiServerLabelValue {
+			return true
+		}
+	}
+	return false
+}
+
 func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
 	result := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
 	for _, nodeInfo := range nodeInfos {
-		found := false
-		for _, pod := range nodeInfo.Pods() {
-			if pod.Namespace == metav1.NamespaceSystem && pod.Labels[apiServerLabelKey] == apiServerLabelValue {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !isMasterNode(nodeInfo) {
 			result = append(result, nodeInfo)
 		}
 	}
