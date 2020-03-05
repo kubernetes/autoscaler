@@ -208,14 +208,19 @@ func (list byPriority) Swap(i, j int) {
 
 // Less implements reverse ordering by priority (highest priority first).
 func (list byPriority) Less(i, j int) bool {
+	return list[i].priority.Less(list[j].priority)
+}
+
+// Less compares pod update priorities.
+func (p PodPriority) Less(other PodPriority) bool {
 	// 1. If any container wants to grow, the pod takes precedence.
 	// TODO: A better policy would be to prioritize scaling down when
 	// (a) the pod is pending
 	// (b) there is general resource shortage
 	// and prioritize scaling up otherwise.
-	if list[i].priority.ScaleUp != list[j].priority.ScaleUp {
-		return list[i].priority.ScaleUp
+	if p.ScaleUp != other.ScaleUp {
+		return p.ScaleUp
 	}
 	// 2. A pod with larger value of resourceDiff takes precedence.
-	return list[i].priority.ResourceDiff > list[j].priority.ResourceDiff
+	return p.ResourceDiff > other.ResourceDiff
 }
