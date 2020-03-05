@@ -442,7 +442,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	skipped := 0
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
-	currentlyUnneededNodeInfos := make([]*schedulernodeinfo.NodeInfo, 0)
+	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
@@ -492,23 +492,23 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
 			continue
 		}
-		currentlyUnneededNodeInfos = append(currentlyUnneededNodeInfos, nodeInfo)
+		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
 	}
 
 	if skipped > 0 {
 		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 
-	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeInfos, len(currentlyUnneededNodeInfos))
+	emptyNodesList := sd.getEmptyNodesNoResourceLimits(currentlyUnneededNodeNames, len(currentlyUnneededNodeNames))
 
 	emptyNodes := make(map[string]bool)
 	for _, node := range emptyNodesList {
 		emptyNodes[node.Name] = true
 	}
 
-	currentlyUnneededNonEmptyNodes := make([]*schedulernodeinfo.NodeInfo, 0, len(currentlyUnneededNodeInfos))
-	for _, node := range currentlyUnneededNodeInfos {
-		if !emptyNodes[node.Node().Name] {
+	currentlyUnneededNonEmptyNodes := make([]string, 0, len(currentlyUnneededNodeNames))
+	for _, node := range currentlyUnneededNodeNames {
+		if !emptyNodes[node] {
 			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
 		}
 	}
@@ -675,20 +675,19 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 // chooseCandidates splits nodes into current candidates for scale-down and the
 // rest. Current candidates are unneeded nodes from the previous run that are
 // still in the nodes list.
-func (sd *ScaleDown) chooseCandidates(nodes []*schedulernodeinfo.NodeInfo) ([]*schedulernodeinfo.NodeInfo, []*schedulernodeinfo.NodeInfo) {
+func (sd *ScaleDown) chooseCandidates(nodes []string) ([]string, []string) {
 	// Number of candidates should not be capped. We will look for nodes to remove
 	// from the whole set of nodes.
 	if sd.context.ScaleDownNonEmptyCandidatesCount <= 0 {
 		return nodes, nil
 	}
-	currentCandidates := make([]*schedulernodeinfo.NodeInfo, 0, len(sd.unneededNodesList))
-	currentNonCandidates := make([]*schedulernodeinfo.NodeInfo, 0, len(nodes))
-	for _, nodeInfo := range nodes {
-		node := nodeInfo.Node()
-		if _, found := sd.unneededNodes[node.Name]; found {
-			currentCandidates = append(currentCandidates, nodeInfo)
+	currentCandidates := make([]string, 0, len(sd.unneededNodesList))
+	currentNonCandidates := make([]string, 0, len(nodes))
+	for _, node := range nodes {
+		if _, found := sd.unneededNodes[node]; found {
+			currentCandidates = append(currentCandidates, node)
 		} else {
-			currentNonCandidates = append(currentNonCandidates, nodeInfo)
+			currentNonCandidates = append(currentNonCandidates, node)
 		}
 	}
 	return currentCandidates, currentNonCandidates
@@ -769,6 +768,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
 
 	candidates := make([]*schedulernodeinfo.NodeInfo, 0)
+	candidateNames := make([]string, 0)
 	readinessMap := make(map[string]bool)
 	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
 	gpuLabel := sd.context.CloudProvider.GPULabel()
@@ -858,6 +858,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 		}
 
 		candidates = append(candidates, nodeInfo)
+		candidateNames = append(candidateNames, node.Name)
 		candidateNodeGroups[node.Name] = nodeGroup
 	}
 
@@ -870,7 +871,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := sd.getEmptyNodes(candidates, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
+	emptyNodes := sd.getEmptyNodes(candidateNames, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
 		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
@@ -893,7 +894,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := simulator.FindNodesToRemove(
-		candidates,
+		candidateNames,
 		nodesWithoutMaster,
 		sd.context.ListerRegistry,
 		sd.context.ClusterSnapshot,
@@ -976,24 +977,38 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
-func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []*schedulernodeinfo.NodeInfo, maxEmptyBulkDelete int) []*apiv1.Node {
+func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []string, maxEmptyBulkDelete int) []*apiv1.Node {
+	/*	candidateNodeInfos := make([]*schedulernodeinfo.NodeInfo, len(candidates))
+		for i, name := range candidates {
+			if nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(name); err != nil {
+				klog.Errorf("Can't retrive scale-down candidate %s from snapshot, err: %v", name, err)
+			} else {
+				candidateNodeInfos[i] = nodeInfo
+			}
+		}*/
 	return sd.getEmptyNodes(candidates, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
 // that can be deleted at the same time.
-func (sd *ScaleDown) getEmptyNodes(candidates []*schedulernodeinfo.NodeInfo, maxEmptyBulkDelete int,
+func (sd *ScaleDown) getEmptyNodes(candidates []string, maxEmptyBulkDelete int,
 	resourcesLimits scaleDownResourcesLimits) []*apiv1.Node {
 
-	emptyNodes := simulator.FindEmptyNodesToRemove(candidates)
+	emptyNodes := simulator.FindEmptyNodesToRemove(sd.context.ClusterSnapshot, candidates)
 	availabilityMap := make(map[string]int)
 	result := make([]*apiv1.Node, 0)
 	resourcesLimitsCopy := copyScaleDownResourcesLimits(resourcesLimits) // we do not want to modify input parameter
 	resourcesNames := sets.StringKeySet(resourcesLimits).List()
-	for _, node := range emptyNodes {
+	for _, nodeName := range emptyNodes {
+		nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(nodeName)
+		if err != nil {
+			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+			continue
+		}
+		node := nodeInfo.Node()
 		nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			klog.Errorf("Failed to get group for %s", node.Name)
+			klog.Errorf("Failed to get group for %s", nodeName)
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
