@@ -659,7 +659,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 		})
 
 		for i := 0; i < len(nodeNames); i++ {
-			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
 		}
@@ -722,7 +722,6 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 
 func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	test := func(t *testing.T, expected int, testConfigs []*testConfig) {
-		t.Helper()
 		testConfig0, testConfig1 := testConfigs[0], testConfigs[1]
 		controller, stop := mustCreateTestController(t, testConfigs...)
 		defer stop()
@@ -756,7 +755,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 			expectedErr0 = `node "test-namespace1-machineset-0-nodeid-0" doesn't belong to node group "test-namespace0/machinedeployment-0"`
 		}
 
-		if !strings.Contains(err0.Error(), expectedErr0) {
+		if !strings.Contains(err0.Error(), string(normalizedProviderString(expectedErr0))) {
 			t.Errorf("expected: %q, got: %q", expectedErr0, err0.Error())
 		}
 
@@ -771,7 +770,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 			expectedErr1 = `node "test-namespace0-machineset-0-nodeid-0" doesn't belong to node group "test-namespace1/machinedeployment-0"`
 		}
 
-		if !strings.Contains(err1.Error(), expectedErr1) {
+		if !strings.Contains(err1.Error(), string(normalizedProviderString(expectedErr1))) {
 			t.Errorf("expected: %q, got: %q", expectedErr1, err1.Error())
 		}
 
@@ -845,7 +844,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		})
 
 		for i := 0; i < len(nodeNames); i++ {
-			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
 		}

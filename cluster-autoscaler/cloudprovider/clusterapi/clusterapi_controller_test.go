@@ -205,7 +205,7 @@ func makeLinkedNodeAndMachine(i int, namespace string, owner v1.OwnerReference) 
 			},
 		},
 		Spec: corev1.NodeSpec{
-			ProviderID: fmt.Sprintf("%s-%s-nodeid-%d", namespace, owner.Name, i),
+			ProviderID: fmt.Sprintf("test:////%s-%s-nodeid-%d", namespace, owner.Name, i),
 		},
 	}
 
@@ -224,7 +224,7 @@ func makeLinkedNodeAndMachine(i int, namespace string, owner v1.OwnerReference) 
 			}},
 		},
 		Spec: MachineSpec{
-			ProviderID: pointer.StringPtr(fmt.Sprintf("%s-%s-nodeid-%d", namespace, owner.Name, i)),
+			ProviderID: pointer.StringPtr(fmt.Sprintf("test:////%s-%s-nodeid-%d", namespace, owner.Name, i)),
 		},
 		Status: MachineStatus{
 			NodeRef: &corev1.ObjectReference{
@@ -421,7 +421,7 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 	}
 
 	// Test #1: Verify underlying machine provider ID matches
-	machine, err := controller.findMachineByProviderID(testConfig.nodes[0].Spec.ProviderID)
+	machine, err := controller.findMachineByProviderID(normalizedProviderString(testConfig.nodes[0].Spec.ProviderID))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -440,7 +440,7 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 	if err := controller.machineInformer.Informer().GetStore().Update(machine); err != nil {
 		t.Fatalf("unexpected error updating machine, got %v", err)
 	}
-	machine, err = controller.findMachineByProviderID(testConfig.nodes[0].Spec.ProviderID)
+	machine, err = controller.findMachineByProviderID(normalizedProviderString(testConfig.nodes[0].Spec.ProviderID))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -824,7 +824,7 @@ func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
 	}
 
 	// Test #1: Verify machine can be found from node annotation
-	machine, err := controller.findMachineByProviderID(testConfig.nodes[0].Spec.ProviderID)
+	machine, err := controller.findMachineByProviderID(normalizedProviderString(testConfig.nodes[0].Spec.ProviderID))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -842,7 +842,7 @@ func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
 	if err := controller.nodeInformer.GetStore().Update(node); err != nil {
 		t.Fatalf("unexpected error updating node, got %v", err)
 	}
-	machine, err = controller.findMachineByProviderID(testConfig.nodes[0].Spec.ProviderID)
+	machine, err = controller.findMachineByProviderID(normalizedProviderString(testConfig.nodes[0].Spec.ProviderID))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -938,7 +938,7 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 	})
 
 	for i := range testConfig.nodes {
-		if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+		if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
 			t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 		}
 	}
@@ -986,7 +986,7 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 	})
 
 	for i := range testConfig.nodes {
-		if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+		if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
 			t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 		}
 	}
