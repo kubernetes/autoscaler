@@ -111,7 +111,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// suitable candidate for deletion and drop the replica count
 	// by 1. Fail fast on any error.
 	for _, node := range nodes {
-		machine, err := ng.machineController.findMachineByProviderID(node.Spec.ProviderID)
+		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 		if err != nil {
 			return err
 		}
@@ -198,7 +198,7 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, len(nodes))
 	for i := range nodes {
 		instances[i] = cloudprovider.Instance{
-			Id: nodes[i],
+			Id: string(normalizedProviderString(nodes[i])),
 		}
 	}
 

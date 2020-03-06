@@ -369,3 +369,34 @@ func TestUtilMachineSetMachineDeploymentOwnerRef(t *testing.T) {
 		})
 	}
 }
+
+func TestUtilNormalizedProviderID(t *testing.T) {
+	for _, tc := range []struct {
+		description string
+		providerID  string
+		expectedID  normalizedProviderID
+	}{{
+		description: "nil string yields empty string",
+		providerID:  "",
+		expectedID:  "",
+	}, {
+		description: "empty string",
+		providerID:  "",
+		expectedID:  "",
+	}, {
+		description: "id without / characters",
+		providerID:  "i-12345678",
+		expectedID:  "i-12345678",
+	}, {
+		description: "id with / characters",
+		providerID:  "aws:////i-12345678",
+		expectedID:  "i-12345678",
+	}} {
+		t.Run(tc.description, func(t *testing.T) {
+			actualID := normalizedProviderString(tc.providerID)
+			if actualID != tc.expectedID {
+				t.Errorf("expected %v, got %v", tc.expectedID, actualID)
+			}
+		})
+	}
+}
