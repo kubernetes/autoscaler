@@ -137,7 +137,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		name                 string
 		podJson              []byte
 		namespace            string
-		podPreProcessorError error
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendName        string
@@ -149,21 +148,10 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			name:                 "invalid JSON",
 			podJson:              []byte("{"),
 			namespace:            "default",
-			podPreProcessorError: nil,
 			recommendResources:   []vpa_api_util.ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			recommendName:        "name",
 			expectError:          fmt.Errorf("unexpected end of JSON input"),
-		},
-		{
-			name:                 "invalid pod",
-			podJson:              []byte("{}"),
-			namespace:            "default",
-			podPreProcessorError: fmt.Errorf("bad pod"),
-			recommendResources:   []vpa_api_util.ContainerResources{},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
-			expectError:          fmt.Errorf("bad pod"),
 		},
 		{
 			name: "new cpu recommendation",
@@ -330,11 +318,10 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fppp := fakePodPreProcessor{e: tc.podPreProcessorError}
 			fvpp := fakeVpaPreProcessor{}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
 			lc := limitrange.NewNoopLimitsCalculator()
-			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+			s := NewAdmissionServer(&frp, &fvpp, lc)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
@@ -355,7 +342,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 }
 
 func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
-	fppp := fakePodPreProcessor{}
 	fvpp := fakeVpaPreProcessor{}
 	recommendResources := []vpa_api_util.ContainerResources{
 		{
@@ -382,7 +368,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
 	lc := limitrange.NewNoopLimitsCalculator()
-	s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+	s := NewAdmissionServer(&frp, &fvpp, lc)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
@@ -440,11 +426,10 @@ func TestGetPatchesForResourceRequest_VpaObservedContainers(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fppp := fakePodPreProcessor{}
 			fvpp := fakeVpaPreProcessor{}
 			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, "RecomenderName", nil}
 			lc := limitrange.NewNoopLimitsCalculator()
-			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+			s := NewAdmissionServer(&frp, &fvpp, lc)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, "default")
 			assert.NoError(t, err)
 			if assert.Len(t, patches, len(tc.expectPatches)) {

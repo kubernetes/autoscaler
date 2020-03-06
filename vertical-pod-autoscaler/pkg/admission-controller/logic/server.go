@@ -42,14 +42,13 @@ const (
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
-	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
 	limitsChecker          limitrange.LimitRangeCalculator
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker limitrange.LimitRangeCalculator) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
+func NewAdmissionServer(recommendationProvider RecommendationProvider, vpaPreProcessor VpaPreProcessor, limitsChecker limitrange.LimitRangeCalculator) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, vpaPreProcessor, limitsChecker}
 }
 
 type patchRecord struct {
@@ -69,10 +68,6 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	}
 	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
 	containersResources, annotationsPerContainer, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
-	if err != nil {
-		return nil, err
-	}
-	pod, err = s.podPreProcessor.Process(pod)
 	if err != nil {
 		return nil, err
 	}

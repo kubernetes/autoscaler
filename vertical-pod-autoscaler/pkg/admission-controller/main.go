@@ -82,7 +82,6 @@ func main() {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	podPreprocessor := logic.NewDefaultPodPreProcessor()
 	vpaPreprocessor := logic.NewDefaultVpaPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
@@ -106,7 +105,7 @@ func main() {
 	)
 	defer close(stopCh)
 
-	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, vpaPreprocessor, limitRangeCalculator)
+	as := logic.NewAdmissionServer(recommendationProvider, vpaPreprocessor, limitRangeCalculator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
