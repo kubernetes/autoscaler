@@ -132,6 +132,20 @@ func eqPatch(a, b patchRecord) bool {
 	return string(aJson) == string(bJson) && aErr == bErr
 }
 
+func assertEqPatch(t *testing.T, got, want patchRecord) {
+	assert.True(t, eqPatch(got, want), "got %+v, want: %+v", got, want)
+}
+
+func assertPatchOneOf(t *testing.T, got patchRecord, want []patchRecord) {
+	for _, wanted := range want {
+		if eqPatch(got, wanted) {
+			return
+		}
+	}
+	msg := fmt.Sprintf("got: %+v, expected one of %+v", got, want)
+	assert.Fail(t, msg)
+}
+
 func TestGetPatchesForResourceRequest(t *testing.T) {
 	tests := []struct {
 		name                 string
@@ -389,12 +403,12 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	if assert.Equal(t, len(patches), 5) {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
-		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
-		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
+		assertPatchOneOf(t, patches[0], []patchRecord{cpuUpdate, unobtaniumUpdate})
+		assertPatchOneOf(t, patches[1], []patchRecord{cpuUpdate, unobtaniumUpdate})
 		assert.False(t, eqPatch(patches[0], patches[1]))
-		assert.True(t, eqPatch(patches[2], getAddEmptyAnnotationsPatch()))
-		assert.True(t, eqPatch(patches[3], addAnnotationRequest([][]string{{cpu, unobtanium}}, request)) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}}, request)))
-		assert.True(t, eqPatch(patches[4], addVpaObservedContainersPatch([]string{})))
+		assertEqPatch(t, patches[2], getAddEmptyAnnotationsPatch())
+		assertEqPatch(t, patches[3], addAnnotationRequest([][]string{{cpu, unobtanium}}, request))
+		assertEqPatch(t, patches[4], addVpaObservedContainersPatch([]string{}))
 	}
 }
 
