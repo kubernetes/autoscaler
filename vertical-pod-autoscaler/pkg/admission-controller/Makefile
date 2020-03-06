@@ -3,7 +3,8 @@ all: build
 TAG?=dev
 REGISTRY?=staging-k8s.gcr.io
 FLAGS=
-ENVVAR=CGO_ENABLED=0 LD_FLAGS=-s GO111MODULE=on
+TEST_ENVVAR=LD_FLAGS=-s GO111MODULE=on
+ENVVAR=CGO_ENABLED=0 $(TEST_ENVVAR)
 GOOS?=linux
 COMPONENT=admission-controller
 FULL_COMPONENT=vpa-${COMPONENT}
@@ -19,7 +20,7 @@ build-binary-with-vendor: clean
 	$(ENVVAR) GOOS=$(GOOS) go build -mod vendor -o ${COMPONENT}
 
 test-unit: clean build
-	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS)
+	$(TEST_ENVVAR) go test --test.short -race ./... $(FLAGS)
 
 docker-build:
 ifndef REGISTRY
