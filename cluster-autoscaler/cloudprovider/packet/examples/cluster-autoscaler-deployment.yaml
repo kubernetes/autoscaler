@@ -128,6 +128,18 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
+      # Node affinity is used to force cluster-autoscaler to stick
+      # to the master node. This allows the cluster to reliably downscale
+      # to zero nodes when needed.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dedicated
+                operator: In
+                values:
+                - master
       serviceAccountName: cluster-autoscaler
       containers:
         - name: cluster-autoscaler
@@ -155,7 +167,7 @@ spec:
             - --cluster-name=cluster1
             - --cloud-config=/config/cloud-config
             - --cloud-provider=packet
-            - --nodes=1:10:pool1
+            - --nodes=0:10:pool1
             - --scale-down-unneeded-time=1m0s
             - --scale-down-delay-after-add=1m0s
             - --scale-down-unready-time=1m0s
