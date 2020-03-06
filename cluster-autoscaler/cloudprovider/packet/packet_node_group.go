@@ -58,7 +58,7 @@ const (
 	waitForStatusTimeStep       = 30 * time.Second
 	waitForUpdateStatusTimeout  = 2 * time.Minute
 	waitForCompleteStatusTimout = 10 * time.Minute
-	scaleToZeroSupported        = false
+	scaleToZeroSupported        = true
 
 	// Time that the goroutine that first acquires clusterUpdateMutex
 	// in deleteNodes should wait for other synchronous calls to deleteNodes.

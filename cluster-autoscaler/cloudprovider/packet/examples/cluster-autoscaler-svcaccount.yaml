@@ -38,7 +38,7 @@ rules:
     resources: ["daemonsets", "replicasets", "statefulsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
+    resources: ["storageclasses", "csinodes"]
     verbs: ["watch", "list", "get"]
   - apiGroups: [""]
     resources: ["configmaps"]
@@ -47,6 +47,13 @@ rules:
     resources: ["configmaps"]
     resourceNames: ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"]
     verbs: ["delete", "get", "update"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    resourceNames: ["cluster-autoscaler"]
+    verbs: ["get", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

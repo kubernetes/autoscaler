@@ -31,11 +31,127 @@ import (
 	"time"
 
 	"gopkg.in/gcfg.v1"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
+
+type instanceType struct {
+	InstanceName string
+	CPU          int64
+	MemoryMb     int64
+	GPU          int64
+}
+
+// InstanceTypes is a map of packet resources
+var InstanceTypes = map[string]*instanceType{
+	"c1.large.arm": {
+		InstanceName: "c1.large.arm",
+		CPU:          96,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c1.small.x86": {
+		InstanceName: "c1.small.x86",
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"c1.xlarge.x86": {
+		InstanceName: "c1.xlarge.x86",
+		CPU:          16,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c2.large.arm": {
+		InstanceName: "c2.large.arm",
+		CPU:          32,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c2.medium.x86": {
+		InstanceName: "c2.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.medium.x86": {
+		InstanceName: "c3.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.small.x86": {
+		InstanceName: "c3.small.x86",
+		CPU:          8,
+		MemoryMb:     32768,
+		GPU:          1,
+	},
+	"g2.large.x86": {
+		InstanceName: "g2.large.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"m1.xlarge.x86": {
+		InstanceName: "m1.xlarge.x86",
+		CPU:          24,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m2.xlarge.x86": {
+		InstanceName: "m2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"n2.xlarge.x86": {
+		InstanceName: "n2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"s1.large.x86": {
+		InstanceName: "s1.large.x86",
+		CPU:          8,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"s3.xlarge.x86": {
+		InstanceName: "s3.xlarge.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"t1.small.x86": {
+		InstanceName: "t1.small.x86",
+		CPU:          4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"t3.small.x86": {
+		InstanceName: "t3.small.x86",
+		CPU:          4,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"x1.small.x86": {
+		InstanceName: "x1.small.x86",
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"x2.xlarge.x86": {
+		InstanceName: "x2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          1,
+	},
+}
 
 type packetManagerRest struct {
 	baseURL           string
@@ -338,7 +454,7 @@ func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
 	nodes := []string{}
 	for _, d := range devices.Devices {
 		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
-			nodes = append(nodes, d.ID)
+			nodes = append(nodes, fmt.Sprintf("packet://%s", d.ID))
 		}
 	}
 	return nodes, err
@@ -392,10 +508,35 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	return nil
 }
 
-// templateNodeInfo returns a NodeInfo with a node template based on the VM flavor
-// that is used to created minions in a given node group.
-func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+// templateNodeInfo returns a NodeInfo with a node template based on the packet plan
+// that is used to create nodes in a given node group.
+func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-asg-%d", nodegroup, rand.Int63())
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+
+	packetPlan := InstanceTypes[mgr.plan]
+	if packetPlan == nil {
+		return nil, fmt.Errorf("packet plan %q not supported", mgr.plan)
+	}
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(packetPlan.CPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(packetPlan.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(packetPlan.MemoryMb*1024*1024, resource.DecimalSI)
+
+	node.Status.Allocatable = node.Status.Capacity
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
+	nodeInfo.SetNode(&node)
+	return nodeInfo, nil
 }
 
 func renderTemplate(str string, vars interface{}) string {
