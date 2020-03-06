@@ -20,10 +20,7 @@ import (
 	"fmt"
 
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
@@ -31,29 +28,25 @@ import (
 
 // RecommendationProvider gets current recommendation, annotations and vpaName for the given pod.
 type RecommendationProvider interface {
-	GetContainersResourcesForPod(pod *core.Pod) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error)
+	GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error)
 }
 
 type recommendationProvider struct {
 	limitsRangeCalculator   limitrange.LimitRangeCalculator
 	recommendationProcessor vpa_api_util.RecommendationProcessor
-	selectorFetcher         target.VpaTargetSelectorFetcher
-	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 }
 
-// NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(calculator limitrange.LimitRangeCalculator, recommendationProcessor vpa_api_util.RecommendationProcessor,
-	selectorFetcher target.VpaTargetSelectorFetcher, vpaLister vpa_lister.VerticalPodAutoscalerLister) *recommendationProvider {
+// NewRecommendationProvider constructs the recommendation provider that can be used to determine recommendations for pods.
+func NewRecommendationProvider(calculator limitrange.LimitRangeCalculator,
+	recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
 	return &recommendationProvider{
 		limitsRangeCalculator:   calculator,
 		recommendationProcessor: recommendationProcessor,
-		selectorFetcher:         selectorFetcher,
-		vpaLister:               vpaLister,
 	}
 }
 
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
-func GetContainersResources(pod *core.Pod, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
+func getContainersResources(pod *core.Pod, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
 	annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
@@ -78,60 +71,30 @@ func GetContainersResources(pod *core.Pod, podRecommendation vpa_types.Recommend
 	return resources
 }
 
-func (p *recommendationProvider) getMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
-	configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
-	if err != nil {
-		klog.Errorf("failed to get vpa configs: %v", err)
-		return nil
-	}
-	onConfigs := make([]*vpa_api_util.VpaWithSelector, 0)
-	for _, vpaConfig := range configs {
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
-			continue
-		}
-		selector, err := p.selectorFetcher.Fetch(vpaConfig)
-		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
-			continue
-		}
-		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
-			Vpa:      vpaConfig,
-			Selector: selector,
-		})
-	}
-	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
-	if result != nil {
-		return result.Vpa
-	}
-	return nil
-}
-
-// GetContainersResourcesForPod returns recommended request for a given pod, annotations and name of controlling VPA.
+// GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
 // The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error) {
-	klog.V(2).Infof("updating requirements for pod %s.", pod.Name)
-	vpaConfig := p.getMatchingVPA(pod)
-	if vpaConfig == nil {
-		klog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
-		return nil, nil, "", nil
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+	if vpa == nil || pod == nil {
+		klog.V(2).Infof("can't calculate recommendations, one of vpa(%+v), pod(%+v) is nil", vpa, pod)
+		return nil, nil, nil
 	}
+	klog.V(2).Infof("updating requirements for pod %s.", pod.Name)
 
 	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
 
-	if vpaConfig.Status.Recommendation != nil {
+	if vpa.Status.Recommendation != nil {
 		var err error
-		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy, vpaConfig.Status.Conditions, pod)
+		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa.Status.Recommendation, vpa.Spec.ResourcePolicy, vpa.Status.Conditions, pod)
 		if err != nil {
 			klog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
-			return nil, annotations, vpaConfig.Name, err
+			return nil, annotations, err
 		}
 	}
 	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
-		return nil, nil, "", fmt.Errorf("error getting containerLimitRange: %s", err)
+		return nil, nil, fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
-	containerResources := GetContainersResources(pod, *recommendedPodResources, containerLimitRange, annotations)
-	return containerResources, annotations, vpaConfig.Name, nil
+	containerResources := getContainersResources(pod, *recommendedPodResources, containerLimitRange, annotations)
+	return containerResources, annotations, nil
 }
