@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,6 +48,8 @@ var (
 	// machine set has a non-integral max annotation value.
 	errInvalidMaxAnnotation = errors.New("invalid max annotation")
 )
+
+type normalizedProviderID string
 
 // minSize returns the minimum value encoded in the annotations keyed
 // by nodeGroupMinSizeAnnotationKey. Returns errMissingMinAnnotation
@@ -142,4 +145,11 @@ func machineSetIsOwnedByMachineDeployment(machineSet *MachineSet, machineDeploym
 		return ref.UID == machineDeployment.UID
 	}
 	return false
+}
+
+// normalizedProviderString splits s on '/' returning everything after
+// the last '/'.
+func normalizedProviderString(s string) normalizedProviderID {
+	split := strings.Split(s, "/")
+	return normalizedProviderID(split[len(split)-1])
 }
