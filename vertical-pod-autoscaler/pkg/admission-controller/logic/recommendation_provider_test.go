@@ -23,23 +23,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
-
-func parseLabelSelector(selector string) labels.Selector {
-	labelSelector, _ := metav1.ParseToLabelSelector(selector)
-	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
-	return parsedSelector
-}
 
 func mustParseResourcePointer(val string) *resource.Quantity {
 	q := resource.MustParse(val)
@@ -105,8 +95,6 @@ func TestUpdateResourceRequests(t *testing.T) {
 	limitsNoRequestsPod := test.Pod().WithName("test_initialized").
 		AddContainer(limitsNoRequestsContainer).WithLabels(labels).Get()
 
-	offVPA := vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get()
-
 	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
 	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
 	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
@@ -120,7 +108,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	testCases := []struct {
 		name              string
 		pod               *apiv1.Pod
-		vpas              []*vpa_types.VerticalPodAutoscaler
+		vpa               *vpa_types.VerticalPodAutoscaler
 		expectedAction    bool
 		expectedError     error
 		expectedMem       resource.Quantity
@@ -130,142 +118,107 @@ func TestUpdateResourceRequests(t *testing.T) {
 		limitRange        *apiv1.LimitRangeItem
 		limitRangeCalcErr error
 		annotations       vpa_api_util.ContainerToAnnotationsMap
-		labelSelector     string
 	}{
 		{
 			name:           "uninitialized pod",
 			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:            vpa,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("200Mi"),
 			expectedCPU:    resource.MustParse("2"),
-			labelSelector:  "app = testingApp",
 		},
 		{
 			name:           "target below min",
 			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
+			vpa:            targetBelowMinVPA,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("300Mi"), // MinMemory is expected to be used
 			expectedCPU:    resource.MustParse("4"),     // MinCpu is expected to be used
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
 			},
-			labelSelector: "app = testingApp",
 		},
 		{
 			name:           "target above max",
 			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
+			vpa:            targetAboveMaxVPA,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("1Gi"), // MaxMemory is expected to be used
 			expectedCPU:    resource.MustParse("5"),   // MaxCpu is expected to be used
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
 			},
-			labelSelector: "app = testingApp",
 		},
 		{
 			name:           "initialized pod",
 			pod:            initialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:            vpa,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("200Mi"),
 			expectedCPU:    resource.MustParse("2"),
-			labelSelector:  "app = testingApp",
 		},
 		{
 			name:           "high memory",
 			pod:            initialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
+			vpa:            vpaWithHighMemory,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("1000Mi"),
 			expectedCPU:    resource.MustParse("2"),
-			labelSelector:  "app = testingApp",
-		},
-		{
-			name:           "not matching selecetor",
-			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-			expectedAction: false,
-			labelSelector:  "app = differentApp",
-		},
-		{
-			name:           "off mode",
-			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
-			expectedAction: false,
-			labelSelector:  "app = testingApp",
-		},
-		{
-			name:           "two vpas one in off mode",
-			pod:            uninitialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
-			expectedAction: true,
-			expectedMem:    resource.MustParse("200Mi"),
-			expectedCPU:    resource.MustParse("2"),
-			labelSelector:  "app = testingApp",
 		},
 		{
 			name:           "empty recommendation",
 			pod:            initialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
+			vpa:            vpaWithEmptyRecommendation,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("0"),
 			expectedCPU:    resource.MustParse("0"),
-			labelSelector:  "app = testingApp",
 		},
 		{
 			pod:            initialized,
-			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithNilRecommendation},
+			vpa:            vpaWithNilRecommendation,
 			expectedAction: true,
 			expectedMem:    resource.MustParse("0"),
 			expectedCPU:    resource.MustParse("0"),
-			labelSelector:  "app = testingApp",
 		},
 		{
 			name:             "guaranteed resources",
 			pod:              limitsMatchRequestsPod,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:              vpa,
 			expectedAction:   true,
 			expectedMem:      resource.MustParse("200Mi"),
 			expectedCPU:      resource.MustParse("2"),
 			expectedCPULimit: mustParseResourcePointer("2"),
 			expectedMemLimit: mustParseResourcePointer("200Mi"),
-			labelSelector:    "app = testingApp",
 		},
 		{
 			name:             "guaranteed resources - no request",
 			pod:              limitsNoRequestsPod,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:              vpa,
 			expectedAction:   true,
 			expectedMem:      resource.MustParse("200Mi"),
 			expectedCPU:      resource.MustParse("2"),
 			expectedCPULimit: mustParseResourcePointer("2"),
 			expectedMemLimit: mustParseResourcePointer("200Mi"),
-			labelSelector:    "app = testingApp",
 		},
 		{
 			name:             "proportional limit",
 			pod:              podWithDoubleLimit,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:              vpa,
 			expectedAction:   true,
 			expectedCPU:      resource.MustParse("2"),
 			expectedMem:      resource.MustParse("200Mi"),
 			expectedCPULimit: mustParseResourcePointer("4"),
 			expectedMemLimit: mustParseResourcePointer("400Mi"),
-			labelSelector:    "app = testingApp",
 		},
 		{
 			name:             "limit over int64",
 			pod:              podWithTenfoldLimit,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpaWithExabyteRecommendation},
+			vpa:              vpaWithExabyteRecommendation,
 			expectedAction:   true,
 			expectedCPU:      resource.MustParse("1Ei"),
 			expectedMem:      resource.MustParse("1Ei"),
 			expectedCPULimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
 			expectedMemLimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
-			labelSelector:    "app = testingApp",
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{
 					"cpu: failed to keep limit to request ratio; capping limit to int64",
@@ -276,7 +229,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		{
 			name:              "limit range calculation error",
 			pod:               initialized,
-			vpas:              []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:               vpa,
 			limitRangeCalcErr: fmt.Errorf("oh no"),
 			expectedAction:    false,
 			expectedError:     fmt.Errorf("error getting containerLimitRange: oh no"),
@@ -284,13 +237,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 		{
 			name:             "proportional limit from default",
 			pod:              initialized,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			vpa:              vpa,
 			expectedAction:   true,
 			expectedCPU:      resource.MustParse("2"),
 			expectedMem:      resource.MustParse("200Mi"),
 			expectedCPULimit: mustParseResourcePointer("2"),
 			expectedMemLimit: mustParseResourcePointer("200Mi"),
-			labelSelector:    "app = testingApp",
 			limitRange: &apiv1.LimitRangeItem{
 				Type: apiv1.LimitTypeContainer,
 				Default: apiv1.ResourceList{
@@ -302,34 +254,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf(tc.name), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
-
-			vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
-			vpaNamespaceLister.On("List").Return(tc.vpas, nil)
-
-			vpaLister := &test.VerticalPodAutoscalerListerMock{}
-			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
-
-			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
-
+		t.Run(tc.name, func(t *testing.T) {
 			recommendationProvider := &recommendationProvider{
-				vpaLister:               vpaLister,
 				recommendationProcessor: vpa_api_util.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
-				selectorFetcher:         mockSelectorFetcher,
 				limitsRangeCalculator: &fakeLimitRangeCalculator{
 					containerLimitRange: tc.limitRange,
 					containerErr:        tc.limitRangeCalcErr,
 				},
 			}
 
-			resources, annotations, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
+			resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
 
 			if tc.expectedAction {
-				assert.Equal(t, vpaName, name)
 				assert.Nil(t, err)
 				if !assert.Equal(t, len(resources), 1) {
 					return

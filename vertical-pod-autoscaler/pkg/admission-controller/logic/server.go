@@ -45,11 +45,16 @@ type AdmissionServer struct {
 	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
 	limitsChecker          limitrange.LimitRangeCalculator
+	vpaMatcher             VpaMatcher
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker limitrange.LimitRangeCalculator) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
+func NewAdmissionServer(recommendationProvider RecommendationProvider,
+	podPreProcessor PodPreProcessor,
+	vpaPreProcessor VpaPreProcessor,
+	limitsChecker limitrange.LimitRangeCalculator,
+	vpaMatcher VpaMatcher) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker, vpaMatcher}
 }
 
 type patchRecord struct {
@@ -68,7 +73,12 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		pod.Namespace = namespace
 	}
 	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	containersResources, annotationsPerContainer, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
+	controllingVpa := s.vpaMatcher.GetMatchingVPA(&pod)
+	if controllingVpa == nil {
+		klog.V(4).Infof("No matching VPA found for pod %s/%s", pod.Namespace, pod.Name)
+		return []patchRecord{}, nil
+	}
+	containersResources, annotationsPerContainer, err := s.recommendationProvider.GetContainersResourcesForPod(&pod, controllingVpa)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +102,7 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		patches = append(patches, getAddEmptyAnnotationsPatch())
 	}
 	if len(updatesAnnotation) > 0 {
-		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: %s", vpaName, strings.Join(updatesAnnotation, "; "))
+		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: %s", controllingVpa.Name, strings.Join(updatesAnnotation, "; "))
 		patches = append(patches, getAddAnnotationPatch(vpaAnnotationLabel, vpaAnnotationValue))
 	}
 	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(&pod)

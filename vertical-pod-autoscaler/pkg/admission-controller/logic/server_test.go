@@ -28,6 +28,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -57,12 +58,17 @@ func (fvp *fakeVpaPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, is
 type fakeRecommendationProvider struct {
 	resources              []vpa_api_util.ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
-	name                   string
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *apiv1.Pod) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error) {
-	return frp.resources, frp.containerToAnnotations, frp.name, frp.e
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+	return frp.resources, frp.containerToAnnotations, frp.e
+}
+
+type fakeVpaMatcher struct{}
+
+func (m fakeVpaMatcher) GetMatchingVPA(pod *apiv1.Pod) *vpa_types.VerticalPodAutoscaler {
+	return test.VerticalPodAutoscaler().WithName("name").WithContainer("testy-container").Get()
 }
 
 func addResourcesPatch(idx int) patchRecord {
@@ -166,7 +172,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			podPreProcessorError: nil,
 			recommendResources:   []vpa_api_util.ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectError:          fmt.Errorf("unexpected end of JSON input"),
 		},
 		{
@@ -176,7 +181,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			podPreProcessorError: fmt.Errorf("bad pod"),
 			recommendResources:   []vpa_api_util.ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectError:          fmt.Errorf("bad pod"),
 		},
 		{
@@ -196,7 +200,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourcesPatch(0),
 				addRequestsPatch(0),
@@ -231,7 +234,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				getAddEmptyAnnotationsPatch(),
@@ -270,7 +272,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addResourcesPatch(1),
@@ -298,7 +299,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourcesPatch(0),
 				addLimitsPatch(0),
@@ -333,7 +333,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
 				getAddEmptyAnnotationsPatch(),
@@ -346,9 +345,10 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			fppp := fakePodPreProcessor{e: tc.podPreProcessorError}
 			fvpp := fakeVpaPreProcessor{}
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
+			fvm := fakeVpaMatcher{}
+			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			lc := limitrange.NewNoopLimitsCalculator()
-			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc, &fvm)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
@@ -371,6 +371,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	fppp := fakePodPreProcessor{}
 	fvpp := fakeVpaPreProcessor{}
+	fvm := fakeVpaMatcher{}
 	recommendResources := []vpa_api_util.ContainerResources{
 		{
 			Requests: apiv1.ResourceList{
@@ -394,9 +395,9 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 					}
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
-	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
+	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
 	lc := limitrange.NewNoopLimitsCalculator()
-	s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+	s := NewAdmissionServer(&frp, &fppp, &fvpp, lc, &fvm)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
@@ -458,9 +459,10 @@ func TestGetPatchesForResourceRequest_VpaObservedContainers(t *testing.T) {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			fppp := fakePodPreProcessor{}
 			fvpp := fakeVpaPreProcessor{}
-			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, "RecomenderName", nil}
+			fvm := fakeVpaMatcher{}
+			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, nil}
 			lc := limitrange.NewNoopLimitsCalculator()
-			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
+			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc, fvm)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, "default")
 			assert.NoError(t, err)
 			if assert.Len(t, patches, len(tc.expectPatches)) {
