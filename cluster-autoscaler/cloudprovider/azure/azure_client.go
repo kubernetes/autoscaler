@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
@@ -31,22 +31,11 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+
 	"k8s.io/klog"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient"
 )
-
-// VirtualMachineScaleSetsClient defines needed functions for azure compute.VirtualMachineScaleSetsClient.
-type VirtualMachineScaleSetsClient interface {
-	Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error)
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, name string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error)
-	DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error)
-	List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error)
-}
-
-// VirtualMachineScaleSetVMsClient defines needed functions for azure compute.VirtualMachineScaleSetVMsClient.
-type VirtualMachineScaleSetVMsClient interface {
-	Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error)
-	List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error)
-}
 
 // VirtualMachinesClient defines needed functions for azure compute.VirtualMachinesClient.
 type VirtualMachinesClient interface {
@@ -77,134 +66,6 @@ type DisksClient interface {
 // AccountsClient defines needed functions for azure storage.AccountsClient.
 type AccountsClient interface {
 	ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error)
-}
-
-// azVirtualMachineScaleSetsClient implements VirtualMachineScaleSetsClient.
-type azVirtualMachineScaleSetsClient struct {
-	client compute.VirtualMachineScaleSetsClient
-}
-
-func newAzVirtualMachineScaleSetsClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azVirtualMachineScaleSetsClient {
-	virtualMachineScaleSetsClient := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
-	virtualMachineScaleSetsClient.BaseURI = endpoint
-	virtualMachineScaleSetsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
-	virtualMachineScaleSetsClient.PollingDelay = 5 * time.Second
-	configureUserAgent(&virtualMachineScaleSetsClient.Client)
-
-	return &azVirtualMachineScaleSetsClient{
-		client: virtualMachineScaleSetsClient,
-	}
-}
-
-func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, VMScaleSetName)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, VMScaleSetName)
-	}()
-
-	future, err := az.client.CreateOrUpdate(ctx, resourceGroupName, VMScaleSetName, parameters)
-	if err != nil {
-		return future.Response(), err
-	}
-
-	err = future.WaitForCompletionRef(ctx, az.client.Client)
-	return future.Response(), err
-}
-
-func (az *azVirtualMachineScaleSetsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): start", resourceGroupName, VMScaleSetName)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): end", resourceGroupName, VMScaleSetName)
-	}()
-
-	return az.client.Get(ctx, resourceGroupName, VMScaleSetName)
-}
-
-func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): start", resourceGroupName)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): end", resourceGroupName)
-	}()
-
-	iterator, err := az.client.ListComplete(ctx, resourceGroupName)
-	if err != nil {
-		return nil, err
-	}
-
-	result = make([]compute.VirtualMachineScaleSet, 0)
-	for ; iterator.NotDone(); err = iterator.Next() {
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, iterator.Value())
-	}
-
-	return result, nil
-}
-
-func (az *azVirtualMachineScaleSetsClient) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
-	}()
-
-	future, err := az.client.DeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs)
-	if err != nil {
-		return future.Response(), err
-	}
-
-	err = future.WaitForCompletionRef(ctx, az.client.Client)
-	return future.Response(), err
-}
-
-// azVirtualMachineScaleSetVMsClient implements VirtualMachineScaleSetVMsClient.
-type azVirtualMachineScaleSetVMsClient struct {
-	client compute.VirtualMachineScaleSetVMsClient
-}
-
-func newAzVirtualMachineScaleSetVMsClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azVirtualMachineScaleSetVMsClient {
-	virtualMachineScaleSetVMsClient := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
-	virtualMachineScaleSetVMsClient.BaseURI = endpoint
-	virtualMachineScaleSetVMsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
-	virtualMachineScaleSetVMsClient.PollingDelay = 5 * time.Second
-	configureUserAgent(&virtualMachineScaleSetVMsClient.Client)
-
-	return &azVirtualMachineScaleSetVMsClient{
-		client: virtualMachineScaleSetVMsClient,
-	}
-}
-
-func (az *azVirtualMachineScaleSetVMsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): start", resourceGroupName, VMScaleSetName, instanceID)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): end", resourceGroupName, VMScaleSetName, instanceID)
-	}()
-
-	return az.client.Get(ctx, resourceGroupName, VMScaleSetName, instanceID)
-}
-
-func (az *azVirtualMachineScaleSetVMsClient) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): start", resourceGroupName, virtualMachineScaleSetName, filter)
-	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): end", resourceGroupName, virtualMachineScaleSetName, filter)
-	}()
-
-	iterator, err := az.client.ListComplete(ctx, resourceGroupName, virtualMachineScaleSetName, filter, selectParameter, expand)
-	if err != nil {
-		return nil, err
-	}
-
-	result = make([]compute.VirtualMachineScaleSetVM, 0)
-	for ; iterator.NotDone(); err = iterator.Next() {
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, iterator.Value())
-	}
-
-	return result, nil
 }
 
 // azVirtualMachinesClient implements VirtualMachinesClient.
@@ -446,8 +307,8 @@ func (az *azAccountsClient) ListKeys(ctx context.Context, resourceGroupName stri
 }
 
 type azClient struct {
-	virtualMachineScaleSetsClient   VirtualMachineScaleSetsClient
-	virtualMachineScaleSetVMsClient VirtualMachineScaleSetVMsClient
+	virtualMachineScaleSetsClient   vmssclient.Interface
+	virtualMachineScaleSetVMsClient vmssvmclient.Interface
 	virtualMachinesClient           VirtualMachinesClient
 	deploymentsClient               DeploymentsClient
 	interfacesClient                InterfacesClient
@@ -519,10 +380,14 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		return nil, err
 	}
 
-	scaleSetsClient := newAzVirtualMachineScaleSetsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
+	azClientConfig := cfg.getAzureClientConfig(spt, env)
+
+	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
+	scaleSetsClient := vmssclient.New(vmssClientConfig)
 	klog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
 
-	scaleSetVMsClient := newAzVirtualMachineScaleSetVMsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
+	vmssVMClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
+	scaleSetVMsClient := vmssvmclient.New(vmssVMClientConfig)
 	klog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
 
 	virtualMachinesClient := newAzVirtualMachinesClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
