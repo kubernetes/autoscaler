@@ -244,9 +244,28 @@ Then deploy cluster-autoscaler by running
 kubectl create -f cluster-autoscaler-aks.yaml
 ```
 
-To deploy in AKS with `Helm 3`, please refer to [this tutorial](https://github.com/helm/charts/tree/master/stable/cluster-autoscaler#azure-aks).
+To deploy in AKS with `Helm 3`, please refer to [helm installation tutorial][].
 
 Please see the [AKS autoscaler documentation][] for details.
+
+## Rate limit and back-off retries
+
+The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by environment variables or cloud config file.
+
+| Config Name | Default | Environment Variable | Cloud Config File |
+| ----------- | ------- | -------------------- | ----------------- |
+| CloudProviderBackoff | false | ENABLE_BACKOFF | cloudProviderBackoff |
+| CloudProviderBackoffRetries | 6 | BACKOFF_RETRIES | cloudProviderBackoffRetries |
+| CloudProviderBackoffExponent | 1.5 | BACKOFF_EXPONENT | cloudProviderBackoffExponent |
+| CloudProviderBackoffDuration | 5 | BACKOFF_DURATION | cloudProviderBackoffDuration |
+| CloudProviderBackoffJitter | 1.0 | BACKOFF_JITTER | cloudProviderBackoffJitter |
+| CloudProviderRateLimit * | false | CLOUD_PROVIDER_RATE_LIMIT | cloudProviderRateLimit |
+| CloudProviderRateLimitQPS * | 1 | | cloudProviderRateLimitQPS |
+| CloudProviderRateLimitBucket * | 5 | | cloudProviderRateLimitBucket |
+| CloudProviderRateLimitQPSWrite * | 1 | | cloudProviderRateLimitQPSWrite |
+| CloudProviderRateLimitBucketWrite * | 5 | | cloudProviderRateLimitBucketWrite |
+
+> **_NOTE_**: * These rate limit configs can be set per-client. Customizing  `QPS` and `Bucket` through environment variables is not supported.
 
 [AKS]: https://docs.microsoft.com/azure/aks/
 [AKS autoscaler documentation]: https://docs.microsoft.com/azure/aks/autoscaler
@@ -255,3 +274,5 @@ Please see the [AKS autoscaler documentation][] for details.
 [Azure Portal]: https://portal.azure.com
 [Releases]: ../../README.md#releases
 [service principal]: https://docs.microsoft.com/azure/active-directory/develop/app-objects-and-service-principals
+[helm installation tutorial]: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler#azure-aks
+[Azure client]: https://github.com/kubernetes/kubernetes/tree/master/staging/src/k8s.io/legacy-cloud-providers/azure/clients

@@ -36,7 +36,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 )
 
@@ -176,9 +176,9 @@ func (scaleSet *ScaleSet) getAllVMSSInfo() ([]compute.VirtualMachineScaleSet, er
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.List(ctx, resourceGroup)
-	if err != nil {
-		return []compute.VirtualMachineScaleSet{}, err
+	setInfo, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.List(ctx, resourceGroup)
+	if rerr != nil {
+		return []compute.VirtualMachineScaleSet{}, rerr.Error()
 	}
 
 	return setInfo, nil
@@ -228,8 +228,6 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
 func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	var op compute.VirtualMachineScaleSet
-	var resp *http.Response
-	var isSuccess bool
 	var err error
 
 	defer func() {
@@ -257,15 +255,14 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
-	resp, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, scaleSet.Name, op)
-	isSuccess, err = isSuccessHTTPResponse(resp, err)
-	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
-		scaleSet.invalidateInstanceCache()
+	rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, scaleSet.Name, op)
+	if rerr != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, rerr)
 		return
 	}
 
-	klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+	klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+	scaleSet.invalidateInstanceCache()
 	return
 }
 
@@ -315,11 +312,11 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
+	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "")
 	klog.V(4).Infof("GetScaleSetVms: scaleSet.Name: %s, vmList: %v", scaleSet.Name, vmList)
 	if err != nil {
 		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
-		return nil, err
+		return nil, err.Error()
 	}
 
 	allVMs := make([]string, 0)
@@ -418,8 +415,8 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	_, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
-	return err
+	rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	return rerr.Error()
 }
 
 // DeleteNodes deletes the nodes from the group.

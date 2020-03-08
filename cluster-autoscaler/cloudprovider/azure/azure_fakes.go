@@ -22,11 +22,12 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/mock"
+	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 
 const (
@@ -41,7 +42,7 @@ type VirtualMachineScaleSetsClientMock struct {
 }
 
 // Get gets the VirtualMachineScaleSet by vmScaleSetName.
-func (client *VirtualMachineScaleSetsClientMock) Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
+func (client *VirtualMachineScaleSetsClientMock) Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, rerr *retry.Error) {
 	capacity := int64(2)
 	name := "Standard_D8_V3" // typo to test case-insensitive lookup
 	location := "switzerlandwest"
@@ -58,7 +59,7 @@ func (client *VirtualMachineScaleSetsClientMock) Get(ctx context.Context, resour
 }
 
 // CreateOrUpdate creates or updates the VirtualMachineScaleSet.
-func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error) {
+func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) *retry.Error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
@@ -67,19 +68,20 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 	}
 	client.FakeStore[resourceGroupName][VMScaleSetName] = parameters
 
-	return &http.Response{
-		StatusCode: http.StatusOK,
-	}, nil
+	return nil
 }
 
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
-func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
+func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) *retry.Error {
 	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs)
-	return nil, args.Error(1)
+	if args.Error(1) != nil {
+		return &retry.Error{RawError: args.Error(1)}
+	}
+	return nil
 }
 
 // List gets a list of VirtualMachineScaleSets.
-func (client *VirtualMachineScaleSetsClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
+func (client *VirtualMachineScaleSetsClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, rerr *retry.Error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
@@ -99,7 +101,7 @@ type VirtualMachineScaleSetVMsClientMock struct {
 }
 
 // Get gets a VirtualMachineScaleSetVM by VMScaleSetName and instanceID.
-func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
+func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string, expand compute.InstanceViewTypes) (result compute.VirtualMachineScaleSetVM, rerr *retry.Error) {
 	ID := fakeVirtualMachineScaleSetVMID
 	vmID := "123E4567-E89B-12D3-A456-426655440000"
 	properties := compute.VirtualMachineScaleSetVMProperties{
@@ -113,7 +115,7 @@ func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceG
 }
 
 // List gets a list of VirtualMachineScaleSetVMs.
-func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
+func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, expand string) (result []compute.VirtualMachineScaleSetVM, rerr *retry.Error) {
 	ID := fakeVirtualMachineScaleSetVMID
 	instanceID := "0"
 	vmID := "123E4567-E89B-12D3-A456-426655440000"
@@ -127,6 +129,16 @@ func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resource
 	})
 
 	return result, nil
+}
+
+// Update updates a  VirtualMachineScaleSetVM
+func (m *VirtualMachineScaleSetVMsClientMock) Update(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string, parameters compute.VirtualMachineScaleSetVM, source string) *retry.Error {
+	return nil
+}
+
+// UpdateVMs updates a list of VirtualMachineScaleSetVM from map[instanceID]compute.VirtualMachineScaleSetVM.
+func (m *VirtualMachineScaleSetVMsClientMock) UpdateVMs(ctx context.Context, resourceGroupName string, VMScaleSetName string, instances map[string]compute.VirtualMachineScaleSetVM, source string) *retry.Error {
+	return nil
 }
 
 // VirtualMachinesClientMock mocks for VirtualMachinesClient.
