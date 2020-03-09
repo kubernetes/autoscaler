@@ -100,6 +100,16 @@ func TestUtilization(t *testing.T) {
 	assert.Zero(t, utilInfo.Utilization)
 }
 
+func nodeInfos(nodes []*apiv1.Node) []*schedulernodeinfo.NodeInfo {
+	result := make([]*schedulernodeinfo.NodeInfo, len(nodes))
+	for i, node := range nodes {
+		ni := schedulernodeinfo.NewNodeInfo()
+		ni.SetNode(node)
+		result[i] = ni
+	}
+	return result
+}
+
 func TestFindPlaceAllOk(t *testing.T) {
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
@@ -113,6 +123,10 @@ func TestFindPlaceAllOk(t *testing.T) {
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	destinations := map[string]bool{
+		"n1": true,
+		"n2": true,
+	}
 	tracker := NewUsageTracker()
 
 	clusterSnapshot := NewBasicClusterSnapshot()
@@ -121,10 +135,11 @@ func TestFindPlaceAllOk(t *testing.T) {
 	InitializeClusterSnapshotOrDie(t, clusterSnapshot,
 		[]*apiv1.Node{node1, node2},
 		[]*apiv1.Pod{pod1})
+
 	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{new1, new2},
-		[]*apiv1.Node{node1, node2},
+		destinations,
 		clusterSnapshot,
 		predicateChecker,
 		oldHints, newHints, tracker, time.Now())
@@ -136,7 +151,6 @@ func TestFindPlaceAllOk(t *testing.T) {
 }
 
 func TestFindPlaceAllBas(t *testing.T) {
-	nodebad := BuildTestNode("nbad", 1000, 2000000)
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
 	node2 := BuildTestNode("n2", 1000, 2000000)
@@ -150,6 +164,11 @@ func TestFindPlaceAllBas(t *testing.T) {
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	destinations := map[string]bool{
+		"nbad": true,
+		"n1":   true,
+		"n2":   true,
+	}
 	tracker := NewUsageTracker()
 
 	clusterSnapshot := NewBasicClusterSnapshot()
@@ -162,7 +181,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 	err = findPlaceFor(
 		"nbad",
 		[]*apiv1.Pod{new1, new2, new3},
-		[]*apiv1.Node{nodebad, node1, node2},
+		destinations,
 		clusterSnapshot, predicateChecker,
 		oldHints, newHints, tracker, time.Now())
 
@@ -181,6 +200,11 @@ func TestFindNone(t *testing.T) {
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
 
+	destinations := map[string]bool{
+		"n1": true,
+		"n2": true,
+	}
+
 	clusterSnapshot := NewBasicClusterSnapshot()
 	predicateChecker, err := NewTestPredicateChecker()
 	assert.NoError(t, err)
@@ -191,7 +215,7 @@ func TestFindNone(t *testing.T) {
 	err = findPlaceFor(
 		"x",
 		[]*apiv1.Pod{},
-		[]*apiv1.Node{node1, node2},
+		destinations,
 		clusterSnapshot, predicateChecker,
 		make(map[string]string),
 		make(map[string]string),
@@ -200,65 +224,61 @@ func TestFindNone(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestShuffleNodes(t *testing.T) {
-	nodes := []*apiv1.Node{
-		BuildTestNode("n1", 0, 0),
-		BuildTestNode("n2", 0, 0),
-		BuildTestNode("n3", 0, 0)}
-	gotPermutation := false
-	for i := 0; i < 10000; i++ {
-		shuffled := shuffleNodes(nodes)
-		if shuffled[0].Name == "n2" && shuffled[1].Name == "n3" && shuffled[2].Name == "n1" {
-			gotPermutation = true
-			break
-		}
-	}
-	assert.True(t, gotPermutation)
-}
-
 func TestFindEmptyNodes(t *testing.T) {
+	nodes := []*apiv1.Node{}
+	nodeNames := []string{}
+	for i := 0; i < 4; i++ {
+		nodeName := fmt.Sprintf("n%d", i)
+		node := BuildTestNode(nodeName, 1000, 2000000)
+		SetNodeReadyState(node, true, time.Time{})
+		nodes = append(nodes, node)
+		nodeNames = append(nodeNames, nodeName)
+	}
+
 	pod1 := BuildTestPod("p1", 300, 500000)
 	pod1.Spec.NodeName = "n1"
+
 	pod2 := BuildTestPod("p2", 300, 500000)
 	pod2.Spec.NodeName = "n2"
 	pod2.Annotations = map[string]string{
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	node1 := BuildTestNode("n1", 1000, 2000000)
-	node2 := BuildTestNode("n2", 1000, 2000000)
-	node3 := BuildTestNode("n3", 1000, 2000000)
-	node4 := BuildTestNode("n4", 1000, 2000000)
+	clusterSnapshot := NewBasicClusterSnapshot()
+	InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
 
-	SetNodeReadyState(node1, true, time.Time{})
-	SetNodeReadyState(node2, true, time.Time{})
-	SetNodeReadyState(node3, true, time.Time{})
-	SetNodeReadyState(node4, true, time.Time{})
-
-	emptyNodes := FindEmptyNodesToRemove([]*apiv1.Node{node1, node2, node3, node4}, []*apiv1.Pod{pod1, pod2})
-	assert.Equal(t, []*apiv1.Node{node2, node3, node4}, emptyNodes)
+	emptyNodes := FindEmptyNodesToRemove(clusterSnapshot, nodeNames)
+	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
 
 type findNodesToRemoveTestConfig struct {
 	name        string
 	pods        []*apiv1.Pod
-	candidates  []*apiv1.Node
 	allNodes    []*apiv1.Node
+	candidates  []string
 	toRemove    []NodeToBeRemoved
 	unremovable []*UnremovableNode
 }
 
 func TestFindNodesToRemove(t *testing.T) {
 	emptyNode := BuildTestNode("n1", 1000, 2000000)
+	emptyNodeInfo := schedulernodeinfo.NewNodeInfo()
+	emptyNodeInfo.SetNode(emptyNode)
 
 	// two small pods backed by ReplicaSet
 	drainableNode := BuildTestNode("n2", 1000, 2000000)
+	drainableNodeInfo := schedulernodeinfo.NewNodeInfo()
+	drainableNodeInfo.SetNode(drainableNode)
 
 	// one small pod, not backed by anything
 	nonDrainableNode := BuildTestNode("n3", 1000, 2000000)
+	nonDrainableNodeInfo := schedulernodeinfo.NewNodeInfo()
+	nonDrainableNodeInfo.SetNode(nonDrainableNode)
 
 	// one very large pod
 	fullNode := BuildTestNode("n4", 1000, 2000000)
+	fullNodeInfo := schedulernodeinfo.NewNodeInfo()
+	fullNodeInfo.SetNode(fullNode)
 
 	SetNodeReadyState(emptyNode, true, time.Time{})
 	SetNodeReadyState(drainableNode, true, time.Time{})
@@ -270,13 +290,20 @@ func TestFindNodesToRemove(t *testing.T) {
 	pod1 := BuildTestPod("p1", 100, 100000)
 	pod1.OwnerReferences = ownerRefs
 	pod1.Spec.NodeName = "n2"
+	drainableNodeInfo.AddPod(pod1)
+
 	pod2 := BuildTestPod("p2", 100, 100000)
 	pod2.OwnerReferences = ownerRefs
 	pod2.Spec.NodeName = "n2"
+	drainableNodeInfo.AddPod(pod2)
+
 	pod3 := BuildTestPod("p3", 100, 100000)
 	pod3.Spec.NodeName = "n3"
+	nonDrainableNodeInfo.AddPod(pod3)
+
 	pod4 := BuildTestPod("p4", 1000, 100000)
 	pod4.Spec.NodeName = "n4"
+	fullNodeInfo.AddPod(pod4)
 
 	emptyNodeToRemove := NodeToBeRemoved{
 		Node:             emptyNode,
@@ -297,7 +324,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "just an empty node, should be removed",
 			pods:        []*apiv1.Pod{},
-			candidates:  []*apiv1.Node{emptyNode},
+			candidates:  []string{emptyNode.Name},
 			allNodes:    []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*UnremovableNode{},
@@ -306,7 +333,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
-			candidates:  []*apiv1.Node{drainableNode},
+			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
@@ -315,7 +342,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
-			candidates:  []*apiv1.Node{drainableNode, nonDrainableNode},
+			candidates:  []string{drainableNode.Name, nonDrainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
 			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
@@ -324,7 +351,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
-			candidates:  []*apiv1.Node{drainableNode},
+			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
 			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
@@ -333,7 +360,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		{
 			name:        "4 nodes, 1 empty, 1 drainable",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates:  []*apiv1.Node{emptyNode, drainableNode},
+			candidates:  []string{emptyNode.Name, drainableNode.Name},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 			unremovable: []*UnremovableNode{},
@@ -341,14 +368,20 @@ func TestFindNodesToRemove(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-		toRemove, unremovable, _, err := FindNodesToRemove(
-			test.candidates, test.allNodes, test.pods, nil,
-			clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
-			tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-		assert.NoError(t, err)
-		fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
-		assert.Equal(t, toRemove, test.toRemove)
-		assert.Equal(t, unremovable, test.unremovable)
+		t.Run(test.name, func(t *testing.T) {
+			destinations := make([]string, 0, len(test.allNodes))
+			for _, node := range test.allNodes {
+				destinations = append(destinations, node.Name)
+			}
+			InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
+			toRemove, unremovable, _, err := FindNodesToRemove(
+				test.candidates, destinations, nil,
+				clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
+				tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+			assert.NoError(t, err)
+			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
+			assert.Equal(t, toRemove, test.toRemove)
+			assert.Equal(t, unremovable, test.unremovable)
+		})
 	}
 }
