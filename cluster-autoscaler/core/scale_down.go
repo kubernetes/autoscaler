@@ -417,10 +417,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	destinations := make(map[string]bool, len(destinationNodes))
-	for _, destination := range destinationNodes {
-		destinations[destination.Name] = true
-	}
 
 	sd.updateUnremovableNodes()
 
@@ -499,6 +495,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
 	currentCandidates, currentNonCandidates := sd.chooseCandidates(currentlyUnneededNonEmptyNodes)
+
+	destinations := make([]string, 0, len(destinationNodes))
+	for _, destinationNode := range destinationNodes {
+		destinations = append(destinations, destinationNode.Name)
+	}
 
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
@@ -751,7 +752,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	}
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
-	nodesWithoutMasterNames := make(map[string]bool, len(nodesWithoutMaster))
+	nodesWithoutMasterNames := make([]string, 0, len(nodesWithoutMaster))
 
 	candidateNames := make([]string, 0)
 	readinessMap := make(map[string]bool)
@@ -771,7 +772,7 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	resourcesWithLimits := resourceLimiter.GetResources()
 	for _, nodeInfo := range nodesWithoutMaster {
 		node := nodeInfo.Node()
-		nodesWithoutMasterNames[node.Name] = true
+		nodesWithoutMasterNames = append(nodesWithoutMasterNames, node.Name)
 
 		unneededSince, found := sd.unneededNodes[node.Name]
 		if !found {
