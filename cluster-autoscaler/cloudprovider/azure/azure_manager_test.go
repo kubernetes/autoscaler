@@ -18,12 +18,14 @@ package azure
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	azclients "k8s.io/legacy-cloud-providers/azure/clients"
 )
 
 const validAzureCfg = `{
@@ -40,7 +42,13 @@ const validAzureCfg = `{
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
 	"vmssCacheTTL": 60,
-	"maxDeploymentsCount": 8}`
+	"maxDeploymentsCount": 8,
+	"cloudProviderRateLimit": false,
+	"routeRateLimit": {
+		"cloudProviderRateLimit": true,
+		"cloudProviderRateLimitQPS": 3
+	}
+}`
 
 const invalidAzureCfg = `{{}"cloud": "AzurePublicCloud",}`
 
@@ -49,6 +57,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 
 	expectedConfig := &Config{
 		Cloud:               "AzurePublicCloud",
+		Location:            "southeastasia",
 		TenantID:            "fakeId",
 		SubscriptionID:      "fakeId",
 		ResourceGroup:       "fakeId",
@@ -57,10 +66,54 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		AADClientSecret:     "fakeId",
 		VmssCacheTTL:        60,
 		MaxDeploymentsCount: 8,
+		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
+			RateLimitConfig: azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			InterfaceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			StorageAccountRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			DiskRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+		},
 	}
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedConfig, manager.config, "unexpected azure manager configuration")
+	assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
 }
 
 func TestCreateAzureManagerInvalidConfig(t *testing.T) {
