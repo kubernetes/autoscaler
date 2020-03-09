@@ -962,14 +962,6 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 }
 
 func (sd *ScaleDown) getEmptyNodesNoResourceLimits(candidates []string, maxEmptyBulkDelete int) []*apiv1.Node {
-	/*	candidateNodeInfos := make([]*schedulernodeinfo.NodeInfo, len(candidates))
-		for i, name := range candidates {
-			if nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(name); err != nil {
-				klog.Errorf("Can't retrive scale-down candidate %s from snapshot, err: %v", name, err)
-			} else {
-				candidateNodeInfos[i] = nodeInfo
-			}
-		}*/
 	return sd.getEmptyNodes(candidates, maxEmptyBulkDelete, noScaleDownLimitsOnResources())
 }
 
