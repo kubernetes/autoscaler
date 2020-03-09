@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"flag"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
@@ -24,15 +25,15 @@ import (
 
 var (
 	// MemoryAggregationWindowLength is the length of the memory usage history
-	// aggregated by VPA, which is 8 days.
-	MemoryAggregationWindowLength = time.Hour * 8 * 24
+	// aggregated by VPA.
+	MemoryAggregationWindowLength = DefaultMemoryAggregationWindowLength
 	// MemoryAggregationInterval is the length of a single interval, for
 	// which the peak memory usage is computed.
 	// Memory usage peaks are aggregated in daily intervals. In other words
 	// there is one memory usage sample per day (the maximum usage over that
 	// day).
 	// Note: AggregationWindowLength must be integrally divisible by this value.
-	MemoryAggregationInterval = time.Hour * 24
+	MemoryAggregationInterval = DefaultMemoryAggregationInterval
 	// CPUHistogramOptions are options to be used by histograms that store
 	// CPU measures expressed in cores.
 	CPUHistogramOptions = cpuHistogramOptions()
@@ -46,10 +47,10 @@ var (
 	// memory usage sample to lose half of its weight. In other words, a fresh
 	// usage sample is twice as 'important' as one with age equal to the half
 	// life period.
-	MemoryHistogramDecayHalfLife = time.Hour * 24
+	MemoryHistogramDecayHalfLife = DefaultMemoryHistogramDecayHalfLife
 	// CPUHistogramDecayHalfLife is the amount of time it takes a historical
 	// CPU usage sample to lose half of its weight.
-	CPUHistogramDecayHalfLife = time.Hour * 24
+	CPUHistogramDecayHalfLife = DefaultCPUHistogramDecayHalfLife
 )
 
 const (
@@ -58,6 +59,16 @@ const (
 	// epsilon is the minimal weight kept in histograms, it should be small enough that old samples
 	// (just inside MemoryAggregationWindowLength) added with minSampleWeight are still kept
 	epsilon = 0.001 * minSampleWeight
+	// DefaultMemoryAggregationWindowLength is the default value for MemoryAggregationWindowLength.
+	DefaultMemoryAggregationWindowLength = time.Hour * 8 * 24
+	// DefaultMemoryAggregationInterval is the default value for MemoryAggregationInterval.
+	// which the peak memory usage is computed.
+	DefaultMemoryAggregationInterval = time.Hour * 24
+	// DefaultMemoryHistogramDecayHalfLife is the default value for MemoryHistogramDecayHalfLife.
+	DefaultMemoryHistogramDecayHalfLife = time.Hour * 24
+	// DefaultCPUHistogramDecayHalfLife is the default value for CPUHistogramDecayHalfLife.
+	// CPU usage sample to lose half of its weight.
+	DefaultCPUHistogramDecayHalfLife = time.Hour * 24
 )
 
 func cpuHistogramOptions() util.HistogramOptions {
@@ -82,4 +93,11 @@ func memoryHistogramOptions() util.HistogramOptions {
 		panic("Invalid memory histogram options") // Should not happen.
 	}
 	return options
+}
+
+func init() {
+	flag.DurationVar(&MemoryAggregationWindowLength, "memory-aggregation-window-length", DefaultMemoryAggregationWindowLength, `The length of the memory usage history aggregated by VPA.`)
+	flag.DurationVar(&MemoryAggregationInterval, "memory-aggregation-interval", DefaultMemoryAggregationInterval, `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in daily intervals. In other words there is one memory usage sample per day (the maximum usage over that day). Note: AggregationWindowLength must be integrally divisible by this value.`)
+	flag.DurationVar(&MemoryHistogramDecayHalfLife, "memory-histogram-decay-half-life", DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
+	flag.DurationVar(&CPUHistogramDecayHalfLife, "cpu-histogram-decay-half-life", DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 }
