@@ -659,22 +659,20 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 // chooseCandidates splits nodes into current candidates for scale-down and the
 // rest. Current candidates are unneeded nodes from the previous run that are
 // still in the nodes list.
-func (sd *ScaleDown) chooseCandidates(nodes []string) ([]string, []string) {
+func (sd *ScaleDown) chooseCandidates(nodes []string) (candidates []string, nonCandidates []string) {
 	// Number of candidates should not be capped. We will look for nodes to remove
 	// from the whole set of nodes.
 	if sd.context.ScaleDownNonEmptyCandidatesCount <= 0 {
 		return nodes, nil
 	}
-	currentCandidates := make([]string, 0, len(sd.unneededNodesList))
-	currentNonCandidates := make([]string, 0, len(nodes))
 	for _, node := range nodes {
 		if _, found := sd.unneededNodes[node]; found {
-			currentCandidates = append(currentCandidates, node)
+			candidates = append(candidates, node)
 		} else {
-			currentNonCandidates = append(currentNonCandidates, node)
+			nonCandidates = append(nonCandidates, node)
 		}
 	}
-	return currentCandidates, currentNonCandidates
+	return candidates, nonCandidates
 }
 
 func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGroups map[string]cloudprovider.NodeGroup, evictedPodLists map[string][]*apiv1.Pod) []*status.ScaleDownNode {
