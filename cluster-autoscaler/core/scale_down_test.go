@@ -1456,16 +1456,14 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 		{"n6", 8000, 6000 * utils.MiB, 0, true, "ng1"},
 		{"n7", 6000, 16000 * utils.MiB, 0, true, "ng1"},
 	}
-	nodes := make([]*schedulernodeinfo.NodeInfo, len(nodeConfigs))
+	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		SetNodeReadyState(node, n.ready, time.Now())
-		nodeInfo := schedulernodeinfo.NewNodeInfo()
-		nodeInfo.SetNode(node)
-		nodes[i] = nodeInfo
+		nodes[i] = node
 	}
 
-	nodes[6].Node().Spec.Taints = []apiv1.Taint{
+	nodes[6].Spec.Taints = []apiv1.Taint{
 		{
 			Key:    deletetaint.ToBeDeletedTaint,
 			Value:  fmt.Sprint(time.Now().Unix()),
@@ -1528,7 +1526,7 @@ func TestFilterOutMasters(t *testing.T) {
 
 	withoutMastersNames := make([]string, len(withoutMasters))
 	for i, n := range withoutMasters {
-		withoutMastersNames[i] = n.Node().Name
+		withoutMastersNames[i] = n.Name
 	}
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
