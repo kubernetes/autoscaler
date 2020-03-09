@@ -407,7 +407,9 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 		assertPatchOneOf(t, patches[1], []patchRecord{cpuUpdate, unobtaniumUpdate})
 		assert.False(t, eqPatch(patches[0], patches[1]))
 		assertEqPatch(t, patches[2], getAddEmptyAnnotationsPatch())
-		assertEqPatch(t, patches[3], addAnnotationRequest([][]string{{cpu, unobtanium}}, request))
+		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
+		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
+		assertPatchOneOf(t, patches[3], []patchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
 		assertEqPatch(t, patches[4], addVpaObservedContainersPatch([]string{}))
 	}
 }
