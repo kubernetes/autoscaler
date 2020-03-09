@@ -113,7 +113,7 @@ type UtilizationInfo struct {
 // rescheduling location for each of the pods.
 func FindNodesToRemove(
 	candidates []string,
-	destinations map[string]bool,
+	destinations []string,
 	listers kube_util.ListerRegistry,
 	clusterSnapshot ClusterSnapshot,
 	predicateChecker PredicateChecker,
@@ -134,6 +134,11 @@ func FindNodesToRemove(
 	}
 	newHints := make(map[string]string, len(oldHints))
 
+	destinationMap := make(map[string]bool, len(destinations))
+	for _, destination := range destinations {
+		destinationMap[destination] = true
+	}
+
 candidateloop:
 	for _, nodeName := range candidates {
 		nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
@@ -145,7 +150,7 @@ candidateloop:
 		var podsToRemove []*apiv1.Pod
 		var blockingPod *drain.BlockingPod
 
-		if _, found := destinations[nodeName]; !found {
+		if _, found := destinationMap[nodeName]; !found {
 			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, nodeName)
 			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
 			continue candidateloop
@@ -169,7 +174,7 @@ candidateloop:
 			continue candidateloop
 		}
 
-		findProblems := findPlaceFor(nodeName, podsToRemove, destinations, clusterSnapshot,
+		findProblems := findPlaceFor(nodeName, podsToRemove, destinationMap, clusterSnapshot,
 			predicateChecker, oldHints, newHints, usageTracker, timestamp)
 
 		if findProblems == nil {
