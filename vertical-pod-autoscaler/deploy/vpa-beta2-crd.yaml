@@ -23,6 +23,7 @@ spec:
   validation:
     # openAPIV3Schema is the schema for validating custom objects.
     openAPIV3Schema:
+      type: object
       properties:
         spec:
           type: object
