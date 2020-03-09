@@ -196,6 +196,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 		nodeInfo, err := snapshot.NodeInfos().Get(node)
 		if err != nil {
 			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", node, err)
+			continue
 		}
 		// Should block on all pods.
 		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
