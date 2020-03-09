@@ -369,9 +369,9 @@ func TestFindNodesToRemove(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			destinations := map[string]bool{}
+			destinations := make([]string, 0, len(test.allNodes))
 			for _, node := range test.allNodes {
-				destinations[node.Name] = true
+				destinations = append(destinations, node.Name)
 			}
 			InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			toRemove, unremovable, _, err := FindNodesToRemove(
