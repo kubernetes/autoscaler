@@ -166,7 +166,7 @@ type scaleDownResourcesDelta map[string]int64
 // used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
 const scaleDownLimitUnknown = math.MinInt64
 
-func computeScaleDownResourcesLeftLimits(nodes []*schedulernodeinfo.NodeInfo, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
+func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
 	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
 
 	var totalGpus map[string]int64
@@ -208,10 +208,9 @@ func computeAboveMin(total int64, min int64) int64 {
 
 }
 
-func calculateScaleDownCoresMemoryTotal(nodes []*schedulernodeinfo.NodeInfo, timestamp time.Time) (int64, int64) {
+func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
-	for _, nodeInfo := range nodes {
-		node := nodeInfo.Node()
+	for _, node := range nodes {
 		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
@@ -225,7 +224,7 @@ func calculateScaleDownCoresMemoryTotal(nodes []*schedulernodeinfo.NodeInfo, tim
 	return coresTotal, memoryTotal
 }
 
-func calculateScaleDownGpusTotal(nodes []*schedulernodeinfo.NodeInfo, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
+func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
 	type gpuInfo struct {
 		name  string
 		count int64
@@ -233,8 +232,7 @@ func calculateScaleDownGpusTotal(nodes []*schedulernodeinfo.NodeInfo, cp cloudpr
 
 	result := make(map[string]int64)
 	ngCache := make(map[string]gpuInfo)
-	for _, nodeInfo := range nodes {
-		node := nodeInfo.Node()
+	for _, node := range nodes {
 		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
@@ -753,6 +751,9 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
 	nodesWithoutMasterNames := make([]string, 0, len(nodesWithoutMaster))
+	for _, node := range nodesWithoutMaster {
+		nodesWithoutMasterNames = append(nodesWithoutMasterNames, node.Name)
+	}
 
 	candidateNames := make([]string, 0)
 	readinessMap := make(map[string]bool)
@@ -770,17 +771,16 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
-	for _, nodeInfo := range nodesWithoutMaster {
-		node := nodeInfo.Node()
-		nodesWithoutMasterNames = append(nodesWithoutMasterNames, node.Name)
+	for nodeName, unneededSince := range sd.unneededNodes {
+		klog.V(2).Infof("%s was unneeded for %s", nodeName, currentTime.Sub(unneededSince).String())
 
-		unneededSince, found := sd.unneededNodes[node.Name]
-		if !found {
-			// Node is not unneeded.
+		nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(nodeName)
+		if err != nil {
+			klog.Errorf("Can't retrieve unneeded node %s from snapshot, err: %v", nodeName, err)
 			continue
 		}
 
-		klog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(unneededSince).String())
+		node := nodeInfo.Node()
 
 		// Check if node is marked with no scale down annotation.
 		if hasNoScaleDownAnnotation(node) {
@@ -1326,11 +1326,11 @@ func isMasterNode(nodeInfo *schedulernodeinfo.NodeInfo) bool {
 	return false
 }
 
-func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
-	result := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
+func filterOutMasters(nodeInfos []*schedulernodeinfo.NodeInfo) []*apiv1.Node {
+	result := make([]*apiv1.Node, 0, len(nodeInfos))
 	for _, nodeInfo := range nodeInfos {
 		if !isMasterNode(nodeInfo) {
-			result = append(result, nodeInfo)
+			result = append(result, nodeInfo.Node())
 		}
 	}
 	return result
