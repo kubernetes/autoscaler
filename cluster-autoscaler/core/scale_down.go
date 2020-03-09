@@ -752,7 +752,6 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
 	nodesWithoutMasterNames := make(map[string]bool, len(nodesWithoutMaster))
 
-	candidates := make([]*schedulernodeinfo.NodeInfo, 0)
 	candidateNames := make([]string, 0)
 	readinessMap := make(map[string]bool)
 	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
@@ -843,12 +842,11 @@ func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, curren
 			continue
 		}
 
-		candidates = append(candidates, nodeInfo)
 		candidateNames = append(candidateNames, node.Name)
 		candidateNodeGroups[node.Name] = nodeGroup
 	}
 
-	if len(candidates) == 0 {
+	if len(candidateNames) == 0 {
 		klog.V(1).Infof("No candidates for scale down")
 		scaleDownStatus.Result = status.ScaleDownNoUnneeded
 		return scaleDownStatus, nil
