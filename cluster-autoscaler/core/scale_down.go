@@ -624,10 +624,13 @@ func (sd *ScaleDown) updateUnremovableNodes() {
 	}
 	newUnremovableNodes := make(map[string]time.Time, len(sd.unremovableNodes))
 	for oldUnremovable, since := range sd.unremovableNodes {
-		if _, err := sd.context.ClusterSnapshot.NodeInfos().Get(oldUnremovable); err == nil {
-			// Nodes that are in the cluster should not be deleted.
-			newUnremovableNodes[oldUnremovable] = since
+		if _, err := sd.context.ClusterSnapshot.NodeInfos().Get(oldUnremovable); err != nil {
+			// Not logging on error level as most likely cause is that node is no longer in the cluster.
+			klog.Infof("Can't retrieve node %s from snapshot, removing from unremovable map, err: %v", oldUnremovable, err)
+			continue
 		}
+		// Keep nodes that are still in the cluster.
+		newUnremovableNodes[oldUnremovable] = since
 	}
 	sd.unremovableNodes = newUnremovableNodes
 }
