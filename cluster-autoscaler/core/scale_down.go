@@ -465,7 +465,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 		utilizationMap[node.Name] = utilInfo
 
-		if !sd.isNodeBelowUtilzationThreshold(node, utilInfo) {
+		if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
 			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
 			continue
@@ -600,8 +600,8 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	return nil
 }
 
-// isNodeBelowUtilzationThreshold determintes if a given node utilization is blow threshold.
-func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
+// isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
+func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
 	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
 		if utilInfo.Utilization >= sd.context.ScaleDownGpuUtilizationThreshold {
 			return false
@@ -736,7 +736,10 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+func (sd *ScaleDown) TryToScaleDown(
+	currentTime time.Time,
+	pdbs []*policyv1.PodDisruptionBudget,
+) (*status.ScaleDownStatus, errors.AutoscalerError) {
 
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
