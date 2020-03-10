@@ -26,6 +26,8 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
@@ -82,16 +84,16 @@ func main() {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	vpaPreprocessor := logic.NewDefaultVpaPreProcessor()
+	podPreprocessor := pod.NewDefaultPreProcessor()
+	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
-	recommendationProvider := logic.NewRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
-	vpaMatcher := logic.NewVpaMatcher(vpaLister, targetSelectorFetcher)
+	recommendationProvider := pod.NewRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher)
 
 	hostname, err := os.Hostname()
 	if err != nil {

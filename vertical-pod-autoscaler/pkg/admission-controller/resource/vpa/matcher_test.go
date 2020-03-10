@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package vpa
 
 import (
 	"testing"
@@ -114,9 +114,9 @@ func TestGetMatchingVpa(t *testing.T) {
 			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
-			vpaMatcher := NewVpaMatcher(vpaLister, mockSelectorFetcher)
+			matcher := NewMatcher(vpaLister, mockSelectorFetcher)
 
-			vpa := vpaMatcher.GetMatchingVPA(tc.pod)
+			vpa := matcher.GetMatchingVPA(tc.pod)
 			if tc.expectedFound && assert.NotNil(t, vpa) {
 				assert.Equal(t, tc.expectedVpaName, vpa.Name)
 			} else {

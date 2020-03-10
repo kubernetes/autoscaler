@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package vpa
 
 import (
 	core "k8s.io/api/core/v1"
@@ -26,25 +26,25 @@ import (
 	"k8s.io/klog"
 )
 
-// VpaMatcher is capable of returning a single matching VPA object
+// Matcher is capable of returning a single matching VPA object
 // for a pod. Will return nil if no matching object is found.
-type VpaMatcher interface {
+type Matcher interface {
 	GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 }
 
-type vpaMatcher struct {
+type matcher struct {
 	vpaLister       vpa_lister.VerticalPodAutoscalerLister
 	selectorFetcher target.VpaTargetSelectorFetcher
 }
 
-// NewVpaMatcher returns a new VPA matcher.
-func NewVpaMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
-	selectorFetcher target.VpaTargetSelectorFetcher) VpaMatcher {
-	return &vpaMatcher{vpaLister: vpaLister,
+// NewMatcher returns a new VPA matcher.
+func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
+	selectorFetcher target.VpaTargetSelectorFetcher) Matcher {
+	return &matcher{vpaLister: vpaLister,
 		selectorFetcher: selectorFetcher}
 }
 
-func (m *vpaMatcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
 	configs, err := m.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
 		klog.Errorf("failed to get vpa configs: %v", err)

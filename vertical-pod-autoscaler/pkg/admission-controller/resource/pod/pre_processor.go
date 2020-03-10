@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package pod
 
 import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
-// PodPreProcessor processes the pods before building patches.
-type PodPreProcessor interface {
+// PreProcessor processes the pods before building patches.
+type PreProcessor interface {
 	Process(apiv1.Pod) (apiv1.Pod, error)
 }
 
@@ -33,7 +33,7 @@ func (p *NoopPreProcessor) Process(pod apiv1.Pod) (apiv1.Pod, error) {
 	return pod, nil
 }
 
-// NewDefaultPodPreProcessor creates a default PodPreProcessor
-func NewDefaultPodPreProcessor() PodPreProcessor {
+// NewDefaultPreProcessor creates a default PreProcessor
+func NewDefaultPreProcessor() PreProcessor {
 	return &NoopPreProcessor{}
 }

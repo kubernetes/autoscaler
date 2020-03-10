@@ -14,26 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package vpa
 
 import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
-// VpaPreProcessor processes the VPAs before applying default .
-type VpaPreProcessor interface {
+// PreProcessor processes the VPAs before applying default .
+type PreProcessor interface {
 	Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error)
 }
 
-// noopVpaPreProcessor leaves pods unchanged when processing
-type noopVpaPreProcessor struct{}
+// noopPreProcessor leaves pods unchanged when processing
+type noopPreProcessor struct{}
 
 // Process leaves the pod unchanged
-func (p *noopVpaPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error) {
+func (p *noopPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error) {
 	return vpa, nil
 }
 
-// NewDefaultVpaPreProcessor creates a VpaPreProcessor that leaves VPAs unchanged and returns no error
-func NewDefaultVpaPreProcessor() VpaPreProcessor {
-	return &noopVpaPreProcessor{}
+// NewDefaultPreProcessor creates a PreProcessor that leaves VPAs unchanged and returns no error
+func NewDefaultPreProcessor() PreProcessor {
+	return &noopPreProcessor{}
 }
