@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package vpa
 
 import (
 	"encoding/json"
@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	"k8s.io/klog"
@@ -41,40 +42,40 @@ var (
 	}
 )
 
-// vpaResourceHandler builds patches for VPAs.
-type vpaResourceHandler struct {
-	vpaPreProcessor VpaPreProcessor
+// resourceHandler builds patches for VPAs.
+type resourceHandler struct {
+	preProcessor PreProcessor
 }
 
-// newVpaResourceHandler creates new instance of vpaResourceHandler.
-func newVpaResourceHandler(vpaPreProcessor VpaPreProcessor) ResourceHandler {
-	return &vpaResourceHandler{vpaPreProcessor: vpaPreProcessor}
+// NewResourceHandler creates new instance of resourceHandler.
+func NewResourceHandler(preProcessor PreProcessor) resource.Handler {
+	return &resourceHandler{preProcessor: preProcessor}
 }
 
 // AdmissionResource returns resource type this handler accepts.
-func (h *vpaResourceHandler) AdmissionResource() admission.AdmissionResource {
+func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
 	return admission.Vpa
 }
 
 // GroupResource returns Group and Resource type this handler accepts.
-func (h *vpaResourceHandler) GroupResource() metav1.GroupResource {
+func (h *resourceHandler) GroupResource() metav1.GroupResource {
 	return metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
-func (h *vpaResourceHandler) DisallowIncorrectObjects() bool {
+func (h *resourceHandler) DisallowIncorrectObjects() bool {
 	return true
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *vpaResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRecord, error) {
+func (h *resourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]resource.PatchRecord, error) {
 	raw, isCreate := ar.Object.Raw, ar.Operation == v1beta1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
 		return nil, err
 	}
 
-	vpa, err = h.vpaPreProcessor.Process(vpa, isCreate)
+	vpa, err = h.preProcessor.Process(vpa, isCreate)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +86,11 @@ func (h *vpaResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRe
 	}
 
 	klog.V(4).Infof("Processing vpa: %v", vpa)
-	patches := []patchRecord{}
+	patches := []resource.PatchRecord{}
 	if vpa.Spec.UpdatePolicy == nil {
 		// Sets the default updatePolicy.
 		defaultUpdateMode := vpa_types.UpdateModeAuto
-		patches = append(patches, patchRecord{
+		patches = append(patches, resource.PatchRecord{
 			Op:    "add",
 			Path:  "/spec/updatePolicy",
 			Value: vpa_types.PodUpdatePolicy{UpdateMode: &defaultUpdateMode}})
