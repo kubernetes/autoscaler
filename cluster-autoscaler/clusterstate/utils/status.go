@@ -135,7 +135,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 // DeleteStatusConfigMap deletes status configmap
 func DeleteStatusConfigMap(kubeClient kube_client.Interface, namespace string) error {
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
-	err := maps.Delete(context.TODO(), StatusConfigMapName, &metav1.DeleteOptions{})
+	err := maps.Delete(context.TODO(), StatusConfigMapName, metav1.DeleteOptions{})
 	if err != nil {
 		klog.Error("Failed to delete status configmap")
 	}
