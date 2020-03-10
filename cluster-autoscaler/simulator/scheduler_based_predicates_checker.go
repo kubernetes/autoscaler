@@ -26,11 +26,11 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/klog"
+	volume_scheduling "k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	scheduler_framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	scheduler_volumebinder "k8s.io/kubernetes/pkg/scheduler/volumebinder"
 
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
@@ -52,7 +52,7 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
-	volumeBinder := scheduler_volumebinder.NewVolumeBinder(
+	volumeBinder := volume_scheduling.NewVolumeBinder(
 		kubeClient,
 		informerFactory.Core().V1().Nodes(),
 		informerFactory.Storage().V1().CSINodes(),
