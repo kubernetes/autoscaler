@@ -21,31 +21,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"k8s.io/api/admission/v1beta1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
-)
-
-const (
-	vpaAnnotationLabel = "vpaUpdates"
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
-	recommendationProvider RecommendationProvider
-	podPreProcessor        PodPreProcessor
-	vpaPreProcessor        VpaPreProcessor
-	limitsChecker          limitrange.LimitRangeCalculator
-	vpaMatcher             VpaMatcher
+	limitsChecker    limitrange.LimitRangeCalculator
+	resourceHandlers map[metav1.GroupResource]ResourceHandler
 }
 
 // NewAdmissionServer constructs new AdmissionServer
@@ -54,221 +41,15 @@ func NewAdmissionServer(recommendationProvider RecommendationProvider,
 	vpaPreProcessor VpaPreProcessor,
 	limitsChecker limitrange.LimitRangeCalculator,
 	vpaMatcher VpaMatcher) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker, vpaMatcher}
+	as := &AdmissionServer{limitsChecker, map[metav1.GroupResource]ResourceHandler{}}
+	as.RegisterResourceHandler(newPodResourceHandler(podPreProcessor, recommendationProvider, vpaMatcher))
+	as.RegisterResourceHandler(newVpaResourceHandler(vpaPreProcessor))
+	return as
 }
 
-type patchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
-}
-
-func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace string) ([]patchRecord, error) {
-	pod := v1.Pod{}
-	if err := json.Unmarshal(raw, &pod); err != nil {
-		return nil, err
-	}
-	if len(pod.Name) == 0 {
-		pod.Name = pod.GenerateName + "%"
-		pod.Namespace = namespace
-	}
-	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	controllingVpa := s.vpaMatcher.GetMatchingVPA(&pod)
-	if controllingVpa == nil {
-		klog.V(4).Infof("No matching VPA found for pod %s/%s", pod.Namespace, pod.Name)
-		return []patchRecord{}, nil
-	}
-	containersResources, annotationsPerContainer, err := s.recommendationProvider.GetContainersResourcesForPod(&pod, controllingVpa)
-	if err != nil {
-		return nil, err
-	}
-	pod, err = s.podPreProcessor.Process(pod)
-	if err != nil {
-		return nil, err
-	}
-	if annotationsPerContainer == nil {
-		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
-	}
-
-	patches := []patchRecord{}
-	updatesAnnotation := []string{}
-	for i, containerResources := range containersResources {
-		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, annotationsPerContainer, containerResources)
-		patches = append(patches, newPatches...)
-		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
-	}
-
-	if pod.Annotations == nil {
-		patches = append(patches, getAddEmptyAnnotationsPatch())
-	}
-	if len(updatesAnnotation) > 0 {
-		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: %s", controllingVpa.Name, strings.Join(updatesAnnotation, "; "))
-		patches = append(patches, getAddAnnotationPatch(vpaAnnotationLabel, vpaAnnotationValue))
-	}
-	vpaObservedContainersValue := annotations.GetVpaObservedContainersValue(&pod)
-	patches = append(patches, getAddAnnotationPatch(annotations.VpaObservedContainersLabel, vpaObservedContainersValue))
-
-	return patches, nil
-}
-
-func getAddEmptyAnnotationsPatch() patchRecord {
-	return patchRecord{
-		Op:    "add",
-		Path:  "/metadata/annotations",
-		Value: map[string]string{},
-	}
-}
-
-func getAddAnnotationPatch(annotationName, annotationValue string) patchRecord {
-	return patchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
-		Value: annotationValue,
-	}
-}
-
-func getPatchInitializingEmptyResources(i int) patchRecord {
-	return patchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
-		Value: v1.ResourceRequirements{},
-	}
-}
-
-func getPatchInitializingEmptyResourcesSubfield(i int, kind string) patchRecord {
-	return patchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
-		Value: v1.ResourceList{},
-	}
-}
-
-func getAddResourceRequirementValuePatch(i int, kind string, resource v1.ResourceName, quantity resource.Quantity) patchRecord {
-	return patchRecord{
-		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
-		Value: quantity.String()}
-}
-
-func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]patchRecord, string) {
-	var patches []patchRecord
-	// Add empty resources object if missing
-	if pod.Spec.Containers[i].Resources.Limits == nil &&
-		pod.Spec.Containers[i].Resources.Requests == nil {
-		patches = append(patches, getPatchInitializingEmptyResources(i))
-	}
-
-	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
-	if !found {
-		annotations = make([]string, 0)
-	}
-
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", "request")
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", "limit")
-
-	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
-	return patches, updatesAnnotation
-}
-
-func appendPatchesAndAnnotations(patches []patchRecord, annotations []string, current v1.ResourceList, containerIndex int, resources v1.ResourceList, fieldName, resourceName string) ([]patchRecord, []string) {
-	// Add empty object if it's missing and we're about to fill it.
-	if current == nil && len(resources) > 0 {
-		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
-	}
-	for resource, request := range resources {
-		patches = append(patches, getAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
-		annotations = append(annotations, fmt.Sprintf("%s %s", resource, resourceName))
-	}
-	return patches, annotations
-}
-
-func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
-	vpa := vpa_types.VerticalPodAutoscaler{}
-	if err := json.Unmarshal(raw, &vpa); err != nil {
-		return nil, err
-	}
-	return &vpa, nil
-}
-
-var (
-	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:      struct{}{},
-		vpa_types.UpdateModeInitial:  struct{}{},
-		vpa_types.UpdateModeRecreate: struct{}{},
-		vpa_types.UpdateModeAuto:     struct{}{},
-	}
-
-	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
-	}
-)
-
-func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
-	if vpa.Spec.UpdatePolicy != nil {
-		mode := vpa.Spec.UpdatePolicy.UpdateMode
-		if mode == nil {
-			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
-		}
-		if _, found := possibleUpdateModes[*mode]; !found {
-			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
-		}
-	}
-
-	if vpa.Spec.ResourcePolicy != nil {
-		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.ContainerName == "" {
-				return fmt.Errorf("ContainerPolicies.ContainerName is required")
-			}
-			mode := policy.Mode
-			if mode != nil {
-				if _, found := possibleScalingModes[*mode]; !found {
-					return fmt.Errorf("unexpected Mode value %s", *mode)
-				}
-			}
-			for resource, min := range policy.MinAllowed {
-				max, found := policy.MaxAllowed[resource]
-				if found && max.Cmp(min) < 0 {
-					return fmt.Errorf("max resource for %v is lower than min", resource)
-				}
-			}
-		}
-	}
-
-	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1.")
-	}
-
-	return nil
-}
-
-func (s *AdmissionServer) getPatchesForVPADefaults(raw []byte, isCreate bool) ([]patchRecord, error) {
-	vpa, err := parseVPA(raw)
-	if err != nil {
-		return nil, err
-	}
-
-	vpa, err = s.vpaPreProcessor.Process(vpa, isCreate)
-	if err != nil {
-		return nil, err
-	}
-
-	err = validateVPA(vpa, isCreate)
-	if err != nil {
-		return nil, err
-	}
-
-	klog.V(4).Infof("Processing vpa: %v", vpa)
-	patches := []patchRecord{}
-	if vpa.Spec.UpdatePolicy == nil {
-		// Sets the default updatePolicy.
-		defaultUpdateMode := vpa_types.UpdateModeAuto
-		patches = append(patches, patchRecord{
-			Op:    "add",
-			Path:  "/spec/updatePolicy",
-			Value: vpa_types.PodUpdatePolicy{UpdateMode: &defaultUpdateMode}})
-	}
-	return patches, nil
+// RegisterResourceHandler allows to register a custom logic for handling given types of resources.
+func (s *AdmissionServer) RegisterResourceHandler(resourceHandler ResourceHandler) {
+	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
 }
 
 func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
@@ -281,10 +62,6 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		klog.Error(err)
 		return &response, metrics_admission.Error, metrics_admission.Unknown
 	}
-	// The externalAdmissionHookConfiguration registered via selfRegistration
-	// asks the kube-apiserver only to send admission requests regarding pods & VPA objects.
-	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	vpaGroupResource := metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
 
 	var patches []patchRecord
 	var err error
@@ -295,14 +72,13 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		Resource: ar.Request.Resource.Resource,
 	}
 
-	if ar.Request.Resource == podResource {
-		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
-		resource = metrics_admission.Pod
-	} else if admittedGroupResource == vpaGroupResource {
-		patches, err = s.getPatchesForVPADefaults(ar.Request.Object.Raw, ar.Request.Operation == v1beta1.Create)
-		resource = metrics_admission.Vpa
-		// we don't let in problematic VPA objects - late validation
-		if err != nil {
+	handler, ok := s.resourceHandlers[admittedGroupResource]
+	if ok {
+		patches, err = handler.GetPatches(ar.Request)
+		resource = handler.AdmissionResource()
+
+		if handler.DisallowIncorrectObjects() && err != nil {
+			// we don't let in problematic objects - late validation
 			status := metav1.Status{}
 			status.Status = "Failure"
 			status.Message = err.Error()
@@ -310,7 +86,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 			response.Allowed = false
 		}
 	} else {
-		patches, err = nil, fmt.Errorf("expected the resource to be one of: %v, %v", podResource, vpaGroupResource)
+		patches, err = nil, fmt.Errorf("not supported resource type: %v", admittedGroupResource)
 	}
 
 	if err != nil {
