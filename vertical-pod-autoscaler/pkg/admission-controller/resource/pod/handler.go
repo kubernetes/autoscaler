@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package pod
 
 import (
 	"encoding/json"
@@ -25,6 +25,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -35,46 +37,40 @@ const (
 	vpaAnnotationLabel = "vpaUpdates"
 )
 
-type patchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
-}
-
-// podResourceHandler builds patches for Pods.
-type podResourceHandler struct {
-	podPreProcessor        PodPreProcessor
+// resourceHandler builds patches for Pods.
+type resourceHandler struct {
+	preProcessor           PreProcessor
 	recommendationProvider RecommendationProvider
-	vpaMatcher             VpaMatcher
+	vpaMatcher             vpa.Matcher
 }
 
-// newPodResourceHandler creates new instance of podResourceHandler.
-func newPodResourceHandler(podPreProcessor PodPreProcessor, recommendationProvider RecommendationProvider, vpaMatcher VpaMatcher) ResourceHandler {
-	return &podResourceHandler{
-		podPreProcessor:        podPreProcessor,
+// NewResourceHandler creates new instance of resourceHandler.
+func NewResourceHandler(preProcessor PreProcessor, recommendationProvider RecommendationProvider, vpaMatcher vpa.Matcher) resource_admission.Handler {
+	return &resourceHandler{
+		preProcessor:           preProcessor,
 		recommendationProvider: recommendationProvider,
 		vpaMatcher:             vpaMatcher,
 	}
 }
 
 // AdmissionResource returns resource type this handler accepts.
-func (h *podResourceHandler) AdmissionResource() admission.AdmissionResource {
+func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
 	return admission.Pod
 }
 
 // GroupResource returns Group and Resource type this handler accepts.
-func (h *podResourceHandler) GroupResource() metav1.GroupResource {
+func (h *resourceHandler) GroupResource() metav1.GroupResource {
 	return metav1.GroupResource{Group: "", Resource: "pods"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
-func (h *podResourceHandler) DisallowIncorrectObjects() bool {
+func (h *resourceHandler) DisallowIncorrectObjects() bool {
 	// Incorrect Pods are validated by API Server.
 	return false
 }
 
 // GetPatches builds patches for Pod in given admission request.
-func (h *podResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRecord, error) {
+func (h *resourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
 	if ar.Resource.Version != "v1" {
 		return nil, fmt.Errorf("only v1 Pods are supported")
 	}
@@ -91,13 +87,13 @@ func (h *podResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRe
 	controllingVpa := h.vpaMatcher.GetMatchingVPA(&pod)
 	if controllingVpa == nil {
 		klog.V(4).Infof("No matching VPA found for pod %s/%s", pod.Namespace, pod.Name)
-		return []patchRecord{}, nil
+		return []resource_admission.PatchRecord{}, nil
 	}
 	containersResources, annotationsPerContainer, err := h.recommendationProvider.GetContainersResourcesForPod(&pod, controllingVpa)
 	if err != nil {
 		return nil, err
 	}
-	pod, err = h.podPreProcessor.Process(pod)
+	pod, err = h.preProcessor.Process(pod)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +101,7 @@ func (h *podResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRe
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 
-	patches := []patchRecord{}
+	patches := []resource_admission.PatchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
 		newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources)
@@ -126,8 +122,8 @@ func (h *podResourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]patchRe
 	return patches, nil
 }
 
-func getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]patchRecord, string) {
-	var patches []patchRecord
+func getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
+	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
 		pod.Spec.Containers[i].Resources.Requests == nil {
@@ -146,46 +142,46 @@ func getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.C
 	return patches, updatesAnnotation
 }
 
-func getAddEmptyAnnotationsPatch() patchRecord {
-	return patchRecord{
+func getAddEmptyAnnotationsPatch() resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  "/metadata/annotations",
 		Value: map[string]string{},
 	}
 }
 
-func getAddAnnotationPatch(annotationName, annotationValue string) patchRecord {
-	return patchRecord{
+func getAddAnnotationPatch(annotationName, annotationValue string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
 		Value: annotationValue,
 	}
 }
 
-func getPatchInitializingEmptyResources(i int) patchRecord {
-	return patchRecord{
+func getPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
 		Value: v1.ResourceRequirements{},
 	}
 }
 
-func getPatchInitializingEmptyResourcesSubfield(i int, kind string) patchRecord {
-	return patchRecord{
+func getPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
 		Value: v1.ResourceList{},
 	}
 }
 
-func getAddResourceRequirementValuePatch(i int, kind string, resource v1.ResourceName, quantity resource.Quantity) patchRecord {
-	return patchRecord{
+func getAddResourceRequirementValuePatch(i int, kind string, resource v1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
 		Value: quantity.String()}
 }
 
-func appendPatchesAndAnnotations(patches []patchRecord, annotations []string, current v1.ResourceList, containerIndex int, resources v1.ResourceList, fieldName, resourceName string) ([]patchRecord, []string) {
+func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current v1.ResourceList, containerIndex int, resources v1.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
 		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))

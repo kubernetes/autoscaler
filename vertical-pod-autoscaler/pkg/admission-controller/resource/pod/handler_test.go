@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package logic
+package pod
 
 import (
 	"encoding/json"
@@ -26,8 +26,9 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -65,47 +66,47 @@ func (m fakeVpaMatcher) GetMatchingVPA(pod *apiv1.Pod) *vpa_types.VerticalPodAut
 	return test.VerticalPodAutoscaler().WithName("name").WithContainer("testy-container").Get()
 }
 
-func addResourcesPatch(idx int) patchRecord {
-	return patchRecord{
+func addResourcesPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		"add",
 		fmt.Sprintf("/spec/containers/%d/resources", idx),
 		apiv1.ResourceRequirements{},
 	}
 }
 
-func addRequestsPatch(idx int) patchRecord {
-	return patchRecord{
+func addRequestsPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		"add",
 		fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
 		apiv1.ResourceList{},
 	}
 }
 
-func addLimitsPatch(idx int) patchRecord {
-	return patchRecord{
+func addLimitsPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		"add",
 		fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
 		apiv1.ResourceList{},
 	}
 }
 
-func addResourceRequestPatch(index int, res, amount string) patchRecord {
-	return patchRecord{
+func addResourceRequestPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		"add",
 		fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
 		resource.MustParse(amount),
 	}
 }
 
-func addResourceLimitPatch(index int, res, amount string) patchRecord {
-	return patchRecord{
+func addResourceLimitPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
 		"add",
 		fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
 		resource.MustParse(amount),
 	}
 }
 
-func addAnnotationRequest(updateResources [][]string, kind string) patchRecord {
+func addAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
 	requests := make([]string, 0)
 	for idx, podResources := range updateResources {
 		podRequests := make([]string, 0)
@@ -119,24 +120,24 @@ func addAnnotationRequest(updateResources [][]string, kind string) patchRecord {
 	return getAddAnnotationPatch(vpaAnnotationLabel, vpaUpdates)
 }
 
-func addVpaObservedContainersPatch(conetinerNames []string) patchRecord {
+func addVpaObservedContainersPatch(conetinerNames []string) resource_admission.PatchRecord {
 	return getAddAnnotationPatch(
 		annotations.VpaObservedContainersLabel,
 		strings.Join(conetinerNames, ", "),
 	)
 }
 
-func eqPatch(a, b patchRecord) bool {
+func eqPatch(a, b resource_admission.PatchRecord) bool {
 	aJson, aErr := json.Marshal(a)
 	bJson, bErr := json.Marshal(b)
 	return string(aJson) == string(bJson) && aErr == bErr
 }
 
-func assertEqPatch(t *testing.T, got, want patchRecord) {
+func assertEqPatch(t *testing.T, got, want resource_admission.PatchRecord) {
 	assert.True(t, eqPatch(got, want), "got %+v, want: %+v", got, want)
 }
 
-func assertPatchOneOf(t *testing.T, got patchRecord, want []patchRecord) {
+func assertPatchOneOf(t *testing.T, got resource_admission.PatchRecord, want []resource_admission.PatchRecord) {
 	for _, wanted := range want {
 		if eqPatch(got, wanted) {
 			return
@@ -156,7 +157,7 @@ func TestGetPatches(t *testing.T) {
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendName        string
 		recommendError       error
-		expectPatches        []patchRecord
+		expectPatches        []resource_admission.PatchRecord
 		expectError          error
 	}{
 		{
@@ -194,7 +195,7 @@ func TestGetPatches(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				addResourcesPatch(0),
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
@@ -228,7 +229,7 @@ func TestGetPatches(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, request),
@@ -266,7 +267,7 @@ func TestGetPatches(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
 				addResourcesPatch(1),
 				addRequestsPatch(1),
@@ -293,7 +294,7 @@ func TestGetPatches(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				addResourcesPatch(0),
 				addLimitsPatch(0),
 				addResourceLimitPatch(0, cpu, "1"),
@@ -327,7 +328,7 @@ func TestGetPatches(t *testing.T) {
 				},
 			},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				addResourceLimitPatch(0, cpu, "1"),
 				getAddEmptyAnnotationsPatch(),
 				addAnnotationRequest([][]string{{cpu}}, limit),
@@ -340,7 +341,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := fakePodPreProcessor{e: tc.podPreProcessorError}
 			fvm := fakeVpaMatcher{}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
-			h := newPodResourceHandler(&fppp, &frp, &fvm)
+			h := NewResourceHandler(&fppp, &frp, &fvm)
 			patches, err := h.GetPatches(&v1beta1.AdmissionRequest{
 				Resource: v1.GroupVersionResource{
 					Version: "v1",
@@ -395,7 +396,7 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
-	h := newPodResourceHandler(&fppp, &frp, &fvm)
+	h := NewResourceHandler(&fppp, &frp, &fvm)
 	patches, err := h.GetPatches(&v1beta1.AdmissionRequest{
 		Namespace: "default",
 		Resource: v1.GroupVersionResource{
@@ -410,13 +411,13 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	if assert.Equal(t, len(patches), 5) {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
-		assertPatchOneOf(t, patches[0], []patchRecord{cpuUpdate, unobtaniumUpdate})
-		assertPatchOneOf(t, patches[1], []patchRecord{cpuUpdate, unobtaniumUpdate})
+		assertPatchOneOf(t, patches[0], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
+		assertPatchOneOf(t, patches[1], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
 		assert.False(t, eqPatch(patches[0], patches[1]))
 		assertEqPatch(t, patches[2], getAddEmptyAnnotationsPatch())
 		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
 		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
-		assertPatchOneOf(t, patches[3], []patchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
+		assertPatchOneOf(t, patches[3], []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
 		assertEqPatch(t, patches[4], addVpaObservedContainersPatch([]string{}))
 	}
 }
@@ -425,7 +426,7 @@ func TestGetPatches_VpaObservedContainers(t *testing.T) {
 	tests := []struct {
 		name          string
 		podJson       []byte
-		expectPatches []patchRecord
+		expectPatches []resource_admission.PatchRecord
 	}{
 		{
 			name: "create vpa observed containers annotation",
@@ -442,7 +443,7 @@ func TestGetPatches_VpaObservedContainers(t *testing.T) {
 						]
 					}
 				}`),
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				getAddEmptyAnnotationsPatch(),
 				addVpaObservedContainersPatch([]string{"test1", "test2"}),
 			},
@@ -455,7 +456,7 @@ func TestGetPatches_VpaObservedContainers(t *testing.T) {
 						"containers": []
 					}
 				}`),
-			expectPatches: []patchRecord{
+			expectPatches: []resource_admission.PatchRecord{
 				getAddEmptyAnnotationsPatch(),
 				addVpaObservedContainersPatch([]string{}),
 			},
@@ -466,7 +467,7 @@ func TestGetPatches_VpaObservedContainers(t *testing.T) {
 			fppp := fakePodPreProcessor{}
 			fvm := fakeVpaMatcher{}
 			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, nil}
-			h := newPodResourceHandler(&fppp, &frp, &fvm)
+			h := NewResourceHandler(&fppp, &frp, &fvm)
 			patches, err := h.GetPatches(&v1beta1.AdmissionRequest{
 				Namespace: "default",
 				Resource: v1.GroupVersionResource{

@@ -24,6 +24,9 @@ import (
 
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	"k8s.io/klog"
@@ -32,23 +35,23 @@ import (
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	limitsChecker    limitrange.LimitRangeCalculator
-	resourceHandlers map[metav1.GroupResource]ResourceHandler
+	resourceHandlers map[metav1.GroupResource]resource.Handler
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider,
-	podPreProcessor PodPreProcessor,
-	vpaPreProcessor VpaPreProcessor,
+func NewAdmissionServer(recommendationProvider pod.RecommendationProvider,
+	podPreProcessor pod.PreProcessor,
+	vpaPreProcessor vpa.PreProcessor,
 	limitsChecker limitrange.LimitRangeCalculator,
-	vpaMatcher VpaMatcher) *AdmissionServer {
-	as := &AdmissionServer{limitsChecker, map[metav1.GroupResource]ResourceHandler{}}
-	as.RegisterResourceHandler(newPodResourceHandler(podPreProcessor, recommendationProvider, vpaMatcher))
-	as.RegisterResourceHandler(newVpaResourceHandler(vpaPreProcessor))
+	vpaMatcher vpa.Matcher) *AdmissionServer {
+	as := &AdmissionServer{limitsChecker, map[metav1.GroupResource]resource.Handler{}}
+	as.RegisterResourceHandler(pod.NewResourceHandler(podPreProcessor, recommendationProvider, vpaMatcher))
+	as.RegisterResourceHandler(vpa.NewResourceHandler(vpaPreProcessor))
 	return as
 }
 
 // RegisterResourceHandler allows to register a custom logic for handling given types of resources.
-func (s *AdmissionServer) RegisterResourceHandler(resourceHandler ResourceHandler) {
+func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handler) {
 	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
 }
 
@@ -63,7 +66,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		return &response, metrics_admission.Error, metrics_admission.Unknown
 	}
 
-	var patches []patchRecord
+	var patches []resource.PatchRecord
 	var err error
 	resource := metrics_admission.Unknown
 
