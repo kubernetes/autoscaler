@@ -440,6 +440,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		var scaleDownCandidates []*apiv1.Node
 		var podDestinations []*apiv1.Node
 
+		// podDestinations and scaleDownCandidates are initialized based on allNodes variable, which contains only
+		// registered nodes in cluster.
+		// It does not include any upcoming nodes which can be part of clusterSnapshot. As an alternative to using
+		// allNodes here, we could use nodes from clusterSnapshot and explicitly filter out upcoming nodes here but it
+		// is of little (if any) benefit.
+
 		if a.processors == nil || a.processors.ScaleDownNodeProcessor == nil {
 			scaleDownCandidates = allNodes
 			podDestinations = allNodes
