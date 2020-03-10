@@ -1163,7 +1163,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 				GracePeriodSeconds: &maxTermination,
 			},
 		}
-		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
+		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(ctx.TODO(), eviction)
 		if lastError == nil || kube_errors.IsNotFound(lastError) {
 			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 		}
