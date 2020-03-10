@@ -394,6 +394,40 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodes = make(map[string]time.Time)
 }
 
+func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo) (simulator.UnremovableReason, *simulator.UtilizationInfo) {
+	// Skip nodes that were recently checked.
+	if _, found := sd.unremovableNodes[node.Name]; found {
+		return simulator.RecentlyUnremovable, nil
+	}
+
+	// Skip nodes marked to be deleted, if they were marked recently.
+	// Old-time marked nodes are again eligible for deletion - something went wrong with them
+	// and they have not been deleted.
+	if isNodeBeingDeleted(node, timestamp) {
+		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
+		return simulator.CurrentlyBeingDeleted, nil
+	}
+
+	// Skip nodes marked with no scale down annotation
+	if hasNoScaleDownAnnotation(node) {
+		klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
+		return simulator.ScaleDownDisabledAnnotation, nil
+	}
+
+	utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel())
+	if err != nil {
+		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+	}
+	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+
+	if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
+		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+		return simulator.NotUnderutilized, &utilInfo
+	}
+
+	return simulator.NoReason, &utilInfo
+}
+
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
 // node utilization level. The computations are made only for the nodes managed by CA.
@@ -416,7 +450,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	sd.updateUnremovableNodes()
+	sd.updateUnremovableNodes(timestamp)
 
 	skipped := 0
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
@@ -432,44 +466,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
-		// Skip nodes that were recently checked.
-		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
-			if unremovableTimestamp.After(timestamp) {
-				sd.addUnremovableNodeReason(node, simulator.RecentlyUnremovable)
+		reason, utilInfo := sd.checkNodeUtilization(timestamp, node, nodeInfo)
+		if utilInfo != nil {
+			utilizationMap[node.Name] = *utilInfo
+		}
+		if reason != simulator.NoReason {
+			// For logging purposes.
+			if reason == simulator.RecentlyUnremovable {
 				skipped++
-				continue
 			}
-			delete(sd.unremovableNodes, node.Name)
-		}
 
-		// Skip nodes marked to be deleted, if they were marked recently.
-		// Old-time marked nodes are again eligible for deletion - something went wrong with them
-		// and they have not been deleted.
-		if isNodeBeingDeleted(node, timestamp) {
-			klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.CurrentlyBeingDeleted)
+			sd.addUnremovableNodeReason(node, reason)
 			continue
 		}
 
-		// Skip nodes marked with no scale down annotation
-		if hasNoScaleDownAnnotation(node) {
-			klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.ScaleDownDisabledAnnotation)
-			continue
-		}
-
-		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel())
-		if err != nil {
-			klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
-		}
-		klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-		utilizationMap[node.Name] = utilInfo
-
-		if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
-			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-			sd.addUnremovableNodeReason(node, simulator.NotUnderutilized)
-			continue
-		}
 		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
 	}
 
@@ -617,19 +627,21 @@ func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo 
 // updateUnremovableNodes updates unremovableNodes map according to current
 // state of the cluster. Removes from the map nodes that are no longer in the
 // nodes list.
-func (sd *ScaleDown) updateUnremovableNodes() {
+func (sd *ScaleDown) updateUnremovableNodes(timestamp time.Time) {
 	if len(sd.unremovableNodes) <= 0 {
 		return
 	}
 	newUnremovableNodes := make(map[string]time.Time, len(sd.unremovableNodes))
-	for oldUnremovable, since := range sd.unremovableNodes {
+	for oldUnremovable, ttl := range sd.unremovableNodes {
 		if _, err := sd.context.ClusterSnapshot.NodeInfos().Get(oldUnremovable); err != nil {
 			// Not logging on error level as most likely cause is that node is no longer in the cluster.
 			klog.Infof("Can't retrieve node %s from snapshot, removing from unremovable map, err: %v", oldUnremovable, err)
 			continue
 		}
-		// Keep nodes that are still in the cluster.
-		newUnremovableNodes[oldUnremovable] = since
+		if ttl.After(timestamp) {
+			// Keep nodes that are still in the cluster and haven't expired yet.
+			newUnremovableNodes[oldUnremovable] = ttl
+		}
 	}
 	sd.unremovableNodes = newUnremovableNodes
 }
