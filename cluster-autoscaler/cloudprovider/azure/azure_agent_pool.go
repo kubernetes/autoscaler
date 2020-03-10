@@ -44,9 +44,9 @@ const (
 )
 
 var virtualMachinesStatusCache struct {
-	lastRefresh     time.Time
+	lastRefresh     map[string]time.Time
 	mutex           sync.Mutex
-	virtualMachines []compute.VirtualMachine
+	virtualMachines map[string][]compute.VirtualMachine
 }
 
 // AgentPool implements NodeGroup interface for agent pools deployed by aks-engine.
@@ -133,22 +133,36 @@ func (as *AgentPool) MaxSize() int {
 func (as *AgentPool) getVirtualMachinesFromCache() ([]compute.VirtualMachine, error) {
 	virtualMachinesStatusCache.mutex.Lock()
 	defer virtualMachinesStatusCache.mutex.Unlock()
+	klog.V(4).Infof("getVirtualMachinesFromCache: starts for %+v", as)
 
-	if virtualMachinesStatusCache.lastRefresh.Add(vmInstancesRefreshPeriod).After(time.Now()) {
-		return virtualMachinesStatusCache.virtualMachines, nil
+	if virtualMachinesStatusCache.virtualMachines == nil {
+		klog.V(4).Infof("getVirtualMachinesFromCache: initialize vm cache")
+		virtualMachinesStatusCache.virtualMachines = make(map[string][]compute.VirtualMachine)
+	}
+	if virtualMachinesStatusCache.lastRefresh == nil {
+		klog.V(4).Infof("getVirtualMachinesFromCache: initialize last refresh time cache")
+		virtualMachinesStatusCache.lastRefresh = make(map[string]time.Time)
 	}
 
+	if virtualMachinesStatusCache.lastRefresh[as.Id()].Add(vmInstancesRefreshPeriod).After(time.Now()) {
+		klog.V(4).Infof("getVirtualMachinesFromCache: get vms from cache")
+		return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
+	}
+	klog.V(4).Infof("getVirtualMachinesFromCache: get vms from API")
 	vms, err := as.GetVirtualMachines()
+	klog.V(4).Infof("getVirtualMachinesFromCache: got vms from API %+v", vms)
+
 	if err != nil {
 		if isAzureRequestsThrottled(err) {
 			klog.Warningf("getAllVirtualMachines: throttling with message %v, would return the cached vms", err)
-			return virtualMachinesStatusCache.virtualMachines, nil
+			return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
 		}
 
 		return []compute.VirtualMachine{}, err
 	}
-	virtualMachinesStatusCache.virtualMachines = vms
-	virtualMachinesStatusCache.lastRefresh = time.Now()
+
+	virtualMachinesStatusCache.virtualMachines[as.Id()] = vms
+	virtualMachinesStatusCache.lastRefresh[as.Id()] = time.Now()
 
 	return vms, err
 }
