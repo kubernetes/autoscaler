@@ -166,10 +166,12 @@ func (m *asgCache) regenerate() error {
 	newCache := make(map[azureRef]cloudprovider.NodeGroup)
 
 	for _, nsg := range m.registeredAsgs {
+		klog.V(6).Infof("regenerate: finding nodes for nsg %+v", nsg)
 		instances, err := nsg.Nodes()
 		if err != nil {
 			return err
 		}
+		klog.V(6).Infof("regenerate: found nodes for nsg %v: %+v", nsg, instances)
 
 		for _, instance := range instances {
 			ref := azureRef{Name: instance.Id}
