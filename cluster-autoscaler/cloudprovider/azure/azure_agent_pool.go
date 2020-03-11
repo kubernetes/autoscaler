@@ -164,15 +164,24 @@ func (as *AgentPool) getVirtualMachinesFromCache() ([]compute.VirtualMachine, er
 	virtualMachinesStatusCache.virtualMachines[as.Id()] = vms
 	virtualMachinesStatusCache.lastRefresh[as.Id()] = time.Now()
 
-	return vms, err
+	return vms, nil
+}
+
+func invalidateVMCache(agentpoolName string) {
+	virtualMachinesStatusCache.mutex.Lock()
+	virtualMachinesStatusCache.lastRefresh[agentpoolName] = time.Now().Add(-1 * vmInstancesRefreshPeriod)
+	virtualMachinesStatusCache.mutex.Unlock()
 }
 
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
 func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
+	klog.V(6).Infof("GetVMIndexes: starts for as %v", as)
+
 	instances, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return nil, nil, err
 	}
+	klog.V(6).Infof("GetVMIndexes: got instances, length = %d", len(instances))
 
 	indexes := make([]int, 0)
 	indexToVM := make(map[int]string)
@@ -209,6 +218,11 @@ func (as *AgentPool) getCurSize() (int64, error) {
 		return 0, err
 	}
 	klog.V(5).Infof("Returning agent pool (%q) size: %d\n", as.Name, len(indexes))
+
+	if as.curSize != int64(len(indexes)) {
+		klog.V(6).Infof("getCurSize:as.curSize(%d) != real size (%d), invalidating vm cache", as.curSize, len(indexes))
+		invalidateVMCache(as.Id())
+	}
 
 	as.curSize = int64(len(indexes))
 	as.lastRefresh = time.Now()
@@ -296,6 +310,9 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 		klog.Warningf("IncreaseSize: failed to cleanup outdated deployments with err: %v.", err)
 	}
 
+	klog.V(6).Infof("IncreaseSize: invalidating vm cache")
+	invalidateVMCache(as.Id())
+
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return err
@@ -334,6 +351,8 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 		// Update cache after scale success.
 		as.curSize = int64(expectedSize)
 		as.lastRefresh = time.Now()
+		klog.V(6).Info("IncreaseSize: invalidating vm cache")
+		invalidateVMCache(as.Id())
 		return nil
 	}
 
@@ -450,12 +469,14 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 		}
 	}
 
+	klog.V(6).Infof("DeleteInstances: invalidating vm cache")
+	invalidateVMCache(as.Id())
 	return nil
 }
 
 // DeleteNodes deletes the nodes from the group.
 func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(8).Infof("Delete nodes requested: %v\n", nodes)
+	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return err
