@@ -162,6 +162,42 @@ If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigu
 }
 ```
 
+### Gotchas
+
+* Without these tags, when the cluster autoscaler needs to increase the number of nodes, if a node group creates nodes with taints that the pending pod does not tolerate then the cluster autoscaler will only learn about this after the node has been created and it sees that it is tainted. From this point on this information will be cached and subsequent scaling operations will take this into account, but it means that the behaviour of the cluster autoscaler differs between the first and subsequent scale up requests and can lead to confusion.
+
+* The device plugin on nodes which provide GPU resources take a little while to advertise the GPU resource to the APIServer so the AutoScaler may unnecessarily scale up again. See the guidance below for how to avoid this
+
+## GPU Node Groups
+
+If you launch a pod that requires a GPU in it's resource requirements then you must add the following node label to the node (via the kubelet arguments for example)
+
+### Cluster AutoScaler Version < 1.15.x
+
+```bash
+--node-labels=cloud.google.com/gke-accelerator=<GPU TYPE YOU ARE USING>
+```
+
+E.g. on an AWS P2.X instance
+
+```bash
+--kubelet-extra-args '--node-labels=cloud.google.com/gke-accelerator=nvidia-tesla-k80'
+```
+
+### Cluster AutoScaler Version >= 1.15.x
+
+```bash
+--node-labels=k8s.amazonaws.com/accelerator=<GPU TYPE YOU ARE USING>
+```
+
+E.g. on an AWS P2.X instance
+
+```bash
+--kubelet-extra-args '--node-labels=k8s.amazonaws.com/accelerator=nvidia-tesla-k80'
+```
+
+This is because the GPU resource does not become available immediately after the instance is ready and so without this label, the cluster autoscaler will think that no suitable GPU resource is available and add an additional node.
+
 ## Using AutoScalingGroup MixedInstancesPolicy
 
 > Note: The minimum version of cluster autoscaler to support MixedInstancePolicy is v1.14.x.
