@@ -148,7 +148,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	}
 
 	// Look up caches for the instance.
-	klog.V(4).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToAsg)
+	klog.V(6).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToAsg)
 	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
 		klog.V(4).Infof("FindForInstance: found asg %s in cache", asg.Id())
 		return asg, nil
