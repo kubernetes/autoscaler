@@ -23,10 +23,11 @@ import (
 	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/stretchr/testify/mock"
+
 	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 
@@ -150,7 +151,7 @@ type VirtualMachinesClientMock struct {
 }
 
 // Get gets the VirtualMachine by VMName.
-func (m *VirtualMachinesClientMock) Get(ctx context.Context, resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
+func (m *VirtualMachinesClientMock) Get(ctx context.Context, resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, rerr *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if _, ok := m.FakeStore[resourceGroupName]; ok {
@@ -158,14 +159,14 @@ func (m *VirtualMachinesClientMock) Get(ctx context.Context, resourceGroupName s
 			return entity, nil
 		}
 	}
-	return result, autorest.DetailedError{
-		StatusCode: http.StatusNotFound,
-		Message:    "Not such VM",
+	return result, &retry.Error{
+		HTTPStatusCode: http.StatusNotFound,
+		RawError:       fmt.Errorf("Not such VM"),
 	}
 }
 
 // List gets a lit of VirtualMachine inside the resource group.
-func (m *VirtualMachinesClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachine, err error) {
+func (m *VirtualMachinesClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachine, rerr *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -179,9 +180,22 @@ func (m *VirtualMachinesClientMock) List(ctx context.Context, resourceGroupName 
 }
 
 // Delete deletes the VirtualMachine by VMName.
-func (m *VirtualMachinesClientMock) Delete(ctx context.Context, resourceGroupName string, VMName string) (resp *http.Response, err error) {
+func (m *VirtualMachinesClientMock) Delete(ctx context.Context, resourceGroupName string, VMName string) *retry.Error {
 	args := m.Called(resourceGroupName, VMName)
-	return nil, args.Error(1)
+	if args.Error(1) != nil {
+		return &retry.Error{RawError: args.Error(1)}
+	}
+	return nil
+}
+
+// CreateOrUpdate creates or updates a VirtualMachine.
+func (m *VirtualMachinesClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachine, source string) *retry.Error {
+	return nil
+}
+
+// Update updates a VirtualMachine.
+func (m *VirtualMachinesClientMock) Update(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, source string) *retry.Error {
+	return nil
 }
 
 // InterfacesClientMock mocks for InterfacesClient.
@@ -190,9 +204,27 @@ type InterfacesClientMock struct {
 }
 
 // Delete deletes the interface by networkInterfaceName.
-func (m *InterfacesClientMock) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error) {
+func (m *InterfacesClientMock) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) *retry.Error {
 	args := m.Called(resourceGroupName, networkInterfaceName)
-	return nil, args.Error(1)
+	if args.Error(1) != nil {
+		return &retry.Error{RawError: args.Error(1)}
+	}
+	return nil
+}
+
+// Get gets a network.Interface.
+func (m *InterfacesClientMock) Get(ctx context.Context, resourceGroupName string, networkInterfaceName string, expand string) (result network.Interface, rerr *retry.Error) {
+	return network.Interface{}, nil
+}
+
+// GetVirtualMachineScaleSetNetworkInterface gets a network.Interface of VMSS VM.
+func (m *InterfacesClientMock) GetVirtualMachineScaleSetNetworkInterface(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, virtualmachineIndex string, networkInterfaceName string, expand string) (result network.Interface, rerr *retry.Error) {
+	return network.Interface{}, nil
+}
+
+// CreateOrUpdate creates or updates a network.Interface.
+func (m *InterfacesClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, networkInterfaceName string, parameters network.Interface) *retry.Error {
+	return nil
 }
 
 // DisksClientMock mocks for DisksClient.
@@ -201,9 +233,22 @@ type DisksClientMock struct {
 }
 
 // Delete deletes the disk by diskName.
-func (m *DisksClientMock) Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error) {
+func (m *DisksClientMock) Delete(ctx context.Context, resourceGroupName string, diskName string) *retry.Error {
 	args := m.Called(resourceGroupName, diskName)
-	return nil, args.Error(1)
+	if args.Error(1) != nil {
+		return &retry.Error{RawError: args.Error(1)}
+	}
+	return nil
+}
+
+// Get gets a Disk.
+func (m *DisksClientMock) Get(ctx context.Context, resourceGroupName string, diskName string) (result compute.Disk, rerr *retry.Error) {
+	return compute.Disk{}, nil
+}
+
+// CreateOrUpdate creates or updates a Disk.
+func (m *DisksClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, diskName string, diskParameter compute.Disk) *retry.Error {
+	return nil
 }
 
 // AccountsClientMock mocks for AccountsClient.
@@ -212,9 +257,32 @@ type AccountsClientMock struct {
 }
 
 // ListKeys get a list of keys by accountName.
-func (m *AccountsClientMock) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
+func (m *AccountsClientMock) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, rerr *retry.Error) {
 	args := m.Called(resourceGroupName, accountName)
-	return storage.AccountListKeysResult{}, args.Error(1)
+	if args.Error(1) != nil {
+		return storage.AccountListKeysResult{}, &retry.Error{RawError: args.Error(1)}
+	}
+	return storage.AccountListKeysResult{}, nil
+}
+
+// Create creates a StorageAccount.
+func (m *AccountsClientMock) Create(ctx context.Context, resourceGroupName string, accountName string, parameters storage.AccountCreateParameters) *retry.Error {
+	return nil
+}
+
+// Delete deletes a StorageAccount by name.
+func (m *AccountsClientMock) Delete(ctx context.Context, resourceGroupName string, accountName string) *retry.Error {
+	return nil
+}
+
+// ListByResourceGroup get a list storage accounts by resourceGroup.
+func (m *AccountsClientMock) ListByResourceGroup(ctx context.Context, resourceGroupName string) ([]storage.Account, *retry.Error) {
+	return []storage.Account{}, nil
+}
+
+// GetProperties gets properties of the StorageAccount.
+func (m *AccountsClientMock) GetProperties(ctx context.Context, resourceGroupName string, accountName string) (result storage.Account, rerr *retry.Error) {
+	return storage.Account{}, nil
 }
 
 // DeploymentsClientMock mocks for DeploymentsClient.

@@ -177,9 +177,9 @@ func (agentPool *AKSAgentPool) GetName(providerID string) (string, error) {
 	providerID = strings.TrimPrefix(providerID, "azure://")
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	vms, err := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
-	if err != nil {
-		return "", err
+	vms, rerr := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
+	if rerr != nil {
+		return "", rerr.Error()
 	}
 	for _, vm := range vms {
 		if strings.EqualFold(*vm.ID, providerID) {
@@ -336,10 +336,10 @@ func (agentPool *AKSAgentPool) IsAKSNode(tags map[string]*string) bool {
 func (agentPool *AKSAgentPool) GetNodes() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	vmList, err := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
-	if err != nil {
-		klog.Errorf("Azure client list vm error : %v", err)
-		return nil, err
+	vmList, rerr := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
+	if rerr != nil {
+		klog.Errorf("Azure client list vm error : %v", rerr.Error())
+		return nil, rerr.Error()
 	}
 	var nodeArray []string
 	for _, node := range vmList {

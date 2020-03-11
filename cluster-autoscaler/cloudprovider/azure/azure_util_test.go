@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 
 func TestSplitBlobURI(t *testing.T) {
@@ -249,7 +249,7 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 func TestIsAzureRequestsThrottled(t *testing.T) {
 	tests := []struct {
 		desc     string
-		err      error
+		rerr     *retry.Error
 		expected bool
 	}{
 		{
@@ -257,28 +257,23 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 			expected: false,
 		},
 		{
-			desc:     "non autorest.DetailedError error should return false",
-			err:      fmt.Errorf("unknown error"),
-			expected: false,
-		},
-		{
 			desc: "non http.StatusTooManyRequests error should return false",
-			err: autorest.DetailedError{
-				StatusCode: http.StatusBadRequest,
+			rerr: &retry.Error{
+				HTTPStatusCode: http.StatusBadRequest,
 			},
 			expected: false,
 		},
 		{
 			desc: "http.StatusTooManyRequests error should return true",
-			err: autorest.DetailedError{
-				StatusCode: http.StatusTooManyRequests,
+			rerr: &retry.Error{
+				HTTPStatusCode: http.StatusTooManyRequests,
 			},
 			expected: true,
 		},
 	}
 
 	for _, test := range tests {
-		real := isAzureRequestsThrottled(test.err)
+		real := isAzureRequestsThrottled(test.rerr)
 		assert.Equal(t, test.expected, real, test.desc)
 	}
 }
