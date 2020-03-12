@@ -170,9 +170,10 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
 func NewAggregateContainerState() *AggregateContainerState {
+	config := GetAggregationsConfig()
 	return &AggregateContainerState{
-		AggregateCPUUsage:    util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
-		AggregateMemoryPeaks: util.NewDecayingHistogram(MemoryHistogramOptions, MemoryHistogramDecayHalfLife),
+		AggregateCPUUsage:    util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
+		AggregateMemoryPeaks: util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
 		CreationTime:         time.Now(),
 	}
 }
@@ -263,9 +264,9 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 
 func (a *AggregateContainerState) isExpired(now time.Time) bool {
 	if a.isEmpty() {
-		return now.Sub(a.CreationTime) >= MemoryAggregationWindowLength
+		return now.Sub(a.CreationTime) >= GetAggregationsConfig().GetMemoryAggregationWindowLength()
 	}
-	return now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
+	return now.Sub(a.LastSampleStart) >= GetAggregationsConfig().GetMemoryAggregationWindowLength()
 }
 
 func (a *AggregateContainerState) isEmpty() bool {
