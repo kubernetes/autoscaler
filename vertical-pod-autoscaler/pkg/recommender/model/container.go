@@ -164,7 +164,8 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 		}
 	} else {
 		// Shift the memory aggregation window to the next interval.
-		shift := truncate(ts.Sub(container.WindowEnd), MemoryAggregationInterval) + MemoryAggregationInterval
+		memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
+		shift := truncate(ts.Sub(container.WindowEnd), memoryAggregationInterval) + memoryAggregationInterval
 		container.WindowEnd = container.WindowEnd.Add(shift)
 		container.memoryPeak = 0
 		container.oomPeak = 0
@@ -191,7 +192,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
 	// Discard old OOM
-	if timestamp.Before(container.WindowEnd.Add(-1 * MemoryAggregationInterval)) {
+	if timestamp.Before(container.WindowEnd.Add(-1 * GetAggregationsConfig().MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
 	// Get max of the request and the recent usage-based memory peak.

@@ -36,13 +36,14 @@ var (
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
 // and memory peaks distributions.
 func TestPercentileEstimator(t *testing.T) {
+	config := model.GetAggregationsConfig()
 	// Create a sample CPU histogram.
-	cpuHistogram := util.NewHistogram(model.CPUHistogramOptions)
+	cpuHistogram := util.NewHistogram(config.CPUHistogramOptions)
 	cpuHistogram.AddSample(1.0, 1.0, anyTime)
 	cpuHistogram.AddSample(2.0, 1.0, anyTime)
 	cpuHistogram.AddSample(3.0, 1.0, anyTime)
 	// Create a sample memory histogram.
-	memoryPeaksHistogram := util.NewHistogram(model.MemoryHistogramOptions)
+	memoryPeaksHistogram := util.NewHistogram(config.MemoryHistogramOptions)
 	memoryPeaksHistogram.AddSample(1e9, 1.0, anyTime)
 	memoryPeaksHistogram.AddSample(2e9, 1.0, anyTime)
 	memoryPeaksHistogram.AddSample(3e9, 1.0, anyTime)

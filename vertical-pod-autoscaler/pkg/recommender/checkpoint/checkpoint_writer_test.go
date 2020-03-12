@@ -73,7 +73,7 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 			"Current peak was not excluded from the aggregation.")
 	}
 	// Verify that an old peak is not excluded from the aggregation.
-	timeNow = timeNow.Add(model.MemoryAggregationInterval)
+	timeNow = timeNow.Add(model.GetAggregationsConfig().MemoryAggregationInterval)
 	aggregateContainerStateMap = buildAggregateContainerStateMap(vpa, cluster, timeNow)
 	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
 		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),

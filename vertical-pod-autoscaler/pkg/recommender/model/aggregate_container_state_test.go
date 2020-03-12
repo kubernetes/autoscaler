@@ -110,13 +110,14 @@ func TestAggregateStateByContainerName(t *testing.T) {
 	assert.Equal(t, 1, aggregateResources["app-B"].TotalSamplesCount)
 	assert.Equal(t, 1, aggregateResources["app-C"].TotalSamplesCount)
 
+	config := GetAggregationsConfig()
 	// Compute the expected histograms for the "app-A" containers.
-	expectedCPUHistogram := util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife)
+	expectedCPUHistogram := util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife)
 	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[0]).AggregateCPUUsage)
 	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[2]).AggregateCPUUsage)
 	actualCPUHistogram := aggregateResources["app-A"].AggregateCPUUsage
 
-	expectedMemoryHistogram := util.NewDecayingHistogram(MemoryHistogramOptions, MemoryHistogramDecayHalfLife)
+	expectedMemoryHistogram := util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife)
 	expectedMemoryHistogram.AddSample(2e9, 1.0, cluster.GetContainer(containers[0]).WindowEnd)
 	expectedMemoryHistogram.AddSample(4e9, 1.0, cluster.GetContainer(containers[2]).WindowEnd)
 	actualMemoryHistogram := aggregateResources["app-A"].AggregateMemoryPeaks
