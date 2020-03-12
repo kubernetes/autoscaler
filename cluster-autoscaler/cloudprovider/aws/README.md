@@ -114,6 +114,7 @@ kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
 From CA 0.6.1 - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
 
 If you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"` and `"k8s.io/cluster-autoscaler/node-template/taint/"` if you are using taints.
+If your pods request resources other than `cpu` and `memory`, you need to tag ASG with key `k8s.io/cluster-autoscaler/node-template/resources/`.
 
 For example for a node label of `foo=bar` you would tag the ASG with:
 
@@ -138,6 +139,18 @@ And for a taint of `"dedicated": "foo:NoSchedule"` you would tag the ASG with:
     "Key": "k8s.io/cluster-autoscaler/node-template/taint/dedicated"
 }
 ```
+If you request other resources on the node, like `vpc.amazonaws.com/PrivateIPv4Address` for Windows nodes, `ephemeral-storage`, etc, you would tag ASG with
+
+```json
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "2",
+    "Key": "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/PrivateIPv4Address"
+}
+```
+> Note: This is only supported in CA 1.14.x and above
 
 If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigurations` or `ec2:DescribeLaunchTemplateVersions` permission is required depending on if you made your ASG with Launch Configuration or Launch Template:
 
