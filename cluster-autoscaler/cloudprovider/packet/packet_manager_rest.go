@@ -485,8 +485,8 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	return nil
 }
 
-// templateNodeInfo returns a NodeInfo with a node template based on the VM flavor
-// that is used to created minions in a given node group.
+// templateNodeInfo returns a NodeInfo with a node template based on the packet plan
+// that is used to create nodes in a given node group.
 func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodegroup, rand.Int63())
