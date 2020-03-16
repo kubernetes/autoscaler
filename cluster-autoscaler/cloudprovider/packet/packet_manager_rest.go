@@ -51,10 +51,10 @@ type instanceType struct {
 // InstanceTypes is a map of packet resources
 var InstanceTypes = map[string]*instanceType{
 	"c2.large.arm": {
-        InstanceName: "c2.large.arm",
-        CPU: 32,
-        MemoryMb: 131072,
-        GPU: 0,
+		InstanceName: "c2.large.arm",
+		CPU: 32,
+		MemoryMb: 131072,
+		GPU: 0,
 	},
 	"c2.medium.x86": {
 		InstanceName: "c2.medium.x86",
