@@ -30,15 +30,15 @@ import (
 	"text/template"
 	"time"
 
+	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 type instanceType struct {
@@ -52,81 +52,81 @@ type instanceType struct {
 var InstanceTypes = map[string]*instanceType{
 	"c2.large.arm": {
 		InstanceName: "c2.large.arm",
-		CPU: 32,
-		MemoryMb: 131072,
-		GPU: 0,
+		CPU:          32,
+		MemoryMb:     131072,
+		GPU:          0,
 	},
 	"c2.medium.x86": {
 		InstanceName: "c2.medium.x86",
-		CPU: 24,
-		MemoryMb: 65536,
-		GPU: 0,
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
 	},
 	"g2.large.x86": {
 		InstanceName: "g2.large.x86",
-		CPU: 24,
-		MemoryMb: 196608,
-		GPU: 0,
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
 	},
 	"m2.xlarge.x86": {
 		InstanceName: "m2.xlarge.x86",
-		CPU: 28,
-		MemoryMb: 393216,
-		GPU: 0,
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
 	},
 	"n2.xlarge.x86": {
 		InstanceName: "n2.xlarge.x86",
-		CPU: 28,
-		MemoryMb: 393216,
-		GPU: 0,
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
 	},
 	"x2.xlarge.x86": {
 		InstanceName: "x2.xlarge.x86",
-		CPU: 28,
-		MemoryMb: 393216,
-		GPU: 1,
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          1,
 	},
 	"c1.large.arm": {
 		InstanceName: "c1.large.arm",
-		CPU: 96,
-		MemoryMb: 131072,
-		GPU: 0,
+		CPU:          96,
+		MemoryMb:     131072,
+		GPU:          0,
 	},
 	"c1.small.x86": {
 		InstanceName: "c1.small.x86",
-		CPU: 4,
-		MemoryMb: 32768,
-		GPU: 0,
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
 	},
 	"c1.xlarge.x86": {
 		InstanceName: "c1.xlarge.x86",
-		CPU: 16,
-		MemoryMb: 131072,
-		GPU: 0,
+		CPU:          16,
+		MemoryMb:     131072,
+		GPU:          0,
 	},
 	"m1.xlarge.x86": {
 		InstanceName: "m1.xlarge.x86",
-		CPU: 24,
-		MemoryMb: 262144,
-		GPU: 0,
+		CPU:          24,
+		MemoryMb:     262144,
+		GPU:          0,
 	},
 	"s1.large.x86": {
 		InstanceName: "s1.large.x86",
-		CPU: 8,
-		MemoryMb: 65536,
-		GPU: 0,
+		CPU:          8,
+		MemoryMb:     65536,
+		GPU:          0,
 	},
 	"t1.small.x86": {
 		InstanceName: "t1.small.x86",
-		CPU: 4,
-		MemoryMb: 8192,
-		GPU: 0,
+		CPU:          4,
+		MemoryMb:     8192,
+		GPU:          0,
 	},
 	"x1.small.x86": {
 		InstanceName: "x1.small.x86",
-		CPU: 4,
-		MemoryMb: 32768,
-		GPU: 0,
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
 	},
 }
 
