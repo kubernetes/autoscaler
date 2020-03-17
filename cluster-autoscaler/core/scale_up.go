@@ -464,6 +464,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if context.MaxNodesTotal > 0 && len(nodes)+newNodes+len(upcomingNodes) > context.MaxNodesTotal {
 			klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
 			newNodes = context.MaxNodesTotal - len(nodes) - len(upcomingNodes)
+			context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
 			if newNodes < 1 {
 				return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
 					errors.TransientError,
