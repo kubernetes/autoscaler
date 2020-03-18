@@ -42,7 +42,10 @@ const (
 	nodeProviderIDIndex    = "nodeProviderIDIndex"
 	defaultCAPIGroup       = "cluster.x-k8s.io"
 	// CAPIGroupEnvVar contains the environment variable name which allows overriding defaultCAPIGroup.
-	CAPIGroupEnvVar = "CAPI_GROUP"
+	CAPIGroupEnvVar               = "CAPI_GROUP"
+	resourceNameMachine           = "machines"
+	resourceNameMachineSet        = "machinesets"
+	resourceNameMachineDeployment = "machinedeployments"
 )
 
 // machineController watches for Nodes, Machines, MachineSets and
@@ -301,32 +304,33 @@ func newMachineController(
 	CAPIGroup := getCAPIGroup()
 	CAPIVersion, err := getAPIGroupPreferredVersion(discoveryclient, CAPIGroup)
 	if err != nil {
-		panic("CAPIVersion")
+		return nil, fmt.Errorf("could not find preferred version for CAPI group %q: %v", CAPIGroup, err)
 	}
 	klog.Infof("Using version %q for API group %q", CAPIVersion, CAPIGroup)
 
-	machineDeploymentResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinedeployments.%v.%v", CAPIVersion, CAPIGroup))
-	if machineDeploymentResource == nil {
-		panic("MachineDeployment")
+	gvrMachineDeployment := &schema.GroupVersionResource{
+		Group:    CAPIGroup,
+		Version:  CAPIVersion,
+		Resource: resourceNameMachineDeployment,
 	}
-
-	machineSetResource, _ := schema.ParseResourceArg(fmt.Sprintf("machinesets.%v.%v", CAPIVersion, CAPIGroup))
-	if machineSetResource == nil {
-		panic("MachineSetResource")
-	}
-
-	machineResource, _ := schema.ParseResourceArg(fmt.Sprintf("machines.%v.%v", CAPIVersion, CAPIGroup))
-	if machineResource == nil {
-		panic("machineResource")
-	}
-
-	machineInformer := informerFactory.ForResource(*machineResource)
-	machineSetInformer := informerFactory.ForResource(*machineSetResource)
-	machineDeploymentInformer := informerFactory.ForResource(*machineDeploymentResource)
-
-	machineInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
-	machineSetInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	machineDeploymentInformer := informerFactory.ForResource(*gvrMachineDeployment)
 	machineDeploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+
+	gvrMachineSet := &schema.GroupVersionResource{
+		Group:    CAPIGroup,
+		Version:  CAPIVersion,
+		Resource: resourceNameMachineSet,
+	}
+	machineSetInformer := informerFactory.ForResource(*gvrMachineSet)
+	machineSetInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+
+	gvrMachine := &schema.GroupVersionResource{
+		Group:    CAPIGroup,
+		Version:  CAPIVersion,
+		Resource: resourceNameMachine,
+	}
+	machineInformer := informerFactory.ForResource(*gvrMachine)
+	machineInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 
 	nodeInformer := kubeInformerFactory.Core().V1().Nodes().Informer()
 	nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{})
@@ -351,9 +355,9 @@ func newMachineController(
 		machineSetInformer:        machineSetInformer,
 		nodeInformer:              nodeInformer,
 		dynamicclient:             dynamicclient,
-		machineSetResource:        machineSetResource,
-		machineResource:           machineResource,
-		machineDeploymentResource: machineDeploymentResource,
+		machineSetResource:        gvrMachineSet,
+		machineResource:           gvrMachine,
+		machineDeploymentResource: gvrMachineDeployment,
 	}, nil
 }
 
