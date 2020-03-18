@@ -50,42 +50,6 @@ type instanceType struct {
 
 // InstanceTypes is a map of packet resources
 var InstanceTypes = map[string]*instanceType{
-	"c2.large.arm": {
-		InstanceName: "c2.large.arm",
-		CPU:          32,
-		MemoryMb:     131072,
-		GPU:          0,
-	},
-	"c2.medium.x86": {
-		InstanceName: "c2.medium.x86",
-		CPU:          24,
-		MemoryMb:     65536,
-		GPU:          0,
-	},
-	"g2.large.x86": {
-		InstanceName: "g2.large.x86",
-		CPU:          24,
-		MemoryMb:     196608,
-		GPU:          0,
-	},
-	"m2.xlarge.x86": {
-		InstanceName: "m2.xlarge.x86",
-		CPU:          28,
-		MemoryMb:     393216,
-		GPU:          0,
-	},
-	"n2.xlarge.x86": {
-		InstanceName: "n2.xlarge.x86",
-		CPU:          28,
-		MemoryMb:     393216,
-		GPU:          0,
-	},
-	"x2.xlarge.x86": {
-		InstanceName: "x2.xlarge.x86",
-		CPU:          28,
-		MemoryMb:     393216,
-		GPU:          1,
-	},
 	"c1.large.arm": {
 		InstanceName: "c1.large.arm",
 		CPU:          96,
@@ -104,10 +68,52 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 	},
+	"c2.large.arm": {
+		InstanceName: "c2.large.arm",
+		CPU:          32,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c2.medium.x86": {
+		InstanceName: "c2.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.medium.x86": {
+		InstanceName: "c3.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.small.x86": {
+		InstanceName: "c3.small.x86",
+		CPU:          8,
+		MemoryMb:     32768,
+		GPU:          1,
+	},
+	"g2.large.x86": {
+		InstanceName: "g2.large.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
 	"m1.xlarge.x86": {
 		InstanceName: "m1.xlarge.x86",
 		CPU:          24,
 		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m2.xlarge.x86": {
+		InstanceName: "m2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"n2.xlarge.x86": {
+		InstanceName: "n2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
 		GPU:          0,
 	},
 	"s1.large.x86": {
@@ -116,10 +122,22 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 	},
+	"s3.xlarge.x86": {
+		InstanceName: "s3.xlarge.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
 	"t1.small.x86": {
 		InstanceName: "t1.small.x86",
 		CPU:          4,
 		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"t3.small.x86": {
+		InstanceName: "t3.small.x86",
+		CPU:          4,
+		MemoryMb:     16384,
 		GPU:          0,
 	},
 	"x1.small.x86": {
@@ -127,6 +145,12 @@ var InstanceTypes = map[string]*instanceType{
 		CPU:          4,
 		MemoryMb:     32768,
 		GPU:          0,
+	},
+	"x2.xlarge.x86": {
+		InstanceName: "x2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          1,
 	},
 }
 
