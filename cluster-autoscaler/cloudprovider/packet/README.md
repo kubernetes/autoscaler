@@ -44,7 +44,7 @@ to match your cluster.
 | Argument         | Usage                                                                                                      |
 |------------------|------------------------------------------------------------------------------------------------------------|
 | --cluster-name   | The name of your Kubernetes cluster. It should correspond to the tags that have been applied to the nodes. |
-| --nodes          | Of the form `min:max:NodepoolName`. Only a single node pool is currently supported.                        |
+| --nodes          | Of the form `min:max:NodepoolName`. For multiple nodepools you can add the same argument multiple times. E.g. for pool1, pool2 you would add `--nodes=0:10:pool1` and `--nodes=0:10:pool2`                        |
 
 ## Notes
 
