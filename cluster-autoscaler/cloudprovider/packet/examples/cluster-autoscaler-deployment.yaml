@@ -130,7 +130,7 @@ spec:
     spec:
       # Node affinity is used to force cluster-autoscaler to stick
       # to the master node. This allows the cluster to reliably downscale
-      # to zero nodes when needed.
+      # to zero worker nodes when needed.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -161,6 +161,11 @@ spec:
                 secretKeyRef:
                   name: cluster-autoscaler-packet
                   key: authtoken
+          # You can take advantage of multiple nodepools by adding
+          # extra arguments on the cluster-autoscaler command.
+          # e.g. for pool1, pool2
+          # --nodes=0:10:pool1
+          # --nodes=0:10:pool2
           command:
             - ./cluster-autoscaler
             - --alsologtostderr
