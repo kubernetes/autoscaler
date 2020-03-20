@@ -168,6 +168,7 @@ func TestBuildGenericLabels(t *testing.T) {
 			expectedLabels := map[string]string{
 				apiv1.LabelZoneRegion:        "us-central1",
 				apiv1.LabelZoneFailureDomain: "us-central1-b",
+				gceCSITopologyKeyZone:        "us-central1-b",
 				apiv1.LabelHostname:          "sillyname",
 				apiv1.LabelInstanceType:      "n1-standard-8",
 				kubeletapis.LabelArch:        cloudprovider.DefaultArch,
