@@ -19,6 +19,7 @@ package processors
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -43,6 +44,8 @@ type AutoscalingProcessors struct {
 	AutoscalingStatusProcessor status.AutoscalingStatusProcessor
 	// NodeGroupManager is responsible for creating/deleting node groups.
 	NodeGroupManager nodegroups.NodeGroupManager
+	// NodeInfoProcessor is used to process nodeInfos after they're created.
+	NodeInfoProcessor nodeinfos.NodeInfoProcessor
 }
 
 // DefaultProcessors returns default set of processors.
@@ -56,6 +59,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 		ScaleDownStatusProcessor:   status.NewDefaultScaleDownStatusProcessor(),
 		AutoscalingStatusProcessor: status.NewDefaultAutoscalingStatusProcessor(),
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
+		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 	}
 }
 
@@ -69,4 +73,5 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.AutoscalingStatusProcessor.CleanUp()
 	ap.NodeGroupManager.CleanUp()
 	ap.ScaleDownNodeProcessor.CleanUp()
+	ap.NodeInfoProcessor.CleanUp()
 }
