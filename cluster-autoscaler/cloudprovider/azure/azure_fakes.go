@@ -76,13 +76,8 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateSync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
-
-	if _, ok := client.FakeStore[resourceGroupName]; !ok {
-		client.FakeStore[resourceGroupName] = make(map[string]compute.VirtualMachineScaleSet)
-	}
-	client.FakeStore[resourceGroupName][VMScaleSetName] = parameters
-
-	return compute.VirtualMachineScaleSetsCreateOrUpdateFuture{}, nil
+	args := client.Called(resourceGroupName, VMScaleSetName, parameters)
+	return compute.VirtualMachineScaleSetsCreateOrUpdateFuture{}, args.Error(1)
 }
 
 // WaitForCreateOrUpdate returns a successful result
