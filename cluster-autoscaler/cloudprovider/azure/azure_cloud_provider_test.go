@@ -23,6 +23,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -33,6 +34,33 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	skuName := "Standard_D4_v2"
 	location := "eastus"
 	var vmssCapacity int64 = 3
+
+	scaleSetsClient := &VirtualMachineScaleSetsClientMock{
+		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+			"test": {
+				"test-asg": {
+					Name: &vmssName,
+					Sku: &compute.Sku{
+						Capacity: &vmssCapacity,
+						Name:     &skuName,
+					},
+					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
+					Location:                         &location,
+				},
+			},
+		},
+	}
+
+	scaleSetsClient.On("CreateOrUpdateSync", mock.Anything, mock.Anything, mock.Anything).Run(
+		func(args mock.Arguments) {
+			resourceGroupName := args.Get(0).(string)
+			vmssName := args.Get(1).(string)
+			if _, ok := scaleSetsClient.FakeStore[args.Get(0).(string)]; !ok {
+				scaleSetsClient.FakeStore[resourceGroupName] = make(map[string]compute.VirtualMachineScaleSet)
+			}
+			scaleSetsClient.FakeStore[resourceGroupName][vmssName] = args.Get(2).(compute.VirtualMachineScaleSet)
+		}).Return(compute.VirtualMachineScaleSetsCreateOrUpdateFuture{}, nil)
+
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
@@ -51,21 +79,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachinesClient: &VirtualMachinesClientMock{
 				FakeStore: make(map[string]map[string]compute.VirtualMachine),
 			},
-			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
-				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-					"test": {
-						"test-asg": {
-							Name: &vmssName,
-							Sku: &compute.Sku{
-								Capacity: &vmssCapacity,
-								Name:     &skuName,
-							},
-							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
-							Location:                         &location,
-						},
-					},
-				},
-			},
+			virtualMachineScaleSetsClient:   scaleSetsClient,
 			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
 		},
 	}
