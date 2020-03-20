@@ -34,6 +34,7 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -138,6 +139,7 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
 		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
+		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 	}
 }
 
