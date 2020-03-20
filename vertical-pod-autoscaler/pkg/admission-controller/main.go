@@ -54,13 +54,14 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	port           = flag.Int("port", 8000, "The port to listen on.")
-	address        = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace      = os.Getenv("NAMESPACE")
-	serviceName    = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
-	webhookAddress = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort    = flag.String("webhook-port", "", "Server Port for Webhook")
-	registerByURL  = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	port            = flag.Int("port", 8000, "The port to listen on.")
+	address         = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace       = os.Getenv("NAMESPACE")
+	serviceName     = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
+	webhookAddress  = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort     = flag.String("webhook-port", "", "Server Port for Webhook")
+	registerWebhook = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
+	registerByURL   = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 )
 
 func main() {
@@ -121,7 +122,9 @@ func main() {
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
-		selfRegistration(clientset, certs.caCert, namespace, *serviceName, url, *registerByURL)
+		if *registerWebhook {
+			selfRegistration(clientset, certs.caCert, namespace, *serviceName, url, *registerByURL)
+		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
 	}()
