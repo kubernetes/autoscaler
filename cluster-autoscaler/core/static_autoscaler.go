@@ -269,6 +269,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
 	}
 
+	nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups)
+	if err != nil {
+		klog.Errorf("Failed to process nodeInfos: %v", err)
+		return errors.ToAutoscalerError(errors.InternalError, err)
+	}
+
 	if typedErr := a.updateClusterState(allNodes, nodeInfosForGroups, currentTime); typedErr != nil {
 		klog.Errorf("Failed to update cluster state: %v", typedErr)
 		return typedErr
