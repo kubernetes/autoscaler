@@ -72,6 +72,21 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 	}, nil
 }
 
+// CreateOrUpdateSync creates or updates the VirtualMachineScaleSet and returns the future
+func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateSync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
+	client.mutex.Lock()
+	defer client.mutex.Unlock()
+	args := client.Called(resourceGroupName, VMScaleSetName, parameters)
+	return compute.VirtualMachineScaleSetsCreateOrUpdateFuture{}, args.Error(1)
+}
+
+// WaitForCreateOrUpdate returns a successful result
+func (client *VirtualMachineScaleSetsClientMock) WaitForCreateOrUpdate(ctx context.Context, future compute.VirtualMachineScaleSetsCreateOrUpdateFuture) (resp *http.Response, err error) {
+	return &http.Response{
+		StatusCode: http.StatusOK,
+	}, nil
+}
+
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
 func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
 	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs)
