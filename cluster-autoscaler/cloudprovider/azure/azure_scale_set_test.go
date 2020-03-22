@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -96,6 +97,37 @@ func TestIncreaseSize(t *testing.T) {
 	targetSize, err = provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 5, targetSize)
+}
+
+func TestIncreaseSizeFailure(t *testing.T) {
+	provider := newTestProvider(t)
+	manager := newTestAzureManager(t)
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	scaleSetClient := &VirtualMachineScaleSetsClientMock{
+		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+			"test": {
+				"test-asg": {
+					Name: &vmssName,
+					Sku: &compute.Sku{
+						Capacity: &vmssCapacity,
+					},
+					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
+				},
+			},
+		},
+	}
+	scaleSetClient.On("CreateOrUpdateSync", "test", "test-asg", mock.Anything).Return(nil, errors.New("autorest/azure: service returned an error"))
+	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
+	provider.azureManager = manager
+
+	registered := provider.azureManager.RegisterAsg(newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+
+	// Increase Size by 2 nodes
+	err := provider.NodeGroups()[0].IncreaseSize(2)
+	assert.Error(t, err)
 }
 
 func TestBelongs(t *testing.T) {

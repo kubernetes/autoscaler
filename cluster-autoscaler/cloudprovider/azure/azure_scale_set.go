@@ -226,10 +226,40 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 }
 
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
-func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
+func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) error {
 	var op compute.VirtualMachineScaleSet
-	var resp *http.Response
-	var isSuccess bool
+	var err error
+
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	op, err = scaleSet.getVMSSInfo()
+	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		return err
+	}
+
+	vmssSizeMutex.Lock()
+	op.Sku.Capacity = &size
+	vmssSizeMutex.Unlock()
+	op.Identity = nil
+	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateSync(%s)", scaleSet.Name)
+	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateSync(ctx, resourceGroup, scaleSet.Name, op)
+	if err != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdateSync for scale set %q failed: %v", scaleSet.Name, err)
+		return err
+	}
+
+	// Proactively set the VMSS size so autoscaler makes better decisions.
+	scaleSet.curSize = size
+	scaleSet.lastSizeRefresh = time.Now()
+
+	go scaleSet.waitForUpdateVMSSCapacity(future)
+	return nil
+}
+
+func (scaleSet *ScaleSet) waitForUpdateVMSSCapacity(future compute.VirtualMachineScaleSetsCreateOrUpdateFuture) {
 	var err error
 
 	defer func() {
@@ -242,42 +272,26 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 		}
 	}()
 
-	resourceGroup := scaleSet.manager.config.ResourceGroup
-	op, err = scaleSet.getVMSSInfo()
-	if err != nil {
-		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
-		return
-	}
-
-	vmssSizeMutex.Lock()
-	op.Sku.Capacity = &size
-	vmssSizeMutex.Unlock()
-	op.Identity = nil
-	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
-	resp, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, scaleSet.Name, op)
-	isSuccess, err = isSuccessHTTPResponse(resp, err)
+
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.WaitForCreateOrUpdate(%s)", scaleSet.Name)
+	resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForCreateOrUpdate(ctx, future)
+	isSuccess, err := isSuccessHTTPResponse(resp, err)
 	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForCreateOrUpdate(%s) success", scaleSet.Name)
 		scaleSet.invalidateInstanceCache()
 		return
 	}
-
-	klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
-	return
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
 }
 
 // SetScaleSetSize sets ScaleSet size.
-func (scaleSet *ScaleSet) SetScaleSetSize(size int64) {
+func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	// Proactively set the VMSS size so autoscaler makes better decisions.
-	scaleSet.curSize = size
-	scaleSet.lastSizeRefresh = time.Now()
-	go scaleSet.updateVMSSCapacity(size)
+	return scaleSet.updateVMSSCapacity(size)
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
@@ -302,8 +316,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
 	}
 
-	scaleSet.SetScaleSetSize(size + int64(delta))
-	return nil
+	return scaleSet.SetScaleSetSize(size + int64(delta))
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
