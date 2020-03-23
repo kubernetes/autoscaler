@@ -221,17 +221,19 @@ func TestUpdateRecommendation(t *testing.T) {
 func TestUseAggregationIfMatching(t *testing.T) {
 	modeOff := vpa_types.UpdateModeOff
 	modeAuto := vpa_types.UpdateModeAuto
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	scalingModeOff := vpa_types.ContainerScalingModeOff
 	cases := []struct {
 		name                        string
 		aggregations                []string
 		vpaSelector                 string
+		resourcePolicy              *vpa_types.PodResourcePolicy
 		updateMode                  *vpa_types.UpdateMode
 		container                   string
 		containerLabels             map[string]string
-		isUnderVPA                  bool
-		expectedAggregations        []string
+		expectedMatching            bool
 		expectedUpdateMode          *vpa_types.UpdateMode
-		expectedNeedsRecommendation bool
+		expectedNeedsRecommendation map[string]bool
 	}{
 		{
 			name:                        "First matching aggregation",
@@ -240,9 +242,8 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
-			isUnderVPA:                  false,
-			expectedAggregations:        []string{"test-container"},
-			expectedNeedsRecommendation: true,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          &modeOff,
 		}, {
 			name:                        "New matching aggregation",
@@ -251,9 +252,8 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			isUnderVPA:                  false,
-			expectedAggregations:        []string{"test-container", "second-container"},
-			expectedNeedsRecommendation: true,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"test-container": true, "second-container": true},
 			expectedUpdateMode:          &modeAuto,
 		}, {
 			name:                        "Existing matching aggregation",
@@ -262,9 +262,8 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
-			isUnderVPA:                  true,
-			expectedAggregations:        []string{"test-container"},
-			expectedNeedsRecommendation: true,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          &modeOff,
 		}, {
 			name:                        "Aggregation not matching",
@@ -273,66 +272,131 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             map[string]string{"different": "labels"},
-			isUnderVPA:                  false,
-			expectedAggregations:        []string{"test-container"},
-			expectedNeedsRecommendation: false,
+			expectedMatching:            false,
+			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          nil,
+		}, {
+			name:         "New matching aggregation with scaling mode Off",
+			aggregations: []string{"test-container"},
+			vpaSelector:  testSelectorStr,
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "second-container",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			updateMode:                  &modeAuto,
+			container:                   "second-container",
+			containerLabels:             testLabels,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": true},
+			expectedUpdateMode:          &modeAuto,
+		}, {
+			name:         "New matching aggregation with default scaling mode Off",
+			aggregations: []string{"test-container"},
+			vpaSelector:  testSelectorStr,
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			updateMode:                  &modeAuto,
+			container:                   "second-container",
+			containerLabels:             testLabels,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": false},
+			expectedUpdateMode:          &modeAuto,
+		}, {
+			name:         "New matching aggregation with scaling mode Off with default Auto",
+			aggregations: []string{"test-container"},
+			vpaSelector:  testSelectorStr,
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeAuto,
+					},
+					{
+						ContainerName: "second-container",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			updateMode:                  &modeAuto,
+			container:                   "second-container",
+			containerLabels:             testLabels,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": true},
+			expectedUpdateMode:          &modeAuto,
+		}, {
+			name:         "New matching aggregation with scaling mode Auto with default Off",
+			aggregations: []string{"test-container"},
+			vpaSelector:  testSelectorStr,
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeOff,
+					},
+					{
+						ContainerName: "second-container",
+						Mode:          &scalingModeAuto,
+					},
+				},
+			},
+			updateMode:                  &modeAuto,
+			container:                   "second-container",
+			containerLabels:             testLabels,
+			expectedMatching:            true,
+			expectedNeedsRecommendation: map[string]bool{"second-container": true, "test-container": false},
+			expectedUpdateMode:          &modeAuto,
 		},
 	}
 	for _, tc := range cases {
-		if tc.name == "Existing matching aggregation" {
-			t.Run(tc.name, func(t *testing.T) {
-				namespace := "test-namespace"
-				selector, err := labels.Parse(tc.vpaSelector)
-				if !assert.NoError(t, err) {
-					t.FailNow()
+		t.Run(tc.name, func(t *testing.T) {
+			namespace := "test-namespace"
+			selector, err := labels.Parse(tc.vpaSelector)
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, anyTime)
+			vpa.UpdateMode = tc.updateMode
+			key := mockAggregateStateKey{
+				namespace:     namespace,
+				containerName: tc.container,
+				labels:        labels.Set(tc.containerLabels).String(),
+			}
+			aggregationUnderTest := &AggregateContainerState{}
+			for _, container := range tc.aggregations {
+				containerKey, aggregation := testAggregation(vpa, container, labels.Set(testLabels).String())
+				vpa.aggregateContainerStates[containerKey] = aggregation
+				if container == tc.container {
+					aggregationUnderTest = aggregation
 				}
-				vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, anyTime)
-				vpa.UpdateMode = tc.updateMode
-				key := mockAggregateStateKey{
-					namespace:     namespace,
-					containerName: tc.container,
-					labels:        labels.Set(tc.containerLabels).String(),
-				}
-				aggregation := &AggregateContainerState{
-					IsUnderVPA: tc.isUnderVPA,
-				}
-				for _, container := range tc.aggregations {
-					containerKey := mockAggregateStateKey{
-						namespace:     namespace,
-						containerName: container,
-						labels:        labels.Set(testLabels).String(),
-					}
-					if container == tc.container {
-						aggregation.UpdateMode = vpa.UpdateMode
-						vpa.aggregateContainerStates[containerKey] = aggregation
-					} else {
-						vpa.aggregateContainerStates[key] = &AggregateContainerState{UpdateMode: vpa.UpdateMode}
-					}
-				}
+			}
+			vpa.SetResourcePolicy(tc.resourcePolicy)
 
-				vpa.UseAggregationIfMatching(key, aggregation)
-				assert.Equal(t, len(tc.expectedAggregations), len(vpa.aggregateContainerStates), "AggregateContainerStates has unexpected size")
-				for _, container := range tc.expectedAggregations {
-					found := false
-					for key := range vpa.aggregateContainerStates {
-						if key.ContainerName() == container {
-							found = true
-							break
-						}
-					}
-					assert.True(t, found, "Container %s not found in aggregateContainerStates", container)
-				}
-				assert.Equal(t, tc.expectedNeedsRecommendation, aggregation.NeedsRecommendation())
-				if tc.expectedUpdateMode == nil {
-					assert.Nil(t, aggregation.GetUpdateMode())
-				} else {
-					if assert.NotNil(t, aggregation.GetUpdateMode()) {
-						assert.Equal(t, *tc.expectedUpdateMode, *aggregation.GetUpdateMode())
+			matching := vpa.UseAggregationIfMatching(key, aggregationUnderTest)
+			assert.Equal(t, tc.expectedMatching, matching, "Unexpected assessment of aggregation matching")
+			assert.Len(t, vpa.aggregateContainerStates, len(tc.expectedNeedsRecommendation), "AggregateContainerStates has unexpected size")
+			for container, expectedNeedsRecommendation := range tc.expectedNeedsRecommendation {
+				found := false
+				for key, state := range vpa.aggregateContainerStates {
+					if key.ContainerName() == container {
+						found = true
+						assert.Equal(t, expectedNeedsRecommendation, state.NeedsRecommendation(),
+							"Unexpected NeedsRecommendation result for container %s", container)
 					}
 				}
-			})
-		}
+				assert.True(t, found, "Container %s not found in aggregateContainerStates", container)
+			}
+			assert.Equal(t, tc.expectedUpdateMode, aggregationUnderTest.GetUpdateMode())
+		})
 	}
 }
 
@@ -378,6 +442,144 @@ func TestDeleteAggregation(t *testing.T) {
 			assert.Equal(t, 0, len(vpa.aggregateContainerStates))
 		})
 	}
+}
+
+func TestSetResourcePolicy(t *testing.T) {
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	scalingModeOff := vpa_types.ContainerScalingModeOff
+	cases := []struct {
+		name                        string
+		containers                  []string
+		resourcePolicy              *vpa_types.PodResourcePolicy
+		expectedScalingMode         map[string]*vpa_types.ContainerScalingMode
+		expectedNeedsRecommendation map[string]bool
+	}{
+		{
+			name:           "Nil policy",
+			containers:     []string{"container1"},
+			resourcePolicy: nil,
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeAuto,
+			},
+			expectedNeedsRecommendation: map[string]bool{"container1": true},
+		}, {
+			name:       "Default policy with no scaling mode",
+			containers: []string{"container1", "container2"},
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+					},
+				},
+			},
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeAuto, "container2": &scalingModeAuto,
+			},
+			expectedNeedsRecommendation: map[string]bool{
+				"container1": true, "container2": true},
+		}, {
+			name:       "Default policy with scaling mode auto",
+			containers: []string{"container1", "container2"},
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeAuto,
+					},
+				},
+			},
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeAuto, "container2": &scalingModeAuto,
+			},
+			expectedNeedsRecommendation: map[string]bool{
+				"container1": true, "container2": true},
+		}, {
+			name:       "Default policy with scaling mode off",
+			containers: []string{"container1", "container2"},
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeOff, "container2": &scalingModeOff,
+			},
+			expectedNeedsRecommendation: map[string]bool{
+				"container1": false, "container2": false},
+		}, {
+			name:       "One container has scaling mode Off",
+			containers: []string{"container1", "container2"},
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "container2",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeAuto, "container2": &scalingModeOff,
+			},
+			expectedNeedsRecommendation: map[string]bool{
+				"container1": true, "container2": false},
+		}, {
+			name:       "One container has scaling mode Auto with default off",
+			containers: []string{"container1", "container2"},
+			resourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "*",
+						Mode:          &scalingModeOff,
+					}, {
+						ContainerName: "container2",
+						Mode:          &scalingModeAuto,
+					},
+				},
+			},
+			expectedScalingMode: map[string]*vpa_types.ContainerScalingMode{
+				"container1": &scalingModeOff, "container2": &scalingModeAuto,
+			},
+			expectedNeedsRecommendation: map[string]bool{
+				"container1": false, "container2": true},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			selector, err := labels.Parse(testSelectorStr)
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			vpa := NewVpa(VpaID{Namespace: "test-namespace", VpaName: "my-favourite-vpa"}, selector, anyTime)
+			for _, container := range tc.containers {
+				containerKey, aggregation := testAggregation(vpa, container, labels.Set(testLabels).String())
+				vpa.aggregateContainerStates[containerKey] = aggregation
+			}
+			vpa.SetResourcePolicy(tc.resourcePolicy)
+			assert.Equal(t, tc.resourcePolicy, vpa.ResourcePolicy)
+			for key, state := range vpa.aggregateContainerStates {
+				containerName := key.ContainerName()
+				assert.Equal(t, tc.expectedScalingMode[containerName], state.GetScalingMode(), "Unexpected scaling mode for container %s", containerName)
+				assert.Equal(t, tc.expectedNeedsRecommendation[containerName], state.NeedsRecommendation(), "Unexpected needs recommendation for container %s", containerName)
+			}
+		})
+	}
+}
+
+func testAggregation(vpa *Vpa, containerName, labels string) (mockAggregateStateKey, *AggregateContainerState) {
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	containerKey := mockAggregateStateKey{
+		namespace:     vpa.ID.Namespace,
+		containerName: containerName,
+		labels:        labels,
+	}
+	aggregation := &AggregateContainerState{}
+	aggregation.UpdateMode = vpa.UpdateMode
+	aggregation.IsUnderVPA = true
+	aggregation.ScalingMode = &scalingModeAuto
+	return containerKey, aggregation
 }
 
 type mockAggregateStateKey struct {
