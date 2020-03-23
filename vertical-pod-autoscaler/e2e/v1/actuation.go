@@ -343,10 +343,8 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 
 		ginkgo.By("Setting up a hamster deployment")
 
-		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
-
-		podList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m"), ParseQuantityOrDie("100Mi"))
+		podList := startDeploymentPods(f, d)
 		for _, pod := range podList.Items {
 			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
 			gomega.Expect(ok).To(gomega.Equal(true))
