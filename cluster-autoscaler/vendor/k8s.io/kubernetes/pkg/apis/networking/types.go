@@ -158,7 +158,7 @@ type IPBlock struct {
 	Except []string
 }
 
-// NetworkPolicyPeer describes a peer to allow traffic from.
+// NetworkPolicyPeer describes a peer to allow traffic to/from.
 type NetworkPolicyPeer struct {
 	// This is a label selector which selects Pods. This field follows standard label
 	// selector semantics; if present but empty, it selects all pods.
@@ -297,10 +297,9 @@ type IngressClassSpec struct {
 	// "acme.io/ingress-controller". This field is immutable.
 	Controller string
 
-	// Parameters is a link to a resource containing additional configuration
-	// for the controller. This is optional if the controller does not require
-	// extra parameters. Example configuration resources include
-	// `core.ConfigMap` or a controller specific Custom Resource.
+	// Parameters is a link to a custom resource containing additional
+	// configuration for the controller. This is optional if the controller does
+	// not require extra parameters.
 	// +optional
 	Parameters *api.TypedLocalObjectReference
 }
