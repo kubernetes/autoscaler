@@ -226,25 +226,29 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
 func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) error {
-	var op compute.VirtualMachineScaleSet
+	var vmssInfo compute.VirtualMachineScaleSet
 	var err error
 
-	resourceGroup := scaleSet.manager.config.ResourceGroup
-	op, err = scaleSet.getVMSSInfo()
+	vmssInfo, err = scaleSet.getVMSSInfo()
 	if err != nil {
 		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return err
 	}
 
 	vmssSizeMutex.Lock()
-	op.Sku.Capacity = &size
+	vmssInfo.Sku.Capacity = &size
 	vmssSizeMutex.Unlock()
-	op.Identity = nil
-	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
+
+	// Compose a new VMSS for updating.
+	op := compute.VirtualMachineScaleSet{
+		Name:     vmssInfo.Name,
+		Sku:      vmssInfo.Sku,
+		Location: vmssInfo.Location,
+	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateSync(%s)", scaleSet.Name)
-	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateSync(ctx, resourceGroup, scaleSet.Name, op)
+	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateSync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
 	if err != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdateSync for scale set %q failed: %v", scaleSet.Name, err)
 		return err
