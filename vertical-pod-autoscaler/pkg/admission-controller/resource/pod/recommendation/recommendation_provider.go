@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pod
+package recommendation
 
 import (
 	"fmt"
@@ -26,8 +26,8 @@ import (
 	"k8s.io/klog"
 )
 
-// RecommendationProvider gets current recommendation, annotations and vpaName for the given pod.
-type RecommendationProvider interface {
+// Provider gets current recommendation, annotations and vpaName for the given pod.
+type Provider interface {
 	GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error)
 }
 
@@ -36,8 +36,8 @@ type recommendationProvider struct {
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
-// NewRecommendationProvider constructs the recommendation provider that can be used to determine recommendations for pods.
-func NewRecommendationProvider(calculator limitrange.LimitRangeCalculator,
+// NewProvider constructs the recommendation provider that can be used to determine recommendations for pods.
+func NewProvider(calculator limitrange.LimitRangeCalculator,
 	recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
 	return &recommendationProvider{
 		limitsRangeCalculator:   calculator,

@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
@@ -39,13 +40,13 @@ type AdmissionServer struct {
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider pod.RecommendationProvider,
-	podPreProcessor pod.PreProcessor,
+func NewAdmissionServer(podPreProcessor pod.PreProcessor,
 	vpaPreProcessor vpa.PreProcessor,
 	limitsChecker limitrange.LimitRangeCalculator,
-	vpaMatcher vpa.Matcher) *AdmissionServer {
+	vpaMatcher vpa.Matcher,
+	patchCalculators []patch.Calculator) *AdmissionServer {
 	as := &AdmissionServer{limitsChecker, map[metav1.GroupResource]resource.Handler{}}
-	as.RegisterResourceHandler(pod.NewResourceHandler(podPreProcessor, recommendationProvider, vpaMatcher))
+	as.RegisterResourceHandler(pod.NewResourceHandler(podPreProcessor, vpaMatcher, patchCalculators))
 	as.RegisterResourceHandler(vpa.NewResourceHandler(vpaPreProcessor))
 	return as
 }
