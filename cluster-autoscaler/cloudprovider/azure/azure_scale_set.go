@@ -37,8 +37,9 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	"k8s.io/legacy-cloud-providers/azure/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 var (
@@ -227,13 +228,12 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 }
 
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
-func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
-	var vmssInfo compute.VirtualMachineScaleSet
-	var rerr *retry.Error
+func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
+	var err error
 
 	defer func() {
-		if rerr != nil {
-			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, rerr)
+		if err != nil {
+			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
 			// Invalidate the VMSS size cache in order to fetch the size from the API.
 			scaleSet.sizeMutex.Lock()
 			defer scaleSet.sizeMutex.Unlock()
@@ -241,10 +241,34 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 		}
 	}()
 
-	vmssInfo, rerr = scaleSet.getVMSSInfo()
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
+
+	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
+	if isSuccess {
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult(%s) success", scaleSet.Name)
+		scaleSet.invalidateInstanceCache()
+
+		return
+	}
+
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+}
+
+// SetScaleSetSize sets ScaleSet size.
+func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
+	scaleSet.sizeMutex.Lock()
+	defer scaleSet.sizeMutex.Unlock()
+
+	// Proactively set the VMSS size so autoscaler makes better decisions.
+	scaleSet.curSize = size
+	scaleSet.lastSizeRefresh = time.Now()
+
+	vmssInfo, rerr := scaleSet.getVMSSInfo()
 	if rerr != nil {
 		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, rerr)
-		return
+		return rerr.Error()
 	}
 
 	// Update the new capacity to cache.
@@ -260,27 +284,17 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
-	rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
 	if rerr != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, rerr)
-		return
+		return rerr.Error()
 	}
 
-	klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
-	scaleSet.invalidateInstanceCache()
-	return
-}
+	klog.V(3).Infof("create a goroutine to wait for the result of the virtualMachineScaleSetsClient.CreateOrUpdate request")
+	go scaleSet.updateVMSSCapacity(future)
 
-// SetScaleSetSize sets ScaleSet size.
-func (scaleSet *ScaleSet) SetScaleSetSize(size int64) {
-	scaleSet.sizeMutex.Lock()
-	defer scaleSet.sizeMutex.Unlock()
-
-	// Proactively set the VMSS size so autoscaler makes better decisions.
-	scaleSet.curSize = size
-	scaleSet.lastSizeRefresh = time.Now()
-	go scaleSet.updateVMSSCapacity(size)
+	return nil
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
@@ -305,8 +319,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
 	}
 
-	scaleSet.SetScaleSetSize(size + int64(delta))
-	return nil
+	return scaleSet.SetScaleSetSize(size + int64(delta))
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.

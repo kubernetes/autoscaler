@@ -1,10 +1,9 @@
 # cloud.google.com/go v0.38.0 => cloud.google.com/go v0.38.0
 cloud.google.com/go/compute/metadata
-# github.com/Azure/azure-sdk-for-go v35.0.0+incompatible => github.com/Azure/azure-sdk-for-go v35.0.0+incompatible
-github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute
+# github.com/Azure/azure-sdk-for-go v40.2.0+incompatible => github.com/Azure/azure-sdk-for-go v40.2.0+incompatible
+github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute
 github.com/Azure/azure-sdk-for-go/services/containerregistry/mgmt/2019-05-01/containerregistry
 github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice
-github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network
 github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources
 github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage
@@ -14,14 +13,14 @@ github.com/Azure/azure-sdk-for-go/version
 # github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 => github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
 github.com/Azure/go-ansiterm
 github.com/Azure/go-ansiterm/winterm
-# github.com/Azure/go-autorest/autorest v0.9.0 => github.com/Azure/go-autorest/autorest v0.9.0
+# github.com/Azure/go-autorest/autorest v0.9.6 => github.com/Azure/go-autorest/autorest v0.9.6
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/azure
-# github.com/Azure/go-autorest/autorest/adal v0.5.0 => github.com/Azure/go-autorest/autorest/adal v0.5.0
+# github.com/Azure/go-autorest/autorest/adal v0.8.2 => github.com/Azure/go-autorest/autorest/adal v0.8.2
 github.com/Azure/go-autorest/autorest/adal
-# github.com/Azure/go-autorest/autorest/date v0.1.0 => github.com/Azure/go-autorest/autorest/date v0.1.0
+# github.com/Azure/go-autorest/autorest/date v0.2.0 => github.com/Azure/go-autorest/autorest/date v0.2.0
 github.com/Azure/go-autorest/autorest/date
-# github.com/Azure/go-autorest/autorest/mocks v0.2.0 => github.com/Azure/go-autorest/autorest/mocks v0.2.0
+# github.com/Azure/go-autorest/autorest/mocks v0.3.0 => github.com/Azure/go-autorest/autorest/mocks v0.3.0
 github.com/Azure/go-autorest/autorest/mocks
 # github.com/Azure/go-autorest/autorest/to v0.2.0 => github.com/Azure/go-autorest/autorest/to v0.2.0
 github.com/Azure/go-autorest/autorest/to
@@ -182,14 +181,11 @@ github.com/docker/docker/api/types/time
 github.com/docker/docker/api/types/versions
 github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
-github.com/docker/docker/daemon/logger/jsonfilelog/jsonlog
 github.com/docker/docker/errdefs
 github.com/docker/docker/pkg/jsonmessage
 github.com/docker/docker/pkg/mount
-github.com/docker/docker/pkg/parsers
 github.com/docker/docker/pkg/parsers/operatingsystem
 github.com/docker/docker/pkg/stdcopy
-github.com/docker/docker/pkg/sysinfo
 github.com/docker/docker/pkg/term
 github.com/docker/docker/pkg/term/windows
 # github.com/docker/go-connections v0.3.0 => github.com/docker/go-connections v0.3.0
@@ -285,7 +281,7 @@ github.com/google/cadvisor/utils/sysinfo
 github.com/google/cadvisor/version
 github.com/google/cadvisor/watcher
 github.com/google/cadvisor/zfs
-# github.com/google/go-cmp v0.3.0 => github.com/google/go-cmp v0.3.0
+# github.com/google/go-cmp v0.3.1 => github.com/google/go-cmp v0.3.1
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -426,7 +422,7 @@ github.com/opencontainers/runtime-spec/specs-go
 # github.com/opencontainers/selinux v1.3.1-0.20190929122143-5215b1806f52 => github.com/opencontainers/selinux v1.3.1-0.20190929122143-5215b1806f52
 github.com/opencontainers/selinux/go-selinux
 github.com/opencontainers/selinux/go-selinux/label
-# github.com/pkg/errors v0.8.1 => github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1 => github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0 => github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -509,7 +505,7 @@ github.com/vmware/govmomi/vim25/progress
 github.com/vmware/govmomi/vim25/soap
 github.com/vmware/govmomi/vim25/types
 github.com/vmware/govmomi/vim25/xml
-# go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738 => go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+# go.etcd.io/etcd v0.5.0-alpha.5.0.20200224211402-c65a9e2dd1fd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200224211402-c65a9e2dd1fd
 go.etcd.io/etcd/auth/authpb
 go.etcd.io/etcd/clientv3
 go.etcd.io/etcd/clientv3/balancer
@@ -592,7 +588,7 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e => golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 => golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+# golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 => golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
@@ -687,7 +683,7 @@ gopkg.in/square/go-jose.v2/jwt
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.2.8 => gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-# k8s.io/api v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/api
+# k8s.io/api v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/api
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
 k8s.io/api/admissionregistration/v1
@@ -730,7 +726,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/apimachinery
+# k8s.io/apimachinery v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/apimachinery
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
@@ -788,7 +784,7 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/apiserver
+# k8s.io/apiserver v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/apiserver
 k8s.io/apiserver/pkg/admission
 k8s.io/apiserver/pkg/admission/configuration
 k8s.io/apiserver/pkg/admission/initializer
@@ -885,7 +881,7 @@ k8s.io/apiserver/pkg/util/webhook
 k8s.io/apiserver/pkg/util/wsstream
 k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
-# k8s.io/client-go v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/client-go
+# k8s.io/client-go v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/client-go
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
 k8s.io/client-go/dynamic
@@ -1115,7 +1111,7 @@ k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/cloud-provider v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/cloud-provider
+# k8s.io/cloud-provider v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/cloud-provider
 k8s.io/cloud-provider
 k8s.io/cloud-provider/api
 k8s.io/cloud-provider/node/helpers
@@ -1123,7 +1119,7 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/component-base v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/component-base
+# k8s.io/component-base v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/component-base
 k8s.io/component-base/cli/flag
 k8s.io/component-base/codec
 k8s.io/component-base/config
@@ -1136,10 +1132,10 @@ k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/metrics/testutil
 k8s.io/component-base/version
 k8s.io/component-base/version/verflag
-# k8s.io/cri-api v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/cri-api
+# k8s.io/cri-api v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/cri-api
 k8s.io/cri-api/pkg/apis
 k8s.io/cri-api/pkg/apis/runtime/v1alpha2
-# k8s.io/csi-translation-lib v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/csi-translation-lib
+# k8s.io/csi-translation-lib v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/csi-translation-lib
 k8s.io/csi-translation-lib
 k8s.io/csi-translation-lib/plugins
 # k8s.io/klog v1.0.0 => k8s.io/klog v1.0.0
@@ -1151,17 +1147,17 @@ k8s.io/kube-openapi/pkg/handler
 k8s.io/kube-openapi/pkg/schemaconv
 k8s.io/kube-openapi/pkg/util
 k8s.io/kube-openapi/pkg/util/proto
-# k8s.io/kube-proxy v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/kube-proxy
+# k8s.io/kube-proxy v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/kube-proxy
 k8s.io/kube-proxy/config/v1alpha1
-# k8s.io/kube-scheduler v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/kube-scheduler
+# k8s.io/kube-scheduler v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/kube-scheduler
 k8s.io/kube-scheduler/extender/v1
-# k8s.io/kubectl v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/kubectl
+# k8s.io/kubectl v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/kubectl
 k8s.io/kubectl/pkg/scale
-# k8s.io/kubelet v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/kubelet
+# k8s.io/kubelet v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/kubelet
 k8s.io/kubelet/config/v1beta1
 k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
-# k8s.io/kubernetes v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes
+# k8s.io/kubernetes v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes
 k8s.io/kubernetes/cmd/kube-proxy/app
 k8s.io/kubernetes/cmd/kubelet/app
 k8s.io/kubernetes/cmd/kubelet/app/options
@@ -1450,7 +1446,7 @@ k8s.io/kubernetes/pkg/volume/vsphere_volume
 k8s.io/kubernetes/pkg/windows/service
 k8s.io/kubernetes/test/utils
 k8s.io/kubernetes/third_party/forked/golang/expansion
-# k8s.io/legacy-cloud-providers v0.0.0 => /tmp/ca-update-vendor.Hz3P/kubernetes/staging/src/k8s.io/legacy-cloud-providers
+# k8s.io/legacy-cloud-providers v0.0.0 => /tmp/ca-update-vendor.mB1S/kubernetes/staging/src/k8s.io/legacy-cloud-providers
 k8s.io/legacy-cloud-providers/aws
 k8s.io/legacy-cloud-providers/azure
 k8s.io/legacy-cloud-providers/azure/auth

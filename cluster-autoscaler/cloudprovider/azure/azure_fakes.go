@@ -22,10 +22,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/mock"
 
 	"k8s.io/legacy-cloud-providers/azure/retry"
@@ -70,6 +71,16 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 	client.FakeStore[resourceGroupName][VMScaleSetName] = parameters
 
 	return nil
+}
+
+// CreateOrUpdateAsync sends the request to arm client and DO NOT wait for the response
+func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateAsync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (*azure.Future, *retry.Error) {
+	return nil, nil
+}
+
+// WaitForAsyncOperationResult waits for the response of the request
+func (client *VirtualMachineScaleSetsClientMock) WaitForAsyncOperationResult(ctx context.Context, future *azure.Future) (*http.Response, error) {
+	return nil, nil
 }
 
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
