@@ -38,6 +38,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
@@ -64,6 +65,7 @@ type verticalPodAutoscalerBuilder struct {
 	maxAllowed              core.ResourceList
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
+	annotations             map[string]string
 	targetRef               *autoscaling.CrossVersionObjectReference
 	appendedRecommendations []vpa_types.RecommendedContainerResources
 }
@@ -137,6 +139,12 @@ func (b *verticalPodAutoscalerBuilder) WithTargetRef(targetRef *autoscaling.Cros
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithAnnotations(annotations map[string]string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.annotations = annotations
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
@@ -174,6 +182,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 		ObjectMeta: meta.ObjectMeta{
 			Name:              b.vpaName,
 			Namespace:         b.namespace,
+			Annotations:       b.annotations,
 			CreationTimestamp: meta.NewTime(b.creationTimestamp),
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
