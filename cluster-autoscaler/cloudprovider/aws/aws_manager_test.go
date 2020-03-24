@@ -59,10 +59,10 @@ func TestGetRegion(t *testing.T) {
 	// Ensure without environment variable, EC2 Metadata used... and it merely
 	// chops the last character off the Availability Zone.
 	expected2 := "mordor-2"
-	expected2a := expected2 + "a"
+	response := "{\"region\": \"mordor-2\"}"
 	os.Unsetenv(key)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(expected2a))
+		w.Write([]byte(response))
 	}))
 	cfg := aws.NewConfig().WithEndpoint(server.URL)
 	assert.Equal(t, expected2, getRegion(cfg))
