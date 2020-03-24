@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"k8s.io/utils/pointer"
 	"testing"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -35,9 +37,19 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 	// - add more nodes
 	// - add better naming for pods/scenarios
 
+	p2Owner := metav1.OwnerReference{
+		UID:        "controler_a",
+		Controller: pointer.BoolPtr(true),
+	}
+
 	p1 := BuildTestPod("p1", 1500, 200000)
-	p2_1 := BuildTestPod("p2_2", 3000, 200000)
+
+	// define owner to enable caching
+	p2_1 := BuildTestPod("p2_1", 3000, 200000)
+	p2_1.ObjectMeta.OwnerReferences = append(p2_1.ObjectMeta.OwnerReferences, p2Owner)
 	p2_2 := BuildTestPod("p2_2", 3000, 200000)
+	p2_2.ObjectMeta.OwnerReferences = append(p2_2.ObjectMeta.OwnerReferences, p2Owner)
+
 	p3_1 := BuildTestPod("p3_1", 300, 200000)
 	p3_2 := BuildTestPod("p3_2", 300, 200000)
 
