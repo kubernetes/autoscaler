@@ -18,10 +18,12 @@ package patch
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // EqPatch returns true if patches are equal by comparing their
@@ -35,4 +37,15 @@ func EqPatch(a, b resource_admission.PatchRecord) bool {
 // AssertEqPatch asserts patches are equal.
 func AssertEqPatch(t *testing.T, got, want resource_admission.PatchRecord) {
 	assert.True(t, EqPatch(got, want), "got %+v, want: %+v", got, want)
+}
+
+// AssertPatchOneOf asserts patch is one of possible expected patches.
+func AssertPatchOneOf(t *testing.T, got resource_admission.PatchRecord, want []resource_admission.PatchRecord) {
+	for _, wanted := range want {
+		if EqPatch(got, wanted) {
+			return
+		}
+	}
+	msg := fmt.Sprintf("got: %+v, expected one of %+v", got, want)
+	assert.Fail(t, msg)
 }
