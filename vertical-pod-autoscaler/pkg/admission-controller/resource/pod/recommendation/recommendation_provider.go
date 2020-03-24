@@ -38,7 +38,7 @@ type recommendationProvider struct {
 
 // NewProvider constructs the recommendation provider that can be used to determine recommendations for pods.
 func NewProvider(calculator limitrange.LimitRangeCalculator,
-	recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
+	recommendationProcessor vpa_api_util.RecommendationProcessor) Provider {
 	return &recommendationProvider{
 		limitsRangeCalculator:   calculator,
 		recommendationProcessor: recommendationProcessor,
