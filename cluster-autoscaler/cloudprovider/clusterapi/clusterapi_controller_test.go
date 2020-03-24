@@ -86,9 +86,31 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 			Resources: []*v1.APIResourceList{
 				{
 					GroupVersion: fmt.Sprintf("%s/v1beta1", customCAPIGroup),
+					APIResources: []v1.APIResource{
+						{
+							Name: resourceNameMachineDeployment,
+						},
+						{
+							Name: resourceNameMachineSet,
+						},
+						{
+							Name: resourceNameMachine,
+						},
+					},
 				},
 				{
 					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+					APIResources: []v1.APIResource{
+						{
+							Name: resourceNameMachineDeployment,
+						},
+						{
+							Name: resourceNameMachineSet,
+						},
+						{
+							Name: resourceNameMachine,
+						},
+					},
 				},
 			},
 		},
@@ -1186,6 +1208,70 @@ func TestMachineKeyFromFailedProviderID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := machineKeyFromFailedProviderID(tc.providerID); got != tc.expected {
 				t.Errorf("test case: %s, expected: %q, got: %q", tc.name, tc.expected, got)
+			}
+		})
+	}
+}
+
+func TestGroupVersionHasResource(t *testing.T) {
+	testCases := []struct {
+		description  string
+		APIGroup     string
+		resourceName string
+		expected     bool
+		error        bool
+	}{
+		{
+			description:  "true when it finds resource",
+			resourceName: resourceNameMachineDeployment,
+			APIGroup:     fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+			expected:     true,
+			error:        false,
+		},
+		{
+			description:  "false when it does not find resource",
+			resourceName: "resourceDoesNotExist",
+			APIGroup:     fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+			expected:     false,
+			error:        false,
+		},
+		{
+			description:  "error when invalid groupVersion",
+			resourceName: resourceNameMachineDeployment,
+			APIGroup:     "APIGroupDoesNotExist",
+			expected:     false,
+			error:        true,
+		},
+	}
+
+	discoveryClient := &fakediscovery.FakeDiscovery{
+		Fake: &clientgotesting.Fake{
+			Resources: []*v1.APIResourceList{
+				{
+					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
+					APIResources: []v1.APIResource{
+						{
+							Name: resourceNameMachineDeployment,
+						},
+						{
+							Name: resourceNameMachineSet,
+						},
+						{
+							Name: resourceNameMachine,
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			got, err := groupVersionHasResource(discoveryClient, tc.APIGroup, tc.resourceName)
+			if (err != nil) != tc.error {
+				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
+			}
+			if got != tc.expected {
+				t.Errorf("expected %v, got: %v", tc.expected, got)
 			}
 		})
 	}
