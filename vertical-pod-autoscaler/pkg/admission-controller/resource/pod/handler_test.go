@@ -17,7 +17,6 @@ limitations under the License.
 package pod
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -131,19 +130,9 @@ func addVpaObservedContainersPatch(conetinerNames []string) resource_admission.P
 	)
 }
 
-func eqPatch(a, b resource_admission.PatchRecord) bool {
-	aJson, aErr := json.Marshal(a)
-	bJson, bErr := json.Marshal(b)
-	return string(aJson) == string(bJson) && aErr == bErr
-}
-
-func assertEqPatch(t *testing.T, got, want resource_admission.PatchRecord) {
-	assert.True(t, eqPatch(got, want), "got %+v, want: %+v", got, want)
-}
-
 func assertPatchOneOf(t *testing.T, got resource_admission.PatchRecord, want []resource_admission.PatchRecord) {
 	for _, wanted := range want {
-		if eqPatch(got, wanted) {
+		if patch.EqPatch(got, wanted) {
 			return
 		}
 	}
@@ -365,7 +354,7 @@ func TestGetPatches(t *testing.T) {
 			}
 			if assert.Equal(t, len(tc.expectPatches), len(patches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !eqPatch(gotPatch, tc.expectPatches[i]) {
+					if !patch.EqPatch(gotPatch, tc.expectPatches[i]) {
 						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
 					}
 				}
@@ -417,81 +406,13 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	if assert.Equal(t, len(patches), 5) {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
-		assertEqPatch(t, patches[0], patch.GetAddEmptyAnnotationsPatch())
+		patch.AssertEqPatch(t, patches[0], patch.GetAddEmptyAnnotationsPatch())
 		assertPatchOneOf(t, patches[1], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
 		assertPatchOneOf(t, patches[2], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
-		assert.False(t, eqPatch(patches[1], patches[2]))
+		assert.False(t, patch.EqPatch(patches[1], patches[2]))
 		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
 		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
 		assertPatchOneOf(t, patches[3], []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
-		assertEqPatch(t, patches[4], addVpaObservedContainersPatch([]string{}))
-	}
-}
-
-func TestGetPatches_VpaObservedContainers(t *testing.T) {
-	tests := []struct {
-		name          string
-		podJson       []byte
-		expectPatches []resource_admission.PatchRecord
-	}{
-		{
-			name: "create vpa observed containers annotation",
-			podJson: []byte(
-				`{
-					"spec": {
-						"containers": [
-							{
-								"Name": "test1"
-							},
-							{
-								"Name": "test2"
-							}
-						]
-					}
-				}`),
-			expectPatches: []resource_admission.PatchRecord{
-				patch.GetAddEmptyAnnotationsPatch(),
-				addVpaObservedContainersPatch([]string{"test1", "test2"}),
-			},
-		},
-		{
-			name: "create vpa observed containers annotation with no containers",
-			podJson: []byte(
-				`{
-					"spec": {
-						"containers": []
-					}
-				}`),
-			expectPatches: []resource_admission.PatchRecord{
-				patch.GetAddEmptyAnnotationsPatch(),
-				addVpaObservedContainersPatch([]string{}),
-			},
-		},
-	}
-	for _, tc := range tests {
-		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fppp := fakePodPreProcessor{}
-			fvm := fakeVpaMatcher{}
-			frp := fakeRecommendationProvider{[]vpa_api_util.ContainerResources{}, vpa_api_util.ContainerToAnnotationsMap{}, nil}
-			cs := []patch.Calculator{patch.NewResourceUpdatesCalculator(&frp), patch.NewObservedContainersCalculator()}
-			h := NewResourceHandler(&fppp, &fvm, cs)
-			patches, err := h.GetPatches(&v1beta1.AdmissionRequest{
-				Namespace: "default",
-				Resource: v1.GroupVersionResource{
-					Version: "v1",
-				},
-				Object: runtime.RawExtension{
-					Raw: tc.podJson,
-				},
-			})
-			assert.NoError(t, err)
-			if assert.Len(t, patches, len(tc.expectPatches)) {
-				for i, gotPatch := range patches {
-					if !eqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
-				}
-			}
-		})
+		patch.AssertEqPatch(t, patches[4], addVpaObservedContainersPatch([]string{}))
 	}
 }
