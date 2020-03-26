@@ -25,6 +25,7 @@ import (
 	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -109,6 +110,74 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
 	expectedEphemeralStorage := resource.MustParse("20G")
 	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+}
+
+func TestBuildNodeFromTemplate(t *testing.T) {
+	awsManager := &AwsManager{}
+	asg := &asg{AwsRef: AwsRef{Name: "test-auto-scaling-group"}}
+	c5Instance := &InstanceType{
+		InstanceType: "c5.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	}
+
+	// Node with custom resource
+	ephemeralStorageKey := "ephemeral-storage"
+	ephemeralStorageValue := int64(20)
+	vpcIPKey := "vpc.amazonaws.com/PrivateIPv4Address"
+	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", ephemeralStorageKey)),
+				Value: aws.String(strconv.FormatInt(ephemeralStorageValue, 10)),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	esValue, esExist := observedNode.Status.Capacity[apiv1.ResourceName(ephemeralStorageKey)]
+	assert.True(t, esExist)
+	assert.Equal(t, int64(20), esValue.Value())
+	_, ipExist := observedNode.Status.Capacity[apiv1.ResourceName(vpcIPKey)]
+	assert.False(t, ipExist)
+
+	// Nod with labels
+	GPULabelValue := "nvidia-telsa-v100"
+	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/label/%s", GPULabel)),
+				Value: aws.String(GPULabelValue),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	gpuValue, gpuLabelExist := observedNode.Labels[GPULabel]
+	assert.True(t, gpuLabelExist)
+	assert.Equal(t, GPULabelValue, gpuValue)
+
+	// Node with taints
+	gpuTaint := apiv1.Taint{
+		Key:    "nvidia.com/gpu",
+		Value:  "present",
+		Effect: "NoSchedule",
+	}
+	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/taint/%s", gpuTaint.Key)),
+				Value: aws.String(fmt.Sprintf("%s:%s", gpuTaint.Value, gpuTaint.Effect)),
+			},
+		},
+	})
+
+	assert.NoError(t, observedErr)
+	observedTaints := observedNode.Spec.Taints
+	assert.Equal(t, 1, len(observedTaints))
+	assert.Equal(t, gpuTaint, observedTaints[0])
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {
