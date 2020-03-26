@@ -912,4 +912,43 @@ We are aware that this process is tedious and we will work to improve it.
 
 ### How can I update CA dependencies (particularly k8s.io/kubernetes)?
 
-TODO - update needed after k8s migrated to go modules
+Cluster Autoscaler imports a huge chunk of internal k8s code as it calls out to scheduler implementation.
+Therefore we want to keep set of libraries used in CA as close to one used by k8s, to avoid
+unexpected problems coming from version incompatibilities.
+
+Cluster Autoscaler depends on `go modules` mechanism for dependency management, but do not use it directly
+during build process. `go.mod` file is just used to generate the `vendor` directory and further compilation
+is run against set of libraries stored in `vendor`. `vendor` directory can be regenerated using [`update-vendor.sh`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script.
+The `update-vendor.sh` script is responsible for autogenerating `go.mod` file used by Cluster Autoscaler. The base
+of the file is `go.mod` file coming from [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) repository. 
+On top of that script adds modifications as defined
+locally in [`go.mod-extra`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/go.mod-extra) file. 
+
+Note: It is important that one should **never manually edit** `go.mod` file as it is regenerated
+on each `update-vendor.sh` call. Any extra libraries or version overrides should be put in `go.mod-extra` file (syntax of the file
+is same as syntax of `go.mod` file). 
+
+Finally `vendor` directry is materialized and validation tests are run.
+
+If everything completes correctly a commit with updated `vendor` directory is created automatically. The pull-request with changed vendor
+must be sent out manually. The PR should include the auto-generated commit as well as commits containing any manual changes/fixes that need to
+go together.
+
+Execution of `update-vendor.sh` can be parametrized using command line argumets:
+ - `-f` - kubernetes/kubernetes fork to use. On `master` it defaults to `git@github.com:kubernetes/kubernetes.git`
+ - `-r` - revision in kubernetes/kubernetes which should be used to get base `go.mod` file
+ - `-d` - specifies script workdir; useful to speed up execution if script needs to be run multiple times, because updating vendor resulted in some compilation errors on Cluster-Autoscaler side which need to be fixed
+ 
+Example execution looks like this:
+```
+./hack/update-vendor.sh -d/tmp/ca-update-vendor.ou1l -fgit@github.com:kubernetes/kubernetes.git -rmaster
+```
+
+Caveats:
+ - `update-vendor.sh` is called directly in shell (no docker is used) therefore its operation may differ from environment to environment.
+ - It is important that go version, which isn in use in the shell in which `update-vendor.sh` is called, matches the `go <version>` directive specified in `go.mod` file
+   in `kubernetes/kubernetes` revision against which revendoring is done.
+ - `update-vendor.sh` automatically runs unit tests as part of verification process. If one needs to suppress that, it can be done by overriding `VERIFY_COMMAND` variable (`VERIFY_COMMAND=true ./hack/update-vendor.sh ...`)
+ - If one wants to only add new libraries to `go.mod-extra`, but not change the base `go.mod`, `-r` should be used with kubernetes/kubernets revision, which was used last time `update-vendor.sh` was called. One can determine that revision by looking at `git log` in Cluster Autoscaler repository. Following command will do the trick `git log | grep "Updating vendor against"`.
+
+
