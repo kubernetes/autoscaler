@@ -943,3 +943,83 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		}))
 	})
 }
+
+func TestNodeGroupWithFailedMachine(t *testing.T) {
+	test := func(t *testing.T, testConfig *testConfig) {
+		controller, stop := mustCreateTestController(t, testConfig)
+		defer stop()
+
+		// Simulate a failed machine
+		machine := testConfig.machines[3].DeepCopy()
+		machine.Spec.ProviderID = nil
+		failureMessage := "FailureMessage"
+		machine.Status.FailureMessage = &failureMessage
+		if err := controller.machineInformer.Informer().GetStore().Update(newUnstructuredFromMachine(machine)); err != nil {
+			t.Fatalf("unexpected error updating machine, got %v", err)
+		}
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0]
+		nodeNames, err := ng.Nodes()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(nodeNames) != len(testConfig.nodes) {
+			t.Fatalf("expected len=%v, got len=%v", len(testConfig.nodes), len(nodeNames))
+		}
+
+		sort.SliceStable(nodeNames, func(i, j int) bool {
+			return nodeNames[i].Id < nodeNames[j].Id
+		})
+
+		// The failed machine key is sorted to the first index
+		failedMachineID := fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.Namespace, machine.Name)
+		if nodeNames[0].Id != failedMachineID {
+			t.Fatalf("expected %q, got %q", failedMachineID, nodeNames[0].Id)
+		}
+
+		for i := 1; i < len(nodeNames); i++ {
+			// Fix the indexing due the failed machine being removed from the list
+			var nodeIndex int
+			if i < 4 {
+				// for nodes 0, 1, 2
+				nodeIndex = i - 1
+			} else {
+				// for nodes 4 onwards
+				nodeIndex = i
+			}
+
+			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[nodeIndex].Spec.ProviderID)) {
+				t.Fatalf("expected %q, got %q", testConfig.nodes[nodeIndex].Spec.ProviderID, nodeNames[i].Id)
+			}
+		}
+	}
+
+	// Note: 10 is an upper bound for the number of nodes/replicas
+	// Going beyond 10 will break the sorting that happens in the
+	// test() function because sort.Strings() will not do natural
+	// sorting and the expected semantics in test() will fail.
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, createMachineSetTestConfig(testNamespace, 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		test(t, createMachineDeploymentTestConfig(testNamespace, 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+}

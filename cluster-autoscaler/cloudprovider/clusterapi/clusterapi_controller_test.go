@@ -1222,3 +1222,57 @@ func TestGroupVersionHasResource(t *testing.T) {
 		})
 	}
 }
+
+func TestIsFailedMachineProviderID(t *testing.T) {
+	testCases := []struct {
+		name       string
+		providerID normalizedProviderID
+		expected   bool
+	}{
+		{
+			name:       "with the failed machine prefix",
+			providerID: normalizedProviderID(fmt.Sprintf("%sfoo", failedMachinePrefix)),
+			expected:   true,
+		},
+		{
+			name:       "without the failed machine prefix",
+			providerID: normalizedProviderID("foo"),
+			expected:   false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := isFailedMachineProviderID(tc.providerID); got != tc.expected {
+				t.Errorf("test case: %s, expected: %v, got: %v", tc.name, tc.expected, got)
+			}
+		})
+	}
+}
+
+func TestMachineKeyFromFailedProviderID(t *testing.T) {
+	testCases := []struct {
+		name       string
+		providerID normalizedProviderID
+		expected   string
+	}{
+		{
+			name:       "with a valid failed machine prefix",
+			providerID: normalizedProviderID(fmt.Sprintf("%stest-namespace_foo", failedMachinePrefix)),
+			expected:   "test-namespace/foo",
+		},
+		{
+			name:       "with a machine with an underscore in the name",
+			providerID: normalizedProviderID(fmt.Sprintf("%stest-namespace_foo_bar", failedMachinePrefix)),
+			expected:   "test-namespace/foo_bar",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := machineKeyFromFailedProviderID(tc.providerID); got != tc.expected {
+				t.Errorf("test case: %s, expected: %q, got: %q", tc.name, tc.expected, got)
+			}
+		})
+	}
+}
