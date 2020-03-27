@@ -54,6 +54,10 @@ import (
 const (
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+	// ScaleDownUnneededTimeKey is the name of annotation to override the cluster wide --scale-down-unneeded-time
+	ScaleDownUnneededTimeKey = "cluster-autoscaler.kubernetes.io/scale-down-unneeded-time"
+	// ScaleDownUnreadyTimeKey is the name of annotation to override the cluster wide --scale-down-unready-time
+	ScaleDownUnreadyTimeKey = "cluster-autoscaler.kubernetes.io/scale-down-unready-time"
 	// DelayDeletionAnnotationPrefix is the prefix of annotation marking node as it needs to wait
 	// for other K8s components before deleting node.
 	DelayDeletionAnnotationPrefix = "delay-deletion.cluster-autoscaler.kubernetes.io/"
@@ -746,6 +750,20 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 	return
 }
 
+func getNodeScaleDownTime(annotationKey string, clusterTime time.Duration, node *apiv1.Node) time.Duration {
+	annotationTimeValue, ok := node.Annotations[annotationKey]
+	if !ok {
+		return clusterTime
+	}
+	d, err := time.ParseDuration(annotationTimeValue)
+	if err != nil {
+		klog.Warningf("Failed to parse node % annotation %s:%s: %v, using cluster time: %s", node.Name, annotationKey, annotationTimeValue, err, clusterTime.String())
+		return clusterTime
+	}
+	klog.V(4).Infof("%s override cluster time by annotation %s:%s", node.Name, annotationKey, d.String())
+	return d
+}
+
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(
@@ -808,13 +826,13 @@ func (sd *ScaleDown) TryToScaleDown(
 		readinessMap[node.Name] = ready
 
 		// Check how long a ready node was underutilized.
-		if ready && !unneededSince.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
+		if ready && !unneededSince.Add(getNodeScaleDownTime(ScaleDownUnneededTimeKey, sd.context.ScaleDownUnneededTime, node)).Before(currentTime) {
 			sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
 			continue
 		}
 
 		// Unready nodes may be deleted after a different time than underutilized nodes.
-		if !ready && !unneededSince.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
+		if !ready && !unneededSince.Add(getNodeScaleDownTime(ScaleDownUnreadyTimeKey, sd.context.ScaleDownUnreadyTime, node)).Before(currentTime) {
 			sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
 			continue
 		}

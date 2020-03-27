@@ -307,6 +307,14 @@ It can be added to (or removed from) a node using kubectl:
 kubectl annotate node <nodename> cluster-autoscaler.kubernetes.io/scale-down-disabled=true
 ```
 
+Note that you can annotate any node with the following annotations to customise the scale down times:
+```yaml
+metadata:
+  annotations:
+    cluster-autoscaler.kubernetes.io/scale-down-unneeded-time: "1h"
+    cluster-autoscaler.kubernetes.io/scale-down-unready-time: "2h"
+```
+
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
 Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
@@ -493,7 +501,9 @@ the scheduler will place the pods somewhere else.
 * It doesn't have scale-down disabled annotation (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node))
 
 If a node is unneeded for more than 10 minutes, it will be terminated. (This time can
-be configured by flags - please see [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why) section for a more detailed explanation.)
+be configured by flags - please see [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why) section for a more detailed explanation.) 
+You can override this global value with a per node annotation time `cluster-autoscaler.kubernetes.io/scale-down-unneeded-time: 60m`
+
 Cluster Autoscaler terminates one non-empty node at a time to reduce the risk of
 creating new unschedulable pods. The next node may possibly be terminated just after the first one,
 if it was also unneeded for more than 10 min and didn't rely on the same nodes
@@ -538,6 +548,9 @@ Once there are more unready nodes in the cluster,
 CA stops all operations until the situation improves. If there are fewer unready nodes,
 but they are concentrated in a particular node group,
 then this node group may be excluded from future scale-ups.
+
+The CA scales down NotReady nodes while not in scale down cooldown and after the configured time `--scale-down-unready-time`.
+It's possible to set a per node time with this annotation `cluster-autoscaler.kubernetes.io/scale-down-unready-time: "2h"`
 
 ### How fast is Cluster Autoscaler?
 
@@ -692,7 +705,7 @@ CA doesn't remove underutilized nodes if they are running pods [that it shouldn'
 * node has the scale-down disabled annotation (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node))
 
 * node was unneeded for less than 10 minutes (configurable by
-  `--scale-down-unneeded-time` flag),
+  `--scale-down-unneeded-time` flag or with node annotation `cluster-autoscaler.kubernetes.io/scale-down-unneeded-time: 1h`),
 
 * there was a scale-up in the last 10 min (configurable by `--scale-down-delay-after-add` flag),
 
