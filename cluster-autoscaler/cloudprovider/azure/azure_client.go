@@ -25,17 +25,16 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/vmssclient"
 	"k8s.io/klog"
 	"k8s.io/legacy-cloud-providers/azure/clients/diskclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient"
 )
 
@@ -133,10 +132,6 @@ func (az *azDeploymentsClient) Delete(ctx context.Context, resourceGroupName, de
 
 	err = future.WaitForCompletionRef(ctx, az.client.Client)
 	return future.Response(), err
-}
-
-type azAccountsClient struct {
-	client storage.AccountsClient
 }
 
 type azClient struct {
