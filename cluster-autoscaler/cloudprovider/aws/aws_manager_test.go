@@ -111,9 +111,11 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 }
 
 func TestBuildNodeFromTemplate(t *testing.T) {
+	GPULabel := "k8s.amazonaws.com/accelerator"
+
 	awsManager := &AwsManager{}
 	asg := &asg{AwsRef: AwsRef{Name: "test-auto-scaling-group"}}
-	c5Instance := &InstanceType{
+	c5Instance := &instanceType{
 		InstanceType: "c5.xlarge",
 		VCPU:         4,
 		MemoryMb:     8192,
