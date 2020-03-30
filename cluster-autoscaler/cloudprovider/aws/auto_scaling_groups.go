@@ -354,6 +354,11 @@ func (m *asgCache) regenerate() error {
 		return err
 	}
 
+	err = m.service.populateLaunchConfigurationInstanceTypeCache(groups)
+	if err != nil {
+		klog.Warningf("Failed to fully populate all launchConfigurations: %v", err)
+	}
+
 	// If currently any ASG has more Desired than running Instances, introduce placeholders
 	// for the instances to come up. This is required to track Desired instances that
 	// will never come up, like with Spot Request that can't be fulfilled
