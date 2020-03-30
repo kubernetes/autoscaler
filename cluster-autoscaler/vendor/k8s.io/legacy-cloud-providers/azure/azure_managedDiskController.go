@@ -185,6 +185,10 @@ func (c *ManagedDiskController) DeleteManagedDisk(diskURI string) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
+	if _, ok := c.common.diskAttachDetachMap.Load(strings.ToLower(diskURI)); ok {
+		return fmt.Errorf("failed to delete disk(%s) since it's in attaching or detaching state", diskURI)
+	}
+
 	_, err = c.common.cloud.DisksClient.Delete(ctx, resourceGroup, diskName)
 	if err != nil {
 		return err
@@ -262,7 +266,7 @@ func (c *ManagedDiskController) ResizeDisk(diskURI string, oldSize resource.Quan
 // according to https://docs.microsoft.com/en-us/rest/api/compute/disks/get
 func getResourceGroupFromDiskURI(diskURI string) (string, error) {
 	fields := strings.Split(diskURI, "/")
-	if len(fields) != 9 || fields[3] != "resourceGroups" {
+	if len(fields) != 9 || strings.ToLower(fields[3]) != "resourcegroups" {
 		return "", fmt.Errorf("invalid disk URI: %s", diskURI)
 	}
 	return fields[4], nil

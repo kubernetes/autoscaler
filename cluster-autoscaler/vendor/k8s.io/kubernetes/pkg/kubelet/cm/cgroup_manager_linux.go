@@ -51,7 +51,7 @@ const (
 
 // hugePageSizeList is useful for converting to the hugetlb canonical unit
 // which is what is expected when interacting with libcontainer
-var hugePageSizeList = []string{"B", "kB", "MB", "GB", "TB", "PB"}
+var hugePageSizeList = []string{"B", "KB", "MB", "GB", "TB", "PB"}
 
 var RootCgroupName = CgroupName([]string{})
 
@@ -326,7 +326,7 @@ func getSupportedSubsystems() map[subsystem]bool {
 	supportedSubsystems := map[subsystem]bool{
 		&cgroupfs.MemoryGroup{}: true,
 		&cgroupfs.CpuGroup{}:    true,
-		&cgroupfs.PidsGroup{}:   true,
+		&cgroupfs.PidsGroup{}:   false,
 	}
 	// not all hosts support hugetlb cgroup, and in the absent of hugetlb, we will fail silently by reporting no capacity.
 	supportedSubsystems[&cgroupfs.HugetlbGroup{}] = false
