@@ -62,7 +62,7 @@ type AwsManager struct {
 }
 
 type asgTemplate struct {
-	InstanceType *instanceType
+	InstanceType *InstanceType
 	Region       string
 	Zone         string
 	Tags         []*autoscaling.TagDescription
@@ -363,8 +363,8 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
-	if val, ok := resourcesFromTags["ephemeral-storage"]; ok {
-		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *val
+	for resourceName, val := range resourcesFromTags {
+		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
 	}
 
 	// TODO: use proper allocatable!!
