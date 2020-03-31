@@ -441,6 +441,8 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
 		Annotations: make(map[string]string),
+		MemRequest:  1024 * 1024 * 1024,
+		MemLimit:    1024 * 1024 * 1024,
 	}
 
 	dpConfig := testutils.DeploymentConfig{
