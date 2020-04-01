@@ -172,6 +172,7 @@ var (
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
 	enableProfiling           = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
+	cordonNodeBeforeTerminate = flag.Bool("cordon-node-before-terminate", false, "Should CA cordon nodes before termiante during downscale process")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -240,6 +241,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		KubeConfigPath:                   *kubeConfigFile,
 		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList:         *awsUseStaticInstanceList,
+		CordonNodeBeforeTerminate:        *cordonNodeBeforeTerminate,
 	}
 }
 

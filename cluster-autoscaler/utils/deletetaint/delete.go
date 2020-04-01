@@ -25,6 +25,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/cordon"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -42,6 +44,8 @@ const (
 var (
 	maxRetryDeadline      time.Duration = 5 * time.Second
 	conflictRetryInterval time.Duration = 750 * time.Millisecond
+	// cordonNodeOptions variable for cordon options
+	cordonNodeOptions config.AutoscalingOptions
 )
 
 // getKeyShortName converts taint key to short name for logging
@@ -58,7 +62,12 @@ func getKeyShortName(key string) string {
 
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
 func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
-	return addTaint(node, client, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	var err error
+	err = addTaint(node, client, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	if err == nil && cordonNodeOptions.CordonNodeBeforeTerminate {
+		_ = cordon.CordonNode(node, client)
+	}
+	return err
 }
 
 // MarkDeletionCandidate sets a soft taint that makes the node preferably unschedulable.
@@ -165,7 +174,11 @@ func getTaintTime(node *apiv1.Node, taintKey string) (*time.Time, error) {
 
 // CleanToBeDeleted cleans CA's NoSchedule taint from a node.
 func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, error) {
-	return cleanTaint(node, client, ToBeDeletedTaint)
+	successfulDelete, err := cleanTaint(node, client, ToBeDeletedTaint)
+	if successfulDelete && cordonNodeOptions.CordonNodeBeforeTerminate {
+		_ = cordon.UnCordonNode(node, client)
+	}
+	return successfulDelete, err
 }
 
 // CleanDeletionCandidate cleans CA's soft NoSchedule taint from a node.

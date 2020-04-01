@@ -142,4 +142,6 @@ type AutoscalingOptions struct {
 	AWSUseStaticInstanceList bool
 	// Path to kube configuration if available
 	KubeConfigPath string
+	// Enable or disable cordon nodes functionality before termiante during downscale process
+	CordonNodeBeforeTerminate bool
 }
