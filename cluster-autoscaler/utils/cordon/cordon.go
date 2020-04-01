@@ -42,7 +42,8 @@ func CordonNode(node *apiv1.Node, client kube_client.Interface) error {
 		if hasNodeCordonTaint(node) {
 			klog.V(1).Infof("Node %v already was cordoned by Cluster Autoscaler", node.Name)
 			return nil
-		} else {
+		}
+		if !hasNodeCordonTaint(node) {
 			klog.V(1).Infof("Skip cordonning because node %v was not cordoned by Cluster Autoscaler", node.Name)
 			return nil
 		}
