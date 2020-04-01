@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	cpuQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d])"
+	cpuQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[5m])[8d:]"
 	memoryQuery = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d]"
 	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
 )
@@ -64,7 +64,8 @@ func TestGetEmptyClusterHistory(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
-		prometheusClient: &mockClient}
+		prometheusClient: &mockClient,
+	}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		[]Timeseries{}, nil)
 	tss, err := historyProvider.GetClusterHistory()
@@ -77,7 +78,8 @@ func TestPrometheusError(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
-		prometheusClient: &mockClient}
+		prometheusClient: &mockClient,
+	}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		nil, fmt.Errorf("bla"))
 	_, err := historyProvider.GetClusterHistory()
@@ -88,15 +90,19 @@ func TestGetCPUSamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
-		prometheusClient: &mockClient}
+		prometheusClient: &mockClient,
+	}
 	mockClient.On("GetTimeseries", cpuQuery).Return(
 		[]Timeseries{{
 			Labels: map[string]string{
 				"namespace": "default",
 				"pod_name":  "pod",
-				"name":      "container"},
+				"name":      "container",
+			},
 			Samples: []Sample{{
-				Value: 5.5, Timestamp: time.Unix(1, 0)}}}}, nil)
+				Value: 5.5, Timestamp: time.Unix(1, 0),
+			}},
+		}}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
@@ -105,7 +111,9 @@ func TestGetCPUSamples(t *testing.T) {
 		Samples: map[string][]model.ContainerUsageSample{"container": {{
 			MeasureStart: time.Unix(1, 0),
 			Usage:        model.CPUAmountFromCores(5.5),
-			Resource:     model.ResourceCPU}}}}
+			Resource:     model.ResourceCPU,
+		}}},
+	}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
@@ -115,16 +123,20 @@ func TestGetMemorySamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
-		prometheusClient: &mockClient}
+		prometheusClient: &mockClient,
+	}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return(
 		[]Timeseries{{
 			Labels: map[string]string{
 				"namespace": "default",
 				"pod_name":  "pod",
-				"name":      "container"},
+				"name":      "container",
+			},
 			Samples: []Sample{{
-				Value: 12345, Timestamp: time.Unix(1, 0)}}}}, nil)
+				Value: 12345, Timestamp: time.Unix(1, 0),
+			}},
+		}}, nil)
 	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
@@ -132,7 +144,9 @@ func TestGetMemorySamples(t *testing.T) {
 		Samples: map[string][]model.ContainerUsageSample{"container": {{
 			MeasureStart: time.Unix(1, 0),
 			Usage:        model.MemoryAmountFromBytes(12345),
-			Resource:     model.ResourceMemory}}}}
+			Resource:     model.ResourceMemory,
+		}}},
+	}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
@@ -142,7 +156,8 @@ func TestGetLabels(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
 		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
-		prometheusClient: &mockClient}
+		prometheusClient: &mockClient,
+	}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{
@@ -150,21 +165,29 @@ func TestGetLabels(t *testing.T) {
 			Labels: map[string]string{
 				"kubernetes_namespace": "default",
 				"kubernetes_pod_name":  "pod",
-				"pod_label_x":          "y"},
+				"pod_label_x":          "y",
+			},
 			Samples: []Sample{{
-				Value: 1, Timestamp: time.Unix(10, 0)}}},
+				Value: 1, Timestamp: time.Unix(10, 0),
+			}},
+		},
 		{
 			Labels: map[string]string{
 				"kubernetes_namespace": "default",
 				"kubernetes_pod_name":  "pod",
-				"pod_label_x":          "z"},
+				"pod_label_x":          "z",
+			},
 			Samples: []Sample{{
-				Value: 1, Timestamp: time.Unix(20, 0)}}}}, nil)
+				Value: 1, Timestamp: time.Unix(20, 0),
+			}},
+		},
+	}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{"x": "z"},
 		LastSeen:   time.Unix(20, 0),
-		Samples:    map[string][]model.ContainerUsageSample{}}
+		Samples:    map[string][]model.ContainerUsageSample{},
+	}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
