@@ -60,6 +60,8 @@ const (
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
+	// TODO(jbartosik): put the image in a VPA project
+	stressImage = "gcr.io/jbartosik-gke-dev/stress:0.10"
 )
 
 var (
@@ -363,7 +365,7 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name st
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
 		CpuRequest:  cpuRequestMillis,
-		MemRequest:  memRequestMb * 1024 * 1024, // MemLimit is in bytes
+		MemRequest:  memRequestMb * 1024 * 1024, // Mem Request is in bytes
 		Annotations: podAnnotations,
 	}
 
@@ -426,4 +428,28 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name st
 	// Wait for endpoints to propagate for the controller service.
 	framework.ExpectNoError(framework.WaitForServiceEndpointsNum(
 		c, ns, controllerName, 1, startServiceInterval, startServiceTimeout))
+}
+
+func runOomingReplicationController(c clientset.Interface, ns, name string, replicas int) {
+	ginkgo.By(fmt.Sprintf("Running OOMing RC %s with %v replicas", name, replicas))
+
+	rcConfig := testutils.RCConfig{
+		Client:      c,
+		Image:       stressImage,
+		Name:        name,
+		Namespace:   ns,
+		Timeout:     timeoutRC,
+		Replicas:    replicas,
+		Annotations: make(map[string]string),
+		MemRequest:  1024 * 1024 * 1024,
+		MemLimit:    1024 * 1024 * 1024,
+	}
+
+	dpConfig := testutils.DeploymentConfig{
+		RCConfig: rcConfig,
+	}
+	ginkgo.By(fmt.Sprintf("Creating deployment %s in namespace %s", dpConfig.Name, dpConfig.Namespace))
+	dpConfig.NodeDumpFunc = framework.DumpNodeDebugInfo
+	dpConfig.ContainerDumpFunc = framework.LogFailedContainers
+	framework.ExpectNoError(testutils.RunDeployment(dpConfig))
 }
