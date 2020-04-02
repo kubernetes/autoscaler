@@ -44,6 +44,7 @@ const (
 )
 
 var _ = FullVpaE2eDescribe("Pods under VPA", func() {
+	return
 	var (
 		rc           *ResourceConsumer
 		vpaClientSet *vpa_clientset.Clientset
