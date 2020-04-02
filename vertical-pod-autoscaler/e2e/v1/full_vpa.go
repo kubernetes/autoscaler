@@ -120,49 +120,6 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	})
 })
 
-var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
-	var (
-		vpaClientSet *vpa_clientset.Clientset
-		vpaCRD       *vpa_types.VerticalPodAutoscaler
-	)
-	const replicas = 3
-
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-
-	ginkgo.BeforeEach(func() {
-		ns := f.Namespace.Name
-		ginkgo.By("Setting up a hamster deployment")
-
-		runOomingReplicationController(
-			f.ClientSet,
-			ns,
-			"hamster",
-			replicas)
-		ginkgo.By("Setting up a VPA CRD")
-		config, err := framework.LoadConfig()
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		vpaCRD = NewVPA(f, "hamster-vpa", &autoscaling.CrossVersionObjectReference{
-			APIVersion: "v1",
-			Kind:       "Deployment",
-			Name:       "hamster",
-		})
-
-		vpaClientSet = vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.AutoscalingV1()
-		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-
-	ginkgo.It("have memory requests growing with OOMs", func() {
-		listOptions := metav1.ListOptions{LabelSelector: "name=hamster", FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
-		err := waitForResourceRequestInRangeInPods(
-			f, listOptions, apiv1.ResourceMemory,
-			ParseQuantityOrDie("1400Mi"), ParseQuantityOrDie("10000Mi"))
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-})
-
 func waitForPodsMatch(f *framework.Framework, listOptions metav1.ListOptions, matcher func(pod apiv1.Pod) bool) error {
 	return wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
 
@@ -178,17 +135,12 @@ func waitForPodsMatch(f *framework.Framework, listOptions metav1.ListOptions, ma
 			return false, nil
 		}
 
-		// Run matcher on all pods, even if we find pod that doesn't match early.
-		// This allows the matcher to write logs for all pods. This in turns makes
-		// it easier to spot some problems (for example unexpected pods in the list
-		// results).
-		result := true
 		for _, pod := range podList.Items {
 			if !matcher(pod) {
-				result = false
+				return false, nil
 			}
 		}
-		return result, nil
+		return true, nil
 
 	})
 }
