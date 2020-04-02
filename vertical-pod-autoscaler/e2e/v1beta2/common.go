@@ -192,17 +192,12 @@ func NewHamsterDeploymentWithResourcesAndLimits(f *framework.Framework, cpuQuant
 	return d
 }
 
-func getPodSelectorExcludingDonePodsOrDie() string {
-	stringSelector := "status.phase!=" + string(apiv1.PodSucceeded) +
-		",status.phase!=" + string(apiv1.PodFailed)
-	selector := fields.ParseSelectorOrDie(stringSelector)
-	return selector.String()
-}
-
 // GetHamsterPods returns running hamster pods (matched by hamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
-	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodSucceeded) +
+		",status.phase!=" + string(apiv1.PodFailed))
+	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: selector.String()}
 	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(options)
 }
 
