@@ -30,7 +30,7 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "cloud.google.com/gke-accelerator"
+	GPULabel = "accelerator"
 )
 
 var (
