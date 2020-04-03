@@ -21,6 +21,9 @@ spec:
         app: vpa-updater
     spec:
       serviceAccountName: vpa-updater
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
       containers:
         - name: updater
           image: k8s.gcr.io/vpa-updater:0.6.3
