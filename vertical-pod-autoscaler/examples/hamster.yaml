@@ -29,6 +29,9 @@ spec:
       labels:
         app: hamster
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
       containers:
         - name: hamster
           image: k8s.gcr.io/ubuntu-slim:0.1

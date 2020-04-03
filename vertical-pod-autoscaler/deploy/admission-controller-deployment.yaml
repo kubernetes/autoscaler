@@ -15,6 +15,9 @@ spec:
         app: vpa-admission-controller
     spec:
       serviceAccountName: vpa-admission-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
       containers:
         - name: admission-controller
           image: k8s.gcr.io/vpa-admission-controller:0.6.3
