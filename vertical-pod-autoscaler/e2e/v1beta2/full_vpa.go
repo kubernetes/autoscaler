@@ -39,8 +39,9 @@ const (
 	minimalMemoryLowerBound = "20Mi"
 	minimalMemoryUpperBound = "300Mi"
 	// the initial values should be outside minimal bounds
-	initialCPU    = int64(10) // mCPU
-	initialMemory = int64(10) // MB
+	initialCPU     = int64(10) // mCPU
+	initialMemory  = int64(10) // MB
+	oomTestTimeout = 8 * time.Minute
 )
 
 var _ = FullVpaE2eDescribe("Pods under VPA", func() {
@@ -156,9 +157,12 @@ var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 	})
 
 	ginkgo.It("have memory requests growing with OOMs", func() {
-		listOptions := metav1.ListOptions{LabelSelector: "name=hamster", FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
+		listOptions := metav1.ListOptions{
+			LabelSelector: "name=hamster",
+			FieldSelector: getPodSelectorExcludingDonePodsOrDie(),
+		}
 		err := waitForResourceRequestInRangeInPods(
-			f, 7*time.Minute, listOptions, apiv1.ResourceMemory,
+			f, oomTestTimeout, listOptions, apiv1.ResourceMemory,
 			ParseQuantityOrDie("1400Mi"), ParseQuantityOrDie("10000Mi"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
