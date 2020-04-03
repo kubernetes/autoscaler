@@ -21,6 +21,9 @@ spec:
         app: vpa-recommender
     spec:
       serviceAccountName: vpa-recommender
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
       containers:
       - name: recommender
         image: us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-recommender:0.8.0
