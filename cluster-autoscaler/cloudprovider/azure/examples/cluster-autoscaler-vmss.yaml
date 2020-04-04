@@ -151,7 +151,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
+        - image: us.gcr.io/k8s-artifacts-prod/cluster-autoscaler:{{ ca_version }}
           imagePullPolicy: Always
           name: cluster-autoscaler
           resources:

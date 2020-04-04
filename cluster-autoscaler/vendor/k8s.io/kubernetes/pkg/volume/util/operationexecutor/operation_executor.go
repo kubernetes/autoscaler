@@ -533,7 +533,7 @@ type MountedVolume struct {
 	//     name: test-pd
 	//   spec:
 	//     containers:
-	//     - image: k8s.gcr.io/test-webserver
+	//     - image: us.gcr.io/k8s-artifacts-prod/test-webserver
 	//     	 name: test-container
 	//     	 volumeMounts:
 	//     	 - mountPath: /test-pd
@@ -571,7 +571,7 @@ type MountedVolume struct {
 	//     name: test-pd
 	//   spec:
 	//     containers:
-	//     - image: k8s.gcr.io/test-webserver
+	//     - image: us.gcr.io/k8s-artifacts-prod/test-webserver
 	//     	 name: test-container
 	//     	 volumeMounts:
 	//     	 - mountPath: /test-pd

@@ -140,12 +140,12 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		panic("container count should be greater than 0")
 	}
 	d := framework_deployment.NewDeployment(
-		"hamster-deployment",                       /*deploymentName*/
-		defaultHamsterReplicas,                     /*replicas*/
-		hamsterLabels,                              /*podLabels*/
-		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"k8s.gcr.io/ubuntu-slim:0.1",               /*image*/
-		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+		"hamster-deployment",                           /*deploymentName*/
+		defaultHamsterReplicas,                         /*replicas*/
+		hamsterLabels,                                  /*podLabels*/
+		GetHamsterContainerNameByIndex(0),              /*imageName*/
+		"us.gcr.io/k8s-artifacts-prod/ubuntu-slim:0.1", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType,     /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
@@ -279,7 +279,7 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 
 	return apiv1.Container{
 		Name:  "hamster",
-		Image: "k8s.gcr.io/ubuntu-slim:0.1",
+		Image: "us.gcr.io/k8s-artifacts-prod/ubuntu-slim:0.1",
 		Resources: apiv1.ResourceRequirements{
 			Requests: apiv1.ResourceList{
 				apiv1.ResourceCPU:    cpuQuantity,

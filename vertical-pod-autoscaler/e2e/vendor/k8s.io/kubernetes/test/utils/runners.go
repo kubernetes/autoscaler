@@ -1251,7 +1251,7 @@ func MakePodSpec() v1.PodSpec {
 	return v1.PodSpec{
 		Containers: []v1.Container{{
 			Name:  "pause",
-			Image: "k8s.gcr.io/pause:3.1",
+			Image: "us.gcr.io/k8s-artifacts-prod/pause:3.1",
 			Ports: []v1.ContainerPort{{ContainerPort: 80}},
 			Resources: v1.ResourceRequirements{
 				Limits: v1.ResourceList{
@@ -1601,7 +1601,7 @@ type DaemonConfig struct {
 
 func (config *DaemonConfig) Run() error {
 	if config.Image == "" {
-		config.Image = "k8s.gcr.io/pause:3.1"
+		config.Image = "us.gcr.io/k8s-artifacts-prod/pause:3.1"
 	}
 	nameLabel := map[string]string{
 		"name": config.Name + "-daemon",

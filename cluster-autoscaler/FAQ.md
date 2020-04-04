@@ -397,7 +397,7 @@ spec:
       priorityClassName: overprovisioning
       containers:
       - name: reserve-resources
-        image: k8s.gcr.io/pause
+        image: us.gcr.io/k8s-artifacts-prod/pause
         resources:
           requests:
             cpu: "200m"
@@ -420,7 +420,7 @@ spec:
         app: overprovisioning-autoscaler
     spec:
       containers:
-        - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.2
+        - image: us.gcr.io/k8s-artifacts-prod/cluster-proportional-autoscaler-amd64:1.1.2
           name: autoscaler
           command:
             - ./cluster-proportional-autoscaler
@@ -950,5 +950,3 @@ Caveats:
    in `kubernetes/kubernetes` revision against which revendoring is done.
  - `update-vendor.sh` automatically runs unit tests as part of verification process. If one needs to suppress that, it can be done by overriding `VERIFY_COMMAND` variable (`VERIFY_COMMAND=true ./hack/update-vendor.sh ...`)
  - If one wants to only add new libraries to `go.mod-extra`, but not change the base `go.mod`, `-r` should be used with kubernetes/kubernets revision, which was used last time `update-vendor.sh` was called. One can determine that revision by looking at `git log` in Cluster Autoscaler repository. Following command will do the trick `git log | grep "Updating vendor against"`.
-
-

@@ -286,7 +286,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 			// TODO(krzysied): Update the image url when the agnhost:2.10 image
 			// is promoted to the k8s-e2e-test-images repository.
 			agnhostImage  = "gcr.io/k8s-staging-e2e-test-images/agnhost:2.10"
-			sidecarParam  = "--sidecar-image=k8s.gcr.io/pause:3.1"
+			sidecarParam  = "--sidecar-image=us.gcr.io/k8s-artifacts-prod/pause:3.1"
 			sidecarName   = "webhook-added-sidecar"
 			servicePort   = int32(8443)
 			containerPort = int32(8444)
@@ -468,7 +468,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 
 func setupHamsterReplicationController(f *framework.Framework, cpu, memory string, replicas int32) {
 	hamsterContainer := SetupHamsterContainer(cpu, memory)
-	rc := framework.RcByNameContainer("hamster-rc", replicas, "k8s.gcr.io/ubuntu-slim:0.1",
+	rc := framework.RcByNameContainer("hamster-rc", replicas, "us.gcr.io/k8s-artifacts-prod/ubuntu-slim:0.1",
 		hamsterLabels, hamsterContainer, nil)
 
 	rc.Namespace = f.Namespace.Name
