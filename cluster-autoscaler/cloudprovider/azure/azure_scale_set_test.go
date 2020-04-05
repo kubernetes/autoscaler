@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -95,6 +97,60 @@ func TestIncreaseSize(t *testing.T) {
 	targetSize, err = provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 5, targetSize)
+}
+
+func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
+	manager := newTestAzureManager(t)
+	vmssName := "vmss-updating"
+	var vmssCapacity int64 = 3
+	scaleSetClient := &VirtualMachineScaleSetsClientMock{
+		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+			"test": {
+				vmssName: {
+					Name: &vmssName,
+					Sku: &compute.Sku{
+						Capacity: &vmssCapacity,
+					},
+					VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+						ProvisioningState: to.StringPtr(string(compute.ProvisioningStateUpdating)),
+					},
+				},
+			},
+		},
+	}
+	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
+	registered := manager.RegisterAsg(newTestScaleSet(manager, vmssName))
+	assert.True(t, registered)
+	manager.regenerateCache()
+
+	provider, err := BuildAzureCloudProvider(manager, nil)
+	assert.NoError(t, err)
+
+	// Scaling should fail because VMSS is still under updating.
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	assert.True(t, ok)
+	err = scaleSet.IncreaseSize(1)
+	assert.Equal(t, fmt.Errorf("VMSS %q is still under updating", scaleSet.Name), err)
+
+	// Scaling should succeed after VMSS ProvisioningState changed to succeeded.
+	scaleSetClient.FakeStore = map[string]map[string]compute.VirtualMachineScaleSet{
+		"test": {
+			vmssName: {
+				Name: &vmssName,
+				Sku: &compute.Sku{
+					Capacity: &vmssCapacity,
+				},
+				VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+					ProvisioningState: to.StringPtr(string(compute.ProvisioningStateSucceeded)),
+				},
+			},
+		},
+	}
+	scaleSetStatusCache.mutex.Lock()
+	scaleSetStatusCache.lastRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
+	scaleSetStatusCache.mutex.Unlock()
+	err = scaleSet.IncreaseSize(1)
+	assert.NoError(t, err)
 }
 
 func TestBelongs(t *testing.T) {
