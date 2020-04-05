@@ -80,7 +80,7 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateAsync(ctx context
 
 // WaitForAsyncOperationResult waits for the response of the request
 func (client *VirtualMachineScaleSetsClientMock) WaitForAsyncOperationResult(ctx context.Context, future *azure.Future) (*http.Response, error) {
-	return nil, nil
+	return &http.Response{StatusCode: http.StatusOK}, nil
 }
 
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
