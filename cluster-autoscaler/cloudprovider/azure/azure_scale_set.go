@@ -275,10 +275,6 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		return fmt.Errorf("VMSS %q is still under updating", scaleSet.Name)
 	}
 
-	// Proactively set the VMSS size so autoscaler makes better decisions.
-	scaleSet.curSize = size
-	scaleSet.lastSizeRefresh = time.Now()
-
 	// Update the new capacity to cache.
 	vmssSizeMutex.Lock()
 	vmssInfo.Sku.Capacity = &size
@@ -299,6 +295,10 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, rerr)
 		return rerr.Error()
 	}
+
+	// Proactively set the VMSS size so autoscaler makes better decisions.
+	scaleSet.curSize = size
+	scaleSet.lastSizeRefresh = time.Now()
 
 	klog.V(3).Infof("create a goroutine to wait for the result of the virtualMachineScaleSetsClient.CreateOrUpdate request")
 	go scaleSet.updateVMSSCapacity(future)
