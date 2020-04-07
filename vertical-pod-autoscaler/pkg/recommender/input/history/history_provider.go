@@ -18,6 +18,7 @@ package history
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"sort"
 	"strings"
@@ -34,6 +35,7 @@ type PrometheusHistoryProviderConfig struct {
 	PodNamespaceLabel, PodNameLabel                    string
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel   string
 	CadvisorMetricsJobName                             string
+	MetricsFetchInterval                               time.Duration
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -190,7 +192,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	podSelector := fmt.Sprintf("job=\"%s\", %s=~\".+\", %s!=\"POD\", %s!=\"\"",
 		p.config.CadvisorMetricsJobName, p.config.CtrPodNameLabel,
 		p.config.CtrNameLabel, p.config.CtrNameLabel)
-	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryLength), model.ResourceCPU)
+	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%.fs])[%s:]", podSelector, math.Round(4*p.config.MetricsFetchInterval.Seconds()), p.config.HistoryLength), model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}

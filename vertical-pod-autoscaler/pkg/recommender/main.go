@@ -80,6 +80,7 @@ func main() {
 			CtrPodNameLabel:        *ctrPodNameLabel,
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
+			MetricsFetchInterval:   *metricsFetcherInterval,
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(config))
 	}
