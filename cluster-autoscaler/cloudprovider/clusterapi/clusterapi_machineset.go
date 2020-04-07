@@ -123,6 +123,10 @@ func (r machineSetScalableResource) MarkMachineForDeletion(machine *Machine) err
 	return updateErr
 }
 
+func (r machineSetScalableResource) UnmarkMachineForDeletion(machine *Machine) error {
+	return unmarkMachineForDeletion(r.controller, machine)
+}
+
 func newMachineSetScalableResource(controller *machineController, machineSet *MachineSet) (*machineSetScalableResource, error) {
 	minSize, maxSize, err := parseScalingBounds(machineSet.Annotations)
 	if err != nil {
