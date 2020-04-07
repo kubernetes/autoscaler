@@ -160,6 +160,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		}
 
 		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
+			nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
 		}
 
