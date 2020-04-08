@@ -14,6 +14,16 @@ spec:
     apiVersion: "apps/v1"
     kind: Deployment
     name: hamster
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        minAllowed:
+          cpu: 100m
+          memory: 50Mi
+        maxAllowed:
+          cpu: 1
+          memory: 500Mi
+        controlledResources: ["cpu", "memory"]
 ---
 apiVersion: apps/v1
 kind: Deployment
