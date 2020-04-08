@@ -256,7 +256,7 @@ func (in *VerticalPodAutoscalerCheckpoint) DeepCopyObject() runtime.Object {
 func (in *VerticalPodAutoscalerCheckpointList) DeepCopyInto(out *VerticalPodAutoscalerCheckpointList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]VerticalPodAutoscalerCheckpoint, len(*in))
@@ -343,7 +343,7 @@ func (in *VerticalPodAutoscalerCondition) DeepCopy() *VerticalPodAutoscalerCondi
 func (in *VerticalPodAutoscalerList) DeepCopyInto(out *VerticalPodAutoscalerList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]VerticalPodAutoscaler, len(*in))

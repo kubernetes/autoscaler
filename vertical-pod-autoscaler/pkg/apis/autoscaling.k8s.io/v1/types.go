@@ -147,6 +147,11 @@ type ContainerResourcePolicy struct {
 	// for the container. The default is no maximum.
 	// +optional
 	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+
+	// Specifies the type of recommendations that will be computed
+	// (and possibly applied) by VPA.
+	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+	ControlledResources *[]v1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
 }
 
 const (
