@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
@@ -126,29 +125,9 @@ func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	provider, err := BuildAzureCloudProvider(manager, nil)
 	assert.NoError(t, err)
 
-	// Scaling should fail because VMSS is still under updating.
+	// Scaling should continue even VMSS is under updating.
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
-	err = scaleSet.IncreaseSize(1)
-	assert.Equal(t, fmt.Errorf("VMSS %q is still under updating", scaleSet.Name), err)
-
-	// Scaling should succeed after VMSS ProvisioningState changed to succeeded.
-	scaleSetClient.FakeStore = map[string]map[string]compute.VirtualMachineScaleSet{
-		"test": {
-			vmssName: {
-				Name: &vmssName,
-				Sku: &compute.Sku{
-					Capacity: &vmssCapacity,
-				},
-				VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
-					ProvisioningState: to.StringPtr(string(compute.ProvisioningStateSucceeded)),
-				},
-			},
-		},
-	}
-	scaleSetStatusCache.mutex.Lock()
-	scaleSetStatusCache.lastRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
-	scaleSetStatusCache.mutex.Unlock()
 	err = scaleSet.IncreaseSize(1)
 	assert.NoError(t, err)
 }

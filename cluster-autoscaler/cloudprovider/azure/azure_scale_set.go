@@ -40,7 +40,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 )
 
 var (
@@ -268,17 +267,9 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		return rerr.Error()
 	}
 
-	// Abort scaling to avoid concurrent VMSS scaling if the VMSS is still under updating.
-	// Note that the VMSS provisioning state would be updated per scaleSet.sizeRefreshPeriod.
-	if vmssInfo.VirtualMachineScaleSetProperties != nil && strings.EqualFold(to.String(vmssInfo.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.ProvisioningStateUpdating)) {
-		klog.Errorf("VMSS %q is still under updating, waiting for it finishes before scaling", scaleSet.Name)
-		return fmt.Errorf("VMSS %q is still under updating", scaleSet.Name)
-	}
-
 	// Update the new capacity to cache.
 	vmssSizeMutex.Lock()
 	vmssInfo.Sku.Capacity = &size
-	vmssInfo.VirtualMachineScaleSetProperties.ProvisioningState = to.StringPtr(string(compute.ProvisioningStateUpdating))
 	vmssSizeMutex.Unlock()
 
 	// Compose a new VMSS for updating.
