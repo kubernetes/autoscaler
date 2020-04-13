@@ -209,8 +209,20 @@ func TestDeleteNodes(t *testing.T) {
 	}
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
+
+	targetSize, err := scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	// Perform the delete operation
 	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
+
+	// Ensure the the cached size has been proactively decremented
+	targetSize, err = scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, targetSize)
+
 	scaleSetClient.AssertNumberOfCalls(t, "DeleteInstances", 1)
 }
 

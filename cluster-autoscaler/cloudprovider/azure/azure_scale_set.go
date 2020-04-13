@@ -235,9 +235,7 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
 		if err != nil {
 			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
 			// Invalidate the VMSS size cache in order to fetch the size from the API.
-			scaleSet.sizeMutex.Lock()
-			defer scaleSet.sizeMutex.Unlock()
-			scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
+			scaleSet.invalidateStatusCacheWithLock()
 		}
 	}()
 
@@ -434,7 +432,18 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
+
+	// Proactively decrement scale set size so that we don't
+	// go below minimum node count if cache data is stale
+	scaleSet.sizeMutex.Lock()
+	scaleSet.curSize--
+	scaleSet.sizeMutex.Unlock()
+
 	rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	if rerr != nil {
+		klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds)
+		scaleSet.invalidateStatusCacheWithLock()
+	}
 	return rerr.Error()
 }
 
@@ -690,4 +699,14 @@ func (scaleSet *ScaleSet) invalidateInstanceCache() {
 	// Set the instanceCache as outdated.
 	scaleSet.lastInstanceRefresh = time.Now().Add(-1 * vmssInstancesRefreshPeriod)
 	scaleSet.instanceMutex.Unlock()
+}
+
+func (scaleSet *ScaleSet) invalidateStatusCacheWithLock() {
+	scaleSet.sizeMutex.Lock()
+	scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
+	scaleSet.sizeMutex.Unlock()
+
+	scaleSetStatusCache.mutex.Lock()
+	scaleSetStatusCache.lastRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
+	scaleSetStatusCache.mutex.Unlock()
 }
