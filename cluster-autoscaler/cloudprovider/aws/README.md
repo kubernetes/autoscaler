@@ -36,8 +36,6 @@ If you'd like the cluster autoscaler to [automatically
 discover](#auto-discovery-setup) EC2 AutoScalingGroups, the
 `autoscaling:DescribeTags` permission is also required.
 
-To attach the IAM role with the policy to the pod see 
-
 **NOTE**: You can restrict the target resources for the autoscaling actions by
 specifying autoscaling group ARNS. More information can be found
 [here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
