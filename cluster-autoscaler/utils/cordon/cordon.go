@@ -74,6 +74,8 @@ func CordonNode(node *apiv1.Node, client kube_client.Interface) error {
 			klog.Warningf("Error while cordoning node %v: %v", node.Name, err)
 			return nil
 		}
+		klog.V(1).Infof("Successfully cordoned node %v by Cluster Autoscaler", node.Name)
+		return nil
 	}
 
 }
@@ -120,6 +122,8 @@ func UnCordonNode(node *apiv1.Node, client kube_client.Interface) error {
 			klog.Warningf("Error while uncordoning node %v: %v", node.Name, err)
 			return nil
 		}
+		klog.V(1).Infof("Successfully uncordoned node %v by Cluster Autoscaler", node.Name)
+		return nil
 	}
 }
 

@@ -42,7 +42,7 @@ func TestMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	err := MarkToBeDeleted(node, fakeClient)
+	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -88,7 +88,7 @@ func TestQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	err := MarkToBeDeleted(node, fakeClient)
+	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -125,7 +125,7 @@ func TestCleanNodes(t *testing.T) {
 	updatedNode := getNode(t, fakeClient, "node")
 	assert.True(t, HasToBeDeletedTaint(updatedNode))
 
-	cleaned, err := CleanToBeDeleted(node, fakeClient)
+	cleaned, err := CleanToBeDeleted(node, fakeClient, false)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
 
