@@ -21,6 +21,7 @@ import (
 	"flag"
 	"time"
 
+	core "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -57,6 +58,8 @@ var (
 
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
+
+	vpaNamespace = flag.String("namespace", core.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 )
 
 const (
@@ -99,6 +102,7 @@ func main() {
 		nil,
 		targetSelectorFetcher,
 		priority.NewProcessor(),
+		*vpaNamespace,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

@@ -34,6 +34,7 @@ type PrometheusHistoryProviderConfig struct {
 	PodNamespaceLabel, PodNameLabel                    string
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel   string
 	CadvisorMetricsJobName                             string
+	Namespace                                          string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -194,6 +195,9 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 		p.config.CadvisorMetricsJobName, p.config.CtrPodNameLabel,
 		p.config.CtrNameLabel, p.config.CtrNameLabel)
 
+	if p.config.Namespace != "" {
+		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.CtrNamespaceLabel, p.config.Namespace)
+	}
 	// This query uses Prometheus Subquery notation, to gives us a result of a five minute cpu rate by default evaluated every 1minute for last config.HistoryLength days/hours/minutes. In order to change the evaluation step, you need change Prometheus global.evaluation_interval configuration parameter.
 	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[5m])[%s:]", podSelector, p.config.HistoryLength), model.ResourceCPU)
 	if err != nil {

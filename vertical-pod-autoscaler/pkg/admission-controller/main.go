@@ -24,6 +24,7 @@ import (
 	"os"
 	"time"
 
+	core "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
@@ -64,6 +65,7 @@ var (
 	webhookPort     = flag.String("webhook-port", "", "Server Port for Webhook")
 	registerWebhook = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
 	registerByURL   = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	vpaNamespace    = flag.String("namespace", core.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 )
 
 func main() {
@@ -83,7 +85,7 @@ func main() {
 	}
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	vpaLister := vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{}))
+	vpaLister := vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{}), *vpaNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)

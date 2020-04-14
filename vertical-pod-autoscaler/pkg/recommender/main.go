@@ -20,6 +20,7 @@ import (
 	"flag"
 	"time"
 
+	core "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
@@ -50,6 +51,7 @@ var (
 	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
+	namespace           = flag.String("namespace", core.NamespaceAll, "Namespace to search for pod stats and VPA objects. Empty means all namespaces will be used.")
 )
 
 func main() {
@@ -65,7 +67,7 @@ func main() {
 	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *namespace)
 	if useCheckpoints {
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
 	} else {
@@ -80,6 +82,7 @@ func main() {
 			CtrPodNameLabel:        *ctrPodNameLabel,
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
+			Namespace:              *namespace,
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(config))
 	}

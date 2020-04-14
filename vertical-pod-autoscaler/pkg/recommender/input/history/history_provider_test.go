@@ -30,6 +30,9 @@ const (
 	cpuQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[5m])[8d:]"
 	memoryQuery = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d]"
 	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
+
+	cpuNamespacedQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}[8d])"
+	memoryNamespacedQuery = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}[8d]"
 )
 
 type mockPrometheusClient struct {
@@ -188,6 +191,36 @@ func TestGetLabels(t *testing.T) {
 		LastSeen:   time.Unix(20, 0),
 		Samples:    map[string][]model.ContainerUsageSample{},
 	}
+	histories, err := historyProvider.GetClusterHistory()
+	assert.Nil(t, err)
+	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
+}
+
+func TestGetNamespacedMemorySamples(t *testing.T) {
+	mockClient := mockPrometheusClient{}
+
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.Namespace = "kube-system"
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient}
+	mockClient.On("GetTimeseries", cpuNamespacedQuery).Return([]Timeseries{}, nil)
+	mockClient.On("GetTimeseries", memoryNamespacedQuery).Return(
+		[]Timeseries{{
+			Labels: map[string]string{
+				"namespace": "kube-system",
+				"pod_name":  "pod",
+				"name":      "container"},
+			Samples: []Sample{{
+				Value: 12345, Timestamp: time.Unix(1, 0)}}}}, nil)
+	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{}, nil)
+	podID := model.PodID{Namespace: "kube-system", PodName: "pod"}
+	podHistory := &PodHistory{
+		LastLabels: map[string]string{},
+		Samples: map[string][]model.ContainerUsageSample{"container": {{
+			MeasureStart: time.Unix(1, 0),
+			Usage:        model.MemoryAmountFromBytes(12345),
+			Resource:     model.ResourceMemory}}}}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
