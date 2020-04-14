@@ -115,6 +115,10 @@ func newMachineFromUnstructured(u *unstructured.Unstructured) *Machine {
 		machine.Status.NodeRef = &nodeRef
 	}
 
+	if failureMessage, _, _ := unstructured.NestedString(u.Object, "status", "failureMessage"); failureMessage != "" {
+		machine.Status.FailureMessage = pointer.StringPtr(failureMessage)
+	}
+
 	return &machine
 }
 
@@ -182,6 +186,10 @@ func newUnstructuredFromMachine(m *Machine) *unstructured.Unstructured {
 		if m.Status.NodeRef.Name != "" {
 			unstructured.SetNestedField(u.Object, m.Status.NodeRef.Name, "status", "nodeRef", "name")
 		}
+	}
+
+	if m.Status.FailureMessage != nil {
+		unstructured.SetNestedField(u.Object, *m.Status.FailureMessage, "status", "failureMessage")
 	}
 
 	return &u
