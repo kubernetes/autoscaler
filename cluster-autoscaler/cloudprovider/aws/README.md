@@ -5,9 +5,9 @@ The cluster autoscaler on AWS scales worker nodes within any specified autoscali
 Cluster autoscaler must run on v1.3.0 or greater.
 
 ## Permissions
-The worker running the cluster autoscaler will need access to certain resources and actions. We always recommend you to attach IAM policy to nodegroup and avoid using AWS credentials directly unless you have special requirements.
+The pod running the cluster autoscaler will need access to certain resources and actions. We always recommend you to attach the IAM policy to the cluster austoscaler pod using [IAM roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) and avoid attaching it to the NodeGroup or using AWS credentials directly unless you have special requirements.
 
-### Attach IAM policy to NodeGroup
+### Attach IAM policy to Service Account
 A minimum IAM policy would look like:
 ```json
 {
@@ -35,6 +35,8 @@ made your ASG with Launch Configuration or Launch Template.
 If you'd like the cluster autoscaler to [automatically
 discover](#auto-discovery-setup) EC2 AutoScalingGroups, the
 `autoscaling:DescribeTags` permission is also required.
+
+To attach the IAM role with the policy to the pod see 
 
 **NOTE**: You can restrict the target resources for the autoscaling actions by
 specifying autoscaling group ARNS. More information can be found
@@ -263,3 +265,4 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under `clu
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay-after-add`, `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure` flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay to 5 minutes after a node has been added.
 - If you're running multiple ASGs, the `--expander` flag supports three options: `random`, `most-pods` and `least-waste`. `random` will expand a random ASG on scale up. `most-pods` will scale up the ASG that will schedule the most amount of pods. `least-waste` will expand the ASG that will waste the least amount of CPU/MEM resources. In the event of a tie, cluster autoscaler will fall back to `random`.
 - If you're managing your own kubelets, they need to be started with the `--provider-id` flag. The provider id has the format `aws:///<availability-zone>/<instance-id>`, e.g. `aws:///us-east-1a/i-01234abcdef`.
+- If you want to use regional STS endpoints (e.g. when using VPC endpoint for STS) the env `AWS_STS_REGIONAL_ENDPOINTS=regional` should be set.
