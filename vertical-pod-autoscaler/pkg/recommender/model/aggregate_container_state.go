@@ -58,6 +58,10 @@ const (
 	SupportedCheckpointVersion = "v3"
 )
 
+var (
+	defaultControlledResources = []ResourceName{ResourceCPU, ResourceMemory}
+)
+
 // ContainerStateAggregator is an interface for objects that consume and
 // aggregate container usage samples.
 type ContainerStateAggregator interface {
@@ -100,10 +104,11 @@ type AggregateContainerState struct {
 	// we want to know if it needs recommendation, if the recommendation
 	// is present and if the automatic updates are on (are we able to
 	// apply the recommendation to the pods).
-	LastRecommendation corev1.ResourceList
-	IsUnderVPA         bool
-	UpdateMode         *vpa_types.UpdateMode
-	ScalingMode        *vpa_types.ContainerScalingMode
+	LastRecommendation  corev1.ResourceList
+	IsUnderVPA          bool
+	UpdateMode          *vpa_types.UpdateMode
+	ScalingMode         *vpa_types.ContainerScalingMode
+	ControlledResources *[]ResourceName
 }
 
 // GetLastRecommendation returns last recorded recommendation.
@@ -128,6 +133,15 @@ func (a *AggregateContainerState) GetScalingMode() *vpa_types.ContainerScalingMo
 	return a.ScalingMode
 }
 
+// GetControlledResources returns the list of resources controlled by VPA controlling this aggregator.
+// Returns default if not set.
+func (a *AggregateContainerState) GetControlledResources() []ResourceName {
+	if a.ControlledResources != nil {
+		return *a.ControlledResources
+	}
+	return defaultControlledResources
+}
+
 // MarkNotAutoscaled registers that this container state is not controlled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
@@ -135,6 +149,7 @@ func (a *AggregateContainerState) MarkNotAutoscaled() {
 	a.LastRecommendation = nil
 	a.UpdateMode = nil
 	a.ScalingMode = nil
+	a.ControlledResources = nil
 }
 
 // MergeContainerState merges two AggregateContainerStates.
@@ -255,7 +270,7 @@ func (a *AggregateContainerState) isEmpty() bool {
 	return a.TotalSamplesCount == 0
 }
 
-// UpdateFromPolicy updates container state scaling mode based on resource
+// UpdateFromPolicy updates container state scaling mode and controlled resources based on resource
 // policy of the VPA object.
 func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.ContainerResourcePolicy) {
 	// ContainerScalingModeAuto is the default scaling mode
@@ -263,6 +278,10 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	a.ScalingMode = &scalingModeAuto
 	if resourcePolicy != nil && resourcePolicy.Mode != nil {
 		a.ScalingMode = resourcePolicy.Mode
+	}
+	a.ControlledResources = &defaultControlledResources
+	if resourcePolicy != nil && resourcePolicy.ControlledResources != nil {
+		a.ControlledResources = resourceNamesApiToModel(*resourcePolicy.ControlledResources)
 	}
 }
 
