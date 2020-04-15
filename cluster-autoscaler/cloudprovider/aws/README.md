@@ -5,7 +5,7 @@ The cluster autoscaler on AWS scales worker nodes within any specified autoscali
 Cluster autoscaler must run on v1.3.0 or greater.
 
 ## Permissions
-The pod running the cluster autoscaler will need access to certain resources and actions. We always recommend you to attach the IAM policy to the cluster austoscaler pod using [IAM roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) and avoid attaching it to the NodeGroup or using AWS credentials directly unless you have special requirements.
+The pod running the cluster autoscaler will need access to certain resources and actions. If using AWS EKS it is recommend to attach the IAM policy to the cluster austoscaler pod using [IAM roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html). For non-EKS kubernetes clusters attaching the IAM policy to the NodeGroup is recommended instead of using AWS credentials directly unless you have special requirements.
 
 ### Attach IAM policy to Service Account
 A minimum IAM policy would look like:
