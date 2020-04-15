@@ -195,10 +195,14 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 		return nil, err
 	}
 
+	// Nodes do not have normalized IDs, so do not normalize the ID here.
+	// The IDs returned here are used to check if a node is registered or not and
+	// must match the ID on the Node object itself.
+	// https://github.com/kubernetes/autoscaler/blob/a973259f1852303ba38a3a61eeee8489cf4e1b13/cluster-autoscaler/clusterstate/clusterstate.go#L967-L985
 	instances := make([]cloudprovider.Instance, len(nodes))
 	for i := range nodes {
 		instances[i] = cloudprovider.Instance{
-			Id: string(normalizedProviderString(nodes[i])),
+			Id: nodes[i],
 		}
 	}
 
