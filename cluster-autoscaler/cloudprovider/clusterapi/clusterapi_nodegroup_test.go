@@ -659,7 +659,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 		})
 
 		for i := 0; i < len(nodeNames); i++ {
-			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
+			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
 		}
@@ -844,7 +844,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		})
 
 		for i := 0; i < len(nodeNames); i++ {
-			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
+			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 			}
 		}
@@ -998,7 +998,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 				nodeIndex = i
 			}
 
-			if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[nodeIndex].Spec.ProviderID)) {
+			if nodeNames[i].Id != testConfig.nodes[nodeIndex].Spec.ProviderID {
 				t.Fatalf("expected %q, got %q", testConfig.nodes[nodeIndex].Spec.ProviderID, nodeNames[i].Id)
 			}
 		}
