@@ -965,7 +965,7 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 	})
 
 	for i := range testConfig.nodes {
-		if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
+		if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 			t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 		}
 	}
@@ -1013,7 +1013,7 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 	})
 
 	for i := range testConfig.nodes {
-		if nodeNames[i].Id != string(normalizedProviderString(testConfig.nodes[i].Spec.ProviderID)) {
+		if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
 			t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
 		}
 	}
