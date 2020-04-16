@@ -100,8 +100,8 @@ func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 	return result
 }
 
-// resourceNamesApiToModel converts an array of resource names expressed in API types into model types.
-func resourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
+// ResourceNamesApiToModel converts an array of resource names expressed in API types into model types.
+func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
 	result := make([]ResourceName, 0, len(resources))
 	for _, resource := range resources {
 		switch resource {
