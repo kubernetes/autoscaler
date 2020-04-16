@@ -86,8 +86,10 @@ func (p *prometheusHistoryProvider) getContainerIDFromLabels(labels map[string]s
 	return &model.ContainerID{
 		PodID: model.PodID{
 			Namespace: namespace,
-			PodName:   podName},
-		ContainerName: containerName}, nil
+			PodName:   podName,
+		},
+		ContainerName: containerName,
+	}, nil
 }
 
 func (p *prometheusHistoryProvider) getPodIDFromLabels(labels map[string]string) (*model.PodID, error) {
@@ -131,7 +133,8 @@ func getContainerUsageSamplesFromSamples(samples []Sample, resource model.Resour
 		res = append(res, model.ContainerUsageSample{
 			MeasureStart: sample.Timestamp,
 			Usage:        resourceAmountFromValue(sample.Value, resource),
-			Resource:     resource})
+			Resource:     resource,
+		})
 	}
 	return res
 }
@@ -190,7 +193,9 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	podSelector := fmt.Sprintf("job=\"%s\", %s=~\".+\", %s!=\"POD\", %s!=\"\"",
 		p.config.CadvisorMetricsJobName, p.config.CtrPodNameLabel,
 		p.config.CtrNameLabel, p.config.CtrNameLabel)
-	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryLength), model.ResourceCPU)
+
+	// This query uses Prometheus Subquery notation, to gives us a result of a five minute cpu rate by default evaluated every 1minute for last config.HistoryLength days/hours/minutes. In order to change the evaluation step, you need change Prometheus global.evaluation_interval configuration parameter.
+	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[5m])[%s:]", podSelector, p.config.HistoryLength), model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
