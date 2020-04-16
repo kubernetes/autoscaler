@@ -80,13 +80,14 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 // Takes AggregateContainerState and returns a container recommendation.
 func (r *podResourceRecommender) estimateContainerResources(s *model.AggregateContainerState) RecommendedContainerResources {
 	return RecommendedContainerResources{
-		filterControlledResources(r.targetEstimator.GetResourceEstimation(s), s.GetControlledResources()),
-		filterControlledResources(r.lowerBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
-		filterControlledResources(r.upperBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
+		FilterControlledResources(r.targetEstimator.GetResourceEstimation(s), s.GetControlledResources()),
+		FilterControlledResources(r.lowerBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
+		FilterControlledResources(r.upperBoundEstimator.GetResourceEstimation(s), s.GetControlledResources()),
 	}
 }
 
-func filterControlledResources(estimation model.Resources, controlledResources []model.ResourceName) model.Resources {
+// FilterControlledResources returns estimations from 'estimation' only for resources present in 'controlledResources'.
+func FilterControlledResources(estimation model.Resources, controlledResources []model.ResourceName) model.Resources {
 	result := make(model.Resources)
 	for _, resource := range controlledResources {
 		if value, ok := estimation[resource]; ok {
