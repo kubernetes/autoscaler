@@ -144,7 +144,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	}
 
 	targetSize := n.nodePool.Count + delta
-	if targetSize <= n.MinSize() {
+	if targetSize < n.MinSize() {
 		return fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
 			n.nodePool.Count, targetSize, n.MinSize())
 	}
