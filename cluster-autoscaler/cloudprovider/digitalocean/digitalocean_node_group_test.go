@@ -182,6 +182,34 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("successful decrease to minimum", func(t *testing.T) {
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:     2,
+			AutoScale: true,
+			MinNodes:  1,
+			MaxNodes:  5,
+		})
+
+		delta := -1
+		newCount := ng.nodePool.Count + delta
+		client.On("UpdateNodePool",
+			ctx,
+			ng.clusterID,
+			ng.id,
+			&godo.KubernetesNodePoolUpdateRequest{
+				Count: &newCount,
+			},
+		).Return(
+			&godo.KubernetesNodePool{Count: newCount},
+			&godo.Response{},
+			nil,
+		).Once()
+
+		err := ng.DecreaseTargetSize(delta)
+		assert.NoError(t, err)
+	})
+
 	t.Run("positive decrease", func(t *testing.T) {
 		numberOfNodes := 5
 		client := &doClientMock{}
@@ -216,7 +244,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		client := &doClientMock{}
 		ng := testNodeGroup(client, &godo.KubernetesNodePool{
 			Count:    numberOfNodes,
-			MinNodes: 1,
+			MinNodes: 2,
 			MaxNodes: 5,
 		})
 
