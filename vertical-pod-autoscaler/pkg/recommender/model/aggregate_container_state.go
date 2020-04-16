@@ -59,7 +59,8 @@ const (
 )
 
 var (
-	defaultControlledResources = []ResourceName{ResourceCPU, ResourceMemory}
+	// DefaultControlledResources is a default value of Spec.ResourcePolicy.ContainerPolicies[].ControlledResources.
+	DefaultControlledResources = []ResourceName{ResourceCPU, ResourceMemory}
 )
 
 // ContainerStateAggregator is an interface for objects that consume and
@@ -139,7 +140,7 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 	if a.ControlledResources != nil {
 		return *a.ControlledResources
 	}
-	return defaultControlledResources
+	return DefaultControlledResources
 }
 
 // MarkNotAutoscaled registers that this container state is not controlled by
@@ -279,9 +280,9 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	if resourcePolicy != nil && resourcePolicy.Mode != nil {
 		a.ScalingMode = resourcePolicy.Mode
 	}
-	a.ControlledResources = &defaultControlledResources
+	a.ControlledResources = &DefaultControlledResources
 	if resourcePolicy != nil && resourcePolicy.ControlledResources != nil {
-		a.ControlledResources = resourceNamesApiToModel(*resourcePolicy.ControlledResources)
+		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
 	}
 }
 
