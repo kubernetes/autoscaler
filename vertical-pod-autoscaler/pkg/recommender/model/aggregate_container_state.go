@@ -158,7 +158,8 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 	a.AggregateCPUUsage.Merge(other.AggregateCPUUsage)
 	a.AggregateMemoryPeaks.Merge(other.AggregateMemoryPeaks)
 
-	if !other.FirstSampleStart.IsZero() && other.FirstSampleStart.Before(a.FirstSampleStart) {
+	if a.FirstSampleStart.IsZero() ||
+		(!other.FirstSampleStart.IsZero() && other.FirstSampleStart.Before(a.FirstSampleStart)) {
 		a.FirstSampleStart = other.FirstSampleStart
 	}
 	if other.LastSampleStart.After(a.LastSampleStart) {
