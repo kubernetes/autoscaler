@@ -643,9 +643,6 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) ([]cloud
 		} else {
 			return asgs, fmt.Errorf("no maximum size specified for vmss: %s", *scaleSet.Name)
 		}
-		if spec.MaxSize < 1 {
-			return asgs, fmt.Errorf("maximum size must be greater than 1 node")
-		}
 		if spec.MaxSize < spec.MinSize {
 			return asgs, fmt.Errorf("maximum size must be greater than minimum size")
 		}
