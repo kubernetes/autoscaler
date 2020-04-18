@@ -22,7 +22,7 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 function print_help {
   echo "ERROR! Usage: vpa-process-yamls.sh <action> [<component>]"
-  echo "<action> should be either 'create' or 'delete'."
+  echo "<action> should be either 'apply' or 'delete'."
   echo "<component> might be one of 'admission-controller', 'updater', 'recommender'."
   echo "If <component> is set, only the deployment of that component will be processed,"
   echo "otherwise all components and configs will be processed."
@@ -39,9 +39,9 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-beta2-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-v1-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 if [ ${ACTION} == delete ]; then
-  COMPONENTS+=" vpa-beta2-crd"
+  COMPONENTS+=" vpa-v1-crd"
 fi
 
 if [ $# -gt 1 ]; then
@@ -50,7 +50,7 @@ fi
 
 for i in $COMPONENTS; do
   if [ $i == admission-controller-deployment ] ; then
-    if [ ${ACTION} == create ] ; then
+    if [ ${ACTION} == apply ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/gencerts.sh || true)
     elif [ ${ACTION} == delete ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh || true)
