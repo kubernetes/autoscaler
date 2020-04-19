@@ -21,15 +21,26 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	vpaclientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
+	inputmetrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
-	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
-	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	metricsquality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
+	metricsrecommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	vpaapiutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
+	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kube_flag "k8s.io/component-base/cli/flag"
+	kubeflag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog"
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
 var (
@@ -51,6 +62,7 @@ var (
 	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
+	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
 )
 
 // Aggregation configuration flags
@@ -63,20 +75,49 @@ var (
 
 func main() {
 	klog.InitFlags(nil)
-	kube_flag.InitFlags()
+	kubeflag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
-
-	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife))
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
-	metrics_recommender.Register()
-	metrics_quality.Register()
+	metricsrecommender.Register()
+	metricsquality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+
+	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
+	kubeClient := kubeclient.NewForConfigOrDie(config)
+	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient)
+
+	const defaultResyncPeriod = 10 * time.Minute
+	sharedInformerFactory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+
+	clusterState := model.NewClusterState()
+	clusterStateFactory := input.ClusterStateFeederFactory{
+		ClusterState:        clusterState,
+		KubeClient:          kubeClient,
+		MetricsClient:       inputmetrics.NewMetricsClient(resourceclient.NewForConfigOrDie(config)),
+		VpaCheckpointClient: vpaclientset.NewForConfigOrDie(config).AutoscalingV1(),
+		VpaLister:           vpaapiutil.NewAllVpasLister(vpaclientset.NewForConfigOrDie(config), make(chan struct{})),
+		PodLister:           podLister,
+		OOMObserver:         oomObserver,
+		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, sharedInformerFactory),
+		MemorySaveMode:      *memorySaver,
+		ControllerFetcher:   controllerfetcher.NewControllerFetcher(config, kubeClient, sharedInformerFactory),
+	}
+
+	recommender := routines.RecommenderFactory{
+		ClusterState:           clusterState,
+		ClusterStateFeeder:     clusterStateFactory.Make(),
+		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpaclientset.NewForConfigOrDie(config).AutoscalingV1()),
+		VpaClient:              vpaclientset.NewForConfigOrDie(config).AutoscalingV1(),
+		PodResourceRecommender: logic.CreatePodResourceRecommender(),
+		CheckpointsGCInterval:  *checkpointsGCInterval,
+		UseCheckpoints:         useCheckpoints,
+	}.Make()
+
 	if useCheckpoints {
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
 	} else {

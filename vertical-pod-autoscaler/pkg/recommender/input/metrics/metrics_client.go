@@ -39,7 +39,7 @@ type ContainerMetricsSnapshot struct {
 	Usage model.Resources
 }
 
-// MetricsClient provides simple metrics on resources usage on containter level.
+// MetricsClient provides simple metrics on resources usage on container level.
 type MetricsClient interface {
 	// GetContainersMetrics returns an array of ContainerMetricsSnapshots,
 	// representing resource usage for every running container in the cluster
