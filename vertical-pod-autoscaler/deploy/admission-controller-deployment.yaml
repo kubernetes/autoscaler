@@ -17,7 +17,7 @@ spec:
       serviceAccountName: vpa-admission-controller
       containers:
         - name: admission-controller
-          image: k8s.gcr.io/vpa-admission-controller:0.6.3
+          image: us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-admission-controller:0.8.0
           imagePullPolicy: Always
           env:
             - name: NAMESPACE
