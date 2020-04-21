@@ -109,9 +109,9 @@ func (pcp *packetCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
 }
 
-// Pricing is not implemented.
+// Pricing returns pricing model for this cloud provider or error if not available.
 func (pcp *packetCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return nil, cloudprovider.ErrNotImplemented
+	return &PacketPriceModel{}, nil
 }
 
 // GetAvailableMachineTypes is not implemented.

@@ -39,11 +39,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
-<<<<<<< HEAD
-=======
-	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
->>>>>>> 95a0f0008... Add support for multiple nodepools in Packet
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -601,15 +596,16 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	return nil
 }
 
-func buildGenericLabels(nodegroup string, instanceType string) map[string]string {
+// BuildGenericLabels builds basic labels for Packet nodes
+func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
 	result := make(map[string]string)
 
-	result[kubeletapis.LabelArch] = "amd64"
-	result[kubeletapis.LabelOS] = "linux"
+	//result[kubeletapis.LabelArch] = "amd64"
+	//result[kubeletapis.LabelOS] = "linux"
 	result[apiv1.LabelInstanceType] = instanceType
-	result[apiv1.LabelZoneRegion] = ""
-	result[apiv1.LabelZoneFailureDomain] = "0"
-	result[apiv1.LabelHostname] = ""
+	//result[apiv1.LabelZoneRegion] = ""
+	//result[apiv1.LabelZoneFailureDomain] = "0"
+	//result[apiv1.LabelHostname] = ""
 	result["pool"] = nodegroup
 
 	return result
@@ -642,7 +638,7 @@ func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulernode
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	// GenericLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
 	nodeInfo.SetNode(&node)
