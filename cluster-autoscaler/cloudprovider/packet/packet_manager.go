@@ -45,7 +45,7 @@ type packetManager interface {
 	getNodes(nodegroup string) ([]string, error)
 	getNodeNames(nodegroup string) ([]string, error)
 	deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error
-	templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error)
+	templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error)
 	NodeGroupForNode(labels map[string]string, nodeId string) (string, error)
 }
 
