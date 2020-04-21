@@ -16,12 +16,8 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Azure](./cloudprovider/azure/README.md)
 * [AWS](./cloudprovider/aws/README.md)
 * [BaiduCloud](./cloudprovider/baiducloud/README.md)
-<<<<<<< HEAD
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [Packet](./cloudprovider/packet/README.md#notes) 
-=======
-* [Packet](./cloudprovider/packet/README.md)
->>>>>>> Add support for scaling up/down from/to 0 nodes in Packet
 
 # Releases
 
@@ -148,8 +144,5 @@ Supported cloud providers:
 * Alibaba Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
 * OpenStack Magnum https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/magnum/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
-<<<<<<< HEAD
 * Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
-=======
->>>>>>> Add support for scaling up/down from/to 0 nodes in Packet
 * Packet https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/packet/README.md
