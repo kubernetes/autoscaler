@@ -39,8 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 type instanceType struct {
@@ -597,15 +596,16 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	return nil
 }
 
-func buildGenericLabels(nodegroup string, instanceType string) map[string]string {
+// BuildGenericLabels builds basic labels for Packet nodes
+func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
 	result := make(map[string]string)
 
-	result[kubeletapis.LabelArch] = "amd64"
-	result[kubeletapis.LabelOS] = "linux"
+	//result[kubeletapis.LabelArch] = "amd64"
+	//result[kubeletapis.LabelOS] = "linux"
 	result[apiv1.LabelInstanceType] = instanceType
-	result[apiv1.LabelZoneRegion] = ""
-	result[apiv1.LabelZoneFailureDomain] = "0"
-	result[apiv1.LabelHostname] = ""
+	//result[apiv1.LabelZoneRegion] = ""
+	//result[apiv1.LabelZoneFailureDomain] = "0"
+	//result[apiv1.LabelHostname] = ""
 	result["pool"] = nodegroup
 
 	return result
@@ -613,7 +613,7 @@ func buildGenericLabels(nodegroup string, instanceType string) map[string]string
 
 // templateNodeInfo returns a NodeInfo with a node template based on the packet plan
 // that is used to create nodes in a given node group.
-func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
+func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodegroup, rand.Int63())
 	node.ObjectMeta = metav1.ObjectMeta{
@@ -638,9 +638,9 @@ func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulernode
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	// GenericLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
 
-	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
 	nodeInfo.SetNode(&node)
 	return nodeInfo, nil
 }
