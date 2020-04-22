@@ -134,7 +134,9 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
 	ts := sample.MeasureStart
-	if !sample.isValid(ResourceMemory) || ts.Before(container.lastMemorySampleStart) {
+	// We always process OOM samples.
+	if !sample.isValid(ResourceMemory) ||
+		(!isOOM && ts.Before(container.lastMemorySampleStart)) {
 		return false // Discard invalid or outdated samples.
 	}
 	container.lastMemorySampleStart = ts
