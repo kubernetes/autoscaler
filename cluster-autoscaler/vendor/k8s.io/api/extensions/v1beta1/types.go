@@ -50,6 +50,9 @@ type ScaleStatus struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.2
+// +k8s:prerelease-lifecycle-gen:removed=1.18
 
 // represents a scaling request for a resource.
 type Scale struct {
@@ -71,6 +74,10 @@ type Scale struct {
 // +genclient:method=GetScale,verb=get,subresource=scale,result=Scale
 // +genclient:method=UpdateScale,verb=update,subresource=scale,input=Scale,result=Scale
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,Deployment
 
 // DEPRECATED - This group version of Deployment is deprecated by apps/v1beta2/Deployment. See the release notes for
 // more information.
@@ -144,6 +151,9 @@ type DeploymentSpec struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.2
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
 
 // DEPRECATED.
 // DeploymentRollback stores the information required to rollback a deployment.
@@ -301,6 +311,10 @@ type DeploymentCondition struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,DeploymentList
 
 // DeploymentList is a list of Deployments.
 type DeploymentList struct {
@@ -475,6 +489,10 @@ type DaemonSetCondition struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,DaemonSet
 
 // DEPRECATED - This group version of DaemonSet is deprecated by apps/v1beta2/DaemonSet. See the release notes for
 // more information.
@@ -514,6 +532,10 @@ const (
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,DaemonSetList
 
 // DaemonSetList is a collection of daemon sets.
 type DaemonSetList struct {
@@ -529,6 +551,10 @@ type DaemonSetList struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.14
+// +k8s:prerelease-lifecycle-gen:removed=1.22
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1beta1,Ingress
 
 // Ingress is a collection of rules that allow inbound connections to reach the
 // endpoints defined by a backend. An Ingress can be configured to give services
@@ -554,6 +580,10 @@ type Ingress struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.1
+// +k8s:prerelease-lifecycle-gen:deprecated=1.14
+// +k8s:prerelease-lifecycle-gen:removed=1.22
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1beta1,IngressList
 
 // IngressList is a collection of Ingress.
 type IngressList struct {
@@ -776,6 +806,10 @@ type IngressBackend struct {
 // +genclient:method=GetScale,verb=get,subresource=scale,result=Scale
 // +genclient:method=UpdateScale,verb=update,subresource=scale,input=Scale,result=Scale
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.2
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,ReplicaSet
 
 // DEPRECATED - This group version of ReplicaSet is deprecated by apps/v1beta2/ReplicaSet. See the release notes for
 // more information.
@@ -804,6 +838,10 @@ type ReplicaSet struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.2
+// +k8s:prerelease-lifecycle-gen:deprecated=1.8
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=apps,v1,ReplicaSetList
 
 // ReplicaSetList is a collection of ReplicaSets.
 type ReplicaSetList struct {
@@ -906,6 +944,10 @@ type ReplicaSetCondition struct {
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.2
+// +k8s:prerelease-lifecycle-gen:deprecated=1.11
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=policy,v1beta1,PodSecurityPolicy
 
 // PodSecurityPolicy governs the ability to make requests that affect the Security Context
 // that will be applied to a pod and container.
@@ -1264,6 +1306,10 @@ type RuntimeClassStrategyOptions struct {
 const AllowAllRuntimeClassNames = "*"
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.2
+// +k8s:prerelease-lifecycle-gen:deprecated=1.11
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=policy,v1beta1,PodSecurityPolicyList
 
 // PodSecurityPolicyList is a list of PodSecurityPolicy objects.
 // Deprecated: use PodSecurityPolicyList from policy API Group instead.
@@ -1280,6 +1326,10 @@ type PodSecurityPolicyList struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.3
+// +k8s:prerelease-lifecycle-gen:deprecated=1.9
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1,NetworkPolicy
 
 // DEPRECATED 1.9 - This group version of NetworkPolicy is deprecated by networking/v1/NetworkPolicy.
 // NetworkPolicy describes what network traffic is allowed for a set of Pods
@@ -1450,6 +1500,10 @@ type NetworkPolicyPeer struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.3
+// +k8s:prerelease-lifecycle-gen:deprecated=1.9
+// +k8s:prerelease-lifecycle-gen:removed=1.18
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1,NetworkPolicyList
 
 // DEPRECATED 1.9 - This group version of NetworkPolicyList is deprecated by networking/v1/NetworkPolicyList.
 // Network Policy List is a list of NetworkPolicy objects.

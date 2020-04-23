@@ -49,8 +49,8 @@ import (
 	kubefeatures "k8s.io/kubernetes/pkg/features"
 	podresourcesapi "k8s.io/kubernetes/pkg/kubelet/apis/podresources/v1alpha1"
 	"k8s.io/kubernetes/pkg/kubelet/cadvisor"
+	"k8s.io/kubernetes/pkg/kubelet/cm/containermap"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager"
-	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/containermap"
 	cputopology "k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/topology"
 	"k8s.io/kubernetes/pkg/kubelet/cm/devicemanager"
 	"k8s.io/kubernetes/pkg/kubelet/cm/topologymanager"
@@ -62,7 +62,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/qos"
 	"k8s.io/kubernetes/pkg/kubelet/stats/pidlimit"
 	"k8s.io/kubernetes/pkg/kubelet/status"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"k8s.io/kubernetes/pkg/util/oom"
 	"k8s.io/kubernetes/pkg/util/procfs"
 	utilsysctl "k8s.io/kubernetes/pkg/util/sysctl"
@@ -159,6 +159,11 @@ func validateSystemRequirements(mountUtil mount.Interface) (features, error) {
 	mountPoints, err := mountUtil.List()
 	if err != nil {
 		return f, fmt.Errorf("%s - %v", localErr, err)
+	}
+
+	if cgroups.IsCgroup2UnifiedMode() {
+		f.cpuHardcapping = true
+		return f, nil
 	}
 
 	expectedCgroups := sets.NewString("cpu", "cpuacct", "cpuset", "memory")
@@ -671,7 +676,7 @@ func (cm *containerManagerImpl) GetResources(pod *v1.Pod, container *v1.Containe
 	return opts, nil
 }
 
-func (cm *containerManagerImpl) UpdatePluginResources(node *schedulernodeinfo.NodeInfo, attrs *lifecycle.PodAdmitAttributes) error {
+func (cm *containerManagerImpl) UpdatePluginResources(node *schedulerframework.NodeInfo, attrs *lifecycle.PodAdmitAttributes) error {
 	return cm.deviceManager.UpdatePluginResources(node, attrs)
 }
 
@@ -882,6 +887,11 @@ func getContainer(pid int) (string, error) {
 	cgs, err := cgroups.ParseCgroupFile(fmt.Sprintf("/proc/%d/cgroup", pid))
 	if err != nil {
 		return "", err
+	}
+
+	if cgroups.IsCgroup2UnifiedMode() {
+		c, _ := cgs[""]
+		return c, nil
 	}
 
 	cpu, found := cgs["cpu"]
