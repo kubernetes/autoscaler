@@ -23,7 +23,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // ResourceLimits is a score plugin that increases score of input node by 1 if the node satisfies
@@ -46,7 +45,7 @@ const (
 
 // preScoreState computed at PreScore and used at Score.
 type preScoreState struct {
-	podResourceRequest *schedulernodeinfo.Resource
+	podResourceRequest *framework.Resource
 }
 
 // Clone the preScore state.
@@ -81,7 +80,7 @@ func (rl *ResourceLimits) PreScore(
 	return nil
 }
 
-func getPodResource(cycleState *framework.CycleState) (*schedulernodeinfo.Resource, error) {
+func getPodResource(cycleState *framework.CycleState) (*framework.Resource, error) {
 	c, err := cycleState.Read(preScoreStateKey)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading %q from cycleState: %v", preScoreStateKey, err)
@@ -107,14 +106,14 @@ func (rl *ResourceLimits) Score(ctx context.Context, state *framework.CycleState
 	if err != nil || nodeInfo.Node() == nil {
 		return 0, framework.NewStatus(framework.Error, fmt.Sprintf("getting node %q from Snapshot: %v, node is nil: %v", nodeName, err, nodeInfo.Node() == nil))
 	}
-	allocatableResources := nodeInfo.AllocatableResource()
+
 	podLimits, err := getPodResource(state)
 	if err != nil {
 		return 0, framework.NewStatus(framework.Error, err.Error())
 	}
 
-	cpuScore := computeScore(podLimits.MilliCPU, allocatableResources.MilliCPU)
-	memScore := computeScore(podLimits.Memory, allocatableResources.Memory)
+	cpuScore := computeScore(podLimits.MilliCPU, nodeInfo.Allocatable.MilliCPU)
+	memScore := computeScore(podLimits.Memory, nodeInfo.Allocatable.Memory)
 
 	score := int64(0)
 	if cpuScore == 1 || memScore == 1 {
@@ -129,16 +128,16 @@ func (rl *ResourceLimits) ScoreExtensions() framework.ScoreExtensions {
 }
 
 // NewResourceLimits initializes a new plugin and returns it.
-func NewResourceLimits(_ *runtime.Unknown, h framework.FrameworkHandle) (framework.Plugin, error) {
+func NewResourceLimits(_ runtime.Object, h framework.FrameworkHandle) (framework.Plugin, error) {
 	return &ResourceLimits{handle: h}, nil
 }
 
 // getResourceLimits computes resource limits for input pod.
 // The reason to create this new function is to be consistent with other
 // priority functions because most or perhaps all priority functions work
-// with schedulernodeinfo.Resource.
-func getResourceLimits(pod *v1.Pod) *schedulernodeinfo.Resource {
-	result := &schedulernodeinfo.Resource{}
+// with framework.Resource.
+func getResourceLimits(pod *v1.Pod) *framework.Resource {
+	result := &framework.Resource{}
 	for _, container := range pod.Spec.Containers {
 		result.Add(container.Resources.Limits)
 	}

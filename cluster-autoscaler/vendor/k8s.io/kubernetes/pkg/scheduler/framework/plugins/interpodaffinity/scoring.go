@@ -22,10 +22,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	"k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	"k8s.io/kubernetes/pkg/scheduler/internal/parallelize"
 	schedutil "k8s.io/kubernetes/pkg/scheduler/util"
 )
 
@@ -118,7 +117,7 @@ func (m scoreMap) append(other scoreMap) {
 	}
 }
 
-func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod *v1.Pod, existingPodNodeInfo *nodeinfo.NodeInfo, incomingPod *v1.Pod, topoScore scoreMap) error {
+func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod *v1.Pod, existingPodNodeInfo *framework.NodeInfo, incomingPod *v1.Pod, topoScore scoreMap) error {
 	existingPodAffinity := existingPod.Spec.Affinity
 	existingHasAffinityConstraints := existingPodAffinity != nil && existingPodAffinity.PodAffinity != nil
 	existingHasAntiAffinityConstraints := existingPodAffinity != nil && existingPodAffinity.PodAntiAffinity != nil
@@ -138,7 +137,7 @@ func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod
 		// For every hard pod affinity term of <existingPod>, if <pod> matches the term,
 		// increment <p.counts> for every node in the cluster with the same <term.TopologyKey>
 		// value as that of <existingPod>'s node by the constant <ipa.hardPodAffinityWeight>
-		if *pl.HardPodAffinityWeight > 0 {
+		if *pl.args.HardPodAffinityWeight > 0 {
 			terms := existingPodAffinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution
 			// TODO: Uncomment this block when implement RequiredDuringSchedulingRequiredDuringExecution.
 			//if len(existingPodAffinity.PodAffinity.RequiredDuringSchedulingRequiredDuringExecution) != 0 {
@@ -146,7 +145,7 @@ func (pl *InterPodAffinity) processExistingPod(state *preScoreState, existingPod
 			//}
 			for i := range terms {
 				term := &terms[i]
-				processedTerm, err := newWeightedAffinityTerm(existingPod, term, *pl.HardPodAffinityWeight)
+				processedTerm, err := newWeightedAffinityTerm(existingPod, term, *pl.args.HardPodAffinityWeight)
 				if err != nil {
 					return err
 				}
@@ -231,7 +230,7 @@ func (pl *InterPodAffinity) PreScore(
 		antiAffinityTerms: antiAffinityTerms,
 	}
 
-	errCh := schedutil.NewErrorChannel()
+	errCh := parallelize.NewErrorChannel()
 	ctx, cancel := context.WithCancel(pCtx)
 	processNode := func(i int) {
 		nodeInfo := allNodes[i]
@@ -240,15 +239,15 @@ func (pl *InterPodAffinity) PreScore(
 		}
 		// Unless the pod being scheduled has affinity terms, we only
 		// need to process pods with affinity in the node.
-		podsToProcess := nodeInfo.PodsWithAffinity()
+		podsToProcess := nodeInfo.PodsWithAffinity
 		if hasAffinityConstraints || hasAntiAffinityConstraints {
 			// We need to process all the pods.
-			podsToProcess = nodeInfo.Pods()
+			podsToProcess = nodeInfo.Pods
 		}
 
 		topoScore := make(scoreMap)
 		for _, existingPod := range podsToProcess {
-			if err := pl.processExistingPod(state, existingPod, nodeInfo, pod, topoScore); err != nil {
+			if err := pl.processExistingPod(state, existingPod.Pod, nodeInfo, pod, topoScore); err != nil {
 				errCh.SendErrorWithCancel(err, cancel)
 				return
 			}
@@ -259,7 +258,7 @@ func (pl *InterPodAffinity) PreScore(
 			pl.Unlock()
 		}
 	}
-	workqueue.ParallelizeUntil(ctx, 16, len(allNodes), processNode)
+	parallelize.Until(ctx, len(allNodes), processNode)
 	if err := errCh.ReceiveError(); err != nil {
 		return framework.NewStatus(framework.Error, err.Error())
 	}

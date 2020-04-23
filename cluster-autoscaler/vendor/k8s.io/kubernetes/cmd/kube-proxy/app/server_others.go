@@ -91,10 +91,10 @@ func newProxyServer(
 		return nil, fmt.Errorf("unable to register configz: %s", err)
 	}
 
-	protocol := utiliptables.ProtocolIpv4
+	protocol := utiliptables.ProtocolIPv4
 	if net.ParseIP(config.BindAddress).To4() == nil {
 		klog.V(0).Infof("IPv6 bind address (%s), assume IPv6 operation", config.BindAddress)
-		protocol = utiliptables.ProtocolIpv6
+		protocol = utiliptables.ProtocolIPv6
 	}
 
 	var iptInterface utiliptables.Interface
@@ -108,7 +108,11 @@ func newProxyServer(
 	iptInterface = utiliptables.New(execer, protocol)
 	kernelHandler = ipvs.NewLinuxKernelHandler()
 	ipsetInterface = utilipset.New(execer)
-	canUseIPVS, _ := ipvs.CanUseIPVSProxier(kernelHandler, ipsetInterface)
+	canUseIPVS, err := ipvs.CanUseIPVSProxier(kernelHandler, ipsetInterface)
+	if string(config.Mode) == proxyModeIPVS && err != nil {
+		klog.Errorf("Can't use the IPVS proxier: %v", err)
+	}
+
 	if canUseIPVS {
 		ipvsInterface = utilipvs.New(execer)
 	}
@@ -155,7 +159,7 @@ func newProxyServer(
 	var proxier proxy.Provider
 	var detectLocalMode proxyconfigapi.LocalMode
 
-	proxyMode := getProxyMode(string(config.Mode), kernelHandler, ipsetInterface, iptables.LinuxKernelCompatTester{})
+	proxyMode := getProxyMode(string(config.Mode), canUseIPVS, iptables.LinuxKernelCompatTester{})
 	detectLocalMode, err = getDetectLocalMode(config)
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine detect-local-mode: %v", err)
@@ -195,12 +199,12 @@ func newProxyServer(
 			// Create iptables handlers for both families, one is already created
 			// Always ordered as IPv4, IPv6
 			var ipt [2]utiliptables.Interface
-			if iptInterface.IsIpv6() {
+			if iptInterface.IsIPv6() {
 				ipt[1] = iptInterface
-				ipt[0] = utiliptables.New(execer, utiliptables.ProtocolIpv4)
+				ipt[0] = utiliptables.New(execer, utiliptables.ProtocolIPv4)
 			} else {
 				ipt[0] = iptInterface
-				ipt[1] = utiliptables.New(execer, utiliptables.ProtocolIpv6)
+				ipt[1] = utiliptables.New(execer, utiliptables.ProtocolIPv6)
 			}
 
 			// Always ordered to match []ipt
@@ -263,12 +267,12 @@ func newProxyServer(
 			// Create iptables handlers for both families, one is already created
 			// Always ordered as IPv4, IPv6
 			var ipt [2]utiliptables.Interface
-			if iptInterface.IsIpv6() {
+			if iptInterface.IsIPv6() {
 				ipt[1] = iptInterface
-				ipt[0] = utiliptables.New(execer, utiliptables.ProtocolIpv4)
+				ipt[0] = utiliptables.New(execer, utiliptables.ProtocolIPv4)
 			} else {
 				ipt[0] = iptInterface
-				ipt[1] = utiliptables.New(execer, utiliptables.ProtocolIpv6)
+				ipt[1] = utiliptables.New(execer, utiliptables.ProtocolIPv6)
 			}
 
 			nodeIPs := nodeIPTuple(config.BindAddress)
@@ -375,6 +379,7 @@ func newProxyServer(
 		ProxyMode:              proxyMode,
 		NodeRef:                nodeRef,
 		MetricsBindAddress:     config.MetricsBindAddress,
+		BindAddressHardFail:    config.BindAddressHardFail,
 		EnableProfiling:        config.EnableProfiling,
 		OOMScoreAdj:            config.OOMScoreAdj,
 		ConfigSyncPeriod:       config.ConfigSyncPeriod.Duration,
@@ -549,28 +554,21 @@ func nodeIPTuple(bindAddress string) [2]net.IP {
 	return nodes
 }
 
-func getProxyMode(proxyMode string, khandle ipvs.KernelHandler, ipsetver ipvs.IPSetVersioner, kcompat iptables.KernelCompatTester) string {
+func getProxyMode(proxyMode string, canUseIPVS bool, kcompat iptables.KernelCompatTester) string {
 	switch proxyMode {
 	case proxyModeUserspace:
 		return proxyModeUserspace
 	case proxyModeIPTables:
 		return tryIPTablesProxy(kcompat)
 	case proxyModeIPVS:
-		return tryIPVSProxy(khandle, ipsetver, kcompat)
+		return tryIPVSProxy(canUseIPVS, kcompat)
 	}
 	klog.Warningf("Unknown proxy mode %q, assuming iptables proxy", proxyMode)
 	return tryIPTablesProxy(kcompat)
 }
 
-func tryIPVSProxy(khandle ipvs.KernelHandler, ipsetver ipvs.IPSetVersioner, kcompat iptables.KernelCompatTester) string {
-	// guaranteed false on error, error only necessary for debugging
-	// IPVS Proxier relies on ip_vs_* kernel modules and ipset
-	useIPVSProxy, err := ipvs.CanUseIPVSProxier(khandle, ipsetver)
-	if err != nil {
-		// Try to fallback to iptables before falling back to userspace
-		utilruntime.HandleError(fmt.Errorf("can't determine whether to use ipvs proxy, error: %v", err))
-	}
-	if useIPVSProxy {
+func tryIPVSProxy(canUseIPVS bool, kcompat iptables.KernelCompatTester) string {
+	if canUseIPVS {
 		return proxyModeIPVS
 	}
 
