@@ -38,6 +38,15 @@ const (
 
 	// SchedulerDefaultProviderName defines the default provider names
 	SchedulerDefaultProviderName = "DefaultProvider"
+
+	// DefaultInsecureSchedulerPort is the default port for the scheduler status server.
+	// May be overridden by a flag at startup.
+	// Deprecated: use the secure KubeSchedulerPort instead.
+	DefaultInsecureSchedulerPort = 10251
+
+	// DefaultKubeSchedulerPort is the default port for the scheduler status server.
+	// May be overridden by a flag at startup.
+	DefaultKubeSchedulerPort = 10259
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -237,7 +246,7 @@ type PluginConfig struct {
 	// Name defines the name of plugin being configured
 	Name string
 	// Args defines the arguments passed to the plugins at the time of initialization. Args can have arbitrary structure.
-	Args runtime.Unknown
+	Args runtime.Object
 }
 
 /*

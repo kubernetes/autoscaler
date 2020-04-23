@@ -31,8 +31,6 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
-	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // NodeScoreList declares a list of nodes and their scores.
@@ -212,34 +210,8 @@ type Plugin interface {
 	Name() string
 }
 
-// PodInfo is a wrapper to a Pod with additional information for purposes such as tracking
-// the timestamp when it's added to the queue or recording per-pod metrics.
-type PodInfo struct {
-	Pod *v1.Pod
-	// The time pod added to the scheduling queue.
-	Timestamp time.Time
-	// Number of schedule attempts before successfully scheduled.
-	// It's used to record the # attempts metric.
-	Attempts int
-	// The time when the pod is added to the queue for the first time. The pod may be added
-	// back to the queue multiple times before it's successfully scheduled.
-	// It shouldn't be updated once initialized. It's used to record the e2e scheduling
-	// latency for a pod.
-	InitialAttemptTimestamp time.Time
-}
-
-// DeepCopy returns a deep copy of the PodInfo object.
-func (podInfo *PodInfo) DeepCopy() *PodInfo {
-	return &PodInfo{
-		Pod:                     podInfo.Pod.DeepCopy(),
-		Timestamp:               podInfo.Timestamp,
-		Attempts:                podInfo.Attempts,
-		InitialAttemptTimestamp: podInfo.InitialAttemptTimestamp,
-	}
-}
-
 // LessFunc is the function to sort pod info
-type LessFunc func(podInfo1, podInfo2 *PodInfo) bool
+type LessFunc func(podInfo1, podInfo2 *QueuedPodInfo) bool
 
 // QueueSortPlugin is an interface that must be implemented by "QueueSort" plugins.
 // These plugins are used to sort pods in the scheduling queue. Only one queue sort
@@ -247,7 +219,7 @@ type LessFunc func(podInfo1, podInfo2 *PodInfo) bool
 type QueueSortPlugin interface {
 	Plugin
 	// Less are used to sort pods in the scheduling queue.
-	Less(*PodInfo, *PodInfo) bool
+	Less(*QueuedPodInfo, *QueuedPodInfo) bool
 }
 
 // PreFilterExtensions is an interface that is included in plugins that allow specifying
@@ -256,10 +228,10 @@ type QueueSortPlugin interface {
 type PreFilterExtensions interface {
 	// AddPod is called by the framework while trying to evaluate the impact
 	// of adding podToAdd to the node while scheduling podToSchedule.
-	AddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	AddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
 	// RemovePod is called by the framework while trying to evaluate the impact
 	// of removing podToRemove from the node while scheduling podToSchedule.
-	RemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToRemove *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	RemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToRemove *v1.Pod, nodeInfo *NodeInfo) *Status
 }
 
 // PreFilterPlugin is an interface that must be implemented by "prefilter" plugins.
@@ -299,7 +271,7 @@ type FilterPlugin interface {
 	// For example, during preemption, we may pass a copy of the original
 	// nodeInfo object that has some pods removed from it to evaluate the
 	// possibility of preempting them to schedule the target pod.
-	Filter(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	Filter(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *NodeInfo) *Status
 }
 
 // PreScorePlugin is an interface for Pre-score plugin. Pre-score is an
@@ -425,17 +397,17 @@ type Framework interface {
 	// preemption, we may pass a copy of the original nodeInfo object that has some pods
 	// removed from it to evaluate the possibility of preempting them to
 	// schedule the target pod.
-	RunFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) PluginToStatus
+	RunFilterPlugins(ctx context.Context, state *CycleState, pod *v1.Pod, nodeInfo *NodeInfo) PluginToStatus
 
 	// RunPreFilterExtensionAddPod calls the AddPod interface for the set of configured
 	// PreFilter plugins. It returns directly if any of the plugins return any
 	// status other than Success.
-	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
 
 	// RunPreFilterExtensionRemovePod calls the RemovePod interface for the set of configured
 	// PreFilter plugins. It returns directly if any of the plugins return any
 	// status other than Success.
-	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *Status
+	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
 
 	// RunPreScorePlugins runs the set of configured pre-score plugins. If any
 	// of these plugins returns any status other than "Success", the given pod is rejected.
@@ -504,7 +476,7 @@ type FrameworkHandle interface {
 	// cycle (pre-bind/bind/post-bind/un-reserve plugin) should not use it,
 	// otherwise a concurrent read/write error might occur, they should use scheduler
 	// cache instead.
-	SnapshotSharedLister() schedulerlisters.SharedLister
+	SnapshotSharedLister() SharedLister
 
 	// IterateOverWaitingPods acquires a read lock and iterates over the WaitingPods map.
 	IterateOverWaitingPods(callback func(WaitingPod))

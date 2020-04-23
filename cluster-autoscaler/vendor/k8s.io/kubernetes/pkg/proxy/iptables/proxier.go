@@ -269,10 +269,8 @@ func NewProxier(ipt utiliptables.Interface,
 	nodePortAddresses []string,
 ) (*Proxier, error) {
 	// Set the route_localnet sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlRouteLocalnet); val != 1 {
-		if err := sysctl.SetSysctl(sysctlRouteLocalnet, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlRouteLocalnet, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlRouteLocalnet, 1); err != nil {
+		return nil, err
 	}
 
 	// Proxy needs br_netfilter and bridge-nf-call-iptables=1 when containers
@@ -285,12 +283,13 @@ func NewProxier(ipt utiliptables.Interface,
 	// Generate the masquerade mark to use for SNAT rules.
 	masqueradeValue := 1 << uint(masqueradeBit)
 	masqueradeMark := fmt.Sprintf("%#08x/%#08x", masqueradeValue, masqueradeValue)
+	klog.V(2).Infof("iptables(%s) masquerade mark: %s", ipt.Protocol(), masqueradeMark)
 
 	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying)
 
 	serviceHealthServer := healthcheck.NewServiceHealthServer(hostname, recorder)
 
-	isIPv6 := ipt.IsIpv6()
+	isIPv6 := ipt.IsIPv6()
 	proxier := &Proxier{
 		portsMap:                 make(map[utilproxy.LocalPort]utilproxy.Closeable),
 		serviceMap:               make(proxy.ServiceMap),
@@ -319,15 +318,25 @@ func NewProxier(ipt utiliptables.Interface,
 		nodePortAddresses:        nodePortAddresses,
 		networkInterfacer:        utilproxy.RealNetwork{},
 	}
+
 	burstSyncs := 2
-	klog.V(3).Infof("minSyncPeriod: %v, syncPeriod: %v, burstSyncs: %d", minSyncPeriod, syncPeriod, burstSyncs)
+	klog.V(2).Infof("iptables(%s) sync params: minSyncPeriod=%v, syncPeriod=%v, burstSyncs=%d",
+		ipt.Protocol(), minSyncPeriod, syncPeriod, burstSyncs)
 	// We pass syncPeriod to ipt.Monitor, which will call us only if it needs to.
 	// We need to pass *some* maxInterval to NewBoundedFrequencyRunner anyway though.
 	// time.Hour is arbitrary.
 	proxier.syncRunner = async.NewBoundedFrequencyRunner("sync-runner", proxier.syncProxyRules, minSyncPeriod, time.Hour, burstSyncs)
+
 	go ipt.Monitor(utiliptables.Chain("KUBE-PROXY-CANARY"),
 		[]utiliptables.Table{utiliptables.TableMangle, utiliptables.TableNAT, utiliptables.TableFilter},
 		proxier.syncProxyRules, syncPeriod, wait.NeverStop)
+
+	if ipt.HasRandomFully() {
+		klog.V(2).Infof("iptables(%s) supports --random-fully", ipt.Protocol())
+	} else {
+		klog.V(2).Infof("iptables(%s) does not support --random-fully", ipt.Protocol())
+	}
+
 	return proxier, nil
 }
 
@@ -722,32 +731,33 @@ func servicePortEndpointChainName(servicePortName string, protocol string, endpo
 	return utiliptables.Chain("KUBE-SEP-" + encoded[:16])
 }
 
-// After a UDP endpoint has been removed, we must flush any pending conntrack entries to it, or else we
-// risk sending more traffic to it, all of which will be lost (because UDP).
+// After a UDP or SCTP endpoint has been removed, we must flush any pending conntrack entries to it, or else we
+// risk sending more traffic to it, all of which will be lost.
 // This assumes the proxier mutex is held
 // TODO: move it to util
 func (proxier *Proxier) deleteEndpointConnections(connectionMap []proxy.ServiceEndpoint) {
 	for _, epSvcPair := range connectionMap {
-		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && svcInfo.Protocol() == v1.ProtocolUDP {
+		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && conntrack.IsClearConntrackNeeded(svcInfo.Protocol()) {
 			endpointIP := utilproxy.IPPart(epSvcPair.Endpoint)
 			nodePort := svcInfo.NodePort()
+			svcProto := svcInfo.Protocol()
 			var err error
 			if nodePort != 0 {
-				err = conntrack.ClearEntriesForPortNAT(proxier.exec, endpointIP, nodePort, v1.ProtocolUDP)
+				err = conntrack.ClearEntriesForPortNAT(proxier.exec, endpointIP, nodePort, svcProto)
 			} else {
-				err = conntrack.ClearEntriesForNAT(proxier.exec, svcInfo.ClusterIP().String(), endpointIP, v1.ProtocolUDP)
+				err = conntrack.ClearEntriesForNAT(proxier.exec, svcInfo.ClusterIP().String(), endpointIP, svcProto)
 			}
 			if err != nil {
 				klog.Errorf("Failed to delete %s endpoint connections, error: %v", epSvcPair.ServicePortName.String(), err)
 			}
 			for _, extIP := range svcInfo.ExternalIPStrings() {
-				err := conntrack.ClearEntriesForNAT(proxier.exec, extIP, endpointIP, v1.ProtocolUDP)
+				err := conntrack.ClearEntriesForNAT(proxier.exec, extIP, endpointIP, svcProto)
 				if err != nil {
 					klog.Errorf("Failed to delete %s endpoint connections for externalIP %s, error: %v", epSvcPair.ServicePortName.String(), extIP, err)
 				}
 			}
 			for _, lbIP := range svcInfo.LoadBalancerIPStrings() {
-				err := conntrack.ClearEntriesForNAT(proxier.exec, lbIP, endpointIP, v1.ProtocolUDP)
+				err := conntrack.ClearEntriesForNAT(proxier.exec, lbIP, endpointIP, svcProto)
 				if err != nil {
 					klog.Errorf("Failed to delete %s endpoint connections for LoabBalancerIP %s, error: %v", epSvcPair.ServicePortName.String(), lbIP, err)
 				}
@@ -786,7 +796,7 @@ func (proxier *Proxier) syncProxyRules() {
 	start := time.Now()
 	defer func() {
 		metrics.SyncProxyRulesLatency.Observe(metrics.SinceInSeconds(start))
-		klog.V(4).Infof("syncProxyRules took %v", time.Since(start))
+		klog.V(2).Infof("syncProxyRules took %v", time.Since(start))
 	}()
 
 	localAddrs, err := utilproxy.GetLocalAddrs()
@@ -808,8 +818,8 @@ func (proxier *Proxier) syncProxyRules() {
 	staleServices := serviceUpdateResult.UDPStaleClusterIP
 	// merge stale services gathered from updateEndpointsMap
 	for _, svcPortName := range endpointUpdateResult.StaleServiceNames {
-		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && svcInfo.Protocol() == v1.ProtocolUDP {
-			klog.V(2).Infof("Stale udp service %v -> %s", svcPortName, svcInfo.ClusterIP().String())
+		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && conntrack.IsClearConntrackNeeded(svcInfo.Protocol()) {
+			klog.V(2).Infof("Stale %s service %v -> %s", strings.ToLower(string(svcInfo.Protocol())), svcPortName, svcInfo.ClusterIP().String())
 			staleServices.Insert(svcInfo.ClusterIP().String())
 			for _, extIP := range svcInfo.ExternalIPStrings() {
 				staleServices.Insert(extIP)
@@ -817,7 +827,7 @@ func (proxier *Proxier) syncProxyRules() {
 		}
 	}
 
-	klog.V(3).Info("Syncing iptables rules")
+	klog.V(2).Info("Syncing iptables rules")
 
 	success := false
 	defer func() {
@@ -908,9 +918,6 @@ func (proxier *Proxier) syncProxyRules() {
 	}
 	if proxier.iptables.HasRandomFully() {
 		masqRule = append(masqRule, "--random-fully")
-		klog.V(3).Info("Using `--random-fully` in the MASQUERADE rule for iptables")
-	} else {
-		klog.V(3).Info("Not using `--random-fully` in the MASQUERADE rule for iptables because the local version of iptables does not support it")
 	}
 	writeLine(proxier.natRules, masqRule...)
 
@@ -1033,7 +1040,7 @@ func (proxier *Proxier) syncProxyRules() {
 			// If the "external" IP happens to be an IP that is local to this
 			// machine, hold the local port open so no other process can open it
 			// (because the socket might open but it would never work).
-			if localAddrSet.Len() > 0 && (svcInfo.Protocol() != v1.ProtocolSCTP) && localAddrSet.Has(net.ParseIP(externalIP)) {
+			if (svcInfo.Protocol() != v1.ProtocolSCTP) && localAddrSet.Has(net.ParseIP(externalIP)) {
 				lp := utilproxy.LocalPort{
 					Description: "externalIP for " + svcNameString,
 					IP:          externalIP,
@@ -1461,7 +1468,7 @@ func (proxier *Proxier) syncProxyRules() {
 	if err != nil {
 		klog.Errorf("Failed to get node ip address matching nodeport cidr")
 	} else {
-		isIPv6 := proxier.iptables.IsIpv6()
+		isIPv6 := proxier.iptables.IsIPv6()
 		for address := range addresses {
 			// TODO(thockin, m1093782566): If/when we have dual-stack support we will want to distinguish v4 from v6 zero-CIDRs.
 			if utilproxy.IsZeroCIDR(address) {
