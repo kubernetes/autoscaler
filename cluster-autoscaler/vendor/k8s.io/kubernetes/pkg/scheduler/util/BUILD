@@ -9,7 +9,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "error_channel_test.go",
         "non_zero_test.go",
         "topologies_test.go",
         "utils_test.go",
@@ -31,7 +30,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "clock.go",
-        "error_channel.go",
         "non_zero.go",
         "topologies.go",
         "utils.go",
@@ -40,10 +38,12 @@ go_library(
     deps = [
         "//pkg/api/v1/pod:go_default_library",
         "//pkg/apis/core/v1/helper:go_default_library",
+        "//pkg/features:go_default_library",
         "//staging/src/k8s.io/api/core/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//staging/src/k8s.io/apiserver/pkg/util/feature:go_default_library",
         "//staging/src/k8s.io/kube-scheduler/extender/v1:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
