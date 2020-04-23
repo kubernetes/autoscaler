@@ -43,7 +43,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -153,7 +153,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	p2 := BuildTestPod("p2", 600, 100)
 
 	tn := BuildTestNode("tn", 1000, 1000)
-	tni := schedulernodeinfo.NewNodeInfo()
+	tni := schedulerframework.NewNodeInfo()
 	tni.SetNode(tn)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
@@ -163,7 +163,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			return onScaleDownMock.ScaleDown(id, name)
 		},
 		nil, nil,
-		nil, map[string]*schedulernodeinfo.NodeInfo{"ng1": tni, "ng2": tni})
+		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -323,15 +323,15 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	tn1 := BuildTestNode("tn1", 100, 1000)
 	SetNodeReadyState(tn1, true, time.Now())
-	tni1 := schedulernodeinfo.NewNodeInfo()
+	tni1 := schedulerframework.NewNodeInfo()
 	tni1.SetNode(tn1)
 	tn2 := BuildTestNode("tn2", 1000, 1000)
 	SetNodeReadyState(tn2, true, time.Now())
-	tni2 := schedulernodeinfo.NewNodeInfo()
+	tni2 := schedulerframework.NewNodeInfo()
 	tni2.SetNode(tn2)
 	tn3 := BuildTestNode("tn3", 100, 1000)
 	SetNodeReadyState(tn2, true, time.Now())
-	tni3 := schedulernodeinfo.NewNodeInfo()
+	tni3 := schedulerframework.NewNodeInfo()
 	tni3.SetNode(tn3)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
@@ -344,7 +344,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		}, func(id string) error {
 			return onNodeGroupDeleteMock.Delete(id)
 		},
-		[]string{"TN1", "TN2"}, map[string]*schedulernodeinfo.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
+		[]string{"TN1", "TN2"}, map[string]*schedulerframework.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
 	autoprovisionedTN1 := reflect.ValueOf(provider.GetNodeGroup("autoprovisioned-TN1")).Interface().(*testprovider.TestNodeGroup)

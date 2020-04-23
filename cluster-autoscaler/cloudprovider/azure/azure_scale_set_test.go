@@ -294,7 +294,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	nodeInfo, err := asg.TemplateNodeInfo()
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeInfo)
-	assert.NotEmpty(t, nodeInfo.Pods())
+	assert.NotEmpty(t, nodeInfo.Pods)
 }
 func TestExtractLabelsFromScaleSet(t *testing.T) {
 	expectedNodeLabelKey := "zip"

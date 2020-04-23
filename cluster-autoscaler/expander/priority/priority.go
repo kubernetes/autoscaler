@@ -31,7 +31,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -120,7 +120,7 @@ func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) (priorities,
 	return newPriorities, nil
 }
 
-func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *expander.Option {
+func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
 	if len(expansionOptions) <= 0 {
 		return nil
 	}

@@ -38,7 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -282,7 +282,7 @@ func (mgr *magnumManagerHeat) getStackStatus() (string, error) {
 
 // templateNodeInfo returns a NodeInfo with a node template based on the VM flavor
 // that is used to created minions in a given node group.
-func (mgr *magnumManagerHeat) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
+func (mgr *magnumManagerHeat) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
 	// TODO: create a node template by getting the minion flavor from the heat stack.
 	return nil, cloudprovider.ErrNotImplemented
 }

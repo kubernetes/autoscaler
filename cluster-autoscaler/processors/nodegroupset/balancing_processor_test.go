@@ -19,7 +19,7 @@ package nodegroupset
 import (
 	"testing"
 
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func buildBasicNodeGroups(context *context.AutoscalingContext) (*schedulernodeinfo.NodeInfo, *schedulernodeinfo.NodeInfo, *schedulernodeinfo.NodeInfo) {
+func buildBasicNodeGroups(context *context.AutoscalingContext) (*schedulerframework.NodeInfo, *schedulerframework.NodeInfo, *schedulerframework.NodeInfo) {
 	n1 := BuildTestNode("n1", 1000, 1000)
 	n2 := BuildTestNode("n2", 1000, 1000)
 	n3 := BuildTestNode("n3", 2000, 2000)
@@ -41,11 +41,11 @@ func buildBasicNodeGroups(context *context.AutoscalingContext) (*schedulernodein
 	provider.AddNode("ng2", n2)
 	provider.AddNode("ng3", n3)
 
-	ni1 := schedulernodeinfo.NewNodeInfo()
+	ni1 := schedulerframework.NewNodeInfo()
 	ni1.SetNode(n1)
-	ni2 := schedulernodeinfo.NewNodeInfo()
+	ni2 := schedulerframework.NewNodeInfo()
 	ni2.SetNode(n2)
-	ni3 := schedulernodeinfo.NewNodeInfo()
+	ni3 := schedulerframework.NewNodeInfo()
 	ni3.SetNode(n3)
 
 	context.CloudProvider = provider
@@ -56,11 +56,11 @@ func basicSimilarNodeGroupsTest(
 	t *testing.T,
 	context *context.AutoscalingContext,
 	processor NodeGroupSetProcessor,
-	ni1 *schedulernodeinfo.NodeInfo,
-	ni2 *schedulernodeinfo.NodeInfo,
-	ni3 *schedulernodeinfo.NodeInfo,
+	ni1 *schedulerframework.NodeInfo,
+	ni2 *schedulerframework.NodeInfo,
+	ni3 *schedulerframework.NodeInfo,
 ) {
-	nodeInfosForGroups := map[string]*schedulernodeinfo.NodeInfo{
+	nodeInfosForGroups := map[string]*schedulerframework.NodeInfo{
 		"ng1": ni1, "ng2": ni2, "ng3": ni3,
 	}
 
@@ -103,7 +103,7 @@ func TestFindSimilarNodeGroupsCustomComparator(t *testing.T) {
 	ni1, ni2, ni3 := buildBasicNodeGroups(context)
 
 	processor := &BalancingNodeGroupSetProcessor{
-		Comparator: func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+		Comparator: func(n1, n2 *schedulerframework.NodeInfo) bool {
 			return (n1.Node().Name == "n1" && n2.Node().Name == "n2") ||
 				(n1.Node().Name == "n2" && n2.Node().Name == "n1")
 		},

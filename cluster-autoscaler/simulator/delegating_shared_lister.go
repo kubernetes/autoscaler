@@ -18,16 +18,13 @@ package simulator
 
 import (
 	"fmt"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	scheduler_listers "k8s.io/kubernetes/pkg/scheduler/listers"
-	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // DelegatingSchedulerSharedLister is an implementation of scheduler.SharedLister which
 // passes logic to delegate. Delegate can be updated.
 type DelegatingSchedulerSharedLister struct {
-	delegate scheduler_listers.SharedLister
+	delegate schedulerframework.SharedLister
 }
 
 // NewDelegatingSchedulerSharedLister creates new NewDelegatingSchedulerSharedLister
@@ -37,18 +34,13 @@ func NewDelegatingSchedulerSharedLister() *DelegatingSchedulerSharedLister {
 	}
 }
 
-// Pods returns a PodLister
-func (lister *DelegatingSchedulerSharedLister) Pods() scheduler_listers.PodLister {
-	return lister.delegate.Pods()
-}
-
 // NodeInfos returns a NodeInfoLister.
-func (lister *DelegatingSchedulerSharedLister) NodeInfos() scheduler_listers.NodeInfoLister {
+func (lister *DelegatingSchedulerSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
 	return lister.delegate.NodeInfos()
 }
 
 // UpdateDelegate updates the delegate
-func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate scheduler_listers.SharedLister) {
+func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate schedulerframework.SharedLister) {
 	lister.delegate = delegate
 }
 
@@ -58,41 +50,25 @@ func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 }
 
 type unsetSharedLister struct{}
-type unsetPodLister unsetSharedLister
 type unsetNodeInfoLister unsetSharedLister
 
 // List always returns an error
-func (lister *unsetPodLister) List(labels.Selector) ([]*apiv1.Pod, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// FilteredList always returns an error
-func (lister *unsetPodLister) FilteredList(podFilter scheduler_listers.PodFilter, selector labels.Selector) ([]*apiv1.Pod, error) {
-	return nil, fmt.Errorf("lister not set in delegate")
-}
-
-// List always returns an error
-func (lister *unsetNodeInfoLister) List() ([]*scheduler_nodeinfo.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) List() ([]*schedulerframework.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // HavePodsWithAffinityList always returns an error
-func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]*scheduler_nodeinfo.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 // Get always returns an error
-func (lister *unsetNodeInfoLister) Get(nodeName string) (*scheduler_nodeinfo.NodeInfo, error) {
+func (lister *unsetNodeInfoLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-// Pods returns a fake PodLister which always returns an error
-func (lister *unsetSharedLister) Pods() scheduler_listers.PodLister {
-	return (*unsetPodLister)(lister)
-}
-
 // Pods returns a fake NodeInfoLister which always returns an error
-func (lister *unsetSharedLister) NodeInfos() scheduler_listers.NodeInfoLister {
+func (lister *unsetSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*unsetNodeInfoLister)(lister)
 }
 

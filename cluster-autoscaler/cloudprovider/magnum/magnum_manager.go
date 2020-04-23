@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -38,7 +38,7 @@ type magnumManager interface {
 	deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error
 	getClusterStatus() (string, error)
 	canUpdate() (bool, string, error)
-	templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error)
+	templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error)
 }
 
 // createMagnumManager creates the desired implementation of magnumManager.

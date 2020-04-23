@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // podInfo contains Pod and score that corresponds to how important it is to handle the pod first.
@@ -59,7 +59,7 @@ func NewBinpackingNodeEstimator(
 // Returns the number of nodes needed to accommodate all pods from the list.
 func (estimator *BinpackingNodeEstimator) Estimate(
 	pods []*apiv1.Pod,
-	nodeTemplate *schedulernodeinfo.NodeInfo) int {
+	nodeTemplate *schedulerframework.NodeInfo) int {
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
@@ -110,7 +110,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 }
 
 func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
-	template *schedulernodeinfo.NodeInfo,
+	template *schedulerframework.NodeInfo,
 	nameTimestamp time.Time,
 	nameIndex int) (string, error) {
 
@@ -120,7 +120,11 @@ func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
 		newNode.Labels = make(map[string]string)
 	}
 	newNode.Labels["kubernetes.io/hostname"] = newNode.Name
-	if err := estimator.clusterSnapshot.AddNodeWithPods(newNode, template.Pods()); err != nil {
+	var pods []*apiv1.Pod
+	for _, podInfo := range template.Pods {
+		pods = append(pods, podInfo.Pod)
+	}
+	if err := estimator.clusterSnapshot.AddNodeWithPods(newNode, pods); err != nil {
 		return "", err
 	}
 	return newNode.Name, nil
@@ -129,7 +133,7 @@ func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
 // Calculates score for all pods and returns podInfo structure.
 // Score is defined as cpu_sum/node_capacity + mem_sum/node_capacity.
 // Pods that have bigger requirements should be processed first, thus have higher scores.
-func calculatePodScore(pods []*apiv1.Pod, nodeTemplate *schedulernodeinfo.NodeInfo) []*podInfo {
+func calculatePodScore(pods []*apiv1.Pod, nodeTemplate *schedulerframework.NodeInfo) []*podInfo {
 	podInfos := make([]*podInfo, 0, len(pods))
 
 	for _, pod := range pods {

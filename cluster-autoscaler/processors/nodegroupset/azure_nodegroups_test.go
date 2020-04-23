@@ -23,7 +23,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -88,12 +88,12 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	ni1 := schedulernodeinfo.NewNodeInfo()
+	ni1 := schedulerframework.NewNodeInfo()
 	ni1.SetNode(n1)
-	ni2 := schedulernodeinfo.NewNodeInfo()
+	ni2 := schedulerframework.NewNodeInfo()
 	ni2.SetNode(n2)
 
-	nodeInfosForGroups := map[string]*schedulernodeinfo.NodeInfo{
+	nodeInfosForGroups := map[string]*schedulerframework.NodeInfo{
 		"ng1": ni1, "ng2": ni2,
 	}
 
@@ -117,7 +117,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n3 := BuildTestNode("n1", 1000, 1000)
 	provider.AddNodeGroup("ng3", 1, 10, 1)
 	provider.AddNode("ng3", n3)
-	ni3 := schedulernodeinfo.NewNodeInfo()
+	ni3 := schedulerframework.NewNodeInfo()
 	ni3.SetNode(n3)
 	nodeInfosForGroups["ng3"] = ni3
 	ng3, _ := provider.NodeGroupForNode(n3)

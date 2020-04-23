@@ -29,8 +29,7 @@ import (
 	volume_scheduling "k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
-	scheduler_framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	scheduler_nodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
@@ -39,7 +38,7 @@ import (
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
 // The verification is done by calling out to scheduler code.
 type SchedulerBasedPredicateChecker struct {
-	framework              scheduler_framework.Framework
+	framework              schedulerframework.Framework
 	delegatingSharedLister *DelegatingSchedulerSharedLister
 	nodeLister             v1listers.NodeLister
 	podLister              v1listers.PodLister
@@ -62,13 +61,13 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 		time.Duration(10)*time.Second,
 	)
 
-	framework, err := scheduler_framework.NewFramework(
+	framework, err := schedulerframework.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
 		plugins,
 		nil, // This is fine.
-		scheduler_framework.WithInformerFactory(informerFactory),
-		scheduler_framework.WithSnapshotSharedLister(sharedLister),
-		scheduler_framework.WithVolumeBinder(volumeBinder),
+		schedulerframework.WithInformerFactory(informerFactory),
+		schedulerframework.WithSnapshotSharedLister(sharedLister),
+		schedulerframework.WithVolumeBinder(volumeBinder),
 	)
 
 	if err != nil {
@@ -106,7 +105,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot ClusterSnap
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	state := scheduler_framework.NewCycleState()
+	state := schedulerframework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
@@ -147,7 +146,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot Cluster
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	state := scheduler_framework.NewCycleState()
+	state := schedulerframework.NewCycleState()
 	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return NewPredicateError(
@@ -180,7 +179,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot Cluster
 	return nil
 }
 
-func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *scheduler_nodeinfo.NodeInfo) func() string {
+func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *schedulerframework.NodeInfo) func() string {
 	switch filterName {
 	case "TaintToleration":
 		taints := nodeInfo.Node().Spec.Taints
