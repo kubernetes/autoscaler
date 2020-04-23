@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -142,8 +141,14 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 			assert.ElementsMatch(t, stillPendingPods, expectedPendingPods, "pending pods differ")
 
 			// Check if snapshot was correctly modified
-			podsInSnapshot, err := clusterSnapshot.Pods().List(labels.Everything())
+			nodeInfos, err := clusterSnapshot.NodeInfos().List()
 			assert.NoError(t, err)
+			var podsInSnapshot []*apiv1.Pod
+			for _, nodeInfo := range nodeInfos {
+				for _, podInfo := range nodeInfo.Pods {
+					podsInSnapshot = append(podsInSnapshot, podInfo.Pod)
+				}
+			}
 			assert.ElementsMatch(t, podsInSnapshot, expectedPodsInSnapshot, "pods in snapshot differ")
 
 			// Verify hints map; it is very whitebox but better than nothing

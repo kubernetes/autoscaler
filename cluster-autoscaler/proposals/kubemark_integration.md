@@ -28,7 +28,7 @@ On Cluster Autoscaler startup kubemark Cloud Provider will parse the config pass
 * `IncreaseSize(delta int)` - creation of #delta singleton Replication Controllers in external cluster with label `'autoscaling.k8s.io/nodegroup'=Name()`
 * `DeleteNodes([]*apiv1.Node)` - removal of specified Replication Controllers
 * `DecreaseTargetSize(delta int) error` - removal of Replication Controllers that have not yet been created
-* `TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error)` - will return ErrNotImplemented
+* `TemplateNodeInfo() (*schedulerframework.NodeInfo, error)` - will return ErrNotImplemented
 * `MaxSize()` - specified via config (`--nodes={MIN}:{MAX}:{NG_LABEL_VALUE}`)
 * `MinSize()` - specified via config
 

@@ -21,7 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -51,7 +51,7 @@ var BasicIgnoredLabels = map[string]bool{
 
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
 // similar enough to be considered a part of a single NodeGroupSet.
-type NodeInfoComparator func(n1, n2 *schedulernodeinfo.NodeInfo) bool
+type NodeInfoComparator func(n1, n2 *schedulerframework.NodeInfo) bool
 
 func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
 	maxDifferenceRatio float64) bool {
@@ -68,7 +68,7 @@ func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resourc
 	return true
 }
 
-func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
+func compareLabels(nodes []*schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
 	labels := make(map[string][]string)
 	for _, node := range nodes {
 		for label, value := range node.Node().ObjectMeta.Labels {
@@ -96,7 +96,7 @@ func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoCompar
 		genericIgnoredLabels[k] = true
 	}
 
-	return func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+	return func(n1, n2 *schedulerframework.NodeInfo) bool {
 		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
 	}
 }
@@ -106,11 +106,11 @@ func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoCompar
 // somewhat arbitrary, but generally we check if resources provided by both nodes
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a set of labels passed in to be ignored like hostname or zone).
-func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
+func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
-	nodes := []*schedulernodeinfo.NodeInfo{n1, n2}
+	nodes := []*schedulerframework.NodeInfo{n1, n2}
 	for _, node := range nodes {
 		for res, quantity := range node.Node().Status.Capacity {
 			capacity[res] = append(capacity[res], quantity)
@@ -118,8 +118,7 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredL
 		for res, quantity := range node.Node().Status.Allocatable {
 			allocatable[res] = append(allocatable[res], quantity)
 		}
-		requested := node.RequestedResource()
-		for res, quantity := range (&requested).ResourceList() {
+		for res, quantity := range node.Requested.ResourceList() {
 			freeRes := node.Node().Status.Allocatable[res].DeepCopy()
 			freeRes.Sub(quantity)
 			free[res] = append(free[res], freeRes)
