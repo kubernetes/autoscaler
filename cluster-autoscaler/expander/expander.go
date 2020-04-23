@@ -19,7 +19,7 @@ package expander
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 var (
@@ -48,5 +48,5 @@ type Option struct {
 
 // Strategy describes an interface for selecting the best option when scaling up
 type Strategy interface {
-	BestOption(options []Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *Option
+	BestOption(options []Option, nodeInfo map[string]*schedulerframework.NodeInfo) *Option
 }

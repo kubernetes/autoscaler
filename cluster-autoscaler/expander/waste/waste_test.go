@@ -27,7 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 type FakeNodeGroup struct {
@@ -45,7 +45,7 @@ func (f *FakeNodeGroup) Debug() string                      { return f.id }
 func (f *FakeNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return []cloudprovider.Instance{}, nil
 }
-func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 func (f *FakeNodeGroup) Exist() bool { return true }
@@ -55,7 +55,7 @@ func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
 func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
 
-func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulernodeinfo.NodeInfo {
+func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulerframework.NodeInfo {
 	node := &apiv1.Node{
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
@@ -68,7 +68,7 @@ func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulernodeinfo.NodeIn
 	node.Status.Allocatable = node.Status.Capacity
 	SetNodeReadyState(node, true, time.Time{})
 
-	nodeInfo := schedulernodeinfo.NewNodeInfo()
+	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
 	return nodeInfo
@@ -79,7 +79,7 @@ func TestLeastWaste(t *testing.T) {
 	memoryPerPod := int64(1000 * 1024 * 1024)
 	e := NewStrategy()
 	balancedNodeInfo := makeNodeInfo(16*cpuPerPod, 16*memoryPerPod, 100)
-	nodeMap := map[string]*schedulernodeinfo.NodeInfo{"balanced": balancedNodeInfo}
+	nodeMap := map[string]*schedulerframework.NodeInfo{"balanced": balancedNodeInfo}
 	balancedOption := expander.Option{NodeGroup: &FakeNodeGroup{"balanced"}, NodeCount: 1}
 
 	// Test without any pods, one node info
