@@ -24,11 +24,11 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
-func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
+func GetDaemonSetPodsForNode(nodeInfo *schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
 	result := make([]*apiv1.Pod, 0)
 
 	// here we can use empty snapshot
@@ -36,7 +36,11 @@ func GetDaemonSetPodsForNode(nodeInfo *schedulernodeinfo.NodeInfo, daemonsets []
 
 	// add a node with pods - node info is created by cloud provider,
 	// we don't know whether it'll have pods or not.
-	if err := clusterSnapshot.AddNodeWithPods(nodeInfo.Node(), nodeInfo.Pods()); err != nil {
+	var pods []*apiv1.Pod
+	for _, podInfo := range nodeInfo.Pods {
+		pods = append(pods, podInfo.Pod)
+	}
+	if err := clusterSnapshot.AddNodeWithPods(nodeInfo.Node(), pods); err != nil {
 		return nil, err
 	}
 

@@ -28,7 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 //AKSAgentPool implements NodeGroup interface for agent pool deployed in AKS
@@ -412,7 +412,7 @@ func (agentPool *AKSAgentPool) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 //TemplateNodeInfo is not implemented.
-func (agentPool *AKSAgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (agentPool *AKSAgentPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

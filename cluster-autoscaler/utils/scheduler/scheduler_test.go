@@ -44,9 +44,9 @@ func TestCreateNodeNameToInfoMap(t *testing.T) {
 
 	res := CreateNodeNameToInfoMap([]*apiv1.Pod{p1, p2, p3, podWaitingForPreemption}, []*apiv1.Node{n1, n2})
 	assert.Equal(t, 2, len(res))
-	assert.Equal(t, p1, res["node1"].Pods()[0])
-	assert.Equal(t, podWaitingForPreemption, res["node1"].Pods()[1])
+	assert.Equal(t, p1, res["node1"].Pods[0].Pod)
+	assert.Equal(t, podWaitingForPreemption, res["node1"].Pods[1].Pod)
 	assert.Equal(t, n1, res["node1"].Node())
-	assert.Equal(t, p2, res["node2"].Pods()[0])
+	assert.Equal(t, p2, res["node2"].Pods[0].Pod)
 	assert.Equal(t, n2, res["node2"].Node())
 }

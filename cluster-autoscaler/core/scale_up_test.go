@@ -38,7 +38,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -437,7 +437,7 @@ type reportingStrategy struct {
 	t                  *testing.T
 }
 
-func (r reportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *expander.Option {
+func (r reportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
 	r.results.inputOptions = expanderOptionsToGroupSizeChanges(options)
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)
@@ -823,7 +823,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	t1 := BuildTestNode("t1", 4000, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
-	ti1 := schedulernodeinfo.NewNodeInfo()
+	ti1 := schedulerframework.NewNodeInfo()
 	ti1.SetNode(t1)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
@@ -833,7 +833,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		}, nil, func(nodeGroup string) error {
 			createdGroups <- nodeGroup
 			return nil
-		}, nil, []string{"T1"}, map[string]*schedulernodeinfo.NodeInfo{"T1": ti1})
+		}, nil, []string{"T1"}, map[string]*schedulerframework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
 		EstimatorName:                    estimator.BinpackingEstimatorName,
@@ -875,7 +875,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 
 	t1 := BuildTestNode("t1", 100, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
-	ti1 := schedulernodeinfo.NewNodeInfo()
+	ti1 := schedulerframework.NewNodeInfo()
 	ti1.SetNode(t1)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
@@ -885,7 +885,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 		}, nil, func(nodeGroup string) error {
 			createdGroups <- nodeGroup
 			return nil
-		}, nil, []string{"T1"}, map[string]*schedulernodeinfo.NodeInfo{"T1": ti1})
+		}, nil, []string{"T1"}, map[string]*schedulerframework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
 		BalanceSimilarNodeGroups:         true,

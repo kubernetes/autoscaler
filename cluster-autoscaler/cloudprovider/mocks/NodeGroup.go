@@ -16,7 +16,7 @@ limitations under the License.
 
 package mocks
 
-import cache "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+import schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 import cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 import mock "github.com/stretchr/testify/mock"
 import v1 "k8s.io/api/core/v1"
@@ -234,15 +234,15 @@ func (_m *NodeGroup) TargetSize() (int, error) {
 }
 
 // TemplateNodeInfo provides a mock function with given fields:
-func (_m *NodeGroup) TemplateNodeInfo() (*cache.NodeInfo, error) {
+func (_m *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	ret := _m.Called()
 
-	var r0 *cache.NodeInfo
-	if rf, ok := ret.Get(0).(func() *cache.NodeInfo); ok {
+	var r0 *schedulerframework.NodeInfo
+	if rf, ok := ret.Get(0).(func() *schedulerframework.NodeInfo); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*cache.NodeInfo)
+			r0 = ret.Get(0).(*schedulerframework.NodeInfo)
 		}
 	}
 

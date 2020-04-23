@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 type magnumManagerMock struct {
@@ -64,8 +64,8 @@ func (m *magnumManagerMock) canUpdate() (bool, string, error) {
 	return args.Bool(0), args.String(1), args.Error(2)
 }
 
-func (m *magnumManagerMock) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
-	return &schedulernodeinfo.NodeInfo{}, nil
+func (m *magnumManagerMock) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
+	return &schedulerframework.NodeInfo{}, nil
 }
 
 func createTestNodeGroup(manager magnumManager) *magnumNodeGroup {
