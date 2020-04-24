@@ -63,7 +63,7 @@ type ClusterStateFeeder interface {
 	// LoadVPAs updates clusterState with current state of VPAs.
 	LoadVPAs()
 
-	// LoadPods updates slusterState with current specification of Pods and their Containers.
+	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
 
 	// LoadRealTimeMetrics updates clusterState with current usage metrics of containers.
