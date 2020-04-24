@@ -18,13 +18,13 @@ package nodeinfos
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // NodeInfoProcessor processes nodeInfos after they're created.
 type NodeInfoProcessor interface {
 	// Process processes a map of nodeInfos for node groups.
-	Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*nodeinfo.NodeInfo) (map[string]*nodeinfo.NodeInfo, error)
+	Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -34,7 +34,7 @@ type NoOpNodeInfoProcessor struct {
 }
 
 // Process returns unchanged nodeInfos.
-func (p *NoOpNodeInfoProcessor) Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*nodeinfo.NodeInfo) (map[string]*nodeinfo.NodeInfo, error) {
+func (p *NoOpNodeInfoProcessor) Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error) {
 	return nodeInfosForNodeGroups, nil
 }
 

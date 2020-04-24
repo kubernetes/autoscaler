@@ -18,7 +18,7 @@ package simulator
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -34,12 +34,12 @@ func getRequiredPodsForNode(nodename string, podsForNodes map[string][]*apiv1.Po
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, podsForNodes map[string][]*apiv1.Pod) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func BuildNodeInfoForNode(node *apiv1.Node, podsForNodes map[string][]*apiv1.Pod) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	requiredPods, err := getRequiredPodsForNode(node.Name, podsForNodes)
 	if err != nil {
 		return nil, err
 	}
-	result := schedulernodeinfo.NewNodeInfo(requiredPods...)
+	result := schedulerframework.NewNodeInfo(requiredPods...)
 	if err := result.SetNode(node); err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}

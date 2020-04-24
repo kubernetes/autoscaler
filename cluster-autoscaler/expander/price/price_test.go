@@ -28,7 +28,7 @@ import (
 	cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -77,13 +77,13 @@ func TestPriceExpander(t *testing.T) {
 	ng2, _ := provider.NodeGroupForNode(n2)
 	ng3, _ := provider.NewNodeGroup("MT1", nil, nil, nil, nil)
 
-	ni1 := schedulernodeinfo.NewNodeInfo()
+	ni1 := schedulerframework.NewNodeInfo()
 	ni1.SetNode(n1)
-	ni2 := schedulernodeinfo.NewNodeInfo()
+	ni2 := schedulerframework.NewNodeInfo()
 	ni2.SetNode(n2)
-	ni3 := schedulernodeinfo.NewNodeInfo()
+	ni3 := schedulerframework.NewNodeInfo()
 	ni3.SetNode(n3)
-	nodeInfosForGroups := map[string]*schedulernodeinfo.NodeInfo{
+	nodeInfosForGroups := map[string]*schedulerframework.NodeInfo{
 		"ng1": ni1, "ng2": ni2,
 	}
 	var pricingModel cloudprovider.PricingModel

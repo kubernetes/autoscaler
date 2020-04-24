@@ -27,7 +27,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +35,7 @@ import (
 func TestGetDaemonSetPodsForNode(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	SetNodeReadyState(node, true, time.Now())
-	nodeInfo := schedulernodeinfo.NewNodeInfo()
+	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
 	predicateChecker, err := simulator.NewTestPredicateChecker()
