@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +36,7 @@ func TestUtilization(t *testing.T) {
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
-	nodeInfo := schedulernodeinfo.NewNodeInfo(pod, pod, pod2)
+	nodeInfo := schedulerframework.NewNodeInfo(pod, pod, pod2)
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
@@ -56,12 +56,12 @@ func TestUtilization(t *testing.T) {
 	daemonSetPod4.OwnerReferences = GenerateOwnerReferences("ds", "CustomDaemonSet", "crd/v1", "")
 	daemonSetPod4.Annotations = map[string]string{"cluster-autoscaler.kubernetes.io/daemonset-pod": "true"}
 
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, daemonSetPod3)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, daemonSetPod3)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -71,12 +71,12 @@ func TestUtilization(t *testing.T) {
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, mirrorPod4)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, mirrorPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, mirrorPod4)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, mirrorPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -86,7 +86,7 @@ func TestUtilization(t *testing.T) {
 	gpuPod := BuildTestPod("gpu_pod", 100, 200000)
 	RequestGpuForPod(gpuPod, 1)
 	TolerateGpuForPod(gpuPod)
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, gpuPod)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, gpuPod)
 	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
@@ -94,16 +94,16 @@ func TestUtilization(t *testing.T) {
 	// Node with Unready GPU
 	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
 	AddGpuLabelToNode(gpuNode)
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod)
 	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
 }
 
-func nodeInfos(nodes []*apiv1.Node) []*schedulernodeinfo.NodeInfo {
-	result := make([]*schedulernodeinfo.NodeInfo, len(nodes))
+func nodeInfos(nodes []*apiv1.Node) []*schedulerframework.NodeInfo {
+	result := make([]*schedulerframework.NodeInfo, len(nodes))
 	for i, node := range nodes {
-		ni := schedulernodeinfo.NewNodeInfo()
+		ni := schedulerframework.NewNodeInfo()
 		ni.SetNode(node)
 		result[i] = ni
 	}
@@ -262,22 +262,22 @@ type findNodesToRemoveTestConfig struct {
 
 func TestFindNodesToRemove(t *testing.T) {
 	emptyNode := BuildTestNode("n1", 1000, 2000000)
-	emptyNodeInfo := schedulernodeinfo.NewNodeInfo()
+	emptyNodeInfo := schedulerframework.NewNodeInfo()
 	emptyNodeInfo.SetNode(emptyNode)
 
 	// two small pods backed by ReplicaSet
 	drainableNode := BuildTestNode("n2", 1000, 2000000)
-	drainableNodeInfo := schedulernodeinfo.NewNodeInfo()
+	drainableNodeInfo := schedulerframework.NewNodeInfo()
 	drainableNodeInfo.SetNode(drainableNode)
 
 	// one small pod, not backed by anything
 	nonDrainableNode := BuildTestNode("n3", 1000, 2000000)
-	nonDrainableNodeInfo := schedulernodeinfo.NewNodeInfo()
+	nonDrainableNodeInfo := schedulerframework.NewNodeInfo()
 	nonDrainableNodeInfo.SetNode(nonDrainableNode)
 
 	// one very large pod
 	fullNode := BuildTestNode("n4", 1000, 2000000)
-	fullNodeInfo := schedulernodeinfo.NewNodeInfo()
+	fullNodeInfo := schedulerframework.NewNodeInfo()
 	fullNodeInfo.SetNode(fullNode)
 
 	SetNodeReadyState(emptyNode, true, time.Time{})

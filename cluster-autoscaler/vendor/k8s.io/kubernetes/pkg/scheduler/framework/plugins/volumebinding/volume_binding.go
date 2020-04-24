@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // VolumeBinding is a plugin that binds pod volumes in scheduling.
@@ -62,7 +61,7 @@ func podHasPVCs(pod *v1.Pod) bool {
 //
 // The predicate returns true if all bound PVCs have compatible PVs with the node, and if all unbound
 // PVCs can be matched with an available and node-compatible PV.
-func (pl *VolumeBinding) Filter(ctx context.Context, cs *framework.CycleState, pod *v1.Pod, nodeInfo *schedulernodeinfo.NodeInfo) *framework.Status {
+func (pl *VolumeBinding) Filter(ctx context.Context, cs *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
 	node := nodeInfo.Node()
 	if node == nil {
 		return framework.NewStatus(framework.Error, "node not found")
@@ -89,7 +88,7 @@ func (pl *VolumeBinding) Filter(ctx context.Context, cs *framework.CycleState, p
 }
 
 // New initializes a new plugin with volume binder and returns it.
-func New(_ *runtime.Unknown, fh framework.FrameworkHandle) (framework.Plugin, error) {
+func New(_ runtime.Object, fh framework.FrameworkHandle) (framework.Plugin, error) {
 	return &VolumeBinding{
 		binder: fh.VolumeBinder(),
 	}, nil

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"time"
 
+	api "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/httpstream"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apiserver/pkg/util/wsstream"
 	"k8s.io/client-go/tools/remotecommand"
-	api "k8s.io/kubernetes/pkg/apis/core"
 
 	"k8s.io/klog"
 )
@@ -411,6 +411,7 @@ func (*v1ProtocolHandler) supportsTerminalResizing() bool { return false }
 
 func handleResizeEvents(stream io.Reader, channel chan<- remotecommand.TerminalSize) {
 	defer runtime.HandleCrash()
+	defer close(channel)
 
 	decoder := json.NewDecoder(stream)
 	for {
