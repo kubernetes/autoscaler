@@ -247,11 +247,6 @@ func TestListScalesets(t *testing.T) {
 			expectedErrString: fmt.Sprintf("no maximum size specified for vmss: %s", vmssName),
 		},
 		{
-			name:              "MaxLessThanOne",
-			specs:             map[string]string{"min": "5", "max": "-5"},
-			expectedErrString: "maximum size must be greater than 1 node",
-		},
-		{
 			name:              "MinLessThanZero",
 			specs:             map[string]string{"min": "-4", "max": "20"},
 			expectedErrString: fmt.Sprintf("minimum size must be a non-negative number of nodes"),
