@@ -17,7 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // CreateAwsNodeInfoComparator returns a comparator that checks if two nodes should be considered
@@ -40,7 +40,7 @@ func CreateAwsNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator
 		awsIgnoredLabels[k] = true
 	}
 
-	return func(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+	return func(n1, n2 *schedulerframework.NodeInfo) bool {
 		return IsCloudProviderNodeInfoSimilar(n1, n2, awsIgnoredLabels)
 	}
 }

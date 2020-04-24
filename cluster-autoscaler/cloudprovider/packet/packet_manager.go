@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -45,7 +45,7 @@ type packetManager interface {
 	getNodes(nodegroup string) ([]string, error)
 	getNodeNames(nodegroup string) ([]string, error)
 	deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error
-	templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error)
+	templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error)
 }
 
 // createPacketManager creates the desired implementation of packetManager.

@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // packetNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
@@ -254,7 +254,7 @@ func (ng *packetNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *packetNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (ng *packetNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	return ng.packetManager.templateNodeInfo(ng.id)
 }
 

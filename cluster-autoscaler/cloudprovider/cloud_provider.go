@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
@@ -144,13 +144,13 @@ type NodeGroup interface {
 	// This list should include also instances that might have not become a kubernetes node yet.
 	Nodes() ([]Instance, error)
 
-	// TemplateNodeInfo returns a schedulernodeinfo.NodeInfo structure of an empty
+	// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
 	// predict what would a new node look like if a node group was expanded. The returned
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
 	// the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-	TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error)
+	TemplateNodeInfo() (*schedulerframework.NodeInfo, error)
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 	// theoretical node group from the real one. Implementation required.

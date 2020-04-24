@@ -154,13 +154,6 @@ func BenchmarkAddPods(b *testing.B) {
 					if err != nil {
 						assert.NoError(b, err)
 					}
-					/*
-						// uncomment to test effect of pod caching
-							_, err = clusterSnapshot.Pods().List(labels.Everything())
-							if err != nil {
-								assert.NoError(b, err)
-							}
-					*/
 					b.StartTimer()
 					for _, pod := range pods {
 						err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
@@ -269,76 +262,5 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 				}
 			}
 		})
-	}
-}
-
-func BenchmarkBuildPodList(b *testing.B) {
-	testCases := []struct {
-		nodeCount int
-	}{
-		{
-			nodeCount: 1000,
-		},
-		{
-			nodeCount: 5000,
-		},
-		{
-			nodeCount: 15000,
-		},
-	}
-	for _, modifiedPodCount := range []int{0, 1, 100} {
-		for _, extraNodeCount := range []int{0, 1, 100} {
-			for _, tc := range testCases {
-				b.Run(fmt.Sprintf("%s: modified %v, added nodes %v, nodes %v", "delta", modifiedPodCount, extraNodeCount, tc.nodeCount), func(b *testing.B) {
-					nodes := createTestNodes(tc.nodeCount)
-					pods := createTestPods(tc.nodeCount * 30)
-					assignPodsToNodes(pods, nodes)
-
-					modifiedPods := createTestPods(modifiedPodCount)
-					assignPodsToNodes(modifiedPods, nodes)
-
-					newNodes := createTestNodesWithPrefix("new-", extraNodeCount)
-					newPods := createTestPods(extraNodeCount * 30)
-					assignPodsToNodes(newPods, newNodes)
-
-					snapshot := NewDeltaClusterSnapshot()
-
-					if err := snapshot.AddNodes(nodes); err != nil {
-						assert.NoError(b, err)
-					}
-					for _, pod := range pods {
-						if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-							assert.NoError(b, err)
-						}
-					}
-
-					if err := snapshot.Fork(); err != nil {
-						assert.NoError(b, err)
-					}
-					for _, pod := range modifiedPods {
-						if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-							assert.NoError(b, err)
-						}
-					}
-
-					if err := snapshot.AddNodes(newNodes); err != nil {
-						assert.NoError(b, err)
-					}
-					for _, pod := range newPods {
-						if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-							assert.NoError(b, err)
-						}
-					}
-
-					b.ResetTimer()
-					for i := 0; i < b.N; i++ {
-						list := snapshot.data.buildPodList()
-						if len(list) != tc.nodeCount*30+modifiedPodCount+extraNodeCount*30 {
-							assert.Equal(b, tc.nodeCount*30+modifiedPodCount+extraNodeCount*30, len(list))
-						}
-					}
-				})
-			}
-		}
 	}
 }

@@ -347,10 +347,8 @@ func NewProxier(ipt utiliptables.Interface,
 	kernelHandler KernelHandler,
 ) (*Proxier, error) {
 	// Set the route_localnet sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlRouteLocalnet); val != 1 {
-		if err := sysctl.SetSysctl(sysctlRouteLocalnet, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlRouteLocalnet, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlRouteLocalnet, 1); err != nil {
+		return nil, err
 	}
 
 	// Proxy needs br_netfilter and bridge-nf-call-iptables=1 when containers
@@ -361,10 +359,8 @@ func NewProxier(ipt utiliptables.Interface,
 	}
 
 	// Set the conntrack sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlVSConnTrack); val != 1 {
-		if err := sysctl.SetSysctl(sysctlVSConnTrack, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlVSConnTrack, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlVSConnTrack, 1); err != nil {
+		return nil, err
 	}
 
 	kernelVersionStr, err := kernelHandler.GetKernelVersion()
@@ -379,47 +375,35 @@ func NewProxier(ipt utiliptables.Interface,
 		klog.Errorf("can't set sysctl %s, kernel version must be at least %s", sysctlConnReuse, connReuseMinSupportedKernelVersion)
 	} else {
 		// Set the connection reuse mode
-		if val, _ := sysctl.GetSysctl(sysctlConnReuse); val != 0 {
-			if err := sysctl.SetSysctl(sysctlConnReuse, 0); err != nil {
-				return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlConnReuse, err)
-			}
+		if err := utilproxy.EnsureSysctl(sysctl, sysctlConnReuse, 0); err != nil {
+			return nil, err
 		}
 	}
 
 	// Set the expire_nodest_conn sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlExpireNoDestConn); val != 1 {
-		if err := sysctl.SetSysctl(sysctlExpireNoDestConn, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlExpireNoDestConn, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlExpireNoDestConn, 1); err != nil {
+		return nil, err
 	}
 
 	// Set the expire_quiescent_template sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlExpireQuiescentTemplate); val != 1 {
-		if err := sysctl.SetSysctl(sysctlExpireQuiescentTemplate, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlExpireQuiescentTemplate, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlExpireQuiescentTemplate, 1); err != nil {
+		return nil, err
 	}
 
 	// Set the ip_forward sysctl we need for
-	if val, _ := sysctl.GetSysctl(sysctlForward); val != 1 {
-		if err := sysctl.SetSysctl(sysctlForward, 1); err != nil {
-			return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlForward, err)
-		}
+	if err := utilproxy.EnsureSysctl(sysctl, sysctlForward, 1); err != nil {
+		return nil, err
 	}
 
 	if strictARP {
 		// Set the arp_ignore sysctl we need for
-		if val, _ := sysctl.GetSysctl(sysctlArpIgnore); val != 1 {
-			if err := sysctl.SetSysctl(sysctlArpIgnore, 1); err != nil {
-				return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlArpIgnore, err)
-			}
+		if err := utilproxy.EnsureSysctl(sysctl, sysctlArpIgnore, 1); err != nil {
+			return nil, err
 		}
 
 		// Set the arp_announce sysctl we need for
-		if val, _ := sysctl.GetSysctl(sysctlArpAnnounce); val != 2 {
-			if err := sysctl.SetSysctl(sysctlArpAnnounce, 2); err != nil {
-				return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlArpAnnounce, err)
-			}
+		if err := utilproxy.EnsureSysctl(sysctl, sysctlArpAnnounce, 2); err != nil {
+			return nil, err
 		}
 	}
 
@@ -490,7 +474,8 @@ func NewProxier(ipt utiliptables.Interface,
 		proxier.ipsetList[is.name] = NewIPSet(ipset, is.name, is.setType, isIPv6, is.comment)
 	}
 	burstSyncs := 2
-	klog.V(3).Infof("minSyncPeriod: %v, syncPeriod: %v, burstSyncs: %d", minSyncPeriod, syncPeriod, burstSyncs)
+	klog.V(2).Infof("ipvs(%s) sync params: minSyncPeriod=%v, syncPeriod=%v, burstSyncs=%d",
+		ipt.Protocol(), minSyncPeriod, syncPeriod, burstSyncs)
 	proxier.syncRunner = async.NewBoundedFrequencyRunner("sync-runner", proxier.syncProxyRules, minSyncPeriod, syncPeriod, burstSyncs)
 	proxier.gracefuldeleteManager.Run()
 	return proxier, nil
@@ -608,7 +593,7 @@ func (handle *LinuxKernelHandler) GetModules() ([]string, error) {
 	}
 	ipvsModules := utilipvs.GetRequiredIPVSModules(kernelVersion)
 
-	var bmods []string
+	var bmods, lmods []string
 
 	// Find out loaded kernel modules. If this is a full static kernel it will try to verify if the module is compiled using /boot/config-KERNELVERSION
 	modulesFile, err := os.Open("/proc/modules")
@@ -650,11 +635,15 @@ func (handle *LinuxKernelHandler) GetModules() ([]string, error) {
 			if err != nil {
 				klog.Warningf("Failed to load kernel module %v with modprobe. "+
 					"You can ignore this message when kube-proxy is running inside container without mounting /lib/modules", module)
+			} else {
+				lmods = append(lmods, module)
 			}
 		}
 	}
 
-	return append(mods, bmods...), nil
+	mods = append(mods, bmods...)
+	mods = append(mods, lmods...)
+	return mods, nil
 }
 
 // getFirstColumn reads all the content from r into memory and return a
@@ -1040,8 +1029,8 @@ func (proxier *Proxier) syncProxyRules() {
 	staleServices := serviceUpdateResult.UDPStaleClusterIP
 	// merge stale services gathered from updateEndpointsMap
 	for _, svcPortName := range endpointUpdateResult.StaleServiceNames {
-		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && svcInfo.Protocol() == v1.ProtocolUDP {
-			klog.V(2).Infof("Stale udp service %v -> %s", svcPortName, svcInfo.ClusterIP().String())
+		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && conntrack.IsClearConntrackNeeded(svcInfo.Protocol()) {
+			klog.V(2).Infof("Stale %s service %v -> %s", strings.ToLower(string(svcInfo.Protocol())), svcPortName, svcInfo.ClusterIP().String())
 			staleServices.Insert(svcInfo.ClusterIP().String())
 			for _, extIP := range svcInfo.ExternalIPStrings() {
 				staleServices.Insert(extIP)
@@ -1216,7 +1205,7 @@ func (proxier *Proxier) syncProxyRules() {
 			// If the "external" IP happens to be an IP that is local to this
 			// machine, hold the local port open so no other process can open it
 			// (because the socket might open but it would never work).
-			if localAddrSet.Len() > 0 && (svcInfo.Protocol() != v1.ProtocolSCTP) && localAddrSet.Has(net.ParseIP(externalIP)) {
+			if (svcInfo.Protocol() != v1.ProtocolSCTP) && localAddrSet.Has(net.ParseIP(externalIP)) {
 				// We do not start listening on SCTP ports, according to our agreement in the SCTP support KEP
 				lp := utilproxy.LocalPort{
 					Description: "externalIP for " + svcNameString,
@@ -1859,9 +1848,6 @@ func (proxier *Proxier) createAndLinkeKubeChain() {
 	}
 	if proxier.iptables.HasRandomFully() {
 		masqRule = append(masqRule, "--random-fully")
-		klog.V(3).Info("Using `--random-fully` in the MASQUERADE rule for iptables")
-	} else {
-		klog.V(2).Info("Not using `--random-fully` in the MASQUERADE rule for iptables because the local version of iptables does not support it")
 	}
 	writeLine(proxier.natRules, masqRule...)
 
@@ -1888,25 +1874,26 @@ func (proxier *Proxier) getExistingChains(buffer *bytes.Buffer, table utiliptabl
 	return nil
 }
 
-// After a UDP endpoint has been removed, we must flush any pending conntrack entries to it, or else we
+// After a UDP or SCTP endpoint has been removed, we must flush any pending conntrack entries to it, or else we
 // risk sending more traffic to it, all of which will be lost (because UDP).
 // This assumes the proxier mutex is held
 func (proxier *Proxier) deleteEndpointConnections(connectionMap []proxy.ServiceEndpoint) {
 	for _, epSvcPair := range connectionMap {
-		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && svcInfo.Protocol() == v1.ProtocolUDP {
+		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && conntrack.IsClearConntrackNeeded(svcInfo.Protocol()) {
 			endpointIP := utilproxy.IPPart(epSvcPair.Endpoint)
-			err := conntrack.ClearEntriesForNAT(proxier.exec, svcInfo.ClusterIP().String(), endpointIP, v1.ProtocolUDP)
+			svcProto := svcInfo.Protocol()
+			err := conntrack.ClearEntriesForNAT(proxier.exec, svcInfo.ClusterIP().String(), endpointIP, svcProto)
 			if err != nil {
 				klog.Errorf("Failed to delete %s endpoint connections, error: %v", epSvcPair.ServicePortName.String(), err)
 			}
 			for _, extIP := range svcInfo.ExternalIPStrings() {
-				err := conntrack.ClearEntriesForNAT(proxier.exec, extIP, endpointIP, v1.ProtocolUDP)
+				err := conntrack.ClearEntriesForNAT(proxier.exec, extIP, endpointIP, svcProto)
 				if err != nil {
 					klog.Errorf("Failed to delete %s endpoint connections for externalIP %s, error: %v", epSvcPair.ServicePortName.String(), extIP, err)
 				}
 			}
 			for _, lbIP := range svcInfo.LoadBalancerIPStrings() {
-				err := conntrack.ClearEntriesForNAT(proxier.exec, lbIP, endpointIP, v1.ProtocolUDP)
+				err := conntrack.ClearEntriesForNAT(proxier.exec, lbIP, endpointIP, svcProto)
 				if err != nil {
 					klog.Errorf("Failed to delete %s endpoint connections for LoadBalancerIP %s, error: %v", epSvcPair.ServicePortName.String(), lbIP, err)
 				}
@@ -2101,10 +2088,10 @@ func (proxier *Proxier) isIPInExcludeCIDRs(ip net.IP) bool {
 
 func (proxier *Proxier) getLegacyBindAddr(activeBindAddrs map[string]bool, currentBindAddrs []string) map[string]bool {
 	legacyAddrs := make(map[string]bool)
-	isIpv6 := utilnet.IsIPv6(proxier.nodeIP)
+	isIPv6 := utilnet.IsIPv6(proxier.nodeIP)
 	for _, addr := range currentBindAddrs {
-		addrIsIpv6 := utilnet.IsIPv6(net.ParseIP(addr))
-		if addrIsIpv6 && !isIpv6 || !addrIsIpv6 && isIpv6 {
+		addrIsIPv6 := utilnet.IsIPv6(net.ParseIP(addr))
+		if addrIsIPv6 && !isIPv6 || !addrIsIPv6 && isIPv6 {
 			continue
 		}
 		if _, ok := activeBindAddrs[addr]; !ok {

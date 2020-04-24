@@ -20,9 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // BasicClusterSnapshot is simple, reference implementation of ClusterSnapshot.
@@ -33,21 +31,21 @@ type BasicClusterSnapshot struct {
 }
 
 type internalBasicSnapshotData struct {
-	nodeInfoMap map[string]*schedulernodeinfo.NodeInfo
+	nodeInfoMap map[string]*schedulerframework.NodeInfo
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulernodeinfo.NodeInfo, error) {
-	nodeInfoList := make([]*schedulernodeinfo.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulerframework.NodeInfo, error) {
+	nodeInfoList := make([]*schedulerframework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
 	return nodeInfoList, nil
 }
 
-func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]*schedulernodeinfo.NodeInfo, error) {
-	havePodsWithAffinityList := make([]*schedulernodeinfo.NodeInfo, 0, len(data.nodeInfoMap))
+func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
+	havePodsWithAffinityList := make([]*schedulerframework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
-		if len(v.PodsWithAffinity()) > 0 {
+		if len(v.PodsWithAffinity) > 0 {
 			havePodsWithAffinityList = append(havePodsWithAffinityList, v)
 		}
 	}
@@ -55,38 +53,21 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList
 	return havePodsWithAffinityList, nil
 }
 
-func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulernodeinfo.NodeInfo, error) {
+func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
 	return nil, errNodeNotFound
 }
 
-func (data *internalBasicSnapshotData) listPods(selector labels.Selector) ([]*apiv1.Pod, error) {
-	alwaysTrue := func(p *apiv1.Pod) bool { return true }
-	return data.filteredListPods(alwaysTrue, selector)
-}
-
-func (data *internalBasicSnapshotData) filteredListPods(podFilter schedulerlisters.PodFilter, selector labels.Selector) ([]*apiv1.Pod, error) {
-	pods := make([]*apiv1.Pod, 0)
-	for _, n := range data.nodeInfoMap {
-		for _, pod := range n.Pods() {
-			if podFilter(pod) && selector.Matches(labels.Set(pod.Labels)) {
-				pods = append(pods, pod)
-			}
-		}
-	}
-	return pods, nil
-}
-
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
-		nodeInfoMap: make(map[string]*schedulernodeinfo.NodeInfo),
+		nodeInfoMap: make(map[string]*schedulerframework.NodeInfo),
 	}
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
-	clonedNodeInfoMap := make(map[string]*schedulernodeinfo.NodeInfo)
+	clonedNodeInfoMap := make(map[string]*schedulerframework.NodeInfo)
 	for k, v := range data.nodeInfoMap {
 		clonedNodeInfoMap[k] = v.Clone()
 	}
@@ -99,7 +80,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
-	nodeInfo := schedulernodeinfo.NewNodeInfo()
+	nodeInfo := schedulerframework.NewNodeInfo()
 	err := nodeInfo.SetNode(node)
 	if err != nil {
 		return fmt.Errorf("cannot set node in NodeInfo; %v", err)
@@ -138,9 +119,9 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 	if !found {
 		return errNodeNotFound
 	}
-	for _, pod := range nodeInfo.Pods() {
-		if pod.Namespace == namespace && pod.Name == podName {
-			err := nodeInfo.RemovePod(pod)
+	for _, podInfo := range nodeInfo.Pods {
+		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == podName {
+			err := nodeInfo.RemovePod(podInfo.Pod)
 			if err != nil {
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
@@ -238,39 +219,23 @@ func (snapshot *BasicClusterSnapshot) Clear() {
 // implementation of SharedLister interface
 
 type basicClusterSnapshotNodeLister BasicClusterSnapshot
-type basicClusterSnapshotPodLister BasicClusterSnapshot
-
-// Pods exposes snapshot as PodLister
-func (snapshot *BasicClusterSnapshot) Pods() schedulerlisters.PodLister {
-	return (*basicClusterSnapshotPodLister)(snapshot)
-}
-
-// List returns the list of pods in the snapshot.
-func (snapshot *basicClusterSnapshotPodLister) List(selector labels.Selector) ([]*apiv1.Pod, error) {
-	return (*BasicClusterSnapshot)(snapshot).getInternalData().listPods(selector)
-}
-
-// FilteredList returns a filtered list of pods in the snapshot.
-func (snapshot *basicClusterSnapshotPodLister) FilteredList(podFilter schedulerlisters.PodFilter, selector labels.Selector) ([]*apiv1.Pod, error) {
-	return (*BasicClusterSnapshot)(snapshot).getInternalData().filteredListPods(podFilter, selector)
-}
 
 // NodeInfos exposes snapshot as NodeInfoLister.
-func (snapshot *BasicClusterSnapshot) NodeInfos() schedulerlisters.NodeInfoLister {
+func (snapshot *BasicClusterSnapshot) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*basicClusterSnapshotNodeLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
-func (snapshot *basicClusterSnapshotNodeLister) List() ([]*schedulernodeinfo.NodeInfo, error) {
+func (snapshot *basicClusterSnapshotNodeLister) List() ([]*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos()
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity
-func (snapshot *basicClusterSnapshotNodeLister) HavePodsWithAffinityList() ([]*schedulernodeinfo.NodeInfo, error) {
+func (snapshot *basicClusterSnapshotNodeLister) HavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfosThatHavePodsWithAffinityList()
 }
 
 // Returns the NodeInfo of the given node name.
-func (snapshot *basicClusterSnapshotNodeLister) Get(nodeName string) (*schedulernodeinfo.NodeInfo, error) {
+func (snapshot *basicClusterSnapshotNodeLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().getNodeInfo(nodeName)
 }

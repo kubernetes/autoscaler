@@ -20,13 +20,13 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
-	schedulerlisters.SharedLister
+	schedulerframework.SharedLister
 	// AddNode adds node to the snapshot.
 	AddNode(node *apiv1.Node) error
 	// AddNodes adds nodes to the snapshot.
