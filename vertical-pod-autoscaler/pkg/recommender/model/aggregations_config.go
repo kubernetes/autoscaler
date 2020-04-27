@@ -33,7 +33,7 @@ type AggregationsConfig struct {
 	// MemoryAggregationWindowIntervalCount is the number of consecutive MemoryAggregationIntervals
 	// which make up the MemoryAggregationWindowLength which in turn is the period for memory
 	// usage aggregation by VPA.
-	MemoryAggregationWindowIntervalCount int64
+	MemoryAggregationIntervalCount int64
 	// CPUHistogramOptions are options to be used by histograms that store
 	// CPU measures expressed in cores.
 	CPUHistogramOptions util.HistogramOptions
@@ -59,8 +59,8 @@ const (
 	// epsilon is the minimal weight kept in histograms, it should be small enough that old samples
 	// (just inside MemoryAggregationWindowLength) added with minSampleWeight are still kept
 	epsilon = 0.001 * minSampleWeight
-	// DefaultMemoryAggregationWindowIntervalCount is the default value for MemoryAggregationWindowIntevalCount.
-	DefaultMemoryAggregationWindowIntervalCount = 8
+	// DefaultMemoryAggregationIntervalCount is the default value for MemoryAggregationIntevalCount.
+	DefaultMemoryAggregationIntervalCount = 8
 	// DefaultMemoryAggregationInterval is the default value for MemoryAggregationInterval.
 	// which the peak memory usage is computed.
 	DefaultMemoryAggregationInterval = time.Hour * 24
@@ -75,7 +75,7 @@ const (
 
 // GetMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
 func (a *AggregationsConfig) GetMemoryAggregationWindowLength() time.Duration {
-	return a.MemoryAggregationInterval * time.Duration(a.MemoryAggregationWindowIntervalCount)
+	return a.MemoryAggregationInterval * time.Duration(a.MemoryAggregationIntervalCount)
 }
 
 func (a *AggregationsConfig) cpuHistogramOptions() util.HistogramOptions {
@@ -103,13 +103,13 @@ func (a *AggregationsConfig) memoryHistogramOptions() util.HistogramOptions {
 }
 
 // NewAggregationsConfig creates a new AggregationsConfig based on the supplied parameters and default values.
-func NewAggregationsConfig(memoryAggregationInterval time.Duration, memoryAggregationWindowIntervalCount int64, memoryHistogramDecayHalfLife, cpuHistogramDecayHalfLife time.Duration) *AggregationsConfig {
+func NewAggregationsConfig(memoryAggregationInterval time.Duration, memoryAggregationIntervalCount int64, memoryHistogramDecayHalfLife, cpuHistogramDecayHalfLife time.Duration) *AggregationsConfig {
 	a := &AggregationsConfig{
-		MemoryAggregationInterval:            memoryAggregationInterval,
-		MemoryAggregationWindowIntervalCount: memoryAggregationWindowIntervalCount,
-		HistogramBucketSizeGrowth:            DefaultHistogramBucketSizeGrowth,
-		MemoryHistogramDecayHalfLife:         memoryHistogramDecayHalfLife,
-		CPUHistogramDecayHalfLife:            cpuHistogramDecayHalfLife,
+		MemoryAggregationInterval:      memoryAggregationInterval,
+		MemoryAggregationIntervalCount: memoryAggregationIntervalCount,
+		HistogramBucketSizeGrowth:      DefaultHistogramBucketSizeGrowth,
+		MemoryHistogramDecayHalfLife:   memoryHistogramDecayHalfLife,
+		CPUHistogramDecayHalfLife:      cpuHistogramDecayHalfLife,
 	}
 	a.CPUHistogramOptions = a.cpuHistogramOptions()
 	a.MemoryHistogramOptions = a.memoryHistogramOptions()
@@ -121,7 +121,7 @@ var aggregationsConfig *AggregationsConfig
 // GetAggregationsConfig gets the aggregations config. Initializes to default values if not initialized already.
 func GetAggregationsConfig() *AggregationsConfig {
 	if aggregationsConfig == nil {
-		aggregationsConfig = NewAggregationsConfig(DefaultMemoryAggregationInterval, DefaultMemoryAggregationWindowIntervalCount, DefaultMemoryHistogramDecayHalfLife, DefaultCPUHistogramDecayHalfLife)
+		aggregationsConfig = NewAggregationsConfig(DefaultMemoryAggregationInterval, DefaultMemoryAggregationIntervalCount, DefaultMemoryHistogramDecayHalfLife, DefaultCPUHistogramDecayHalfLife)
 	}
 
 	return aggregationsConfig
