@@ -248,7 +248,10 @@ spec:
 * Set LaunchTemplateOverrides to include the 'base' instance type r5.2xlarge and suitable alternatives, e.g. r5d.2xlarge, i3.2xlarge, r5a.2xlarge and r5ad.2xlarge. Differing processor types and speeds should be evaluated depending on your use-case(s).
 * Set [InstancesDistribution](https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html) according to your needs.
 * See [Allocation Strategies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html#asg-allocation-strategies) for information about the ASG fulfils capacity from the specified instance types. It is recommended to use the capacity-optimized allocation strategy, which will automatically launche Spot Instances into the most available pools by looking at real-time capacity data and predicting which are the most available
-* For the same workload or for the generic capacity in your cluster, you can also create more node groups with identical number of vCPU/Mem, but from different sizes. For example, node group 1: m5.xlarge, m5a.xlarge, m5d.xlarge, m5ad.xlarge, m4.xlarge. node group 2: m5.2xlarge, m5a.2xlarge, m5d.2xlarge, m5ad.2xlarge, m4.2xlarge. This approach along with cluster-autoscaler will help you tap into many Spot capacity pools, and increase your chances of achieving your desired scale.
+* For the same workload or for the generic capacity in your cluster, you can also create more node groups with a vCPU/Mem ratio that is a good fit for your workloads, but from different instance sizes. For example:
+Node group 1: m5.xlarge, m5a.xlarge, m5d.xlarge, m5ad.xlarge, m4.xlarge. 
+Node group 2: m5.2xlarge, m5a.2xlarge, m5d.2xlarge, m5ad.2xlarge, m4.2xlarge. 
+This approach along with cluster-autoscaler will help you tap into many Spot capacity pools, and increase your chances of achieving your desired scale.
 
 See CloudFormation example [here](MixedInstancePolicy.md).
 
