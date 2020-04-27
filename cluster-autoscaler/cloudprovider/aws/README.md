@@ -215,9 +215,9 @@ This is because the GPU resource does not become available immediately after the
 
 > Note: The minimum version of cluster autoscaler to support MixedInstancePolicy is v1.14.x.
 
-It is possible to use Cluster Autoscaler with a [mixed instances policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html), to enable diversification across on-demand and spot instances, of multiple instance types in a single ASG. When using spot instances, this increases the likelihood of successfully launching a spot instance to add the desired capacity to the cluster versus a single instance type, which may be in short supply.
+It is possible to use Cluster Autoscaler with a [mixed instances policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html), to enable diversification across on-demand and Spot Instances, of multiple instance types in a single ASG. When using Spot Instances, this increases the likelihood of successfully launching a Spot Instance to add the desired capacity to the cluster versus a single instance type, which may be in short supply.
 
-Note that the instance types should have the same amount of RAM and number of CPU cores, since this is fundamental to CA's scaling calculations. Using mismatched instances types can produce unintended results.
+Note that the instance types should have the same amount of RAM and number of CPU cores, since this is fundamental to CA's scaling calculations. Using mismatched instances types can produce unintended results, See an example below.
 
 Additionally, there are other factors which affect scaling, such as node labels. If you are currently using `nodeSelector` with the [beta.kubernetes.io/instance-type](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#interlude-built-in-node-labels) label, you will need to apply a common propagating label to the ASG and use that instead, since the instance-type label can no longer be relied upon. One may also use auto-generated tags such as `aws:cloudformation:stack-name` for this purpose. [Node affinity and anti-affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity) are not affected in the same way, since these selectors natively accept multiple values; one must add all the configured instances types to the list of values, for example:
 
@@ -233,9 +233,12 @@ spec:
             values:
             - r5.2xlarge
             - r5d.2xlarge
-            - i3.2xlarge
             - r5a.2xlarge
             - r5ad.2xlarge
+            - r5n.2xlarge
+            - r5dn.2xlarge
+            - r4.2xlarge
+            - i3.2xlarge
 ```
 
 ### Example usage:
@@ -244,8 +247,8 @@ spec:
 * Create an ASG with a MixedInstancesPolicy that refers to the newly-created LT.
 * Set LaunchTemplateOverrides to include the 'base' instance type r5.2xlarge and suitable alternatives, e.g. r5d.2xlarge, i3.2xlarge, r5a.2xlarge and r5ad.2xlarge. Differing processor types and speeds should be evaluated depending on your use-case(s).
 * Set [InstancesDistribution](https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html) according to your needs.
-* See [Allocation Strategies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html#asg-allocation-strategies) for information about the ASG fulfils capacity from the specified instance types.
-* Repeat by creating other LTs and ASGs, for example c5.18xlarge and c5n.18xlarge or a bunch of similar burstable instances.
+* See [Allocation Strategies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html#asg-allocation-strategies) for information about the ASG fulfils capacity from the specified instance types. It is recommended to use the capacity-optimized allocation strategy, which will automatically launche Spot Instances into the most available pools by looking at real-time capacity data and predicting which are the most available
+* For the same workload or for the generic capacity in your cluster, you can also create more node groups with identical number of vCPU/Mem, but from different sizes. For example, node group 1: m5.xlarge, m5a.xlarge, m5d.xlarge, m5ad.xlarge, m4.xlarge. node group 2: m5.2xlarge, m5a.2xlarge, m5d.2xlarge, m5ad.2xlarge, m4.2xlarge. This approach along with cluster-autoscaler will help you tap into many Spot capacity pools, and increase your chances of achieving your desired scale.
 
 See CloudFormation example [here](MixedInstancePolicy.md).
 
@@ -257,8 +260,8 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under `clu
 
 ## Common Notes and Gotchas:
 - The `/etc/ssl/certs/ca-bundle.crt` should exist by default on ec2 instance in your EKS cluster. If you use other cluster privision tools like [kops](https://github.com/kubernetes/kops) with different operating systems other than Amazon Linux 2, please use `/etc/ssl/certs/ca-certificates.crt` or correct path on your host instead for the volume hostPath in your cluster autoscaler manifest.
-- Cluster autoscaler does not support Auto Scaling Groups which span multiple Availability Zones; instead you should use an Auto Scaling Group for each Availability Zone and enable the [--balance-similar-node-groups](../../FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler) feature. If you do use a single Auto Scaling Group that spans multiple Availability Zones you will find that AWS unexpectedly terminates nodes without them being drained because of the [rebalancing feature](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html#arch-AutoScalingMultiAZ).
-- EBS volumes cannot span multiple AWS Availability Zones. If you have a Pod with Persistent Volume in an AZ, It must be running on a k8s/EKS node which is in the same Availability Zone of the Persistent Volume. If AWS Auto Scaling Group launches a new k8s/EKS node in different AZ and moves this Pod into the new node, The Persistent volume in previous AZ will not be available from the new AZ. The pod will stay in Pending status. The Workaround is using a single AZ for the k8s/EKS nodes.
+- If you’re using Persistent Volumes, your deployment needs to run in the same AZ as where the EBS volume is, otherwise the pod scheduling could fail if it is scheduled in a different AZ and cannot find the EBS volume. To overcome this, either use a single AZ ASG for this use case, or an ASG-per-AZ while enabling [--balance-similar-node-groups](../../FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler). Alternatively, and depending on your use-case, you might be able to switch from using EBS to using shared storage that is available across AZs (for each pod in its respective AZ). Consider AWS services like Amazon EFS, or Amazon FSx for Lustre.
+- On creation time, the ASG will have the [AZRebalance process] (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html#arch-AutoScalingMultiAZ) enabled, which means it will actively work to balance the number of instances between AZs, and possibly terminate instances. If your applications could be impacted from sudden termination, you can either suspend the AZRebalance feature, or use a tool for automatic draining upon ASG scale-in such as the [k8s-node-drainer] https://github.com/aws-samples/amazon-k8s-node-drainer. The [AWS Node Termination Handler] (https://github.com/aws/aws-node-termination-handler/issues/95) will also support this use-case in the future.
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay-after-add`, `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure` flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay to 5 minutes after a node has been added.
 - If you're running multiple ASGs, the `--expander` flag supports three options: `random`, `most-pods` and `least-waste`. `random` will expand a random ASG on scale up. `most-pods` will scale up the ASG that will schedule the most amount of pods. `least-waste` will expand the ASG that will waste the least amount of CPU/MEM resources. In the event of a tie, cluster autoscaler will fall back to `random`.
