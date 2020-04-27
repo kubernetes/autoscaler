@@ -43,18 +43,22 @@ var (
 
 	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	// prometheus history provider configs
-	historyLength                        = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
-	podLabelPrefix                       = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
-	podLabelsMetricName                  = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
-	podNamespaceLabel                    = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for container names`)
-	podNameLabel                         = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for container names`)
-	ctrNamespaceLabel                    = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
-	ctrPodNameLabel                      = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
-	ctrNameLabel                         = flag.String("container-name-label", "name", `Label name to look for container names`)
-	memoryAggregationInterval            = flag.Duration("memory-aggregation-interval", model.DefaultMemoryAggregationInterval, `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)`)
-	memoryAggregationWindowIntervalCount = flag.Int64("memory-aggregation-window-interval-count", model.DefaultMemoryAggregationWindowIntervalCount, `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-window-interval-count.`)
-	memoryHistogramDecayHalfLife         = flag.Duration("memory-histogram-decay-half-life", model.DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
-	cpuHistogramDecayHalfLife            = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
+	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
+	podLabelPrefix      = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
+	podLabelsMetricName = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
+	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for container names`)
+	podNameLabel        = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for container names`)
+	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
+	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
+	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
+)
+
+// Aggregation configuration flags
+var (
+	memoryAggregationInterval      = flag.Duration("memory-aggregation-interval", model.DefaultMemoryAggregationInterval, `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)`)
+	memoryAggregationIntervalCount = flag.Int64("memory-aggregation-interval-count", model.DefaultMemoryAggregationIntervalCount, `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.`)
+	memoryHistogramDecayHalfLife   = flag.Duration("memory-histogram-decay-half-life", model.DefaultMemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
+	cpuHistogramDecayHalfLife      = flag.Duration("cpu-histogram-decay-half-life", model.DefaultCPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 )
 
 func main() {
@@ -64,7 +68,7 @@ func main() {
 
 	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
 
-	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationWindowIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife))
+	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife))
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
