@@ -19,6 +19,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,7 +72,7 @@ func (c *verticalPodAutoscalers) Get(name string, options v1.GetOptions) (result
 		Resource("verticalpodautoscalers").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }
@@ -88,7 +89,7 @@ func (c *verticalPodAutoscalers) List(opts v1.ListOptions) (result *v1beta1.Vert
 		Resource("verticalpodautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }
@@ -105,7 +106,7 @@ func (c *verticalPodAutoscalers) Watch(opts v1.ListOptions) (watch.Interface, er
 		Resource("verticalpodautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(context.TODO())
 }
 
 // Create takes the representation of a verticalPodAutoscaler and creates it.  Returns the server's representation of the verticalPodAutoscaler, and an error, if there is any.
@@ -115,7 +116,7 @@ func (c *verticalPodAutoscalers) Create(verticalPodAutoscaler *v1beta1.VerticalP
 		Namespace(c.ns).
 		Resource("verticalpodautoscalers").
 		Body(verticalPodAutoscaler).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }
@@ -128,7 +129,7 @@ func (c *verticalPodAutoscalers) Update(verticalPodAutoscaler *v1beta1.VerticalP
 		Resource("verticalpodautoscalers").
 		Name(verticalPodAutoscaler.Name).
 		Body(verticalPodAutoscaler).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }
@@ -144,7 +145,7 @@ func (c *verticalPodAutoscalers) UpdateStatus(verticalPodAutoscaler *v1beta1.Ver
 		Name(verticalPodAutoscaler.Name).
 		SubResource("status").
 		Body(verticalPodAutoscaler).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }
@@ -156,7 +157,7 @@ func (c *verticalPodAutoscalers) Delete(name string, options *v1.DeleteOptions) 
 		Resource("verticalpodautoscalers").
 		Name(name).
 		Body(options).
-		Do().
+		Do(context.TODO()).
 		Error()
 }
 
@@ -172,7 +173,7 @@ func (c *verticalPodAutoscalers) DeleteCollection(options *v1.DeleteOptions, lis
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
-		Do().
+		Do(context.TODO()).
 		Error()
 }
 
@@ -185,7 +186,7 @@ func (c *verticalPodAutoscalers) Patch(name string, pt types.PatchType, data []b
 		SubResource(subresources...).
 		Name(name).
 		Body(data).
-		Do().
+		Do(context.TODO()).
 		Into(result)
 	return
 }

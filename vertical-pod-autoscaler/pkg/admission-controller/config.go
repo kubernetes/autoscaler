@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"time"
 
@@ -59,9 +60,9 @@ func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *t
 func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
-	_, err := client.Get(webhookConfigName, metav1.GetOptions{})
+	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
-		if err2 := client.Delete(webhookConfigName, nil); err2 != nil {
+		if err2 := client.Delete(context.TODO(), webhookConfigName, metav1.DeleteOptions{}); err2 != nil {
 			klog.Fatal(err2)
 		}
 	}
@@ -106,7 +107,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 			},
 		},
 	}
-	if _, err := client.Create(webhookConfig); err != nil {
+	if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{}); err != nil {
 		klog.Fatal(err)
 	} else {
 		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")

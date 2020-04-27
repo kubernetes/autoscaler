@@ -17,6 +17,7 @@ limitations under the License.
 package target
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -211,7 +212,7 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(groupResource, name)
+		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
 		if err == nil {
 			if scale.Status.Selector == "" {
 				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)

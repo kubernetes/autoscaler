@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -137,7 +138,7 @@ func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer o
 		}
 
 		for {
-			watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
+			watchInterface, err := kubeClient.CoreV1().Events("").Watch(context.TODO(), options)
 			if err != nil {
 				klog.Errorf("Cannot initialize watching events. Reason %v", err)
 				continue
@@ -276,7 +277,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
 	feeder.LoadVPAs()
 
-	namspaceList, err := feeder.coreClient.Namespaces().List(metav1.ListOptions{})
+	namspaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		klog.Errorf("Cannot list namespaces. Reason: %+v", err)
 		return
