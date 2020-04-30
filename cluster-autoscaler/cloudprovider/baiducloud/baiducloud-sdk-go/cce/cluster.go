@@ -62,13 +62,14 @@ type CceCluster struct {
 
 // CceGroup defines autoscaling group
 type CceGroup struct {
-	InstanceType int    `json:"instanceType"`
-	CPU          int    `json:"cpu,omitempty"`
-	Memory       int    `json:"memory,omitempty"`
-	GpuCount     int    `json:"gpuCount,omitempty"`
-	GpuCard      string `json:"gpuCard,omitempty"`
-	DiskSize     int    `json:"diskSize,omitempty"`
-	Tags         []Tag  `json:"tags"`
+	InstanceType     int    `json:"instanceType"`
+	CPU              int    `json:"cpu,omitempty"`
+	Memory           int    `json:"memory,omitempty"`
+	GpuCount         int    `json:"gpuCount,omitempty"`
+	GpuCard          string `json:"gpuCard,omitempty"`
+	DiskSize         int    `json:"diskSize,omitempty"`
+	EphemeralStorage int    `json:"ephemeralStorage,omitempty"`
+	Tags             []Tag  `json:"tags"`
 }
 
 // Tag defines label
