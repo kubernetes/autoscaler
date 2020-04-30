@@ -58,13 +58,14 @@ type asgInformation struct {
 }
 
 type asgTemplate struct {
-	InstanceType int
-	Region       string
-	Zone         string
-	CPU          int
-	Memory       int
-	GpuCount     int
-	Tags         map[string]string
+	InstanceType     int
+	Region           string
+	Zone             string
+	CPU              int
+	Memory           int
+	GpuCount         int
+	EphemeralStorage int
+	Tags             map[string]string
 }
 
 // CreateBaiducloudManager constructs baiducloudManager object.
@@ -230,12 +231,13 @@ func (m *BaiducloudManager) getAsgTemplate(name string) (*asgTemplate, error) {
 	}
 
 	return &asgTemplate{
-		InstanceType: cceGroup.InstanceType,
-		Region:       m.cloudConfig.Region,
-		CPU:          cceGroup.CPU,
-		Memory:       cceGroup.Memory,
-		GpuCount:     cceGroup.GpuCount,
-		Tags:         tags,
+		InstanceType:     cceGroup.InstanceType,
+		Region:           m.cloudConfig.Region,
+		CPU:              cceGroup.CPU,
+		Memory:           cceGroup.Memory,
+		GpuCount:         cceGroup.GpuCount,
+		EphemeralStorage: cceGroup.EphemeralStorage,
+		Tags:             tags,
 	}, nil
 }
 
@@ -257,6 +259,9 @@ func (m *BaiducloudManager) buildNodeFromTemplate(asg *Asg, template *asgTemplat
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template))
 
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
+
+	// add ephemeral-storage
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.EphemeralStorage*1024*1024*1024), resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
 
