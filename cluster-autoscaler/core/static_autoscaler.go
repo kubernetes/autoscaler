@@ -565,7 +565,9 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 		}
 		if incorrectSize.FirstObserved.Add(context.MaxNodeProvisionTime).Before(currentTime) {
 			delta := incorrectSize.CurrentSize - incorrectSize.ExpectedSize
-			if delta < 0 {
+			if (nodeGroup.MinSize() + delta) < nodeGroup.MinSize() {
+				klog.V(2).Infof("Skipping NodeGroupSize fixing, since it would violate NodeGroups's MinSize %q", nodeGroup.MinSize())
+			} else if delta < 0 {
 				klog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
 					incorrectSize.ExpectedSize,
 					incorrectSize.CurrentSize,
