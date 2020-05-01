@@ -119,7 +119,7 @@ There are three modes in which *VPAs* operate:
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise prefer the `"Auto"` mode which may take
   advantage of restart free updates once they are available. **NOTE:** This feature of VPA
-  is experimental and may cause dowtime for your applications.
+  is experimental and may cause downtime for your applications.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change resource requirements of the pods.
