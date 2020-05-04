@@ -82,6 +82,9 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 // group. This function should wait until node group size is updated.
 // Implementation required.
 func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+	ng.machineController.accessLock.Lock()
+	defer ng.machineController.accessLock.Unlock()
+
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
