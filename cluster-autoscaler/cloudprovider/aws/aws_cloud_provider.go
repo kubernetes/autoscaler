@@ -368,7 +368,9 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 			keys = append(keys, key)
 		}
 
-		klog.Infof("Successfully load %d EC2 Instance Types %s", len(keys), keys)
+		klog.Infof("Successfully loaded %d EC2 Instance Types %s", len(keys), keys)
+		// TODO: Move away from global variable
+		InstanceTypes = instanceTypes
 	}
 
 	manager, err := CreateAwsManager(config, do)
