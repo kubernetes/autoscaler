@@ -59,7 +59,11 @@ func (ng *nodegroup) MaxSize() int {
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
 func (ng *nodegroup) TargetSize() (int, error) {
-	return int(ng.scalableResource.Replicas()), nil
+	size, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return 0, err
+	}
+	return int(size), nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
@@ -70,11 +74,17 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
-	size := int(ng.scalableResource.Replicas())
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ng.MaxSize())
+
+	size, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return err
 	}
-	return ng.scalableResource.SetSize(int32(size + delta))
+	intSize := int(size)
+
+	if intSize+delta > ng.MaxSize() {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", intSize+delta, ng.MaxSize())
+	}
+	return ng.scalableResource.SetSize(int32(intSize + delta))
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned
@@ -104,7 +114,10 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 2: if deleting len(nodes) would make the replica count
 	// <= 0, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	replicas := ng.scalableResource.Replicas()
+	replicas, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return err
+	}
 
 	if replicas-int32(len(nodes)) <= 0 {
 		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are <= 0 ", len(nodes), ng.Id())
@@ -187,7 +200,11 @@ func (ng *nodegroup) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (ng *nodegroup) Debug() string {
-	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), ng.scalableResource.Replicas())
+	replicas, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(), ng.MaxSize(), err)
+	}
+	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), replicas)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
