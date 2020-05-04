@@ -1,0 +1,1 @@
+kubectl delete deployment -n kube-system $ADDON_DEPLOYMENT
