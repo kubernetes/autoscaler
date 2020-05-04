@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"sort"
@@ -24,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/utils/pointer"
@@ -108,7 +110,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	}
 
 	test := func(t *testing.T, tc testCase, testConfig *testConfig) {
-		controller, stop := mustCreateTestController(t)
+		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
 		ng, err := newNodeGroup(t, controller, testConfig)
@@ -429,12 +431,22 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		switch v := (ng.scalableResource).(type) {
 		case *machineSetScalableResource:
 			testConfig.machineSet.Spec.Replicas = int32ptr(*testConfig.machineSet.Spec.Replicas + tc.targetSizeIncrement)
-			if err := controller.machineSetInformer.Informer().GetStore().Add(newUnstructuredFromMachineSet(testConfig.machineSet)); err != nil {
+			u := newUnstructuredFromMachineSet(testConfig.machineSet)
+			if err := controller.machineSetInformer.Informer().GetStore().Add(u); err != nil {
 				t.Fatalf("failed to add new machine: %v", err)
+			}
+			_, err := controller.dynamicclient.Resource(*controller.machineSetResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
+			if err != nil {
+				t.Fatalf("failed to updating machine: %v", err)
 			}
 		case *machineDeploymentScalableResource:
 			testConfig.machineDeployment.Spec.Replicas = int32ptr(*testConfig.machineDeployment.Spec.Replicas + tc.targetSizeIncrement)
-			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(newUnstructuredFromMachineDeployment(testConfig.machineDeployment)); err != nil {
+			u := newUnstructuredFromMachineDeployment(testConfig.machineDeployment)
+			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(u); err != nil {
+			}
+			_, err := controller.dynamicclient.Resource(*controller.machineDeploymentResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
+			if err != nil {
+				t.Fatalf("failed to updating machine: %v", err)
 			}
 		default:
 			t.Errorf("unexpected type: %T", v)
@@ -450,6 +462,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
+
 		if currReplicas != int(tc.initial)+int(tc.targetSizeIncrement) {
 			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
 		}
