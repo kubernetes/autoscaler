@@ -25,6 +25,26 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscrip
 
 This will create a new [service principal][] with "Contributor" role scoped to your subscription. Save the JSON output, because it will be needed to configure the cluster autoscaler deployment in the next step.
 
+## Scaling a VMSS node group to and from 0
+
+If you are using `nodeSelector`, you need to tag the VMSS  with a node-template key `"k8s.io_cluster-autoscaler_node-template_label_"` for using labels and `"k8s.io_cluster-autoscaler_node-template_taint_"` if you are using taints.
+
+> Note that these tags use the pipe `_` character compared to a forward slash due to [Azure tag name restrictions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags).
+
+### Examples
+
+#### Labels
+
+To add the label of `foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_foo: bar`.
+
+You can also use forward slashes in the labels by setting them as an underscore in the tag name. For example to add the label of `k8s.io/foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_k8s.io_foo: bar`
+
+#### Taints
+
+To add the taint of `foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_foo: bar:NoSchedule`.
+
+You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
