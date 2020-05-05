@@ -95,6 +95,16 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	ng.machineController.accessLock.Lock()
 	defer ng.machineController.accessLock.Unlock()
 
+	replicas, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return err
+	}
+
+	// if we are at minSize already we wail early.
+	if int(replicas) <= ng.MinSize() {
+		return fmt.Errorf("min size reached, nodes will not be deleted")
+	}
+
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
@@ -112,15 +122,10 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	}
 
 	// Step 2: if deleting len(nodes) would make the replica count
-	// <= 0, then the request to delete that many nodes is bogus
+	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	replicas, err := ng.scalableResource.Replicas()
-	if err != nil {
-		return err
-	}
-
-	if replicas-int32(len(nodes)) <= 0 {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are <= 0 ", len(nodes), ng.Id())
+	if replicas-int32(len(nodes)) < int32(ng.MinSize()) {
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %q, minSize is %q ", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
 	// Step 3: annotate the corresponding machine that it is a
