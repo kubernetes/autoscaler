@@ -148,24 +148,63 @@ type Config struct {
 }
 
 // InitializeCloudProviderRateLimitConfig initializes rate limit configs.
-func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig) {
+func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig) error {
 	if config == nil {
-		return
+		return nil
 	}
 
 	// Assign read rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPS == 0 {
-		config.CloudProviderRateLimitQPS = rateLimitQPSDefault
+		if rateLimitQPSFromEnv := os.Getenv("RATE_LIMIT_READ_QPS"); rateLimitQPSFromEnv != "" {
+			rateLimitQPS, err := strconv.ParseFloat(rateLimitQPSFromEnv, 0)
+			if err != nil {
+				return fmt.Errorf("failed to parse RATE_LIMIT_READ_QPS: %q, %v", rateLimitQPSFromEnv, err)
+			}
+			klog.V(4).Infof("Set read rate limit QPS to %f", rateLimitQPS)
+			config.CloudProviderRateLimitQPS = float32(rateLimitQPS)
+		} else {
+			config.CloudProviderRateLimitQPS = rateLimitQPSDefault
+		}
 	}
+
 	if config.CloudProviderRateLimitBucket == 0 {
-		config.CloudProviderRateLimitBucket = rateLimitBucketDefault
+		if rateLimitBucketFromEnv := os.Getenv("RATE_LIMIT_READ_BUCKETS"); rateLimitBucketFromEnv != "" {
+			rateLimitBucket, err := strconv.ParseInt(rateLimitBucketFromEnv, 10, 0)
+			if err != nil {
+				return fmt.Errorf("failed to parse RATE_LIMIT_READ_BUCKETS: %q, %v", rateLimitBucketFromEnv, err)
+			}
+			config.CloudProviderRateLimitBucket = int(rateLimitBucket)
+			klog.V(4).Infof("Set read rate limit buckets to %d", rateLimitBucket)
+		} else {
+			config.CloudProviderRateLimitBucket = rateLimitBucketDefault
+		}
 	}
-	// Assing write rate limit defaults if no configuration was passed in.
+
+	// Assign write rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPSWrite == 0 {
-		config.CloudProviderRateLimitQPSWrite = config.CloudProviderRateLimitQPS
+		if rateLimitQPSWriteFromEnv := os.Getenv("RATE_LIMIT_WRITE_QPS"); rateLimitQPSWriteFromEnv != "" {
+			rateLimitQPSWrite, err := strconv.ParseFloat(rateLimitQPSWriteFromEnv, 0)
+			if err != nil {
+				return fmt.Errorf("failed to parse RATE_LIMIT_WRITE_QPS: %q, %v", rateLimitQPSWriteFromEnv, err)
+			}
+			config.CloudProviderRateLimitQPSWrite = float32(rateLimitQPSWrite)
+			klog.V(4).Infof("Set write rate limit QPS to %f", rateLimitQPSWrite)
+		} else {
+			config.CloudProviderRateLimitQPSWrite = config.CloudProviderRateLimitQPS
+		}
 	}
+
 	if config.CloudProviderRateLimitBucketWrite == 0 {
-		config.CloudProviderRateLimitBucketWrite = config.CloudProviderRateLimitBucket
+		if rateLimitBucketWriteFromEnv := os.Getenv("RATE_LIMIT_WRITE_BUCKETS"); rateLimitBucketWriteFromEnv != "" {
+			rateLimitBucketWrite, err := strconv.ParseInt(rateLimitBucketWriteFromEnv, 10, 0)
+			if err != nil {
+				return fmt.Errorf("failed to parse RATE_LIMIT_WRITE_BUCKET: %q, %v", rateLimitBucketWriteFromEnv, err)
+			}
+			klog.V(4).Infof("Set write rate limit buckets to %d", rateLimitBucketWrite)
+			config.CloudProviderRateLimitBucketWrite = int(rateLimitBucketWrite)
+		} else {
+			config.CloudProviderRateLimitBucketWrite = config.CloudProviderRateLimitBucket
+		}
 	}
 
 	config.InterfaceRateLimit = overrideDefaultRateLimitConfig(&config.RateLimitConfig, config.InterfaceRateLimit)
@@ -173,6 +212,8 @@ func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 	config.StorageAccountRateLimit = overrideDefaultRateLimitConfig(&config.RateLimitConfig, config.StorageAccountRateLimit)
 	config.DiskRateLimit = overrideDefaultRateLimitConfig(&config.RateLimitConfig, config.DiskRateLimit)
 	config.VirtualMachineScaleSetRateLimit = overrideDefaultRateLimitConfig(&config.RateLimitConfig, config.VirtualMachineScaleSetRateLimit)
+
+	return nil
 }
 
 // overrideDefaultRateLimitConfig overrides the default CloudProviderRateLimitConfig.
@@ -358,7 +399,11 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 			return nil, fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: %q, %v", cloudProviderRateLimit, err)
 		}
 	}
-	InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
+
+	err = InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
+	if err != nil {
+		return  nil, err
+	}
 
 	// Defaulting vmType to vmss.
 	if cfg.VMType == "" {
