@@ -25,8 +25,10 @@ import (
 	"testing"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/utils/pointer"
 )
@@ -819,15 +821,28 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 }
 
 func TestNodeGroupDeleteNodesTwice(t *testing.T) {
-	addDeletionTimestamp := func(t *testing.T, controller *machineController, machine *Machine) error {
+	addDeletionTimestampToMachine := func(t *testing.T, controller *machineController, node *corev1.Node) error {
+		m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		if err != nil {
+			return err
+		}
+
 		// Simulate delete that would have happened if the
 		// Machine API controllers were running Don't actually
 		// delete since the fake client does not support
 		// finalizers.
 		now := v1.Now()
-		machine.DeletionTimestamp = &now
-		return controller.machineInformer.Informer().GetStore().Update(newUnstructuredFromMachine(machine))
+		m.DeletionTimestamp = &now
+		if _, err := controller.dynamicclient.Resource(*controller.machineResource).Namespace(m.GetNamespace()).Update(context.Background(), newUnstructuredFromMachine(m), v1.UpdateOptions{}); err != nil {
+			return err
+		}
+
+		return nil
 	}
+
+	// This is the size we expect the NodeGroup to be after we have called DeleteNodes.
+	// We need at least 8 nodes for this test to be valid.
+	expectedSize := 7
 
 	test := func(t *testing.T, testConfig *testConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
@@ -848,6 +863,17 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
+		// Check that the test case is valid before executing DeleteNodes
+		// 1. We must have at least 1 more node than the expected size otherwise DeleteNodes is a no-op
+		// 2. MinSize must be less than the expected size otherwise a second call to DeleteNodes may
+		//    not make the nodegroup size less than the expected size.
+		if len(nodeNames) <= expectedSize {
+			t.Fatalf("expected more nodes than the expected size: %d <= %d", len(nodeNames), expectedSize)
+		}
+		if ng.MinSize() >= expectedSize {
+			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(), expectedSize)
+		}
+
 		if len(nodeNames) != len(testConfig.nodes) {
 			t.Fatalf("expected len=%v, got len=%v", len(testConfig.nodes), len(nodeNames))
 		}
@@ -862,55 +888,41 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 			}
 		}
 
+		// These are the nodes which are over the final expectedSize
+		nodesToBeDeleted := testConfig.nodes[expectedSize:]
+
 		// Assert that we have no DeletionTimestamp
-		for i := 7; i < len(testConfig.machines); i++ {
+		for i := expectedSize; i < len(testConfig.machines); i++ {
 			if !testConfig.machines[i].ObjectMeta.DeletionTimestamp.IsZero() {
 				t.Fatalf("unexpected DeletionTimestamp")
 			}
 		}
 
-		if err := ng.DeleteNodes(testConfig.nodes[7:]); err != nil {
+		// Delete all nodes over the expectedSize
+		if err := ng.DeleteNodes(nodesToBeDeleted); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		for i := 7; i < len(testConfig.machines); i++ {
-			if err := addDeletionTimestamp(t, controller, testConfig.machines[i]); err != nil {
+		for _, node := range nodesToBeDeleted {
+			if err := addDeletionTimestampToMachine(t, controller, node); err != nil {
 				t.Fatalf("unexpected err: %v", err)
-			}
-			if testConfig.machines[i].ObjectMeta.DeletionTimestamp.IsZero() {
-				t.Fatalf("expected a DeletionTimestamp")
 			}
 		}
 
-		// TODO(frobware) We have a flaky test here because we
-		// just called Delete and Update and the next call to
-		// controller.nodeGroups() will sometimes get stale
-		// objects from the (fakeclient) store. To fix this we
-		// should update the test machinery so that individual
-		// tests can have callbacks on Add/Update/Delete on
-		// each of the respective informers. We should then
-		// override those callbacks here in this test to add
-		// rendezvous points so that we wait until all objects
-		// have been updated before we go and get them again.
-		//
-		// Running this test with a 500ms duration I see:
-		//
-		// $ ./stress ./openshiftmachineapi.test -test.run TestNodeGroupDeleteNodesTwice -test.count 5 | ts | ts -i
-		// 00:00:05 Feb 27 14:29:36 0 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:29:41 8 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:29:46 16 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:29:51 24 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:29:56 32 runs so far, 0 failures
-		// ...
-		// 00:00:05 Feb 27 14:31:01 112 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:31:06 120 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:31:11 128 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:31:16 136 runs so far, 0 failures
-		// 00:00:05 Feb 27 14:31:21 144 runs so far, 0 failures
-		//
-		// To make sure we don't run into any flakes in CI
-		// I've chosen to make this sleep duration 3s.
-		time.Sleep(3 * time.Second)
+		// Wait for the machineset to have been updated
+		if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) {
+			nodegroups, err = controller.nodeGroups()
+			if err != nil {
+				return false, err
+			}
+			targetSize, err := nodegroups[0].TargetSize()
+			if err != nil {
+				return false, err
+			}
+			return targetSize == expectedSize, nil
+		}); err != nil {
+			t.Fatalf("unexpected error waiting for nodegroup to be expected size: %v", err)
+		}
 
 		nodegroups, err = controller.nodeGroups()
 		if err != nil {
@@ -919,21 +931,57 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 
 		ng = nodegroups[0]
 
-		// Attempt to delete the nodes again which verifies
-		// that nodegroup.DeleteNodes() skips over nodes that
-		// have a non-nil DeletionTimestamp value.
-		if err := ng.DeleteNodes(testConfig.nodes[7:]); err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
+		// Check the nodegroup is at the expected size
 		actualSize, err := ng.TargetSize()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		expectedSize := len(testConfig.machines) - len(testConfig.machines[7:])
 		if actualSize != expectedSize {
 			t.Fatalf("expected %d nodes, got %d", expectedSize, actualSize)
+		}
+
+		// Check that the machines deleted in the last run have DeletionTimestamp's
+		// when fetched from the API
+		for _, node := range nodesToBeDeleted {
+			// Ensure the update has propogated
+			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) {
+				m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+				if err != nil {
+					return false, err
+				}
+				return !m.GetDeletionTimestamp().IsZero(), nil
+			}); err != nil {
+				t.Fatalf("unexpected error waiting for machine to have deletion timestamp: %v", err)
+			}
+		}
+
+		// Attempt to delete the nodes again which verifies
+		// that nodegroup.DeleteNodes() skips over nodes that
+		// have a non-nil DeletionTimestamp value.
+		if err := ng.DeleteNodes(nodesToBeDeleted); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		switch v := (ng.scalableResource).(type) {
+		case *machineSetScalableResource:
+			updatedMachineSet, err := controller.getMachineSet(testConfig.machineSet.Namespace, testConfig.machineSet.Name, metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if actual := pointer.Int32PtrDerefOr(updatedMachineSet.Spec.Replicas, 0); int(actual) != expectedSize {
+				t.Fatalf("expected %v nodes, got %v", expectedSize, actual)
+			}
+		case *machineDeploymentScalableResource:
+			updatedMachineDeployment, err := controller.getMachineDeployment(testConfig.machineDeployment.Namespace, testConfig.machineDeployment.Name, metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if actual := pointer.Int32PtrDerefOr(updatedMachineDeployment.Spec.Replicas, 0); int(actual) != expectedSize {
+				t.Fatalf("expected %v nodes, got %v", expectedSize, actual)
+			}
+		default:
+			t.Errorf("unexpected type: %T", v)
 		}
 	}
 
