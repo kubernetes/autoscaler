@@ -66,8 +66,12 @@ const (
 	backoffJitterDefault   = 1.0
 
 	// rate limit
-	rateLimitQPSDefault    = 1.0
+	rateLimitQPSDefault float32 = 1.0
 	rateLimitBucketDefault = 5
+	rateLimitReadQPSEnvVar = "RATE_LIMIT_READ_QPS"
+	rateLimitReadBucketsEnvVar = "RATE_LIMIT_READ_BUCKETS"
+	rateLimitWriteQPSEnvVar = "RATE_LIMIT_WRITE_QPS"
+	rateLimitWriteBucketsEnvVar = "RATE_LIMIT_WRITE_BUCKETS"
 )
 
 var validLabelAutoDiscovererKeys = strings.Join([]string{
@@ -155,12 +159,11 @@ func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 
 	// Assign read rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPS == 0 {
-		if rateLimitQPSFromEnv := os.Getenv("RATE_LIMIT_READ_QPS"); rateLimitQPSFromEnv != "" {
+		if rateLimitQPSFromEnv := os.Getenv(rateLimitReadQPSEnvVar); rateLimitQPSFromEnv != "" {
 			rateLimitQPS, err := strconv.ParseFloat(rateLimitQPSFromEnv, 0)
 			if err != nil {
-				return fmt.Errorf("failed to parse RATE_LIMIT_READ_QPS: %q, %v", rateLimitQPSFromEnv, err)
+				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitReadQPSEnvVar, rateLimitQPSFromEnv, err)
 			}
-			klog.V(4).Infof("Set read rate limit QPS to %f", rateLimitQPS)
 			config.CloudProviderRateLimitQPS = float32(rateLimitQPS)
 		} else {
 			config.CloudProviderRateLimitQPS = rateLimitQPSDefault
@@ -168,13 +171,12 @@ func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 	}
 
 	if config.CloudProviderRateLimitBucket == 0 {
-		if rateLimitBucketFromEnv := os.Getenv("RATE_LIMIT_READ_BUCKETS"); rateLimitBucketFromEnv != "" {
+		if rateLimitBucketFromEnv := os.Getenv(rateLimitReadBucketsEnvVar); rateLimitBucketFromEnv != "" {
 			rateLimitBucket, err := strconv.ParseInt(rateLimitBucketFromEnv, 10, 0)
 			if err != nil {
-				return fmt.Errorf("failed to parse RATE_LIMIT_READ_BUCKETS: %q, %v", rateLimitBucketFromEnv, err)
+				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitReadBucketsEnvVar, rateLimitBucketFromEnv, err)
 			}
 			config.CloudProviderRateLimitBucket = int(rateLimitBucket)
-			klog.V(4).Infof("Set read rate limit buckets to %d", rateLimitBucket)
 		} else {
 			config.CloudProviderRateLimitBucket = rateLimitBucketDefault
 		}
@@ -182,25 +184,23 @@ func InitializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 
 	// Assign write rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPSWrite == 0 {
-		if rateLimitQPSWriteFromEnv := os.Getenv("RATE_LIMIT_WRITE_QPS"); rateLimitQPSWriteFromEnv != "" {
+		if rateLimitQPSWriteFromEnv := os.Getenv(rateLimitWriteQPSEnvVar); rateLimitQPSWriteFromEnv != "" {
 			rateLimitQPSWrite, err := strconv.ParseFloat(rateLimitQPSWriteFromEnv, 0)
 			if err != nil {
-				return fmt.Errorf("failed to parse RATE_LIMIT_WRITE_QPS: %q, %v", rateLimitQPSWriteFromEnv, err)
+				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitWriteQPSEnvVar, rateLimitQPSWriteFromEnv, err)
 			}
 			config.CloudProviderRateLimitQPSWrite = float32(rateLimitQPSWrite)
-			klog.V(4).Infof("Set write rate limit QPS to %f", rateLimitQPSWrite)
 		} else {
 			config.CloudProviderRateLimitQPSWrite = config.CloudProviderRateLimitQPS
 		}
 	}
 
 	if config.CloudProviderRateLimitBucketWrite == 0 {
-		if rateLimitBucketWriteFromEnv := os.Getenv("RATE_LIMIT_WRITE_BUCKETS"); rateLimitBucketWriteFromEnv != "" {
+		if rateLimitBucketWriteFromEnv := os.Getenv(rateLimitWriteBucketsEnvVar); rateLimitBucketWriteFromEnv != "" {
 			rateLimitBucketWrite, err := strconv.ParseInt(rateLimitBucketWriteFromEnv, 10, 0)
 			if err != nil {
-				return fmt.Errorf("failed to parse RATE_LIMIT_WRITE_BUCKET: %q, %v", rateLimitBucketWriteFromEnv, err)
+				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitWriteBucketsEnvVar, rateLimitBucketWriteFromEnv, err)
 			}
-			klog.V(4).Infof("Set write rate limit buckets to %d", rateLimitBucketWrite)
 			config.CloudProviderRateLimitBucketWrite = int(rateLimitBucketWrite)
 		} else {
 			config.CloudProviderRateLimitBucketWrite = config.CloudProviderRateLimitBucket
