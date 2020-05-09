@@ -18,6 +18,7 @@ package azure
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -365,4 +366,98 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	assert.Equal(t, vmssName, asgs[0].Id())
 	assert.Equal(t, minVal, asgs[0].MinSize())
 	assert.Equal(t, maxVal, asgs[0].MaxSize())
+}
+
+func TestInitializeCloudProviderRateLimitConfigWithNoConfigReturnsNoError(t *testing.T) {
+	err := InitializeCloudProviderRateLimitConfig(nil)
+	assert.Nil(t, err, "err should be nil")
+}
+
+func TestInitializeCloudProviderRateLimitConfigWithNoRateLimitSettingsReturnsDefaults(t *testing.T) {
+	emptyConfig := &CloudProviderRateLimitConfig{}
+	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitQPSDefault)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitBucketDefault)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitQPSDefault)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitBucketDefault)
+}
+
+func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettingsFromEnv(t *testing.T) {
+	emptyConfig := &CloudProviderRateLimitConfig{}
+	var rateLimitReadQPS float32 = 3.0
+	rateLimitReadBuckets := 10
+	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
+	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
+
+	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitReadQPS)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets)
+
+	os.Unsetenv(rateLimitReadBucketsEnvVar)
+	os.Unsetenv(rateLimitReadQPSEnvVar)
+}
+
+func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
+	emptyConfig := &CloudProviderRateLimitConfig{}
+	var rateLimitReadQPS float32 = 3.0
+	rateLimitReadBuckets := 10
+	var rateLimitWriteQPS float32 = 6.0
+	rateLimitWriteBuckets := 20
+
+	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
+	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
+	os.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
+	os.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
+
+	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
+
+	assert.NoError(t, err)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
+	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
+
+	os.Unsetenv(rateLimitReadQPSEnvVar)
+	os.Unsetenv(rateLimitReadBucketsEnvVar)
+	os.Unsetenv(rateLimitWriteQPSEnvVar)
+	os.Unsetenv(rateLimitWriteBucketsEnvVar)
+}
+
+func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadySetInConfig(t *testing.T) {
+	var rateLimitReadQPS float32 = 3.0
+	rateLimitReadBuckets := 10
+	var rateLimitWriteQPS float32 = 6.0
+	rateLimitWriteBuckets := 20
+
+	configWithRateLimits :=	&CloudProviderRateLimitConfig{
+		RateLimitConfig: azclients.RateLimitConfig{
+			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
+			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
+			CloudProviderRateLimitQPS:         rateLimitReadQPS,
+			CloudProviderRateLimitQPSWrite:    rateLimitWriteQPS,
+		},
+	}
+
+	os.Setenv(rateLimitReadQPSEnvVar, "99")
+	os.Setenv(rateLimitReadBucketsEnvVar, "99")
+	os.Setenv(rateLimitWriteQPSEnvVar, "99")
+	os.Setenv(rateLimitWriteBucketsEnvVar, "99")
+
+	err := InitializeCloudProviderRateLimitConfig(configWithRateLimits)
+
+	assert.NoError(t, err)
+	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPS, rateLimitReadQPS)
+	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucket, rateLimitReadBuckets)
+	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
+	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
+
+	os.Unsetenv(rateLimitReadQPSEnvVar)
+	os.Unsetenv(rateLimitReadBucketsEnvVar)
+	os.Unsetenv(rateLimitWriteQPSEnvVar)
+	os.Unsetenv(rateLimitWriteBucketsEnvVar)
 }
