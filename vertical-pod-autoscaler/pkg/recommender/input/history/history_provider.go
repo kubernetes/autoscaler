@@ -17,23 +17,29 @@ limitations under the License.
 package history
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"sort"
 	"strings"
 	"time"
 
+	promapi "github.com/prometheus/client_golang/api"
+
+	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	prommodel "github.com/prometheus/common/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
-	Address                                            string
-	HistoryLength, PodLabelPrefix, PodLabelsMetricName string
-	PodNamespaceLabel, PodNameLabel                    string
-	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel   string
-	CadvisorMetricsJobName                             string
+	Address                                          string
+	QueryTimeout                                     time.Duration
+	HistoryLength, HistoryResolution                 string
+	PodLabelPrefix, PodLabelsMetricName              string
+	PodNamespaceLabel, PodNameLabel                  string
+	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
+	CadvisorMetricsJobName                           string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -58,19 +64,44 @@ type HistoryProvider interface {
 }
 
 type prometheusHistoryProvider struct {
-	prometheusClient PrometheusClient
-	config           PrometheusHistoryProviderConfig
+	prometheusClient  prometheusv1.API
+	config            PrometheusHistoryProviderConfig
+	queryTimeout      time.Duration
+	historyDuration   prommodel.Duration
+	historyResolution prommodel.Duration
 }
 
 // NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
-func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) HistoryProvider {
-	return &prometheusHistoryProvider{
-		prometheusClient: NewPrometheusClient(&http.Client{}, config.Address),
-		config:           config,
+func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
+	promClient, err := promapi.NewClient(promapi.Config{
+		Address: config.Address,
+	})
+	if err != nil {
+		return &prometheusHistoryProvider{}, err
 	}
+
+	// Use Prometheus's model.Duration; this can additionally parse durations in days, weeks and years (as well as seconds, minutes, hours etc)
+	historyDuration, err := prommodel.ParseDuration(config.HistoryLength)
+	if err != nil {
+		return &prometheusHistoryProvider{}, fmt.Errorf("history length %s is not a valid duration: %v", config.HistoryLength, err)
+	}
+
+	historyResolution, err := prommodel.ParseDuration(config.HistoryResolution)
+	if err != nil {
+		return &prometheusHistoryProvider{}, fmt.Errorf("history resolution %s is not a valid duration: %v", config.HistoryResolution, err)
+	}
+
+	return &prometheusHistoryProvider{
+		prometheusClient:  prometheusv1.NewAPI(promClient),
+		config:            config,
+		queryTimeout:      config.QueryTimeout,
+		historyDuration:   historyDuration,
+		historyResolution: historyResolution,
+	}, nil
 }
 
-func (p *prometheusHistoryProvider) getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
+func (p *prometheusHistoryProvider) getContainerIDFromLabels(metric prommodel.Metric) (*model.ContainerID, error) {
+	labels := promMetricToLabelMap(metric)
 	namespace, ok := labels[p.config.CtrNamespaceLabel]
 	if !ok {
 		return nil, fmt.Errorf("no %s label", p.config.CtrNamespaceLabel)
@@ -86,13 +117,12 @@ func (p *prometheusHistoryProvider) getContainerIDFromLabels(labels map[string]s
 	return &model.ContainerID{
 		PodID: model.PodID{
 			Namespace: namespace,
-			PodName:   podName,
-		},
-		ContainerName: containerName,
-	}, nil
+			PodName:   podName},
+		ContainerName: containerName}, nil
 }
 
-func (p *prometheusHistoryProvider) getPodIDFromLabels(labels map[string]string) (*model.PodID, error) {
+func (p *prometheusHistoryProvider) getPodIDFromLabels(metric prommodel.Metric) (*model.PodID, error) {
+	labels := promMetricToLabelMap(metric)
 	namespace, ok := labels[p.config.PodNamespaceLabel]
 	if !ok {
 		return nil, fmt.Errorf("no %s label", p.config.PodNamespaceLabel)
@@ -104,15 +134,23 @@ func (p *prometheusHistoryProvider) getPodIDFromLabels(labels map[string]string)
 	return &model.PodID{Namespace: namespace, PodName: podName}, nil
 }
 
-func (p *prometheusHistoryProvider) getPodLabelsMap(metricLabels map[string]string) map[string]string {
+func (p *prometheusHistoryProvider) getPodLabelsMap(metric prommodel.Metric) map[string]string {
 	podLabels := make(map[string]string)
-	for key, value := range metricLabels {
-		podLabelKey := strings.TrimPrefix(key, p.config.PodLabelPrefix)
-		if podLabelKey != key {
-			podLabels[podLabelKey] = value
+	for key, value := range metric {
+		podLabelKey := strings.TrimPrefix(string(key), p.config.PodLabelPrefix)
+		if podLabelKey != string(key) {
+			podLabels[podLabelKey] = string(value)
 		}
 	}
 	return podLabels
+}
+
+func promMetricToLabelMap(metric prommodel.Metric) map[string]string {
+	labels := map[string]string{}
+	for k, v := range metric {
+		labels[string(k)] = string(v)
+	}
+	return labels
 }
 
 func resourceAmountFromValue(value float64, resource model.ResourceName) model.ResourceAmount {
@@ -127,29 +165,46 @@ func resourceAmountFromValue(value float64, resource model.ResourceName) model.R
 	return model.ResourceAmount(0)
 }
 
-func getContainerUsageSamplesFromSamples(samples []Sample, resource model.ResourceName) []model.ContainerUsageSample {
+func getContainerUsageSamplesFromSamples(samples []prommodel.SamplePair, resource model.ResourceName) []model.ContainerUsageSample {
 	res := make([]model.ContainerUsageSample, 0)
 	for _, sample := range samples {
 		res = append(res, model.ContainerUsageSample{
-			MeasureStart: sample.Timestamp,
-			Usage:        resourceAmountFromValue(sample.Value, resource),
-			Resource:     resource,
-		})
+			MeasureStart: sample.Timestamp.Time(),
+			Usage:        resourceAmountFromValue(float64(sample.Value), resource),
+			Resource:     resource})
 	}
 	return res
 }
 
 func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*PodHistory, query string, resource model.ResourceName) error {
-	tss, err := p.prometheusClient.GetTimeseries(query)
+	end := time.Now()
+	start := end.Add(-time.Duration(p.historyDuration))
+
+	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
+	defer cancel()
+
+	result, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
+		Start: start,
+		End:   end,
+		Step:  time.Duration(p.historyResolution),
+	})
+
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 	}
-	for _, ts := range tss {
-		containerID, err := p.getContainerIDFromLabels(ts.Labels)
+
+	matrix, ok := result.(prommodel.Matrix)
+	if !ok {
+		return fmt.Errorf("expected query to return a matrix; got result type %T", result)
+	}
+
+	for _, ts := range matrix {
+		containerID, err := p.getContainerIDFromLabels(ts.Metric)
 		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels: %v", ts.Labels)
+			return fmt.Errorf("cannot get container ID from labels: %v", ts.Metric)
 		}
-		newSamples := getContainerUsageSamplesFromSamples(ts.Samples, resource)
+
+		newSamples := getContainerUsageSamplesFromSamples(ts.Values, resource)
 		podHistory, ok := res[containerID.PodID]
 		if !ok {
 			podHistory = newEmptyHistory()
@@ -163,26 +218,37 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 }
 
 func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHistory, query string) error {
-	tss, err := p.prometheusClient.GetTimeseries(query)
+	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
+	defer cancel()
+
+	result, err := p.prometheusClient.Query(ctx, query, time.Now())
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for labels: %v", err)
 	}
-	for _, ts := range tss {
-		podID, err := p.getPodIDFromLabels(ts.Labels)
+
+	matrix, ok := result.(prommodel.Matrix)
+	if !ok {
+		return fmt.Errorf("expected query to return a matrix; got result type %T", result)
+	}
+
+	for _, ts := range matrix {
+		podID, err := p.getPodIDFromLabels(ts.Metric)
 		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels: %v", ts.Labels)
+			return fmt.Errorf("cannot get container ID from labels %v: %v", ts.Metric, err)
 		}
 		podHistory, ok := res[*podID]
 		if !ok {
 			podHistory = newEmptyHistory()
 			res[*podID] = podHistory
 		}
-		podLabels := p.getPodLabelsMap(ts.Labels)
-		for _, sample := range ts.Samples {
-			if sample.Timestamp.After(podHistory.LastSeen) {
-				podHistory.LastSeen = sample.Timestamp
-				podHistory.LastLabels = podLabels
-			}
+		podLabels := p.getPodLabelsMap(ts.Metric)
+
+		// time series results will always be sorted chronologically from oldest to
+		// newest, so the last element is the latest sample
+		lastSample := ts.Values[len(ts.Values)-1]
+		if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
+			podHistory.LastSeen = lastSample.Timestamp.Time()
+			podHistory.LastLabels = podLabels
 		}
 	}
 	return nil

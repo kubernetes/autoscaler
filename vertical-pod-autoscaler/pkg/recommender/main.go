@@ -44,6 +44,8 @@ var (
 	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	// prometheus history provider configs
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
+	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
+	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
 	podLabelPrefix      = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
 	podLabelsMetricName = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
 	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for container names`)
@@ -77,12 +79,20 @@ func main() {
 
 	useCheckpoints := *storage != "prometheus"
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+
+	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
+	if err != nil {
+		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+	}
+
 	if useCheckpoints {
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
 	} else {
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
+			QueryTimeout:           promQueryTimeout,
 			HistoryLength:          *historyLength,
+			HistoryResolution:      *historyResolution,
 			PodLabelPrefix:         *podLabelPrefix,
 			PodLabelsMetricName:    *podLabelsMetricName,
 			PodNamespaceLabel:      *podNamespaceLabel,
@@ -92,7 +102,11 @@ func main() {
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
 		}
-		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(config))
+		provider, err := history.NewPrometheusHistoryProvider(config)
+		if err != nil {
+			klog.Fatalf("Could not initialize history provider: %v", err)
+		}
+		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
