@@ -19,7 +19,7 @@ package history
 import (
 	"context"
 	"fmt"
-	"k8s.io/klog"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -29,7 +29,11 @@ import (
 	prommodel "github.com/prometheus/common/model"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/klog"
 )
+
+// Day is a shortcut for the Prometheus-defined day (which is always 24 hours, unlike real days
+const Day = 24 * time.Hour
 
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
@@ -154,6 +158,57 @@ func promMetricToLabelMap(metric prommodel.Metric) map[string]string {
 	return labels
 }
 
+// splitTimeShards splits a larger range of time into smaller time periods
+// (currently of a day each, but this may change in future).
+// It returns a slice of v1.Ranges with the first Range starting at the given
+// time and the last Range ending at the given end time.
+// Each Range will be no more than a day.
+func splitTimeShards(start, end time.Time, step time.Duration) []prometheusv1.Range {
+	timeRange := end.Sub(start)
+
+	if timeRange < Day {
+		// no need to split up time range
+		return []prometheusv1.Range{
+			{
+				Start: start,
+				End:   end,
+				Step:  step,
+			},
+		}
+	}
+
+	// split time range up into days, save the remainder
+	days := int(math.Floor(timeRange.Hours() / 24.))
+	remainder := timeRange - (time.Duration(days) * Day)
+
+	var res []prometheusv1.Range
+
+	rangeStart := start
+	rangeEnd := start.Add(remainder)
+
+	// If there's a remainder bit, put it first
+	if int(remainder) > 0 {
+		res = append(res, prometheusv1.Range{
+			Start: rangeStart,
+			End:   rangeEnd,
+			Step:  step,
+		})
+	}
+
+	// Add ranges of a day each
+	for i := 0; i < days; i++ {
+		rangeStart = rangeEnd
+		rangeEnd = rangeStart.Add(Day)
+		res = append(res, prometheusv1.Range{
+			Start: rangeStart,
+			End:   rangeEnd,
+			Step:  step,
+		})
+	}
+
+	return res
+}
+
 func resourceAmountFromValue(value float64, resource model.ResourceName) model.ResourceAmount {
 	// This assumes CPU value is in cores and memory in bytes, which is true
 	// for the metrics this class queries from Prometheus.
@@ -181,39 +236,39 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 	end := time.Now()
 	start := end.Add(-time.Duration(p.historyDuration))
 
-	ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
-	defer cancel()
+	for _, r := range splitTimeShards(start, end, time.Duration(p.historyResolution)) {
+		ctx, cancel := context.WithTimeout(context.Background(), p.queryTimeout)
+		defer cancel()
 
-	result, err := p.prometheusClient.QueryRange(ctx, query, prometheusv1.Range{
-		Start: start,
-		End:   end,
-		Step:  time.Duration(p.historyResolution),
-	})
+		klog.V(4).Infof("Running query for %s between %s and %s with step %s", query, r.Start.Format(time.RFC3339), r.End.Format(time.RFC3339), r.Step.String())
 
-	if err != nil {
-		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
-	}
+		result, err := p.prometheusClient.QueryRange(ctx, query, r)
 
-	matrix, ok := result.(prommodel.Matrix)
-	if !ok {
-		return fmt.Errorf("expected query to return a matrix; got result type %T", result)
-	}
-
-	for _, ts := range matrix {
-		containerID, err := p.getContainerIDFromLabels(ts.Metric)
 		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels: %v", ts.Metric)
+			return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 		}
 
-		newSamples := getContainerUsageSamplesFromSamples(ts.Values, resource)
-		podHistory, ok := res[containerID.PodID]
+		matrix, ok := result.(prommodel.Matrix)
 		if !ok {
-			podHistory = newEmptyHistory()
-			res[containerID.PodID] = podHistory
+			return fmt.Errorf("expected query to return a matrix; got result type %T", result)
 		}
-		podHistory.Samples[containerID.ContainerName] = append(
-			podHistory.Samples[containerID.ContainerName],
-			newSamples...)
+
+		for _, ts := range matrix {
+			containerID, err := p.getContainerIDFromLabels(ts.Metric)
+			if err != nil {
+				return fmt.Errorf("cannot get container ID from labels: %v", ts.Metric)
+			}
+
+			newSamples := getContainerUsageSamplesFromSamples(ts.Values, resource)
+			podHistory, ok := res[containerID.PodID]
+			if !ok {
+				podHistory = newEmptyHistory()
+				res[containerID.PodID] = podHistory
+			}
+			podHistory.Samples[containerID.ContainerName] = append(
+				podHistory.Samples[containerID.ContainerName],
+				newSamples...)
+		}
 	}
 	return nil
 }
