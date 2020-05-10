@@ -260,12 +260,12 @@ The new version of [Azure client][] supports rate limit and back-off retries whe
 | CloudProviderBackoffDuration | 5 | BACKOFF_DURATION | cloudProviderBackoffDuration |
 | CloudProviderBackoffJitter | 1.0 | BACKOFF_JITTER | cloudProviderBackoffJitter |
 | CloudProviderRateLimit * | false | CLOUD_PROVIDER_RATE_LIMIT | cloudProviderRateLimit |
-| CloudProviderRateLimitQPS * | 1 | | cloudProviderRateLimitQPS |
-| CloudProviderRateLimitBucket * | 5 | | cloudProviderRateLimitBucket |
-| CloudProviderRateLimitQPSWrite * | 1 | | cloudProviderRateLimitQPSWrite |
-| CloudProviderRateLimitBucketWrite * | 5 | | cloudProviderRateLimitBucketWrite |
+| CloudProviderRateLimitQPS * | 1 | RATE_LIMIT_READ_QPS | cloudProviderRateLimitQPS |
+| CloudProviderRateLimitBucket * | 5 | RATE_LIMIT_READ_BUCKETS | cloudProviderRateLimitBucket |
+| CloudProviderRateLimitQPSWrite * | 1 | RATE_LIMIT_WRITE_QPS | cloudProviderRateLimitQPSWrite |
+| CloudProviderRateLimitBucketWrite * | 5 | RATE_LIMIT_WRITE_BUCKETS | cloudProviderRateLimitBucketWrite |
 
-> **_NOTE_**: * These rate limit configs can be set per-client. Customizing  `QPS` and `Bucket` through environment variables is not supported.
+> **_NOTE_**: * These rate limit configs can be set per-client. Customizing `QPS` and `Bucket` through environment variables per client is not supported.
 
 [AKS]: https://docs.microsoft.com/azure/aks/
 [AKS autoscaler documentation]: https://docs.microsoft.com/azure/aks/autoscaler
