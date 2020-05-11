@@ -1,2 +1,7 @@
 # Updater binary
 updater
+updater-amd64
+updater-arm64
+updater-arm
+updater-ppc64le
+updater-s390x
