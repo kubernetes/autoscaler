@@ -19,6 +19,7 @@ package history
 import (
 	"context"
 	"fmt"
+	"k8s.io/klog"
 	"sort"
 	"strings"
 	"time"
@@ -263,12 +264,16 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	podSelector = podSelector + fmt.Sprintf("%s=~\".+\", %s!=\"POD\", %s!=\"\"",
 		p.config.CtrPodNameLabel, p.config.CtrNameLabel, p.config.CtrNameLabel)
 
-	// This query uses Prometheus Subquery notation, to gives us a result of a five minute cpu rate by default evaluated every 1minute for last config.HistoryLength days/hours/minutes. In order to change the evaluation step, you need change Prometheus global.evaluation_interval configuration parameter.
-	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[5m])[%s:]", podSelector, p.config.HistoryLength), model.ResourceCPU)
+	historicalCpuQuery := fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryResolution)
+	klog.V(4).Infof("Historical CPU usage query used: %s", historicalCpuQuery)
+	err := p.readResourceHistory(res, historicalCpuQuery, model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
-	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_working_set_bytes{%s}[%s]", podSelector, p.config.HistoryLength), model.ResourceMemory)
+
+	historicalMemoryQuery := fmt.Sprintf("container_memory_working_set_bytes{%s}", podSelector)
+	klog.V(4).Infof("Historical memory usage query used: %s", historicalMemoryQuery)
+	err = p.readResourceHistory(res, historicalMemoryQuery, model.ResourceMemory)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
@@ -277,6 +282,6 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 			sort.Slice(samples, func(i, j int) bool { return samples[i].MeasureStart.Before(samples[j].MeasureStart) })
 		}
 	}
-	p.readLastLabels(res, fmt.Sprintf("%s[%s]", p.config.PodLabelsMetricName, p.config.HistoryLength))
+	p.readLastLabels(res, p.config.PodLabelsMetricName)
 	return res, nil
 }
