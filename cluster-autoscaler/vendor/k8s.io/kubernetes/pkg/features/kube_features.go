@@ -543,6 +543,7 @@ const (
 
 	// owner: @wojtek-t
 	// alpha: v1.18
+	// beta: v1.19
 	//
 	// Enables a feature to make secrets and configmaps data immutable.
 	ImmutableEphemeralVolumes featuregate.Feature = "ImmutableEphemeralVolumes"
@@ -657,10 +658,10 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	PodDisruptionBudget:                            {Default: true, PreRelease: featuregate.Beta},
 	ServiceTopology:                                {Default: false, PreRelease: featuregate.Alpha},
 	ServiceAppProtocol:                             {Default: true, PreRelease: featuregate.Beta},
-	ImmutableEphemeralVolumes:                      {Default: false, PreRelease: featuregate.Alpha},
+	ImmutableEphemeralVolumes:                      {Default: true, PreRelease: featuregate.Beta},
 	DefaultIngressClass:                            {Default: true, PreRelease: featuregate.Beta},
 	HugePageStorageMediumSize:                      {Default: false, PreRelease: featuregate.Alpha},
-	ExternalPolicyForExternalIP:                    {Default: false, PreRelease: featuregate.GA}, // remove in 1.19
+	ExternalPolicyForExternalIP:                    {Default: true, PreRelease: featuregate.GA}, // remove in 1.20
 	AnyVolumeDataSource:                            {Default: false, PreRelease: featuregate.Alpha},
 
 	// inherited features from generic apiserver, relisted here to get a conflict if it is changed
@@ -671,7 +672,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	genericfeatures.DynamicAuditing:         {Default: false, PreRelease: featuregate.Alpha},
 	genericfeatures.APIResponseCompression:  {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.APIListChunking:         {Default: true, PreRelease: featuregate.Beta},
-	genericfeatures.DryRun:                  {Default: true, PreRelease: featuregate.Beta},
+	genericfeatures.DryRun:                  {Default: true, PreRelease: featuregate.GA},
 	genericfeatures.ServerSideApply:         {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.APIPriorityAndFairness:  {Default: false, PreRelease: featuregate.Alpha},
 

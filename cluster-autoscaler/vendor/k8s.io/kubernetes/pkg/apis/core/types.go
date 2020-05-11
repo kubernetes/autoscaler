@@ -4521,20 +4521,7 @@ type EventSeries struct {
 	Count int32
 	// Time of the last occurrence observed
 	LastObservedTime metav1.MicroTime
-	// State of this Series: Ongoing or Finished
-	// Deprecated. Planned removal for 1.18
-	State EventSeriesState
 }
-
-// EventSeriesState defines the state of event series
-type EventSeriesState string
-
-// These are valid values of event series state
-const (
-	EventSeriesStateOngoing  EventSeriesState = "Ongoing"
-	EventSeriesStateFinished EventSeriesState = "Finished"
-	EventSeriesStateUnknown  EventSeriesState = "Unknown"
-)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -4780,7 +4767,7 @@ type Secret struct {
 
 	// Immutable field, if set, ensures that data stored in the Secret cannot
 	// be updated (only object metadata can be modified).
-	// This is an alpha field enabled by ImmutableEphemeralVolumes feature gate.
+	// This is a beta field enabled by ImmutableEphemeralVolumes feature gate.
 	// +optional
 	Immutable *bool
 
@@ -4908,7 +4895,7 @@ type ConfigMap struct {
 
 	// Immutable field, if set, ensures that data stored in the ConfigMap cannot
 	// be updated (only object metadata can be modified).
-	// This is an alpha field enabled by ImmutableEphemeralVolumes feature gate.
+	// This is a beta field enabled by ImmutableEphemeralVolumes feature gate.
 	// +optional
 	Immutable *bool
 
@@ -5189,8 +5176,8 @@ const (
 // TopologySpreadConstraint specifies how to spread matching pods among the given topology.
 type TopologySpreadConstraint struct {
 	// MaxSkew describes the degree to which pods may be unevenly distributed.
-	// It's the maximum permitted difference between the number of matching pods in
-	// any two topology domains of a given topology type.
+	// When `whenUnsatisfiable=DoNotSchedule`, it is the maximum permitted difference
+	// between the number of matching pods in the target topology and the global minimum.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
 	// labelSelector spread as 1/1/0:
 	// +-------+-------+-------+
@@ -5202,6 +5189,8 @@ type TopologySpreadConstraint struct {
 	// scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2)
 	// violate MaxSkew(1).
 	// - if MaxSkew is 2, incoming pod can be scheduled onto any zone.
+	// When `whenUnsatisfiable=ScheduleAnyway`, it is used to give higher precedence
+	// to topologies that satisfy it.
 	// It's a required field. Default value is 1 and 0 is not allowed.
 	MaxSkew int32
 	// TopologyKey is the key of node labels. Nodes that have a label with this key
@@ -5212,10 +5201,13 @@ type TopologySpreadConstraint struct {
 	TopologyKey string
 	// WhenUnsatisfiable indicates how to deal with a pod if it doesn't satisfy
 	// the spread constraint.
-	// - DoNotSchedule (default) tells the scheduler not to schedule it
-	// - ScheduleAnyway tells the scheduler to still schedule it
-	// It's considered as "Unsatisfiable" if and only if placing incoming pod on any
-	// topology violates "MaxSkew".
+	// - DoNotSchedule (default) tells the scheduler not to schedule it.
+	// - ScheduleAnyway tells the scheduler to schedule the pod in any location,
+	//   but giving higher precedence to topologies that would help reduce the
+	//   skew.
+	// A constraint is considered "Unsatisfiable" for an incoming pod
+	// if and only if every possible node assigment for that pod would violate
+	// "MaxSkew" on some topology.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
 	// labelSelector spread as 3/1/1:
 	// +-------+-------+-------+
