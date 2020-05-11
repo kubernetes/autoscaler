@@ -16,7 +16,8 @@
 FROM gcr.io/distroless/static:latest
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
-COPY updater /
+ARG ARCH
+COPY updater-$ARCH /updater
 
 ENTRYPOINT ["/updater"]
 CMD ["--v=4", "--stderrthreshold=info"]
