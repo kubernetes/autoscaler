@@ -108,7 +108,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool, namespace string) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient, namespace)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory)
 	return ClusterStateFeederFactory{
 		PodLister:           podLister,
