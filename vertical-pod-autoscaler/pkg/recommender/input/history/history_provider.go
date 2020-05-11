@@ -24,9 +24,9 @@ import (
 	"time"
 
 	promapi "github.com/prometheus/client_golang/api"
-
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -83,12 +83,12 @@ func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (Histo
 	// Use Prometheus's model.Duration; this can additionally parse durations in days, weeks and years (as well as seconds, minutes, hours etc)
 	historyDuration, err := prommodel.ParseDuration(config.HistoryLength)
 	if err != nil {
-		return &prometheusHistoryProvider{}, fmt.Errorf("history length %s is not a valid duration: %v", config.HistoryLength, err)
+		return &prometheusHistoryProvider{}, fmt.Errorf("history length %s is not a valid Prometheus duration: %v", config.HistoryLength, err)
 	}
 
 	historyResolution, err := prommodel.ParseDuration(config.HistoryResolution)
 	if err != nil {
-		return &prometheusHistoryProvider{}, fmt.Errorf("history resolution %s is not a valid duration: %v", config.HistoryResolution, err)
+		return &prometheusHistoryProvider{}, fmt.Errorf("history resolution %s is not a valid Prometheus duration: %v", config.HistoryResolution, err)
 	}
 
 	return &prometheusHistoryProvider{
