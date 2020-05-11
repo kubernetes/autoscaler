@@ -36,10 +36,6 @@ const (
 	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
 )
 
-type mockPrometheusClient struct {
-	mock.Mock
-}
-
 func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProviderConfig {
 	return PrometheusHistoryProviderConfig{
 		Address:                "",
