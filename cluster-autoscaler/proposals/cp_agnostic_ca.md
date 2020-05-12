@@ -67,3 +67,4 @@ package aws
 func init() {
 	cloudprovider.RegisterCloudProvider("aws", aws.BuildAWS)
 }
+```
