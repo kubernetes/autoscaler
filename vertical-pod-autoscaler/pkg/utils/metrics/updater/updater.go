@@ -18,21 +18,65 @@ limitations under the License.
 package updater
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 )
 
 const (
 	metricsNamespace = metrics.TopMetricsNamespace + "updater"
+
+	maxVpaSizeLog = 20
+	// maxVpaSize = 2 ^ maxVpaSizeLog
+	maxVpaSize = 1024 * 1024
 )
 
+// SizeBasedGauge is a wrapper for incrementally recording values indexed by log2(VPA size)
+type SizeBasedGauge struct {
+	values map[int]int
+	gauge  *prometheus.GaugeVec
+}
+
 var (
-	evictedCount = prometheus.NewCounter(
+	controlledCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "controlled_pods_total",
+			Help:      "Number of Pods controlled by VPA updater.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	evictableCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "evictable_pods_total",
+			Help:      "Number of Pods matching evicition criteria.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	evictedCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of Pods evicted by Updater to apply a new recommendation.",
-		},
+		}, []string{"vpa_size_log2"},
+	)
+
+	vpasWithEvictablePodsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_with_evictable_pods_total",
+			Help:      "Number of VPA objects with at least one Pod matching evicition criteria.",
+		}, []string{"vpa_size_log2"},
+	)
+
+	vpasWithEvictedPodsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_with_evicted_pods_total",
+			Help:      "Number of VPA objects with at least one evicted Pod.",
+		}, []string{"vpa_size_log2"},
 	)
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
@@ -41,8 +85,7 @@ var (
 
 // Register initializes all metrics for VPA Updater
 func Register() {
-	prometheus.MustRegister(evictedCount)
-	prometheus.MustRegister(functionLatency)
+	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, functionLatency)
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
@@ -50,7 +93,69 @@ func NewExecutionTimer() *metrics.ExecutionTimer {
 	return metrics.NewExecutionTimer(functionLatency)
 }
 
-// AddEvictedPod increases the counter of pods evicted by VPA
-func AddEvictedPod() {
-	evictedCount.Add(1)
+// newSizeBasedGauge provides a wrapper for counting items in a loop
+func newSizeBasedGauge(gauge *prometheus.GaugeVec) *SizeBasedGauge {
+	obj := SizeBasedGauge{
+		values: make(map[int]int),
+		gauge:  gauge,
+	}
+
+	// initialize with empty data so we can clean stale gauge values in Observe
+	for i := 0; i <= maxVpaSizeLog; i++ {
+		obj.values[i] = 0
+	}
+
+	return &obj
+}
+
+// NewControlledPodsCounter returns a wrapper for counting Pods controlled by Updater
+func NewControlledPodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(controlledCount)
+}
+
+// NewEvictablePodsCounter returns a wrapper for counting Pods which are matching eviction criteria
+func NewEvictablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(evictableCount)
+}
+
+// NewVpasWithEvictablePodsCounter returns a wrapper for counting VPA objects with Pods matching eviction criteria
+func NewVpasWithEvictablePodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithEvictablePodsCount)
+}
+
+// NewVpasWithEvictedPodsCounter returns a wrapper for counting VPA objects with evicted Pods
+func NewVpasWithEvictedPodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithEvictedPodsCount)
+}
+
+func getVpaSizeLog2(vpaSize int) int {
+	if vpaSize >= maxVpaSize {
+		return maxVpaSizeLog
+	}
+
+	log2 := 0
+	for vpaSize > 1 {
+		log2++
+		vpaSize >>= 1
+	}
+	return log2
+}
+
+// AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
+func AddEvictedPod(vpaSize int) {
+	log2 := getVpaSizeLog2(vpaSize)
+	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+}
+
+// Add increases the counter for the given VPA size
+func (g *SizeBasedGauge) Add(vpaSize int, value int) {
+	log2 := getVpaSizeLog2(vpaSize)
+	g.values[log2] += value
+}
+
+// Observe stores the recorded values into metrics object associated with the wrapper
+func (g *SizeBasedGauge) Observe() {
+	for log2, value := range g.values {
+		g.gauge.WithLabelValues(strconv.Itoa(log2)).Set(float64(value))
+	}
 }

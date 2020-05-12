@@ -29,4 +29,3 @@ before pod with 20% memory increase and no change in cpu).
 
 # Missing parts
 * Recommendation API for fetching data from Vertical Pod Autoscaler Recommender.
-* Monitoring.
