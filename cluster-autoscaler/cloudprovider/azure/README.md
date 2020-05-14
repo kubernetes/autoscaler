@@ -47,7 +47,7 @@ You can also use forward slashes in taints by setting them as an underscore in t
 
 ## Deployment manifests
 
-Cluster autoscaler supports four Kubernetes cluster options on Azure:
+Cluster autoscaler supports three Kubernetes cluster options on Azure:
 
 - [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss` or to an empty string. This supports clusters deployed with [aks-engine][].
 - [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
