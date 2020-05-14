@@ -3,7 +3,32 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-shopt -s lastpipe
+if [[ -z "$BASH" ]] ; then
+  echo "Set"
+  shopt -s lastpipe
+fi
+
+SED=sed
+XARGS=xargs
+GETOPT=getopt
+unamestr=`uname`
+if [[ "$unamestr" == "Darwin" ]] ; then
+  SED=gsed
+  XARGS=gxargs
+  GETOPT="$(brew --prefix gnu-getopt)/bin/getopt"
+  type $SED >/dev/null 2<&1 || {
+    echo >&2 "$SED not installed. Try: brew install gnu-sed";
+    exit 1;
+  }
+  type $XARGS >/dev/null 2<&1 || {
+    echo >&2 "$XARGS not installed. Try brew install findutils";
+    exit 1;
+  }
+  type $GETOPT >/dev/null 2>&1 || {
+    echo <&2 "$GETOPT not installed. Try brew install gnu-getopt";
+    exit 1;
+  }
+fi
 
 if [[ $(basename $(pwd)) != "cluster-autoscaler" ]];then
   echo "The script must be run in cluster-autoscaler directory"
@@ -23,7 +48,7 @@ TARGET_MODULE=${TARGET_MODULE:-k8s.io/autoscaler/cluster-autoscaler}
 VERIFY_COMMAND=${VERIFY_COMMAND:-"go test -mod=vendor ./..."}
 
 ARGS="$@"
-OPTS=`getopt -o f::r::d::v::b:: --long k8sfork::,k8srev::,workdir::,batch:: -n $SCRIPT_NAME -- "$@"`
+OPTS=`$GETOPT -o f::r::d::v::b:: --long k8sfork::,k8srev::,workdir::,batch:: -n $SCRIPT_NAME -- "$@"`
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 eval set -- "$OPTS"
 while true; do
@@ -105,17 +130,22 @@ set +o errexit
   # Base CA go.mod on one from k8s.io/kuberntes
   cp $K8S_REPO/go.mod .
 
+  # version compare
+  function version_gt() {
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+  }
+
   # Check go version
   REQUIRED_GO_VERSION=$(cat go.mod  |grep '^go ' |tr -s ' ' |cut -d ' '  -f 2)
-  USED_GO_VERSION=$(go version |sed 's/.*go\([0-9]\+\.[0-9]\+\).*/\1/')
+  USED_GO_VERSION=$(go version | $SED 's/.*go\([0-9]\+\.[0-9]\+\).*/\1/')
 
-  if [[ "${REQUIRED_GO_VERSION}" != "${USED_GO_VERSION}" ]];then
+  if version_gt $REQUIRED_GO_VERSION $USED_GO_VERSION; then
     err_rerun "Invalid go version ${USED_GO_VERSION}; required go version is ${REQUIRED_GO_VERSION}."
   fi
 
   # Fix module name and staging modules links
-  sed -i "s#module k8s.io/kubernetes#module ${TARGET_MODULE}#" go.mod
-  sed -i "s#\\./staging#${K8S_REPO}/staging#" go.mod
+  $SED -i "s#module k8s.io/kubernetes#module ${TARGET_MODULE}#" go.mod
+  $SED -i "s#\\./staging#${K8S_REPO}/staging#" go.mod
 
   function list_dependencies() {
     local_tmp_dir=$(mktemp -d "${WORK_DIR}/list_dependencies.XXXX")
@@ -125,10 +155,6 @@ set +o errexit
     go mod edit -json ${go_dep_file} |jq -r '.Replace[]? | select(.New.Version != null)| "\(.Old.Path) \(.New.Version)"' >> ${tmp_file}
     go mod edit -json ${go_dep_file} |jq -r '.Require[]? | "\(.Path) \(.Version)"' >> ${tmp_file}
     cat ${tmp_file} |sort |uniq
-  }
-
-  function version_gt() {
-    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
   }
 
   GO_MOD_EXTRA_FILES="$(shopt -s nullglob;echo go.mod-extra*)"
@@ -152,10 +178,10 @@ set +o errexit
   # Add dependencies from go.mod-extra to go.mod
   # Propagate require entries to both require and replace
   for go_mod_extra in ${GO_MOD_EXTRA_FILES}; do
-    go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-require \(.Path)@\(.Version)"' | xargs -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
-    go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-replace \(.Path)=\(.Path)@\(.Version)"' | xargs -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
+    go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-require \(.Path)@\(.Version)"' | $XARGS -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
+    go mod edit -json ${go_mod_extra} | jq -r '.Require[]? | "-replace \(.Path)=\(.Path)@\(.Version)"' | $XARGS -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
     # And add explicit replace entries
-    go mod edit -json ${go_mod_extra} | jq -r '.Replace[]? | "-replace \(.Old.Path)=\(.New.Path)@\(.New.Version)"' | sed "s/@null//g" |xargs -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
+    go mod edit -json ${go_mod_extra} | jq -r '.Replace[]? | "-replace \(.Old.Path)=\(.New.Path)@\(.New.Version)"' | $SED "s/@null//g" | $XARGS -t -r go mod edit >&${BASH_XTRACEFD} 2>&1
   done
   # Add k8s.io/kubernetes dependency
   go mod edit -require k8s.io/kubernetes@v0.0.0
