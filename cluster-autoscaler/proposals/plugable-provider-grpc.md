@@ -109,6 +109,10 @@ A new flag, named
 In addition this approach reuses the existing flag that defines the name of the cloud provider `--cloud-provider=mycloudprovider`
 https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider.
 
+To connect the CA core with this new remote cloud provider, this approach needs to implement a new generic cloud provider 
+as part of the CA core code.
+This new provider, named `CustomCloudProvider` simply makes gRPC calls to the remote functions exposed by the custom cloud provider server. In other words, it forwards the calls and handle the errors analogously how done in other existing providers.
+
 Obviously, this new apprach needs to use TLS to ensure a secure communication between CA and this CA provider server.
 The flags need to be defined [TODO].
 
