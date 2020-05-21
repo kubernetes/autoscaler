@@ -9,101 +9,150 @@ In this proposal, a different design approach is presented which will decouple t
 ### Issues
 - In the current design the ClusterAutoscaler core has dependency on the CloudProvider implementations.
 - For proprietary CloudProvider implementations it results in an development cycle to fork new version from public repo and port the CloudProvider implementation to the latest fork.
-- Also the ClusterAutoscaler library comes with a lot of unnecessary CloudProvider specific dependencies which might not be required for other CloudProviders.
+- Also the ClusterAutoscaler library comes with a lot of unnecessary CloudProvider specific dependencies which might not be required for other CloudProviders. (We dont want to address this)
 
 ### Solution
+Version 1:  (Not acceptable, as we don't want to disrupt the existing dev/build cycle)
 - Release ClusterAutoscalerCore as a separate module which won't have any Cloudprovider specific code/dependencies.
 - Release CloudProvider specific ClusterAutoscaler[PROVIDER] as separate module. This module depends on specific version of ClusterAutoscaler.
 - For proprietary CloudProvider implementations can depend on ClusterAutoscalerCore module and wont get any other CloudProvider specific dependencies.
 - Also the development cycle for CloudProvider implementation reduces to just a version bump of ClusterAutoscalerCore if the CloudProvider,Nodegroup interfaces are intact and CloudProvider doesn't intend to add any feature.
 
+Version 2:
+- Let the existing cloudProvider code remain in the current hierarchy.
+- Introduce external_cloud_provider.go under cloudprovider.external package: A shim layer which will give external_cloud_provider mechanism to register their implementation.
+
 ### Implementation
-- Introduce a Registration mechanism in ClusterAutoScalerCore which the CloudProvider can use to register the implementation at init.
 ```go
-package cloudprovider
+package external
 
-type CloudProviderFactory func(opts config.AutoscalingOptions, do NodeGroupDiscoveryOptions, rl *ResourceLimiter) CloudProvider
+import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/klog"
+	"sync"
+)
 
-// All registered cloud providers.
+type CloudProviderFactory func(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider
+
 var (
 	mutex                         sync.Mutex
 	cloudProviderFactory          CloudProviderFactory
-	podListProcessor              pods.PodListProcessor
-	nodeGroupListProcessor        nodegroups.NodeGroupListProcessor
-	nodeGroupSetProcessor 		  nodegroupset.NodeGroupSetProcessor
-	scaleUpStatusProcessor 		  status.ScaleUpStatusProcessor
-	scaleDownNodeProcessor 		  nodes.ScaleDownNodeProcessor
-	scaleDownStatusProcessor 	  status.ScaleDownStatusProcessor
-	autoscalingStatusProcessor    status.AutoscalingStatusProcessor
-	nodeGroupManager 			  nodegroups.NodeGroupManager
-	nodeInfoProcessor 			  nodeinfos.NodeInfoProcessor
 )
 
-func RegisterCloudProviderFactory(cloudProviderFactory CloudProviderFactory) {
+func RegisterExternalCloudProvider(cpf CloudProviderFactory) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if cloudProviderFactory != nil {
-		klog.Fatalf("Cloud provider %q was registered twice", name)
+		klog.Fatalf("Cloud provider %q was registered twice")
 	}
-	cloudProviderFactory = cloudProviderFactory
+	cloudProviderFactory = cpf
 }
 
-func GetCloudProvider(name string, opts config.AutoscalingOptions, do NodeGroupDiscoveryOptions, rl *ResourceLimiter) CloudProvider {
-	cloudProvidersMutex.Lock()
-	defer cloudProvidersMutex.Unlock()
+func BuildExternalCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	mutex.Lock()
+	defer mutex.Unlock()
 	if cloudProviderFactory != nil {
-	    return cloudProviderFactory(opts, do, rl)
+		klog.Fatalf("external cloudProvider not registered")
+	}
+	return cloudProviderFactory(opts, do, rl)
+}
+```
+
+- Modify buidler_all.go
+```go
+// +build  !external !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi
+package builder
+
+import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/external"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+)
+
+// AvailableCloudProviders supported by the cloud provider builder.
+var AvailableCloudProviders = []string{
+	cloudprovider.AwsProviderName,
+	cloudprovider.AzureProviderName,
+	cloudprovider.GceProviderName,
+	cloudprovider.AlicloudProviderName,
+	cloudprovider.BaiducloudProviderName,
+	cloudprovider.MagnumProviderName,
+	cloudprovider.DigitalOceanProviderName,
+	cloudprovider.ExternalCloudProviderName,
+	clusterapi.ProviderName,
+}
+
+// DefaultCloudProvider is GCE.
+const DefaultCloudProvider = cloudprovider.GceProviderName
+
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	switch opts.CloudProviderName {
+	case cloudprovider.GceProviderName:
+		return gce.BuildGCE(opts, do, rl)
+	case cloudprovider.AwsProviderName:
+		return aws.BuildAWS(opts, do, rl)
+	case cloudprovider.AzureProviderName:
+		return azure.BuildAzure(opts, do, rl)
+	case cloudprovider.AlicloudProviderName:
+		return alicloud.BuildAlicloud(opts, do, rl)
+	case cloudprovider.BaiducloudProviderName:
+		return baiducloud.BuildBaiducloud(opts, do, rl)
+	case cloudprovider.DigitalOceanProviderName:
+		return digitalocean.BuildDigitalOcean(opts, do, rl)
+	case cloudprovider.MagnumProviderName:
+		return magnum.BuildMagnum(opts, do, rl)
+	case packet.ProviderName:
+		return packet.BuildPacket(opts, do, rl)
+	case clusterapi.ProviderName:
+		return clusterapi.BuildClusterAPI(opts, do, rl)
+	case cloudprovider.ExternalCloudProviderName:
+		return external.BuildExternalCloudProvider(opts, do, rl)
 	}
 	return nil
 }
-
-func RegisterPodListProcessor(podListProcessor pods.PodListProcessor) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	podListProcessor = podListProcessor
-}
-
-func GetPodListProcessor() pods.PodListProcessor {
-	mutex.Lock()
-	defer mutex.Unlock()
-	return podListProcessor
-}
-
-func RegisterNodeGroupListProcessor(nodeGroupListProcessor nodegroups.NodeGroupListProcessor) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	nodeGroupListProcessor = nodeGroupListProcessor
-}
-
-func GetNodeGroupListProcessor() nodegroups.NodeGroupListProcessor {
-	mutex.Lock()
-	defer mutex.Unlock()
-	return nodeGroupListProcessor
-}
-
-// Similarly add methods to register other processor which can be used by cloudprovider to override at boot time
-
 ```
-- Move CloudProvider specific code out of clusterAutoScalerCore and let each of them have their own go module (ClusterAutoScale[AWS]) which depends on ClusterAutoScalerCore.
 
-- CloudProvider can provide an init block in which they can register their implementation.
+- Introduce builder_external.go
 ```go
-package aws
+// +build external
+
+package builder
+
+import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/external"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+)
+
+// AvailableCloudProviders supported by the cloud provider builder.
+var AvailableCloudProviders = []string{
+	cloudprovider.ExternalCloudProviderName,
+}
+
+const DefaultCloudProvider = cloudprovider.ExternalCloudProviderName
+
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+		return external.BuildExternalCloudProvider(ops,do,rl)
+}
+```
+
+- External cloudprovider will register their implementation using init block. (in their own repo)
+```go
+package ecp
+//ecp: ExternalCloudProvider
+import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/external"
 
 func init() {
-	cloudprovider.RegisterCloudProvider("aws", aws.BuildAWS)
-    cloudprovider.RegisterNodeGroupListProcessor(AWSNodeGroupListProcessorImplementation)
+	extenral.RegisterExternalCloudProvider("aws", ecp.BuildCloudProvider)
 }
 ```
-- In the main class after default processor are initialized, have a block of code to check and override processor in case the cloudProvider has registered any implementation.
-```main.go
-
-302	opts.Processors = ca_processors.DefaultProcessors()
-303     if cloudprovider.GetNodeGroupListProcessor != nil {
-304        opts.Processors.NodeGroupListProcessor = cloudprovider.GetNodeGroupListProcessor
-305     }
-
-// Similarly have a block to check and override the processor if any proccessor is registered by the cloudProvider in init block
-```
-
-- Move cloudProvider specific nodeGroup implementation to their distribution.
