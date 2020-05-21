@@ -1,24 +1,13 @@
-# Decoupling ClusterAutoScalerCore (separate library) from CloudProvider implementations
+# Enabling external CloudProvider to inject their implementations in clusterAutoscaler.
 ##### Author: bhargav-naik
 
 ### Introduction
-Current ClusterAutoscaler is released as a bundle which includes core and all the CloudProviders included.
-When someone intends to write implementation of the CloudProvider they need to fork the intended version ClusterAutoscaler and provide their implementation.
-In this proposal, a different design approach is presented which will decouple the ClusterAutoscaler core from CloudProviders and make ClusterAutoScalerCore available as a separate release. 
-
-### Issues
-- In the current design the ClusterAutoscaler core has dependency on the CloudProvider implementations.
-- For proprietary CloudProvider implementations it results in an development cycle to fork new version from public repo and port the CloudProvider implementation to the latest fork.
-- Also the ClusterAutoscaler library comes with a lot of unnecessary CloudProvider specific dependencies which might not be required for other CloudProviders. (We dont want to address this)
+- In current ClusterAutoscaler, there is no mechanism for external cloudprovider to inject their implementations.
+- Current ClusterAutoscaler is released as a bundle which includes core and all the CloudProviders included.
+- When someone intends to write implementation of the CloudProvider they need to fork the intended version ClusterAutoscaler and provide their implementation.
+In this proposal, a different design approach is presented which provides a mechanism for external_cp to inject their implementation. 
 
 ### Solution
-Version 1:  (Not acceptable, as we don't want to disrupt the existing dev/build cycle)
-- Release ClusterAutoscalerCore as a separate module which won't have any Cloudprovider specific code/dependencies.
-- Release CloudProvider specific ClusterAutoscaler[PROVIDER] as separate module. This module depends on specific version of ClusterAutoscaler.
-- For proprietary CloudProvider implementations can depend on ClusterAutoscalerCore module and wont get any other CloudProvider specific dependencies.
-- Also the development cycle for CloudProvider implementation reduces to just a version bump of ClusterAutoscalerCore if the CloudProvider,Nodegroup interfaces are intact and CloudProvider doesn't intend to add any feature.
-
-Version 2:
 - Let the existing cloudProvider code remain in the current hierarchy.
 - Introduce external_cloud_provider.go under cloudprovider.external package: A shim layer which will give external_cloud_provider mechanism to register their implementation.
 
