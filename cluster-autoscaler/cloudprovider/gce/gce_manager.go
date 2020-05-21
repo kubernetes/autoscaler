@@ -492,7 +492,7 @@ func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone 
 	if strings.HasPrefix(machineType, "custom-") {
 		return parseCustomMachineType(machineType)
 	}
-	machine := m.cache.GetMachineFromCache(machineType, zone)
+	machine, _ := m.cache.GetMachineFromCache(machineType, zone)
 	if machine == nil {
 		machine, err = m.GceService.FetchMachineType(zone, machineType)
 		if err != nil {
