@@ -18,12 +18,25 @@ package nanny
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
+	"github.com/prometheus/common/expfmt"
+	"github.com/prometheus/common/model"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
+)
+
+const (
+	// objectCountMetricName is the metric to be used to get number of nodes
+	objectCountMetricName = "etcd_object_counts"
+	// nodeResourceName is the label value for Nodes in objectCountMetricName metric.
+	nodeResourceName = "nodes"
+	// resourceLabel is the label name for resource.
+	resourceLabel = "resource"
 )
 
 type kubernetesClient struct {
@@ -32,9 +45,20 @@ type kubernetesClient struct {
 	pod        string
 	container  string
 	clientset  *kubernetes.Clientset
+	useMetrics bool
 }
 
+// CountNodes returns the number of nodes in the cluster:
+// 1) by listing Nodes using API (default)
+// 2) using etcd_object_count metric exposed by kube-apiserver
 func (k *kubernetesClient) CountNodes() (uint64, error) {
+	if k.useMetrics {
+		return k.countNodesThroughMetrics()
+	}
+	return k.countNodesThroughAPI()
+}
+
+func (k *kubernetesClient) countNodesThroughAPI() (uint64, error) {
 	// Set ResourceVersion = 0 to use cached versions.
 	options := metav1.ListOptions{
 		ResourceVersion: "0",
@@ -51,6 +75,47 @@ func (k *kubernetesClient) CountNodes() (uint64, error) {
 		Do().
 		Into(result)
 	return uint64(len(result.Items)), err
+}
+
+func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
+	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
+	// Other than that, endpoint is visible from everywhere.
+	rawMetrics, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").DoRaw()
+	if err != nil {
+		return 0, err
+	}
+
+	decoder := expfmt.SampleDecoder{
+		Dec:  expfmt.NewDecoder(strings.NewReader(string(rawMetrics)), expfmt.FmtText),
+		Opts: &expfmt.DecodeOptions{},
+	}
+	var v model.Vector
+	for {
+		if err := decoder.Decode(&v); err != nil {
+			if err == io.EOF {
+				break
+			}
+			continue
+		}
+		for _, metric := range v {
+			name := metric.Metric[model.MetricNameLabel]
+			if name != objectCountMetricName {
+				continue
+			}
+			resource := metric.Metric[resourceLabel]
+			if resource != nodeResourceName {
+				continue
+			}
+			value := uint64(metric.Value)
+			if value < 0 {
+				return 0, fmt.Errorf("metric unknown")
+			}
+			return value, nil
+
+		}
+	}
+
+	return 0, fmt.Errorf("metric unset")
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
@@ -87,13 +152,14 @@ func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequiremen
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
-func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset) KubernetesClient {
+func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset, useMetrics bool) KubernetesClient {
 	result := &kubernetesClient{
 		namespace:  namespace,
 		deployment: deployment,
 		pod:        pod,
 		container:  container,
 		clientset:  clientset,
+		useMetrics: useMetrics,
 	}
 	return result
 }
