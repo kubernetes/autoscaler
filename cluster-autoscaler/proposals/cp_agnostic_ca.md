@@ -27,6 +27,14 @@ type CloudProviderFactory func(opts config.AutoscalingOptions, do cloudprovider.
 var (
 	mutex                         sync.Mutex
 	cloudProviderFactory          CloudProviderFactory
+	nodeGroupListProcessor        nodegroups.NodeGroupListProcessor
+	nodeGroupSetProcessor         nodegroupset.NodeGroupSetProcessor
+	scaleUpStatusProcessor        status.ScaleUpStatusProcessor
+	scaleDownNodeProcessor        nodes.ScaleDownNodeProcessor
+	scaleDownStatusProcessor      status.ScaleDownStatusProcessor
+	autoscalingStatusProcessor    status.AutoscalingStatusProcessor
+	nodeGroupManager              nodegroups.NodeGroupManager
+	nodeInfoProcessor             nodeinfos.NodeInfoProcessor
 )
 
 func RegisterExternalCloudProvider(cpf CloudProviderFactory) {
@@ -46,6 +54,30 @@ func BuildExternalCloudProvider(opts config.AutoscalingOptions, do cloudprovider
 	}
 	return cloudProviderFactory(opts, do, rl)
 }
+
+func RegisterPodListProcessor(podListProcessor pods.PodListProcessor) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	podListProcessor = podListProcessor
+}
+
+func GetPodListProcessor() pods.PodListProcessor {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return podListProcessor
+}
+func RegisterNodeGroupListProcessor(nodeGroupListProcessor nodegroups.NodeGroupListProcessor) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	nodeGroupListProcessor = nodeGroupListProcessor
+}
+
+func GetNodeGroupListProcessor() nodegroups.NodeGroupListProcessor {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return nodeGroupListProcessor
+}
+// Similarly add methods to register other processor which can be used by cloudprovider to override at boot time
 ```
 
 - Modify buidler_all.go
@@ -135,6 +167,17 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 }
 ```
 
+- In the main class after default processors are initialized, have a block of code to check and override processor for external_cp.
+```main.go
+    opts.Processors = ca_processors.DefaultProcessors()
+    if autoscalingOptions.CloudProviderName == cloudprovider.ExternalCloudProviderName {
+        if external.GetNodeGroupListProcessor() != nil {
+            opts.Processors.NodeGroupListProcessor = cloudprovider.GetNodeGroupListProcessor
+        }
+        //Repeat this for all the processors
+    }
+```
+
 - External cloudprovider will register their implementation using init block. (in their own repo)
 ```go
 package ecp
@@ -142,6 +185,7 @@ package ecp
 import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/external"
 
 func init() {
-	extenral.RegisterExternalCloudProvider("aws", ecp.BuildCloudProvider)
+    extenral.RegisterExternalCloudProvider("aws", ecp.BuildCloudProvider)
+    extenral.RegisterNodeGroupListProcessor(ecp.NodeGroupListProcessorImplementation())
 }
 ```
