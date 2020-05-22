@@ -27,6 +27,9 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
+// How long to sleep after deleting nodes, to ensure that multiple requests arrive in order.
+var postDeleteSleepDuration = 5 * time.Second
+
 // magnumNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
 //
 // Represents a homogeneous collection of nodes within a cluster,
@@ -34,41 +37,27 @@ import (
 // number of nodes.
 type magnumNodeGroup struct {
 	magnumManager magnumManager
-	id            string
 
-	clusterUpdateMutex *sync.Mutex
+	// Human readable ID for logs and CA status configmap.
+	id string
+	// Node group UUID in Magnum.
+	UUID string
 
-	minSize int
-	maxSize int
-	// Stored as a pointer so that when autoscaler copies the nodegroup it can still update the target size
-	targetSize *int
+	// To be locked when resizing the cluster, or reading
+	// cluster state that could be being modified.
+	// Shared between all node groups.
+	clusterUpdateLock *sync.Mutex
 
-	nodesToDelete      []*apiv1.Node
-	nodesToDeleteMutex sync.Mutex
+	minSize    int
+	maxSize    int
+	targetSize int
 
-	waitTimeStep        time.Duration
-	deleteBatchingDelay time.Duration
-
-	// Used so that only one DeleteNodes goroutine has to get the node group size at the start of the deletion
-	deleteNodesCachedSize   int
-	deleteNodesCachedSizeAt time.Time
-}
-
-// waitForClusterStatus checks periodically to see if the cluster has entered a given status.
-// Returns when the status is observed or the timeout is reached.
-func (ng *magnumNodeGroup) waitForClusterStatus(status string, timeout time.Duration) error {
-	klog.V(2).Infof("Waiting for cluster %s status", status)
-	for start := time.Now(); time.Since(start) < timeout; time.Sleep(ng.waitTimeStep) {
-		clusterStatus, err := ng.magnumManager.getClusterStatus()
-		if err != nil {
-			return fmt.Errorf("error waiting for %s status: %v", status, err)
-		}
-		if clusterStatus == status {
-			klog.V(0).Infof("Waited for cluster %s status", status)
-			return nil
-		}
-	}
-	return fmt.Errorf("timeout (%v) waiting for %s status", timeout, status)
+	// deletedNodes tracks nodes which have been requested for deletion.
+	// Heat can't always delete a node immediately if there is another concurrent update,
+	// so reporting a node as being in a failed state multiple times can cause the autoscaler
+	// to try to repeatedly delete it.
+	// Maps provider ID -> time of deletion request.
+	deletedNodes map[string]time.Time
 }
 
 // IncreaseSize increases the number of nodes by replacing the cluster's node_count.
@@ -76,185 +65,94 @@ func (ng *magnumNodeGroup) waitForClusterStatus(status string, timeout time.Dura
 // Takes precautions so that the cluster is not modified while in an UPDATE_IN_PROGRESS state.
 // Blocks until the cluster has reached UPDATE_COMPLETE.
 func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
-	ng.clusterUpdateMutex.Lock()
-	defer ng.clusterUpdateMutex.Unlock()
+	ng.clusterUpdateLock.Lock()
+	defer ng.clusterUpdateLock.Unlock()
 
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
 
-	size, err := ng.magnumManager.nodeGroupSize(ng.id)
-	if err != nil {
-		return fmt.Errorf("could not check current nodegroup size: %v", err)
-	}
+	size := ng.targetSize
 	if size+delta > ng.MaxSize() {
 		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize())
 	}
 
-	updatePossible, currentStatus, err := ng.magnumManager.canUpdate()
-	if err != nil {
-		return fmt.Errorf("can not increase node count: %v", err)
-	}
-	if !updatePossible {
-		return fmt.Errorf("can not add nodes, cluster is in %s status", currentStatus)
-	}
-	klog.V(0).Infof("Increasing size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
-	*ng.targetSize += delta
-
-	err = ng.magnumManager.updateNodeCount(ng.id, *ng.targetSize)
+	klog.V(2).Infof("Increasing size by %d, %d->%d", delta, size, size+delta)
+	err := ng.magnumManager.updateNodeCount(ng.UUID, size+delta)
 	if err != nil {
 		return fmt.Errorf("could not increase cluster size: %v", err)
 	}
 
-	// Block until cluster has gone into update status and then completed
-	err = ng.waitForClusterStatus(clusterStatusUpdateInProgress, waitForUpdateStatusTimeout)
-	if err != nil {
-		return fmt.Errorf("wait for cluster status failed: %v", err)
-	}
-	err = ng.waitForClusterStatus(clusterStatusUpdateComplete, waitForCompleteStatusTimout)
-	if err != nil {
-		return fmt.Errorf("wait for cluster status failed: %v", err)
-	}
+	ng.targetSize += delta
 	return nil
 }
 
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
-//
-// The process of deletion depends on the implementation of magnumManager,
-// but this function handles what should be common between all implementations:
-//   - simultaneous but separate calls from the autoscaler are batched together
-//   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
-//   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
 func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	ng.clusterUpdateLock.Lock()
+	defer ng.clusterUpdateLock.Unlock()
 
-	// Batch simultaneous deletes on individual nodes
-	ng.nodesToDeleteMutex.Lock()
-
-	// First get the node group size and store the value, so that any other parallel delete calls can use it
-	// without having to make the get request for the cluster themselves.
-	// cachedSize keeps a local copy for this goroutine, so that ng.deleteNodesCachedSize is used
-	// only within the ng.nodesToDeleteMutex.
-	var cachedSize int
-	var err error
-	if time.Since(ng.deleteNodesCachedSizeAt) > time.Second*10 {
-		cachedSize, err = ng.magnumManager.nodeGroupSize(ng.id)
-		if err != nil {
-			ng.nodesToDeleteMutex.Unlock()
-			return fmt.Errorf("could not get current node count: %v", err)
-		}
-		ng.deleteNodesCachedSize = cachedSize
-		ng.deleteNodesCachedSizeAt = time.Now()
-	} else {
-		cachedSize = ng.deleteNodesCachedSize
-	}
-
-	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
-	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
-		ng.nodesToDeleteMutex.Unlock()
-		return fmt.Errorf("deleting nodes would take nodegroup below minimum size")
-	}
-	// otherwise, add the nodes to the batch and release the lock
-	ng.nodesToDelete = append(ng.nodesToDelete, nodes...)
-	ng.nodesToDeleteMutex.Unlock()
-
-	// The first of the parallel delete calls to obtain this lock will be the one to actually perform the deletion
-	ng.clusterUpdateMutex.Lock()
-	defer ng.clusterUpdateMutex.Unlock()
-
-	ng.nodesToDeleteMutex.Lock()
-	if len(ng.nodesToDelete) == 0 {
-		// Deletion was handled by another goroutine
-		ng.nodesToDeleteMutex.Unlock()
-		return nil
-	}
-	ng.nodesToDeleteMutex.Unlock()
-
-	// This goroutine has the clusterUpdateMutex, so will be the one
-	// to actually delete the nodes. While this goroutine waits, others
-	// will add their nodes to nodesToDelete and block at acquiring
-	// the clusterUpdateMutex lock. One they get it, the deletion will
-	// already be done and they will return above at the check
-	// for len(ng.nodesToDelete) == 0.
-	time.Sleep(ng.deleteBatchingDelay)
-
-	ng.nodesToDeleteMutex.Lock()
-	nodes = make([]*apiv1.Node, len(ng.nodesToDelete))
-	copy(nodes, ng.nodesToDelete)
-	ng.nodesToDelete = nil
-	ng.nodesToDeleteMutex.Unlock()
+	size := ng.targetSize
 
 	var nodeNames []string
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	klog.V(1).Infof("Deleting nodes: %v", nodeNames)
+	klog.V(2).Infof("Deleting nodes: %v", nodeNames)
 
-	updatePossible, currentStatus, err := ng.magnumManager.canUpdate()
-	if err != nil {
-		return fmt.Errorf("could not check if cluster is ready to delete nodes: %v", err)
-	}
-	if !updatePossible {
-		return fmt.Errorf("can not delete nodes, cluster is in %s status", currentStatus)
-	}
-
-	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
-	if cachedSize-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
+	// Check that the total number of nodes to be deleted will not take the node group below its minimum size
+	if size-len(nodes) < ng.MinSize() {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", size-len(nodes), ng.MinSize())
 	}
 
 	var nodeRefs []NodeRef
 	for _, node := range nodes {
-
-		// Find node IPs, can be multiple (IPv4 and IPv6)
-		var IPs []string
-		for _, addr := range node.Status.Addresses {
-			if addr.Type == apiv1.NodeInternalIP {
-				IPs = append(IPs, addr.Address)
-			}
-		}
 		nodeRefs = append(nodeRefs, NodeRef{
 			Name:       node.Name,
-			MachineID:  node.Status.NodeInfo.MachineID,
+			SystemUUID: node.Status.NodeInfo.SystemUUID,
 			ProviderID: node.Spec.ProviderID,
-			IPs:        IPs,
+			IsFake:     isFakeNode(node),
 		})
 	}
 
-	err = ng.magnumManager.deleteNodes(ng.id, nodeRefs, cachedSize-len(nodes))
+	err := ng.magnumManager.deleteNodes(ng.UUID, nodeRefs, size-len(nodes))
 	if err != nil {
 		return fmt.Errorf("manager error deleting nodes: %v", err)
 	}
 
-	// Block until cluster has gone into update status and then completed
-	err = ng.waitForClusterStatus(clusterStatusUpdateInProgress, waitForUpdateStatusTimeout)
-	if err != nil {
-		return fmt.Errorf("wait for cluster status failed: %v", err)
-	}
-	err = ng.waitForClusterStatus(clusterStatusUpdateComplete, waitForCompleteStatusTimout)
-	if err != nil {
-		return fmt.Errorf("wait for cluster status failed: %v", err)
+	ng.targetSize = size - len(nodes)
+
+	now := time.Now()
+	for _, node := range nodes {
+		ng.deletedNodes[node.Spec.ProviderID] = now
 	}
 
-	// Check the new node group size and store that as the new target
-	newSize, err := ng.magnumManager.nodeGroupSize(ng.id)
-	if err != nil {
-		// Set to the expected size as a fallback
-		*ng.targetSize = cachedSize - len(nodes)
-		return fmt.Errorf("could not check new cluster size after scale down: %v", err)
-	}
-	*ng.targetSize = newSize
+	// Sleep for a few seconds to ensure that delete requests are received in order.
+	time.Sleep(postDeleteSleepDuration)
 
 	return nil
 }
 
 // DecreaseTargetSize decreases the cluster node_count in magnum.
 func (ng *magnumNodeGroup) DecreaseTargetSize(delta int) error {
+	ng.clusterUpdateLock.Lock()
+	defer ng.clusterUpdateLock.Unlock()
+
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
-	klog.V(0).Infof("Decreasing target size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
-	*ng.targetSize += delta
-	return ng.magnumManager.updateNodeCount(ng.id, *ng.targetSize)
+	size := ng.targetSize
+	if size+delta < ng.MinSize() {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", size+delta, ng.MinSize())
+	}
+
+	klog.V(2).Infof("Decreasing target size by %d, %d->%d", delta, ng.targetSize, ng.targetSize+delta)
+	err := ng.magnumManager.updateNodeCount(ng.UUID, ng.targetSize+delta)
+	if err != nil {
+		return fmt.Errorf("could not decrease target size: %v", err)
+	}
+	ng.targetSize += delta
+	return nil
 }
 
 // Id returns the node group ID
@@ -264,25 +162,46 @@ func (ng *magnumNodeGroup) Id() string {
 
 // Debug returns a string formatted with the node group's min, max and target sizes.
 func (ng *magnumNodeGroup) Debug() string {
-	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, *ng.targetSize)
+	ng.clusterUpdateLock.Lock()
+	defer ng.clusterUpdateLock.Unlock()
+	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, ng.targetSize)
 }
 
 // Nodes returns a list of nodes that belong to this node group.
 func (ng *magnumNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	nodes, err := ng.magnumManager.getNodes(ng.id)
+	ng.clusterUpdateLock.Lock()
+	defer ng.clusterUpdateLock.Unlock()
+
+	instances, err := ng.magnumManager.getNodes(ng.UUID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get nodes: %v", err)
 	}
-	var instances []cloudprovider.Instance
-	for _, node := range nodes {
-		instances = append(instances, cloudprovider.Instance{Id: node})
+
+	for node, deletedTime := range ng.deletedNodes {
+		if time.Since(deletedTime) > 10*time.Minute {
+			// Remove the node from the list of recently deleted nodes after 10 minutes.
+			klog.V(3).Infof("Removing node %s from the deleted nodes cache after 10 minutes", node)
+			delete(ng.deletedNodes, node)
+		}
+	}
+
+	for i, instance := range instances {
+		if instance.Status.State == cloudprovider.InstanceDeleting {
+			continue
+		}
+		if deleteTime, ok := ng.deletedNodes[instance.Id]; ok {
+			// This node has recently been requested for deletion, report the state as delete in progress.
+			klog.V(3).Infof("Node %s has received deletetion request %s ago, reporting it as delete in progress instead of %v", instance.Id, time.Since(deleteTime), instance.Status.State)
+			instances[i].Status.State = cloudprovider.InstanceDeleting
+		}
+
 	}
 	return instances, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.
 func (ng *magnumNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return ng.magnumManager.templateNodeInfo(ng.id)
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Exist returns if this node group exists.
@@ -318,5 +237,5 @@ func (ng *magnumNodeGroup) MinSize() int {
 
 // TargetSize returns the target size of the node group.
 func (ng *magnumNodeGroup) TargetSize() (int, error) {
-	return *ng.targetSize, nil
+	return ng.targetSize, nil
 }
