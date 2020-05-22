@@ -17,9 +17,12 @@ limitations under the License.
 package magnum
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,29 +35,40 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "cloud.google.com/gke-accelerator"
+	GPULabel = "magnum.openstack.org/gpu"
+
+	// Refresh interval for node group auto discovery
+	discoveryRefreshInterval = 1 * time.Minute
 )
 
 var (
-	availableGPUTypes = map[string]struct{}{
-		"nvidia-tesla-k80":  {},
-		"nvidia-tesla-p100": {},
-		"nvidia-tesla-v100": {},
-	}
+	availableGPUTypes = map[string]struct{}{}
 )
 
 // magnumCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
 type magnumCloudProvider struct {
-	magnumManager   *magnumManager
+	magnumManager   magnumManager
 	resourceLimiter *cloudprovider.ResourceLimiter
-	nodeGroups      []magnumNodeGroup
+
+	nodeGroups []*magnumNodeGroup
+
+	// To be locked when modifying or reading the node groups slice.
+	nodeGroupsLock *sync.Mutex
+
+	// To be locked when modifying or reading the cluster state from Magnum.
+	clusterUpdateLock *sync.Mutex
+
+	usingAutoDiscovery   bool
+	autoDiscoveryConfigs []magnumAutoDiscoveryConfig
+	lastDiscoveryRefresh time.Time
 }
 
-func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
+func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *cloudprovider.ResourceLimiter) (*magnumCloudProvider, error) {
 	mcp := &magnumCloudProvider{
-		magnumManager:   &magnumManager,
+		magnumManager:   magnumManager,
 		resourceLimiter: resourceLimiter,
-		nodeGroups:      []magnumNodeGroup{},
+		nodeGroups:      []*magnumNodeGroup{},
+		nodeGroupsLock:  &sync.Mutex{},
 	}
 	return mcp, nil
 }
@@ -76,27 +90,49 @@ func (mcp *magnumCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // NodeGroups returns all node groups managed by this cloud provider.
 func (mcp *magnumCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+	mcp.nodeGroupsLock.Lock()
+	defer mcp.nodeGroupsLock.Unlock()
+
+	// Have to convert to a slice of the NodeGroup interface type.
 	groups := make([]cloudprovider.NodeGroup, len(mcp.nodeGroups))
 	for i, group := range mcp.nodeGroups {
-		groups[i] = &group
+		groups[i] = group
 	}
 	return groups
 }
 
 // AddNodeGroup appends a node group to the list of node groups managed by this cloud provider.
-func (mcp *magnumCloudProvider) AddNodeGroup(group magnumNodeGroup) {
+func (mcp *magnumCloudProvider) AddNodeGroup(group *magnumNodeGroup) {
+	mcp.nodeGroupsLock.Lock()
+	defer mcp.nodeGroupsLock.Unlock()
 	mcp.nodeGroups = append(mcp.nodeGroups, group)
 }
 
 // NodeGroupForNode returns the node group that a given node belongs to.
-//
-// Since only a single node group is currently supported, the first node group is always returned.
 func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	// TODO: wait for magnum nodegroup support
+	mcp.nodeGroupsLock.Lock()
+	defer mcp.nodeGroupsLock.Unlock()
+
+	// Ignore master node
 	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]; found {
 		return nil, nil
 	}
-	return &(mcp.nodeGroups[0]), nil
+
+	ngUUID, err := mcp.magnumManager.nodeGroupForNode(node)
+	if err != nil {
+		return nil, fmt.Errorf("error finding node group UUID for node %s: %v", node.Spec.ProviderID, err)
+	}
+
+	for _, group := range mcp.nodeGroups {
+		if group.UUID == ngUUID {
+			klog.V(4).Infof("Node %s belongs to node group %s", node.Spec.ProviderID, group.Id())
+			return group, nil
+		}
+	}
+
+	klog.V(4).Infof("Node %s is not part of an autoscaled node group", node.Spec.ProviderID)
+
+	return nil, nil
 }
 
 // Pricing is not implemented.
@@ -120,18 +156,28 @@ func (mcp *magnumCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLim
 	return mcp.resourceLimiter, nil
 }
 
-// GetInstanceID gets the instance ID for the specified node.
-func (mcp *magnumCloudProvider) GetInstanceID(node *apiv1.Node) string {
-	return node.Spec.ProviderID
-}
-
 // Refresh is called before every autoscaler main loop.
 //
-// Currently only prints debug information.
+// Debug information for each node group is printed with logging level >= 5.
+// Every 60 seconds the node group state on the Magnum side is checked,
+// to see if there are any node groups that need to be added/removed/updated.
 func (mcp *magnumCloudProvider) Refresh() error {
+	mcp.nodeGroupsLock.Lock()
 	for _, nodegroup := range mcp.nodeGroups {
-		klog.V(3).Info(nodegroup.Debug())
+		klog.V(5).Info(nodegroup.Debug())
 	}
+	mcp.nodeGroupsLock.Unlock()
+
+	if mcp.usingAutoDiscovery {
+		if time.Since(mcp.lastDiscoveryRefresh) > discoveryRefreshInterval {
+			mcp.lastDiscoveryRefresh = time.Now()
+			err := mcp.refreshNodeGroups()
+			if err != nil {
+				return fmt.Errorf("error refreshing node groups: %v", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -140,21 +186,138 @@ func (mcp *magnumCloudProvider) Cleanup() error {
 	return nil
 }
 
+// refreshNodeGroups gets the list of node groups which meet the requirements for autoscaling,
+// creates magnumNodeGroups for any that do not exist in the cloud provider,
+// and drops any node groups which are present in the cloud provider but not in the
+// list of node groups that should be autoscaled.
+//
+// Any node groups which have had their min/max node count updated in Magnum
+// are updated with the new limits.
+func (mcp *magnumCloudProvider) refreshNodeGroups() error {
+	mcp.clusterUpdateLock.Lock()
+	defer mcp.clusterUpdateLock.Unlock()
+
+	// Get the list of node groups that match the auto discovery configuration and
+	// meet the requirements for autoscaling.
+	nodeGroups, err := mcp.magnumManager.autoDiscoverNodeGroups(mcp.autoDiscoveryConfigs)
+	if err != nil {
+		return fmt.Errorf("could not discover node groups: %v", err)
+	}
+
+	// Track names of node groups which are added or removed (for logging).
+	var newNodeGroupNames []string
+	var droppedNodeGroupNames []string
+
+	// Use maps for easier lookups of node group names.
+
+	// Node group names as registered in the autoscaler.
+	registeredNGs := make(map[string]*magnumNodeGroup)
+	mcp.nodeGroupsLock.Lock()
+	for _, ng := range mcp.nodeGroups {
+		registeredNGs[ng.UUID] = ng
+	}
+	mcp.nodeGroupsLock.Unlock()
+
+	// Node group names that exist on the cloud side and should be autoscaled.
+	autoscalingNGs := make(map[string]string)
+
+	for _, nodeGroup := range nodeGroups {
+		name := uniqueName(nodeGroup)
+
+		// Just need the name in the key.
+		autoscalingNGs[nodeGroup.UUID] = ""
+
+		if ng, alreadyRegistered := registeredNGs[nodeGroup.UUID]; alreadyRegistered {
+			// Node group exists in autoscaler and in cloud, only need to check if min/max node count have changed.
+			if ng.minSize != nodeGroup.MinNodeCount {
+				ng.minSize = nodeGroup.MinNodeCount
+				klog.V(2).Infof("Node group %s min node count changed to %d", nodeGroup.Name, ng.minSize)
+			}
+			// Node groups with unset max node count are not eligible for autoscaling, so this dereference is safe.
+			if ng.maxSize != *nodeGroup.MaxNodeCount {
+				ng.maxSize = *nodeGroup.MaxNodeCount
+				klog.V(2).Infof("Node group %s max node count changed to %d", nodeGroup.Name, ng.maxSize)
+			}
+			continue
+		}
+
+		// The node group is not known to the autoscaler, so create it.
+		ng := &magnumNodeGroup{
+			magnumManager:     mcp.magnumManager,
+			id:                name,
+			UUID:              nodeGroup.UUID,
+			clusterUpdateLock: mcp.clusterUpdateLock,
+			minSize:           nodeGroup.MinNodeCount,
+			maxSize:           *nodeGroup.MaxNodeCount,
+			targetSize:        nodeGroup.NodeCount,
+			deletedNodes:      make(map[string]time.Time),
+		}
+		mcp.AddNodeGroup(ng)
+		mcp.magnumManager.fetchNodeGroupStackIDs(ng.UUID)
+		newNodeGroupNames = append(newNodeGroupNames, name)
+	}
+
+	// Drop any node groups that should not be autoscaled either
+	// because they were deleted or had their maximum node count unset.
+	// Done by copying all node groups to a buffer, clearing the original
+	// node groups and copying back only the ones that should still exist.
+	mcp.nodeGroupsLock.Lock()
+	buffer := make([]*magnumNodeGroup, len(mcp.nodeGroups))
+	copy(buffer, mcp.nodeGroups)
+
+	mcp.nodeGroups = nil
+
+	for _, ng := range buffer {
+		if _, ok := autoscalingNGs[ng.UUID]; ok {
+			mcp.nodeGroups = append(mcp.nodeGroups, ng)
+		} else {
+			droppedNodeGroupNames = append(droppedNodeGroupNames, ng.id)
+		}
+	}
+
+	mcp.nodeGroupsLock.Unlock()
+
+	// Log whatever actions were taken
+	if len(newNodeGroupNames) == 0 && len(droppedNodeGroupNames) == 0 {
+		klog.V(3).Info("No nodegroups added or removed")
+		return nil
+	}
+
+	if len(newNodeGroupNames) > 0 {
+		klog.V(2).Infof("Discovered %d new node groups for autoscaling: %s", len(newNodeGroupNames),
+			strings.Join(newNodeGroupNames, ", "))
+	}
+	if len(droppedNodeGroupNames) > 0 {
+		klog.V(2).Infof("Dropped %d node groups which should no longer be autoscaled: %s",
+			len(droppedNodeGroupNames), strings.Join(droppedNodeGroupNames, ", "))
+	}
+
+	return nil
+}
+
 // BuildMagnum is called by the autoscaler to build a magnum cloud provider.
 //
-// The magnumManager is created here, and the node groups are created
-// based on the specs provided via the command line parameters.
+// The magnumManager is created here, and the initial node groups are created
+// based on the static or auto discovery specs provided via the command line parameters.
 func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 
-	// Should be loaded with --cloud-config /etc/kubernetes/kube_openstack_config from master node
+	// Should be loaded with --cloud-config /etc/kubernetes/kube_openstack_config from master node.
 	if opts.CloudConfig != "" {
 		var err error
 		config, err = os.Open(opts.CloudConfig)
 		if err != nil {
-			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+			klog.Fatalf("Couldn't open cloud provider configuration from %s: %#v", opts.CloudConfig, err)
 		}
 		defer config.Close()
+	}
+
+	// Check that one of static node group discovery or auto discovery are specified.
+	if !do.DiscoverySpecified() {
+		klog.Fatal("no node group discovery options specified")
+	}
+	if do.StaticDiscoverySpecified() && do.AutoDiscoverySpecified() {
+		klog.Fatal("can not use both static node group discovery and node group auto discovery")
 	}
 
 	manager, err := createMagnumManager(config, do, opts)
@@ -167,40 +330,58 @@ func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 		klog.Fatalf("Failed to create magnum cloud provider: %v", err)
 	}
 
-	// TODO: When magnum node group support is available then 0 NodeGroupSpecs will be a valid input.
-	if len(do.NodeGroupSpecs) == 0 {
-		klog.Fatalf("Must specify at least one node group with --nodes=<min>:<max>:<name>,...")
-	}
-
-	// TODO: Temporary, only makes sense to have one nodegroup until magnum nodegroups are implemented
-	// Node groups will be available in k8s_fedora_atomic_v2 driver https://review.openstack.org/#/c/629274/
-	if len(do.NodeGroupSpecs) > 1 {
-		klog.Fatalf("Magnum autoscaler only supports a single nodegroup for now")
-	}
-
 	clusterUpdateLock := sync.Mutex{}
+	provider.clusterUpdateLock = &clusterUpdateLock
 
-	for _, nodegroupSpec := range do.NodeGroupSpecs {
-		spec, err := dynamic.SpecFromString(nodegroupSpec, scaleToZeroSupported)
-		if err != nil {
-			klog.Fatalf("Could not parse node group spec %s: %v", nodegroupSpec, err)
-		}
+	// Handle initial node group discovery.
+	if do.StaticDiscoverySpecified() {
+		for _, nodegroupSpec := range do.NodeGroupSpecs {
+			// Parse a node group spec in the form min:max:name
+			spec, err := dynamic.SpecFromString(nodegroupSpec, scaleToZeroSupported)
+			if err != nil {
+				klog.Fatalf("Could not parse node group spec %s: %v", nodegroupSpec, err)
+			}
 
-		ng := magnumNodeGroup{
-			magnumManager:       manager,
-			id:                  spec.Name,
-			clusterUpdateMutex:  &clusterUpdateLock,
-			minSize:             spec.MinSize,
-			maxSize:             spec.MaxSize,
-			targetSize:          new(int),
-			waitTimeStep:        waitForStatusTimeStep,
-			deleteBatchingDelay: deleteNodesBatchingDelay,
+			ng := &magnumNodeGroup{
+				magnumManager:     manager,
+				id:                spec.Name,
+				clusterUpdateLock: &clusterUpdateLock,
+				minSize:           spec.MinSize,
+				maxSize:           spec.MaxSize,
+				targetSize:        1,
+				deletedNodes:      make(map[string]time.Time),
+			}
+
+			// Lookup the nodegroup with this name and create a unique name for it based on the UUID.
+			name, uuid, err := ng.magnumManager.uniqueNameAndIDForNodeGroup(ng.id)
+			if err != nil {
+				klog.Fatalf("could not get unique name and UUID for node group %s: %v", spec.Name, err)
+			}
+			ng.id = name
+			ng.UUID = uuid
+
+			// Fetch the current size of this node group.
+			ng.targetSize, err = ng.magnumManager.nodeGroupSize(ng.UUID)
+			if err != nil {
+				klog.Fatalf("Could not get current number of nodes in node group %s: %v", spec.Name, err)
+			}
+
+			provider.AddNodeGroup(ng)
+			manager.(*magnumManagerImpl).fetchNodeGroupStackIDs(ng.UUID)
 		}
-		*ng.targetSize, err = ng.magnumManager.nodeGroupSize(ng.id)
+	} else if do.AutoDiscoverySpecified() {
+		provider.usingAutoDiscovery = true
+		cfgs, err := parseMagnumAutoDiscoverySpecs(do)
 		if err != nil {
-			klog.Fatalf("Could not set current nodes in node group: %v", err)
+			klog.Fatalf("Could not parse auto discovery specs: %v", err)
 		}
-		provider.(*magnumCloudProvider).AddNodeGroup(ng)
+		provider.autoDiscoveryConfigs = cfgs
+
+		err = provider.refreshNodeGroups()
+		if err != nil {
+			klog.Fatalf("Initial node group discovery failed: %v", err)
+		}
+		provider.lastDiscoveryRefresh = time.Now()
 	}
 
 	return provider
