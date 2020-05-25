@@ -18,9 +18,12 @@ package nanny
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/prometheus/common/expfmt"
 	"github.com/prometheus/common/model"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
@@ -77,14 +80,14 @@ func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 	}
 
 	decoder := expfmt.SampleDecoder{
-		Dec:  expfmt.NewDecoder(strings.NewReader(string(rawMetrics)), expfmt.FmtTxt),
+		Dec:  expfmt.NewDecoder(strings.NewReader(string(rawMetrics)), expfmt.FmtText),
 		Opts: &expfmt.DecodeOptions{},
 	}
 	var v model.Vector
 	for {
 		if err := decoder.Decode(&v); err != nil {
 			if err == io.EOF {
-				return nil
+				return 0, nil
 			}
 			continue
 		}
