@@ -126,20 +126,18 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 }
 
 // UseAggregationIfMatching checks if the given aggregation matches (contributes to) this VPA
-// and adds it to the set of VPA's aggregations if that is the case. Returns true
-// if the aggregation matches VPA.
-func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggregation *AggregateContainerState) bool {
+// and adds it to the set of VPA's aggregations if that is the case.
+func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggregation *AggregateContainerState) {
 	if vpa.UsesAggregation(aggregationKey) {
-		return true
+		// Already linked, we can return quickly.
+		return
 	}
 	if vpa.matchesAggregation(aggregationKey) {
 		vpa.aggregateContainerStates[aggregationKey] = aggregation
 		aggregation.IsUnderVPA = true
 		aggregation.UpdateMode = vpa.UpdateMode
 		aggregation.UpdateFromPolicy(vpa_api_util.GetContainerResourcePolicy(aggregationKey.ContainerName(), vpa.ResourcePolicy))
-		return true
 	}
-	return false
 }
 
 // UpdateRecommendation updates the recommended resources in the VPA and its

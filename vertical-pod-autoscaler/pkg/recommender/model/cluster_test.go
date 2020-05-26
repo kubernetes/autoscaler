@@ -32,6 +32,8 @@ import (
 
 var (
 	testPodID       = PodID{"namespace-1", "pod-1"}
+	testPodID3      = PodID{"namespace-1", "pod-3"}
+	testPodID4      = PodID{"namespace-1", "pod-4"}
 	testContainerID = ContainerID{testPodID, "container-1"}
 	testVpaID       = VpaID{"namespace-1", "vpa-1"}
 	testAnnotations = vpaAnnotationsMap{"key-1": "value-1"}
@@ -701,13 +703,13 @@ func TestVPAWithMatchingPods(t *testing.T) {
 		name          string
 		vpaSelector   string
 		pods          []podDesc
-		expectedMatch bool
+		expectedMatch int
 	}{
 		{
 			name:          "No pods",
 			vpaSelector:   testSelectorStr,
 			pods:          []podDesc{},
-			expectedMatch: false,
+			expectedMatch: 0,
 		},
 		{
 			name:        "VPA with matching pod",
@@ -719,7 +721,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 					apiv1.PodRunning,
 				},
 			},
-			expectedMatch: true,
+			expectedMatch: 1,
 		},
 		{
 			name:        "No matching pod",
@@ -731,11 +733,34 @@ func TestVPAWithMatchingPods(t *testing.T) {
 					apiv1.PodRunning,
 				},
 			},
-			expectedMatch: false,
+			expectedMatch: 0,
+		},
+		{
+			name:        "VPA with 2 matching pods, 1 not matching",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					testPodID,
+					emptyLabels, // does not match VPA
+					apiv1.PodRunning,
+				},
+				{
+					testPodID3,
+					testLabels,
+					apiv1.PodRunning,
+				},
+				{
+					testPodID4,
+					testLabels,
+					apiv1.PodRunning,
+				},
+			},
+			expectedMatch: 2,
 		},
 	}
+	// Run with adding VPA first
 	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.name+", VPA first", func(t *testing.T) {
 			cluster := NewClusterState()
 			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
 			for _, podDesc := range tc.pods {
@@ -743,7 +768,20 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				containerID := ContainerID{testPodID, "foo"}
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
-			assert.Equal(t, tc.expectedMatch, cluster.VpasWithMatchingPods[vpa.ID])
+			assert.Equal(t, tc.expectedMatch, cluster.VpaPodCount[vpa.ID])
+		})
+	}
+	// Run with adding Pods first
+	for _, tc := range cases {
+		t.Run(tc.name+", Pods first", func(t *testing.T) {
+			cluster := NewClusterState()
+			for _, podDesc := range tc.pods {
+				cluster.AddOrUpdatePod(podDesc.id, podDesc.labels, podDesc.phase)
+				containerID := ContainerID{testPodID, "foo"}
+				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
+			}
+			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
+			assert.Equal(t, tc.expectedMatch, cluster.VpaPodCount[vpa.ID])
 		})
 	}
 }
