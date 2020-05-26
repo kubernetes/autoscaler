@@ -22,7 +22,7 @@ ARCH ?= amd64
 
 GOARM=7
 GOLANG_VERSION = 1.12.1
-REGISTRY = staging-k8s.gcr.io
+REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
