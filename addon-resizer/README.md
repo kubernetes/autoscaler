@@ -27,6 +27,7 @@ Usage of pod_nanny:
       --poll-period=10000: The time, in milliseconds, to poll the dependent container.
       --storage="MISSING": The base storage resource requirement.
       --threshold=0: A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.
+      --use-metrics=false: Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.
 ```
 
 ## Example deployment file

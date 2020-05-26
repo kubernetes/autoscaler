@@ -60,6 +60,7 @@ var (
 	pollPeriod     = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
 	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
 	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
+	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.")
 )
 
 func main() {
@@ -100,7 +101,7 @@ func main() {
 	// Use protobufs to improve performance.
 	config.ContentType = "application/vnd.kubernetes.protobuf"
 
-	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset)
+	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics)
 
 	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
 		BaseCPU:       *baseCPU,
