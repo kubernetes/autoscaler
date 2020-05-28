@@ -189,6 +189,8 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer vpasWithEvictablePodsCounter.Observe()
 	defer vpasWithEvictedPodsCounter.Observe()
 
+	// NOTE: this loop assumes that controlledPods are filtered
+	// to contain only Pods controlled by a VPA in auto or recreate mode
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		controlledPodsCounter.Add(vpaSize, vpaSize)
