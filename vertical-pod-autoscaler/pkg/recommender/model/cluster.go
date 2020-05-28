@@ -46,9 +46,8 @@ type ClusterState struct {
 	// time we've noticed the recommendation missing or last time we logged
 	// a warning about it.
 	EmptyVPAs map[VpaID]time.Time
-	// VpasWithMatchingPods contains information if there exist live pods that
-	// this VPAs selector matches.
-	VpasWithMatchingPods map[VpaID]bool
+	// VpaPodCount contains number of live Pods matching a given VPA object.
+	VpaPodCount map[VpaID]int
 	// Observed VPAs. Used to check if there are updates needed.
 	ObservedVpas []*vpa_types.VerticalPodAutoscaler
 
@@ -97,12 +96,12 @@ type PodState struct {
 // NewClusterState returns a new ClusterState with no pods.
 func NewClusterState() *ClusterState {
 	return &ClusterState{
-		Pods:                 make(map[PodID]*PodState),
-		Vpas:                 make(map[VpaID]*Vpa),
-		EmptyVPAs:            make(map[VpaID]time.Time),
-		VpasWithMatchingPods: make(map[VpaID]bool),
-		aggregateStateMap:    make(aggregateContainerStatesMap),
-		labelSetMap:          make(labelSetMap),
+		Pods:              make(map[PodID]*PodState),
+		Vpas:              make(map[VpaID]*Vpa),
+		EmptyVPAs:         make(map[VpaID]time.Time),
+		VpaPodCount:       make(map[VpaID]int),
+		aggregateStateMap: make(aggregateContainerStatesMap),
+		labelSetMap:       make(labelSetMap),
 	}
 }
 
@@ -124,7 +123,12 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 		pod = newPod(podID)
 		cluster.Pods[podID] = pod
 	}
+
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
+	if podExists && pod.labelSetKey != newlabelSetKey {
+		// This Pod is already counted in the old VPA, remove the link.
+		cluster.removePodFromItsVpa(pod)
+	}
 	if !podExists || pod.labelSetKey != newlabelSetKey {
 		pod.labelSetKey = newlabelSetKey
 		// Set the links between the containers and aggregations based on the current pod labels.
@@ -132,8 +136,29 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
+
+		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
+}
+
+// addPodToItsVpa increases the count of Pods associated with a VPA object.
+// Does a scan similar to findOrCreateAggregateContainerState so could be optimized if needed.
+func (cluster *ClusterState) addPodToItsVpa(pod *PodState) {
+	for _, vpa := range cluster.Vpas {
+		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
+			cluster.VpaPodCount[vpa.ID]++
+		}
+	}
+}
+
+// removePodFromItsVpa decreases the count of Pods associated with a VPA object.
+func (cluster *ClusterState) removePodFromItsVpa(pod *PodState) {
+	for _, vpa := range cluster.Vpas {
+		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
+			cluster.VpaPodCount[vpa.ID]--
+		}
+	}
 }
 
 // GetContainer returns the ContainerState object for a given ContainerID or
@@ -151,6 +176,10 @@ func (cluster *ClusterState) GetContainer(containerID ContainerID) *ContainerSta
 
 // DeletePod removes an existing pod from the cluster.
 func (cluster *ClusterState) DeletePod(podID PodID) {
+	pod, found := cluster.Pods[podID]
+	if found {
+		cluster.removePodFromItsVpa(pod)
+	}
 	delete(cluster.Pods, podID)
 }
 
@@ -237,10 +266,9 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
 		cluster.Vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
-			if vpa.UseAggregationIfMatching(aggregationKey, aggregation) {
-				cluster.VpasWithMatchingPods[vpa.ID] = true
-			}
+			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
 		}
+		cluster.VpaPodCount[vpaID] = len(cluster.GetMatchingPods(vpa))
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
@@ -262,7 +290,7 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 	}
 	delete(cluster.Vpas, vpaID)
 	delete(cluster.EmptyVPAs, vpaID)
-	delete(cluster.VpasWithMatchingPods, vpaID)
+	delete(cluster.VpaPodCount, vpaID)
 	return nil
 }
 
@@ -313,9 +341,7 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 		cluster.aggregateStateMap[aggregateStateKey] = aggregateContainerState
 		// Link the new aggregation to the existing VPAs.
 		for _, vpa := range cluster.Vpas {
-			if vpa.UseAggregationIfMatching(aggregateStateKey, aggregateContainerState) {
-				cluster.VpasWithMatchingPods[vpa.ID] = true
-			}
+			vpa.UseAggregationIfMatching(aggregateStateKey, aggregateContainerState)
 		}
 	}
 	return aggregateContainerState
