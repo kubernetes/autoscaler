@@ -177,11 +177,31 @@ func (u *updater) RunOnce(ctx context.Context) {
 	}
 	timer.ObserveStep("AdmissionInit")
 
+	// wrappers for metrics which are computed every loop run
+	controlledPodsCounter := metrics_updater.NewControlledPodsCounter()
+	evictablePodsCounter := metrics_updater.NewEvictablePodsCounter()
+	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
+	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
+
+	// using defer to protect against 'return' after evictionRateLimiter.Wait
+	defer controlledPodsCounter.Observe()
+	defer evictablePodsCounter.Observe()
+	defer vpasWithEvictablePodsCounter.Observe()
+	defer vpasWithEvictedPodsCounter.Observe()
+
+	// NOTE: this loop assumes that controlledPods are filtered
+	// to contain only Pods controlled by a VPA in auto or recreate mode
 	for vpa, livePods := range controlledPods {
+		vpaSize := len(livePods)
+		controlledPodsCounter.Add(vpaSize, vpaSize)
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
 		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+		evictablePodsCounter.Add(vpaSize, len(podsForUpdate))
 
+		withEvictable := false
+		withEvicted := false
 		for _, pod := range podsForUpdate {
+			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}
@@ -194,7 +214,17 @@ func (u *updater) RunOnce(ctx context.Context) {
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
+			} else {
+				withEvicted = true
+				metrics_updater.AddEvictedPod(vpaSize)
 			}
+		}
+
+		if withEvictable {
+			vpasWithEvictablePodsCounter.Add(vpaSize, 1)
+		}
+		if withEvicted {
+			vpasWithEvictedPodsCounter.Add(vpaSize, 1)
 		}
 	}
 	timer.ObserveStep("EvictPods")
