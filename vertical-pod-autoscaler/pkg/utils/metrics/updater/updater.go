@@ -18,7 +18,6 @@ limitations under the License.
 package updater
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,15 +26,11 @@ import (
 
 const (
 	metricsNamespace = metrics.TopMetricsNamespace + "updater"
-
-	// The metrics will distinguish VPA sizes up to 2^maxVpaSizeLog (~1M)
-	// Anything above that size will be reported in the top bucket.
-	maxVpaSizeLog = 20
 )
 
 // SizeBasedGauge is a wrapper for incrementally recording values indexed by log2(VPA size)
 type SizeBasedGauge struct {
-	values [maxVpaSizeLog]int
+	values [metrics.MaxVpaSizeLog]int
 	gauge  *prometheus.GaugeVec
 }
 
@@ -97,7 +92,7 @@ func NewExecutionTimer() *metrics.ExecutionTimer {
 // newSizeBasedGauge provides a wrapper for counting items in a loop
 func newSizeBasedGauge(gauge *prometheus.GaugeVec) *SizeBasedGauge {
 	return &SizeBasedGauge{
-		values: [maxVpaSizeLog]int{},
+		values: [metrics.MaxVpaSizeLog]int{},
 		gauge:  gauge,
 	}
 }
@@ -122,27 +117,15 @@ func NewVpasWithEvictedPodsCounter() *SizeBasedGauge {
 	return newSizeBasedGauge(vpasWithEvictedPodsCount)
 }
 
-func getVpaSizeLog2(vpaSize int) int {
-	if vpaSize == 0 {
-		return 0
-	}
-
-	ret := int(math.Log2(float64(vpaSize)))
-	if ret > maxVpaSizeLog {
-		return maxVpaSizeLog
-	}
-	return ret
-}
-
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
 func AddEvictedPod(vpaSize int) {
-	log2 := getVpaSizeLog2(vpaSize)
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
 }
 
 // Add increases the counter for the given VPA size
 func (g *SizeBasedGauge) Add(vpaSize int, value int) {
-	log2 := getVpaSizeLog2(vpaSize)
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	g.values[log2] += value
 }
 
