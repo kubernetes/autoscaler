@@ -231,7 +231,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 		updateMode                  *vpa_types.UpdateMode
 		container                   string
 		containerLabels             map[string]string
-		expectedMatching            bool
 		expectedUpdateMode          *vpa_types.UpdateMode
 		expectedNeedsRecommendation map[string]bool
 	}{
@@ -242,7 +241,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          &modeOff,
 		}, {
@@ -252,7 +250,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"test-container": true, "second-container": true},
 			expectedUpdateMode:          &modeAuto,
 		}, {
@@ -262,7 +259,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          &modeOff,
 		}, {
@@ -272,7 +268,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             map[string]string{"different": "labels"},
-			expectedMatching:            false,
 			expectedNeedsRecommendation: map[string]bool{"test-container": true},
 			expectedUpdateMode:          nil,
 		}, {
@@ -290,7 +285,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": true},
 			expectedUpdateMode:          &modeAuto,
 		}, {
@@ -308,7 +302,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": false},
 			expectedUpdateMode:          &modeAuto,
 		}, {
@@ -330,7 +323,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"second-container": false, "test-container": true},
 			expectedUpdateMode:          &modeAuto,
 		}, {
@@ -352,7 +344,6 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
-			expectedMatching:            true,
 			expectedNeedsRecommendation: map[string]bool{"second-container": true, "test-container": false},
 			expectedUpdateMode:          &modeAuto,
 		},
@@ -381,8 +372,7 @@ func TestUseAggregationIfMatching(t *testing.T) {
 			}
 			vpa.SetResourcePolicy(tc.resourcePolicy)
 
-			matching := vpa.UseAggregationIfMatching(key, aggregationUnderTest)
-			assert.Equal(t, tc.expectedMatching, matching, "Unexpected assessment of aggregation matching")
+			vpa.UseAggregationIfMatching(key, aggregationUnderTest)
 			assert.Len(t, vpa.aggregateContainerStates, len(tc.expectedNeedsRecommendation), "AggregateContainerStates has unexpected size")
 			for container, expectedNeedsRecommendation := range tc.expectedNeedsRecommendation {
 				found := false

@@ -157,6 +157,13 @@ metadata:
   name: system:vpa-target-reader
 rules:
   - apiGroups:
+    - '*'
+    resources:
+    - '*/scale'
+    verbs:
+    - get
+    - watch
+  - apiGroups:
       - ""
     resources:
       - replicationcontrollers
