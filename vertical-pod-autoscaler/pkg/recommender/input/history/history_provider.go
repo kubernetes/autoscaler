@@ -190,9 +190,12 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
 	res := make(map[model.PodID]*PodHistory)
-	podSelector := fmt.Sprintf("job=\"%s\", %s=~\".+\", %s!=\"POD\", %s!=\"\"",
-		p.config.CadvisorMetricsJobName, p.config.CtrPodNameLabel,
-		p.config.CtrNameLabel, p.config.CtrNameLabel)
+	var podSelector string
+	if p.config.CadvisorMetricsJobName != "" {
+		podSelector = fmt.Sprintf("job=\"%s\", ", p.config.CadvisorMetricsJobName)
+	}
+	podSelector = podSelector + fmt.Sprintf("%s=~\".+\", %s!=\"POD\", %s!=\"\"",
+		p.config.CtrPodNameLabel, p.config.CtrNameLabel, p.config.CtrNameLabel)
 
 	// This query uses Prometheus Subquery notation, to gives us a result of a five minute cpu rate by default evaluated every 1minute for last config.HistoryLength days/hours/minutes. In order to change the evaluation step, you need change Prometheus global.evaluation_interval configuration parameter.
 	err := p.readResourceHistory(res, fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[5m])[%s:]", podSelector, p.config.HistoryLength), model.ResourceCPU)
