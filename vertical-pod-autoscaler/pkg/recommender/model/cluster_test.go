@@ -768,7 +768,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				containerID := ContainerID{testPodID, "foo"}
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
-			assert.Equal(t, tc.expectedMatch, cluster.VpaPodCount[vpa.ID])
+			assert.Equal(t, tc.expectedMatch, cluster.Vpas[vpa.ID].PodCount)
 		})
 	}
 	// Run with adding Pods first
@@ -781,7 +781,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
 			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
-			assert.Equal(t, tc.expectedMatch, cluster.VpaPodCount[vpa.ID])
+			assert.Equal(t, tc.expectedMatch, cluster.Vpas[vpa.ID].PodCount)
 		})
 	}
 }
