@@ -120,6 +120,11 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	n2.ObjectMeta.Labels[apiv1.LabelZoneFailureDomain] = "us-houston1-a"
 	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
 
+	// Different agentpool labels shouldn't matter
+	n1.ObjectMeta.Labels["agentpool"] = "pool1"
+	n2.ObjectMeta.Labels["agentpool"] = "pool2"
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
+
 	// Different beta.kubernetes.io/fluentd-ds-ready should not matter
 	n1.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "true"
 	n2.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "false"
