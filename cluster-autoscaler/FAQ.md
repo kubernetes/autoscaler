@@ -677,7 +677,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership.<br>This is only applicable if leader election is enabled | 2 seconds
 | `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election.<br>Supported options are `endpoints` (default) and `configmaps` | "endpoints"
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only | false
-| `skip-nodes-with-system-pods` | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods | true
+| `skip-nodes-with-system-pods` | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods) | true
 | `skip-nodes-with-local-storage`| If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true
 | `min-replica-count` | Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down | 0
 
