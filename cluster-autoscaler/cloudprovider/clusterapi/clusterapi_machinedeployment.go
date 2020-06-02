@@ -120,12 +120,8 @@ func (r machineDeploymentScalableResource) UnmarkMachineForDeletion(machine *Mac
 
 func (r machineDeploymentScalableResource) MarkMachineForDeletion(machine *Machine) error {
 	u, err := r.controller.dynamicclient.Resource(*r.controller.machineResource).Namespace(machine.Namespace).Get(context.TODO(), machine.Name, metav1.GetOptions{})
-
 	if err != nil {
 		return err
-	}
-	if u == nil {
-		return fmt.Errorf("unknown machine %s", machine.Name)
 	}
 
 	u = u.DeepCopy()
