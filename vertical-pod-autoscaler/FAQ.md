@@ -4,6 +4,7 @@
 
 - [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-CPU-or-memory-settings)
 - [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
+- [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -129,3 +130,17 @@ Here you should see the flags that you set for the VPA recommender and you shoul
 ```Initializing VPA from history provider```
 
 This means that the VPA recommender is now using Prometheus as the history provider.
+
+### I get recommendations for my single pod replicaSet but they are not applied
+
+By default, the [`--min-replicas`](pkg/updater/main.go#L44) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](deploy/updater-deployment.yaml) file:
+
+```yaml
+spec:
+  containers:
+  - name: updater
+  - args:
+    - "--min-replicas=1"
+```
+
+and then deploy it manually if your vpa is already configured.
