@@ -46,8 +46,6 @@ type ClusterState struct {
 	// time we've noticed the recommendation missing or last time we logged
 	// a warning about it.
 	EmptyVPAs map[VpaID]time.Time
-	// VpaPodCount contains number of live Pods matching a given VPA object.
-	VpaPodCount map[VpaID]int
 	// Observed VPAs. Used to check if there are updates needed.
 	ObservedVpas []*vpa_types.VerticalPodAutoscaler
 
@@ -99,7 +97,6 @@ func NewClusterState() *ClusterState {
 		Pods:              make(map[PodID]*PodState),
 		Vpas:              make(map[VpaID]*Vpa),
 		EmptyVPAs:         make(map[VpaID]time.Time),
-		VpaPodCount:       make(map[VpaID]int),
 		aggregateStateMap: make(aggregateContainerStatesMap),
 		labelSetMap:       make(labelSetMap),
 	}
@@ -147,7 +144,7 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 func (cluster *ClusterState) addPodToItsVpa(pod *PodState) {
 	for _, vpa := range cluster.Vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
-			cluster.VpaPodCount[vpa.ID]++
+			vpa.PodCount++
 		}
 	}
 }
@@ -156,7 +153,7 @@ func (cluster *ClusterState) addPodToItsVpa(pod *PodState) {
 func (cluster *ClusterState) removePodFromItsVpa(pod *PodState) {
 	for _, vpa := range cluster.Vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
-			cluster.VpaPodCount[vpa.ID]--
+			vpa.PodCount--
 		}
 	}
 }
@@ -268,7 +265,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
 		}
-		cluster.VpaPodCount[vpaID] = len(cluster.GetMatchingPods(vpa))
+		vpa.PodCount = len(cluster.GetMatchingPods(vpa))
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
@@ -290,7 +287,6 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 	}
 	delete(cluster.Vpas, vpaID)
 	delete(cluster.EmptyVPAs, vpaID)
-	delete(cluster.VpaPodCount, vpaID)
 	return nil
 }
 

@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -107,6 +108,8 @@ type Vpa struct {
 	IsV1Beta1API bool
 	// TargetRef points to the controller managing the set of pods.
 	TargetRef *autoscaling.CrossVersionObjectReference
+	// PodCount contains number of live Pods matching a given VPA object.
+	PodCount int
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
@@ -121,6 +124,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		Annotations:                     make(vpaAnnotationsMap),
 		Conditions:                      make(vpaConditionsMap),
 		IsV1Beta1API:                    false,
+		PodCount:                        0,
 	}
 	return vpa
 }
@@ -143,14 +147,15 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 // UpdateRecommendation updates the recommended resources in the VPA and its
 // aggregations with the given recommendation.
 func (vpa *Vpa) UpdateRecommendation(recommendation *vpa_types.RecommendedPodResources) {
-	vpa.Recommendation = recommendation
 	for _, containerRecommendation := range recommendation.ContainerRecommendations {
 		for container, state := range vpa.aggregateContainerStates {
 			if container.ContainerName() == containerRecommendation.ContainerName {
+				metrics_quality.ObserveRecommendationChange(state.LastRecommendation, containerRecommendation.UncappedTarget, vpa.UpdateMode, vpa.PodCount)
 				state.LastRecommendation = containerRecommendation.UncappedTarget
 			}
 		}
 	}
+	vpa.Recommendation = recommendation
 }
 
 // UsesAggregation returns true iff an aggregation with the given key contributes to the VPA.
