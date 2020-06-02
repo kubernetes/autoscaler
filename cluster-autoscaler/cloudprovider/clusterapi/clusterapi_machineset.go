@@ -102,12 +102,8 @@ func (r machineSetScalableResource) SetSize(nreplicas int32) error {
 
 func (r machineSetScalableResource) MarkMachineForDeletion(machine *Machine) error {
 	u, err := r.controller.dynamicclient.Resource(*r.controller.machineResource).Namespace(machine.Namespace).Get(context.TODO(), machine.Name, metav1.GetOptions{})
-
 	if err != nil {
 		return err
-	}
-	if u == nil {
-		return fmt.Errorf("unknown machine %s", machine.Name)
 	}
 
 	u = u.DeepCopy()
