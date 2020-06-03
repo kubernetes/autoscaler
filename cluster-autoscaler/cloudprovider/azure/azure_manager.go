@@ -66,12 +66,12 @@ const (
 	backoffJitterDefault   = 1.0
 
 	// rate limit
-	rateLimitQPSDefault float32 = 1.0
-	rateLimitBucketDefault = 5
-	rateLimitReadQPSEnvVar = "RATE_LIMIT_READ_QPS"
-	rateLimitReadBucketsEnvVar = "RATE_LIMIT_READ_BUCKETS"
-	rateLimitWriteQPSEnvVar = "RATE_LIMIT_WRITE_QPS"
-	rateLimitWriteBucketsEnvVar = "RATE_LIMIT_WRITE_BUCKETS"
+	rateLimitQPSDefault         float32 = 1.0
+	rateLimitBucketDefault              = 5
+	rateLimitReadQPSEnvVar              = "RATE_LIMIT_READ_QPS"
+	rateLimitReadBucketsEnvVar          = "RATE_LIMIT_READ_BUCKETS"
+	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
+	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 )
 
 var validLabelAutoDiscovererKeys = strings.Join([]string{
@@ -402,7 +402,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 
 	err = InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	// Defaulting vmType to vmss.
