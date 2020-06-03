@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
