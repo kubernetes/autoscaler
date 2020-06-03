@@ -19,10 +19,9 @@ package nanny
 import (
 	"fmt"
 	"io"
-	"strings"
 
+	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/common/model"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
@@ -77,36 +76,47 @@ func (k *kubernetesClient) countNodesThroughAPI() (uint64, error) {
 	return uint64(len(result.Items)), err
 }
 
+func hasEqualValues(a string, b *string) bool {
+	return b != nil && a == *b
+}
+
 func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
 	// Other than that, endpoint is visible from everywhere.
-	rawMetrics, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").DoRaw()
+	reader, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").Stream()
 	if err != nil {
 		return 0, err
 	}
 
-	decoder := expfmt.SampleDecoder{
-		Dec:  expfmt.NewDecoder(strings.NewReader(string(rawMetrics)), expfmt.FmtText),
-		Opts: &expfmt.DecodeOptions{},
-	}
-	var v model.Vector
+	decoder := expfmt.NewDecoder(reader, expfmt.FmtText)
+
+	var mf dto.MetricFamily
 	for {
-		if err := decoder.Decode(&v); err != nil {
+		if err := decoder.Decode(&mf); err != nil {
 			if err == io.EOF {
 				break
 			}
 			continue
 		}
-		for _, metric := range v {
-			name := metric.Metric[model.MetricNameLabel]
-			if name != objectCountMetricName {
+
+		if !hasEqualValues(objectCountMetricName, mf.Name) {
+			continue
+		}
+		for _, metric := range mf.Metric {
+			hasLabel := false
+			for _, label := range metric.Label {
+				if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(nodeResourceName, label.Value) {
+					hasLabel = true
+					break
+				}
+			}
+			if !hasLabel {
 				continue
 			}
-			resource := metric.Metric[resourceLabel]
-			if resource != nodeResourceName {
+			if metric.Gauge == nil || metric.Gauge.Value == nil {
 				continue
 			}
-			value := uint64(metric.Value)
+			value := uint64(*metric.Gauge.Value)
 			if value < 0 {
 				return 0, fmt.Errorf("metric unknown")
 			}
