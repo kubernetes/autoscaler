@@ -26,7 +26,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/avast/retry-go"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -131,7 +130,7 @@ func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceG
 }
 
 // List gets a list of VirtualMachineScaleSetVMs.
-func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, expand string) (result []compute.VirtualMachineScaleSetVM, rerr *retry.Error) {
+func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
