@@ -70,9 +70,6 @@ func TestTargetSize(t *testing.T) {
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
-	ng := provider.NodeGroups()[0]
-	size, err := ng.TargetSize()
-	println(size)
 	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
