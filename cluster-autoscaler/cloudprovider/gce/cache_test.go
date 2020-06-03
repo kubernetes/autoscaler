@@ -53,7 +53,7 @@ func TestMachineCache(t *testing.T) {
 				},
 			},
 			want: map[MachineTypeKey]uint64{
-				MachineTypeKey{
+				{
 					MachineType: "e2-standard-2",
 					Zone:        "myzone",
 				}: 2,
