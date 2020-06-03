@@ -337,9 +337,9 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instanceRefToMigRef:      make(map[GceRef]GceRef),
 		instancesFromUnknownMigs: make(map[GceRef]struct{}),
 		machinesCache: map[MachineTypeKey]machinesCacheValue{
-			{"us-central1-b", "n1-standard-1"}: machinesCacheValue{&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
-			{"us-central1-c", "n1-standard-1"}: machinesCacheValue{&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
-			{"us-central1-f", "n1-standard-1"}: machinesCacheValue{&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
+			{"us-central1-b", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
+			{"us-central1-c", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
+			{"us-central1-f", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
 		},
 		migTargetSizeCache:     map[GceRef]int64{},
 		instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{},
