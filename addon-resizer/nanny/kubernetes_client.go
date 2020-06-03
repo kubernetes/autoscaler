@@ -19,7 +19,6 @@ package nanny
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
@@ -84,12 +83,12 @@ func hasEqualValues(a string, b *string) bool {
 func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
 	// Other than that, endpoint is visible from everywhere.
-	rawMetrics, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").DoRaw()
+	reader, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").Stream()
 	if err != nil {
 		return 0, err
 	}
 
-	decoder := expfmt.NewDecoder(strings.NewReader(string(rawMetrics)), expfmt.FmtText)
+	decoder := expfmt.NewDecoder(reader, expfmt.FmtText)
 
 	var mf dto.MetricFamily
 	for {
