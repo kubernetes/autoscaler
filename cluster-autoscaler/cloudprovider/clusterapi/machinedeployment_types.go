@@ -36,7 +36,11 @@ type MachineDeploymentSpec struct {
 }
 
 // MachineDeploymentStatus is the internal autoscaler Schema for MachineDeploymentStatus
-type MachineDeploymentStatus struct{}
+type MachineDeploymentStatus struct {
+	// Number of desired machines. Defaults to 1.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	Replicas int32 `json:"replicas,omitempty"`
+}
 
 // MachineDeployment is the internal autoscaler Schema for MachineDeployment
 type MachineDeployment struct {
