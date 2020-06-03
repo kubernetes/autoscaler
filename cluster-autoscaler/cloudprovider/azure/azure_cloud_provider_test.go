@@ -22,6 +22,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -79,8 +80,34 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachinesClient: &VirtualMachinesClientMock{
 				FakeStore: make(map[string]map[string]compute.VirtualMachine),
 			},
-			virtualMachineScaleSetsClient:   scaleSetsClient,
-			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
+			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
+				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+					"test": {
+						"test-asg": {
+							Name: &vmssName,
+							Sku: &compute.Sku{
+								Capacity: &vmssCapacity,
+								Name:     &skuName,
+							},
+							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
+							Location:                         &location,
+						},
+					},
+				},
+			},
+			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{
+				FakeStore: map[string]map[string]compute.VirtualMachineScaleSetVM{
+					"test": {
+						"0": {
+							ID:         to.StringPtr(fakeVirtualMachineScaleSetVMID),
+							InstanceID: to.StringPtr("0"),
+							VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+								VMID: to.StringPtr("123E4567-E89B-12D3-A456-426655440000"),
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
