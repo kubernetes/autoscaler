@@ -130,7 +130,7 @@ func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceG
 }
 
 // List gets a list of VirtualMachineScaleSetVMs.
-func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
+func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
