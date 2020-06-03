@@ -24,6 +24,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/klog"
 	"k8s.io/utils/pointer"
 )
 
@@ -75,8 +76,22 @@ func (r machineDeploymentScalableResource) Nodes() ([]string, error) {
 	return result, nil
 }
 
-func (r machineDeploymentScalableResource) Replicas() int32 {
-	return pointer.Int32PtrDerefOr(r.machineDeployment.Spec.Replicas, 0)
+func (r machineDeploymentScalableResource) Replicas() (int32, error) {
+	freshMachineDeployment, err := r.controller.getMachineDeployment(r.machineDeployment.Namespace, r.machineDeployment.Name, metav1.GetOptions{})
+	if err != nil {
+		return 0, err
+	}
+
+	if freshMachineDeployment == nil {
+		return 0, fmt.Errorf("unknown machineDeployment %s", r.machineDeployment.Name)
+	}
+
+	if freshMachineDeployment.Spec.Replicas == nil {
+		klog.Warningf("MachineDeployment %q has nil spec.replicas. This is unsupported behaviour. Falling back to status.replicas.", r.machineDeployment.Name)
+	}
+	// If no value for replicas on the MachineSet spec, fallback to the status
+	// TODO: Remove this fallback once defaulting is implemented for MachineSet Replicas
+	return pointer.Int32PtrDerefOr(freshMachineDeployment.Spec.Replicas, freshMachineDeployment.Status.Replicas), nil
 }
 
 func (r machineDeploymentScalableResource) SetSize(nreplicas int32) error {

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,6 +66,7 @@ type machineController struct {
 	machineSetResource        *schema.GroupVersionResource
 	machineResource           *schema.GroupVersionResource
 	machineDeploymentResource *schema.GroupVersionResource
+	accessLock                sync.Mutex
 }
 
 type machineSetFilterFunc func(machineSet *MachineSet) error
