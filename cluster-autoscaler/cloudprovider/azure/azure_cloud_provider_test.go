@@ -80,21 +80,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachinesClient: &VirtualMachinesClientMock{
 				FakeStore: make(map[string]map[string]compute.VirtualMachine),
 			},
-			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
-				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-					"test": {
-						"test-asg": {
-							Name: &vmssName,
-							Sku: &compute.Sku{
-								Capacity: &vmssCapacity,
-								Name:     &skuName,
-							},
-							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
-							Location:                         &location,
-						},
-					},
-				},
-			},
+			virtualMachineScaleSetsClient: scaleSetsClient,
 			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{
 				FakeStore: map[string]map[string]compute.VirtualMachineScaleSetVM{
 					"test": {
