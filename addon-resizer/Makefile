@@ -21,7 +21,7 @@ ALL_ARCH = amd64 arm arm64 ppc64le s390x
 ARCH ?= amd64
 
 GOARM=7
-GOLANG_VERSION = 1.12.1
+GOLANG_VERSION = 1.14.3
 REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
