@@ -28,16 +28,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/klog"
 	providerazure "k8s.io/legacy-cloud-providers/azure"
 	azclients "k8s.io/legacy-cloud-providers/azure/clients"
 	"k8s.io/legacy-cloud-providers/azure/retry"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 const (
@@ -66,12 +66,12 @@ const (
 	backoffJitterDefault   = 1.0
 
 	// rate limit
-	rateLimitQPSDefault float32 = 1.0
-	rateLimitBucketDefault = 5
-	rateLimitReadQPSEnvVar = "RATE_LIMIT_READ_QPS"
-	rateLimitReadBucketsEnvVar = "RATE_LIMIT_READ_BUCKETS"
-	rateLimitWriteQPSEnvVar = "RATE_LIMIT_WRITE_QPS"
-	rateLimitWriteBucketsEnvVar = "RATE_LIMIT_WRITE_BUCKETS"
+	rateLimitQPSDefault         float32 = 1.0
+	rateLimitBucketDefault              = 5
+	rateLimitReadQPSEnvVar              = "RATE_LIMIT_READ_QPS"
+	rateLimitReadBucketsEnvVar          = "RATE_LIMIT_READ_BUCKETS"
+	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
+	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 )
 
 var validLabelAutoDiscovererKeys = strings.Join([]string{
@@ -402,7 +402,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 
 	err = InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	// Defaulting vmType to vmss.
