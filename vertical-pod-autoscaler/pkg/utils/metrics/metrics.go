@@ -41,7 +41,7 @@ const (
 	// TopMetricsNamespace is a prefix for all VPA-related metrics namespaces
 	TopMetricsNamespace = "vpa_"
 
-	// The metrics will distinguish VPA sizes up to 2^MaxVpaSizeLog (~1M)
+	// MaxVpaSizeLog - The metrics will distinguish VPA sizes up to 2^MaxVpaSizeLog (~1M)
 	// Anything above that size will be reported in the top bucket.
 	MaxVpaSizeLog = 20
 )

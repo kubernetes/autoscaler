@@ -434,7 +434,7 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadyS
 	var rateLimitWriteQPS float32 = 6.0
 	rateLimitWriteBuckets := 20
 
-	configWithRateLimits :=	&CloudProviderRateLimitConfig{
+	configWithRateLimits := &CloudProviderRateLimitConfig{
 		RateLimitConfig: azclients.RateLimitConfig{
 			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
 			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
