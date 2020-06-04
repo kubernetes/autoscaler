@@ -21,9 +21,13 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/legacy-cloud-providers/azure/clients/vmclient/mockvmclient"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -104,4 +108,24 @@ func TestDeleteOutdatedDeployments(t *testing.T) {
 		}
 		assert.Equal(t, test.expectedDeploymentsNames, existedDeploymentsNames, test.desc)
 	}
+}
+
+func TestGetVirtualMachinesFromCache(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	testAS := newTestAgentPool(newTestAzureManager(t), "testAS")
+	expectedVMs := []compute.VirtualMachine{
+		{
+			Tags: map[string]*string{"poolName": to.StringPtr("testAS")},
+		},
+	}
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), testAS.manager.config.ResourceGroup).Return(expectedVMs, nil)
+	testAS.manager.azClient.virtualMachinesClient = mockVMClient
+
+	vms, err := testAS.getVirtualMachinesFromCache()
+	assert.Equal(t, 1, len(vms))
+	assert.NoError(t, err)
 }
