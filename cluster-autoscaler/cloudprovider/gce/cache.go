@@ -383,7 +383,7 @@ func (gc *GceCache) AddMachineToCache(machineType string, zone string, machine *
 	gc.machinesCache[MachineTypeKey{zone, machineType}] = machinesCacheValue{machineType: machine}
 }
 
-// AddMachineToCache adds machine to cache under lock.
+// AddMachineToCacheWithError adds machine to cache under lock.
 func (gc *GceCache) AddMachineToCacheWithError(machineType string, zone string, err error) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
