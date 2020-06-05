@@ -28,16 +28,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/klog"
 	providerazure "k8s.io/legacy-cloud-providers/azure"
 	azclients "k8s.io/legacy-cloud-providers/azure/clients"
 	"k8s.io/legacy-cloud-providers/azure/retry"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 const (
