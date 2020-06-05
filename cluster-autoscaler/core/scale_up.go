@@ -43,7 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 type scaleUpResourcesLimits map[string]int64

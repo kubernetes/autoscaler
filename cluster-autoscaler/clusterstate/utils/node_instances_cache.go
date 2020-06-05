@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
