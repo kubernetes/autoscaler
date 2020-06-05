@@ -19,21 +19,18 @@ package azure
 import (
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/stretchr/testify/assert"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
+
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
+	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func newTestAzureManager(t *testing.T) *AzureManager {
-	vmssName := "test-asg"
-	skuName := "Standard_D4_v2"
-	location := "eastus"
-	var vmssCapacity int64 = 3
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
@@ -44,42 +41,8 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		},
 
 		azClient: &azClient{
-			disksClient:           &DisksClientMock{},
-			interfacesClient:      &InterfacesClientMock{},
-			storageAccountsClient: &AccountsClientMock{},
 			deploymentsClient: &DeploymentsClientMock{
 				FakeStore: make(map[string]resources.DeploymentExtended),
-			},
-			virtualMachinesClient: &VirtualMachinesClientMock{
-				FakeStore: make(map[string]map[string]compute.VirtualMachine),
-			},
-			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
-				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-					"test": {
-						"test-asg": {
-							Name: &vmssName,
-							Sku: &compute.Sku{
-								Capacity: &vmssCapacity,
-								Name:     &skuName,
-							},
-							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
-							Location:                         &location,
-						},
-					},
-				},
-			},
-			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{
-				FakeStore: map[string]map[string]compute.VirtualMachineScaleSetVM{
-					"test": {
-						"0": {
-							ID:         to.StringPtr(fakeVirtualMachineScaleSetVMID),
-							InstanceID: to.StringPtr("0"),
-							VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-								VMID: to.StringPtr("123E4567-E89B-12D3-A456-426655440000"),
-							},
-						},
-					},
-				},
 			},
 		},
 	}
@@ -128,7 +91,20 @@ func TestNodeGroups(t *testing.T) {
 }
 
 func TestNodeGroupForNode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedVMSSVMs := newTestVMSSVMList()
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+
 	provider := newTestProvider(t)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
