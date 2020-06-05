@@ -45,7 +45,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -484,7 +484,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		if klog.V(4) {
+		if klog.V(4).Enabled() {
 			for key, val := range scaleDown.unneededNodes {
 				klog.Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
 			}

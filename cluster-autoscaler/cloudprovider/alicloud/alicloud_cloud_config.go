@@ -18,7 +18,7 @@ package alicloud
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"os"
 )
 

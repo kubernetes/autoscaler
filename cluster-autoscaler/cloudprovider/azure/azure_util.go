@@ -38,7 +38,7 @@ import (
 	"golang.org/x/crypto/pkcs12"
 
 	"k8s.io/autoscaler/cluster-autoscaler/version"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 

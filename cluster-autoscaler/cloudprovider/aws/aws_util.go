@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"io/ioutil"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"net/http"
 	"os"
 	"regexp"

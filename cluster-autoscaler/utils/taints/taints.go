@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	cloudproviderapi "k8s.io/cloud-provider/api"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (

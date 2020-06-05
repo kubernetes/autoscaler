@@ -29,7 +29,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (

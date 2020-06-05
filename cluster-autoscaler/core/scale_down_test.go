@@ -45,7 +45,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 
 	"strconv"
 
