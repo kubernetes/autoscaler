@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package glogx
+package klogx
 
 import (
 	klog "k8s.io/klog/v2"
@@ -40,41 +40,57 @@ func (q *quota) Reset() {
 	q.left = q.limit
 }
 
-// UpTo decreases quota for logging and reports whether there was any left.
-// The returned value is a boolean of type glogx.Verbose.
-func UpTo(quota *quota) klog.Verbose {
-	quota.left--
-	return quota.left >= 0
-}
-
-// Over reports whether quota for logging was exceeded.
-// The returned value is a boolean of type glogx.Verbose.
-func Over(quota *quota) klog.Verbose {
-	return quota.left < 0
-}
-
 // V calls V from glog and wraps the result into glogx.Verbose.
 func V(n klog.Level) Verbose {
-	return Verbose(klog.V(n))
+	return Verbose{
+		enabled: true,
+		v:       klog.V(n)}
 }
 
 // Verbose is a wrapper for klog.Verbose that implements UpTo and Over.
-type Verbose klog.Verbose
+// It provides a subset of methods exposed by klog.Verbose.
+type Verbose struct {
+	enabled bool
+	v       klog.Verbose
+}
+
+func (v Verbose) enable(b bool) Verbose {
+	return Verbose{
+		enabled: b,
+		v:       v.v}
+}
 
 // UpTo calls UpTo from this package if called on true object.
-// The returned value is a boolean of type klog.Verbose.
-func (v Verbose) UpTo(quota *quota) klog.Verbose {
-	if v {
-		return UpTo(quota)
+// The returned value is of type Verbose.
+func (v Verbose) UpTo(quota *quota) Verbose {
+	if v.v.Enabled() {
+		quota.left--
+		return v.enable(quota.left >= 0)
 	}
-	return klog.Verbose(false)
+	return v.enable(false)
 }
 
 // Over calls Over from this package if called on true object.
-// The returned value is a boolean of type klog.Verbose.
-func (v Verbose) Over(quota *quota) klog.Verbose {
-	if v {
-		return Over(quota)
+// The returned value is of type Verbose.
+func (v Verbose) Over(quota *quota) Verbose {
+	if v.v.Enabled() {
+		return v.enable(quota.left < 0)
 	}
-	return klog.Verbose(false)
+	return v.enable(false)
+}
+
+// Infof is a wrapper for klog.Infof that logs if the quota
+// allows for it.
+func (v Verbose) Infof(format string, args ...interface{}) {
+	if v.enabled {
+		v.v.Infof(format, args...)
+	}
+}
+
+// Info is a wrapper for klog.Info that logs if the quota
+// allows for it.
+func (v Verbose) Info(args ...interface{}) {
+	if v.enabled {
+		v.v.Info(args...)
+	}
 }
