@@ -114,10 +114,10 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
 		nodeID, ok := node.Labels[nodeIDLabel]
 		if !ok {
-			// CA creates fake node objects to represent upcoming VMs that haven't
-			// registered as nodes yet. They have node.Spec.ProviderID set. Use
-			// that as nodeID.
-			nodeID = node.Spec.ProviderID
+			// CA creates fake node objects to represent upcoming VMs that
+			// haven't registered as nodes yet. We cannot delete the node at
+			// this point.
+			return fmt.Errorf("cannot delete node %q with provider ID %q on node pool %q: node ID label %q is missing", node.Name, node.Spec.ProviderID, n.id, nodeIDLabel)
 		}
 
 		_, err := n.client.DeleteNode(ctx, n.clusterID, n.id, nodeID, nil)
