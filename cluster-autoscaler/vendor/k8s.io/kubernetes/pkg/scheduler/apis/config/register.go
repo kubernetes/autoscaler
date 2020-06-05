@@ -45,6 +45,9 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&PodTopologySpreadArgs{},
 		&RequestedToCapacityRatioArgs{},
 		&ServiceAffinityArgs{},
+		&VolumeBindingArgs{},
+		&NodeResourcesLeastAllocatedArgs{},
+		&NodeResourcesMostAllocatedArgs{},
 	)
 	scheme.AddKnownTypes(schema.GroupVersion{Group: "", Version: runtime.APIVersionInternal}, &Policy{})
 	return nil

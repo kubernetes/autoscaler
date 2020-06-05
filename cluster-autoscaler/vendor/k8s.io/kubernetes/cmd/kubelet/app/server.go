@@ -22,9 +22,9 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"math"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -35,7 +35,7 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/mount"
 
 	v1 "k8s.io/api/core/v1"
@@ -60,9 +60,12 @@ import (
 	"k8s.io/client-go/util/connrotation"
 	"k8s.io/client-go/util/keyutil"
 	cloudprovider "k8s.io/cloud-provider"
+	"k8s.io/component-base/cli/flag"
 	cliflag "k8s.io/component-base/cli/flag"
+	"k8s.io/component-base/configz"
 	"k8s.io/component-base/featuregate"
 	"k8s.io/component-base/metrics"
+	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/component-base/version"
 	"k8s.io/component-base/version/verflag"
 	kubeletconfigv1beta1 "k8s.io/kubelet/config/v1beta1"
@@ -83,17 +86,14 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
 	"k8s.io/kubernetes/pkg/kubelet/config"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
-	"k8s.io/kubernetes/pkg/kubelet/dockershim"
-	dockerremote "k8s.io/kubernetes/pkg/kubelet/dockershim/remote"
 	"k8s.io/kubernetes/pkg/kubelet/eviction"
 	evictionapi "k8s.io/kubernetes/pkg/kubelet/eviction/api"
 	dynamickubeletconfig "k8s.io/kubernetes/pkg/kubelet/kubeletconfig"
 	"k8s.io/kubernetes/pkg/kubelet/kubeletconfig/configfiles"
+	kubeletmetrics "k8s.io/kubernetes/pkg/kubelet/metrics"
 	"k8s.io/kubernetes/pkg/kubelet/server"
-	"k8s.io/kubernetes/pkg/kubelet/server/streaming"
 	"k8s.io/kubernetes/pkg/kubelet/stats/pidlimit"
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/util/configz"
 	utilfs "k8s.io/kubernetes/pkg/util/filesystem"
 	"k8s.io/kubernetes/pkg/util/flock"
 	nodeutil "k8s.io/kubernetes/pkg/util/node"
@@ -259,14 +259,6 @@ HTTP server: The kubelet can also listen for HTTP and respond to a simple API
 			// set up stopCh here in order to be reused by kubelet and docker shim
 			stopCh := genericapiserver.SetupSignalHandler()
 
-			// start the experimental docker shim, if enabled
-			if kubeletServer.KubeletFlags.ExperimentalDockershim {
-				if err := RunDockershim(&kubeletServer.KubeletFlags, kubeletConfig, stopCh); err != nil {
-					klog.Fatal(err)
-				}
-				return
-			}
-
 			// run the kubelet
 			klog.V(5).Infof("KubeletConfiguration: %#v", kubeletServer.KubeletConfiguration)
 			if err := Run(kubeletServer, kubeletDeps, utilfeature.DefaultFeatureGate, stopCh); err != nil {
@@ -375,9 +367,9 @@ func UnsecuredDependencies(s *options.KubeletServer, featureGate featuregate.Fea
 	hu := hostutil.NewHostUtil()
 	var pluginRunner = exec.New()
 
-	var dockerClientConfig *dockershim.ClientConfig
+	var dockerOptions *kubelet.DockerOptions
 	if s.ContainerRuntime == kubetypes.DockerContainerRuntime {
-		dockerClientConfig = &dockershim.ClientConfig{
+		dockerOptions = &kubelet.DockerOptions{
 			DockerEndpoint:            s.DockerEndpoint,
 			RuntimeRequestTimeout:     s.RuntimeRequestTimeout.Duration,
 			ImagePullProgressDeadline: s.ImagePullProgressDeadline.Duration,
@@ -393,7 +385,7 @@ func UnsecuredDependencies(s *options.KubeletServer, featureGate featuregate.Fea
 		CAdvisorInterface:   nil, // cadvisor.New launches background processes (bg http.ListenAndServe, and some bg cleaners), not set here
 		Cloud:               nil, // cloud provider might start background processes
 		ContainerManager:    nil,
-		DockerClientConfig:  dockerClientConfig,
+		DockerOptions:       dockerOptions,
 		KubeClient:          nil,
 		HeartbeatClient:     nil,
 		EventClient:         nil,
@@ -532,9 +524,7 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, featureGate f
 			if err != nil {
 				return err
 			}
-			if cloud == nil {
-				klog.V(2).Infof("No cloud provider specified: %q from the config file: %q\n", s.CloudProvider, s.CloudConfigFile)
-			} else {
+			if cloud != nil {
 				klog.V(2).Infof("Successfully initialized cloud provider: %q from the config file: %q\n", s.CloudProvider, s.CloudConfigFile)
 			}
 			kubeDeps.Cloud = cloud
@@ -599,11 +589,12 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, featureGate f
 	}
 
 	if kubeDeps.Auth == nil {
-		auth, err := BuildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
+		auth, runAuthenticatorCAReload, err := BuildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
 		if err != nil {
 			return err
 		}
 		kubeDeps.Auth = auth
+		runAuthenticatorCAReload(stopCh)
 	}
 
 	var cgroupRoots []string
@@ -849,6 +840,23 @@ func buildKubeletClientConfig(s *options.KubeletServer, nodeName types.NodeName)
 			return nil, nil, err
 		}
 
+		legacyregistry.RawMustRegister(metrics.NewGaugeFunc(
+			metrics.GaugeOpts{
+				Subsystem: kubeletmetrics.KubeletSubsystem,
+				Name:      "certificate_manager_client_ttl_seconds",
+				Help: "Gauge of the TTL (time-to-live) of the Kubelet's client certificate. " +
+					"The value is in seconds until certificate expiry (negative if already expired). " +
+					"If client certificate is invalid or unused, the value will be +INF.",
+				StabilityLevel: metrics.ALPHA,
+			},
+			func() float64 {
+				if c := clientCertificateManager.Current(); c != nil && c.Leaf != nil {
+					return math.Trunc(c.Leaf.NotAfter.Sub(time.Now()).Seconds())
+				}
+				return math.Inf(1)
+			},
+		))
+
 		// the rotating transport will use the cert from the cert manager instead of these files
 		transportConfig := restclient.AnonymousClientConfig(clientConfig)
 
@@ -1001,6 +1009,17 @@ func InitializeTLS(kf *options.KubeletFlags, kc *kubeletconfiginternal.KubeletCo
 		return nil, err
 	}
 
+	if len(tlsCipherSuites) > 0 {
+		insecureCiphers := flag.InsecureTLSCiphers()
+		for i := 0; i < len(tlsCipherSuites); i++ {
+			for cipherName, cipherID := range insecureCiphers {
+				if tlsCipherSuites[i] == cipherID {
+					klog.Warningf("Use of insecure cipher '%s' detected.", cipherName)
+				}
+			}
+		}
+	}
+
 	minTLSVersion, err := cliflag.TLSVersion(kc.TLSMinVersion)
 	if err != nil {
 		return nil, err
@@ -1059,6 +1078,7 @@ func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencie
 	if err != nil {
 		return err
 	}
+	hostnameOverridden := len(kubeServer.HostnameOverride) > 0
 	// Setup event recorder if required.
 	makeEventRecorder(kubeDeps, nodeName)
 
@@ -1077,7 +1097,9 @@ func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencie
 		kubeDeps,
 		&kubeServer.ContainerRuntimeOptions,
 		kubeServer.ContainerRuntime,
-		kubeServer.HostnameOverride,
+		hostname,
+		hostnameOverridden,
+		nodeName,
 		kubeServer.NodeIP,
 		kubeServer.ProviderID,
 		kubeServer.CloudProvider,
@@ -1149,7 +1171,9 @@ func createAndInitKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	kubeDeps *kubelet.Dependencies,
 	crOptions *config.ContainerRuntimeOptions,
 	containerRuntime string,
-	hostnameOverride string,
+	hostname string,
+	hostnameOverridden bool,
+	nodeName types.NodeName,
 	nodeIP string,
 	providerID string,
 	cloudProvider string,
@@ -1179,7 +1203,9 @@ func createAndInitKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		kubeDeps,
 		crOptions,
 		containerRuntime,
-		hostnameOverride,
+		hostname,
+		hostnameOverridden,
+		nodeName,
 		nodeIP,
 		providerID,
 		cloudProvider,
@@ -1262,52 +1288,4 @@ func BootstrapKubeletConfigController(dynamicConfigDir string, transform dynamic
 		return nil, nil, fmt.Errorf("failed to determine a valid configuration, error: %v", err)
 	}
 	return kc, c, nil
-}
-
-// RunDockershim only starts the dockershim in current process. This is only used for cri validate testing purpose
-// TODO(random-liu): Move this to a separate binary.
-func RunDockershim(f *options.KubeletFlags, c *kubeletconfiginternal.KubeletConfiguration, stopCh <-chan struct{}) error {
-	r := &f.ContainerRuntimeOptions
-
-	// Initialize docker client configuration.
-	dockerClientConfig := &dockershim.ClientConfig{
-		DockerEndpoint:            r.DockerEndpoint,
-		RuntimeRequestTimeout:     c.RuntimeRequestTimeout.Duration,
-		ImagePullProgressDeadline: r.ImagePullProgressDeadline.Duration,
-	}
-
-	// Initialize network plugin settings.
-	pluginSettings := dockershim.NetworkPluginSettings{
-		HairpinMode:        kubeletconfiginternal.HairpinMode(c.HairpinMode),
-		NonMasqueradeCIDR:  f.NonMasqueradeCIDR,
-		PluginName:         r.NetworkPluginName,
-		PluginConfDir:      r.CNIConfDir,
-		PluginBinDirString: r.CNIBinDir,
-		PluginCacheDir:     r.CNICacheDir,
-		MTU:                int(r.NetworkPluginMTU),
-	}
-
-	// Initialize streaming configuration. (Not using TLS now)
-	streamingConfig := &streaming.Config{
-		// Use a relative redirect (no scheme or host).
-		BaseURL:                         &url.URL{Path: "/cri/"},
-		StreamIdleTimeout:               c.StreamingConnectionIdleTimeout.Duration,
-		StreamCreationTimeout:           streaming.DefaultConfig.StreamCreationTimeout,
-		SupportedRemoteCommandProtocols: streaming.DefaultConfig.SupportedRemoteCommandProtocols,
-		SupportedPortForwardProtocols:   streaming.DefaultConfig.SupportedPortForwardProtocols,
-	}
-
-	// Standalone dockershim will always start the local streaming server.
-	ds, err := dockershim.NewDockerService(dockerClientConfig, r.PodSandboxImage, streamingConfig, &pluginSettings,
-		f.RuntimeCgroups, c.CgroupDriver, r.DockershimRootDirectory, true /*startLocalStreamingServer*/)
-	if err != nil {
-		return err
-	}
-	klog.V(2).Infof("Starting the GRPC server for the docker CRI shim.")
-	server := dockerremote.NewDockerServer(f.RemoteRuntimeEndpoint, ds)
-	if err := server.Start(); err != nil {
-		return err
-	}
-	<-stopCh
-	return nil
 }

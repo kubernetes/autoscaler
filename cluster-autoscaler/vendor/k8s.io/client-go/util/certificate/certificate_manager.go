@@ -29,7 +29,7 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	certificates "k8s.io/api/certificates/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -373,6 +373,9 @@ func getCurrentCertificateOrBootstrap(
 	certs, err := x509.ParseCertificates(bootstrapCert.Certificate[0])
 	if err != nil {
 		return nil, false, fmt.Errorf("unable to parse certificate data: %v", err)
+	}
+	if len(certs) < 1 {
+		return nil, false, fmt.Errorf("no cert data found")
 	}
 	bootstrapCert.Leaf = certs[0]
 

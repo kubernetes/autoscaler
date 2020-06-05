@@ -24,7 +24,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/helper"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"k8s.io/kubernetes/pkg/scheduler/internal/parallelize"
@@ -52,7 +52,6 @@ type preFilterState struct {
 
 // Clone makes a copy of the given state.
 func (s *preFilterState) Clone() framework.StateData {
-	// s could be nil when EvenPodsSpread feature is disabled
 	if s == nil {
 		return nil
 	}

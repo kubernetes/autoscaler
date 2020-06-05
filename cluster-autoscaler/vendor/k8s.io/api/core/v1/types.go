@@ -1857,7 +1857,7 @@ type EnvVar struct {
 
 // EnvVarSource represents a source for the value of an EnvVar.
 type EnvVarSource struct {
-	// Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations,
+	// Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
 	// spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
 	// +optional
 	FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty" protobuf:"bytes,1,opt,name=fieldRef"`
@@ -3047,7 +3047,6 @@ type PodSpec struct {
 	Overhead ResourceList `json:"overhead,omitempty" protobuf:"bytes,32,opt,name=overhead"`
 	// TopologySpreadConstraints describes how a group of pods ought to spread across topology
 	// domains. Scheduler will schedule pods in a way which abides by the constraints.
-	// This field is only honored by clusters that enable the EvenPodsSpread feature.
 	// All topologySpreadConstraints are ANDed.
 	// +optional
 	// +patchMergeKey=topologyKey
@@ -3072,8 +3071,8 @@ const (
 // TopologySpreadConstraint specifies how to spread matching pods among the given topology.
 type TopologySpreadConstraint struct {
 	// MaxSkew describes the degree to which pods may be unevenly distributed.
-	// It's the maximum permitted difference between the number of matching pods in
-	// any two topology domains of a given topology type.
+	// When `whenUnsatisfiable=DoNotSchedule`, it is the maximum permitted difference
+	// between the number of matching pods in the target topology and the global minimum.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
 	// labelSelector spread as 1/1/0:
 	// +-------+-------+-------+
@@ -3085,6 +3084,8 @@ type TopologySpreadConstraint struct {
 	// scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2)
 	// violate MaxSkew(1).
 	// - if MaxSkew is 2, incoming pod can be scheduled onto any zone.
+	// When `whenUnsatisfiable=ScheduleAnyway`, it is used to give higher precedence
+	// to topologies that satisfy it.
 	// It's a required field. Default value is 1 and 0 is not allowed.
 	MaxSkew int32 `json:"maxSkew" protobuf:"varint,1,opt,name=maxSkew"`
 	// TopologyKey is the key of node labels. Nodes that have a label with this key
@@ -3095,10 +3096,13 @@ type TopologySpreadConstraint struct {
 	TopologyKey string `json:"topologyKey" protobuf:"bytes,2,opt,name=topologyKey"`
 	// WhenUnsatisfiable indicates how to deal with a pod if it doesn't satisfy
 	// the spread constraint.
-	// - DoNotSchedule (default) tells the scheduler not to schedule it
-	// - ScheduleAnyway tells the scheduler to still schedule it
-	// It's considered as "Unsatisfiable" if and only if placing incoming pod on any
-	// topology violates "MaxSkew".
+	// - DoNotSchedule (default) tells the scheduler not to schedule it.
+	// - ScheduleAnyway tells the scheduler to schedule the pod in any location,
+	//   but giving higher precedence to topologies that would help reduce the
+	//   skew.
+	// A constraint is considered "Unsatisfiable" for an incoming pod
+	// if and only if every possible node assigment for that pod would violate
+	// "MaxSkew" on some topology.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
 	// labelSelector spread as 3/1/1:
 	// +-------+-------+-------+
@@ -5215,18 +5219,9 @@ type EventSeries struct {
 	Count int32 `json:"count,omitempty" protobuf:"varint,1,name=count"`
 	// Time of the last occurrence observed
 	LastObservedTime metav1.MicroTime `json:"lastObservedTime,omitempty" protobuf:"bytes,2,name=lastObservedTime"`
-	// State of this Series: Ongoing or Finished
-	// Deprecated. Planned removal for 1.18
-	State EventSeriesState `json:"state,omitempty" protobuf:"bytes,3,name=state"`
+
+	// +k8s:deprecated=state,protobuf=3
 }
-
-type EventSeriesState string
-
-const (
-	EventSeriesStateOngoing  EventSeriesState = "Ongoing"
-	EventSeriesStateFinished EventSeriesState = "Finished"
-	EventSeriesStateUnknown  EventSeriesState = "Unknown"
-)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -5495,7 +5490,7 @@ type Secret struct {
 	// be updated (only object metadata can be modified).
 	// If not set to true, the field can be modified at any time.
 	// Defaulted to nil.
-	// This is an alpha field enabled by ImmutableEphemeralVolumes feature gate.
+	// This is a beta field enabled by ImmutableEphemeralVolumes feature gate.
 	// +optional
 	Immutable *bool `json:"immutable,omitempty" protobuf:"varint,5,opt,name=immutable"`
 
@@ -5636,7 +5631,7 @@ type ConfigMap struct {
 	// be updated (only object metadata can be modified).
 	// If not set to true, the field can be modified at any time.
 	// Defaulted to nil.
-	// This is an alpha field enabled by ImmutableEphemeralVolumes feature gate.
+	// This is a beta field enabled by ImmutableEphemeralVolumes feature gate.
 	// +optional
 	Immutable *bool `json:"immutable,omitempty" protobuf:"varint,4,opt,name=immutable"`
 
