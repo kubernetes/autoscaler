@@ -55,9 +55,9 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
+	"k8s.io/component-base/config/options"
 	"k8s.io/component-base/metrics/legacyregistry"
 	klog "k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -367,7 +367,7 @@ func main() {
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
-	leaderelectionconfig.BindFlags(&leaderElection, pflag.CommandLine)
+	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 	kube_flag.InitFlags()
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
