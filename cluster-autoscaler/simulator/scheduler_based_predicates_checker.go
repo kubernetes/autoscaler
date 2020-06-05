@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	volume_scheduling "k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"

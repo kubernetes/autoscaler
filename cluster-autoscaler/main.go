@@ -56,7 +56,7 @@ import (
 	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/component-base/metrics/legacyregistry"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 )
 
