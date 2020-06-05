@@ -23,11 +23,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
-	"github.com/stretchr/testify/assert"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	azclients "k8s.io/legacy-cloud-providers/azure/clients"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 const validAzureCfg = `{
@@ -124,6 +127,9 @@ func TestCreateAzureManagerInvalidConfig(t *testing.T) {
 }
 
 func TestFetchExplicitAsgs(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	min, max, name := 1, 15, "test-asg"
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs: []string{
@@ -132,6 +138,15 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
+	expectedVMSSVMs := newTestVMSSVMList()
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 	manager.fetchExplicitAsgs(ngdo.NodeGroupSpecs)
 
 	asgs := manager.asgCache.get()
@@ -196,6 +211,9 @@ func TestParseLabelAutoDiscoverySpecs(t *testing.T) {
 }
 
 func TestListScalesets(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	manager := newTestAzureManager(t)
 	vmssTag := "fake-tag"
 	vmssTagValue := "fake-value"
@@ -269,15 +287,11 @@ func TestListScalesets(t *testing.T) {
 				tags["max"] = &val
 			}
 
-			scaleSetClient := &VirtualMachineScaleSetsClientMock{
-				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-					"test": {
-						vmssName: fakeVMSSWithTags(vmssName, tags),
-					},
-				},
-			}
+			expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, tags)}
+			mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-			manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
 			asgs, err := manager.listScaleSets(specs)
 			if tc.expectedErrString != "" {
 				assert.Error(t, err)
@@ -291,6 +305,9 @@ func TestListScalesets(t *testing.T) {
 }
 
 func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	vmssName := "test-vmss"
 	vmssTag := "fake-tag"
 	vmssTagValue := "fake-value"
@@ -302,16 +319,13 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
-	scaleSetClient := &VirtualMachineScaleSetsClientMock{
-		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-			"test": {
-				vmssName: fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max}),
-			},
-		},
-	}
 
 	manager := newTestAzureManager(t)
-	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})}
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
 	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
@@ -331,6 +345,9 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 }
 
 func TestFetchAutoAsgsVmss(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	vmssName := "test-vmss"
 	vmssTag := "fake-tag"
 	vmssTagValue := "fake-value"
@@ -342,16 +359,18 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
-	scaleSetClient := &VirtualMachineScaleSetsClientMock{
-		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
-			"test": {
-				vmssName: fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString}),
-			},
-		},
-	}
+
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
+	expectedVMSSVMs := newTestVMSSVMList()
 
 	manager := newTestAzureManager(t)
-	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
 	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 	manager.asgAutoDiscoverySpecs = specs
