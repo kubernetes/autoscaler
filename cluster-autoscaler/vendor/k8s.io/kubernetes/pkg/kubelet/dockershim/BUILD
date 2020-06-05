@@ -42,6 +42,7 @@ go_library(
         "//pkg/kubelet/checkpointmanager/checksum:go_default_library",
         "//pkg/kubelet/checkpointmanager/errors:go_default_library",
         "//pkg/kubelet/container:go_default_library",
+        "//pkg/kubelet/cri/streaming:go_default_library",
         "//pkg/kubelet/dockershim/cm:go_default_library",
         "//pkg/kubelet/dockershim/libdocker:go_default_library",
         "//pkg/kubelet/dockershim/metrics:go_default_library",
@@ -49,9 +50,8 @@ go_library(
         "//pkg/kubelet/dockershim/network/cni:go_default_library",
         "//pkg/kubelet/dockershim/network/hostport:go_default_library",
         "//pkg/kubelet/dockershim/network/kubenet:go_default_library",
-        "//pkg/kubelet/kuberuntime:go_default_library",
         "//pkg/kubelet/leaky:go_default_library",
-        "//pkg/kubelet/server/streaming:go_default_library",
+        "//pkg/kubelet/legacy:go_default_library",
         "//pkg/kubelet/types:go_default_library",
         "//pkg/kubelet/util/cache:go_default_library",
         "//pkg/kubelet/util/ioutils:go_default_library",
@@ -70,7 +70,7 @@ go_library(
         "//vendor/github.com/docker/docker/api/types/strslice:go_default_library",
         "//vendor/github.com/docker/docker/pkg/jsonmessage:go_default_library",
         "//vendor/github.com/docker/go-connections/nat:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/k8s.io/utils/exec:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:windows": [

@@ -17,13 +17,10 @@ limitations under the License.
 package plugins
 
 import (
-	"encoding/json"
-
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/klog"
-	schedulerv1alpha2 "k8s.io/kube-scheduler/config/v1alpha2"
+
+	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/defaultpodtopologyspread"
@@ -165,15 +162,15 @@ type ConfigProducerArgs struct {
 	// Weight used for priority functions.
 	Weight int32
 	// NodeLabelArgs is the args for the NodeLabel plugin.
-	NodeLabelArgs *schedulerv1alpha2.NodeLabelArgs
+	NodeLabelArgs *config.NodeLabelArgs
 	// RequestedToCapacityRatioArgs is the args for the RequestedToCapacityRatio plugin.
-	RequestedToCapacityRatioArgs *schedulerv1alpha2.RequestedToCapacityRatioArgs
+	RequestedToCapacityRatioArgs *config.RequestedToCapacityRatioArgs
 	// ServiceAffinityArgs is the args for the ServiceAffinity plugin.
-	ServiceAffinityArgs *schedulerv1alpha2.ServiceAffinityArgs
+	ServiceAffinityArgs *config.ServiceAffinityArgs
 	// NodeResourcesFitArgs is the args for the NodeResources fit filter.
-	NodeResourcesFitArgs *schedulerv1alpha2.NodeResourcesFitArgs
+	NodeResourcesFitArgs *config.NodeResourcesFitArgs
 	// InterPodAffinityArgs is the args for InterPodAffinity plugin
-	InterPodAffinityArgs *schedulerv1alpha2.InterPodAffinityArgs
+	InterPodAffinityArgs *config.InterPodAffinityArgs
 }
 
 // ConfigProducer returns the set of plugins and their configuration for a
@@ -203,6 +200,7 @@ func NewLegacyRegistry() *LegacyRegistry {
 			PodToleratesNodeTaintsPred,
 			CheckVolumeBindingPred,
 			CheckNodeUnschedulablePred,
+			EvenPodsSpreadPred,
 		),
 
 		// Used as the default set of predicates if Policy was specified, but priorities was nil.
@@ -215,6 +213,7 @@ func NewLegacyRegistry() *LegacyRegistry {
 			NodeAffinityPriority:        1,
 			TaintTolerationPriority:     1,
 			ImageLocalityPriority:       1,
+			EvenPodsSpreadPriority:      2,
 		},
 
 		PredicateToConfigProducer: make(map[string]ConfigProducer),
@@ -227,7 +226,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 			plugins.Filter = appendToPluginSet(plugins.Filter, noderesources.FitName, nil)
 			plugins.PreFilter = appendToPluginSet(plugins.PreFilter, noderesources.FitName, nil)
 			if args.NodeResourcesFitArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(noderesources.FitName, args.NodeResourcesFitArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: noderesources.FitName, Args: args.NodeResourcesFitArgs})
 			}
 			plugins.Filter = appendToPluginSet(plugins.Filter, nodename.Name, nil)
 			plugins.Filter = appendToPluginSet(plugins.Filter, nodeports.Name, nil)
@@ -245,7 +245,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 			plugins.Filter = appendToPluginSet(plugins.Filter, noderesources.FitName, nil)
 			plugins.PreFilter = appendToPluginSet(plugins.PreFilter, noderesources.FitName, nil)
 			if args.NodeResourcesFitArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(noderesources.FitName, args.NodeResourcesFitArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: noderesources.FitName, Args: args.NodeResourcesFitArgs})
 			}
 			return
 		})
@@ -273,6 +274,10 @@ func NewLegacyRegistry() *LegacyRegistry {
 	registry.registerPredicateConfigProducer(CheckVolumeBindingPred,
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
 			plugins.Filter = appendToPluginSet(plugins.Filter, volumebinding.Name, nil)
+			plugins.Reserve = appendToPluginSet(plugins.Reserve, volumebinding.Name, nil)
+			plugins.PreBind = appendToPluginSet(plugins.PreBind, volumebinding.Name, nil)
+			plugins.Unreserve = appendToPluginSet(plugins.Unreserve, volumebinding.Name, nil)
+			plugins.PostBind = appendToPluginSet(plugins.PostBind, volumebinding.Name, nil)
 			return
 		})
 	registry.registerPredicateConfigProducer(NoDiskConflictPred,
@@ -320,7 +325,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
 			plugins.Filter = appendToPluginSet(plugins.Filter, nodelabel.Name, nil)
 			if args.NodeLabelArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(nodelabel.Name, args.NodeLabelArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: nodelabel.Name, Args: args.NodeLabelArgs})
 			}
 			return
 		})
@@ -328,9 +334,16 @@ func NewLegacyRegistry() *LegacyRegistry {
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
 			plugins.Filter = appendToPluginSet(plugins.Filter, serviceaffinity.Name, nil)
 			if args.ServiceAffinityArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(serviceaffinity.Name, args.ServiceAffinityArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: serviceaffinity.Name, Args: args.ServiceAffinityArgs})
 			}
 			plugins.PreFilter = appendToPluginSet(plugins.PreFilter, serviceaffinity.Name, nil)
+			return
+		})
+	registry.registerPredicateConfigProducer(EvenPodsSpreadPred,
+		func(_ ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
+			plugins.PreFilter = appendToPluginSet(plugins.PreFilter, podtopologyspread.Name, nil)
+			plugins.Filter = appendToPluginSet(plugins.Filter, podtopologyspread.Name, nil)
 			return
 		})
 
@@ -362,7 +375,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 			plugins.PreScore = appendToPluginSet(plugins.PreScore, interpodaffinity.Name, nil)
 			plugins.Score = appendToPluginSet(plugins.Score, interpodaffinity.Name, &args.Weight)
 			if args.InterPodAffinityArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(interpodaffinity.Name, args.InterPodAffinityArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: interpodaffinity.Name, Args: args.InterPodAffinityArgs})
 			}
 			return
 		})
@@ -390,11 +404,11 @@ func NewLegacyRegistry() *LegacyRegistry {
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
 			plugins.Score = appendToPluginSet(plugins.Score, noderesources.RequestedToCapacityRatioName, &args.Weight)
 			if args.RequestedToCapacityRatioArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(noderesources.RequestedToCapacityRatioName, args.RequestedToCapacityRatioArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: noderesources.RequestedToCapacityRatioName, Args: args.RequestedToCapacityRatioArgs})
 			}
 			return
 		})
-
 	registry.registerPriorityConfigProducer(nodelabel.Name,
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
 			// If there are n LabelPreference priorities in the policy, the weight for the corresponding
@@ -403,7 +417,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 			weight := args.Weight * int32(len(args.NodeLabelArgs.PresentLabelsPreference)+len(args.NodeLabelArgs.AbsentLabelsPreference))
 			plugins.Score = appendToPluginSet(plugins.Score, nodelabel.Name, &weight)
 			if args.NodeLabelArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(nodelabel.Name, args.NodeLabelArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: nodelabel.Name, Args: args.NodeLabelArgs})
 			}
 			return
 		})
@@ -415,35 +430,21 @@ func NewLegacyRegistry() *LegacyRegistry {
 			weight := args.Weight * int32(len(args.ServiceAffinityArgs.AntiAffinityLabelsPreference))
 			plugins.Score = appendToPluginSet(plugins.Score, serviceaffinity.Name, &weight)
 			if args.ServiceAffinityArgs != nil {
-				pluginConfig = append(pluginConfig, NewPluginConfig(serviceaffinity.Name, args.ServiceAffinityArgs))
+				pluginConfig = append(pluginConfig,
+					config.PluginConfig{Name: serviceaffinity.Name, Args: args.ServiceAffinityArgs})
 			}
 			return
 		})
+	registry.registerPriorityConfigProducer(EvenPodsSpreadPriority,
+		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
+			plugins.PreScore = appendToPluginSet(plugins.PreScore, podtopologyspread.Name, nil)
+			plugins.Score = appendToPluginSet(plugins.Score, podtopologyspread.Name, &args.Weight)
+			return
+		})
 
-	// The following two features are the last ones to be supported as predicate/priority.
-	// Once they graduate to GA, there will be no more checking for feature gates here.
-	// Only register EvenPodsSpread predicate & priority if the feature is enabled
-	if utilfeature.DefaultFeatureGate.Enabled(features.EvenPodsSpread) {
-		klog.Infof("Registering EvenPodsSpread predicate and priority function")
-
-		registry.registerPredicateConfigProducer(EvenPodsSpreadPred,
-			func(_ ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
-				plugins.PreFilter = appendToPluginSet(plugins.PreFilter, podtopologyspread.Name, nil)
-				plugins.Filter = appendToPluginSet(plugins.Filter, podtopologyspread.Name, nil)
-				return
-			})
-		registry.DefaultPredicates.Insert(EvenPodsSpreadPred)
-
-		registry.registerPriorityConfigProducer(EvenPodsSpreadPriority,
-			func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
-				plugins.PreScore = appendToPluginSet(plugins.PreScore, podtopologyspread.Name, nil)
-				plugins.Score = appendToPluginSet(plugins.Score, podtopologyspread.Name, &args.Weight)
-				return
-			})
-		registry.DefaultPriorities[EvenPodsSpreadPriority] = 1
-	}
-
-	// Prioritizes nodes that satisfy pod's resource limits
+	// ResourceLimits is the last feature to be supported as predicate/priority.
+	// TODO: Remove this check once it graduates to GA.
+	// Prioritizes nodes that satisfy pod's resource limits.
 	if utilfeature.DefaultFeatureGate.Enabled(features.ResourceLimitsPriorityFunction) {
 		klog.Infof("Registering resourcelimits priority function")
 
@@ -487,19 +488,6 @@ func appendToPluginSet(set *config.PluginSet, name string, weight *int32) *confi
 	return set
 }
 
-// NewPluginConfig builds a PluginConfig with the struct of args marshaled.
-// It panics if it fails to marshal.
-func NewPluginConfig(pluginName string, args interface{}) config.PluginConfig {
-	encoding, err := json.Marshal(args)
-	if err != nil {
-		klog.Fatalf("failed to marshal %+v: %v", args, err)
-	}
-	return config.PluginConfig{
-		Name: pluginName,
-		Args: &runtime.Unknown{Raw: encoding},
-	}
-}
-
 // ProcessPredicatePolicy given a PredicatePolicy, return the plugin name implementing the predicate and update
 // the ConfigProducerArgs if necessary.
 func (lr *LegacyRegistry) ProcessPredicatePolicy(policy config.PredicatePolicy, pluginArgs *ConfigProducerArgs) string {
@@ -526,7 +514,7 @@ func (lr *LegacyRegistry) ProcessPredicatePolicy(policy config.PredicatePolicy, 
 	if policy.Argument.ServiceAffinity != nil {
 		// map LabelsPresence policy to ConfigProducerArgs that's used to configure the ServiceAffinity plugin.
 		if pluginArgs.ServiceAffinityArgs == nil {
-			pluginArgs.ServiceAffinityArgs = &schedulerv1alpha2.ServiceAffinityArgs{}
+			pluginArgs.ServiceAffinityArgs = &config.ServiceAffinityArgs{}
 		}
 		pluginArgs.ServiceAffinityArgs.AffinityLabels = append(pluginArgs.ServiceAffinityArgs.AffinityLabels, policy.Argument.ServiceAffinity.Labels...)
 
@@ -539,7 +527,7 @@ func (lr *LegacyRegistry) ProcessPredicatePolicy(policy config.PredicatePolicy, 
 	if policy.Argument.LabelsPresence != nil {
 		// Map LabelPresence policy to ConfigProducerArgs that's used to configure the NodeLabel plugin.
 		if pluginArgs.NodeLabelArgs == nil {
-			pluginArgs.NodeLabelArgs = &schedulerv1alpha2.NodeLabelArgs{}
+			pluginArgs.NodeLabelArgs = &config.NodeLabelArgs{}
 		}
 		if policy.Argument.LabelsPresence.Presence {
 			pluginArgs.NodeLabelArgs.PresentLabels = append(pluginArgs.NodeLabelArgs.PresentLabels, policy.Argument.LabelsPresence.Labels...)
@@ -587,7 +575,7 @@ func (lr *LegacyRegistry) ProcessPriorityPolicy(policy config.PriorityPolicy, co
 		// This name is then used to find the registered plugin and run the plugin instead of the priority.
 		priorityName = serviceaffinity.Name
 		if configProducerArgs.ServiceAffinityArgs == nil {
-			configProducerArgs.ServiceAffinityArgs = &schedulerv1alpha2.ServiceAffinityArgs{}
+			configProducerArgs.ServiceAffinityArgs = &config.ServiceAffinityArgs{}
 		}
 		configProducerArgs.ServiceAffinityArgs.AntiAffinityLabelsPreference = append(
 			configProducerArgs.ServiceAffinityArgs.AntiAffinityLabelsPreference,
@@ -601,7 +589,7 @@ func (lr *LegacyRegistry) ProcessPriorityPolicy(policy config.PriorityPolicy, co
 		// This name is then used to find the registered plugin and run the plugin instead of the priority.
 		priorityName = nodelabel.Name
 		if configProducerArgs.NodeLabelArgs == nil {
-			configProducerArgs.NodeLabelArgs = &schedulerv1alpha2.NodeLabelArgs{}
+			configProducerArgs.NodeLabelArgs = &config.NodeLabelArgs{}
 		}
 		if policy.Argument.LabelPreference.Presence {
 			configProducerArgs.NodeLabelArgs.PresentLabelsPreference = append(
@@ -618,19 +606,19 @@ func (lr *LegacyRegistry) ProcessPriorityPolicy(policy config.PriorityPolicy, co
 
 	if policy.Argument.RequestedToCapacityRatioArguments != nil {
 		policyArgs := policy.Argument.RequestedToCapacityRatioArguments
-		args := &schedulerv1alpha2.RequestedToCapacityRatioArgs{}
+		args := &config.RequestedToCapacityRatioArgs{}
 
-		args.Shape = make([]schedulerv1alpha2.UtilizationShapePoint, len(policyArgs.Shape))
+		args.Shape = make([]config.UtilizationShapePoint, len(policyArgs.Shape))
 		for i, s := range policyArgs.Shape {
-			args.Shape[i] = schedulerv1alpha2.UtilizationShapePoint{
+			args.Shape[i] = config.UtilizationShapePoint{
 				Utilization: s.Utilization,
 				Score:       s.Score,
 			}
 		}
 
-		args.Resources = make([]schedulerv1alpha2.ResourceSpec, len(policyArgs.Resources))
+		args.Resources = make([]config.ResourceSpec, len(policyArgs.Resources))
 		for i, r := range policyArgs.Resources {
-			args.Resources[i] = schedulerv1alpha2.ResourceSpec{
+			args.Resources[i] = config.ResourceSpec{
 				Name:   r.Name,
 				Weight: r.Weight,
 			}

@@ -74,6 +74,9 @@ const (
 type KubeletConfiguration struct {
 	metav1.TypeMeta
 
+	// enableServer enables Kubelet's secured server.
+	// Note: Kubelet's insecure port is controlled by the readOnlyPort option.
+	EnableServer bool
 	// staticPodPath is the path to the directory containing local (static) pods to
 	// run, or the path to a single static pod file.
 	StaticPodPath string
@@ -100,6 +103,9 @@ type KubeletConfiguration struct {
 	// volumePluginDir is the full path of the directory in which to search
 	// for additional third party volume plugins.
 	VolumePluginDir string
+	// providerID, if set, sets the unique id of the instance that an external provider (i.e. cloudprovider)
+	// can use to identify a specific node
+	ProviderID string
 	// tlsCertFile is the file containing x509 Certificate for HTTPS.  (CA cert,
 	// if any, concatenated after server cert). If tlsCertFile and
 	// tlsPrivateKeyFile are not provided, a self-signed certificate
@@ -241,6 +247,9 @@ type KubeletConfiguration struct {
 	// ResolverConfig is the resolver configuration file used as the basis
 	// for the container DNS resolution configuration.
 	ResolverConfig string
+	// RunOnce causes the Kubelet to check the API server once for pods,
+	// run those in addition to the pods specified by static pod files, and exit.
+	RunOnce bool
 	// cpuCFSQuota enables CPU CFS quota enforcement for containers that
 	// specify CPU limits
 	CPUCFSQuota bool
@@ -248,6 +257,8 @@ type KubeletConfiguration struct {
 	CPUCFSQuotaPeriod metav1.Duration
 	// maxOpenFiles is Number of files that can be opened by Kubelet process.
 	MaxOpenFiles int64
+	// nodeStatusMaxImages caps the number of images reported in Node.Status.Images.
+	NodeStatusMaxImages int32
 	// contentType is contentType of requests sent to apiserver.
 	ContentType string
 	// kubeAPIQPS is the QPS to use while talking with kubernetes apiserver
@@ -402,7 +413,7 @@ type KubeletWebhookAuthentication struct {
 	CacheTTL metav1.Duration
 }
 
-// KubeletAnonymousAuthentication enables anonymous requests to the kubetlet server.
+// KubeletAnonymousAuthentication enables anonymous requests to the kubelet server.
 type KubeletAnonymousAuthentication struct {
 	// enabled allows anonymous requests to the kubelet server.
 	// Requests that are not rejected by another authentication method are treated as anonymous requests.

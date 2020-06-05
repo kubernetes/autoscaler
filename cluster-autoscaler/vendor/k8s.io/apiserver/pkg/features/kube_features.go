@@ -59,13 +59,6 @@ const (
 	// audited.
 	AdvancedAuditing featuregate.Feature = "AdvancedAuditing"
 
-	// owner: @pbarker
-	// alpha: v1.13
-	//
-	// DynamicAuditing enables configuration of audit policy and webhook backends through an
-	// AuditSink API object.
-	DynamicAuditing featuregate.Feature = "DynamicAuditing"
-
 	// owner: @ilackams
 	// alpha: v1.7
 	//
@@ -83,6 +76,7 @@ const (
 	// owner: @apelisse
 	// alpha: v1.12
 	// beta: v1.13
+	// stable: v1.18
 	//
 	// Allow requests to be processed but not stored, so that
 	// validation, merging, mutation can be tested without
@@ -162,10 +156,9 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	StreamingProxyRedirects: {Default: true, PreRelease: featuregate.Deprecated},
 	ValidateProxyRedirects:  {Default: true, PreRelease: featuregate.Beta},
 	AdvancedAuditing:        {Default: true, PreRelease: featuregate.GA},
-	DynamicAuditing:         {Default: false, PreRelease: featuregate.Alpha},
 	APIResponseCompression:  {Default: true, PreRelease: featuregate.Beta},
 	APIListChunking:         {Default: true, PreRelease: featuregate.Beta},
-	DryRun:                  {Default: true, PreRelease: featuregate.Beta},
+	DryRun:                  {Default: true, PreRelease: featuregate.GA},
 	RemainingItemCount:      {Default: true, PreRelease: featuregate.Beta},
 	ServerSideApply:         {Default: true, PreRelease: featuregate.Beta},
 	StorageVersionHash:      {Default: true, PreRelease: featuregate.Beta},

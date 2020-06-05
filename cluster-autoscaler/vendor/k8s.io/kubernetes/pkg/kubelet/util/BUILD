@@ -60,23 +60,23 @@ go_library(
     ] + select({
         "@io_bazel_rules_go//go/platform:android": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
-            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/klog/v2:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:darwin": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
-            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/klog/v2:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
-            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/klog/v2:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:ios": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
-            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/klog/v2:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
-            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/klog/v2:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/Microsoft/go-winio:go_default_library",
@@ -99,7 +99,6 @@ filegroup(
         "//pkg/kubelet/util/cache:all-srcs",
         "//pkg/kubelet/util/format:all-srcs",
         "//pkg/kubelet/util/ioutils:all-srcs",
-        "//pkg/kubelet/util/logreduction:all-srcs",
         "//pkg/kubelet/util/manager:all-srcs",
         "//pkg/kubelet/util/queue:all-srcs",
         "//pkg/kubelet/util/sliceutils:all-srcs",

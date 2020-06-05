@@ -383,6 +383,7 @@ const (
 
 	// owner: @andyzhangx
 	// alpha: v1.15
+	// beta: v1.19
 	//
 	// Enables the Azure Disk in-tree driver to Azure Disk Driver migration feature.
 	CSIMigrationAzureDisk featuregate.Feature = "CSIMigrationAzureDisk"
@@ -503,7 +504,9 @@ const (
 	EndpointSliceProxying featuregate.Feature = "EndpointSliceProxying"
 
 	// owner: @Huang-Wei
+	// alpha: v1.16
 	// beta: v1.18
+	// GA: v1.19
 	//
 	// Schedule pods evenly across available topology domains.
 	EvenPodsSpread featuregate.Feature = "EvenPodsSpread"
@@ -543,6 +546,7 @@ const (
 
 	// owner: @wojtek-t
 	// alpha: v1.18
+	// beta: v1.19
 	//
 	// Enables a feature to make secrets and configmaps data immutable.
 	ImmutableEphemeralVolumes featuregate.Feature = "ImmutableEphemeralVolumes"
@@ -622,7 +626,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	CSIMigrationGCEComplete:        {Default: false, PreRelease: featuregate.Alpha},
 	CSIMigrationAWS:                {Default: false, PreRelease: featuregate.Beta}, // Off by default (requires AWS EBS CSI driver)
 	CSIMigrationAWSComplete:        {Default: false, PreRelease: featuregate.Alpha},
-	CSIMigrationAzureDisk:          {Default: false, PreRelease: featuregate.Alpha},
+	CSIMigrationAzureDisk:          {Default: false, PreRelease: featuregate.Beta}, // Off by default (requires Azure Disk CSI driver)
 	CSIMigrationAzureDiskComplete:  {Default: false, PreRelease: featuregate.Alpha},
 	CSIMigrationAzureFile:          {Default: false, PreRelease: featuregate.Alpha},
 	CSIMigrationAzureFileComplete:  {Default: false, PreRelease: featuregate.Alpha},
@@ -651,16 +655,16 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	IPv6DualStack:                                  {Default: false, PreRelease: featuregate.Alpha},
 	EndpointSlice:                                  {Default: true, PreRelease: featuregate.Beta},
 	EndpointSliceProxying:                          {Default: false, PreRelease: featuregate.Alpha},
-	EvenPodsSpread:                                 {Default: true, PreRelease: featuregate.Beta},
+	EvenPodsSpread:                                 {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.21
 	StartupProbe:                                   {Default: true, PreRelease: featuregate.Beta},
 	AllowInsecureBackendProxy:                      {Default: true, PreRelease: featuregate.Beta},
 	PodDisruptionBudget:                            {Default: true, PreRelease: featuregate.Beta},
 	ServiceTopology:                                {Default: false, PreRelease: featuregate.Alpha},
 	ServiceAppProtocol:                             {Default: true, PreRelease: featuregate.Beta},
-	ImmutableEphemeralVolumes:                      {Default: false, PreRelease: featuregate.Alpha},
+	ImmutableEphemeralVolumes:                      {Default: true, PreRelease: featuregate.Beta},
 	DefaultIngressClass:                            {Default: true, PreRelease: featuregate.Beta},
 	HugePageStorageMediumSize:                      {Default: false, PreRelease: featuregate.Alpha},
-	ExternalPolicyForExternalIP:                    {Default: false, PreRelease: featuregate.GA}, // remove in 1.19
+	ExternalPolicyForExternalIP:                    {Default: true, PreRelease: featuregate.GA}, // remove in 1.20
 	AnyVolumeDataSource:                            {Default: false, PreRelease: featuregate.Alpha},
 
 	// inherited features from generic apiserver, relisted here to get a conflict if it is changed
@@ -668,10 +672,9 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	genericfeatures.StreamingProxyRedirects: {Default: true, PreRelease: featuregate.Deprecated},
 	genericfeatures.ValidateProxyRedirects:  {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.AdvancedAuditing:        {Default: true, PreRelease: featuregate.GA},
-	genericfeatures.DynamicAuditing:         {Default: false, PreRelease: featuregate.Alpha},
 	genericfeatures.APIResponseCompression:  {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.APIListChunking:         {Default: true, PreRelease: featuregate.Beta},
-	genericfeatures.DryRun:                  {Default: true, PreRelease: featuregate.Beta},
+	genericfeatures.DryRun:                  {Default: true, PreRelease: featuregate.GA},
 	genericfeatures.ServerSideApply:         {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.APIPriorityAndFairness:  {Default: false, PreRelease: featuregate.Alpha},
 

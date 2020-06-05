@@ -16,6 +16,10 @@ limitations under the License.
 
 package ports
 
+import (
+	"k8s.io/cloud-provider"
+)
+
 const (
 	// ProxyStatusPort is the default port for the proxy metrics server.
 	// May be overridden by a flag at startup.
@@ -27,10 +31,6 @@ const (
 	// May be overridden by a flag at startup.
 	// Deprecated: use the secure KubeControllerManagerPort instead.
 	InsecureKubeControllerManagerPort = 10252
-	// InsecureCloudControllerManagerPort is the default port for the cloud controller manager server.
-	// This value may be overridden by a flag at startup.
-	// Deprecated: use the secure CloudControllerManagerPort instead.
-	InsecureCloudControllerManagerPort = 10253
 	// KubeletReadOnlyPort exposes basic read-only services from the kubelet.
 	// May be overridden by a flag at startup.
 	// This is necessary for heapster to collect monitoring stats from the kubelet
@@ -45,5 +45,5 @@ const (
 	KubeControllerManagerPort = 10257
 	// CloudControllerManagerPort is the default port for the cloud controller manager server.
 	// This value may be overridden by a flag at startup.
-	CloudControllerManagerPort = 10258
+	CloudControllerManagerPort = cloudprovider.CloudControllerManagerPort
 )

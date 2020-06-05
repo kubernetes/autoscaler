@@ -28,9 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/controller/volume/scheduling"
+	"k8s.io/klog/v2"
+	"k8s.io/kube-scheduler/config/v1beta1"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 	"k8s.io/kubernetes/pkg/scheduler/internal/parallelize"
 	"k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -54,6 +55,8 @@ const (
 	permit                                    = "Permit"
 )
 
+var configDecoder = scheme.Codecs.UniversalDecoder()
+
 // framework is the component responsible for initializing and running scheduler
 // plugins.
 type framework struct {
@@ -75,9 +78,10 @@ type framework struct {
 
 	clientSet       clientset.Interface
 	informerFactory informers.SharedInformerFactory
-	volumeBinder    scheduling.SchedulerVolumeBinder
 
 	metricsRecorder *metricsRecorder
+
+	preemptHandle PreemptHandle
 
 	// Indicates that RunFilterPlugins should accumulate all failed statuses and not return
 	// after the first failure.
@@ -116,7 +120,8 @@ type frameworkOptions struct {
 	informerFactory      informers.SharedInformerFactory
 	snapshotSharedLister SharedLister
 	metricsRecorder      *metricsRecorder
-	volumeBinder         scheduling.SchedulerVolumeBinder
+	podNominator         PodNominator
+	extenders            []Extender
 	runAllFilters        bool
 }
 
@@ -159,15 +164,36 @@ func withMetricsRecorder(recorder *metricsRecorder) Option {
 	}
 }
 
-// WithVolumeBinder sets volume binder for the scheduling framework.
-func WithVolumeBinder(binder scheduling.SchedulerVolumeBinder) Option {
+// WithPodNominator sets podNominator for the scheduling framework.
+func WithPodNominator(nominator PodNominator) Option {
 	return func(o *frameworkOptions) {
-		o.volumeBinder = binder
+		o.podNominator = nominator
+	}
+}
+
+// WithExtenders sets extenders for the scheduling framework.
+func WithExtenders(extenders []Extender) Option {
+	return func(o *frameworkOptions) {
+		o.extenders = extenders
 	}
 }
 
 var defaultFrameworkOptions = frameworkOptions{
 	metricsRecorder: newMetricsRecorder(1000, time.Second),
+}
+
+// TODO(#91029): move this to framework runtime package.
+var _ PreemptHandle = &preemptHandle{}
+
+type preemptHandle struct {
+	extenders []Extender
+	PodNominator
+	PluginsRunner
+}
+
+// Extenders returns the registered extenders.
+func (ph *preemptHandle) Extenders() []Extender {
+	return ph.extenders
 }
 
 var _ Framework = &framework{}
@@ -186,9 +212,13 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 		waitingPods:           newWaitingPodsMap(),
 		clientSet:             options.clientSet,
 		informerFactory:       options.informerFactory,
-		volumeBinder:          options.volumeBinder,
 		metricsRecorder:       options.metricsRecorder,
 		runAllFilters:         options.runAllFilters,
+	}
+	f.preemptHandle = &preemptHandle{
+		extenders:     options.extenders,
+		PodNominator:  options.podNominator,
+		PluginsRunner: f,
 	}
 	if plugins == nil {
 		return f, nil
@@ -197,7 +227,7 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 	// get needed plugins from config
 	pg := f.pluginsNeeded(plugins)
 
-	pluginConfig := make(map[string]runtime.Object, 0)
+	pluginConfig := make(map[string]runtime.Object, len(args))
 	for i := range args {
 		name := args[i].Name
 		if _, ok := pluginConfig[name]; ok {
@@ -214,7 +244,11 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 			continue
 		}
 
-		p, err := factory(pluginConfig[name], f)
+		args, err := getPluginArgsOrDefault(pluginConfig, name)
+		if err != nil {
+			return nil, fmt.Errorf("getting args for Plugin %q: %w", name, err)
+		}
+		p, err := factory(args, f)
 		if err != nil {
 			return nil, fmt.Errorf("error initializing plugin %q: %v", name, err)
 		}
@@ -258,6 +292,25 @@ func NewFramework(r Registry, plugins *config.Plugins, args []config.PluginConfi
 	}
 
 	return f, nil
+}
+
+// getPluginArgsOrDefault returns a configuration provided by the user or builds
+// a default from the scheme. Returns `nil, nil` if the plugin does not have a
+// defined arg types, such as in-tree plugins that don't require configuration
+// or out-of-tree plugins.
+func getPluginArgsOrDefault(pluginConfig map[string]runtime.Object, name string) (runtime.Object, error) {
+	res, ok := pluginConfig[name]
+	if ok {
+		return res, nil
+	}
+	// Use defaults from latest config API version.
+	gvk := v1beta1.SchemeGroupVersion.WithKind(name + "Args")
+	obj, _, err := configDecoder.Decode(nil, &gvk, nil)
+	if runtime.IsNotRegisteredError(err) {
+		// This plugin is out-of-tree or doesn't require configuration.
+		return nil, nil
+	}
+	return obj, err
 }
 
 func updatePluginList(pluginList interface{}, pluginSet *config.PluginSet, pluginsMap map[string]Plugin) error {
@@ -424,19 +477,15 @@ func (f *framework) RunFilterPlugins(
 	pod *v1.Pod,
 	nodeInfo *NodeInfo,
 ) PluginToStatus {
-	var firstFailedStatus *Status
 	statuses := make(PluginToStatus)
 	for _, pl := range f.filterPlugins {
 		pluginStatus := f.runFilterPlugin(ctx, pl, state, pod, nodeInfo)
-		if len(statuses) == 0 {
-			firstFailedStatus = pluginStatus
-		}
 		if !pluginStatus.IsSuccess() {
 			if !pluginStatus.IsUnschedulable() {
 				// Filter plugins are not supposed to return any status other than
 				// Success or Unschedulable.
-				firstFailedStatus = NewStatus(Error, fmt.Sprintf("running %q filter plugin for pod %q: %v", pl.Name(), pod.Name, pluginStatus.Message()))
-				return map[string]*Status{pl.Name(): firstFailedStatus}
+				errStatus := NewStatus(Error, fmt.Sprintf("running %q filter plugin for pod %q: %v", pl.Name(), pod.Name, pluginStatus.Message()))
+				return map[string]*Status{pl.Name(): errStatus}
 			}
 			statuses[pl.Name()] = pluginStatus
 			if !f.runAllFilters {
@@ -851,7 +900,7 @@ func (f *framework) HasScorePlugins() bool {
 }
 
 // ListPlugins returns a map of extension point name to plugin names configured at each extension
-// point. Returns nil if no plugins where configred.
+// point. Returns nil if no plugins where configured.
 func (f *framework) ListPlugins() map[string][]config.Plugin {
 	m := make(map[string][]config.Plugin)
 
@@ -886,11 +935,6 @@ func (f *framework) ClientSet() clientset.Interface {
 // SharedInformerFactory returns a shared informer factory.
 func (f *framework) SharedInformerFactory() informers.SharedInformerFactory {
 	return f.informerFactory
-}
-
-// VolumeBinder returns the volume binder used by scheduler.
-func (f *framework) VolumeBinder() scheduling.SchedulerVolumeBinder {
-	return f.volumeBinder
 }
 
 func (f *framework) pluginsNeeded(plugins *config.Plugins) map[string]config.Plugin {

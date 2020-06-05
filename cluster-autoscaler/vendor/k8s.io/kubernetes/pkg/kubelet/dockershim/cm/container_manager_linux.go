@@ -1,4 +1,4 @@
-// +build linux
+// +build linux,!dockerless
 
 /*
 Copyright 2016 The Kubernetes Authors.
@@ -29,7 +29,7 @@ import (
 	"github.com/opencontainers/runc/libcontainer/configs"
 	utilversion "k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	kubecm "k8s.io/kubernetes/pkg/kubelet/cm"
 
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/libdocker"

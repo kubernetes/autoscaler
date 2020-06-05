@@ -23,7 +23,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	schedulerv1alpha2 "k8s.io/kube-scheduler/config/v1alpha2"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
@@ -35,42 +36,35 @@ const (
 	ErrReasonPresenceViolated = "node(s) didn't have the requested labels"
 )
 
-// validateArgs validates that presentLabels and absentLabels do not conflict.
-func validateNoConflict(presentLabels []string, absentLabels []string) error {
-	m := make(map[string]struct{}, len(presentLabels))
-	for _, l := range presentLabels {
-		m[l] = struct{}{}
-	}
-	for _, l := range absentLabels {
-		if _, ok := m[l]; ok {
-			return fmt.Errorf("detecting at least one label (e.g., %q) that exist in both the present(%+v) and absent(%+v) label list", l, presentLabels, absentLabels)
-		}
-	}
-	return nil
-}
-
 // New initializes a new plugin and returns it.
 func New(plArgs runtime.Object, handle framework.FrameworkHandle) (framework.Plugin, error) {
-	args := schedulerv1alpha2.NodeLabelArgs{}
-	if err := framework.DecodeInto(plArgs, &args); err != nil {
+	args, err := getArgs(plArgs)
+	if err != nil {
 		return nil, err
 	}
-	if err := validateNoConflict(args.PresentLabels, args.AbsentLabels); err != nil {
+
+	if err := validation.ValidateNodeLabelArgs(args); err != nil {
 		return nil, err
 	}
-	if err := validateNoConflict(args.PresentLabelsPreference, args.AbsentLabelsPreference); err != nil {
-		return nil, err
-	}
+
 	return &NodeLabel{
 		handle: handle,
 		args:   args,
 	}, nil
 }
 
+func getArgs(obj runtime.Object) (config.NodeLabelArgs, error) {
+	ptr, ok := obj.(*config.NodeLabelArgs)
+	if !ok {
+		return config.NodeLabelArgs{}, fmt.Errorf("want args to be of type NodeLabelArgs, got %T", obj)
+	}
+	return *ptr, nil
+}
+
 // NodeLabel checks whether a pod can fit based on the node labels which match a filter that it requests.
 type NodeLabel struct {
 	handle framework.FrameworkHandle
-	args   schedulerv1alpha2.NodeLabelArgs
+	args   config.NodeLabelArgs
 }
 
 var _ framework.FilterPlugin = &NodeLabel{}
