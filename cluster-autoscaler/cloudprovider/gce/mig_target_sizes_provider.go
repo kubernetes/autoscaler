@@ -18,7 +18,7 @@ package gce
 
 import (
 	"fmt"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"sync"
 )
 

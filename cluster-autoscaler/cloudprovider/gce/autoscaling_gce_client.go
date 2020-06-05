@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (

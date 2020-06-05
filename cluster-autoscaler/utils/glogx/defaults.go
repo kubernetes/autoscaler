@@ -16,7 +16,7 @@ limitations under the License.
 
 package glogx
 
-import "k8s.io/klog"
+import klog "k8s.io/klog/v2"
 
 const (
 	// MaxPodsLogged is the maximum number of pods for which we will

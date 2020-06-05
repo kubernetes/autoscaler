@@ -16,7 +16,7 @@ limitations under the License.
 
 package gce
 
-import "k8s.io/klog"
+import klog "k8s.io/klog/v2"
 
 // There should be no imports as it is used standalone in e2e tests
 

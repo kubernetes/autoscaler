@@ -22,7 +22,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 // ScaleDownStatus represents the state of scale down.

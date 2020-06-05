@@ -21,7 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.

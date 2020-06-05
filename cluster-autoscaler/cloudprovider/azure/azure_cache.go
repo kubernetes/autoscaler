@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 var (

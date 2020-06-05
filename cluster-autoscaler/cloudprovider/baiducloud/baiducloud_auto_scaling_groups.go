@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud/baiducloud-sdk-go/cce"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 type autoScalingGroups struct {
