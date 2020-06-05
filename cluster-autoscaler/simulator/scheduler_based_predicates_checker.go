@@ -19,14 +19,12 @@ package simulator
 import (
 	"context"
 	"fmt"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
-	volume_scheduling "k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
@@ -51,23 +49,12 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
-	volumeBinder := volume_scheduling.NewVolumeBinder(
-		kubeClient,
-		informerFactory.Core().V1().Nodes(),
-		informerFactory.Storage().V1().CSINodes(),
-		informerFactory.Core().V1().PersistentVolumeClaims(),
-		informerFactory.Core().V1().PersistentVolumes(),
-		informerFactory.Storage().V1().StorageClasses(),
-		time.Duration(10)*time.Second,
-	)
-
 	framework, err := schedulerframework.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
 		plugins,
 		nil, // This is fine.
 		schedulerframework.WithInformerFactory(informerFactory),
 		schedulerframework.WithSnapshotSharedLister(sharedLister),
-		schedulerframework.WithVolumeBinder(volumeBinder),
 	)
 
 	if err != nil {
