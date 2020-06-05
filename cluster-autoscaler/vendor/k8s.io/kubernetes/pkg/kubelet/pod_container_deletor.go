@@ -20,7 +20,7 @@ import (
 	"sort"
 
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 )
 
@@ -48,7 +48,9 @@ func newPodContainerDeletor(runtime kubecontainer.Runtime, containersToKeep int)
 	go wait.Until(func() {
 		for {
 			id := <-buffer
-			runtime.DeleteContainer(id)
+			if err := runtime.DeleteContainer(id); err != nil {
+				klog.Warningf("[pod_container_deletor] DeleteContainer returned error for (id=%v): %v", id, err)
+			}
 		}
 	}, 0, wait.NeverStop)
 
