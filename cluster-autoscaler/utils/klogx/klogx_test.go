@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package glogx
+package klogx
 
 import (
 	"testing"
@@ -29,8 +29,8 @@ func TestLoggingQuota(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		assert.Equal(t, 3-i, q.Left())
-		assert.Equal(t, i < 3, bool(UpTo(q)))
-		assert.Equal(t, i >= 3, bool(Over(q)))
+		assert.Equal(t, i < 3, V(0).UpTo(q).enabled)
+		assert.Equal(t, i >= 3, V(0).Over(q).enabled)
 	}
 }
 
@@ -39,28 +39,30 @@ func TestReset(t *testing.T) {
 	q := NewLoggingQuota(3)
 
 	for i := 0; i < 5; i++ {
-		assert.Equal(t, i < 3, bool(UpTo(q)))
+		assert.Equal(t, i < 3, V(0).UpTo(q).enabled)
 	}
 
 	q.Reset()
 
 	assert.Equal(t, 3, q.Left())
-	assert.False(t, bool(Over(q)))
-	assert.True(t, bool(UpTo(q)))
+	assert.False(t, V(0).Over(q).enabled)
+	assert.True(t, V(0).UpTo(q).enabled)
 }
 
 // Tests that quota isn't used up by calls limited by verbosity.
 func TestVFalse(t *testing.T) {
-	v := Verbose(false)
+	// XXX: this is a hack to get a disabled V, since klog v2 no longer
+	// provides an easy way to create it
+	v := V(10000)
 	q := NewLoggingQuota(3)
 
-	assert.False(t, bool(v.UpTo(q)))
+	assert.False(t, v.UpTo(q).v.Enabled())
 	assert.Equal(t, 3, q.Left())
 }
 
 // Tests that V limits calls based on verbosity the same way as klog.V.
 func TestV(t *testing.T) {
 	for i := klog.Level(0); i <= 10; i++ {
-		assert.Equal(t, bool(klog.V(i)), bool(V(i)))
+		assert.Equal(t, klog.V(i).Enabled(), V(i).v.Enabled())
 	}
 }
