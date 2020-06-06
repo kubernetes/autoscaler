@@ -48,6 +48,20 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 			(*out)[key] = val.DeepCopy()
 		}
 	}
+	if in.ControlledResources != nil {
+		in, out := &in.ControlledResources, &out.ControlledResources
+		*out = new([]corev1.ResourceName)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]corev1.ResourceName, len(*in))
+			copy(*out, *in)
+		}
+	}
+	if in.ControlledValues != nil {
+		in, out := &in.ControlledValues, &out.ControlledValues
+		*out = new(ContainerControlledValues)
+		**out = **in
+	}
 	return
 }
 
@@ -256,7 +270,7 @@ func (in *VerticalPodAutoscalerCheckpoint) DeepCopyObject() runtime.Object {
 func (in *VerticalPodAutoscalerCheckpointList) DeepCopyInto(out *VerticalPodAutoscalerCheckpointList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]VerticalPodAutoscalerCheckpoint, len(*in))
@@ -343,7 +357,7 @@ func (in *VerticalPodAutoscalerCondition) DeepCopy() *VerticalPodAutoscalerCondi
 func (in *VerticalPodAutoscalerList) DeepCopyInto(out *VerticalPodAutoscalerList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]VerticalPodAutoscaler, len(*in))
