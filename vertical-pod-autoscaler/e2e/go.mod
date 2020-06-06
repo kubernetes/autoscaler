@@ -18,7 +18,6 @@ require (
 	github.com/onsi/gomega v1.5.0
 	github.com/prometheus/procfs v0.0.6 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
 	golang.org/x/sys v0.0.0-20191112214154-59a1497f0cea // indirect
 	google.golang.org/appengine v1.6.5 // indirect
@@ -26,7 +25,7 @@ require (
 	gopkg.in/yaml.v2 v2.2.5 // indirect
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
-	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200207133143-e7988a6dd041
+	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200605154545-936eea18fb1d
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/component-base v0.0.0
 	k8s.io/klog v1.0.0
