@@ -57,6 +57,11 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 			copy(*out, *in)
 		}
 	}
+	if in.ControlledValues != nil {
+		in, out := &in.ControlledValues, &out.ControlledValues
+		*out = new(ContainerControlledValues)
+		**out = **in
+	}
 	return
 }
 
