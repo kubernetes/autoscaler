@@ -34,6 +34,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder
 	WithMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
@@ -63,6 +64,7 @@ type verticalPodAutoscalerBuilder struct {
 	creationTimestamp       time.Time
 	minAllowed              core.ResourceList
 	maxAllowed              core.ResourceList
+	ControlledValues        *vpa_types.ContainerControlledValues
 	recommendation          RecommendationBuilder
 	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	annotations             map[string]string
@@ -112,6 +114,12 @@ func (b *verticalPodAutoscalerBuilder) WithMinAllowed(cpu, memory string) Vertic
 func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.maxAllowed = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.ControlledValues = &mode
 	return &c
 }
 
@@ -168,9 +176,10 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 		panic("Must call WithContainer() before Get()")
 	}
 	resourcePolicy := vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		ContainerName: b.containerName,
-		MinAllowed:    b.minAllowed,
-		MaxAllowed:    b.maxAllowed,
+		ContainerName:    b.containerName,
+		MinAllowed:       b.minAllowed,
+		MaxAllowed:       b.maxAllowed,
+		ControlledValues: b.ControlledValues,
 	}}}
 
 	recommendation := b.recommendation.WithContainer(b.containerName).Get()
