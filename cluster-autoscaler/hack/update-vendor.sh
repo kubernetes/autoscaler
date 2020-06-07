@@ -17,7 +17,7 @@ fi
 
 SCRIPT_NAME=$(basename "$0")
 K8S_FORK="git@github.com:kubernetes/kubernetes.git"
-K8S_REV="master"
+K8S_REV="release-1.16"
 BATCH_MODE="false"
 TARGET_MODULE=${TARGET_MODULE:-k8s.io/autoscaler/cluster-autoscaler}
 

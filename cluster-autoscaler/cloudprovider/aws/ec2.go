@@ -18,6 +18,7 @@ package aws
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -54,4 +55,30 @@ func (m ec2Wrapper) getInstanceTypeByLT(launchTemplate *launchTemplate) (string,
 	}
 
 	return aws.StringValue(instanceType), nil
+}
+
+// smallestInstanceType returns the smallest EC2 instance type
+// from the list of provided instance types.
+func smallestInstanceType(instanceTypes []string) (smallest string) {
+	var (
+		leastCPU int64 = math.MaxInt64
+		leastMem int64 = math.MaxInt64
+		leastGPU int64 = math.MaxInt64
+	)
+	for _, instanceType := range instanceTypes {
+		candidate := InstanceTypes[instanceType]
+		if candidate.VCPU < leastCPU {
+			smallest = candidate.InstanceType
+			leastCPU = candidate.VCPU
+		}
+		if candidate.MemoryMb < leastMem {
+			smallest = candidate.InstanceType
+			leastMem = candidate.MemoryMb
+		}
+		if candidate.GPU < leastGPU {
+			smallest = candidate.InstanceType
+			leastGPU = candidate.GPU
+		}
+	}
+	return smallest
 }

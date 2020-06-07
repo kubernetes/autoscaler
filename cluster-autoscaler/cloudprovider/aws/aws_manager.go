@@ -331,9 +331,11 @@ func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
 	} else if asg.LaunchTemplate != nil {
 		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplate)
 	} else if asg.MixedInstancesPolicy != nil {
-		// always use first instance
-		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 {
-			return asg.MixedInstancesPolicy.instanceTypesOverrides[0], nil
+		// Use smallest instance of all the instance types. Otherwise, we run
+		// the risk of launching an instance that is too small for the pending
+		// pod to actually fit in.
+		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) > 0 {
+			return smallestInstanceType(asg.MixedInstancesPolicy.instanceTypesOverrides), nil
 		}
 
 		return m.ec2Service.getInstanceTypeByLT(asg.MixedInstancesPolicy.launchTemplate)
