@@ -239,7 +239,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
+	if !a.shouldActOnEmptyCluster(allNodes, readyNodes, currentTime) {
 		return nil
 	}
 
@@ -719,23 +719,23 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	return allNodes, readyNodes, nil
 }
 
-// actOnEmptyCluster returns true if the cluster was empty and thus acted upon
-func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
+// shouldActOnEmptyCluster returns true if the cluster should be acted upon
+func (a *StaticAutoscaler) shouldActOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
 	if a.AutoscalingContext.AutoscalingOptions.ScaleUpFromZero {
-		return false
+		return true
 	}
 	if len(allNodes) == 0 {
-		a.onEmptyCluster("Cluster has no nodes.", true)
-		return true
+		a.onEmptyCluster("Cluster has no nodes and ScaleUpFromZero is disabled.", true)
+		return false
 	}
 	if len(readyNodes) == 0 {
 		// Cluster Autoscaler may start running before nodes are ready.
 		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
 		a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
-		return true
+		return false
 	}
 	// the cluster is not empty
-	return false
+	return true
 }
 
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) errors.AutoscalerError {
