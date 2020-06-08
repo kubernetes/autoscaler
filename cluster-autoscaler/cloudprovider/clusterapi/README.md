@@ -16,7 +16,7 @@ Please be aware that currently the cluster autoscaler only supports CAPI
 clusters that have joined their management and workload clusters into a single
 cluster. For more information about this please see the
 [Cluster API Concepts documentations](https://cluster-api.sigs.k8s.io/user/concepts.html)
-and the [`clusterctl move` command documentaion](https://cluster-api.sigs.k8s.io/user/concepts.html).
+and the [`clusterctl move` command documentation](https://cluster-api.sigs.k8s.io/user/concepts.html).
 
 ## Starting the Autoscaler
 
