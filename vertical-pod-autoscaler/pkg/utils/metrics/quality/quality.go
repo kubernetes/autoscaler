@@ -214,7 +214,8 @@ func ObserveRecommendationChange(previous, current corev1.ResourceList, updateMo
 
 		if oldValue > 0.0 {
 			diff := newValue/oldValue - 1.0 // -1.0 to report decreases as negative values and keep 0.0 neutral
-			relativeRecommendationChange.WithLabelValues(updateModeToString(updateMode), string(resource), string(vpaSize)).Observe(diff)
+			log2 := metrics.GetVpaSizeLog2(vpaSize)
+			relativeRecommendationChange.WithLabelValues(updateModeToString(updateMode), string(resource), strconv.Itoa(log2)).Observe(diff)
 		} else {
 			klog.Warningf("Cannot compare as old recommendation for %v is 0. VPA mode: %v, size: %v", resource, updateMode, vpaSize)
 		}
