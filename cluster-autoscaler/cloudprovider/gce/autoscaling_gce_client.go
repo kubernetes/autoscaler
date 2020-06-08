@@ -27,10 +27,10 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -212,7 +212,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 	}
 	infos := []cloudprovider.Instance{}
 	errorCodeCounts := make(map[string]int)
-	errorLoggingQuota := glogx.NewLoggingQuota(100)
+	errorLoggingQuota := klogx.NewLoggingQuota(100)
 	for _, gceInstance := range gceInstances.ManagedInstances {
 		ref, err := ParseInstanceUrlRef(gceInstance.Instance)
 		if err != nil {
@@ -274,12 +274,12 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 				} else {
 					gceInstanceJSON = string(gceInstanceJSONBytes)
 				}
-				glogx.V(4).UpTo(errorLoggingQuota).Infof("Got GCE instance which is being created and has lastAttemptErrors; gceInstance=%v; errorInfo=%#v", gceInstanceJSON, errorInfo)
+				klogx.V(4).UpTo(errorLoggingQuota).Infof("Got GCE instance which is being created and has lastAttemptErrors; gceInstance=%v; errorInfo=%#v", gceInstanceJSON, errorInfo)
 			}
 		}
 		infos = append(infos, instance)
 	}
-	glogx.V(4).Over(errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -errorLoggingQuota.Left())
+	klogx.V(4).Over(errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -errorLoggingQuota.Left())
 	if len(errorCodeCounts) > 0 {
 		klog.V(4).Infof("Spotted following instance creation error codes: %#v", errorCodeCounts)
 	}
