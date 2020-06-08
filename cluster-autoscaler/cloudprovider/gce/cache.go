@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 // MachineTypeKey is used to identify MachineType.

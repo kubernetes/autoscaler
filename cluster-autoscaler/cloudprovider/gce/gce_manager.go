@@ -39,7 +39,7 @@ import (
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
 	gcfg "gopkg.in/gcfg.v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
