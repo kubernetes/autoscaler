@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/api/v1/pod"
 )
 

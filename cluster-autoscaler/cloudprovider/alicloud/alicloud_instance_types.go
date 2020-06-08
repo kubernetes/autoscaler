@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ecs"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	"time"
 )
 

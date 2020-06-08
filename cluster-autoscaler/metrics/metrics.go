@@ -25,7 +25,7 @@ import (
 
 	k8smetrics "k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 // NodeScaleDownReason describes reason for removing node

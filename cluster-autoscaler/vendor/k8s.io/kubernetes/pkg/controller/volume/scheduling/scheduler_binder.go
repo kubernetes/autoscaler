@@ -37,7 +37,7 @@ import (
 	storagelisters "k8s.io/client-go/listers/storage/v1"
 	csitrans "k8s.io/csi-translation-lib"
 	csiplugins "k8s.io/csi-translation-lib/plugins"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	pvutil "k8s.io/kubernetes/pkg/controller/volume/persistentvolume/util"
 	"k8s.io/kubernetes/pkg/controller/volume/scheduling/metrics"
@@ -71,17 +71,17 @@ type InTreeToCSITranslator interface {
 	TranslateInTreePVToCSI(pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
 }
 
-// SchedulerVolumeBinder is used by the scheduler to handle PVC/PV binding
-// and dynamic provisioning.  The binding decisions are integrated into the pod scheduling
-// workflow so that the PV NodeAffinity is also considered along with the pod's other
-// scheduling requirements.
+// SchedulerVolumeBinder is used by the scheduler VolumeBinding plugin to
+// handle PVC/PV binding and dynamic provisioning. The binding decisions are
+// integrated into the pod scheduling workflow so that the PV NodeAffinity is
+// also considered along with the pod's other scheduling requirements.
 //
-// This integrates into the existing default scheduler workflow as follows:
+// This integrates into the existing scheduler workflow as follows:
 // 1. The scheduler takes a Pod off the scheduler queue and processes it serially:
-//    a. Invokes all predicate functions, parallelized across nodes.  FindPodVolumes() is invoked here.
-//    b. Invokes all priority functions.  Future/TBD
+//    a. Invokes all filter plugins, parallelized across nodes.  FindPodVolumes() is invoked here.
+//    b. Invokes all score plugins.  Future/TBD
 //    c. Selects the best node for the Pod.
-//    d. Cache the node selection for the Pod. AssumePodVolumes() is invoked here.
+//    d. Invokes all reserve plugins. AssumePodVolumes() is invoked here.
 //       i.  If PVC binding is required, cache in-memory only:
 //           * For manual binding: update PV objects for prebinding to the corresponding PVCs.
 //           * For dynamic provisioning: update PVC object with a selected node from c)
@@ -89,7 +89,7 @@ type InTreeToCSITranslator interface {
 //       ii. Afterwards, the main scheduler caches the Pod->Node binding in the scheduler's pod cache,
 //           This is handled in the scheduler and not here.
 //    e. Asynchronously bind volumes and pod in a separate goroutine
-//        i.  BindPodVolumes() is called first. It makes all the necessary API updates and waits for
+//        i.  BindPodVolumes() is called first in PreBind phase. It makes all the necessary API updates and waits for
 //            PV controller to fully bind and provision the PVCs. If binding fails, the Pod is sent
 //            back through the scheduler.
 //        ii. After BindPodVolumes() is complete, then the scheduler does the final Pod->Node binding.
@@ -115,7 +115,6 @@ type SchedulerVolumeBinder interface {
 	//
 	// It returns true if all volumes are fully bound
 	//
-	// This function will modify assumedPod with the node name.
 	// This function is called serially.
 	AssumePodVolumes(assumedPod *v1.Pod, nodeName string) (allFullyBound bool, err error)
 
@@ -333,8 +332,6 @@ func (b *volumeBinder) AssumePodVolumes(assumedPod *v1.Pod, nodeName string) (al
 		klog.V(4).Infof("AssumePodVolumes for pod %q, node %q: all PVCs bound and nothing to do", podName, nodeName)
 		return true, nil
 	}
-
-	assumedPod.Spec.NodeName = nodeName
 
 	claimsToBind := b.podBindingCache.GetBindings(assumedPod, nodeName)
 	claimsToProvision := b.podBindingCache.GetProvisionedPVCs(assumedPod, nodeName)
@@ -832,7 +829,7 @@ func (b *volumeBinder) checkVolumeProvisions(pod *v1.Pod, claimsToProvision []*v
 		provisionedClaims = append(provisionedClaims, claim)
 
 	}
-	klog.V(4).Infof("Provisioning for claims of pod %q that has no matching volumes on node %q ...", podName, node.Name)
+	klog.V(4).Infof("Provisioning for %d claims of pod %q that has no matching volumes on node %q ...", len(claimsToProvision), podName, node.Name)
 
 	return true, provisionedClaims, nil
 }

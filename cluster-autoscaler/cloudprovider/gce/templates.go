@@ -31,7 +31,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/ghodss/yaml"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 // GceTemplateBuilder builds templates for GCE nodes.

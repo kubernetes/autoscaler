@@ -26,7 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
