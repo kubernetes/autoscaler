@@ -34,9 +34,9 @@ import (
 )
 
 const (
-	minimalCPULowerBound    = "20m"
+	minimalCPULowerBound    = "0m"
 	minimalCPUUpperBound    = "100m"
-	minimalMemoryLowerBound = "20Mi"
+	minimalMemoryLowerBound = "0Mi"
 	minimalMemoryUpperBound = "300Mi"
 	// the initial values should be outside minimal bounds
 	initialCPU     = int64(10) // mCPU
