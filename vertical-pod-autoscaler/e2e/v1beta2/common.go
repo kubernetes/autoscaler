@@ -533,6 +533,18 @@ func WaitForRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.Vert
 	})
 }
 
+// WaitForUncappedCPURecommendationAbove pools VPA object until uncapped recommendation is above specified value.
+// Returns polled VPA object. On timeout returns error.
+func WaitForUncappedCPURecommendationAbove(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler, minMilliCPU int64) (*vpa_types.VerticalPodAutoscaler, error) {
+	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+		if vpa.Status.Recommendation == nil || len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
+			return false
+		}
+		uncappedCpu := vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget[apiv1.ResourceCPU]
+		return uncappedCpu.MilliValue() > minMilliCPU
+	})
+}
+
 func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity, lrType apiv1.LimitType) {
 	lr := &apiv1.LimitRange{
 		ObjectMeta: metav1.ObjectMeta{
