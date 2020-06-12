@@ -1,0 +1,1722 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "version" : "2.0.0-alpha1",
+    "terms-of-service" : "https://exoscale.com/terms",
+    "contact" : {
+      "email" : "api@exoscale.com",
+      "name" : "API support",
+      "url" : "https://portal.exoscale.com/tickets"
+    },
+    "title" : "Exoscale Public API",
+    "description" : "Infrastructure automation API, allowing programmatic access to all Exoscale products and services."
+  },
+  "tags" : [ {
+    "description" : "\nSecurity Groups are groups of firewall rules that regulate traffic to and from your Compute instances.\n                   \n[Read more](https://community.exoscale.com/documentation/compute/security-groups/)",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://community.exoscale.com/documentation/compute/security-groups/"
+    },
+    "name" : "security-groups"
+  }, {
+    "description" : "\nAn Instance Type is a resource describing the amount of CPU, RAM and eventually GPUs your Compute instance will run on.\n\n[Read more](https://www.exoscale.com/pricing/)",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://www.exoscale.com/pricing/"
+    },
+    "name" : "instance-types"
+  }, {
+    "description" : "\nA Network Load Balancer (NLB) is a Layer 4 (TCP/UDP) load balancer that distributes incoming traffic to Compute instances managed by an Instance Pool.\n\n[Read more](https://community.exoscale.com/documentation/compute/network-load-balancer/)\n",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://community.exoscale.com/documentation/compute/network-load-balancer/"
+    },
+    "name" : "network-load-balancer"
+  }, {
+    "description" : "\nInstance Pools is an Exoscale service allowing users to provision groups of identical Compute instances automatically.\n                   \n[Read more](https://community.exoscale.com/documentation/compute/instance-pools/)",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://community.exoscale.com/documentation/compute/instance-pools/"
+    },
+    "name" : "instance-pools"
+  }, {
+    "description" : "\nInstances are the virtual machines at the core of the Exoscale Compute service.",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://www.exoscale.com/compute/"
+    },
+    "name" : "instances"
+  }, {
+    "description" : "\nSnapshots provide a way to get point-in-time recovery for your Compute instance.\n\n[Read more](https://community.exoscale.com/documentation/compute/snapshots/)",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://community.exoscale.com/documentation/compute/snapshots/"
+    },
+    "name" : "snapshots"
+  }, {
+    "description" : "\nA Zone represents an independent datacenter in which Exoscale infrastructure is deployed into.\n                 \n[Read more](https://www.exoscale.com/datacenters/)",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://www.exoscale.com/datacenters/"
+    },
+    "name" : "zones"
+  }, {
+    "description" : "\nOperations describe the current state of an asynchronous operation.",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://community.exoscale.com/"
+    },
+    "name" : "operations"
+  }, {
+    "description" : "\nTemplates contain the OS and the initial setup of a Compute instance.",
+    "externalDocs" : {
+      "description" : "Read more",
+      "url" : "https://www.exoscale.com/templates/"
+    },
+    "name" : "templates"
+  } ],
+  "components" : {
+    "schemas" : {
+      "resource" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "security-group-rule" : {
+        "type" : "object",
+        "properties" : {
+          "protocol" : {
+            "type" : "string",
+            "enum" : [ "tcp", "esp", "icmp", "udp", "gre", "ah", "ipip", "icmpv6" ]
+          },
+          "icmp" : {
+            "type" : "object",
+            "properties" : {
+              "code" : {
+                "all-of" : [ {
+                  "type" : "integer",
+                  "format" : "int64",
+                  "minimum" : 0,
+                  "exclusiveMinimum" : false
+                }, {
+                  "type" : "integer",
+                  "format" : "int64",
+                  "maximum" : 255,
+                  "exclusiveMaximum" : true
+                } ]
+              },
+              "type" : {
+                "all-of" : [ {
+                  "type" : "integer",
+                  "format" : "int64",
+                  "minimum" : 0,
+                  "exclusiveMinimum" : false
+                }, {
+                  "type" : "integer",
+                  "format" : "int64",
+                  "maximum" : 255,
+                  "exclusiveMaximum" : true
+                } ]
+              }
+            }
+          },
+          "end-port" : {
+            "all-of" : [ {
+              "type" : "integer",
+              "format" : "int64",
+              "minimum" : 1,
+              "exclusiveMinimum" : false
+            }, {
+              "type" : "integer",
+              "format" : "int64",
+              "maximum" : 65535,
+              "exclusiveMaximum" : true
+            } ]
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "network" : {
+            "type" : "string"
+          },
+          "flow-direction" : {
+            "type" : "string",
+            "enum" : [ "ingress", "egress" ]
+          },
+          "start-port" : {
+            "all-of" : [ {
+              "type" : "integer",
+              "format" : "int64",
+              "minimum" : 1,
+              "exclusiveMinimum" : false
+            }, {
+              "type" : "integer",
+              "format" : "int64",
+              "maximum" : 65535,
+              "exclusiveMaximum" : true
+            } ]
+          },
+          "security-group" : {
+            "$ref" : "#/components/schemas/security-group-resource"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "private-network" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          }
+        }
+      },
+      "load-balancer" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "creating", "deleting", "running", "error" ],
+            "readOnly" : true
+          },
+          "created-at" : {
+            "type" : "string",
+            "format" : "date-time",
+            "readOnly" : true
+          },
+          "ip" : {
+            "type" : "string",
+            "format" : "ipv4",
+            "readOnly" : true
+          },
+          "services" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/load-balancer-service"
+            }
+          }
+        }
+      },
+      "instance-type" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "size" : {
+            "type" : "string",
+            "enum" : [ "large", "huge", "jumbo", "medium", "mega", "small", "extra-large", "titan", "micro", "tiny" ],
+            "readOnly" : true
+          },
+          "family" : {
+            "type" : "string",
+            "enum" : [ "gpu2", "gpu", "memory", "storage", "standard", "cpu" ],
+            "readOnly" : true
+          },
+          "cpus" : {
+            "type" : "integer",
+            "format" : "int64",
+            "readOnly" : true
+          },
+          "gpus" : {
+            "type" : "integer",
+            "format" : "int64",
+            "readOnly" : true
+          },
+          "authorized" : {
+            "type" : "boolean",
+            "readOnly" : true
+          },
+          "memory" : {
+            "type" : "integer",
+            "format" : "int64",
+            "readOnly" : true
+          }
+        }
+      },
+      "load-balancer-server-status" : {
+        "type" : "object",
+        "properties" : {
+          "public-ip" : {
+            "type" : "string",
+            "format" : "ipv4"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "failure", "success" ]
+          }
+        }
+      },
+      "snapshot" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "created-at" : {
+            "type" : "string",
+            "format" : "date-time",
+            "readOnly" : true
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "snapshotting", "deleted", "exporting", "ready", "deleting", "error", "exported" ]
+          },
+          "export" : {
+            "type" : "object",
+            "properties" : {
+              "presigned-url" : {
+                "type" : "string"
+              },
+              "md5sum" : {
+                "type" : "string"
+              }
+            }
+          },
+          "instance" : {
+            "$ref" : "#/components/schemas/instance"
+          }
+        }
+      },
+      "ssh-key" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "load-balancer-service" : {
+        "type" : "object",
+        "properties" : {
+          "protocol" : {
+            "type" : "string",
+            "enum" : [ "tcp", "udp" ]
+          },
+          "strategy" : {
+            "type" : "string",
+            "enum" : [ "round-robin", "source-hash" ]
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "healthcheck-status" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/load-balancer-server-status"
+            },
+            "readOnly" : true
+          },
+          "target-port" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "healthcheck" : {
+            "$ref" : "#/components/schemas/healthcheck"
+          },
+          "port" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instance-pool" : {
+            "$ref" : "#/components/schemas/resource"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "creating", "deleting", "running", "updating", "error" ],
+            "readOnly" : true
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "operation" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "incorrect", "unknown", "unavailable", "forbidden", "busy", "fault", "partial", "not-found", "interrupted", "unsupported", "conflict" ],
+            "readOnly" : true
+          },
+          "reference" : {
+            "$ref" : "#/components/schemas/reference",
+            "readOnly" : true
+          },
+          "message" : {
+            "type" : "string",
+            "readOnly" : true
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "failure", "pending", "success", "timeout" ],
+            "readOnly" : true
+          }
+        }
+      },
+      "security-group-resource" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "healthcheck" : {
+        "type" : "object",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "tcp", "http", "https" ]
+          },
+          "interval" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "uri" : {
+            "type" : "string"
+          },
+          "port" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "timeout" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "retries" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tls-sni" : {
+            "type" : "string"
+          }
+        }
+      },
+      "instance" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "instance-pool" : {
+        "type" : "object",
+        "properties" : {
+          "user-data" : {
+            "type" : "string"
+          },
+          "instance-type" : {
+            "$ref" : "#/components/schemas/instance-type"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "ssh-key" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ssh-key"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "disk-size" : {
+            "all-of" : [ {
+              "type" : "integer",
+              "format" : "int64"
+            }, {
+              "type" : "integer",
+              "format" : "int64",
+              "minimum" : 10,
+              "exclusiveMinimum" : false
+            } ]
+          },
+          "security-groups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/security-group"
+            }
+          },
+          "private-networks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/private-network"
+            }
+          },
+          "template" : {
+            "$ref" : "#/components/schemas/template"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "scaling-up", "scaling-down", "destroying", "creating", "running", "destroyed" ],
+            "readOnly" : true
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "instances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/instance"
+            }
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "reference" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "link" : {
+            "type" : "string",
+            "readOnly" : true
+          },
+          "command" : {
+            "type" : "string"
+          }
+        }
+      },
+      "template" : {
+        "type" : "object",
+        "properties" : {
+          "url" : {
+            "type" : "string"
+          },
+          "default-user" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "visibility" : {
+            "type" : "string",
+            "enum" : [ "private", "public" ]
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "build" : {
+            "type" : "string",
+            "readOnly" : true
+          },
+          "created-at" : {
+            "type" : "string",
+            "format" : "date-time",
+            "readOnly" : true
+          },
+          "sshkey-enabled" : {
+            "type" : "boolean"
+          },
+          "family" : {
+            "type" : "string",
+            "readOnly" : true
+          },
+          "version" : {
+            "type" : "string",
+            "readOnly" : true
+          },
+          "password-enabled" : {
+            "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "security-group" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "readOnly" : true
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "rules" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/security-group-rule"
+            }
+          }
+        }
+      },
+      "zone" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "enum" : [ "de-muc-1", "ch-gva-2", "ch-zrh-1", "de-fra-1" ],
+            "readOnly" : true
+          }
+        }
+      },
+      "cdn-configuration" : {
+        "type" : "object",
+        "properties" : {
+          "bucket" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "deactivated", "pending", "activated" ],
+            "readOnly" : true
+          },
+          "fqdn" : {
+            "type" : "string",
+            "readOnly" : true
+          }
+        }
+      }
+    }
+  },
+  "servers" : [ {
+    "url" : "{protocol}://{environment}-{zone}.exoscale.com/v2.alpha",
+    "variables" : {
+      "protocol" : {
+        "default" : "https",
+        "enum" : [ "http", "https" ]
+      },
+      "environment" : {
+        "default" : "api",
+        "enum" : [ "api" ]
+      },
+      "zone" : {
+        "default" : "ch-gva-2",
+        "enum" : [ "ch-gva-2", "ch-zrh-1", "de-fra-1", "de-muc-1", "at-vie-1", "bg-sof-1" ]
+      }
+    }
+  } ],
+  "paths" : {
+    "/load-balancer/{id}/service/{service-id}" : {
+      "delete" : {
+        "tags" : [ "network-load-balancer" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-load-balancer-service",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "required" : true,
+          "name" : "service-id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete a Load Balancer Service"
+      },
+      "put" : {
+        "description" : "",
+        "tags" : [ "network-load-balancer" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "name" : {
+                    "type" : "string"
+                  },
+                  "description" : {
+                    "type" : "string"
+                  },
+                  "protocol" : {
+                    "type" : "string",
+                    "enum" : [ "tcp", "udp" ]
+                  },
+                  "strategy" : {
+                    "type" : "string",
+                    "enum" : [ "round-robin", "source-hash" ]
+                  },
+                  "port" : {
+                    "type" : "integer",
+                    "format" : "int64"
+                  },
+                  "target-port" : {
+                    "type" : "integer",
+                    "format" : "int64"
+                  },
+                  "healthcheck" : {
+                    "$ref" : "#/components/schemas/healthcheck"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Update a Load Balancer Service",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "required" : true,
+          "name" : "service-id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "update-load-balancer-service"
+      },
+      "get" : {
+        "tags" : [ "network-load-balancer" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/load-balancer-service"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-load-balancer-service",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "required" : true,
+          "name" : "service-id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve a Load Balancer Service details"
+      }
+    },
+    "/instance/{id}:create-snapshot" : {
+      "post" : {
+        "tags" : [ "instances", "snapshots" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "create-snapshot",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Create a snapshot of a Compute instance"
+      }
+    },
+    "/security-group/{id}/rules/{rule-id}" : {
+      "delete" : {
+        "tags" : [ "security-groups" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-rule-from-security-group",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "required" : true,
+          "name" : "rule-id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete a Security Group rule"
+      }
+    },
+    "/load-balancer" : {
+      "post" : {
+        "description" : "",
+        "tags" : [ "network-load-balancer" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/load-balancer"
+              }
+            }
+          }
+        },
+        "summary" : "Create a new Load Balancer",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ ],
+        "operationId" : "create-load-balancer"
+      },
+      "get" : {
+        "tags" : [ "network-load-balancer" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "load-balancers" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/load-balancer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-load-balancers",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List Load Balancers"
+      }
+    },
+    "/security-group" : {
+      "post" : {
+        "description" : "",
+        "tags" : [ "security-groups" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/security-group"
+              }
+            }
+          }
+        },
+        "summary" : "Create a Security Group",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ ],
+        "operationId" : "create-security-group"
+      },
+      "get" : {
+        "tags" : [ "security-groups" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "security-groups" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/security-group"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-security-groups",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List Security Groups"
+      }
+    },
+    "/instance-type/{id}" : {
+      "get" : {
+        "tags" : [ "instance-types" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/instance-type"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-instance-type",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve an Instance Type details"
+      }
+    },
+    "/zone" : {
+      "get" : {
+        "tags" : [ "zones" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "zones" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/zone"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-zones",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List zones"
+      }
+    },
+    "/instance-pool" : {
+      "get" : {
+        "tags" : [ "instance-pools" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "instance-pools" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/instance-pool"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-instance-pools",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List Instance Pools"
+      },
+      "post" : {
+        "description" : "",
+        "tags" : [ "instance-pools" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/instance-pool"
+              }
+            }
+          }
+        },
+        "summary" : "Create an Instance Pool",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ ],
+        "operationId" : "create-instance-pool"
+      }
+    },
+    "/instance-type" : {
+      "get" : {
+        "tags" : [ "instance-types" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "instance-types" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/instance-type"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-instance-types",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List Compute instance types"
+      }
+    },
+    "/instance-pool/{id}" : {
+      "delete" : {
+        "tags" : [ "instance-pools" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-instance-pool",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete an Instance Pool"
+      },
+      "get" : {
+        "tags" : [ "instance-pools" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/instance-pool"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-instance-pool",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve an Instance Pool details"
+      },
+      "put" : {
+        "description" : "",
+        "tags" : [ "instance-pools" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/instance-pool"
+              }
+            }
+          }
+        },
+        "summary" : "Update an Instance Pool",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "update-instance-pool"
+      }
+    },
+    "/security-group/{id}" : {
+      "get" : {
+        "tags" : [ "security-groups" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/security-group"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-security-group",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve a Security Group details"
+      },
+      "delete" : {
+        "tags" : [ "security-groups" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-security-group",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete a Security Group"
+      }
+    },
+    "/snapshot/{id}:export" : {
+      "post" : {
+        "tags" : [ "snapshots" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "export-snapshot",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Export a snapshot"
+      }
+    },
+    "/snapshot/{id}" : {
+      "delete" : {
+        "tags" : [ "snapshots" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-snapshot",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete a snapshot"
+      },
+      "get" : {
+        "tags" : [ "snapshots" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/snapshot"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-snapshot",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve a snapshot details"
+      }
+    },
+    "/security-group/{id}/rules" : {
+      "post" : {
+        "description" : "",
+        "tags" : [ "security-groups" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/security-group-rule"
+              }
+            }
+          }
+        },
+        "summary" : "Create a Security Group rule",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "add-rule-to-security-group"
+      }
+    },
+    "/snapshot" : {
+      "get" : {
+        "tags" : [ "snapshots" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "snapshots" : {
+                      "type" : "array",
+                      "items" : {
+                        "$ref" : "#/components/schemas/snapshot"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "list-snapshots",
+        "description" : "",
+        "parameters" : [ ],
+        "summary" : "List snapshots"
+      }
+    },
+    "/operation/{id}" : {
+      "get" : {
+        "tags" : [ "operations" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-operation",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Lookup operation status by ID"
+      }
+    },
+    "/template/{id}" : {
+      "get" : {
+        "tags" : [ "templates" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/template"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-template",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve a Compute template details"
+      }
+    },
+    "/instance-pool/{id}:evict" : {
+      "post" : {
+        "description" : "This operation evicts the specified Compute instances member from the Instance Pool, shrinking it to `&lt;current pool size&gt; - &lt;# evicted members&gt;`.",
+        "tags" : [ "instance-pools" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "instances" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string",
+                      "format" : "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Evict Instance Pool members",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "evict-instance-pool-members"
+      }
+    },
+    "/load-balancer/{id}/service" : {
+      "post" : {
+        "description" : "",
+        "tags" : [ "network-load-balancer" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/load-balancer-service"
+              }
+            }
+          }
+        },
+        "summary" : "Add a Load Balancer Service",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "add-service-to-load-balancer"
+      }
+    },
+    "/load-balancer/{id}" : {
+      "put" : {
+        "description" : "",
+        "tags" : [ "network-load-balancer" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "name" : {
+                    "type" : "string"
+                  },
+                  "description" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Update a Load Balancer",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "operationId" : "update-load-balancer"
+      },
+      "delete" : {
+        "tags" : [ "network-load-balancer" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "delete-load-balancer",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Delete a Load Balancer"
+      },
+      "get" : {
+        "tags" : [ "network-load-balancer" ],
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/load-balancer"
+                }
+              }
+            }
+          }
+        },
+        "operationId" : "get-load-balancer",
+        "description" : "",
+        "parameters" : [ {
+          "in" : "path",
+          "required" : true,
+          "name" : "id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "summary" : "Retrieve a Load Balancer details"
+      }
+    },
+    "/instance" : {
+      "post" : {
+        "description" : "",
+        "tags" : [ "instances" ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/instance"
+              }
+            }
+          }
+        },
+        "summary" : "Create a Compute instance",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/operation"
+                }
+              }
+            }
+          }
+        },
+        "parameters" : [ {
+          "in" : "query",
+          "required" : false,
+          "name" : "start",
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "operationId" : "create-instance"
+      }
+    }
+  },
+  "x-topics" : [ {
+    "title" : "API Request Signature",
+    "content" : "\nIn order to authenticate legitimate users, the Exoscale API requires incoming requests to be signed using valid Exoscale API account credentials with the following mechanism.\n\n\n## Signature Mechanism\n\nThe *message* (i.e. content) to sign contains several segments concatenated using a line return character (`\\n`). All segments must be included and in the described order, including empty ones depending on the context of the request (e.g. no request body).\n\n* Request method and request URL (path only), separated by a space character\n* Request body\n* Request URL parameters (Query String) values, concatenated without separator. The matching parameter names have to be specified in the resulting signature header `signed-query-args=` pragma, separated by semicolons (e.g. `p1;p2;pN`).\n* Request header values, concatenated without separator (none at the moment, leave empty)\n* Request expiration date in UNIX timestamp format\n\nExample *message* to sign for `GET /v2.alpha/resource/a02baf5a-a3e4-49a0-857b-8a08d276c1c0?p1=v1&p2=v2` :\n\n```\nGET /v2.alpha/resource/a02baf5a-a3e4-49a0-857b-8a08d276c1c0\n\nv1v2\n\n1599140767\n```\n\nThe request signature consists of the [HMAC][hmac] hash of the base64-encoded *message* and the Exoscale API secret using the SHA265 function:\n\n```\nsignature = HMAC_SHA256(Exoscale API secret, BASE64_ENCODE(message))\n```\n\nFinally, the computed signature must be added to the API request in a `Authorization` header such as:\n\n```\nAuthorization: EXO2-HMAC-SHA256 credential=<Exoscale API key>,expires=<expiration date UNIX timestamp>,signature=<signature>\n```\n\nExample API query:\n\n```\nGET /v2.alpha/resource/a02baf5a-a3e4-49a0-857b-8a08d276c1c0?p1=v1&p2=v2 HTTP/1.1\nHost: api-ch-gva-2.exoscale.com\nAuthorization: EXO2-HMAC-SHA256 credential=EXO29147e9f89102b7ac1e88514,signed-query-args=p1;p2,expires=1599140767,signature=2AOBQsbElQb4FpKT/FM/9T4NobjlmZkSGvvdUth/xlY=\n```\n\n\n## Reference Implementations\n\nYou can look up the following existing reference implementations:\n\n* Go: [github.com/exoscale/egoscale/api/v2 > `SecurityProviderExoscale.signRequest`](https://github.com/exoscale/egoscale/blob/master/api/v2/security.go)\n* Python: [requests-exoscale-auth > `ExoscaleV2Auth`](https://github.com/exoscale/requests-exoscale-auth/blob/master/exoscale_auth.py)\n\n[hmac]: https://en.wikipedia.org/wiki/HMAC\n"
+  } ]
+}
