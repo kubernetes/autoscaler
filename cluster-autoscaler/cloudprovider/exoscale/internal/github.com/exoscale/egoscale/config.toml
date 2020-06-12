@@ -1,0 +1,22 @@
+version = 1
+default_profile = "ppmarc"
+
+[[profiles]]
+  name = "marc"
+  api_key = "EXO29177e9e89702f7aa1e08584"
+  api_secret = "dZYrWkiMi-be7MKBd01e9ljPHnaS6MpA3vBh3EWNTCk"
+
+[[profiles]]
+  name = "ppmarc"
+  compute_api_endpoint = "https://ppapi.exoscale.com/v1"
+  dns_api_endpoint = "https://ppapi.exoscale.com/v1"
+  storage_api_endpoint = "https://ppsos-ch-dk-2.exo.io"
+  storage_zone = "ch-dk-2"
+  api_key = "EXOc46ecdfa44bc0975c16babd6"
+  api_secret = "bTZo7lbylLvKOx5SdUj5Bs7eJbY4AI0VvD1Nd91DeLU"
+
+[[profiles]]
+  name = "eat"
+  api_key = "EXOea4b0e299babc4563ed52ad6"
+  api_secret = "scsVNGHImw1KmwiKCcNPtm6fRxrtvlcZRWo1Vxsmo44"
+  #compute_api_endpoint = "http://localhost:8000/"
