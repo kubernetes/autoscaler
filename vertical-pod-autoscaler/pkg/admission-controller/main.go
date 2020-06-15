@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-
 	"net/http"
 	"os"
 	"time"
@@ -40,7 +39,6 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog"
 )
@@ -59,6 +57,9 @@ var (
 
 	port               = flag.Int("port", 8000, "The port to listen on.")
 	address            = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	kubeconfig         = flag.String("kubeconfig", "", "Paths to a kubeconfig. Only required if out-of-cluster.")
+	kubeApiQps         = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
+	kubeApiBurst       = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 	namespace          = os.Getenv("NAMESPACE")
 	serviceName        = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
 	webhookAddress     = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
@@ -79,11 +80,7 @@ func main() {
 	metrics_admission.Register()
 
 	certs := initCerts(*certsConfiguration)
-
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		klog.Fatal(err)
-	}
+	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), *vpaObjectNamespace)
@@ -93,7 +90,7 @@ func main() {
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
-	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
+	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
