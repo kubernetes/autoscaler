@@ -303,8 +303,8 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
-	// fetchExplicitASGs is called at manager creation time.
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil)
+	instanceTypes, _ := GetStaticEC2InstanceTypes()
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
@@ -332,7 +332,8 @@ func TestBuildInstanceType(t *testing.T) {
 	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
-	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+	instanceTypes, _ := GetStaticEC2InstanceTypes()
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s}, instanceTypes)
 	assert.NoError(t, err)
 
 	asg := asg{
@@ -347,7 +348,7 @@ func TestBuildInstanceType(t *testing.T) {
 
 func TestBuildInstanceTypeMixedInstancePolicyOverride(t *testing.T) {
 	ltName, ltVersion, instanceType := "launcher", "1", "t2.large"
-	instanceTypes := []string{}
+	instanceTypeOverrides := []string{}
 
 	s := &EC2Mock{}
 	s.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
@@ -365,14 +366,15 @@ func TestBuildInstanceTypeMixedInstancePolicyOverride(t *testing.T) {
 
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
-	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+	instanceTypes, _ := GetStaticEC2InstanceTypes()
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s}, instanceTypes)
 	assert.NoError(t, err)
 
 	lt := &launchTemplate{name: ltName, version: ltVersion}
 	asg := asg{
 		MixedInstancesPolicy: &mixedInstancesPolicy{
 			launchTemplate:         lt,
-			instanceTypesOverrides: instanceTypes,
+			instanceTypesOverrides: instanceTypeOverrides,
 		},
 	}
 
@@ -384,25 +386,26 @@ func TestBuildInstanceTypeMixedInstancePolicyOverride(t *testing.T) {
 
 func TestBuildInstanceTypeMixedInstancePolicyNoOverride(t *testing.T) {
 	ltName, ltVersion := "launcher", "1"
-	instanceTypes := []string{"m4.xlarge", "m5.xlarge"}
+	instanceTypeOverrides := []string{"m4.xlarge", "m5.xlarge"}
 
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
-	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{})
+	instanceTypes, _ := GetStaticEC2InstanceTypes()
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{}, instanceTypes)
 	assert.NoError(t, err)
 
 	lt := &launchTemplate{name: ltName, version: ltVersion}
 	asg := asg{
 		MixedInstancesPolicy: &mixedInstancesPolicy{
 			launchTemplate:         lt,
-			instanceTypesOverrides: instanceTypes,
+			instanceTypesOverrides: instanceTypeOverrides,
 		},
 	}
 
 	builtInstanceType, err := m.buildInstanceType(&asg)
 
 	assert.NoError(t, err)
-	assert.Equal(t, instanceTypes[0], builtInstanceType)
+	assert.Equal(t, instanceTypeOverrides[0], builtInstanceType)
 }
 
 func TestGetASGTemplate(t *testing.T) {
@@ -456,7 +459,8 @@ func TestGetASGTemplate(t *testing.T) {
 			// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
 			defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 			os.Setenv("AWS_REGION", "fanghorn")
-			m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+			instanceTypes, _ := GetStaticEC2InstanceTypes()
+			m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s}, instanceTypes)
 			assert.NoError(t, err)
 
 			asg := &asg{
@@ -538,7 +542,8 @@ func TestFetchAutoAsgs(t *testing.T) {
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil)
+	instanceTypes, _ := GetStaticEC2InstanceTypes()
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
