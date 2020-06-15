@@ -28,13 +28,23 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest/to"
-	"k8s.io/klog"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
+
+var (
+	vmInstancesRefreshPeriod = 5 * time.Minute
+)
+
+var virtualMachinesStatusCache struct {
+	lastRefresh     map[string]time.Time
+	mutex           sync.Mutex
+	virtualMachines map[string][]compute.VirtualMachine
+}
 
 // AgentPool implements NodeGroup interface for agent pools deployed by aks-engine.
 type AgentPool struct {
@@ -117,9 +127,46 @@ func (as *AgentPool) MaxSize() int {
 	return as.maxSize
 }
 
+func (as *AgentPool) getVirtualMachinesFromCache() ([]compute.VirtualMachine, error) {
+	virtualMachinesStatusCache.mutex.Lock()
+	defer virtualMachinesStatusCache.mutex.Unlock()
+	klog.V(4).Infof("getVirtualMachinesFromCache: starts for %+v", as)
+
+	if virtualMachinesStatusCache.virtualMachines == nil {
+		klog.V(4).Infof("getVirtualMachinesFromCache: initialize vm cache")
+		virtualMachinesStatusCache.virtualMachines = make(map[string][]compute.VirtualMachine)
+	}
+	if virtualMachinesStatusCache.lastRefresh == nil {
+		klog.V(4).Infof("getVirtualMachinesFromCache: initialize last refresh time cache")
+		virtualMachinesStatusCache.lastRefresh = make(map[string]time.Time)
+	}
+
+	if virtualMachinesStatusCache.lastRefresh[as.Id()].Add(vmInstancesRefreshPeriod).After(time.Now()) {
+		klog.V(4).Infof("getVirtualMachinesFromCache: get vms from cache")
+		return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
+	}
+	klog.V(4).Infof("getVirtualMachinesFromCache: get vms from API")
+	vms, err := as.GetVirtualMachines()
+	klog.V(4).Infof("getVirtualMachinesFromCache: got vms from API %+v", vms)
+
+	if err != nil {
+		if isAzureRequestsThrottled(err) {
+			klog.Warningf("getAllVirtualMachines: throttling with message %v, would return the cached vms", err)
+			return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
+		}
+
+		return []compute.VirtualMachine{}, err
+	}
+
+	virtualMachinesStatusCache.virtualMachines[as.Id()] = vms
+	virtualMachinesStatusCache.lastRefresh[as.Id()] = time.Now()
+
+	return vms, err
+}
+
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
 func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
-	instances, err := as.GetVirtualMachines()
+	instances, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -266,7 +313,7 @@ func (as *AgentPool) DecreaseTargetSize(delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
-	nodes, err := as.GetVirtualMachines()
+	nodes, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return err
 	}
@@ -391,7 +438,7 @@ func (as *AgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
-	instances, err := as.GetVirtualMachines()
+	instances, err := as.getVirtualMachinesFromCache()
 	if err != nil {
 		return nil, err
 	}

@@ -30,7 +30,7 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "cloud.google.com/gke-accelerator"
+	GPULabel = "accelerator"
 )
 
 var (
@@ -91,8 +91,9 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	klog.V(6).Infof("NodeGroupForNode: starts")
 	if node.Spec.ProviderID == "" {
-		klog.V(6).Infof("Skipping to search for node group for the node '%s'. Because doesn't have spec.ProviderID.\n", node.ObjectMeta.Name)
+		klog.V(6).Infof("Skipping the search for node group for the node '%s' because it has no spec.ProviderID", node.ObjectMeta.Name)
 		return nil, nil
 	}
 	klog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
@@ -100,6 +101,7 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 		Name: node.Spec.ProviderID,
 	}
 
+	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
 	return azure.azureManager.GetAsgForInstance(ref)
 }
 
@@ -152,7 +154,7 @@ func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 	if opts.CloudConfig != "" {
 		klog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
 		var err error
-		config, err := os.Open(opts.CloudConfig)
+		config, err = os.Open(opts.CloudConfig)
 		if err != nil {
 			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
 		}

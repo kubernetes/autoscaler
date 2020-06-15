@@ -25,6 +25,26 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscrip
 
 This will create a new [service principal][] with "Contributor" role scoped to your subscription. Save the JSON output, because it will be needed to configure the cluster autoscaler deployment in the next step.
 
+## Scaling a VMSS node group to and from 0
+
+If you are using `nodeSelector`, you need to tag the VMSS  with a node-template key `"k8s.io_cluster-autoscaler_node-template_label_"` for using labels and `"k8s.io_cluster-autoscaler_node-template_taint_"` if you are using taints.
+
+> Note that these tags use the pipe `_` character compared to a forward slash due to [Azure tag name restrictions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags).
+
+### Examples
+
+#### Labels
+
+To add the label of `foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_foo: bar`.
+
+You can also use forward slashes in the labels by setting them as an underscore in the tag name. For example to add the label of `k8s.io/foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_k8s.io_foo: bar`
+
+#### Taints
+
+To add the taint of `foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_foo: bar:NoSchedule`.
+
+You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
@@ -53,6 +73,8 @@ Make a copy of [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.y
 
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 
+> **_NOTE_** (optional) to specify the TTL of VMSS ASG cache to prevent throttling issue, please provide the env `AZURE_ASG_CACHE_TTL` in seconds which is set to one hour by default.
+
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
 Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and VMSS name. For example, if node pool "k8s-nodepool-1-vmss" should scale from 1 to 10 nodes:
@@ -68,8 +90,8 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
 
-Note that it doesn't mean the number of nodes in nodepool is restricted in the 
-range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool, 
+Note that it doesn't mean the number of nodes in nodepool is restricted in the
+range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool,
 it will never break the limit of 1 (10). If the current node pool size is lower than the specified minimum or greater than the specified maximum when you enable autoscaling, the autoscaler waits to take effect until a new node is needed in the node pool or until a node can be safely deleted from the node pool.
 
 To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag (default false). Add it to the `command` section to enable it:
@@ -110,7 +132,8 @@ Make a copy of [cluster-autoscaler-standard-master.yaml](examples/cluster-autosc
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
-Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name. For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
+Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name (tips: node pool name is NOT availability set name, e.g., the corresponding node pool name of the availability set 
+`agentpool1-availabilitySet-xxxxxxxx` would be `agentpool1`). For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
 
 ```yaml
         - --nodes=1:10:k8s-nodepool-1

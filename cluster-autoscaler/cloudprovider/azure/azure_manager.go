@@ -17,15 +17,16 @@ limitations under the License.
 package azure
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/klog"
@@ -79,6 +80,12 @@ type Config struct {
 	ClusterName string `json:"clusterName" yaml:"clusterName"`
 	//Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
+
+	// ASG cache TTL in seconds
+	AsgCacheTTL int64 `json:"asgCacheTTL" yaml:"asgCacheTTL"`
+
+	// VMSS metadata cache TTL in seconds, only applies for vmss type
+	VmssCacheTTL int64 `json:"vmssCacheTTL" yaml:"vmssCacheTTL"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -100,12 +107,16 @@ func (c *Config) TrimSpace() {
 // CreateAzureManager creates Azure Manager object to work with Azure.
 func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
 	var err error
-	var cfg Config
+	cfg := &Config{}
 
 	if configReader != nil {
-		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			klog.Errorf("Couldn't read config: %v", err)
-			return nil, err
+		body, err := ioutil.ReadAll(configReader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config: %v", err)
+		}
+		err = json.Unmarshal(body, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal config body: %v", err)
 		}
 	} else {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
@@ -128,6 +139,20 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 				return nil, err
 			}
 		}
+
+		if asgCacheTTL := os.Getenv("AZURE_ASG_CACHE_TTL"); asgCacheTTL != "" {
+			cfg.AsgCacheTTL, err = strconv.ParseInt(asgCacheTTL, 10, 0)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ASG_CACHE_TTL %q: %v", asgCacheTTL, err)
+			}
+		}
+
+		if vmssCacheTTL := os.Getenv("AZURE_VMSS_CACHE_TTL"); vmssCacheTTL != "" {
+			cfg.VmssCacheTTL, err = strconv.ParseInt(vmssCacheTTL, 10, 0)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_VMSS_CACHE_TTL %q: %v", vmssCacheTTL, err)
+			}
+		}
 	}
 	cfg.TrimSpace()
 
@@ -147,6 +172,10 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.DeploymentParameters = parameters
 	}
 
+	if cfg.AsgCacheTTL == 0 {
+		cfg.AsgCacheTTL = int64(defaultAsgCacheTTL)
+	}
+
 	// Defaulting env to Azure Public Cloud.
 	env := azure.PublicCloud
 	if cfg.Cloud != "" {
@@ -156,26 +185,26 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		}
 	}
 
-	if err := validateConfig(&cfg); err != nil {
+	if err := validateConfig(cfg); err != nil {
 		return nil, err
 	}
 
 	klog.Infof("Starting azure manager with subscription ID %q", cfg.SubscriptionID)
 
-	azClient, err := newAzClient(&cfg, &env)
+	azClient, err := newAzClient(cfg, &env)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create azure manager.
 	manager := &AzureManager{
-		config:               &cfg,
+		config:               cfg,
 		env:                  env,
 		azClient:             azClient,
 		explicitlyConfigured: make(map[string]bool),
 	}
 
-	cache, err := newAsgCache()
+	cache, err := newAsgCache(cfg.AsgCacheTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -253,8 +282,13 @@ func (m *AzureManager) Refresh() error {
 }
 
 func (m *AzureManager) forceRefresh() error {
+	// TODO: Refactor some of this logic out of forceRefresh and
+	// consider merging the list call with the Nodes() call
 	if err := m.fetchAutoAsgs(); err != nil {
 		klog.Errorf("Failed to fetch ASGs: %v", err)
+	}
+	if err := m.regenerateCache(); err != nil {
+		klog.Errorf("Failed to regenerate ASG cache: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()

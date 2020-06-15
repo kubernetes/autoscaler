@@ -18,14 +18,10 @@ package core
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
 	"math/rand"
 	"reflect"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -39,15 +35,21 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-
-	"k8s.io/klog"
 )
 
 const (
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
+
+	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
 )
 
 var (
@@ -61,6 +63,7 @@ var (
 		schedulerapi.TaintNodePIDPressure:        true,
 		schedulerapi.TaintExternalCloudProvider:  true,
 		schedulerapi.TaintNodeShutdown:           true,
+		gkeNodeTerminationHandlerTaint:           true,
 	}
 )
 
