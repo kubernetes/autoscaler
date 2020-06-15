@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -39,7 +41,7 @@ var verticalpodautoscalercheckpointsResource = schema.GroupVersionResource{Group
 var verticalpodautoscalercheckpointsKind = schema.GroupVersionKind{Group: "autoscaling.k8s.io", Version: "v1beta1", Kind: "VerticalPodAutoscalerCheckpoint"}
 
 // Get takes name of the verticalPodAutoscalerCheckpoint, and returns the corresponding verticalPodAutoscalerCheckpoint object, and an error if there is any.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Get(name string, options v1.GetOptions) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(verticalpodautoscalercheckpointsResource, c.ns, name), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
@@ -50,7 +52,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Get(name string, options v1.GetOp
 }
 
 // List takes label and field selectors, and returns the list of VerticalPodAutoscalerCheckpoints that match those selectors.
-func (c *FakeVerticalPodAutoscalerCheckpoints) List(opts v1.ListOptions) (result *v1beta1.VerticalPodAutoscalerCheckpointList, err error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.VerticalPodAutoscalerCheckpointList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(verticalpodautoscalercheckpointsResource, verticalpodautoscalercheckpointsKind, c.ns, opts), &v1beta1.VerticalPodAutoscalerCheckpointList{})
 
@@ -72,14 +74,14 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) List(opts v1.ListOptions) (result
 }
 
 // Watch returns a watch.Interface that watches the requested verticalPodAutoscalerCheckpoints.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(verticalpodautoscalercheckpointsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a verticalPodAutoscalerCheckpoint and creates it.  Returns the server's representation of the verticalPodAutoscalerCheckpoint, and an error, if there is any.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Create(verticalPodAutoscalerCheckpoint *v1beta1.VerticalPodAutoscalerCheckpoint) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Create(ctx context.Context, verticalPodAutoscalerCheckpoint *v1beta1.VerticalPodAutoscalerCheckpoint, opts v1.CreateOptions) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
@@ -90,7 +92,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Create(verticalPodAutoscalerCheck
 }
 
 // Update takes the representation of a verticalPodAutoscalerCheckpoint and updates it. Returns the server's representation of the verticalPodAutoscalerCheckpoint, and an error, if there is any.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Update(verticalPodAutoscalerCheckpoint *v1beta1.VerticalPodAutoscalerCheckpoint) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Update(ctx context.Context, verticalPodAutoscalerCheckpoint *v1beta1.VerticalPodAutoscalerCheckpoint, opts v1.UpdateOptions) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(verticalpodautoscalercheckpointsResource, c.ns, verticalPodAutoscalerCheckpoint), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
@@ -101,7 +103,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Update(verticalPodAutoscalerCheck
 }
 
 // Delete takes name of the verticalPodAutoscalerCheckpoint and deletes it. Returns an error if one occurs.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(verticalpodautoscalercheckpointsResource, c.ns, name), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
@@ -109,15 +111,15 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) Delete(name string, options *v1.D
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeVerticalPodAutoscalerCheckpoints) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(verticalpodautoscalercheckpointsResource, c.ns, listOptions)
+func (c *FakeVerticalPodAutoscalerCheckpoints) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(verticalpodautoscalercheckpointsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta1.VerticalPodAutoscalerCheckpointList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched verticalPodAutoscalerCheckpoint.
-func (c *FakeVerticalPodAutoscalerCheckpoints) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
+func (c *FakeVerticalPodAutoscalerCheckpoints) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.VerticalPodAutoscalerCheckpoint, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalercheckpointsResource, c.ns, name, pt, data, subresources...), &v1beta1.VerticalPodAutoscalerCheckpoint{})
 
