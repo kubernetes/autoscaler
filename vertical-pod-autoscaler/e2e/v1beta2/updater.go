@@ -17,6 +17,7 @@ limitations under the License.
 package autoscaling
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -52,7 +53,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 			ginkgo.By("Deleting the Admission Controller status")
 			close(stopCh)
 			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
-				Delete(status.AdmissionControllerStatusName, &metav1.DeleteOptions{})
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		}()
 		statusUpdater.Run(stopCh)
