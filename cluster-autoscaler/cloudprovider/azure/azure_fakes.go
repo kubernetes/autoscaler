@@ -82,7 +82,7 @@ func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGrou
 
 	deploy.Properties.Parameters = parameters.Properties.Parameters
 	deploy.Properties.Template = parameters.Properties.Template
-	return nil, nil
+	return &http.Response{StatusCode: 200}, nil
 }
 
 // List gets all the deployments for a resource group.
