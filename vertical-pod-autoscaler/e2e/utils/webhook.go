@@ -19,6 +19,7 @@ limitations under the License.
 package utils
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -55,32 +56,32 @@ func LabelNamespace(f *framework.Framework, namespace string) {
 	client := f.ClientSet
 
 	// Add a unique label to the namespace
-	ns, err := client.CoreV1().Namespaces().Get(namespace, metav1.GetOptions{})
+	ns, err := client.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
 	framework.ExpectNoError(err, "error getting namespace %s", namespace)
 	if ns.Labels == nil {
 		ns.Labels = map[string]string{}
 	}
 	ns.Labels[f.UniqueName] = "true"
-	_, err = client.CoreV1().Namespaces().Update(ns)
+	_, err = client.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
 	framework.ExpectNoError(err, "error labeling namespace %s", namespace)
 }
 
 // CreateWebhookConfigurationReadyNamespace creates a separate namespace for webhook configuration ready markers to
 // prevent cross-talk with webhook configurations being tested.
 func CreateWebhookConfigurationReadyNamespace(f *framework.Framework) {
-	ns, err := f.ClientSet.CoreV1().Namespaces().Create(&v1.Namespace{
+	ns, err := f.ClientSet.CoreV1().Namespaces().Create(context.TODO(), &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   f.Namespace.Name + "-markers",
 			Labels: map[string]string{f.UniqueName + "-markers": "true"},
 		},
-	})
+	}, metav1.CreateOptions{})
 	framework.ExpectNoError(err, "creating namespace for webhook configuration ready markers")
 	f.AddNamespacesToDelete(ns)
 }
 
 // RegisterMutatingWebhookForPod creates mutation webhook configuration
 // and applies it to the cluster.
-func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, context *certContext, servicePort int32) func() {
+func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, certContext *certContext, servicePort int32) func() {
 	client := f.ClientSet
 	ginkgo.By("Registering the mutating pod webhook via the AdmissionRegistration API")
 
@@ -109,7 +110,7 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, co
 						Path:      strPtr("/mutating-pods-sidecar"),
 						Port:      pointer.Int32Ptr(servicePort),
 					},
-					CABundle: context.signingCert,
+					CABundle: certContext.signingCert,
 				},
 				SideEffects:             &sideEffectsNone,
 				AdmissionReviewVersions: []string{"v1", "v1beta1"},
@@ -119,7 +120,7 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, co
 				},
 			},
 			// Register a webhook that can be probed by marker requests to detect when the configuration is ready.
-			newMutatingIsReadyWebhookFixture(f, context, servicePort),
+			newMutatingIsReadyWebhookFixture(f, certContext, servicePort),
 		},
 	})
 	framework.ExpectNoError(err, "registering mutating webhook config %s with namespace %s", configName, namespace)
@@ -128,7 +129,7 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, co
 	framework.ExpectNoError(err, "waiting for webhook configuration to be ready")
 
 	return func() {
-		client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(configName, nil)
+		client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(context.TODO(), configName, metav1.DeleteOptions{})
 	}
 }
 
@@ -144,12 +145,12 @@ func createMutatingWebhookConfiguration(f *framework.Framework, config *admissio
 		}
 		framework.Failf(`webhook %s in config %s has no namespace or object selector with %s="true", and can interfere with other tests`, webhook.Name, config.Name, f.UniqueName)
 	}
-	return f.ClientSet.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(config)
+	return f.ClientSet.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(context.TODO(), config, metav1.CreateOptions{})
 }
 
 // newMutatingIsReadyWebhookFixture creates a mutating webhook that can be added to a webhook configuration and then probed
 // with "marker" requests via waitWebhookConfigurationReady to wait for a webhook configuration to be ready.
-func newMutatingIsReadyWebhookFixture(f *framework.Framework, context *certContext, servicePort int32) admissionregistrationv1beta1.MutatingWebhook {
+func newMutatingIsReadyWebhookFixture(f *framework.Framework, certContext *certContext, servicePort int32) admissionregistrationv1beta1.MutatingWebhook {
 	sideEffectsNone := admissionregistrationv1beta1.SideEffectClassNone
 	failOpen := admissionregistrationv1beta1.Ignore
 	return admissionregistrationv1beta1.MutatingWebhook{
@@ -169,7 +170,7 @@ func newMutatingIsReadyWebhookFixture(f *framework.Framework, context *certConte
 				Path:      strPtr("/always-deny"),
 				Port:      pointer.Int32Ptr(servicePort),
 			},
-			CABundle: context.signingCert,
+			CABundle: certContext.signingCert,
 		},
 		// network failures while the service network routing is being set up should be ignored by the marker
 		FailurePolicy:           &failOpen,
@@ -200,7 +201,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 				},
 			},
 		}
-		_, err := cmClient.Create(marker)
+		_, err := cmClient.Create(context.TODO(), marker, metav1.CreateOptions{})
 		if err != nil {
 			// The always-deny webhook does not provide a reason, so check for the error string we expect
 			if strings.Contains(err.Error(), "denied") {
@@ -209,7 +210,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 			return false, err
 		}
 		// best effort cleanup of markers that are no longer needed
-		_ = cmClient.Delete(marker.GetName(), nil)
+		_ = cmClient.Delete(context.TODO(), marker.GetName(), metav1.DeleteOptions{})
 		framework.Logf("Waiting for webhook configuration to be ready...")
 		return false, nil
 	})
@@ -220,7 +221,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 func CreateAuthReaderRoleBinding(f *framework.Framework, namespace string) {
 	ginkgo.By("Create role binding to let webhook read extension-apiserver-authentication")
 	client := f.ClientSet
-	_, err := client.RbacV1().RoleBindings("kube-system").Create(&rbacv1.RoleBinding{
+	_, err := client.RbacV1().RoleBindings("kube-system").Create(context.TODO(), &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: roleBindingName,
 			Annotations: map[string]string{
@@ -240,7 +241,7 @@ func CreateAuthReaderRoleBinding(f *framework.Framework, namespace string) {
 				Namespace: namespace,
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil && apierrors.IsAlreadyExists(err) {
 		framework.Logf("role binding %s already exists", roleBindingName)
 	} else {
@@ -249,7 +250,7 @@ func CreateAuthReaderRoleBinding(f *framework.Framework, namespace string) {
 }
 
 // DeployWebhookAndService creates a webhook with a corresponding service.
-func DeployWebhookAndService(f *framework.Framework, image string, context *certContext, servicePort int32,
+func DeployWebhookAndService(f *framework.Framework, image string, certContext *certContext, servicePort int32,
 	containerPort int32, params ...string) {
 	ginkgo.By("Deploying the webhook pod")
 	client := f.ClientSet
@@ -261,12 +262,12 @@ func DeployWebhookAndService(f *framework.Framework, image string, context *cert
 		},
 		Type: v1.SecretTypeOpaque,
 		Data: map[string][]byte{
-			"tls.crt": context.cert,
-			"tls.key": context.key,
+			"tls.crt": certContext.cert,
+			"tls.key": certContext.key,
 		},
 	}
 	namespace := f.Namespace.Name
-	_, err := client.CoreV1().Secrets(namespace).Create(secret)
+	_, err := client.CoreV1().Secrets(namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 	framework.ExpectNoError(err, "creating secret %q in namespace %q", secretName, namespace)
 
 	// Create the deployment of the webhook
@@ -342,7 +343,7 @@ func DeployWebhookAndService(f *framework.Framework, image string, context *cert
 			},
 		},
 	}
-	deployment, err := client.AppsV1().Deployments(namespace).Create(d)
+	deployment, err := client.AppsV1().Deployments(namespace).Create(context.TODO(), d, metav1.CreateOptions{})
 	framework.ExpectNoError(err, "creating deployment %s in namespace %s", deploymentName, namespace)
 	ginkgo.By("Wait for the deployment to be ready")
 	err = e2edeploy.WaitForDeploymentRevisionAndImage(client, namespace, deploymentName, "1", image)
@@ -370,7 +371,7 @@ func DeployWebhookAndService(f *framework.Framework, image string, context *cert
 			},
 		},
 	}
-	_, err = client.CoreV1().Services(namespace).Create(service)
+	_, err = client.CoreV1().Services(namespace).Create(context.TODO(), service, metav1.CreateOptions{})
 	framework.ExpectNoError(err, "creating service %s in namespace %s", WebhookServiceName, namespace)
 
 	ginkgo.By("Verifying the service has paired with the endpoint")
@@ -380,8 +381,8 @@ func DeployWebhookAndService(f *framework.Framework, image string, context *cert
 
 // CleanWebhookTest cleans after a webhook test.
 func CleanWebhookTest(client clientset.Interface, namespaceName string) {
-	_ = client.CoreV1().Services(namespaceName).Delete(WebhookServiceName, nil)
-	_ = client.AppsV1().Deployments(namespaceName).Delete(deploymentName, nil)
-	_ = client.CoreV1().Secrets(namespaceName).Delete(WebhookServiceName, nil)
-	_ = client.RbacV1().RoleBindings("kube-system").Delete(roleBindingName, nil)
+	_ = client.CoreV1().Services(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
+	_ = client.AppsV1().Deployments(namespaceName).Delete(context.TODO(), deploymentName, metav1.DeleteOptions{})
+	_ = client.CoreV1().Secrets(namespaceName).Delete(context.TODO(), WebhookServiceName, metav1.DeleteOptions{})
+	_ = client.RbacV1().RoleBindings("kube-system").Delete(context.TODO(), roleBindingName, metav1.DeleteOptions{})
 }

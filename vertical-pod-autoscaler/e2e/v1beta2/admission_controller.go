@@ -17,6 +17,7 @@ limitations under the License.
 package autoscaling
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -530,7 +531,7 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 	zero := int32(0)
 	deployment.Spec.Replicas = &zero
 	c, ns := f.ClientSet, f.Namespace.Name
-	deployment, err := c.AppsV1().Deployments(ns).Create(deployment)
+	deployment, err := c.AppsV1().Deployments(ns).Create(context.TODO(), deployment, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when creating deployment with size 0")
 
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
@@ -554,12 +555,12 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 			Replicas: desiredPodCount,
 		},
 	}
-	afterScale, err := c.AppsV1().Deployments(ns).UpdateScale(deployment.Name, &scale)
+	afterScale, err := c.AppsV1().Deployments(ns).UpdateScale(context.TODO(), deployment.Name, &scale, metav1.UpdateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	gomega.Expect(afterScale.Spec.Replicas).To(gomega.Equal(desiredPodCount), fmt.Sprintf("expected %d replicas after scaling", desiredPodCount))
 
 	// After scaling deployment we need to retrieve current version with updated replicas count.
-	deployment, err = c.AppsV1().Deployments(ns).Get(deployment.Name, metav1.GetOptions{})
+	deployment, err = c.AppsV1().Deployments(ns).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when getting scaled deployment")
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for deployment to resize")

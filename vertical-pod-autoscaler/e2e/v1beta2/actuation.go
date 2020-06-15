@@ -17,6 +17,7 @@ limitations under the License.
 package autoscaling
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -36,6 +37,7 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	framework_job "k8s.io/kubernetes/test/e2e/framework/job"
+	framework_rc "k8s.io/kubernetes/test/e2e/framework/rc"
 	framework_rs "k8s.io/kubernetes/test/e2e/framework/replicaset"
 	framework_ss "k8s.io/kubernetes/test/e2e/framework/statefulset"
 	testutils "k8s.io/kubernetes/test/utils"
@@ -188,7 +190,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		permissiveMaxUnavailable := 7
 		// Creating new PDB and removing old one, since PDBs are immutable at the moment
 		setupPDB(f, "hamster-pdb-2", permissiveMaxUnavailable)
-		err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(pdb.Name, &metav1.DeleteOptions{})
+		err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(context.TODO(), pdb.Name, metav1.DeleteOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, sleep for %s", VpaEvictionTimeout.String()))
@@ -365,7 +367,7 @@ func getCPURequest(podSpec apiv1.PodSpec) resource.Quantity {
 }
 
 func killPod(f *framework.Framework, podList *apiv1.PodList) {
-	f.ClientSet.CoreV1().Pods(f.Namespace.Name).Delete(podList.Items[0].Name, &metav1.DeleteOptions{})
+	f.ClientSet.CoreV1().Pods(f.Namespace.Name).Delete(context.TODO(), podList.Items[0].Name, metav1.DeleteOptions{})
 	err := WaitForPodsRestarted(f, podList)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
@@ -468,8 +470,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 
 func setupHamsterReplicationController(f *framework.Framework, cpu, memory string, replicas int32) {
 	hamsterContainer := SetupHamsterContainer(cpu, memory)
-	rc := framework.RcByNameContainer("hamster-rc", replicas, "k8s.gcr.io/ubuntu-slim:0.1",
-		hamsterLabels, hamsterContainer, nil)
+	rc := framework_rc.ByNameContainer("hamster-rc", replicas, hamsterLabels, hamsterContainer, nil)
 
 	rc.Namespace = f.Namespace.Name
 	err := testutils.CreateRCWithRetries(f.ClientSet, f.Namespace.Name, rc)
@@ -509,8 +510,7 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 }
 
 func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) {
-	rs := framework_rs.NewReplicaSet("hamster-rs", f.Namespace.Name, replicas,
-		hamsterLabels, "", "")
+	rs := newReplicaSet("hamster-rs", f.Namespace.Name, replicas, hamsterLabels, "", "")
 	rs.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
 	err := createReplicaSetWithRetries(f.ClientSet, f.Namespace.Name, rs)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -541,7 +541,7 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 			},
 		},
 	}
-	_, err := f.ClientSet.PolicyV1beta1().PodDisruptionBudgets(f.Namespace.Name).Create(pdb)
+	_, err := f.ClientSet.PolicyV1beta1().PodDisruptionBudgets(f.Namespace.Name).Create(context.TODO(), pdb, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return pdb
 }
@@ -557,7 +557,7 @@ func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *a
 		return fmt.Errorf("object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
-		_, err := c.AppsV1().ReplicaSets(namespace).Create(obj)
+		_, err := c.AppsV1().ReplicaSets(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
 		}
@@ -574,7 +574,7 @@ func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, ob
 		return fmt.Errorf("object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
-		_, err := c.AppsV1().StatefulSets(namespace).Create(obj)
+		_, err := c.AppsV1().StatefulSets(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
 		}
@@ -584,4 +584,38 @@ func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, ob
 		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
 	return testutils.RetryWithExponentialBackOff(createFunc)
+}
+
+// newReplicaSet returns a new ReplicaSet.
+func newReplicaSet(name, namespace string, replicas int32, podLabels map[string]string, imageName, image string) *appsv1.ReplicaSet {
+	return &appsv1.ReplicaSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ReplicaSet",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+		Spec: appsv1.ReplicaSetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: podLabels,
+			},
+			Replicas: &replicas,
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: podLabels,
+				},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{
+							Name:            imageName,
+							Image:           image,
+							SecurityContext: &apiv1.SecurityContext{},
+						},
+					},
+				},
+			},
+		},
+	}
 }
