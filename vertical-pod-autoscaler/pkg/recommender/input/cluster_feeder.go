@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -137,7 +138,7 @@ func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer o
 		}
 
 		for {
-			watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
+			watchInterface, err := kubeClient.CoreV1().Events("").Watch(context.TODO(), options)
 			if err != nil {
 				klog.Errorf("Cannot initialize watching events. Reason %v", err)
 				continue
@@ -255,7 +256,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 
 	for namespace := range namespaces {
 		klog.V(3).Infof("Fetching checkpoints from namespace %s", namespace)
-		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
+		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 
 		if err != nil {
 			klog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
@@ -276,7 +277,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
 	feeder.LoadVPAs()
 
-	namspaceList, err := feeder.coreClient.Namespaces().List(metav1.ListOptions{})
+	namspaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		klog.Errorf("Cannot list namespaces. Reason: %+v", err)
 		return
@@ -284,7 +285,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 
 	for _, namespaceItem := range namspaceList.Items {
 		namespace := namespaceItem.Name
-		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
+		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			klog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
@@ -292,7 +293,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 			_, exists := feeder.clusterState.Vpas[vpaID]
 			if !exists {
-				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(checkpoint.Name, &metav1.DeleteOptions{})
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
 					klog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
 				} else {

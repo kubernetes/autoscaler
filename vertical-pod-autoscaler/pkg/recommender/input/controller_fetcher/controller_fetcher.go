@@ -17,6 +17,7 @@ limitations under the License.
 package controllerfetcher
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -266,7 +267,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersi
 
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(key.Namespace).Get(groupResource, key.Name)
+		scale, err := f.scaleNamespacer.Scales(key.Namespace).Get(context.TODO(), groupResource, key.Name, metav1.GetOptions{})
 		if err == nil && scale != nil {
 			return true
 		}
@@ -283,7 +284,7 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(groupResource, name)
+		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
 		if err == nil {
 			return getOwnerController(scale.OwnerReferences, namespace), nil
 		}
