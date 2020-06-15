@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/vertical-pod-autoscaler
 
-go 1.12
+go 1.14
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
