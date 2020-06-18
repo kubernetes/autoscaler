@@ -227,6 +227,29 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	return scaleSet.getCurSize()
 }
 
+func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+	var err error
+
+	defer func() {
+		if err != nil {
+			klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds.InstanceIds)
+			scaleSet.invalidateStatusCacheWithLock()
+		}
+	}()
+
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
+	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
+	if isSuccess {
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v) success", requiredIds.InstanceIds)
+		scaleSet.invalidateInstanceCache()
+		return
+	}
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances for instances %v failed with error: %v", requiredIds.InstanceIds, err)
+}
+
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
 func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
 	var err error
@@ -428,6 +451,13 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
+
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	if rerr != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, err)
+		return rerr.Error()
+	}
 
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
@@ -435,12 +465,8 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	scaleSet.curSize--
 	scaleSet.sizeMutex.Unlock()
 
-	rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
-	if rerr != nil {
-		klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds)
-		scaleSet.invalidateStatusCacheWithLock()
-	}
-	return rerr.Error()
+	go scaleSet.waitForDeleteInstances(future, requiredIds)
+	return nil
 }
 
 // DeleteNodes deletes the nodes from the group.
