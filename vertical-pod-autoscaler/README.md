@@ -2,6 +2,9 @@
 
 ## Contents
 - [Contents](#contents)
+- [Intro](#intro)
+- [Installation](#installation)
+  - [Compatibility](#compatibility)
   - [Notice on removal of v1beta1 version (>=0.5.0)](#notice-on-removal-of-v1beta1-version-050)
   - [Prerequisites](#prerequisites)
   - [Install command](#install-command)
@@ -15,7 +18,8 @@
   - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
   - [Capping to Limit Range](#capping-to-limit-range)
   - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
-- [Limitations of beta version](#limitations-of-beta-version)
+- [Known limitations](#known-limitations)
+- [Related links](#related-links)
 
 # Intro
 
@@ -33,7 +37,7 @@ time.
 
 Autoscaling is configured with a
 [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
-called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go).
+called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go).
 It allows to specify which pods should be vertically autoscaled as well as if/how the
 resource recommendations are applied.
 
@@ -42,11 +46,15 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.5.0
+The current default version is Vertical Pod Autoscaler 0.8.0
 
-**NOTE:** since version 0.4 VPA requires at least Kubernetes 1.11 to work (needs certain
-Custom Resource Definition capabilities). With older Kubernetes versions we
-suggest using the [latest 0.3 version](https://github.com/kubernetes/autoscaler/blob/vpa-release-0.3/vertical-pod-autoscaler/README.md).
+### Compatibility
+
+| VPA version | Kubernetes version |
+| --- | --- |
+| 0.8+ | 1.13+ |
+| 0.4 to 0.7 | 1.11+ |
+| 0.3.X and lower | 1.7+ |
 
 ### Notice on removal of v1beta1 version (>=0.5.0)
 
@@ -60,7 +68,6 @@ This doc is for installing latest VPA. For instructions on migration from older 
 
 ### Prerequisites
 
-* VPA version 0.4+ requires Kubernetes 1.11. For older versions see [latest 0.3 version](https://github.com/kubernetes/autoscaler/blob/vpa-release-0.3/vertical-pod-autoscaler/README.md)
 * `kubectl` should be connected to the cluster you want to install VPA in.
 * The metrics server must be deployed in your cluster. Read more about [Metrics Server](https://github.com/kubernetes-incubator/metrics-server).
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
@@ -151,7 +158,7 @@ You may need to add more nodes or adjust examples/hamster.yaml to use less CPU.*
 ### Example VPA configuration
 
 ```
-apiVersion: autoscaling.k8s.io/v1beta2
+apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
   name: my-app-vpa
@@ -221,7 +228,7 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 # Limits control
 
 When setting limits VPA will conform to
-[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L82).
+[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L82).
 It will maintain limit to request ratio specified for all containers.
 
 VPA will try to cap recommendations between min and max of
@@ -256,8 +263,6 @@ VPA will set RAM request to 2 GB (following the resource policy) and RAM limit t
 
 # Known limitations
 
-## Limitations of beta version
-
 * Updating running pods is an experimental feature of VPA. Whenever VPA updates
   the pod resources the pod is recreated, which causes all running containers to
   be restarted. The pod may be recreated on a different node.
@@ -281,4 +286,4 @@ VPA will set RAM request to 2 GB (following the resource policy) and RAM limit t
 * [Design
   proposal](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md)
 * [API
-  definition](pkg/apis/autoscaling.k8s.io/v1beta2/types.go)
+  definition](pkg/apis/autoscaling.k8s.io/v1/types.go)
