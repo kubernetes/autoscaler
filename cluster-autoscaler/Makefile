@@ -1,6 +1,7 @@
 all: build
 
-TAG?=dev
+DATE:=${shell date +'%y%m%d-%H%M%S'}
+TAG?=dev-${DATE}
 FLAGS=
 LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0 GO111MODULE=off
@@ -33,6 +34,9 @@ test-unit: clean deps build
 
 dev-release: build-binary execute-release
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
+
+dev-deploy: dev-release
+	kubectl patch deployment cluster-autoscaler -n kube-system --type=json -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value":"'${REGISTRY}'/cluster-autoscaler:'${TAG}'"}]'
 
 make-image:
 ifdef BASEIMAGE
