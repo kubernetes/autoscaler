@@ -232,8 +232,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 
 	defer func() {
 		if err != nil {
-			klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds.InstanceIds)
-			scaleSet.invalidateStatusCacheWithLock()
+			klog.Errorf("Failed to delete instances %v", requiredIds.InstanceIds)
 		}
 	}()
 
@@ -244,7 +243,6 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
 		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v) success", requiredIds.InstanceIds)
-		scaleSet.invalidateInstanceCache()
 		return
 	}
 	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances for instances %v failed with error: %v", requiredIds.InstanceIds, err)
@@ -270,7 +268,6 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
 	if isSuccess {
 		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult(%s) success", scaleSet.Name)
 		scaleSet.invalidateInstanceCache()
-
 		return
 	}
 
