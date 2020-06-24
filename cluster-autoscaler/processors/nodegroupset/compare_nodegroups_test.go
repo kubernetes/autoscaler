@@ -101,16 +101,60 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 
 func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
 	comparator := CreateGenericNodeInfoComparator([]string{})
-	n1 := BuildTestNode("node1", 1000, MaxMemoryDifferenceInKiloBytes)
+	n1 := BuildTestNode("node1", 1000, 1000)
 
 	// Different memory capacity within tolerance
-	n2 := BuildTestNode("node2", 1000, MaxMemoryDifferenceInKiloBytes)
-	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(2*MaxMemoryDifferenceInKiloBytes, resource.DecimalSI)
+	n2 := BuildTestNode("node2", 1000, 1000)
+	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*MaxCapacityMemoryDifferenceRatio)+1, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
 	// Different memory capacity exceeds tolerance
-	n3 := BuildTestNode("node3", 1000, MaxMemoryDifferenceInKiloBytes)
-	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(2*MaxMemoryDifferenceInKiloBytes+1, resource.DecimalSI)
+	n3 := BuildTestNode("node3", 1000, 1000)
+	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(1000-(1000*MaxCapacityMemoryDifferenceRatio)-1, resource.DecimalSI)
+	checkNodesSimilar(t, n1, n3, comparator, false)
+}
+
+func TestNodesSimilarVariousLargeMemoryRequirementsM5XLarge(t *testing.T) {
+	comparator := CreateGenericNodeInfoComparator([]string{})
+
+	// Use realistic memory capacity (taken from real nodes)
+	// 15944120 KB ~= 16GiB (m5.xLarge)
+	q1 := resource.MustParse("16116152Ki")
+	q2 := resource.MustParse("15944120Ki")
+
+	n1 := BuildTestNode("node1", 1000, q1.Value())
+
+	// Different memory capacity within tolerance
+	// Value taken from another m5.xLarge in a different zone
+	n2 := BuildTestNode("node2", 1000, q2.Value())
+	checkNodesSimilar(t, n1, n2, comparator, true)
+
+	// Different memory capacity exceeds tolerance
+	// Value of q1 * 1.02
+	q3 := resource.MustParse("16438475Ki")
+	n3 := BuildTestNode("node3", 1000, q3.Value())
+	checkNodesSimilar(t, n1, n3, comparator, false)
+}
+
+func TestNodesSimilarVariousLargeMemoryRequirementsM516XLarge(t *testing.T) {
+	comparator := CreateGenericNodeInfoComparator([]string{})
+
+	// Use realistic memory capacity (taken from real nodes)
+	// 257217528 KB ~= 256GiB (m5.16xLarge)
+	q1 := resource.MustParse("259970052Ki")
+	q2 := resource.MustParse("257217528Ki")
+
+	n1 := BuildTestNode("node1", 1000, q1.Value())
+
+	// Different memory capacity within tolerance
+	// Value taken from another m5.xLarge in a different zone
+	n2 := BuildTestNode("node2", 1000, q2.Value())
+	checkNodesSimilar(t, n1, n2, comparator, true)
+
+	// Different memory capacity exceeds tolerance
+	// Value of q1 * 1.02
+	q3 := resource.MustParse("265169453Ki")
+	n3 := BuildTestNode("node3", 1000, q3.Value())
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
 
