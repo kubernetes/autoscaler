@@ -333,6 +333,10 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 		return err
 	}
 
+	if size == -1 {
+		return fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
+	}
+
 	if int(size)+delta > scaleSet.MaxSize() {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
 	}
