@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -129,6 +130,13 @@ func TestIncreaseSize(t *testing.T) {
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	ss := newTestScaleSet(provider.azureManager, "test-asg")
+	ss.lastSizeRefresh = time.Now()
+	ss.curSize = -1
+	err := ss.IncreaseSize(100)
+	expectedErr := fmt.Errorf("the scale set test-asg is under initialization, skipping IncreaseSize")
+	assert.Equal(t, expectedErr, err)
 
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
