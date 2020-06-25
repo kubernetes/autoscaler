@@ -71,6 +71,7 @@ func NewAgentPool(spec *dynamic.NodeGroupSpec, az *AzureManager) (*AgentPool, er
 		minSize: spec.MinSize,
 		maxSize: spec.MaxSize,
 		manager: az,
+		curSize: -1,
 	}
 
 	if err := as.initialize(); err != nil {
@@ -213,6 +214,10 @@ func (as *AgentPool) TargetSize() (int, error) {
 func (as *AgentPool) IncreaseSize(delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
+
+	if as.curSize == -1 {
+		return fmt.Errorf("the availability set %s is under initialization, skipping IncreaseSize", as.Name)
+	}
 
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
