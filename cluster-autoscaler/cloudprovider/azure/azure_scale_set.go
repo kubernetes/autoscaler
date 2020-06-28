@@ -225,6 +225,19 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	return scaleSet.getCurSize()
 }
 
+func (scaleSet *ScaleSet) waitForDeleteInstances(future compute.VirtualMachineScaleSetsDeleteInstancesFuture, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForDeleteInstances(ctx, future)
+	isSuccess, err := isSuccessHTTPResponse(resp, err)
+	if isSuccess {
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForDeleteInstances(%v) success", requiredIds.InstanceIds)
+		return
+	}
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForDeleteInstances for instances %v failed with error: %v", requiredIds.InstanceIds, err)
+}
+
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
 func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) error {
 	var vmssInfo compute.VirtualMachineScaleSet
@@ -431,18 +444,22 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
+
+	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	if err != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, err)
+		return err
+	}
+
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
 	scaleSet.sizeMutex.Lock()
 	scaleSet.curSize -= int64(len(instanceIDs))
 	scaleSet.sizeMutex.Unlock()
 
-	_, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
-	if err != nil {
-		klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds)
-		scaleSet.invalidateStatusCacheWithLock()
-	}
-	return err
+	go scaleSet.waitForDeleteInstances(future, requiredIds)
+	return nil
 }
 
 // DeleteNodes deletes the nodes from the group.
