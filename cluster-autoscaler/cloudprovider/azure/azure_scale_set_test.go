@@ -179,7 +179,7 @@ func TestDeleteNodes(t *testing.T) {
 			Status: "OK",
 		},
 	}
-	scaleSetClient.On("DeleteInstances", mock.Anything, "test-asg", mock.Anything, mock.Anything).Return(response, nil)
+	scaleSetClient.On("DeleteInstancesAsync", mock.Anything, "test-asg", mock.Anything, mock.Anything).Return(response, nil)
 	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
 	// TODO: this should call manager.Refresh() once the fetchAutoASG
 	// logic is refactored out
@@ -219,7 +219,7 @@ func TestDeleteNodes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 4, targetSize)
 
-	scaleSetClient.AssertNumberOfCalls(t, "DeleteInstances", 1)
+	scaleSetClient.AssertNumberOfCalls(t, "DeleteInstancesAsync", 1)
 }
 
 func TestDeleteNoConflictRequest(t *testing.T) {
