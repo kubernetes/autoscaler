@@ -93,6 +93,21 @@ func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(ctx context.Con
 	return nil, args.Error(1)
 }
 
+// DeleteInstancesAsync deletes a set of instances for specified VirtualMachineScaleSet and returns the future
+func (client *VirtualMachineScaleSetsClientMock) DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (result compute.VirtualMachineScaleSetsDeleteInstancesFuture, err error) {
+	client.mutex.Lock()
+	defer client.mutex.Unlock()
+	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs)
+	return compute.VirtualMachineScaleSetsDeleteInstancesFuture{}, args.Error(1)
+}
+
+// WaitForDeleteInstances returns a successful result
+func (client *VirtualMachineScaleSetsClientMock) WaitForDeleteInstances(ctx context.Context, future compute.VirtualMachineScaleSetsDeleteInstancesFuture) (resp *http.Response, err error) {
+	return &http.Response{
+		StatusCode: http.StatusOK,
+	}, nil
+}
+
 // List gets a list of VirtualMachineScaleSets.
 func (client *VirtualMachineScaleSetsClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
 	client.mutex.Lock()
