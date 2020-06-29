@@ -1930,4 +1930,34 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 	},
+	"r6g.12xlarge": {
+		InstanceType: "r6g.12xlarge",
+		VCPU:         48,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"r6g.16xlarge": {
+		InstanceType: "r6g.16xlarge",
+		VCPU:         64,
+		MemoryMb:     524288,
+		GPU:          0,
+	},
+	"r6g.24xlarge": {
+		InstanceType: "r6g.24xlarge",
+		VCPU:         96,
+		MemoryMb:     786432,
+		GPU:          0,
+	},
+	"r6g.4xlarge": {
+		InstanceType: "r6g.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"r6g.8xlarge": {
+		InstanceType: "r6g.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
 }
