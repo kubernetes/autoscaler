@@ -101,7 +101,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
 			f, pollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-			ParseQuantityOrDie("500m"), ParseQuantityOrDie("900m"))
+			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1000m"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
