@@ -18,9 +18,13 @@ package azure
 
 import (
 	"testing"
+	"os"
+	"io/ioutil"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	azclients "k8s.io/legacy-cloud-providers/azure/clients"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
 
@@ -151,4 +155,167 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, group, nil)
+}
+
+func TestBuildAzure(t *testing.T) {
+	expectedConfig := &Config{
+		Cloud:               "AzurePublicCloud",
+		Location:            "southeastasia",
+		TenantID:            "tenantId",
+		SubscriptionID:      "subId",
+		ResourceGroup:       "rg",
+		VMType:              "vmss",
+		AADClientID:         "clientId",
+		AADClientSecret:     "clientsecret",
+		MaxDeploymentsCount: 10,
+		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
+			RateLimitConfig: azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			InterfaceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			StorageAccountRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			DiskRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+		},
+	}
+
+	cloudConfig := "cfg.json"
+	azureCfg := `{
+		"cloud": "AzurePublicCloud",
+		"tenantId": "tenantId",
+		"subscriptionId": "subId",
+		"aadClientId": "clientId",
+		"aadClientSecret": "clientsecret",
+		"resourceGroup": "rg",
+		"location": "southeastasia"
+	}`
+	err := ioutil.WriteFile(cloudConfig, []byte(azureCfg), 0644)
+	assert.Nil(t, err)
+	defer os.Remove(cloudConfig)
+
+	os.Setenv("ARM_CLOUD", "AzurePublicCloud")
+	os.Setenv("LOCATION", "southeastasia")
+	os.Setenv("ARM_RESOURCE_GROUP", "rg")
+	os.Setenv("ARM_SUBSCRIPTION_ID", "subId")
+	os.Setenv("ARM_TENANT_ID", "tenantId")
+	os.Setenv("ARM_CLIENT_ID", "clientId")
+	os.Setenv("ARM_CLIENT_SECRET", "clientsecret")
+
+	resourceLimiter := &cloudprovider.ResourceLimiter{}
+	discoveryOptions := cloudprovider.NodeGroupDiscoveryOptions{}
+
+	testCases := []struct{
+		name  string
+		cloudConfig  string
+	}{
+		{
+			name: "BuildAzure should create Azure Manager using cloud-config file",
+			cloudConfig: cloudConfig,
+		},
+		{
+			name: "BuildAzure should create Azure Manager using environment variable",
+		},
+	}
+
+	for _, test := range testCases {
+		opts := config.AutoscalingOptions{
+			CloudConfig: test.cloudConfig,
+		}
+		cloudProvider := BuildAzure(opts, discoveryOptions, resourceLimiter)
+		assert.Equal(t, expectedConfig, cloudProvider.(*AzureCloudProvider).azureManager.config, test.name)
+	}
+
+	os.Unsetenv("ARM_CLOUD")
+	os.Unsetenv("LOCATION")
+	os.Unsetenv("ARM_RESOURCE_GROUP")
+	os.Unsetenv("ARM_SUBSCRIPTION_ID")
+	os.Unsetenv("ARM_TENANT_ID")
+	os.Unsetenv("ARM_CLIENT_ID")
+	os.Unsetenv("ARM_CLIENT_SECRET")
+}
+
+func TestGPULabel(t *testing.T) {
+	provider := newTestProvider(t)
+	gpuLabel := provider.GPULabel()
+	assert.Equal(t, GPULabel, gpuLabel)
+}
+
+func TestGetAvailableGPUTypes(t *testing.T) {
+	provider := newTestProvider(t)
+	gpuTypes := provider.GetAvailableGPUTypes()
+	assert.Equal(t, availableGPUTypes, gpuTypes)
+}
+
+func TestGetResourceLimiter(t *testing.T) {
+	expectedResourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
+	provider := newTestProvider(t)
+	resourceLimiter, err := provider.GetResourceLimiter()
+	assert.Equal(t, expectedResourceLimiter, resourceLimiter)
+	assert.Nil(t, err)
+}
+
+func TestString(t *testing.T) {
+	providerID := "azure:///subscriptions/subscription/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm1"
+	ref := &azureRef{
+		Name: providerID,
+	}
+	name := ref.String()
+	assert.Equal(t, providerID, name)
+}
+
+func TestCleanup(t *testing.T) {
+	provider := newTestProvider(t)
+	err := provider.Cleanup()
+	assert.NoError(t, err)
+}
+
+func TestGetAvailableMachineTypes(t *testing.T) {
+	provider := newTestProvider(t)
+	types, err := provider.GetAvailableMachineTypes()
+	assert.Equal(t, []string{}, types)
+	assert.NoError(t, err)
+}
+
+func TestRefresh(t *testing.T) {
+	provider := newTestProvider(t)
+	err := provider.Refresh()
+	assert.NoError(t, err)
 }
