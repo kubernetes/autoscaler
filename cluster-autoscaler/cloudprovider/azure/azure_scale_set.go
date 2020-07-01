@@ -411,9 +411,6 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		return err
 	}
 
-	scaleSet.instanceMutex.Lock()
-	defer scaleSet.instanceMutex.Unlock()
-
 	instanceIDs := []string{}
 	for _, instance := range instances {
 		asg, err := scaleSet.manager.GetAsgForInstance(instance)
@@ -425,10 +422,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same Scale Set (%q)", instance.Name, commonAsg)
 		}
 
+		scaleSet.instanceMutex.Lock()
 		if cpi, found := scaleSet.getInstanceByProviderID(instance.Name); found && cpi.Status != nil && cpi.Status.State == cloudprovider.InstanceDeleting {
 			klog.V(3).Infof("Skipping deleting instance %s as its current state is deleting", instance.Name)
 			continue
 		}
+		scaleSet.instanceMutex.Unlock()
 
 		instanceID, err := getLastSegment(instance.Name)
 		if err != nil {
