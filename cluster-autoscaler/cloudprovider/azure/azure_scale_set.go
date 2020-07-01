@@ -228,14 +228,6 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 }
 
 func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
-	var err error
-
-	defer func() {
-		if err != nil {
-			klog.Errorf("Failed to delete instances %v", requiredIds.InstanceIds)
-		}
-	}()
-
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
