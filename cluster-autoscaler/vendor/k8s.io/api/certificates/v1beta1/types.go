@@ -27,7 +27,8 @@ import (
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:prerelease-lifecycle-gen:introduced=1.12
-// +k8s:prerelease-lifecycle-gen:deprecated=1.22
+// +k8s:prerelease-lifecycle-gen:deprecated=1.19
+// +k8s:prerelease-lifecycle-gen:replacement=certificates.k8s.io,v1,CertificateSigningRequest
 
 // Describes a certificate signing request
 type CertificateSigningRequest struct {
@@ -69,6 +70,30 @@ type CertificateSigningRequestSpec struct {
 	// valid for.
 	// See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
 	//      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+	// Valid values are:
+	//  "signing",
+	//  "digital signature",
+	//  "content commitment",
+	//  "key encipherment",
+	//  "key agreement",
+	//  "data encipherment",
+	//  "cert sign",
+	//  "crl sign",
+	//  "encipher only",
+	//  "decipher only",
+	//  "any",
+	//  "server auth",
+	//  "client auth",
+	//  "code signing",
+	//  "email protection",
+	//  "s/mime",
+	//  "ipsec end system",
+	//  "ipsec tunnel",
+	//  "ipsec user",
+	//  "timestamping",
+	//  "ocsp signing",
+	//  "microsoft sgc",
+	//  "netscape sgc"
 	// +listType=atomic
 	Usages []KeyUsage `json:"usages,omitempty" protobuf:"bytes,5,opt,name=usages"`
 
@@ -171,7 +196,8 @@ type CertificateSigningRequestCondition struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:prerelease-lifecycle-gen:introduced=1.12
-// +k8s:prerelease-lifecycle-gen:deprecated=1.22
+// +k8s:prerelease-lifecycle-gen:deprecated=1.19
+// +k8s:prerelease-lifecycle-gen:replacement=certificates.k8s.io,v1,CertificateSigningRequestList
 
 type CertificateSigningRequestList struct {
 	metav1.TypeMeta `json:",inline"`

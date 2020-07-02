@@ -18,12 +18,9 @@ package plugins
 
 import (
 	"k8s.io/apimachinery/pkg/util/sets"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
-	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/defaultpodtopologyspread"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/imagelocality"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/interpodaffinity"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodeaffinity"
@@ -35,6 +32,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodeunschedulable"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/podtopologyspread"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/selectorspread"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/serviceaffinity"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/tainttoleration"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/volumebinding"
@@ -75,8 +73,6 @@ const (
 	// ImageLocalityPriority defines the name of prioritizer function that prioritizes nodes that have images
 	// requested by the pod present.
 	ImageLocalityPriority = "ImageLocalityPriority"
-	// ResourceLimitsPriority defines the nodes of prioritizer function ResourceLimitsPriority.
-	ResourceLimitsPriority = "ResourceLimitsPriority"
 	// EvenPodsSpreadPriority defines the name of prioritizer function that prioritizes nodes
 	// which have pods and labels matching the incoming pod's topologySpreadConstraints.
 	EvenPodsSpreadPriority = "EvenPodsSpreadPriority"
@@ -273,11 +269,10 @@ func NewLegacyRegistry() *LegacyRegistry {
 		})
 	registry.registerPredicateConfigProducer(CheckVolumeBindingPred,
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
+			plugins.PreFilter = appendToPluginSet(plugins.PreFilter, volumebinding.Name, nil)
 			plugins.Filter = appendToPluginSet(plugins.Filter, volumebinding.Name, nil)
 			plugins.Reserve = appendToPluginSet(plugins.Reserve, volumebinding.Name, nil)
 			plugins.PreBind = appendToPluginSet(plugins.PreBind, volumebinding.Name, nil)
-			plugins.Unreserve = appendToPluginSet(plugins.Unreserve, volumebinding.Name, nil)
-			plugins.PostBind = appendToPluginSet(plugins.PostBind, volumebinding.Name, nil)
 			return
 		})
 	registry.registerPredicateConfigProducer(NoDiskConflictPred,
@@ -350,8 +345,8 @@ func NewLegacyRegistry() *LegacyRegistry {
 	// Register Priorities.
 	registry.registerPriorityConfigProducer(SelectorSpreadPriority,
 		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
-			plugins.Score = appendToPluginSet(plugins.Score, defaultpodtopologyspread.Name, &args.Weight)
-			plugins.PreScore = appendToPluginSet(plugins.PreScore, defaultpodtopologyspread.Name, nil)
+			plugins.Score = appendToPluginSet(plugins.Score, selectorspread.Name, &args.Weight)
+			plugins.PreScore = appendToPluginSet(plugins.PreScore, selectorspread.Name, nil)
 			return
 		})
 	registry.registerPriorityConfigProducer(TaintTolerationPriority,
@@ -441,21 +436,6 @@ func NewLegacyRegistry() *LegacyRegistry {
 			plugins.Score = appendToPluginSet(plugins.Score, podtopologyspread.Name, &args.Weight)
 			return
 		})
-
-	// ResourceLimits is the last feature to be supported as predicate/priority.
-	// TODO: Remove this check once it graduates to GA.
-	// Prioritizes nodes that satisfy pod's resource limits.
-	if utilfeature.DefaultFeatureGate.Enabled(features.ResourceLimitsPriorityFunction) {
-		klog.Infof("Registering resourcelimits priority function")
-
-		registry.registerPriorityConfigProducer(ResourceLimitsPriority,
-			func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
-				plugins.PreScore = appendToPluginSet(plugins.PreScore, noderesources.ResourceLimitsName, nil)
-				plugins.Score = appendToPluginSet(plugins.Score, noderesources.ResourceLimitsName, &args.Weight)
-				return
-			})
-		registry.DefaultPriorities[ResourceLimitsPriority] = 1
-	}
 
 	return registry
 }
