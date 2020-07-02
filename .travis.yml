@@ -6,7 +6,7 @@ services:
 language: go
 
 go:
-  - 1.13.5
+  - 1.14.x
 
 before_install:
   - sudo apt-get install libseccomp-dev -qq
