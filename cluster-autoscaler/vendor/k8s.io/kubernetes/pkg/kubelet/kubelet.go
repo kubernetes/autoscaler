@@ -316,7 +316,7 @@ func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	switch containerRuntime {
 	case kubetypes.DockerContainerRuntime:
-		runDockershim(
+		if err := runDockershim(
 			kubeCfg,
 			kubeDeps,
 			crOptions,
@@ -324,7 +324,9 @@ func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 			remoteRuntimeEndpoint,
 			remoteImageEndpoint,
 			nonMasqueradeCIDR,
-		)
+		); err != nil {
+			return err
+		}
 	case kubetypes.RemoteContainerRuntime:
 		// No-op.
 		break
@@ -363,7 +365,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	registerWithTaints []api.Taint,
 	allowedUnsafeSysctls []string,
 	experimentalMounterPath string,
-	experimentalKernelMemcgNotification bool,
+	kernelMemcgNotification bool,
 	experimentalCheckNodeCapabilitiesBeforeMount bool,
 	experimentalNodeAllocatableIgnoreEvictionThreshold bool,
 	minimumGCAge metav1.Duration,
@@ -403,7 +405,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		}
 	}
 
-	containerGCPolicy := kubecontainer.ContainerGCPolicy{
+	containerGCPolicy := kubecontainer.GCPolicy{
 		MinAge:             minimumGCAge.Duration,
 		MaxPerPodContainer: int(maxPerPodContainerCount),
 		MaxContainers:      int(maxContainerCount),
@@ -432,7 +434,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		PressureTransitionPeriod: kubeCfg.EvictionPressureTransitionPeriod.Duration,
 		MaxPodGracePeriodSeconds: int64(kubeCfg.EvictionMaxPodGracePeriod),
 		Thresholds:               thresholds,
-		KernelMemcgNotification:  experimentalKernelMemcgNotification,
+		KernelMemcgNotification:  kernelMemcgNotification,
 		PodCgroupRoot:            kubeDeps.ContainerManager.GetPodCgroupRoot(),
 	}
 
@@ -868,7 +870,7 @@ type Kubelet struct {
 	// Optional, defaults to /logs/ from /var/log
 	logServer http.Handler
 	// Optional, defaults to simple Docker implementation
-	runner kubecontainer.ContainerCommandRunner
+	runner kubecontainer.CommandRunner
 
 	// cAdvisor used for container information.
 	cadvisor cadvisor.Interface
@@ -919,7 +921,7 @@ type Kubelet struct {
 	recorder record.EventRecorder
 
 	// Policy for handling garbage collection of dead containers.
-	containerGC kubecontainer.ContainerGC
+	containerGC kubecontainer.GC
 
 	// Manager for image garbage collection.
 	imageManager images.ImageGCManager
