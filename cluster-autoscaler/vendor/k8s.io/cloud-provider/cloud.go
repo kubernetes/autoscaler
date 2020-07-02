@@ -49,6 +49,9 @@ type Interface interface {
 	LoadBalancer() (LoadBalancer, bool)
 	// Instances returns an instances interface. Also returns true if the interface is supported, false otherwise.
 	Instances() (Instances, bool)
+	// InstancesV2 is an implementation for instances only used by cloud node-controller now.
+	// Also returns true if the interface is supported, false otherwise.
+	InstancesV2() (InstancesV2, bool)
 	// Zones returns a zones interface. Also returns true if the interface is supported, false otherwise.
 	Zones() (Zones, bool)
 	// Clusters returns a clusters interface.  Also returns true if the interface is supported, false otherwise.
@@ -163,7 +166,6 @@ type Instances interface {
 	// ProviderID is a unique identifier of the node. This will not be called
 	// from the node whose nodeaddresses are being queried. i.e. local metadata
 	// services cannot be used in this method to obtain nodeaddresses
-	// Deprecated: Remove once all calls are migrated to InstanceMetadataByProviderID
 	NodeAddressesByProviderID(ctx context.Context, providerID string) ([]v1.NodeAddress, error)
 	// InstanceID returns the cloud provider ID of the node with the specified NodeName.
 	// Note that if the instance does not exist, we must return ("", cloudprovider.InstanceNotFound)
@@ -172,7 +174,6 @@ type Instances interface {
 	// InstanceType returns the type of the specified instance.
 	InstanceType(ctx context.Context, name types.NodeName) (string, error)
 	// InstanceTypeByProviderID returns the type of the specified instance.
-	// Deprecated: Remove once all calls are migrated to InstanceMetadataByProviderID
 	InstanceTypeByProviderID(ctx context.Context, providerID string) (string, error)
 	// AddSSHKeyToAllInstances adds an SSH public key as a legal identity for all instances
 	// expected format for the key is standard ssh-keygen format: <protocol> <blob>
@@ -183,9 +184,17 @@ type Instances interface {
 	// InstanceExistsByProviderID returns true if the instance for the given provider exists.
 	// If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
 	// This method should still return true for instances that exist but are stopped/sleeping.
-	// Deprecated: Remove once all calls are migrated to InstanceMetadataByProviderID
 	InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error)
 	// InstanceShutdownByProviderID returns true if the instance is shutdown in cloudprovider
+	InstanceShutdownByProviderID(ctx context.Context, providerID string) (bool, error)
+}
+
+// InstancesV2 is an abstract, pluggable interface for sets of instances.
+// Unlike Instances, it is only used by cloud node-controller now.
+type InstancesV2 interface {
+	// InstanceExistsByProviderID returns true if the instance for the given provider exists.
+	InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error)
+	// InstanceShutdownByProviderID returns true if the instance is shutdown in cloudprovider.
 	InstanceShutdownByProviderID(ctx context.Context, providerID string) (bool, error)
 	// InstanceMetadataByProviderID returns the instance's metadata.
 	InstanceMetadataByProviderID(ctx context.Context, providerID string) (*InstanceMetadata, error)

@@ -554,7 +554,7 @@ type DaemonSetList struct {
 // +k8s:prerelease-lifecycle-gen:introduced=1.1
 // +k8s:prerelease-lifecycle-gen:deprecated=1.14
 // +k8s:prerelease-lifecycle-gen:removed=1.22
-// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1beta1,Ingress
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1,Ingress
 
 // Ingress is a collection of rules that allow inbound connections to reach the
 // endpoints defined by a backend. An Ingress can be configured to give services
@@ -583,7 +583,7 @@ type Ingress struct {
 // +k8s:prerelease-lifecycle-gen:introduced=1.1
 // +k8s:prerelease-lifecycle-gen:deprecated=1.14
 // +k8s:prerelease-lifecycle-gen:removed=1.22
-// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1beta1,IngressList
+// +k8s:prerelease-lifecycle-gen:replacement=networking.k8s.io,v1,IngressList
 
 // IngressList is a collection of Ingress.
 type IngressList struct {
@@ -985,7 +985,7 @@ type PodSecurityPolicySpec struct {
 	// You must not list a capability in both allowedCapabilities and requiredDropCapabilities.
 	// +optional
 	AllowedCapabilities []v1.Capability `json:"allowedCapabilities,omitempty" protobuf:"bytes,4,rep,name=allowedCapabilities,casttype=k8s.io/api/core/v1.Capability"`
-	// volumes is a white list of allowed volume plugins. Empty indicates that
+	// volumes is an allowlist of volume plugins. Empty indicates that
 	// no volumes may be used. To allow all volumes you may use '*'.
 	// +optional
 	Volumes []FSType `json:"volumes,omitempty" protobuf:"bytes,5,rep,name=volumes,casttype=FSType"`
@@ -1029,23 +1029,23 @@ type PodSecurityPolicySpec struct {
 	// privilege escalation. If unspecified, defaults to true.
 	// +optional
 	AllowPrivilegeEscalation *bool `json:"allowPrivilegeEscalation,omitempty" protobuf:"varint,16,opt,name=allowPrivilegeEscalation"`
-	// allowedHostPaths is a white list of allowed host paths. Empty indicates
+	// allowedHostPaths is an allowlist of host paths. Empty indicates
 	// that all host paths may be used.
 	// +optional
 	AllowedHostPaths []AllowedHostPath `json:"allowedHostPaths,omitempty" protobuf:"bytes,17,rep,name=allowedHostPaths"`
-	// allowedFlexVolumes is a whitelist of allowed Flexvolumes.  Empty or nil indicates that all
+	// allowedFlexVolumes is an allowlist of Flexvolumes.  Empty or nil indicates that all
 	// Flexvolumes may be used.  This parameter is effective only when the usage of the Flexvolumes
 	// is allowed in the "volumes" field.
 	// +optional
 	AllowedFlexVolumes []AllowedFlexVolume `json:"allowedFlexVolumes,omitempty" protobuf:"bytes,18,rep,name=allowedFlexVolumes"`
-	// AllowedCSIDrivers is a whitelist of inline CSI drivers that must be explicitly set to be embedded within a pod spec.
+	// AllowedCSIDrivers is an allowlist of inline CSI drivers that must be explicitly set to be embedded within a pod spec.
 	// An empty value indicates that any CSI driver can be used for inline ephemeral volumes.
 	// +optional
 	AllowedCSIDrivers []AllowedCSIDriver `json:"allowedCSIDrivers,omitempty" protobuf:"bytes,23,rep,name=allowedCSIDrivers"`
 	// allowedUnsafeSysctls is a list of explicitly allowed unsafe sysctls, defaults to none.
 	// Each entry is either a plain sysctl name or ends in "*" in which case it is considered
 	// as a prefix of allowed sysctls. Single * means all unsafe sysctls are allowed.
-	// Kubelet has to whitelist all allowed unsafe sysctls explicitly to avoid rejection.
+	// Kubelet has to allowlist all unsafe sysctls explicitly to avoid rejection.
 	//
 	// Examples:
 	// e.g. "foo/*" allows "foo/bar", "foo/baz", etc.
@@ -1061,7 +1061,7 @@ type PodSecurityPolicySpec struct {
 	// e.g. "foo.*" forbids "foo.bar", "foo.baz", etc.
 	// +optional
 	ForbiddenSysctls []string `json:"forbiddenSysctls,omitempty" protobuf:"bytes,20,rep,name=forbiddenSysctls"`
-	// AllowedProcMountTypes is a whitelist of allowed ProcMountTypes.
+	// AllowedProcMountTypes is an allowlist of allowed ProcMountTypes.
 	// Empty or nil indicates that only the DefaultProcMountType may be used.
 	// This requires the ProcMountType feature flag to be enabled.
 	// +optional
@@ -1289,7 +1289,7 @@ const (
 // RuntimeClassStrategyOptions define the strategy that will dictate the allowable RuntimeClasses
 // for a pod.
 type RuntimeClassStrategyOptions struct {
-	// allowedRuntimeClassNames is a whitelist of RuntimeClass names that may be specified on a pod.
+	// allowedRuntimeClassNames is an allowlist of RuntimeClass names that may be specified on a pod.
 	// A value of "*" means that any RuntimeClass name is allowed, and must be the only item in the
 	// list. An empty list requires the RuntimeClassName field to be unset.
 	AllowedRuntimeClassNames []string `json:"allowedRuntimeClassNames" protobuf:"bytes,1,rep,name=allowedRuntimeClassNames"`
