@@ -282,7 +282,7 @@ func NewProxier(ipt utiliptables.Interface,
 
 	// Generate the masquerade mark to use for SNAT rules.
 	masqueradeValue := 1 << uint(masqueradeBit)
-	masqueradeMark := fmt.Sprintf("%#08x/%#08x", masqueradeValue, masqueradeValue)
+	masqueradeMark := fmt.Sprintf("%#08x", masqueradeValue)
 	klog.V(2).Infof("iptables(%s) masquerade mark: %s", ipt.Protocol(), masqueradeMark)
 
 	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying)
@@ -290,6 +290,11 @@ func NewProxier(ipt utiliptables.Interface,
 	serviceHealthServer := healthcheck.NewServiceHealthServer(hostname, recorder)
 
 	isIPv6 := ipt.IsIPv6()
+	var incorrectAddresses []string
+	nodePortAddresses, incorrectAddresses = utilproxy.FilterIncorrectCIDRVersion(nodePortAddresses, isIPv6)
+	if len(incorrectAddresses) > 0 {
+		klog.Warning("NodePortAddresses of wrong family; ", incorrectAddresses)
+	}
 	proxier := &Proxier{
 		portsMap:                 make(map[utilproxy.LocalPort]utilproxy.Closeable),
 		serviceMap:               make(proxy.ServiceMap),
@@ -357,16 +362,17 @@ func NewDualStackProxier(
 	nodePortAddresses []string,
 ) (proxy.Provider, error) {
 	// Create an ipv4 instance of the single-stack proxier
+	nodePortAddresses4, nodePortAddresses6 := utilproxy.FilterIncorrectCIDRVersion(nodePortAddresses, false)
 	ipv4Proxier, err := NewProxier(ipt[0], sysctl,
 		exec, syncPeriod, minSyncPeriod, masqueradeAll, masqueradeBit, localDetectors[0], hostname,
-		nodeIP[0], recorder, healthzServer, nodePortAddresses)
+		nodeIP[0], recorder, healthzServer, nodePortAddresses4)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create ipv4 proxier: %v", err)
 	}
 
 	ipv6Proxier, err := NewProxier(ipt[1], sysctl,
 		exec, syncPeriod, minSyncPeriod, masqueradeAll, masqueradeBit, localDetectors[1], hostname,
-		nodeIP[1], recorder, healthzServer, nodePortAddresses)
+		nodeIP[1], recorder, healthzServer, nodePortAddresses6)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create ipv6 proxier: %v", err)
 	}
@@ -919,10 +925,20 @@ func (proxier *Proxier) syncProxyRules() {
 	// this so that it is easier to flush and change, for example if the mark
 	// value should ever change.
 	// NB: THIS MUST MATCH the corresponding code in the kubelet
+	writeLine(proxier.natRules, []string{
+		"-A", string(kubePostroutingChain),
+		"-m", "mark", "!", "--mark", fmt.Sprintf("%s/%s", proxier.masqueradeMark, proxier.masqueradeMark),
+		"-j", "RETURN",
+	}...)
+	// Clear the mark to avoid re-masquerading if the packet re-traverses the network stack.
+	writeLine(proxier.natRules, []string{
+		"-A", string(kubePostroutingChain),
+		// XOR proxier.masqueradeMark to unset it
+		"-j", "MARK", "--xor-mark", proxier.masqueradeMark,
+	}...)
 	masqRule := []string{
 		"-A", string(kubePostroutingChain),
 		"-m", "comment", "--comment", `"kubernetes service traffic requiring SNAT"`,
-		"-m", "mark", "--mark", proxier.masqueradeMark,
 		"-j", "MASQUERADE",
 	}
 	if proxier.iptables.HasRandomFully() {
@@ -935,7 +951,7 @@ func (proxier *Proxier) syncProxyRules() {
 	// value should ever change.
 	writeLine(proxier.natRules, []string{
 		"-A", string(KubeMarkMasqChain),
-		"-j", "MARK", "--set-xmark", proxier.masqueradeMark,
+		"-j", "MARK", "--or-mark", proxier.masqueradeMark,
 	}...)
 
 	// Accumulate NAT chains to keep.
@@ -1514,7 +1530,7 @@ func (proxier *Proxier) syncProxyRules() {
 	writeLine(proxier.filterRules,
 		"-A", string(kubeForwardChain),
 		"-m", "comment", "--comment", `"kubernetes forwarding rules"`,
-		"-m", "mark", "--mark", proxier.masqueradeMark,
+		"-m", "mark", "--mark", fmt.Sprintf("%s/%s", proxier.masqueradeMark, proxier.masqueradeMark),
 		"-j", "ACCEPT",
 	)
 
