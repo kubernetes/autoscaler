@@ -27,6 +27,7 @@ import (
 	klog "k8s.io/klog/v2"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	// We need to import provider to initialize default scheduler.
@@ -49,12 +50,12 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
-	framework, err := schedulerframework.NewFramework(
+	framework, err := schedulerframeworkruntime.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
 		plugins,
 		nil, // This is fine.
-		schedulerframework.WithInformerFactory(informerFactory),
-		schedulerframework.WithSnapshotSharedLister(sharedLister),
+		schedulerframeworkruntime.WithInformerFactory(informerFactory),
+		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)
 
 	if err != nil {
