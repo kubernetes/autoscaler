@@ -414,12 +414,10 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same Scale Set (%q)", instance.Name, commonAsg)
 		}
 
-		scaleSet.instanceMutex.Lock()
 		if cpi, found := scaleSet.getInstanceByProviderID(instance.Name); found && cpi.Status != nil && cpi.Status.State == cloudprovider.InstanceDeleting {
 			klog.V(3).Infof("Skipping deleting instance %s as its current state is deleting", instance.Name)
 			continue
 		}
-		scaleSet.instanceMutex.Unlock()
 
 		instanceID, err := getLastSegment(instance.Name)
 		if err != nil {
@@ -730,6 +728,8 @@ func buildInstanceCache(vms []compute.VirtualMachineScaleSetVM) []cloudprovider.
 }
 
 func (scaleSet *ScaleSet) getInstanceByProviderID(providerID string) (cloudprovider.Instance, bool) {
+	scaleSet.instanceMutex.Lock()
+	defer scaleSet.instanceMutex.Unlock()
 	for _, instance := range scaleSet.instanceCache {
 		if instance.Id == providerID {
 			return instance, true
