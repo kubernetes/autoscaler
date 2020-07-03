@@ -452,7 +452,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
 	scaleSet.sizeMutex.Lock()
-	scaleSet.curSize--
+	scaleSet.curSize -= int64(len(instanceIDs))
 	scaleSet.sizeMutex.Unlock()
 
 	go scaleSet.waitForDeleteInstances(future, requiredIds)
