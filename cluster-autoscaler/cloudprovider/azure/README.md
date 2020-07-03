@@ -128,6 +128,26 @@ To run a cluster autoscaler pod on a master node, the deployment should tolerate
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](examples/cluster-autoscaler-vmss-msi.yaml) instead.
 
+#### Azure API Throttling
+Azure has hard limits on the number of read and write requests against Azure APIs *per subscription, per region*. Running lots of clusters in a single subscription, or running a single large, dynamic cluster in a subscription can produce side effects that exceed the number of calls permitted within a given time window for a particular category of requests. See the following documents for more detail on Azure API throttling in general:
+
+- https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
+- https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
+
+Given the dynamic nature of cluster autoscaler, it can be a trigger for hitting those rate limits on the subscriptions. This in turn can affect other components running in the cluster that depend on Azure APIs such as kube-controller-manager.
+
+When using K8s versions older than v1.18, we recommend using at least **v.1.17.5, v1.16.9, v1.15.12** which include various improvements on the cloud-provider side that have an impact on the number of API calls during scale down operations.
+
+As for CA versions older than 1.18, we recommend using at least **v.1.17.2, v1.16.5, v1.15.6**.
+
+In addition, cluster-autoscaler exposes a `AZURE_VMSS_CACHE_TTL` environment variable which controls the rate of `GetVMScaleSet` being made. By default, this is 15 seconds but setting this to a higher value such as 60 seconds can protect against API throttling. The caches used are proactively incremented and decremented with the scale up and down operations and this higher value doesn't have any noticeable impact on performance. **Note that the value is in seconds**
+
+| Config Name | Default | Environment Variable | Cloud Config File |
+| ----------- | ------- | -------------------- | ----------------- |
+| VmssCacheTTL | 15 | AZURE_VMSS_CACHE_TTL | vmssCacheTTL |
+
+When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
+
 ### Standard deployment
 
 Prerequisites:
@@ -148,7 +168,7 @@ Make a copy of [cluster-autoscaler-standard-master.yaml](examples/cluster-autosc
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
-Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name (tips: node pool name is NOT availability set name, e.g., the corresponding node pool name of the availability set 
+Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name (tips: node pool name is NOT availability set name, e.g., the corresponding node pool name of the availability set
 `agentpool1-availabilitySet-xxxxxxxx` would be `agentpool1`). For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
 
 ```yaml
@@ -198,7 +218,7 @@ az aks create \
 
 #### AKS + Availability Set
 
-The CLI based deployment only support VMSS and manual deployment is needed if availability set is used. 
+The CLI based deployment only support VMSS and manual deployment is needed if availability set is used.
 
 Prerequisites:
 
@@ -210,7 +230,7 @@ Prerequisites:
 kubectl get nodes --show-labels
 ```
 
-Make a copy of [cluster-autoscaler-aks.yaml](examples/cluster-autoscaler-aks.yaml). Fill in the placeholder values for 
+Make a copy of [cluster-autoscaler-aks.yaml](examples/cluster-autoscaler-aks.yaml). Fill in the placeholder values for
 the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
 
 - ClientID: `<base64-encoded-client-id>`
