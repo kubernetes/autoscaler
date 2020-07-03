@@ -113,7 +113,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
 		KubeClient:          kubeClient,
-		MetricsClient:       newMetricsClient(config),
+		MetricsClient:       newMetricsClient(config, namespace),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), namespace),
 		ClusterState:        clusterState,
@@ -123,9 +123,9 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 	}.Make()
 }
 
-func newMetricsClient(config *rest.Config) metrics.MetricsClient {
+func newMetricsClient(config *rest.Config, namespace string) metrics.MetricsClient {
 	metricsGetter := resourceclient.NewForConfigOrDie(config)
-	return metrics.NewMetricsClient(metricsGetter)
+	return metrics.NewMetricsClient(metricsGetter, namespace)
 }
 
 // WatchEvictionEventsWithRetries watches new Events with reason=Evicted and passes them to the observer.
