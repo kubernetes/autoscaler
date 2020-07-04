@@ -59,16 +59,19 @@ func newTestVMSSList(cap int64, name, loc string) []compute.VirtualMachineScaleS
 	}
 }
 
-func newTestVMSSVMList() []compute.VirtualMachineScaleSetVM {
-	return []compute.VirtualMachineScaleSetVM{
-		{
-			ID:         to.StringPtr(fakeVirtualMachineScaleSetVMID),
-			InstanceID: to.StringPtr("0"),
+func newTestVMSSVMList(count int) []compute.VirtualMachineScaleSetVM {
+	var vmssVMList []compute.VirtualMachineScaleSetVM
+	for i := 0; i < count; i++ {
+		vmssVM := compute.VirtualMachineScaleSetVM{
+			ID:         to.StringPtr(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, i)),
+			InstanceID: to.StringPtr(fmt.Sprintf("%d", i)),
 			VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-				VMID: to.StringPtr("123E4567-E89B-12D3-A456-426655440000"),
+				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
 			},
-		},
+		}
+		vmssVMList = append(vmssVMList, vmssVM)
 	}
+	return vmssVMList
 }
 
 func TestMaxSize(t *testing.T) {
@@ -94,7 +97,7 @@ func TestTargetSize(t *testing.T) {
 	defer ctrl.Finish()
 
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -119,7 +122,7 @@ func TestIncreaseSize(t *testing.T) {
 	defer ctrl.Finish()
 
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -177,7 +180,7 @@ func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 			},
 		},
 	}
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil)
@@ -206,7 +209,7 @@ func TestBelongs(t *testing.T) {
 	defer ctrl.Finish()
 
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -236,7 +239,7 @@ func TestBelongs(t *testing.T) {
 
 	validNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
+			ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 		},
 	}
 	belongs, err := scaleSet.Belongs(validNode)
@@ -260,7 +263,7 @@ func TestDeleteNodes(t *testing.T) {
 			},
 		},
 	}
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
@@ -288,11 +291,6 @@ func TestDeleteNodes(t *testing.T) {
 	// logic is refactored out
 	manager.regenerateCache()
 
-	node := &apiv1.Node{
-		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
-		},
-	}
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
 
@@ -301,13 +299,25 @@ func TestDeleteNodes(t *testing.T) {
 	assert.Equal(t, 3, targetSize)
 
 	// Perform the delete operation
-	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
+	nodesToDelete := []*apiv1.Node{
+		{
+			Spec: apiv1.NodeSpec{
+				ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
+			},
+		},
+		{
+			Spec: apiv1.NodeSpec{
+				ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 2),
+			},
+		},
+	}
+	err = scaleSet.DeleteNodes(nodesToDelete)
 	assert.NoError(t, err)
 
-	// Ensure the the cached size has been proactively decremented
+	// Ensure the the cached size has been proactively decremented by 2
 	targetSize, err = scaleSet.TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, targetSize)
+	assert.Equal(t, 1, targetSize)
 }
 
 func TestDeleteNoConflictRequest(t *testing.T) {
@@ -357,7 +367,7 @@ func TestDeleteNoConflictRequest(t *testing.T) {
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
+			ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 		},
 	}
 
@@ -390,7 +400,7 @@ func TestScaleSetNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
 
 	provider := newTestProvider(t)
@@ -409,10 +419,9 @@ func TestScaleSetNodes(t *testing.T) {
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
-	fakeProviderID := "azure://" + fakeVirtualMachineScaleSetVMID
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: fakeProviderID,
+			ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 		},
 	}
 	group, err := provider.NodeGroupForNode(node)
@@ -427,8 +436,10 @@ func TestScaleSetNodes(t *testing.T) {
 	assert.NotNil(t, ss)
 	instances, err := group.Nodes()
 	assert.NoError(t, err)
-	assert.Equal(t, len(instances), 1)
-	assert.Equal(t, instances[0], cloudprovider.Instance{Id: fakeProviderID})
+	assert.Equal(t, len(instances), 3)
+	assert.Equal(t, instances[0], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0)})
+	assert.Equal(t, instances[1], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 1)})
+	assert.Equal(t, instances[2], cloudprovider.Instance{Id: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 2)})
 }
 
 func TestTemplateNodeInfo(t *testing.T) {
