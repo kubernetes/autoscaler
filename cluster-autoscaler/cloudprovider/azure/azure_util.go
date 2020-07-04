@@ -29,6 +29,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
@@ -595,6 +596,10 @@ func readDeploymentParameters(paramFilePath string) (map[string]interface{}, err
 
 func getContextWithCancel() (context.Context, context.CancelFunc) {
 	return context.WithCancel(context.Background())
+}
+
+func getContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), timeout)
 }
 
 // checkExistsFromError inspects an error and returns a true if err is nil,
