@@ -174,7 +174,7 @@ func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, *retry.
 }
 
 func (scaleSet *ScaleSet) getAllVMSSInfo() ([]compute.VirtualMachineScaleSet, *retry.Error) {
-	ctx, cancel := getContextWithCancel()
+	ctx, cancel := getContextWithTimeout(3 * time.Minute)
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
@@ -339,7 +339,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // GetScaleSetVms returns list of nodes for the given scale set.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, *retry.Error) {
 	klog.V(4).Infof("GetScaleSetVms: starts")
-	ctx, cancel := getContextWithCancel()
+	ctx, cancel := getContextWithTimeout(3 * time.Minute)
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
