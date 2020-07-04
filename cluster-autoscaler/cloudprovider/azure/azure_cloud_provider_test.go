@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -94,7 +95,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
 
 	provider := newTestProvider(t)
@@ -112,7 +113,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
+			ProviderID: "azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 		},
 	}
 	// refresh cache

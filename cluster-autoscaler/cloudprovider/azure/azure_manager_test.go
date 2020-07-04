@@ -598,7 +598,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
 
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -889,7 +889,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	}
 
 	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
-	expectedVMSSVMs := newTestVMSSVMList()
+	expectedVMSSVMs := newTestVMSSVMList(1)
 
 	manager := newTestAzureManager(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
