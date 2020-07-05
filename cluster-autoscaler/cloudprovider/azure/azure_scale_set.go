@@ -261,10 +261,10 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) error {
 	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateSync(%s)", scaleSet.Name)
-	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateSync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
+	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
 	if err != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdateSync for scale set %q failed: %v", scaleSet.Name, err)
+		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdateAsync for scale set %q failed: %v", scaleSet.Name, err)
 		return err
 	}
 
