@@ -72,8 +72,8 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 	}, nil
 }
 
-// CreateOrUpdateSync creates or updates the VirtualMachineScaleSet and returns the future
-func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateSync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
+// CreateOrUpdateAsync creates or updates the VirtualMachineScaleSet and returns the future
+func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdateAsync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 	args := client.Called(resourceGroupName, VMScaleSetName, parameters)
