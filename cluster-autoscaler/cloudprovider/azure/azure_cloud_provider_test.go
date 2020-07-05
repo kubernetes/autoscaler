@@ -52,7 +52,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		},
 	}
 
-	scaleSetsClient.On("CreateOrUpdateSync", mock.Anything, mock.Anything, mock.Anything).Run(
+	scaleSetsClient.On("CreateOrUpdateAsync", mock.Anything, mock.Anything, mock.Anything).Run(
 		func(args mock.Arguments) {
 			resourceGroupName := args.Get(0).(string)
 			vmssName := args.Get(1).(string)

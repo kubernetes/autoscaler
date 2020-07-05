@@ -115,7 +115,7 @@ func TestIncreaseSizeFailure(t *testing.T) {
 			},
 		},
 	}
-	scaleSetClient.On("CreateOrUpdateSync", "test", "test-asg", mock.Anything).Return(nil, errors.New("autorest/azure: service returned an error"))
+	scaleSetClient.On("CreateOrUpdateAsync", "test", "test-asg", mock.Anything).Return(nil, errors.New("autorest/azure: service returned an error"))
 	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
 	provider.azureManager = manager
 
