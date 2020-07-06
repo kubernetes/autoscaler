@@ -17,11 +17,11 @@ limitations under the License.
 package taints
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	cloudproviderapi "k8s.io/cloud-provider/api"
 
 	klog "k8s.io/klog/v2"
@@ -34,6 +34,9 @@ const (
 	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
 
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
+
+	// AWS: Indicates that a node has volumes stuck in attaching state and hence it is not fit for scheduling more pods
+	awsNodeWithImpairedVolumesTaint = "NodeWithImpairedVolumes"
 )
 
 // TaintKeySet is a set of taint key
@@ -52,6 +55,7 @@ var (
 		cloudproviderapi.TaintExternalCloudProvider: true,
 		cloudproviderapi.TaintNodeShutdown:          true,
 		gkeNodeTerminationHandlerTaint:              true,
+		awsNodeWithImpairedVolumesTaint:             true,
 	}
 )
 
