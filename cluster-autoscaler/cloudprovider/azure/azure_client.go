@@ -39,9 +39,11 @@ type VirtualMachineScaleSetsClient interface {
 	Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error)
 	CreateOrUpdate(ctx context.Context, resourceGroupName string, name string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error)
 	DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error)
-	CreateOrUpdateSync(ctx context.Context, resourceGroupName string, name string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error)
+	CreateOrUpdateAsync(ctx context.Context, resourceGroupName string, name string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error)
 	WaitForCreateOrUpdate(ctx context.Context, future compute.VirtualMachineScaleSetsCreateOrUpdateFuture) (resp *http.Response, err error)
 	List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error)
+	DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (result compute.VirtualMachineScaleSetsDeleteInstancesFuture, err error)
+	WaitForDeleteInstances(ctx context.Context, future compute.VirtualMachineScaleSetsDeleteInstancesFuture) (resp *http.Response, err error)
 }
 
 // VirtualMachineScaleSetVMsClient defines needed functions for azure compute.VirtualMachineScaleSetVMsClient.
@@ -111,10 +113,10 @@ func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, r
 	return future.Response(), err
 }
 
-func (az *azVirtualMachineScaleSetsClient) CreateOrUpdateSync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
-	klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdateSync(%q,%q): start", resourceGroupName, VMScaleSetName)
+func (az *azVirtualMachineScaleSetsClient) CreateOrUpdateAsync(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (result compute.VirtualMachineScaleSetsCreateOrUpdateFuture, err error) {
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdateAsync(%q,%q): start", resourceGroupName, VMScaleSetName)
 	defer func() {
-		klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdateSync(%q,%q): end", resourceGroupName, VMScaleSetName)
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdateAsync(%q,%q): end", resourceGroupName, VMScaleSetName)
 	}()
 
 	return az.client.CreateOrUpdate(ctx, resourceGroupName, VMScaleSetName, parameters)
@@ -168,6 +170,19 @@ func (az *azVirtualMachineScaleSetsClient) DeleteInstances(ctx context.Context, 
 		return future.Response(), err
 	}
 
+	err = future.WaitForCompletionRef(ctx, az.client.Client)
+	return future.Response(), err
+}
+
+func (az *azVirtualMachineScaleSetsClient) DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (result compute.VirtualMachineScaleSetsDeleteInstancesFuture, err error) {
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstancesAsync(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs.InstanceIds)
+	defer func() {
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstancesAsync(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs.InstanceIds)
+	}()
+	return az.client.DeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs)
+}
+
+func (az *azVirtualMachineScaleSetsClient) WaitForDeleteInstances(ctx context.Context, future compute.VirtualMachineScaleSetsDeleteInstancesFuture) (resp *http.Response, err error) {
 	err = future.WaitForCompletionRef(ctx, az.client.Client)
 	return future.Response(), err
 }
