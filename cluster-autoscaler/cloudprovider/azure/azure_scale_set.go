@@ -430,18 +430,37 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 
+	scaleSet.instanceMutex.Lock()
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	if rerr != nil {
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, err)
+		return rerr.Error()
+	}
+	scaleSet.instanceMutex.Unlock()
+
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
 	scaleSet.sizeMutex.Lock()
 	scaleSet.curSize -= int64(len(instanceIDs))
 	scaleSet.sizeMutex.Unlock()
 
-	rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
-	if rerr != nil {
-		klog.Errorf("Failed to delete instances %v. Invalidating the cache to get the real scale set size", requiredIds)
-		scaleSet.invalidateStatusCacheWithLock()
+	go scaleSet.waitForDeleteInstances(future, requiredIds)
+
+	return nil
+}
+
+func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
+	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
+	if isSuccess {
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v) success", requiredIds.InstanceIds)
+		return
 	}
-	return rerr.Error()
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances for instances %v failed with error: %v", requiredIds.InstanceIds, err)
 }
 
 // DeleteNodes deletes the nodes from the group.
