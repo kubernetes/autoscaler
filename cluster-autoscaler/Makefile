@@ -52,6 +52,7 @@ clean:
 
 generate:
 	go generate ./cloudprovider/aws
+	./hack/update-generated-deep-copies.sh
 
 format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
