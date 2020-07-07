@@ -242,17 +242,19 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
 
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
+
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity(%s)", scaleSet.Name)
 	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
 
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult(%s) success", scaleSet.Name)
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity(%s) success", scaleSet.Name)
 		scaleSet.invalidateInstanceCache()
 
 		return
 	}
 
-	klog.Errorf("virtualMachineScaleSetsClient.WaitForCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity for scale set %q failed: %v", scaleSet.Name, err)
 }
 
 // SetScaleSetSize sets ScaleSet size.
@@ -290,7 +292,6 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	scaleSet.curSize = size
 	scaleSet.lastSizeRefresh = time.Now()
 
-	klog.V(3).Infof("create a goroutine to wait for the result of the virtualMachineScaleSetsClient.CreateOrUpdate request")
 	go scaleSet.updateVMSSCapacity(future)
 
 	return nil
@@ -435,7 +436,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
 	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
 	if rerr != nil {
-		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, err)
+		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, rerr)
 		return rerr.Error()
 	}
 	scaleSet.instanceMutex.Unlock()
@@ -454,7 +455,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v)", requiredIds.InstanceIds)
 	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
