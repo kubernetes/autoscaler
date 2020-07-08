@@ -43,6 +43,7 @@ import (
 var (
 	defaultVmssSizeRefreshPeriod = 15 * time.Second
 	vmssInstancesRefreshPeriod   = 5 * time.Minute
+	vmssContextTimeout           = 3 * time.Minute
 	vmssSizeMutex                sync.Mutex
 )
 
@@ -172,7 +173,7 @@ func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) 
 }
 
 func (scaleSet *ScaleSet) getAllVMSSInfo() ([]compute.VirtualMachineScaleSet, error) {
-	ctx, cancel := getContextWithTimeout(3 * time.Minute)
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
@@ -228,7 +229,7 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 func (scaleSet *ScaleSet) waitForDeleteInstances(future compute.VirtualMachineScaleSetsDeleteInstancesFuture, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForDeleteInstances(%v)", requiredIds.InstanceIds)
 	resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForDeleteInstances(ctx, future)
 	isSuccess, err := isSuccessHTTPResponse(resp, err)
 	if isSuccess {
@@ -259,7 +260,7 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) error {
 		Sku:      vmssInfo.Sku,
 		Location: vmssInfo.Location,
 	}
-	ctx, cancel := getContextWithCancel()
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
 	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
@@ -341,7 +342,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // GetScaleSetVms returns list of nodes for the given scale set.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
 	klog.V(4).Infof("GetScaleSetVms: starts")
-	ctx, cancel := getContextWithTimeout(3 * time.Minute)
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
@@ -440,18 +441,18 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		InstanceIds: &instanceIDs,
 	}
 
-	ctx, cancel := getContextWithCancel()
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 
 	scaleSet.instanceMutex.Lock()
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
 	future, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	scaleSet.instanceMutex.Unlock()
 	if err != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, err)
 		return err
 	}
-	scaleSet.instanceMutex.Unlock()
 
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
