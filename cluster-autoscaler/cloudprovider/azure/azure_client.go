@@ -29,13 +29,13 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/diskclient"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/interfaceclient"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/storageaccountclient"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/vmclient"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/vmssclient"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/clients/vmssvmclient"
 	"k8s.io/klog"
-	"k8s.io/legacy-cloud-providers/azure/clients/diskclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient"
 )
 
 // DeploymentsClient defines needed functions for azure network.DeploymentsClient.
