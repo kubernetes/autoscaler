@@ -55,10 +55,10 @@ type Client struct {
 }
 
 // New creates a new vmssVM client with ratelimiting.
-func New(config *azclients.ClientConfig) *Client {
+func New(config *azclients.ClientConfig, UserAgent string) *Client {
 	baseURI := config.ResourceManagerEndpoint
 	authorizer := config.Authorizer
-	armClient := armclient.New(authorizer, baseURI, "", APIVersion, config.Location, config.Backoff)
+	armClient := armclient.New(authorizer, baseURI, UserAgent, APIVersion, config.Location, config.Backoff)
 	rateLimiterReader, rateLimiterWriter := azclients.NewRateLimiter(config.RateLimitConfig)
 
 	klog.V(2).Infof("Azure vmssVM client (read ops) using rate limit config: QPS=%g, bucket=%d",
