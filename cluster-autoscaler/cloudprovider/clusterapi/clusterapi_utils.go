@@ -22,6 +22,7 @@ import (
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 const (
@@ -109,9 +110,9 @@ func parseScalingBounds(annotations map[string]string) (int, int, error) {
 	return minSize, maxSize, nil
 }
 
-func machineOwnerRef(machine *Machine) *metav1.OwnerReference {
-	for _, ref := range machine.OwnerReferences {
-		if ref.Kind == "MachineSet" && ref.Name != "" {
+func getOwnerForKind(u *unstructured.Unstructured, kind string) *metav1.OwnerReference {
+	for _, ref := range u.GetOwnerReferences() {
+		if ref.Kind == kind && ref.Name != "" {
 			return ref.DeepCopy()
 		}
 	}
@@ -119,32 +120,16 @@ func machineOwnerRef(machine *Machine) *metav1.OwnerReference {
 	return nil
 }
 
-func machineIsOwnedByMachineSet(machine *Machine, machineSet *MachineSet) bool {
-	if ref := machineOwnerRef(machine); ref != nil {
-		return ref.UID == machineSet.UID
-	}
-	return false
+func machineOwnerRef(machine *unstructured.Unstructured) *metav1.OwnerReference {
+	return getOwnerForKind(machine, machineSetKind)
 }
 
-func machineSetMachineDeploymentRef(machineSet *MachineSet) *metav1.OwnerReference {
-	for _, ref := range machineSet.OwnerReferences {
-		if ref.Kind == "MachineDeployment" {
-			return ref.DeepCopy()
-		}
-	}
-
-	return nil
+func machineSetOwnerRef(machineSet *unstructured.Unstructured) *metav1.OwnerReference {
+	return getOwnerForKind(machineSet, machineDeploymentKind)
 }
 
-func machineSetHasMachineDeploymentOwnerRef(machineSet *MachineSet) bool {
-	return machineSetMachineDeploymentRef(machineSet) != nil
-}
-
-func machineSetIsOwnedByMachineDeployment(machineSet *MachineSet, machineDeployment *MachineDeployment) bool {
-	if ref := machineSetMachineDeploymentRef(machineSet); ref != nil {
-		return ref.UID == machineDeployment.UID
-	}
-	return false
+func machineSetHasMachineDeploymentOwnerRef(machineSet *unstructured.Unstructured) bool {
+	return machineSetOwnerRef(machineSet) != nil
 }
 
 // normalizedProviderString splits s on '/' returning everything after
