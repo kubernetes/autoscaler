@@ -60,3 +60,15 @@ use the group `cluster.x-k8s.io`, with a dynamically acquired version. In
 some situations, such as testing or prototyping, you may wish to change this
 group variable. For these situations you may use the environment variable
 `CAPI_GROUP` to change the group that the provider will use.
+
+## Sample manifest
+
+A sample manifest that will create a deployment running the autoscaler is
+available. It can be deployed by passing it through `envsubst`, providing
+these environment variables to set the namespace to deploy into as well as the image and tag to use:
+
+```
+export AUTOSCALER_NS=kube-system
+export AUTOSCALER_IMAGE=us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.18.1
+envsubst < examples/deployment.yaml | kubectl apply -f-
+```
