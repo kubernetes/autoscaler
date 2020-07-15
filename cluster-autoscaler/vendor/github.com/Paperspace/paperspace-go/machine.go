@@ -10,6 +10,10 @@ import (
 
 type MachineState string
 
+func (s MachineState) String() string {
+	return string(s)
+}
+
 const (
 	MachineStateOff          MachineState = "off"
 	MachineStateProvisioning MachineState = "provisioning"
