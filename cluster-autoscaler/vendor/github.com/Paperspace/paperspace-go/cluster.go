@@ -49,10 +49,10 @@ type ClusterCreateParams struct {
 	ArtifactsBucketPath      string `json:"bucketPath,omitempty" yaml:"artifactsBucketPath,omitempty"`
 	ArtifactsSecretAccessKey string `json:"secretKey,omitempty" yaml:"artifactsSecretAccessKey,omitempty"`
 	Domain                   string `json:"fqdn" yaml:"domain"`
-	IsDefault                bool   `json:"isDefault,omitempty" yaml"isDefault,omitempty"`
+	IsDefault                bool   `json:"isDefault,omitempty" yaml:"isDefault,omitempty"`
 	Name                     string `json:"name" yaml:"name"`
 	Platform                 string `json:"cloud,omitempty" yaml:"platform,omitempty"`
-	Region                   string `json:"region,omitempty, yaml:"region,omitempty"`
+	Region                   string `json:"region,omitempty" yaml:"region,omitempty"`
 	Type                     int    `json:"type,omitempty" yaml:"type,omitempty"`
 }
 
