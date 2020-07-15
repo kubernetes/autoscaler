@@ -24,6 +24,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+
+	klog "k8s.io/klog/v2"
 )
 
 // GcePriceModel implements PriceModel interface for GCE.
@@ -110,6 +112,7 @@ var (
 		"e2-standard-4":    0.13402,
 		"e2-standard-8":    0.26805,
 		"e2-standard-16":   0.53609,
+		"e2-standard-32":   1.07210,
 		"f1-micro":         0.0076,
 		"g1-small":         0.0257,
 		"m1-megamem-96":    10.6740,
@@ -217,6 +220,7 @@ var (
 		"e2-standard-4":    0.04021,
 		"e2-standard-8":    0.08041,
 		"e2-standard-16":   0.16083,
+		"e2-standard-32":   0.32163,
 		"f1-micro":         0.0035,
 		"g1-small":         0.0070,
 		"m1-megamem-96":    2.2600,
@@ -319,6 +323,8 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 			if basePricePerHour, found := priceMapToUse[machineType]; found {
 				price = basePricePerHour * getHours(startTime, endTime)
 				basePriceFound = true
+			} else {
+				klog.Warningf("Pricing information not found for instance type %v; will fallback to default pricing", machineType)
 			}
 		}
 	}
