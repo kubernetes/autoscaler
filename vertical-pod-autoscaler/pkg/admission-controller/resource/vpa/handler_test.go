@@ -36,6 +36,8 @@ func TestValidateVPA(t *testing.T) {
 	validUpdateMode := vpa_types.UpdateModeOff
 	badScalingMode := vpa_types.ContainerScalingMode("bad")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
+	scalingModeOff := vpa_types.ContainerScalingModeOff
+	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	tests := []struct {
 		name        string
 		vpa         vpa_types.VerticalPodAutoscaler
@@ -119,6 +121,23 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("max resource for cpu is lower than min"),
+		},
+		{
+			name: "scaling off with controlled values requests and limits",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:    "loot box",
+								Mode:             &scalingModeOff,
+								ControlledValues: &controlledValuesRequestsAndLimits,
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("ControlledValues shouldn't be specified if container scaling mode is off."),
 		},
 		{
 			name: "all valid",

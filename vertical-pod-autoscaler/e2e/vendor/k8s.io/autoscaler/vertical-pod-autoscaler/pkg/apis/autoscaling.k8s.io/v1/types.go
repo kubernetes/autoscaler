@@ -147,6 +147,16 @@ type ContainerResourcePolicy struct {
 	// for the container. The default is no maximum.
 	// +optional
 	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+
+	// Specifies the type of recommendations that will be computed
+	// (and possibly applied) by VPA.
+	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+	ControlledResources *[]v1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge" protobuf:"bytes,5,rep,name=controlledResources"`
+
+	// Specifies which resource values should be controlled.
+	// The default is "RequestsAndLimits".
+	// +optional
+	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
 }
 
 const (
@@ -164,6 +174,17 @@ const (
 	ContainerScalingModeAuto ContainerScalingMode = "Auto"
 	// ContainerScalingModeOff means autoscaling is disabled for a container.
 	ContainerScalingModeOff ContainerScalingMode = "Off"
+)
+
+// ContainerControlledValues controls which resource value should be autoscaled.
+type ContainerControlledValues string
+
+const (
+	// ContainerControlledValuesRequestsAndLimits means resource request and limits
+	// are scaled automatically. The limit is scaled proportionally to the request.
+	ContainerControlledValuesRequestsAndLimits ContainerControlledValues = "RequestsAndLimits"
+	// ContainerControlledValuesRequestsOnly means only requested resource is autoscaled.
+	ContainerControlledValuesRequestsOnly ContainerControlledValues = "RequestsOnly"
 )
 
 // VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.
