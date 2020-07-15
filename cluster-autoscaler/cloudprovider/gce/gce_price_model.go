@@ -305,6 +305,20 @@ var (
 		"n2d-standard-128": 1.3085,
 		"n2d-standard-224": 2.2900,
 	}
+	gpuPrices = map[string]float64{
+		"nvidia-tesla-t4":   0.35,
+		"nvidia-tesla-p4":   0.60,
+		"nvidia-tesla-v100": 2.48,
+		"nvidia-tesla-p100": 1.46,
+		"nvidia-tesla-k80":  0.45,
+	}
+	preemptibleGpuPrices = map[string]float64{
+		"nvidia-tesla-t4":   0.11,
+		"nvidia-tesla-p4":   0.216,
+		"nvidia-tesla-v100": 0.74,
+		"nvidia-tesla-p100": 0.43,
+		"nvidia-tesla-k80":  0.135,
+	}
 )
 
 // NodePrice returns a price of running the given node for a given period of time.
@@ -312,13 +326,15 @@ var (
 func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	basePriceFound := false
+	isPreemptible := false
+
+	// Base instance price
 	if node.Labels != nil {
+		isPreemptible = node.Labels[preemptibleLabel] == "true"
 		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
-			var priceMapToUse map[string]float64
-			if node.Labels[preemptibleLabel] == "true" {
+			priceMapToUse := instancePrices
+			if isPreemptible {
 				priceMapToUse = preemptiblePrices
-			} else {
-				priceMapToUse = instancePrices
 			}
 			if basePricePerHour, found := priceMapToUse[machineType]; found {
 				price = basePricePerHour * getHours(startTime, endTime)
@@ -332,9 +348,27 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		price = getBasePrice(node.Status.Capacity, node.Labels[apiv1.LabelInstanceType], startTime, endTime)
 		price = price * getPreemptibleDiscount(node)
 	}
-	// TODO: handle SSDs.
 
-	price += getAdditionalPrice(node.Status.Capacity, startTime, endTime)
+	// GPUs
+	if gpuRequest, found := node.Status.Capacity[gpu.ResourceNvidiaGPU]; found {
+		gpuPrice := gpuPricePerHour
+		if node.Labels != nil {
+			priceMapToUse := gpuPrices
+			if isPreemptible {
+				priceMapToUse = preemptibleGpuPrices
+			}
+			if gpuType, found := node.Labels[GPULabel]; found {
+				if _, found := priceMapToUse[gpuType]; found {
+					gpuPrice = priceMapToUse[gpuType]
+				} else {
+					klog.Warningf("Pricing information not found for GPU type %v; will fallback to default pricing", gpuType)
+				}
+			}
+		}
+		price += float64(gpuRequest.MilliValue()) / 1000.0 * gpuPrice * getHours(startTime, endTime)
+	}
+
+	// TODO: handle SSDs.
 	return price, nil
 }
 
