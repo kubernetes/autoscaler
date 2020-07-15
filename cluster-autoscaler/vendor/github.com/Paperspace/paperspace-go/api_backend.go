@@ -2,6 +2,7 @@ package paperspace
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,13 +35,13 @@ func NewAPIBackend() *APIBackend {
 	}
 }
 
-func (c *APIBackend) Request(method string, url string,
+func (c *APIBackend) Request(ctx context.Context, method string, url string,
 	params, result interface{}, headers map[string]string) (res *http.Response, err error) {
 	for i := 0; i < c.RetryCount+1; i++ {
 		retryDuration := time.Duration((math.Pow(2, float64(i))-1)/2*1000) * time.Millisecond
 		time.Sleep(retryDuration)
 
-		res, err = c.request(method, url, params, result, headers)
+		res, err = c.request(ctx, method, url, params, result, headers)
 		if res != nil && res.StatusCode == 429 {
 			continue
 		} else {
@@ -51,7 +52,7 @@ func (c *APIBackend) Request(method string, url string,
 	return res, err
 }
 
-func (c *APIBackend) request(method string, url string,
+func (c *APIBackend) request(ctx context.Context, method string, url string,
 	params, result interface{}, headers map[string]string) (res *http.Response, err error) {
 	var data []byte
 	body := bytes.NewReader(make([]byte, 0))
@@ -66,7 +67,7 @@ func (c *APIBackend) request(method string, url string,
 	}
 
 	fullURL := fmt.Sprintf("%s%s", c.BaseURL, url)
-	req, err := http.NewRequest(method, fullURL, body)
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, body)
 	if err != nil {
 		return res, err
 	}

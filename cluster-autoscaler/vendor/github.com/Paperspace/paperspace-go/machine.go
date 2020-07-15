@@ -1,6 +1,7 @@
 package paperspace
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -84,6 +85,10 @@ type MachineUpdateParams struct {
 	DynamicPublicIP        bool   `json:"dynamicPublicIp,omitempty"`
 }
 
+type MachineDeleteParams struct {
+	ID string `json:"machineId"`
+}
+
 func NewMachineListParams() *MachineListParams {
 	machineListParams := MachineListParams{
 		Filter: make(map[string]string),
@@ -92,25 +97,25 @@ func NewMachineListParams() *MachineListParams {
 	return &machineListParams
 }
 
-func (c Client) CreateMachine(params MachineCreateParams) (Machine, error) {
+func (c Client) CreateMachine(ctx context.Context, params MachineCreateParams) (Machine, error) {
 	machine := Machine{}
 
 	url := fmt.Sprintf("/machines/createSingleMachinePublic")
-	_, err := c.Request("POST", url, params, &machine)
+	_, err := c.Request(ctx, "POST", url, params, &machine)
 
 	return machine, err
 }
 
-func (c Client) GetMachine(ID string) (Machine, error) {
+func (c Client) GetMachine(ctx context.Context, ID string) (Machine, error) {
 	machine := Machine{}
 
 	url := fmt.Sprintf("/machines/getMachinePublic?machineId=%s", ID)
-	_, err := c.Request("GET", url, nil, &machine)
+	_, err := c.Request(ctx, "GET", url, nil, &machine)
 
 	return machine, err
 }
 
-func (c Client) GetMachines(p ...MachineListParams) ([]Machine, error) {
+func (c Client) GetMachines(ctx context.Context, p ...MachineListParams) ([]Machine, error) {
 	var machines []Machine
 	params := NewMachineListParams()
 
@@ -119,16 +124,23 @@ func (c Client) GetMachines(p ...MachineListParams) ([]Machine, error) {
 	}
 
 	url := fmt.Sprintf("/machines/getMachines")
-	_, err := c.Request("GET", url, params, &machines)
+	_, err := c.Request(ctx, "GET", url, params, &machines)
 
 	return machines, err
 }
 
-func (c Client) UpdateMachine(p MachineUpdateParams) (Machine, error) {
+func (c Client) UpdateMachine(ctx context.Context, p MachineUpdateParams) (Machine, error) {
 	machine := Machine{}
 
 	url := fmt.Sprintf("/machines/updateMachine")
-	_, err := c.Request("POST", url, p, &machine)
+	_, err := c.Request(ctx, "POST", url, p, &machine)
 
 	return machine, err
+}
+
+func (c Client) DeleteMachine(ctx context.Context, p MachineDeleteParams) error {
+	url := fmt.Sprintf("/machines/%s/destroyMachine", p.ID)
+	_, err := c.Request(ctx, "POST", url, nil, nil)
+
+	return err
 }

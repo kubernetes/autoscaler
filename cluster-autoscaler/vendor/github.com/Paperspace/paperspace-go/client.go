@@ -1,6 +1,7 @@
 package paperspace
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -22,9 +23,9 @@ func NewClientWithBackend(backend Backend) *Client {
 	}
 }
 
-func (c *Client) Request(method, url string, params, result interface{}) (*http.Response, error) {
+func (c *Client) Request(ctx context.Context, method string, url string, params, result interface{}) (*http.Response, error) {
 	headers := map[string]string{
 		"x-api-key": c.APIKey,
 	}
-	return c.Backend.Request(method, url, params, result, headers)
+	return c.Backend.Request(ctx, method, url, params, result, headers)
 }
