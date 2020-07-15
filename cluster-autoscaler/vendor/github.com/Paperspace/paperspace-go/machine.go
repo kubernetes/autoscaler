@@ -8,8 +8,16 @@ import (
 //var ClusterPlatforms = []ClusterPlatformType{ClusterPlatformAWS, ClusterPlatformMetal}
 //var DefaultClusterType = 3
 
+type MachineState string
+
+const (
+	MachineStateOff          MachineState = "off"
+	MachineStateProvisioning MachineState = "provisioning"
+	MachineStateRunning      MachineState = "running"
+)
+
 type Machine struct {
-	ID                     int       `json:"id"`
+	ID                     string    `json:"id"`
 	Name                   string    `json:"name"`
 	OS                     string    `json:"os"`
 	RAM                    string    `json:"ram"`
@@ -25,7 +33,7 @@ type Machine struct {
 	AutoSnapshotFrequency  int       `json:"autoSnapshotFrequency"`
 	AutoSnapshotSaveCount  int       `json:"autoSnapshotSaveCount"`
 	AgentType              string    `json:"agentType"`
-	NetworkID              int       `json:"networkId"`
+	NetworkID              string    `json:"networkId"`
 	PrivateIpAddress       string    `json:"privateIpAddress"`
 	PublicIpAddress        string    `json:"publicIpAddress"`
 	DtCreated              time.Time `json:"dtCreated"`
