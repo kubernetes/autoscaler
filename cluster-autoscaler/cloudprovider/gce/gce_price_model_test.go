@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -29,115 +30,135 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64, mem int64, gpuType string, gpuCount int64, isPreemptible bool) *apiv1.Node {
+	node := BuildTestNode(nodeName, millicpu, mem)
+	labels, err := BuildGenericLabels(GceRef{
+		Name:    "kubernetes-minion-group",
+		Project: "mwielgus-proj",
+		Zone:    "us-central1-b"},
+		instanceType,
+		nodeName,
+		OperatingSystemLinux)
+	assert.NoError(t, err)
+	if isPreemptible {
+		labels[preemptibleLabel] = "true"
+	}
+	if gpuCount > 0 {
+		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		node.Status.Allocatable[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		if gpuType != "" {
+			labels[GPULabel] = gpuType
+		}
+	}
+	node.Labels = labels
+	return node
+}
+
+// this test is meant to cover all the branches in pricing logic, not all possible types of instances
 func TestGetNodePrice(t *testing.T) {
-	labels1, _ := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-standard-8",
-		"sillyname",
-		OperatingSystemLinux)
+	// tests assert that price(cheaperNode) < priceComparisonCoefficient * price(expensiveNode)
+	cases := map[string]struct {
+		cheaperNode                *apiv1.Node
+		expensiveNode              *apiv1.Node
+		priceComparisonCoefficient float64
+	}{
+		// instance types
+		"e2 is cheaper than n1": {
+			cheaperNode:                testNode(t, "e2", "e2-standard-8", 8000, 32*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1,
+		},
+		"custom nodes are more expensive than n1": {
+			cheaperNode:                testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1,
+		},
+		"custom nodes are not extremely expensive": {
+			cheaperNode:                testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1.2,
+		},
+		"custom node price scales linearly": {
+			cheaperNode:                testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1.0 / 7.9,
+		},
+		"custom node price scales linearly 2": {
+			cheaperNode:                testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 8.1,
+		},
+		// GPUs
+		"accelerators are expensive": {
+			cheaperNode: testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			// #NotFunny
+			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
+			priceComparisonCoefficient: 0.5,
+		},
+		"GPUs of unknown type are still expensive": {
+			cheaperNode:                testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "cyclotron", "n1-standard-8", 8000, 30*units.GiB, "", 1, false),
+			priceComparisonCoefficient: 0.5,
+		},
+		"different GPUs have different prices": {
+			cheaperNode:                testNode(t, "cheap gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-t4", 1, false),
+			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
+			priceComparisonCoefficient: 0.5,
+		},
+		"more GPUs is more expensive": {
+			cheaperNode:                testNode(t, "1 gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
+			expensiveNode:              testNode(t, "2 gpus", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false),
+			priceComparisonCoefficient: 0.7,
+		},
+		// Preemptibles
+		"preemtpibles are cheap": {
+			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "", 0, true),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 0.25,
+		},
+		"custom preemptibles are also cheap": {
+			cheaperNode:                testNode(t, "preempted_i_can_be", "custom-8", 8000, 30*units.GiB, "", 0, true),
+			expensiveNode:              testNode(t, "ondemand", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 0.25,
+		},
+		"preemtpibles GPUs are (relatively) cheap": {
+			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, true),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false),
+			priceComparisonCoefficient: 0.5,
+		},
+		// Unknown instances
+		"unknown cost is similar to its node family": {
+			cheaperNode:                testNode(t, "unknown", "n1-unknown", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "known", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1.001,
+		},
+		"unknown cost is similar to its node family 2": {
+			cheaperNode:                testNode(t, "unknown", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "known", "n1-unknown", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1.001,
+		},
+		// Custom instances
+		"big custom from cheap family is cheaper than small custom from expensive family": {
+			cheaperNode:                testNode(t, "unknown", "e2-custom", 9000, 32*units.GiB, "", 0, false),
+			expensiveNode:              testNode(t, "known", "n1-custom", 8000, 30*units.GiB, "", 0, false),
+			priceComparisonCoefficient: 1.001,
+		},
+	}
 
-	labels2, _ := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-standard-8",
-		"sillyname",
-		OperatingSystemLinux)
-	labels2[preemptibleLabel] = "true"
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			model := &GcePriceModel{}
+			now := time.Now()
 
-	labels3, _ := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-custom",
-		"sillyname",
-		OperatingSystemLinux)
-
-	labels4, _ := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"n1-unknown",
-		"sillyname",
-		OperatingSystemLinux)
-
-	labels5, _ := BuildGenericLabels(GceRef{
-		Name:    "kubernetes-minion-group",
-		Project: "mwielgus-proj",
-		Zone:    "us-central1-b"},
-		"e2-custom",
-		"sillyname",
-		OperatingSystemLinux)
-
-	model := &GcePriceModel{}
-	now := time.Now()
-
-	// regular
-	node1 := BuildTestNode("sillyname1", 8000, 30*units.GiB)
-	node1.Labels = labels1
-	price1, err := model.NodePrice(node1, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-
-	// preemptible
-	node2 := BuildTestNode("sillyname2", 8000, 30*units.GiB)
-	node2.Labels = labels2
-	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-	// preemptible nodes should be way cheaper than regular.
-	assert.True(t, price1 > 3*price2)
-
-	// custom node
-	node3 := BuildTestNode("sillyname3", 8000, 30*units.GiB)
-	node3.Labels = labels3
-	price3, err := model.NodePrice(node3, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-	// custom nodes should be slightly more expensive than regular.
-	assert.True(t, price1 < price3)
-	assert.True(t, price1*1.2 > price3)
-
-	// regular with gpu
-	node4 := BuildTestNode("sillyname4", 8000, 30*units.GiB)
-	node4.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	node4.Labels = labels1
-	price4, _ := model.NodePrice(node4, now, now.Add(time.Hour))
-
-	// preemptible with gpu
-	node5 := BuildTestNode("sillyname5", 8000, 30*units.GiB)
-	node5.Labels = labels2
-	node5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	price5, _ := model.NodePrice(node5, now, now.Add(time.Hour))
-
-	// Nodes with GPU are way more expensive than regular.
-	// Being preemptible doesn't bring much of a discount (less than 50%).
-	assert.True(t, price4 > price5)
-	assert.True(t, price4 < 1.5*price5)
-	assert.True(t, price4 > 2*price1)
-
-	// small custom node
-	node6 := BuildTestNode("sillyname6", 1000, 3750*units.MiB)
-	node6.Labels = labels3
-	price6, err := model.NodePrice(node6, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-	// 8 times smaller node should be 8 times less expensive.
-	assert.True(t, math.Abs(price3-8*price6) < 0.1)
-
-	// unknown instance type
-	node7 := BuildTestNode("sillyname7", 8000, 30*units.GiB)
-	node7.Labels = labels4
-	price7, err := model.NodePrice(node7, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-	// Unknown instance type should have similar pricing to its node family
-	assert.True(t, math.Abs(price1-price7) < 0.1)
-
-	// custom node from cheaper family
-	node8 := BuildTestNode("sillyname8", 9000, 32*units.GiB)
-	node8.Labels = labels5
-	price8, err := model.NodePrice(node8, now, now.Add(time.Hour))
-	assert.NoError(t, err)
-	// Bigger custom e2 node should be cheaper than smaller custom n1 node
-	assert.True(t, price8 < price3)
+			price1, err := model.NodePrice(tc.cheaperNode, now, now.Add(time.Hour))
+			assert.NoError(t, err)
+			price2, err := model.NodePrice(tc.expensiveNode, now, now.Add(time.Hour))
+			assert.NoError(t, err)
+			if price1 >= tc.priceComparisonCoefficient*price2 {
+				t.Errorf("Failed price comparison, price1=%v price2=%v price2*coefficient=%v", price1, price2, price2*tc.priceComparisonCoefficient)
+			}
+		})
+	}
 }
 
 func TestGetPodPrice(t *testing.T) {
