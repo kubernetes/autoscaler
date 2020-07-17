@@ -213,6 +213,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	}
 
 	azClientConfig := cfg.getAzureClientConfig(spt, env)
+	azClientConfig.UserAgent = getUserAgentExtension()
 
 	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
 	scaleSetsClient := vmssclient.New(vmssClientConfig)
