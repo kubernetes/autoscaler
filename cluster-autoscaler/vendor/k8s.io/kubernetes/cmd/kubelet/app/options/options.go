@@ -137,9 +137,6 @@ type KubeletFlags struct {
 	ExitOnLockContention bool
 	// seccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot string
-	// bootstrapCheckpointPath is the path to the directory containing pod checkpoints to
-	// run on restore
-	BootstrapCheckpointPath string
 
 	// DEPRECATED FLAGS
 	// minimumGCAge is the minimum age for a finished container before it is
@@ -347,7 +344,6 @@ func (f *KubeletFlags) AddFlags(mainfs *pflag.FlagSet) {
 	fs.Var(&bindableNodeLabels, "node-labels", fmt.Sprintf("<Warning: Alpha feature> Labels to add when registering the node in the cluster.  Labels must be key=value pairs separated by ','. Labels in the 'kubernetes.io' namespace must begin with an allowed prefix (%s) or be in the specifically allowed set (%s)", strings.Join(kubeletapis.KubeletLabelNamespaces(), ", "), strings.Join(kubeletapis.KubeletLabels(), ", ")))
 	fs.StringVar(&f.LockFilePath, "lock-file", f.LockFilePath, "<Warning: Alpha feature> The path to file for kubelet to use as a lock file.")
 	fs.BoolVar(&f.ExitOnLockContention, "exit-on-lock-contention", f.ExitOnLockContention, "Whether kubelet should exit upon lock-file contention.")
-	fs.StringVar(&f.BootstrapCheckpointPath, "bootstrap-checkpoint-path", f.BootstrapCheckpointPath, "<Warning: Alpha feature> Path to the directory where the checkpoints are stored")
 
 	// DEPRECATED FLAGS
 	fs.StringVar(&f.BootstrapKubeconfig, "experimental-bootstrap-kubeconfig", f.BootstrapKubeconfig, "")
@@ -540,6 +536,7 @@ func AddKubeletConfigFlags(mainfs *pflag.FlagSet, c *kubeletconfig.KubeletConfig
 	fs.StringSliceVar(&c.EnforceNodeAllocatable, "enforce-node-allocatable", c.EnforceNodeAllocatable, "A comma separated list of levels of node allocatable enforcement to be enforced by kubelet. Acceptable options are 'none', 'pods', 'system-reserved', and 'kube-reserved'. If the latter two options are specified, '--system-reserved-cgroup' and '--kube-reserved-cgroup' must also be set, respectively. If 'none' is specified, no additional options should be set. See https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/ for more details.")
 	fs.StringVar(&c.SystemReservedCgroup, "system-reserved-cgroup", c.SystemReservedCgroup, "Absolute name of the top level cgroup that is used to manage non-kubernetes components for which compute resources were reserved via '--system-reserved' flag. Ex. '/system-reserved'. [default='']")
 	fs.StringVar(&c.KubeReservedCgroup, "kube-reserved-cgroup", c.KubeReservedCgroup, "Absolute name of the top level cgroup that is used to manage kubernetes components for which compute resources were reserved via '--kube-reserved' flag. Ex. '/kube-reserved'. [default='']")
+	fs.StringVar(&c.Logging.Format, "logging-format", c.Logging.Format, `Sets the log format. Permitted formats: "text", "json".\nNon-default formats don't honor these flags: -add_dir_header, --alsologtostderr, --log_backtrace_at, --log_dir, --log_file, --log_file_max_size, --logtostderr, --skip_headers, --skip_log_headers, --stderrthreshold, --log-flush-frequency.\nNon-default choices are currently alpha and subject to change without warning.`)
 
 	// Graduated experimental flags, kept for backward compatibility
 	fs.BoolVar(&c.KernelMemcgNotification, "experimental-kernel-memcg-notification", c.KernelMemcgNotification, "Use kernelMemcgNotification configuration, this flag will be removed in 1.23.")

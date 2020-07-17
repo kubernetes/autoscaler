@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["default_preemption.go"],
+    srcs = [
+        "candidate.go",
+        "default_preemption.go",
+    ],
     importpath = "k8s.io/kubernetes/pkg/scheduler/framework/plugins/defaultpreemption",
     visibility = ["//visibility:public"],
     deps = [
@@ -19,6 +22,9 @@ go_library(
         "//staging/src/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//staging/src/k8s.io/apiserver/pkg/util/feature:go_default_library",
+        "//staging/src/k8s.io/client-go/informers:go_default_library",
+        "//staging/src/k8s.io/client-go/kubernetes:go_default_library",
+        "//staging/src/k8s.io/client-go/listers/policy/v1beta1:go_default_library",
         "//staging/src/k8s.io/kube-scheduler/extender/v1:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
@@ -61,19 +67,16 @@ go_test(
         "//pkg/scheduler/internal/cache:go_default_library",
         "//pkg/scheduler/internal/queue:go_default_library",
         "//pkg/scheduler/testing:go_default_library",
-        "//pkg/scheduler/util:go_default_library",
         "//staging/src/k8s.io/api/core/v1:go_default_library",
         "//staging/src/k8s.io/api/policy/v1beta1:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/types:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/util/wait:go_default_library",
         "//staging/src/k8s.io/client-go/informers:go_default_library",
         "//staging/src/k8s.io/client-go/kubernetes/fake:go_default_library",
         "//staging/src/k8s.io/client-go/testing:go_default_library",
         "//staging/src/k8s.io/client-go/tools/events:go_default_library",
         "//staging/src/k8s.io/kube-scheduler/extender/v1:go_default_library",
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
     ],
 )
