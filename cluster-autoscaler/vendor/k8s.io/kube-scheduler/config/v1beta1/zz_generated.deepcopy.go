@@ -100,11 +100,6 @@ func (in *KubeSchedulerConfiguration) DeepCopyInto(out *KubeSchedulerConfigurati
 		**out = **in
 	}
 	in.DebuggingConfiguration.DeepCopyInto(&out.DebuggingConfiguration)
-	if in.DisablePreemption != nil {
-		in, out := &in.DisablePreemption, &out.DisablePreemption
-		*out = new(bool)
-		**out = **in
-	}
 	if in.PercentageOfNodesToScore != nil {
 		in, out := &in.PercentageOfNodesToScore, &out.PercentageOfNodesToScore
 		*out = new(int32)
@@ -239,6 +234,11 @@ func (in *NodeResourcesFitArgs) DeepCopyInto(out *NodeResourcesFitArgs) {
 	out.TypeMeta = in.TypeMeta
 	if in.IgnoredResources != nil {
 		in, out := &in.IgnoredResources, &out.IgnoredResources
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.IgnoredResourceGroups != nil {
+		in, out := &in.IgnoredResourceGroups, &out.IgnoredResourceGroups
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
