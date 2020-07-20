@@ -77,7 +77,6 @@ func (p *filterOutSchedulablePodListProcessor) Process(
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		klog.V(2).Info("Schedulable pods present")
-		context.ProcessorCallbacks.DisableScaleDownForLoop()
 	} else {
 		klog.V(4).Info("No schedulable pods")
 	}
