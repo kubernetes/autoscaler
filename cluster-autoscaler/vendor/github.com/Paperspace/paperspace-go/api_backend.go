@@ -2,7 +2,6 @@ package paperspace
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,13 +34,13 @@ func NewAPIBackend() *APIBackend {
 	}
 }
 
-func (c *APIBackend) Request(ctx context.Context, method string, url string,
-	params, result interface{}, headers map[string]string) (res *http.Response, err error) {
+func (c *APIBackend) Request(method string, url string,
+	params, result interface{}, requestParams RequestParams) (res *http.Response, err error) {
 	for i := 0; i < c.RetryCount+1; i++ {
 		retryDuration := time.Duration((math.Pow(2, float64(i))-1)/2*1000) * time.Millisecond
 		time.Sleep(retryDuration)
 
-		res, err = c.request(ctx, method, url, params, result, headers)
+		res, err = c.request(method, url, params, result, requestParams)
 		if res != nil && res.StatusCode == 429 {
 			continue
 		} else {
@@ -52,9 +51,10 @@ func (c *APIBackend) Request(ctx context.Context, method string, url string,
 	return res, err
 }
 
-func (c *APIBackend) request(ctx context.Context, method string, url string,
-	params, result interface{}, headers map[string]string) (res *http.Response, err error) {
+func (c *APIBackend) request(method string, url string,
+	params, result interface{}, requestParams RequestParams) (res *http.Response, err error) {
 	var data []byte
+	var req *http.Request
 	body := bytes.NewReader(make([]byte, 0))
 
 	if params != nil {
@@ -67,16 +67,24 @@ func (c *APIBackend) request(ctx context.Context, method string, url string,
 	}
 
 	fullURL := fmt.Sprintf("%s%s", c.BaseURL, url)
-	req, err := http.NewRequestWithContext(ctx, method, fullURL, body)
-	if err != nil {
-		return res, err
+
+	if requestParams.Context == nil {
+		req, err = http.NewRequest(method, fullURL, body)
+		if err != nil {
+			return res, err
+		}
+	} else {
+		req, err = http.NewRequestWithContext(requestParams.Context, method, fullURL, body)
+		if err != nil {
+			return res, err
+		}
 	}
 
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", "Go Paperspace Gradient 1.0")
 
-	for key, value := range headers {
+	for key, value := range requestParams.Headers {
 		req.Header.Add(key, value)
 	}
 

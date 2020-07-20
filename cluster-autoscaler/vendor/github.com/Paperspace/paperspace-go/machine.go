@@ -1,19 +1,11 @@
 package paperspace
 
 import (
-	"context"
 	"fmt"
 	"time"
 )
 
-//var ClusterPlatforms = []ClusterPlatformType{ClusterPlatformAWS, ClusterPlatformMetal}
-//var DefaultClusterType = 3
-
 type MachineState string
-
-func (s MachineState) String() string {
-	return string(s)
-}
 
 const (
 	MachineStateOff          MachineState = "off"
@@ -51,6 +43,8 @@ type Machine struct {
 }
 
 type MachineCreateParams struct {
+	RequestParams
+
 	Name                   string `json:"name"`
 	Region                 string `json:"region"`
 	MachineType            string `json:"machineType"`
@@ -66,15 +60,29 @@ type MachineCreateParams struct {
 	IsManaged              bool   `json:"isManaged,omitempty"`
 }
 
+type MachineDeleteParams struct {
+	RequestParams
+}
+
+type MachineGetParams struct {
+	RequestParams
+}
+
 type MachineListParams struct {
-	Filter map[string]string `json:"filter"`
+	RequestParams
+
+	Filter map[string]string `json:"filter,omitempty"`
 }
 
 type MachineUpdateAttributeParams struct {
+	RequestParams
+
 	Name string `json:"name,omitempty" yaml:"name"`
 }
 
 type MachineUpdateParams struct {
+	RequestParams
+
 	ID                     string `json:"machineId"`
 	Name                   string `json:"machineName,omitempty"`
 	ShutdownTimeoutInHours int    `json:"shutdownTimeoutInHours,omitempty"`
@@ -85,10 +93,6 @@ type MachineUpdateParams struct {
 	DynamicPublicIP        bool   `json:"dynamicPublicIp,omitempty"`
 }
 
-type MachineDeleteParams struct {
-	ID string `json:"machineId"`
-}
-
 func NewMachineListParams() *MachineListParams {
 	machineListParams := MachineListParams{
 		Filter: make(map[string]string),
@@ -97,50 +101,45 @@ func NewMachineListParams() *MachineListParams {
 	return &machineListParams
 }
 
-func (c Client) CreateMachine(ctx context.Context, params MachineCreateParams) (Machine, error) {
+func (c Client) CreateMachine(params MachineCreateParams) (Machine, error) {
 	machine := Machine{}
 
 	url := fmt.Sprintf("/machines/createSingleMachinePublic")
-	_, err := c.Request(ctx, "POST", url, params, &machine)
+	_, err := c.Request("POST", url, params, &machine, params.RequestParams)
 
 	return machine, err
 }
 
-func (c Client) GetMachine(ctx context.Context, ID string) (Machine, error) {
+func (c Client) GetMachine(id string, params MachineGetParams) (Machine, error) {
 	machine := Machine{}
 
-	url := fmt.Sprintf("/machines/getMachinePublic?machineId=%s", ID)
-	_, err := c.Request(ctx, "GET", url, nil, &machine)
+	url := fmt.Sprintf("/machines/getMachinePublic?machineId=%s", id)
+	_, err := c.Request("GET", url, nil, &machine, params.RequestParams)
 
 	return machine, err
 }
 
-func (c Client) GetMachines(ctx context.Context, p ...MachineListParams) ([]Machine, error) {
+func (c Client) GetMachines(params MachineListParams) ([]Machine, error) {
 	var machines []Machine
-	params := NewMachineListParams()
-
-	if len(p) > 0 {
-		params = &p[0]
-	}
 
 	url := fmt.Sprintf("/machines/getMachines")
-	_, err := c.Request(ctx, "GET", url, params, &machines)
+	_, err := c.Request("GET", url, params, &machines, params.RequestParams)
 
 	return machines, err
 }
 
-func (c Client) UpdateMachine(ctx context.Context, p MachineUpdateParams) (Machine, error) {
+func (c Client) UpdateMachine(params MachineUpdateParams) (Machine, error) {
 	machine := Machine{}
 
 	url := fmt.Sprintf("/machines/updateMachine")
-	_, err := c.Request(ctx, "POST", url, p, &machine)
+	_, err := c.Request("POST", url, params, &machine, params.RequestParams)
 
 	return machine, err
 }
 
-func (c Client) DeleteMachine(ctx context.Context, p MachineDeleteParams) error {
-	url := fmt.Sprintf("/machines/%s/destroyMachine", p.ID)
-	_, err := c.Request(ctx, "POST", url, nil, nil)
+func (c Client) DeleteMachine(id string, params MachineDeleteParams) error {
+	url := fmt.Sprintf("/machines/%s/destroyMachine", id)
+	_, err := c.Request("POST", url, nil, nil, params.RequestParams)
 
 	return err
 }

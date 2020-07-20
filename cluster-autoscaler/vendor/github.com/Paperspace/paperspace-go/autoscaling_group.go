@@ -1,0 +1,101 @@
+package paperspace
+
+import (
+	"fmt"
+)
+
+type AutoscalingGroup struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Min         int    `json:"min"`
+	Max         int    `json:"max"`
+	Current     int    `json:"current"`
+	MachineType string `json:"machineType"`
+	TemplateID  string `json:"templateId"`
+	ScriptID    string `json:"scriptId"`
+	NetworkID   string `json:"networkId"`
+}
+
+type AutoscalingGroupCreateParams struct {
+	RequestParams
+
+	Name        string `json:"name"`
+	Min         int    `json:"min"`
+	Max         int    `json:"max"`
+	MachineType string `json:"machineType"`
+	TemplateID  string `json:"templateId"`
+	ScriptID    string `json:"scriptId,omitempty"`
+	NetworkID   string `json:"networkId"`
+}
+
+type AutoscalingGroupDeleteParams struct {
+	RequestParams
+}
+
+type AutoscalingGroupGetParams struct {
+	RequestParams
+}
+
+type AutoscalingGroupListParams struct {
+	RequestParams
+
+	Filter map[string]string `json:"filter"`
+}
+
+type AutoscalingGroupUpdateAttributeParams struct {
+	Name        string `json:"name,omitempty"`
+	Min         string `json:"name,omitempty"`
+	Max         int    `json:"max,omitempty"`
+	Current     int    `json:"current,omitempty"`
+	MachineType string `json:"machineType,omitempty"`
+	TemplateID  string `json:"templateId,omitempty"`
+	ScriptID    string `json:"scriptId,omitempty"`
+	NetworkID   string `json:"networkId,omitempty"`
+}
+
+type AutoscalingGroupUpdateParams struct {
+	RequestParams
+
+	Attributes AutoscalingGroupUpdateAttributeParams `json:"attributes,omitempty"`
+}
+
+func (c Client) CreateAutoscalingGroup(params AutoscalingGroupCreateParams) (AutoscalingGroup, error) {
+	autoscalingGroup := AutoscalingGroup{}
+
+	url := fmt.Sprintf("/autoscalingGroups")
+	_, err := c.Request("POST", url, params, &autoscalingGroup, params.RequestParams)
+
+	return autoscalingGroup, err
+}
+
+func (c Client) GetAutoscalingGroup(id string, params AutoscalingGroupGetParams) (AutoscalingGroup, error) {
+	autoscalingGroup := AutoscalingGroup{}
+
+	url := fmt.Sprintf("/autoscalingGroups/%s", id)
+	_, err := c.Request("GET", url, nil, &autoscalingGroup, params.RequestParams)
+
+	return autoscalingGroup, err
+}
+
+func (c Client) GetAutoscalingGroups(params AutoscalingGroupListParams) ([]AutoscalingGroup, error) {
+	var autoscalingGroups []AutoscalingGroup
+
+	url := fmt.Sprintf("/autoscalingGroups")
+	_, err := c.Request("GET", url, params, &autoscalingGroups, params.RequestParams)
+
+	return autoscalingGroups, err
+}
+
+func (c Client) UpdateAutoscalingGroup(id string, params AutoscalingGroupUpdateParams) error {
+	url := fmt.Sprintf("/autoscalingGroups/%s", id)
+	_, err := c.Request("PATCH", url, params, nil, params.RequestParams)
+
+	return err
+}
+
+func (c Client) DeleteAutoscalingGroup(id string, params AutoscalingGroupDeleteParams) error {
+	url := fmt.Sprintf("/autoscalingGroups/%s", id)
+	_, err := c.Request("DELETE", url, nil, nil, params.RequestParams)
+
+	return err
+}

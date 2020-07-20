@@ -5,6 +5,11 @@ import (
 	"net/http"
 )
 
+type RequestParams struct {
+	Context context.Context   `json:"-"`
+	Headers map[string]string `json:"-"`
+}
+
 type Client struct {
 	APIKey  string
 	Backend Backend
@@ -23,9 +28,11 @@ func NewClientWithBackend(backend Backend) *Client {
 	}
 }
 
-func (c *Client) Request(ctx context.Context, method string, url string, params, result interface{}) (*http.Response, error) {
-	headers := map[string]string{
-		"x-api-key": c.APIKey,
+func (c *Client) Request(method string, url string, params, result interface{}, requestParams RequestParams) (*http.Response, error) {
+	if requestParams.Headers == nil {
+		requestParams.Headers = make(map[string]string)
 	}
-	return c.Backend.Request(ctx, method, url, params, result, headers)
+	requestParams.Headers["x-api-key"] = c.APIKey
+
+	return c.Backend.Request(method, url, params, result, requestParams)
 }
