@@ -1,5 +1,21 @@
 /*
-Package signer providers functions for sign http request before request cloud.
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Package aksk providers functions for sign http request before request cloud.
 */
 package aksk
 
@@ -21,7 +37,7 @@ import (
 	"time"
 )
 
-//caseInsencitiveStringArray represents string case insensitive sorting operations
+// caseInsencitiveStringArray represents string case insensitive sorting operations
 type caseInsencitiveStringArray []string
 
 // noEscape specifies whether the character should be encoded or not
@@ -86,19 +102,19 @@ type signKeyCacheEntry struct {
 	NumberOfDaysSinceEpoch int64  // number of days since epoch
 }
 
-// The default sign algorithm
+// SignAlgorithmHMACSHA256 The default sign algorithm
 const SignAlgorithmHMACSHA256 = "SDK-HMAC-SHA256"
 
-// The header key of content hash value
+// ContentSha256HeaderKey The header key of content hash value
 const ContentSha256HeaderKey = "x-sdk-content-sha256"
 
-//A regular for searching empty string
+// A regular for searching empty string
 var spaceRegexp = regexp.MustCompile(`\s+`)
 
 // cache sign key
 var cache = NewCache(300)
 
-//Sign manipulates the http.Request instance with some required authentication headers for SK/SK auth.
+// Sign manipulates the http.Request instance with some required authentication headers for SK/SK auth.
 func Sign(req *http.Request, signOptions SignOptions) {
 	signOptions.AccessKey = strings.TrimSpace(signOptions.AccessKey)
 	signOptions.SecretKey = strings.TrimSpace(signOptions.SecretKey)
@@ -164,9 +180,9 @@ func deriveSigningKey(signParam reqSignParams) []byte {
 		})
 		cache.Add(cacheKey, string(signKeyStr))
 		return signKey
-	} else {
-		return buildSignKey(signParam)
 	}
+
+	return buildSignKey(signParam)
 }
 
 func buildSignKey(signParam reqSignParams) []byte {
@@ -179,7 +195,7 @@ func buildSignKey(signParam reqSignParams) []byte {
 	return computeSignature("sdk_request", kService, signParam.SignAlgorithm)
 }
 
-//HmacSha256 implements the  Keyed-Hash Message Authentication Code computation.
+// HmacSha256 implements the  Keyed-Hash Message Authentication Code computation.
 func HmacSha256(data string, key []byte) []byte {
 	mac := hmac.New(sha256.New, key)
 	mac.Write([]byte(data))
@@ -215,10 +231,9 @@ func buildAuthorizationHeader(signParam reqSignParams, signature []byte) string 
 func computeSignature(signData string, key []byte, algorithm string) []byte {
 	if algorithm == SignAlgorithmHMACSHA256 {
 		return HmacSha256(signData, key)
-	} else {
-		log.Fatalf("Unsupported algorithm %s, please use %s and try again", algorithm, SignAlgorithmHMACSHA256)
-		return nil
 	}
+	log.Fatalf("Unsupported algorithm %s, please use %s and try again", algorithm, SignAlgorithmHMACSHA256)
+	return nil
 }
 
 // createStringToSign build the need to be signed string
@@ -278,7 +293,7 @@ func encodeQueryString(queryValues url.Values) string {
 
 	i := 0
 
-	for k, _ := range queryValues {
+	for k := range queryValues {
 		keys[i] = urlEncode(k, false)
 		encodedVals[keys[i]] = k
 		i++
@@ -302,9 +317,8 @@ func encodeQueryString(queryValues url.Values) string {
 func getCanonicalizedQueryString(signParas reqSignParams) string {
 	if usePayloadForQueryParameters(signParas.Req) {
 		return ""
-	} else {
-		return encodeQueryString(signParas.Req.URL.Query())
 	}
+	return encodeQueryString(signParas.Req.URL.Query())
 }
 
 // createCanonicalRequest builds canonical string depends the official document  for signing
@@ -352,7 +366,7 @@ func getCanonicalizedHeaderString(req *http.Request) string {
 	var headers StringBuilder
 
 	keys := make([]string, 0)
-	for k, _ := range req.Header {
+	for k := range req.Header {
 		keys = append(keys, strings.TrimSpace(k))
 	}
 
@@ -379,7 +393,7 @@ func getSignedHeadersString(req *http.Request) string {
 	var headers StringBuilder
 
 	keys := make([]string, 0)
-	for k, _ := range req.Header {
+	for k := range req.Header {
 		keys = append(keys, strings.TrimSpace(k))
 	}
 
@@ -445,15 +459,18 @@ func (signParas *reqSignParams) getScope() string {
 	}, "/")
 }
 
+// Write ...
 func (buff *StringBuilder) Write(s string) *StringBuilder {
 	buff.builder.WriteString(s)
 	return buff
 }
 
+// ToString ...
 func (buff *StringBuilder) ToString() string {
 	return buff.builder.String()
 }
 
+// GetBytes ...
 func (buff *StringBuilder) GetBytes() []byte {
 	return []byte(buff.ToString())
 }

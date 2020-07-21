@@ -147,7 +147,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	defer ng.clusterUpdateMutex.Unlock()
 
 	// get the unique ids of the nodes to be deleted
-	nodeIDs, err, finished := getNodeIDsToDelete(ng, nodes, currentSize)
+	nodeIDs, finished, err := getNodeIDsToDelete(ng, nodes, currentSize)
 	if finished { // nodes have been deleted by other goroutine
 		return nil
 	}
@@ -215,14 +215,14 @@ func checkAndUpdate(ng *NodeGroup, nodes []*apiv1.Node) (int, error) {
 // getNodeIDsToDelete checks whether there're still nodes waiting for being deleted. If there're no nodes
 // to delete, it will return true, representing that the process of deleting the nodes has been finished;
 // otherwise, it will return a slice of node ids to be deleted.
-func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]string, error, bool) {
+func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]string, bool, error) {
 	// check whether the nodes has already been deleted by other goroutine
 	ng.deleteMutex.Lock()
 	// If current goroutine is not the first one to acquire the ng.clusterUpdateMutex,
 	// it's possible that the nodes have already been deleted, which makes ng.nodesToDelete to be empty.
 	if len(ng.nodesToDelete) == 0 {
 		ng.deleteMutex.Unlock()
-		return nil, nil, true
+		return nil, true, nil
 	}
 	ng.deleteMutex.Unlock()
 
@@ -239,15 +239,15 @@ func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]
 	// check whether the cluster is available for deleting nodes
 	canUpdate, status, err := ng.huaweiCloudManager.canUpdate()
 	if err != nil {
-		return nil, fmt.Errorf("failed to check whether the cluster is available for updating: %v", err), false
+		return nil, false, fmt.Errorf("failed to check whether the cluster is available for updating: %v", err)
 	}
 	if !canUpdate {
-		return nil, fmt.Errorf("cluster is in %s status, cannot perform node deletion now", status), false
+		return nil, false, fmt.Errorf("cluster is in %s status, cannot perform node deletion now", status)
 	}
 
 	// check again whether deleting the nodes is valid
 	if currentSize-len(nodes) < ng.MinSize() {
-		return nil, fmt.Errorf("the size of the node pool is not sufficient for deleting the nodes, target size:%d, minimum size:%d", currentSize-len(nodes), ng.MinSize()), false
+		return nil, false, fmt.Errorf("the size of the node pool is not sufficient for deleting the nodes, target size:%d, minimum size:%d", currentSize-len(nodes), ng.MinSize())
 	}
 
 	nodeIDs := make([]string, 0)
@@ -256,7 +256,7 @@ func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]
 		klog.Infof("Delete node with node id: %s", node.Spec.ProviderID)
 		nodeIDs = append(nodeIDs, node.Spec.ProviderID)
 	}
-	return nodeIDs, nil, false
+	return nodeIDs, false, nil
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
