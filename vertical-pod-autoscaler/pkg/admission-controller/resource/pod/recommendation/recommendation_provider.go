@@ -60,7 +60,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		if limitRange != nil {
 			defaultLimit = limitRange.Default
 		}
-		containerControlledValues := GetContainerControlledValues(container.Name, vpaResourcePolicy)
+		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(container.Resources.Limits, container.Resources.Requests, recommendation.Target, defaultLimit)
 			if proportionalLimits != nil {
@@ -72,15 +72,6 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		}
 	}
 	return resources
-}
-
-// GetContainerControlledValues returns controlled resource values
-func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_types.ContainerControlledValues {
-	containerPolicy := vpa_api_util.GetContainerResourcePolicy(name, vpaResourcePolicy)
-	if containerPolicy == nil || containerPolicy.ControlledValues == nil {
-		return vpa_types.ContainerControlledValuesRequestsAndLimits
-	}
-	return *containerPolicy.ControlledValues
 }
 
 // GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
