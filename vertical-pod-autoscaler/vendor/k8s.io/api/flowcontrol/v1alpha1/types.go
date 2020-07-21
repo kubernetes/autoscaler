@@ -26,13 +26,17 @@ const (
 	ResourceAll    = "*"
 	VerbAll        = "*"
 	NonResourceAll = "*"
+	NameAll        = "*"
 
-	NameAll = "*"
+	NamespaceEvery = "*" // matches every particular namespace
 )
 
 // System preset priority level names
 const (
-	PriorityLevelConfigurationNameExempt = "exempt"
+	PriorityLevelConfigurationNameExempt   = "exempt"
+	PriorityLevelConfigurationNameCatchAll = "catch-all"
+	FlowSchemaNameExempt                   = "exempt"
+	FlowSchemaNameCatchAll                 = "catch-all"
 )
 
 // Conditions
@@ -40,6 +44,11 @@ const (
 	FlowSchemaConditionDangling = "Dangling"
 
 	PriorityLevelConfigurationConditionConcurrencyShared = "ConcurrencyShared"
+)
+
+// Constants used by api validation.
+const (
+	FlowSchemaMaxMatchingPrecedence int32 = 10000
 )
 
 // +genclient
@@ -75,7 +84,7 @@ type FlowSchemaList struct {
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// `items` is a list of FlowSchemas.
-	// +listType=set
+	// +listType=atomic
 	Items []FlowSchema `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
@@ -87,8 +96,8 @@ type FlowSchemaSpec struct {
 	PriorityLevelConfiguration PriorityLevelConfigurationReference `json:"priorityLevelConfiguration" protobuf:"bytes,1,opt,name=priorityLevelConfiguration"`
 	// `matchingPrecedence` is used to choose among the FlowSchemas that match a given request. The chosen
 	// FlowSchema is among those with the numerically lowest (which we take to be logically highest)
-	// MatchingPrecedence.  Each MatchingPrecedence value must be non-negative.
-	// Note that if the precedence is not specified or zero, it will be set to 1000 as default.
+	// MatchingPrecedence.  Each MatchingPrecedence value must be ranged in [1,10000].
+	// Note that if the precedence is not specified, it will be set to 1000 as default.
 	// +optional
 	MatchingPrecedence int32 `json:"matchingPrecedence" protobuf:"varint,2,opt,name=matchingPrecedence"`
 	// `distinguisherMethod` defines how to compute the flow distinguisher for requests that match this schema.
@@ -98,7 +107,7 @@ type FlowSchemaSpec struct {
 	// `rules` describes which requests will match this flow schema. This FlowSchema matches a request if and only if
 	// at least one member of rules matches the request.
 	// if it is an empty slice, there will be no requests matching the FlowSchema.
-	// +listType=set
+	// +listType=atomic
 	// +optional
 	Rules []PolicyRulesWithSubjects `json:"rules,omitempty" protobuf:"bytes,4,rep,name=rules"`
 }
@@ -143,18 +152,18 @@ type PolicyRulesWithSubjects struct {
 	// subjects is the list of normal user, serviceaccount, or group that this rule cares about.
 	// There must be at least one member in this slice.
 	// A slice that includes both the system:authenticated and system:unauthenticated user groups matches every request.
-	// +listType=set
+	// +listType=atomic
 	// Required.
 	Subjects []Subject `json:"subjects" protobuf:"bytes,1,rep,name=subjects"`
 	// `resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the
 	// target resource.
 	// At least one of `resourceRules` and `nonResourceRules` has to be non-empty.
-	// +listType=set
+	// +listType=atomic
 	// +optional
 	ResourceRules []ResourcePolicyRule `json:"resourceRules,omitempty" protobuf:"bytes,2,opt,name=resourceRules"`
 	// `nonResourceRules` is a list of NonResourcePolicyRules that identify matching requests according to their verb
 	// and the target non-resource URL.
-	// +listType=set
+	// +listType=atomic
 	// +optional
 	NonResourceRules []NonResourcePolicyRule `json:"nonResourceRules,omitempty" protobuf:"bytes,3,opt,name=nonResourceRules"`
 }
@@ -210,28 +219,53 @@ type ServiceAccountSubject struct {
 	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
 }
 
-// ResourcePolicyRule is a predicate that matches some resource requests, testing the request's verb and the target
-// resource. A ResourcePolicyRule matches a request if and only if: (a) at least one member
-// of verbs matches the request, (b) at least one member of apiGroups matches the request, and (c) at least one member
-// of resources matches the request.
+// ResourcePolicyRule is a predicate that matches some resource
+// requests, testing the request's verb and the target resource. A
+// ResourcePolicyRule matches a resource request if and only if: (a)
+// at least one member of verbs matches the request, (b) at least one
+// member of apiGroups matches the request, (c) at least one member of
+// resources matches the request, and (d) least one member of
+// namespaces matches the request.
 type ResourcePolicyRule struct {
 	// `verbs` is a list of matching verbs and may not be empty.
-	// "*" matches all verbs. if it is present, it must be the only entry.
+	// "*" matches all verbs and, if present, must be the only entry.
 	// +listType=set
 	// Required.
 	Verbs []string `json:"verbs" protobuf:"bytes,1,rep,name=verbs"`
+
 	// `apiGroups` is a list of matching API groups and may not be empty.
-	// "*" matches all api-groups. if it is present, it must be the only entry.
+	// "*" matches all API groups and, if present, must be the only entry.
 	// +listType=set
 	// Required.
 	APIGroups []string `json:"apiGroups" protobuf:"bytes,2,rep,name=apiGroups"`
-	// `resources` is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource.
-	// For example, [ "services", "nodes/status" ].
-	// This list may not be empty.
-	// "*" matches all resources. if it is present, it must be the only entry.
-	// +listType=set
+
+	// `resources` is a list of matching resources (i.e., lowercase
+	// and plural) with, if desired, subresource.  For example, [
+	// "services", "nodes/status" ].  This list may not be empty.
+	// "*" matches all resources and, if present, must be the only entry.
 	// Required.
+	// +listType=set
 	Resources []string `json:"resources" protobuf:"bytes,3,rep,name=resources"`
+
+	// `clusterScope` indicates whether to match requests that do not
+	// specify a namespace (which happens either because the resource
+	// is not namespaced or the request targets all namespaces).
+	// If this field is omitted or false then the `namespaces` field
+	// must contain a non-empty list.
+	// +optional
+	ClusterScope bool `json:"clusterScope,omitempty" protobuf:"varint,4,opt,name=clusterScope"`
+
+	// `namespaces` is a list of target namespaces that restricts
+	// matches.  A request that specifies a target namespace matches
+	// only if either (a) this list contains that target namespace or
+	// (b) this list contains "*".  Note that "*" matches any
+	// specified namespace but does not match a request that _does
+	// not specify_ a namespace (see the `clusterScope` field for
+	// that).
+	// This list may be empty, but only if `clusterScope` is true.
+	// +optional
+	// +listType=set
+	Namespaces []string `json:"namespaces" protobuf:"bytes,5,rep,name=namespaces"`
 }
 
 // NonResourcePolicyRule is a predicate that matches non-resource requests according to their verb and the
@@ -316,48 +350,57 @@ type PriorityLevelConfigurationList struct {
 	// +optional
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// `items` is a list of request-priorities.
-	// +listType=set
+	// +listType=atomic
 	Items []PriorityLevelConfiguration `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-// PriorityLevelConfigurationSpec is specification of a priority level
+// PriorityLevelConfigurationSpec specifies the configuration of a priority level.
+// +union
 type PriorityLevelConfigurationSpec struct {
-	// `type` indicates whether this priority level does
-	// queuing or is exempt.  Valid values are "Queuing" and "Exempt".
-	// "Exempt" means that requests of this priority level are not subject
-	// to concurrency limits (and thus are never queued) and do not detract
-	// from the concurrency available for non-exempt requests. The "Exempt"
-	// type is useful for apiserver self-requests and system administrator use.
+	// `type` indicates whether this priority level is subject to
+	// limitation on request execution.  A value of `"Exempt"` means
+	// that requests of this priority level are not subject to a limit
+	// (and thus are never queued) and do not detract from the
+	// capacity made available to other priority levels.  A value of
+	// `"Limited"` means that (a) requests of this priority level
+	// _are_ subject to limits and (b) some of the server's limited
+	// capacity is made available exclusively to this priority level.
 	// Required.
-	Type PriorityLevelQueueingType `json:"type" protobuf:"varint,1,opt,name=type"`
+	// +unionDiscriminator
+	Type PriorityLevelEnablement `json:"type" protobuf:"bytes,1,opt,name=type"`
 
-	// `queuing` holds the configuration parameters that are
-	// only meaningful for a priority level that does queuing (i.e.,
-	// is not exempt).  This field must be non-empty if and only if
-	// `queuingType` is `"Queuing"`.
+	// `limited` specifies how requests are handled for a Limited priority level.
+	// This field must be non-empty if and only if `type` is `"Limited"`.
 	// +optional
-	Queuing *QueuingConfiguration `json:"queuing,omitempty" protobuf:"bytes,2,opt,name=queuing"`
+	Limited *LimitedPriorityLevelConfiguration `json:"limited,omitempty" protobuf:"bytes,2,opt,name=limited"`
 }
 
-// PriorityLevelQueueingType identifies the queuing nature of a priority level
-type PriorityLevelQueueingType string
+// PriorityLevelEnablement indicates whether limits on execution are enabled for the priority level
+type PriorityLevelEnablement string
 
-// Supported queuing types.
+// Supported priority level enablement values.
 const (
-	// PriorityLevelQueuingTypeQueueing is the PriorityLevelQueueingType for priority levels that queue
-	PriorityLevelQueuingTypeQueueing PriorityLevelQueueingType = "Queuing"
+	// PriorityLevelEnablementExempt means that requests are not subject to limits
+	PriorityLevelEnablementExempt PriorityLevelEnablement = "Exempt"
 
-	// PriorityLevelQueuingTypeExempt is the PriorityLevelQueueingType for priority levels that are exempt from concurrency controls
-	PriorityLevelQueuingTypeExempt PriorityLevelQueueingType = "Exempt"
+	// PriorityLevelEnablementLimited means that requests are subject to limits
+	PriorityLevelEnablementLimited PriorityLevelEnablement = "Limited"
 )
 
-// QueuingConfiguration holds the configuration parameters that are specific to a priority level that is subject to concurrency controls
-type QueuingConfiguration struct {
-	// `assuredConcurrencyShares` (ACS) must be a positive number. The
-	// server's concurrency limit (SCL) is divided among the
-	// concurrency-controlled priority levels in proportion to their
-	// assured concurrency shares. This produces the assured
-	// concurrency value (ACV) for each such priority level:
+// LimitedPriorityLevelConfiguration specifies how to handle requests that are subject to limits.
+// It addresses two issues:
+//  * How are requests for this priority level limited?
+//  * What should be done with requests that exceed the limit?
+type LimitedPriorityLevelConfiguration struct {
+	// `assuredConcurrencyShares` (ACS) configures the execution
+	// limit, which is a limit on the number of requests of this
+	// priority level that may be exeucting at a given time.  ACS must
+	// be a positive number. The server's concurrency limit (SCL) is
+	// divided among the concurrency-controlled priority levels in
+	// proportion to their assured concurrency shares. This produces
+	// the assured concurrency value (ACV) --- the number of requests
+	// that may be executing at a time --- for each such priority
+	// level:
 	//
 	//             ACV(l) = ceil( SCL * ACS(l) / ( sum[priority levels k] ACS(k) ) )
 	//
@@ -367,6 +410,43 @@ type QueuingConfiguration struct {
 	// +optional
 	AssuredConcurrencyShares int32 `json:"assuredConcurrencyShares" protobuf:"varint,1,opt,name=assuredConcurrencyShares"`
 
+	// `limitResponse` indicates what to do with requests that can not be executed right now
+	LimitResponse LimitResponse `json:"limitResponse,omitempty" protobuf:"bytes,2,opt,name=limitResponse"`
+}
+
+// LimitResponse defines how to handle requests that can not be executed right now.
+// +union
+type LimitResponse struct {
+	// `type` is "Queue" or "Reject".
+	// "Queue" means that requests that can not be executed upon arrival
+	// are held in a queue until they can be executed or a queuing limit
+	// is reached.
+	// "Reject" means that requests that can not be executed upon arrival
+	// are rejected.
+	// Required.
+	// +unionDiscriminator
+	Type LimitResponseType `json:"type" protobuf:"bytes,1,opt,name=type"`
+
+	// `queuing` holds the configuration parameters for queuing.
+	// This field may be non-empty only if `type` is `"Queue"`.
+	// +optional
+	Queuing *QueuingConfiguration `json:"queuing,omitempty" protobuf:"bytes,2,opt,name=queuing"`
+}
+
+// LimitResponseType identifies how a Limited priority level handles a request that can not be executed right now
+type LimitResponseType string
+
+// Supported limit responses.
+const (
+	// LimitResponseTypeQueue means that requests that can not be executed right now are queued until they can be executed or a queuing limit is hit
+	LimitResponseTypeQueue LimitResponseType = "Queue"
+
+	// LimitResponseTypeReject means that requests that can not be executed right now are rejected
+	LimitResponseTypeReject LimitResponseType = "Reject"
+)
+
+// QueuingConfiguration holds the configuration parameters for queuing
+type QueuingConfiguration struct {
 	// `queues` is the number of queues for this priority level. The
 	// queues exist independently at each apiserver. The value must be
 	// positive.  Setting it to 1 effectively precludes
@@ -374,7 +454,7 @@ type QueuingConfiguration struct {
 	// associated flow schemas irrelevant.  This field has a default
 	// value of 64.
 	// +optional
-	Queues int32 `json:"queues" protobuf:"varint,2,opt,name=queues"`
+	Queues int32 `json:"queues" protobuf:"varint,1,opt,name=queues"`
 
 	// `handSize` is a small positive number that configures the
 	// shuffle sharding of requests into queues.  When enqueuing a request
@@ -388,14 +468,14 @@ type QueuingConfiguration struct {
 	// documentation for more extensive guidance on setting this
 	// field.  This field has a default value of 8.
 	// +optional
-	HandSize int32 `json:"handSize" protobuf:"varint,3,opt,name=handSize"`
+	HandSize int32 `json:"handSize" protobuf:"varint,2,opt,name=handSize"`
 
 	// `queueLengthLimit` is the maximum number of requests allowed to
 	// be waiting in a given queue of this priority level at a time;
 	// excess requests are rejected.  This value must be positive.  If
 	// not specified, it will be defaulted to 50.
 	// +optional
-	QueueLengthLimit int32 `json:"queueLengthLimit" protobuf:"varint,4,opt,name=queueLengthLimit"`
+	QueueLengthLimit int32 `json:"queueLengthLimit" protobuf:"varint,3,opt,name=queueLengthLimit"`
 }
 
 // PriorityLevelConfigurationConditionType is a valid value for PriorityLevelConfigurationStatusCondition.Type
