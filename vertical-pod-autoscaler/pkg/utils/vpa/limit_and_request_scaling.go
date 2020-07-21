@@ -97,7 +97,7 @@ func GetBoundaryRequest(originalRequest, originalLimit, boundaryLimit, defaultLi
 	}
 	// originalLimit not set, no boundary
 	if originalLimit == nil || originalLimit.Value() == 0 {
-		return nil
+		return &resource.Quantity{}
 	}
 	// originalLimit set but originalRequest not set - K8s will treat the pod as if they were equal
 	if originalRequest == nil || originalRequest.Value() == 0 {
