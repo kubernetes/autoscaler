@@ -73,7 +73,7 @@ func (FlowSchemaList) SwaggerDoc() map[string]string {
 var map_FlowSchemaSpec = map[string]string{
 	"":                           "FlowSchemaSpec describes how the FlowSchema's specification looks like.",
 	"priorityLevelConfiguration": "`priorityLevelConfiguration` should reference a PriorityLevelConfiguration in the cluster. If the reference cannot be resolved, the FlowSchema will be ignored and marked as invalid in its status. Required.",
-	"matchingPrecedence":         "`matchingPrecedence` is used to choose among the FlowSchemas that match a given request. The chosen FlowSchema is among those with the numerically lowest (which we take to be logically highest) MatchingPrecedence.  Each MatchingPrecedence value must be non-negative. Note that if the precedence is not specified or zero, it will be set to 1000 as default.",
+	"matchingPrecedence":         "`matchingPrecedence` is used to choose among the FlowSchemas that match a given request. The chosen FlowSchema is among those with the numerically lowest (which we take to be logically highest) MatchingPrecedence.  Each MatchingPrecedence value must be ranged in [1,10000]. Note that if the precedence is not specified, it will be set to 1000 as default.",
 	"distinguisherMethod":        "`distinguisherMethod` defines how to compute the flow distinguisher for requests that match this schema. `nil` specifies that the distinguisher is disabled and thus will always be the empty string.",
 	"rules":                      "`rules` describes which requests will match this flow schema. This FlowSchema matches a request if and only if at least one member of rules matches the request. if it is an empty slice, there will be no requests matching the FlowSchema.",
 }
@@ -98,6 +98,26 @@ var map_GroupSubject = map[string]string{
 
 func (GroupSubject) SwaggerDoc() map[string]string {
 	return map_GroupSubject
+}
+
+var map_LimitResponse = map[string]string{
+	"":        "LimitResponse defines how to handle requests that can not be executed right now.",
+	"type":    "`type` is \"Queue\" or \"Reject\". \"Queue\" means that requests that can not be executed upon arrival are held in a queue until they can be executed or a queuing limit is reached. \"Reject\" means that requests that can not be executed upon arrival are rejected. Required.",
+	"queuing": "`queuing` holds the configuration parameters for queuing. This field may be non-empty only if `type` is `\"Queue\"`.",
+}
+
+func (LimitResponse) SwaggerDoc() map[string]string {
+	return map_LimitResponse
+}
+
+var map_LimitedPriorityLevelConfiguration = map[string]string{
+	"":                         "LimitedPriorityLevelConfiguration specifies how to handle requests that are subject to limits. It addresses two issues:\n * How are requests for this priority level limited?\n * What should be done with requests that exceed the limit?",
+	"assuredConcurrencyShares": "`assuredConcurrencyShares` (ACS) configures the execution limit, which is a limit on the number of requests of this priority level that may be exeucting at a given time.  ACS must be a positive number. The server's concurrency limit (SCL) is divided among the concurrency-controlled priority levels in proportion to their assured concurrency shares. This produces the assured concurrency value (ACV) ",
+	"limitResponse":            "`limitResponse` indicates what to do with requests that can not be executed right now",
+}
+
+func (LimitedPriorityLevelConfiguration) SwaggerDoc() map[string]string {
+	return map_LimitedPriorityLevelConfiguration
 }
 
 var map_NonResourcePolicyRule = map[string]string{
@@ -165,9 +185,9 @@ func (PriorityLevelConfigurationReference) SwaggerDoc() map[string]string {
 }
 
 var map_PriorityLevelConfigurationSpec = map[string]string{
-	"":        "PriorityLevelConfigurationSpec is specification of a priority level",
-	"type":    "`type` indicates whether this priority level does queuing or is exempt.  Valid values are \"Queuing\" and \"Exempt\". \"Exempt\" means that requests of this priority level are not subject to concurrency limits (and thus are never queued) and do not detract from the concurrency available for non-exempt requests. The \"Exempt\" type is useful for apiserver self-requests and system administrator use. Required.",
-	"queuing": "`queuing` holds the configuration parameters that are only meaningful for a priority level that does queuing (i.e., is not exempt).  This field must be non-empty if and only if `queuingType` is `\"Queuing\"`.",
+	"":        "PriorityLevelConfigurationSpec specifies the configuration of a priority level.",
+	"type":    "`type` indicates whether this priority level is subject to limitation on request execution.  A value of `\"Exempt\"` means that requests of this priority level are not subject to a limit (and thus are never queued) and do not detract from the capacity made available to other priority levels.  A value of `\"Limited\"` means that (a) requests of this priority level _are_ subject to limits and (b) some of the server's limited capacity is made available exclusively to this priority level. Required.",
+	"limited": "`limited` specifies how requests are handled for a Limited priority level. This field must be non-empty if and only if `type` is `\"Limited\"`.",
 }
 
 func (PriorityLevelConfigurationSpec) SwaggerDoc() map[string]string {
@@ -184,11 +204,10 @@ func (PriorityLevelConfigurationStatus) SwaggerDoc() map[string]string {
 }
 
 var map_QueuingConfiguration = map[string]string{
-	"":                         "QueuingConfiguration holds the configuration parameters that are specific to a priority level that is subject to concurrency controls",
-	"assuredConcurrencyShares": "`assuredConcurrencyShares` (ACS) must be a positive number. The server's concurrency limit (SCL) is divided among the concurrency-controlled priority levels in proportion to their assured concurrency shares. This produces the assured concurrency value (ACV) for each such priority level:\n\n            ACV(l) = ceil( SCL * ACS(l) / ( sum[priority levels k] ACS(k) ) )\n\nbigger numbers of ACS mean more reserved concurrent requests (at the expense of every other PL). This field has a default value of 30.",
-	"queues":                   "`queues` is the number of queues for this priority level. The queues exist independently at each apiserver. The value must be positive.  Setting it to 1 effectively precludes shufflesharding and thus makes the distinguisher method of associated flow schemas irrelevant.  This field has a default value of 64.",
-	"handSize":                 "`handSize` is a small positive number that configures the shuffle sharding of requests into queues.  When enqueuing a request at this priority level the request's flow identifier (a string pair) is hashed and the hash value is used to shuffle the list of queues and deal a hand of the size specified here.  The request is put into one of the shortest queues in that hand. `handSize` must be no larger than `queues`, and should be significantly smaller (so that a few heavy flows do not saturate most of the queues).  See the user-facing documentation for more extensive guidance on setting this field.  This field has a default value of 8.",
-	"queueLengthLimit":         "`queueLengthLimit` is the maximum number of requests allowed to be waiting in a given queue of this priority level at a time; excess requests are rejected.  This value must be positive.  If not specified, it will be defaulted to 50.",
+	"":                 "QueuingConfiguration holds the configuration parameters for queuing",
+	"queues":           "`queues` is the number of queues for this priority level. The queues exist independently at each apiserver. The value must be positive.  Setting it to 1 effectively precludes shufflesharding and thus makes the distinguisher method of associated flow schemas irrelevant.  This field has a default value of 64.",
+	"handSize":         "`handSize` is a small positive number that configures the shuffle sharding of requests into queues.  When enqueuing a request at this priority level the request's flow identifier (a string pair) is hashed and the hash value is used to shuffle the list of queues and deal a hand of the size specified here.  The request is put into one of the shortest queues in that hand. `handSize` must be no larger than `queues`, and should be significantly smaller (so that a few heavy flows do not saturate most of the queues).  See the user-facing documentation for more extensive guidance on setting this field.  This field has a default value of 8.",
+	"queueLengthLimit": "`queueLengthLimit` is the maximum number of requests allowed to be waiting in a given queue of this priority level at a time; excess requests are rejected.  This value must be positive.  If not specified, it will be defaulted to 50.",
 }
 
 func (QueuingConfiguration) SwaggerDoc() map[string]string {
@@ -196,10 +215,12 @@ func (QueuingConfiguration) SwaggerDoc() map[string]string {
 }
 
 var map_ResourcePolicyRule = map[string]string{
-	"":          "ResourcePolicyRule is a predicate that matches some resource requests, testing the request's verb and the target resource. A ResourcePolicyRule matches a request if and only if: (a) at least one member of verbs matches the request, (b) at least one member of apiGroups matches the request, and (c) at least one member of resources matches the request.",
-	"verbs":     "`verbs` is a list of matching verbs and may not be empty. \"*\" matches all verbs. if it is present, it must be the only entry. Required.",
-	"apiGroups": "`apiGroups` is a list of matching API groups and may not be empty. \"*\" matches all api-groups. if it is present, it must be the only entry. Required.",
-	"resources": "`resources` is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource. For example, [ \"services\", \"nodes/status\" ]. This list may not be empty. \"*\" matches all resources. if it is present, it must be the only entry. Required.",
+	"":             "ResourcePolicyRule is a predicate that matches some resource requests, testing the request's verb and the target resource. A ResourcePolicyRule matches a resource request if and only if: (a) at least one member of verbs matches the request, (b) at least one member of apiGroups matches the request, (c) at least one member of resources matches the request, and (d) least one member of namespaces matches the request.",
+	"verbs":        "`verbs` is a list of matching verbs and may not be empty. \"*\" matches all verbs and, if present, must be the only entry. Required.",
+	"apiGroups":    "`apiGroups` is a list of matching API groups and may not be empty. \"*\" matches all API groups and, if present, must be the only entry. Required.",
+	"resources":    "`resources` is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource.  For example, [ \"services\", \"nodes/status\" ].  This list may not be empty. \"*\" matches all resources and, if present, must be the only entry. Required.",
+	"clusterScope": "`clusterScope` indicates whether to match requests that do not specify a namespace (which happens either because the resource is not namespaced or the request targets all namespaces). If this field is omitted or false then the `namespaces` field must contain a non-empty list.",
+	"namespaces":   "`namespaces` is a list of target namespaces that restricts matches.  A request that specifies a target namespace matches only if either (a) this list contains that target namespace or (b) this list contains \"*\".  Note that \"*\" matches any specified namespace but does not match a request that _does not specify_ a namespace (see the `clusterScope` field for that). This list may be empty, but only if `clusterScope` is true.",
 }
 
 func (ResourcePolicyRule) SwaggerDoc() map[string]string {
