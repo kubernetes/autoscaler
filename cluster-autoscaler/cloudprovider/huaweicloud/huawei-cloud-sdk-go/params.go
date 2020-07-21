@@ -1,4 +1,20 @@
-package huawei_cloud_sdk_go
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package huaweicloudsdk
 
 import (
 	"encoding/json"
@@ -62,8 +78,8 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 				// if the field's value is zero, return a missing-argument error
 				if zero {
 					// if the field has a 'required' tag, it can't have a zero-value
-					message := fmt.Sprintf(CE_MissingInputMessage, f.Name)
-					err := NewSystemCommonError(CE_MissingInputCode, message)
+					message := fmt.Sprintf(CEMissingInputMessage, f.Name)
+					err := NewSystemCommonError(CEMissingInputCode, message)
 					return nil, err
 				}
 			}
@@ -81,8 +97,8 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 					xorFieldIsZero = isZero(xorField)
 				}
 				if !(zero != xorFieldIsZero) {
-					message := fmt.Sprintf(CE_MissingInputMessage, fmt.Sprintf("%s/%s", f.Name, xorTag))
-					err := NewSystemCommonError(CE_MissingInputCode, message)
+					message := fmt.Sprintf(CEMissingInputMessage, fmt.Sprintf("%s/%s", f.Name, xorTag))
+					err := NewSystemCommonError(CEMissingInputCode, message)
 					return nil, err
 				}
 			}
@@ -100,8 +116,8 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 						orFieldIsZero = isZero(orField)
 					}
 					if orFieldIsZero {
-						message := fmt.Sprintf(CE_MissingInputMessage, fmt.Sprintf("%s/%s", f.Name, orTag))
-						err := NewSystemCommonError(CE_MissingInputCode, message)
+						message := fmt.Sprintf(CEMissingInputMessage, fmt.Sprintf("%s/%s", f.Name, orTag))
+						err := NewSystemCommonError(CEMissingInputCode, message)
 						return nil, err
 					}
 				}
@@ -164,7 +180,7 @@ func BuildRequestBody(opts interface{}, parent string) (map[string]interface{}, 
 	// Return an error if the underlying type of 'opts' isn't a struct.
 	//return nil, fmt.Errorf("Options type is not a struct.")
 
-	err := NewSystemCommonError(CE_OptionTypeNotStructCode, CE_OptionTypeNotStructMessage)
+	err := NewSystemCommonError(CEOptionTypeNotStructCode, CEOptionTypeNotStructMessage)
 	return nil, err
 }
 
@@ -372,7 +388,7 @@ func BuildQueryString(opts interface{}) (*url.URL, error) {
 	// Return an error if the underlying type of 'opts' isn't a struct.
 	//return nil, fmt.Errorf("Options type is not a struct.")
 
-	err := NewSystemCommonError(CE_OptionTypeNotStructCode, CE_OptionTypeNotStructMessage)
+	err := NewSystemCommonError(CEOptionTypeNotStructCode, CEOptionTypeNotStructMessage)
 	return nil, err
 }
 
@@ -451,7 +467,7 @@ func BuildHeaders(opts interface{}) (map[string]string, error) {
 	// Return an error if the underlying type of 'opts' isn't a struct.
 	//return optsMap, fmt.Errorf("Options type is not a struct.")
 
-	err := NewSystemCommonError(CE_OptionTypeNotStructCode, CE_OptionTypeNotStructMessage)
+	err := NewSystemCommonError(CEOptionTypeNotStructCode, CEOptionTypeNotStructMessage)
 	return optsMap, err
 }
 

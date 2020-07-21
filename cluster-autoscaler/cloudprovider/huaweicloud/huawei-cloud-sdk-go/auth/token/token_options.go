@@ -1,4 +1,20 @@
 /*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
 Package token providers functions for initial http request body before request cloud.
 */
 package token
@@ -10,7 +26,7 @@ import (
 )
 
 /*
-AuthOptions stores information needed to authenticate to an OpenStack Cloud.
+TokenOptions - AuthOptions stores information needed to authenticate to an OpenStack Cloud.
 You can populate one manually, or use a provider's AuthOptionsFromEnv() function
 to read relevant information from the standard environment variables. Pass one
 to a provider's AuthenticatedClient function to authenticate and obtain a
@@ -95,11 +111,12 @@ type TokenOptions struct {
 	TokenID string `json:"-"`
 }
 
-// Implements the method of AuthOptionsProvider
+// GetIdentityEndpoint Implements the method of AuthOptionsProvider
 func (opts TokenOptions) GetIdentityEndpoint() string {
 	return opts.IdentityEndpoint
 }
 
+// GetProjectId gets project id
 func (opts TokenOptions) GetProjectId() string {
 	if opts.ProjectID != "" {
 		return opts.ProjectID
@@ -107,6 +124,7 @@ func (opts TokenOptions) GetProjectId() string {
 	return opts.TenantID
 }
 
+// GetDomainId gets domain id
 func (opts TokenOptions) GetDomainId() string {
 	return opts.DomainID
 }
@@ -124,8 +142,8 @@ func (opts TokenOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 				"password": opts.Password,
 			}
 		} else {
-			message := fmt.Sprintf(huawei_cloud_sdk_go.CE_MissingInputMessage, "Password")
-			err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_MissingInputCode, message)
+			message := fmt.Sprintf(huaweicloudsdk.CEMissingInputMessage, "Password")
+			err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEMissingInputCode, message)
 			return nil, err
 			//return nil, ErrMissingInput{Argument: "Password"}
 		}
@@ -134,8 +152,8 @@ func (opts TokenOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 			"id": opts.TokenID,
 		}
 	} else {
-		message := fmt.Sprintf(huawei_cloud_sdk_go.CE_MissingInputMessage, "Username")
-		err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_MissingInputCode, message)
+		message := fmt.Sprintf(huaweicloudsdk.CEMissingInputMessage, "Username")
+		err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEMissingInputCode, message)
 		return nil, err
 		//return nil, ErrMissingInput{Argument: "Username"}
 	}
@@ -150,6 +168,7 @@ func (opts TokenOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 	return map[string]interface{}{"auth": authMap}, nil
 }
 
+// ToTokenV3CreateMap ...
 func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[string]interface{}, error) {
 	type domainReq struct {
 		ID   *string `json:"id,omitempty"`
@@ -202,25 +221,25 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 			if opts.Username != "" {
 				//return nil, ErrUsernameWithToken{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "Username may not be provided when authenticating with a TokenID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "Username may not be provided when authenticating with a TokenID")
 				return nil, err
 			}
 			if opts.UserID != "" {
 				//return nil, ErrUserIDWithToken{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "UserID may not be provided when authenticating with a TokenID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "UserID may not be provided when authenticating with a TokenID")
 				return nil, err
 			}
 			if opts.DomainID != "" {
 				//return nil, ErrDomainIDWithToken{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "DomainID may not be provided when authenticating with a TokenID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "DomainID may not be provided when authenticating with a TokenID")
 				return nil, err
 			}
 			if opts.DomainName != "" {
 				//return nil, ErrDomainNameWithToken{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "DomainName may not be provided when authenticating with a TokenID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "DomainName may not be provided when authenticating with a TokenID")
 				return nil, err
 			}
 
@@ -233,7 +252,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 			// If no password or token ID are available, authentication can't continue.
 			//return nil, ErrMissingPassword{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide a password to authenticate")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide a password to authenticate")
 			return nil, err
 		}
 	} else {
@@ -244,7 +263,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 		if opts.Username == "" && opts.UserID == "" {
 			//return nil, ErrUsernameOrUserID{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "Exactly one of Username and UserID must be provided for password authentication")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "Exactly one of Username and UserID must be provided for password authentication")
 			return nil, err
 		}
 
@@ -253,7 +272,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 			if opts.UserID != "" {
 				//return nil, ErrUsernameOrUserID{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "Exactly one of Username and UserID must be provided for password authentication")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "Exactly one of Username and UserID must be provided for password authentication")
 				return nil, err
 			}
 
@@ -261,7 +280,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 			if opts.DomainID == "" && opts.DomainName == "" {
 				//return nil, ErrDomainIDOrDomainName{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName to authenticate by Username")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName to authenticate by Username")
 				return nil, err
 			}
 
@@ -269,7 +288,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 				if opts.DomainName != "" {
 					//return nil, ErrDomainIDOrDomainName{}
 
-					err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName to authenticate by Username")
+					err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName to authenticate by Username")
 					return nil, err
 				}
 
@@ -300,13 +319,13 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 			if opts.DomainID != "" {
 				//return nil, ErrDomainIDWithUserID{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "DomainID may not be provided when authenticating with a UserID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "DomainID may not be provided when authenticating with a UserID")
 				return nil, err
 			}
 			if opts.DomainName != "" {
 				//return nil, ErrDomainNameWithUserID{}
 
-				err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "DomainName may not be provided when authenticating with a UserID")
+				err := huaweicloudsdk.NewSystemCommonError("Com.2000", "DomainName may not be provided when authenticating with a UserID")
 				return nil, err
 			}
 
@@ -317,7 +336,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 		}
 	}
 
-	b, err := huawei_cloud_sdk_go.BuildRequestBody(req, "")
+	b, err := huaweicloudsdk.BuildRequestBody(req, "")
 	if err != nil {
 		return nil, err
 	}
@@ -329,6 +348,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 	return b, nil
 }
 
+// ToTokenV3ScopeMap ...
 func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 
 	var scope struct {
@@ -365,13 +385,13 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 		if scope.DomainID == "" && scope.DomainName == "" {
 			//return nil, ErrScopeDomainIDOrDomainName{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
 			return nil, err
 		}
 		if scope.ProjectID != "" {
 			//return nil, ErrScopeProjectIDOrProjectName{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide at most one of ProjectID or ProjectName in a Scope")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide at most one of ProjectID or ProjectName in a Scope")
 			return nil, err
 		}
 
@@ -399,7 +419,7 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 		if scope.DomainID != "" || scope.DomainName != "" {
 			//return nil, ErrScopeProjectIDAlone{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "ProjectID must be supplied alone in a Scope")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "ProjectID must be supplied alone in a Scope")
 			return nil, err
 		}
 		//		if scope.DomainName != "" {
@@ -436,6 +456,7 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 	return nil, nil
 }
 
+// CanReauth ...
 func (opts TokenOptions) CanReauth() bool {
 	return opts.AllowReauth
 }

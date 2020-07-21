@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package pagination
 
 import (
@@ -40,13 +56,13 @@ func (current LinkedPageBase) NextPageURL() (string, error) {
 
 		expected := "map[string]interface{}"
 		actual := fmt.Sprintf("%v", reflect.TypeOf(current.Body))
-		message := fmt.Sprintf(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeMessage, expected, actual)
-		err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeCode, message)
+		message := fmt.Sprintf(huaweicloudsdk.CEErrUnexpectedTypeMessage, expected, actual)
+		err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEErrUnexpectedTypeCode, message)
 		return "", err
 	}
 
 	for {
-		key, path = path[0], path[1:len(path)]
+		key, path = path[0], path[1:]
 
 		value, ok := submap[key]
 		if !ok {
@@ -63,8 +79,8 @@ func (current LinkedPageBase) NextPageURL() (string, error) {
 
 				expected := "map[string]interface{}"
 				actual := fmt.Sprintf("%v", reflect.TypeOf(value))
-				message := fmt.Sprintf(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeMessage, expected, actual)
-				err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeCode, message)
+				message := fmt.Sprintf(huaweicloudsdk.CEErrUnexpectedTypeMessage, expected, actual)
+				err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEErrUnexpectedTypeCode, message)
 				return "", err
 			}
 		} else {
@@ -82,8 +98,8 @@ func (current LinkedPageBase) NextPageURL() (string, error) {
 
 				expected := "string"
 				actual := fmt.Sprintf("%v", reflect.TypeOf(value))
-				message := fmt.Sprintf(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeMessage, expected, actual)
-				err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeCode, message)
+				message := fmt.Sprintf(huaweicloudsdk.CEErrUnexpectedTypeMessage, expected, actual)
+				err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEErrUnexpectedTypeCode, message)
 				return "", err
 			}
 
@@ -104,8 +120,8 @@ func (current LinkedPageBase) IsEmpty() (bool, error) {
 
 	expected := "[]interface{}"
 	actual := fmt.Sprintf("%v", reflect.TypeOf(current.Body))
-	message := fmt.Sprintf(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeMessage, expected, actual)
-	err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeCode, message)
+	message := fmt.Sprintf(huaweicloudsdk.CEErrUnexpectedTypeMessage, expected, actual)
+	err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEErrUnexpectedTypeCode, message)
 	return true, err
 }
 
@@ -114,6 +130,7 @@ func (current LinkedPageBase) IsEmpty() (bool, error) {
 func (current LinkedPageBase) GetBody() interface{} {
 	return current.Body
 }
+
 // WrapNextPageURL function use makerID to warp next page url,it returns the full url for request.
 func (current LinkedPageBase) WrapNextPageURL(markerID string) (string, error) {
 	limit := current.URL.Query().Get("limit")

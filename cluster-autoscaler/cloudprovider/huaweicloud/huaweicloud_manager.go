@@ -67,7 +67,7 @@ var availableStatuses = sets.NewString(
 )
 
 type huaweicloudCloudManager struct {
-	clusterClient *huawei_cloud_sdk_go.ServiceClient
+	clusterClient *huaweicloudsdk.ServiceClient
 	clusterName   string // this is the id of the cluster
 	timeIncrement time.Duration
 }
@@ -99,14 +99,14 @@ func buildManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDi
 		return nil, authErr
 	}
 
-	userAgent := huawei_cloud_sdk_go.UserAgent{}
+	userAgent := huaweicloudsdk.UserAgent{}
 	userAgent.Prepend(fmt.Sprintf("cluster-autoscaler/%s", version.ClusterAutoscalerVersion))
 	userAgent.Prepend(fmt.Sprintf("cluster/%s", opts.ClusterName))
 	provider.UserAgent = userAgent
 	klog.V(5).Infof("Using user-agent %s", userAgent.Join())
 
 	// create Huawei CCE Client
-	clusterClient, clientErr := openstack.NewCCEV3(provider, huawei_cloud_sdk_go.EndpointOpts{})
+	clusterClient, clientErr := openstack.NewCCEV3(provider, huaweicloudsdk.EndpointOpts{})
 	if clientErr != nil {
 		fmt.Println("Failed to get the CCEV3 client: ", clientErr)
 		return nil, clientErr
@@ -229,7 +229,7 @@ func (mgr *huaweicloudCloudManager) deleteNodes(nodepool *NodeGroup, nodeIds []s
 }
 
 // deleteNodesHelper calls CCE REST API to remove a set of nodes from a cluster.
-func (mgr *huaweicloudCloudManager) deleteNodesHelper(client *huawei_cloud_sdk_go.ServiceClient, clusterId string, nodeIds [] string) error {
+func (mgr *huaweicloudCloudManager) deleteNodesHelper(client *huaweicloudsdk.ServiceClient, clusterId string, nodeIds []string) error {
 	for _, nodeId := range nodeIds {
 		err := clusters.DeleteNode(client, clusterId, nodeId).ExtractErr()
 		if err != nil {
@@ -239,7 +239,7 @@ func (mgr *huaweicloudCloudManager) deleteNodesHelper(client *huawei_cloud_sdk_g
 				Example response of real DELETE operation failure: {"ErrorCode":"CCE_CM.0003","Message":"Resource not found"}
 
 			*/
-			ue := err.(*huawei_cloud_sdk_go.UnifiedError)
+			ue := err.(*huaweicloudsdk.UnifiedError)
 			if ue.ErrorCode() == deleteOperationSucceedCode && ue.Message() == deleteOperationSucceedMessage {
 				continue
 			}
