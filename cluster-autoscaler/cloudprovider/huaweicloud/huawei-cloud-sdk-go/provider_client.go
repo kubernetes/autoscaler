@@ -1,4 +1,20 @@
-package huawei_cloud_sdk_go
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package huaweicloudsdk
 
 import (
 	"bytes"
@@ -85,7 +101,7 @@ type reauthlock struct {
 	reauthing bool
 }
 
-//GetProjectID,Implement the GetProjectID() interface, return client projectID.
+// GetProjectID Implement the GetProjectID() interface, return client projectID.
 func (client *ProviderClient) GetProjectID() string {
 	return client.ProjectID
 }
@@ -217,8 +233,8 @@ func (client *ProviderClient) Request(method, url string, options *RequestOpts) 
 					// if not timeout error, return
 					return nil, err
 				} else if retryTimes >= client.Conf.MaxRetryTime {
-					timeoutErrorMsg := fmt.Sprintf(CE_TimeoutErrorMessage, strconv.Itoa(retryTimes+1), strconv.Itoa(retryTimes+1))
-					err := NewSystemCommonError(CE_TimeoutErrorCode, timeoutErrorMsg)
+					timeoutErrorMsg := fmt.Sprintf(CETimeoutErrorMessage, strconv.Itoa(retryTimes+1), strconv.Itoa(retryTimes+1))
+					err := NewSystemCommonError(CETimeoutErrorCode, timeoutErrorMsg)
 					return nil, err
 				}
 			}
@@ -385,8 +401,8 @@ func buildReq(client *ProviderClient, method, url string, options *RequestOpts) 
 func doReauthAndReq(client *ProviderClient, prereqtok, method, url string, options *RequestOpts) (*http.Response, error) {
 	err := client.Reauthenticate(prereqtok)
 	if err != nil {
-		message:=fmt.Sprintf(CE_ReauthFuncErrorMessage, err.Error())
-		return nil, NewSystemCommonError(CE_ReauthFuncErrorCode, message)
+		message := fmt.Sprintf(CEReauthFuncErrorMessage, err.Error())
+		return nil, NewSystemCommonError(CEReauthFuncErrorCode, message)
 	}
 	if options.RawBody != nil {
 		if seeker, ok := options.RawBody.(io.Seeker); ok {
