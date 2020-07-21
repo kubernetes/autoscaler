@@ -17,22 +17,22 @@ limitations under the License.
 package node
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
+	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	nodectlr "k8s.io/kubernetes/pkg/controller/nodelifecycle"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	e2elog "k8s.io/kubernetes/test/e2e/framework/log"
 	"k8s.io/kubernetes/test/e2e/system"
-	testutils "k8s.io/kubernetes/test/utils"
 )
 
 const (
@@ -41,7 +41,6 @@ const (
 
 	// singleCallTimeout is how long to try single API calls (like 'get' or 'list'). Used to prevent
 	// transient failures from failing tests.
-	// TODO: client should not apply this timeout to Watch calls. Increased from 30s until that is fixed.
 	singleCallTimeout = 5 * time.Minute
 
 	// ssh port
@@ -57,21 +56,17 @@ type PodNode struct {
 }
 
 // FirstAddress returns the first address of the given type of each node.
-// TODO: Use return type string instead of []string
-func FirstAddress(nodelist *v1.NodeList, addrType v1.NodeAddressType) []string {
-	hosts := []string{}
+func FirstAddress(nodelist *v1.NodeList, addrType v1.NodeAddressType) string {
 	for _, n := range nodelist.Items {
 		for _, addr := range n.Status.Addresses {
 			if addr.Type == addrType && addr.Address != "" {
-				hosts = append(hosts, addr.Address)
-				break
+				return addr.Address
 			}
 		}
 	}
-	return hosts
+	return ""
 }
 
-// TODO: better to change to a easy read name
 func isNodeConditionSetAsExpected(node *v1.Node, conditionType v1.NodeConditionType, wantTrue, silent bool) bool {
 	// Check the node readiness condition (logging all).
 	for _, cond := range node.Status.Conditions {
@@ -142,8 +137,8 @@ func IsConditionSetAsExpectedSilent(node *v1.Node, conditionType v1.NodeConditio
 	return isNodeConditionSetAsExpected(node, conditionType, wantTrue, true)
 }
 
-// IsConditionUnset returns true if conditions of the given node do not have a match to the given conditionType, otherwise false.
-func IsConditionUnset(node *v1.Node, conditionType v1.NodeConditionType) bool {
+// isConditionUnset returns true if conditions of the given node do not have a match to the given conditionType, otherwise false.
+func isConditionUnset(node *v1.Node, conditionType v1.NodeConditionType) bool {
 	for _, cond := range node.Status.Conditions {
 		if cond.Type == conditionType {
 			return false
@@ -154,7 +149,6 @@ func IsConditionUnset(node *v1.Node, conditionType v1.NodeConditionType) bool {
 
 // Filter filters nodes in NodeList in place, removing nodes that do not
 // satisfy the given condition
-// TODO: consider merging with pkg/client/cache.NodeLister
 func Filter(nodeList *v1.NodeList, fn func(node v1.Node) bool) {
 	var l []v1.Node
 
@@ -191,62 +185,6 @@ func TotalReady(c clientset.Interface) (int, error) {
 	return len(nodes.Items), nil
 }
 
-// getSvcNodePort returns the node port for the given service:port.
-func getSvcNodePort(client clientset.Interface, ns, name string, svcPort int) (int, error) {
-	svc, err := client.CoreV1().Services(ns).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return 0, err
-	}
-	for _, p := range svc.Spec.Ports {
-		if p.Port == int32(svcPort) {
-			if p.NodePort != 0 {
-				return int(p.NodePort), nil
-			}
-		}
-	}
-	return 0, fmt.Errorf(
-		"No node port found for service %v, port %v", name, svcPort)
-}
-
-// GetPortURL returns the url to a nodeport Service.
-func GetPortURL(client clientset.Interface, ns, name string, svcPort int) (string, error) {
-	nodePort, err := getSvcNodePort(client, ns, name, svcPort)
-	if err != nil {
-		return "", err
-	}
-	// This list of nodes must not include the master, which is marked
-	// unschedulable, since the master doesn't run kube-proxy. Without
-	// kube-proxy NodePorts won't work.
-	var nodes *v1.NodeList
-	if wait.PollImmediate(poll, singleCallTimeout, func() (bool, error) {
-		nodes, err = client.CoreV1().Nodes().List(metav1.ListOptions{FieldSelector: fields.Set{
-			"spec.unschedulable": "false",
-		}.AsSelector().String()})
-		if err != nil {
-			if testutils.IsRetryableAPIError(err) {
-				return false, nil
-			}
-			return false, err
-		}
-		return true, nil
-	}) != nil {
-		return "", err
-	}
-	if len(nodes.Items) == 0 {
-		return "", fmt.Errorf("Unable to list nodes in cluster")
-	}
-	for _, node := range nodes.Items {
-		for _, address := range node.Status.Addresses {
-			if address.Type == v1.NodeExternalIP {
-				if address.Address != "" {
-					return fmt.Sprintf("http://%v:%v", address.Address, nodePort), nil
-				}
-			}
-		}
-	}
-	return "", fmt.Errorf("Failed to find external address for service %v", name)
-}
-
 // GetExternalIP returns node external IP concatenated with port 22 for ssh
 // e.g. 1.2.3.4:22
 func GetExternalIP(node *v1.Node) (string, error) {
@@ -268,11 +206,9 @@ func GetExternalIP(node *v1.Node) (string, error) {
 func GetInternalIP(node *v1.Node) (string, error) {
 	host := ""
 	for _, address := range node.Status.Addresses {
-		if address.Type == v1.NodeInternalIP {
-			if address.Address != "" {
-				host = net.JoinHostPort(address.Address, sshPort)
-				break
-			}
+		if address.Type == v1.NodeInternalIP && address.Address != "" {
+			host = net.JoinHostPort(address.Address, sshPort)
+			break
 		}
 	}
 	if host == "" {
@@ -316,7 +252,7 @@ func PickIP(c clientset.Interface) (string, error) {
 
 // GetPublicIps returns a public IP list of nodes.
 func GetPublicIps(c clientset.Interface) ([]string, error) {
-	nodes, err := GetReadySchedulableNodesOrDie(c)
+	nodes, err := GetReadySchedulableNodes(c)
 	if err != nil {
 		return nil, fmt.Errorf("get schedulable and ready nodes error: %s", err)
 	}
@@ -328,23 +264,54 @@ func GetPublicIps(c clientset.Interface) ([]string, error) {
 	return ips, nil
 }
 
-// GetReadySchedulableNodesOrDie addresses the common use case of getting nodes you can do work on.
+// GetReadySchedulableNodes addresses the common use case of getting nodes you can do work on.
 // 1) Needs to be schedulable.
 // 2) Needs to be ready.
 // If EITHER 1 or 2 is not true, most tests will want to ignore the node entirely.
-// TODO: remove references in framework/util.go.
-// TODO: remove "OrDie" suffix.
-func GetReadySchedulableNodesOrDie(c clientset.Interface) (nodes *v1.NodeList, err error) {
+// If there are no nodes that are both ready and schedulable, this will return an error.
+func GetReadySchedulableNodes(c clientset.Interface) (nodes *v1.NodeList, err error) {
 	nodes, err = checkWaitListSchedulableNodes(c)
 	if err != nil {
 		return nil, fmt.Errorf("listing schedulable nodes error: %s", err)
 	}
-	// previous tests may have cause failures of some nodes. Let's skip
-	// 'Not Ready' nodes, just in case (there is no need to fail the test).
 	Filter(nodes, func(node v1.Node) bool {
-		return isNodeSchedulable(&node) && isNodeUntainted(&node)
+		return IsNodeSchedulable(&node) && isNodeUntainted(&node)
 	})
+	if len(nodes.Items) == 0 {
+		return nil, fmt.Errorf("there are currently no ready, schedulable nodes in the cluster")
+	}
 	return nodes, nil
+}
+
+// GetBoundedReadySchedulableNodes is like GetReadySchedulableNodes except that it returns
+// at most maxNodes nodes. Use this to keep your test case from blowing up when run on a
+// large cluster.
+func GetBoundedReadySchedulableNodes(c clientset.Interface, maxNodes int) (nodes *v1.NodeList, err error) {
+	nodes, err = GetReadySchedulableNodes(c)
+	if err != nil {
+		return nil, err
+	}
+	if len(nodes.Items) > maxNodes {
+		shuffled := make([]v1.Node, maxNodes)
+		perm := rand.Perm(len(nodes.Items))
+		for i, j := range perm {
+			if j < len(shuffled) {
+				shuffled[j] = nodes.Items[i]
+			}
+		}
+		nodes.Items = shuffled
+	}
+	return nodes, nil
+}
+
+// GetRandomReadySchedulableNode gets a single randomly-selected node which is available for
+// running pods on. If there are no available nodes it will return an error.
+func GetRandomReadySchedulableNode(c clientset.Interface) (*v1.Node, error) {
+	nodes, err := GetReadySchedulableNodes(c)
+	if err != nil {
+		return nil, err
+	}
+	return &nodes.Items[rand.Intn(len(nodes.Items))], nil
 }
 
 // GetReadyNodesIncludingTainted returns all ready nodes, even those which are tainted.
@@ -357,7 +324,7 @@ func GetReadyNodesIncludingTainted(c clientset.Interface) (nodes *v1.NodeList, e
 		return nil, fmt.Errorf("listing schedulable nodes error: %s", err)
 	}
 	Filter(nodes, func(node v1.Node) bool {
-		return isNodeSchedulable(&node)
+		return IsNodeSchedulable(&node)
 	})
 	return nodes, nil
 }
@@ -366,23 +333,29 @@ func GetReadyNodesIncludingTainted(c clientset.Interface) (nodes *v1.NodeList, e
 func GetMasterAndWorkerNodes(c clientset.Interface) (sets.String, *v1.NodeList, error) {
 	nodes := &v1.NodeList{}
 	masters := sets.NewString()
-	all, err := c.CoreV1().Nodes().List(metav1.ListOptions{})
+	all, err := c.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, nil, fmt.Errorf("get nodes error: %s", err)
 	}
 	for _, n := range all.Items {
 		if system.DeprecatedMightBeMasterNode(n.Name) {
 			masters.Insert(n.Name)
-		} else if isNodeSchedulable(&n) && isNodeUntainted(&n) {
+		} else if IsNodeSchedulable(&n) && isNodeUntainted(&n) {
 			nodes.Items = append(nodes.Items, n)
 		}
 	}
 	return masters, nodes, nil
 }
 
-// Test whether a fake pod can be scheduled on "node", given its current taints.
+// isNodeUntainted tests whether a fake pod can be scheduled on "node", given its current taints.
 // TODO: need to discuss wether to return bool and error type
 func isNodeUntainted(node *v1.Node) bool {
+	return isNodeUntaintedWithNonblocking(node, "")
+}
+
+// isNodeUntaintedWithNonblocking tests whether a fake pod can be scheduled on "node"
+// but allows for taints in the list of non-blocking taints.
+func isNodeUntaintedWithNonblocking(node *v1.Node, nonblockingTaints string) bool {
 	fakePod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
@@ -401,32 +374,90 @@ func isNodeUntainted(node *v1.Node) bool {
 			},
 		},
 	}
+
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	fit, _, err := predicates.PodToleratesNodeTaints(fakePod, nil, nodeInfo)
+
+	// Simple lookup for nonblocking taints based on comma-delimited list.
+	nonblockingTaintsMap := map[string]struct{}{}
+	for _, t := range strings.Split(nonblockingTaints, ",") {
+		if strings.TrimSpace(t) != "" {
+			nonblockingTaintsMap[strings.TrimSpace(t)] = struct{}{}
+		}
+	}
+
+	if len(nonblockingTaintsMap) > 0 {
+		nodeCopy := node.DeepCopy()
+		nodeCopy.Spec.Taints = []v1.Taint{}
+		for _, v := range node.Spec.Taints {
+			if _, isNonblockingTaint := nonblockingTaintsMap[v.Key]; !isNonblockingTaint {
+				nodeCopy.Spec.Taints = append(nodeCopy.Spec.Taints, v)
+			}
+		}
+		nodeInfo.SetNode(nodeCopy)
+	} else {
+		nodeInfo.SetNode(node)
+	}
+
+	taints, err := nodeInfo.Taints()
 	if err != nil {
 		e2elog.Failf("Can't test predicates for node %s: %v", node.Name, err)
 		return false
 	}
-	return fit
+
+	return v1helper.TolerationsTolerateTaintsWithFilter(fakePod.Spec.Tolerations, taints, func(t *v1.Taint) bool {
+		return t.Effect == v1.TaintEffectNoExecute || t.Effect == v1.TaintEffectNoSchedule
+	})
 }
 
-// Node is schedulable if:
+// IsNodeSchedulable returns true if:
 // 1) doesn't have "unschedulable" field set
-// 2) it's Ready condition is set to true
-// 3) doesn't have NetworkUnavailable condition set to true
-func isNodeSchedulable(node *v1.Node) bool {
+// 2) it also returns true from IsNodeReady
+func IsNodeSchedulable(node *v1.Node) bool {
+	if node == nil {
+		return false
+	}
+	return !node.Spec.Unschedulable && IsNodeReady(node)
+}
+
+// IsNodeReady returns true if:
+// 1) it's Ready condition is set to true
+// 2) doesn't have NetworkUnavailable condition set to true
+func IsNodeReady(node *v1.Node) bool {
 	nodeReady := IsConditionSetAsExpected(node, v1.NodeReady, true)
-	networkReady := IsConditionUnset(node, v1.NodeNetworkUnavailable) ||
+	networkReady := isConditionUnset(node, v1.NodeNetworkUnavailable) ||
 		IsConditionSetAsExpectedSilent(node, v1.NodeNetworkUnavailable, false)
-	return !node.Spec.Unschedulable && nodeReady && networkReady
+	return nodeReady && networkReady
+}
+
+// hasNonblockingTaint returns true if the node contains at least
+// one taint with a key matching the regexp.
+func hasNonblockingTaint(node *v1.Node, nonblockingTaints string) bool {
+	if node == nil {
+		return false
+	}
+
+	// Simple lookup for nonblocking taints based on comma-delimited list.
+	nonblockingTaintsMap := map[string]struct{}{}
+	for _, t := range strings.Split(nonblockingTaints, ",") {
+		if strings.TrimSpace(t) != "" {
+			nonblockingTaintsMap[strings.TrimSpace(t)] = struct{}{}
+		}
+	}
+
+	for _, taint := range node.Spec.Taints {
+		if _, hasNonblockingTaint := nonblockingTaintsMap[taint.Key]; hasNonblockingTaint {
+			return true
+		}
+	}
+
+	return false
 }
 
 // PodNodePairs return podNode pairs for all pods in a namespace
 func PodNodePairs(c clientset.Interface, ns string) ([]PodNode, error) {
 	var result []PodNode
 
-	podList, err := c.CoreV1().Pods(ns).List(metav1.ListOptions{})
+	podList, err := c.CoreV1().Pods(ns).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return result, err
 	}

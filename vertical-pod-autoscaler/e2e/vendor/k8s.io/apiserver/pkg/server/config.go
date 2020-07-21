@@ -17,12 +17,11 @@ limitations under the License.
 package server
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"net"
 	"net/http"
 	goruntime "runtime"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,7 +30,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-openapi/spec"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -55,14 +54,15 @@ import (
 	apiopenapi "k8s.io/apiserver/pkg/endpoints/openapi"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic"
+	"k8s.io/apiserver/pkg/server/dynamiccertificates"
 	"k8s.io/apiserver/pkg/server/egressselector"
 	genericfilters "k8s.io/apiserver/pkg/server/filters"
 	"k8s.io/apiserver/pkg/server/healthz"
 	"k8s.io/apiserver/pkg/server/routes"
 	serverstore "k8s.io/apiserver/pkg/server/storage"
+	utilflowcontrol "k8s.io/apiserver/pkg/util/flowcontrol"
 	"k8s.io/client-go/informers"
 	restclient "k8s.io/client-go/rest"
-	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/component-base/logs"
 	"k8s.io/klog"
 	openapicommon "k8s.io/kube-openapi/pkg/common"
@@ -108,6 +108,9 @@ type Config struct {
 	AdmissionControl      admission.Interface
 	CorsAllowedOriginList []string
 
+	// FlowControl, if not nil, gives priority and fairness to request handling
+	FlowControl utilflowcontrol.Interface
+
 	EnableIndex     bool
 	EnableProfiling bool
 	EnableDiscovery bool
@@ -116,6 +119,8 @@ type Config struct {
 	EnableMetrics             bool
 
 	DisabledPostStartHooks sets.String
+	// done values in this values for this map are ignored.
+	PostStartHooks map[string]PostStartHookConfigEntry
 
 	// Version will enable the /version endpoint if non-nil
 	Version *version.Info
@@ -192,6 +197,12 @@ type Config struct {
 	// Predicate which is true for paths of long-running http requests
 	LongRunningFunc apirequest.LongRunningRequestCheck
 
+	// GoawayChance is the probability that send a GOAWAY to HTTP/2 clients. When client received
+	// GOAWAY, the in-flight requests will not be affected and new requests will use
+	// a new TCP connection to triggering re-balancing to another server behind the load balance.
+	// Default to 0, means never send GOAWAY. Max is 0.02 to prevent break the apiserver.
+	GoawayChance float64
+
 	// MergedResourceConfig indicates which groupVersion enabled and its resources enabled/disabled.
 	// This is composed of genericapiserver defaultAPIResourceConfig and those parsed from flags.
 	// If not specify any in flags, then genericapiserver will only enable defaultAPIResourceConfig.
@@ -231,13 +242,13 @@ type SecureServingInfo struct {
 
 	// Cert is the main server cert which is used if SNI does not match. Cert must be non-nil and is
 	// allowed to be in SNICerts.
-	Cert *tls.Certificate
+	Cert dynamiccertificates.CertKeyContentProvider
 
-	// SNICerts are the TLS certificates by name used for SNI.
-	SNICerts map[string]*tls.Certificate
+	// SNICerts are the TLS certificates used for SNI.
+	SNICerts []dynamiccertificates.SNICertKeyContentProvider
 
 	// ClientCA is the certificate bundle for all the signers that you'll recognize for incoming client certificates
-	ClientCA *x509.CertPool
+	ClientCA dynamiccertificates.CAContentProvider
 
 	// MinTLSVersion optionally overrides the minimum TLS version supported.
 	// Values are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants).
@@ -282,6 +293,7 @@ func NewConfig(codecs serializer.CodecFactory) *Config {
 		HandlerChainWaitGroup:       new(utilwaitgroup.SafeWaitGroup),
 		LegacyAPIGroupPrefixes:      sets.NewString(DefaultLegacyAPIPrefix),
 		DisabledPostStartHooks:      sets.NewString(),
+		PostStartHooks:              map[string]PostStartHookConfigEntry{},
 		HealthzChecks:               append([]healthz.HealthChecker{}, defaultHealthChecks...),
 		ReadyzChecks:                append([]healthz.HealthChecker{}, defaultHealthChecks...),
 		LivezChecks:                 append([]healthz.HealthChecker{}, defaultHealthChecks...),
@@ -343,22 +355,19 @@ func DefaultOpenAPIConfig(getDefinitions openapicommon.GetOpenAPIDefinitions, de
 	}
 }
 
-func (c *AuthenticationInfo) ApplyClientCert(clientCAFile string, servingInfo *SecureServingInfo) error {
-	if servingInfo != nil {
-		if len(clientCAFile) > 0 {
-			clientCAs, err := certutil.CertsFromFile(clientCAFile)
-			if err != nil {
-				return fmt.Errorf("unable to load client CA file: %v", err)
-			}
-			if servingInfo.ClientCA == nil {
-				servingInfo.ClientCA = x509.NewCertPool()
-			}
-			for _, cert := range clientCAs {
-				servingInfo.ClientCA.AddCert(cert)
-			}
-		}
+func (c *AuthenticationInfo) ApplyClientCert(clientCA dynamiccertificates.CAContentProvider, servingInfo *SecureServingInfo) error {
+	if servingInfo == nil {
+		return nil
+	}
+	if clientCA == nil {
+		return nil
+	}
+	if servingInfo.ClientCA == nil {
+		servingInfo.ClientCA = clientCA
+		return nil
 	}
 
+	servingInfo.ClientCA = dynamiccertificates.NewUnionCAContentProvider(servingInfo.ClientCA, clientCA)
 	return nil
 }
 
@@ -386,6 +395,36 @@ func (c *Config) AddHealthChecks(healthChecks ...healthz.HealthChecker) {
 		c.HealthzChecks = append(c.HealthzChecks, check)
 		c.LivezChecks = append(c.LivezChecks, check)
 		c.ReadyzChecks = append(c.ReadyzChecks, check)
+	}
+}
+
+// AddPostStartHook allows you to add a PostStartHook that will later be added to the server itself in a New call.
+// Name conflicts will cause an error.
+func (c *Config) AddPostStartHook(name string, hook PostStartHookFunc) error {
+	if len(name) == 0 {
+		return fmt.Errorf("missing name")
+	}
+	if hook == nil {
+		return fmt.Errorf("hook func may not be nil: %q", name)
+	}
+	if c.DisabledPostStartHooks.Has(name) {
+		klog.V(1).Infof("skipping %q because it was explicitly disabled", name)
+		return nil
+	}
+
+	if postStartHook, exists := c.PostStartHooks[name]; exists {
+		// this is programmer error, but it can be hard to debug
+		return fmt.Errorf("unable to add %q because it was already registered by: %s", name, postStartHook.originatingStack)
+	}
+	c.PostStartHooks[name] = PostStartHookConfigEntry{hook: hook, originatingStack: string(debug.Stack())}
+
+	return nil
+}
+
+// AddPostStartHookOrDie allows you to add a PostStartHook, but dies on failure.
+func (c *Config) AddPostStartHookOrDie(name string, hook PostStartHookFunc) {
+	if err := c.AddPostStartHook(name, hook); err != nil {
+		klog.Fatalf("Error registering PostStartHook %q: %v", name, err)
 	}
 }
 
@@ -550,12 +589,20 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*G
 		}
 	}
 
+	// first add poststarthooks from delegated targets
 	for k, v := range delegationTarget.PostStartHooks() {
 		s.postStartHooks[k] = v
 	}
 
 	for k, v := range delegationTarget.PreShutdownHooks() {
 		s.preShutdownHooks[k] = v
+	}
+
+	// add poststarthooks that were preconfigured.  Using the add method will give us an error if the same name has already been registered.
+	for name, preconfiguredPostStartHook := range c.PostStartHooks {
+		if err := s.AddPostStartHook(name, preconfiguredPostStartHook.hook); err != nil {
+			return nil, err
+		}
 	}
 
 	genericApiServerHookName := "generic-apiserver-start-informers"
@@ -567,6 +614,21 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*G
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	const priorityAndFairnessConfigConsumerHookName = "priority-and-fairness-config-consumer"
+	if s.isPostStartHookRegistered(priorityAndFairnessConfigConsumerHookName) {
+	} else if c.FlowControl != nil {
+		err := s.AddPostStartHook(priorityAndFairnessConfigConsumerHookName, func(context PostStartHookContext) error {
+			go c.FlowControl.Run(context.StopCh)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		// TODO(yue9944882): plumb pre-shutdown-hook for request-management system?
+	} else {
+		klog.V(3).Infof("Not requested to run hook %s", priorityAndFairnessConfigConsumerHookName)
 	}
 
 	for _, delegateCheck := range delegationTarget.HealthzChecks() {
@@ -601,7 +663,11 @@ func (c completedConfig) New(name string, delegationTarget DelegationTarget) (*G
 
 func DefaultBuildHandlerChain(apiHandler http.Handler, c *Config) http.Handler {
 	handler := genericapifilters.WithAuthorization(apiHandler, c.Authorization.Authorizer, c.Serializer)
-	handler = genericfilters.WithMaxInFlightLimit(handler, c.MaxRequestsInFlight, c.MaxMutatingRequestsInFlight, c.LongRunningFunc)
+	if c.FlowControl != nil {
+		handler = genericfilters.WithPriorityAndFairness(handler, c.LongRunningFunc, c.FlowControl)
+	} else {
+		handler = genericfilters.WithMaxInFlightLimit(handler, c.MaxRequestsInFlight, c.MaxMutatingRequestsInFlight, c.LongRunningFunc)
+	}
 	handler = genericapifilters.WithImpersonation(handler, c.Authorization.Authorizer, c.Serializer)
 	handler = genericapifilters.WithAudit(handler, c.AuditBackend, c.AuditPolicyChecker, c.LongRunningFunc)
 	failedHandler := genericapifilters.Unauthorized(c.Serializer, c.Authentication.SupportsBasicAuth)
@@ -611,6 +677,9 @@ func DefaultBuildHandlerChain(apiHandler http.Handler, c *Config) http.Handler {
 	handler = genericfilters.WithTimeoutForNonLongRunningRequests(handler, c.LongRunningFunc, c.RequestTimeout)
 	handler = genericfilters.WithWaitGroup(handler, c.LongRunningFunc, c.HandlerChainWaitGroup)
 	handler = genericapifilters.WithRequestInfo(handler, c.RequestInfoResolver)
+	if c.SecureServing != nil && !c.SecureServing.DisableHTTP2 && c.GoawayChance > 0 {
+		handler = genericfilters.WithProbabilisticGoaway(handler, c.GoawayChance)
+	}
 	handler = genericapifilters.WithCacheControl(handler)
 	handler = genericfilters.WithPanicRecovery(handler)
 	return handler
@@ -691,7 +760,7 @@ func AuthorizeClientBearerToken(loopback *restclient.Config, authn *Authenticati
 	}
 
 	privilegedLoopbackToken := loopback.BearerToken
-	var uid = uuid.NewRandom().String()
+	var uid = uuid.New().String()
 	tokens := make(map[string]*user.DefaultInfo)
 	tokens[privilegedLoopbackToken] = &user.DefaultInfo{
 		Name:   user.APIServerUser,

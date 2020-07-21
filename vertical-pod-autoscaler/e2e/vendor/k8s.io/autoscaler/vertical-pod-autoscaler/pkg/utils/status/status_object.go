@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"net"
 	"time"
 
@@ -88,7 +89,7 @@ func NewValidator(c clientset.Interface, leaseName, leaseNamespace string) Valid
 // Status object will be created if it doesn't exist.
 func (c *Client) UpdateStatus() error {
 	updateFn := func() error {
-		lease, err := c.client.Get(c.leaseName, metav1.GetOptions{})
+		lease, err := c.client.Get(context.TODO(), c.leaseName, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			// Create lease if it doesn't exist.
 			return c.create()
@@ -97,7 +98,7 @@ func (c *Client) UpdateStatus() error {
 		}
 		lease.Spec.RenewTime = &metav1.MicroTime{Time: time.Now()}
 		lease.Spec.HolderIdentity = pointer.StringPtr(c.holderIdentity)
-		_, err = c.client.Update(lease)
+		_, err = c.client.Update(context.TODO(), lease, metav1.UpdateOptions{})
 		if apierrors.IsConflict(err) {
 			// Lease was updated by an another replica of the component.
 			// No error should be returned.
@@ -109,7 +110,7 @@ func (c *Client) UpdateStatus() error {
 }
 
 func (c *Client) create() error {
-	_, err := c.client.Create(c.newLease())
+	_, err := c.client.Create(context.TODO(), c.newLease(), metav1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		// Lease was created by an another replica of the component.
 		// No error should be returned.
@@ -145,7 +146,7 @@ func (c *Client) getStatus() (*apicoordinationv1.Lease, error) {
 	var lease *apicoordinationv1.Lease
 	getFn := func() error {
 		var err error
-		lease, err = c.client.Get(c.leaseName, metav1.GetOptions{})
+		lease, err = c.client.Get(context.TODO(), c.leaseName, metav1.GetOptions{})
 		return err
 	}
 	err := retryWithExponentialBackOff(getFn)
