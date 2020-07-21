@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	psgo "github.com/Paperspace/paperspace-go"
+	psgo "github.com/paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
@@ -232,7 +232,7 @@ func (n *NodeGroup) Autoprovisioned() bool {
 
 // toInstances converts a slice of *psgo.Machine to
 // cloudprovider.Instance
-func toInstances(nodes []*psgo.Machine) []cloudprovider.Instance {
+func toInstances(nodes []psgo.Machine) []cloudprovider.Instance {
 	instances := make([]cloudprovider.Instance, 0, len(nodes))
 	for _, nd := range nodes {
 		instances = append(instances, toInstance(nd))
@@ -242,7 +242,7 @@ func toInstances(nodes []*psgo.Machine) []cloudprovider.Instance {
 
 // toInstance converts the given *godo.KubernetesNode to a
 // cloudprovider.Instance
-func toInstance(node *psgo.Machine) cloudprovider.Instance {
+func toInstance(node psgo.Machine) cloudprovider.Instance {
 	return cloudprovider.Instance{
 		Id:     toProviderID(node.ID),
 		Status: toInstanceStatus(node.State),

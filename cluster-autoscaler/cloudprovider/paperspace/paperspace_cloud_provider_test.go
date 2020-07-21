@@ -1,4 +1,3 @@
-package paperspace
 ///*
 //Copyright 2019 The Kubernetes Authors.
 //
@@ -14,8 +13,9 @@ package paperspace
 //See the License for the specific language governing permissions and
 //limitations under the License.
 //*/
-//
-//package paperspace
+
+package paperspace
+
 //
 //import (
 //	"bytes"
@@ -23,7 +23,6 @@ package paperspace
 //	"testing"
 //
 //	"github.com/digitalocean/godo"
-//	"github.com/paperspace/godo"
 //	"github.com/stretchr/testify/assert"
 //	"github.com/stretchr/testify/require"
 //
@@ -102,7 +101,7 @@ package paperspace
 //
 //	t.Run("success", func(t *testing.T) {
 //		name := provider.Name()
-//		assert.Equal(t, cloudprovider.PaperspaceProviderName, name, "provider name doesn't match")
+//		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 //	})
 //}
 //

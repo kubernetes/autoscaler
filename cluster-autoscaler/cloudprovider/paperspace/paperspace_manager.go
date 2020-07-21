@@ -23,7 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	psgo "github.com/Paperspace/paperspace-go"
+	psgo "github.com/paperspace/paperspace-go"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
 )
@@ -112,6 +112,7 @@ func (m *Manager) Refresh() error {
 	req := psgo.AutoscalingGroupListParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
 		Filter:        nil,
+		IncludeNodes:  true,
 	}
 	autoscalingGroups, err := m.client.GetAutoscalingGroups(req)
 	if err != nil {
