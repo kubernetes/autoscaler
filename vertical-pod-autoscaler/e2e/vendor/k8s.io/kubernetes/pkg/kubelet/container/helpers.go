@@ -24,8 +24,7 @@ import (
 
 	"k8s.io/klog"
 
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -35,6 +34,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/util/format"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
 	"k8s.io/kubernetes/third_party/forked/golang/expansion"
+	utilsnet "k8s.io/utils/net"
 )
 
 // HandlerRunner runs a lifecycle handler for a container.
@@ -45,7 +45,7 @@ type HandlerRunner interface {
 // RuntimeHelper wraps kubelet to make container runtime
 // able to get necessary informations like the RunContainerOptions, DNS settings, Host IP.
 type RuntimeHelper interface {
-	GenerateRunContainerOptions(pod *v1.Pod, container *v1.Container, podIP string) (contOpts *RunContainerOptions, cleanupAction func(), err error)
+	GenerateRunContainerOptions(pod *v1.Pod, container *v1.Container, podIP string, podIPs []string) (contOpts *RunContainerOptions, cleanupAction func(), err error)
 	GetPodDNS(pod *v1.Pod) (dnsConfig *runtimeapi.DNSConfig, err error)
 	// GetPodCgroupParent returns the CgroupName identifier, and its literal cgroupfs form on the host
 	// of a pod.
@@ -61,6 +61,10 @@ type RuntimeHelper interface {
 // ShouldContainerBeRestarted checks whether a container needs to be restarted.
 // TODO(yifan): Think about how to refactor this.
 func ShouldContainerBeRestarted(container *v1.Container, pod *v1.Pod, podStatus *PodStatus) bool {
+	// Once a pod has been marked deleted, it should not be restarted
+	if pod.DeletionTimestamp != nil {
+		return false
+	}
 	// Get latest container status.
 	status := podStatus.FindContainerStatusByName(container.Name)
 	// If the container was never started before, we should start it.
@@ -209,12 +213,6 @@ func (irecorder *innerEventRecorder) Eventf(object runtime.Object, eventtype, re
 
 }
 
-func (irecorder *innerEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
-	if ref, ok := irecorder.shouldRecordEvent(object); ok {
-		irecorder.recorder.PastEventf(ref, timestamp, eventtype, reason, messageFmt, args...)
-	}
-}
-
 func (irecorder *innerEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
 	if ref, ok := irecorder.shouldRecordEvent(object); ok {
 		irecorder.recorder.AnnotatedEventf(ref, annotations, eventtype, reason, messageFmt, args...)
@@ -319,16 +317,28 @@ func MakePortMappings(container *v1.Container) (ports []PortMapping) {
 			HostIP:        p.HostIP,
 		}
 
+		// We need to determine the address family this entry applies to. We do this to ensure
+		// duplicate containerPort / protocol rules work across different address families.
+		// https://github.com/kubernetes/kubernetes/issues/82373
+		family := "any"
+		if p.HostIP != "" {
+			if utilsnet.IsIPv6String(p.HostIP) {
+				family = "v6"
+			} else {
+				family = "v4"
+			}
+		}
+
 		// We need to create some default port name if it's not specified, since
-		// this is necessary for rkt.
-		// http://issue.k8s.io/7710
+		// this is necessary for the dockershim CNI driver.
+		// https://github.com/kubernetes/kubernetes/pull/82374#issuecomment-529496888
 		if p.Name == "" {
-			pm.Name = fmt.Sprintf("%s-%s:%d", container.Name, p.Protocol, p.ContainerPort)
+			pm.Name = fmt.Sprintf("%s-%s-%s:%d", container.Name, family, p.Protocol, p.ContainerPort)
 		} else {
 			pm.Name = fmt.Sprintf("%s-%s", container.Name, p.Name)
 		}
 
-		// Protect against exposing the same protocol-port more than once in a container.
+		// Protect against a port name being used more than once in a container.
 		if _, ok := names[pm.Name]; ok {
 			klog.Warningf("Port name conflicted, %q is defined more than once", pm.Name)
 			continue

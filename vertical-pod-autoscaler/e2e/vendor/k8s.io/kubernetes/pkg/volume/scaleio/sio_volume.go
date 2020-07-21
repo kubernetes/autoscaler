@@ -23,17 +23,18 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/klog"
+	"k8s.io/utils/mount"
+	utilstrings "k8s.io/utils/strings"
+
 	api "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	volumehelpers "k8s.io/cloud-provider/volume/helpers"
-	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util"
-	utilstrings "k8s.io/utils/strings"
 )
 
 type sioVolume struct {
@@ -156,7 +157,7 @@ func (v *sioVolume) SetUpAt(dir string, mounterArgs volume.MounterArgs) error {
 
 	if !v.readOnly && mounterArgs.FsGroup != nil {
 		klog.V(4).Info(log("applying  value FSGroup ownership"))
-		volume.SetVolumeOwnership(v, mounterArgs.FsGroup)
+		volume.SetVolumeOwnership(v, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy)
 	}
 
 	klog.V(4).Info(log("successfully setup PV %s: volume %s mapped as %s mounted at %s", v.volSpecName, v.volName, devicePath, dir))

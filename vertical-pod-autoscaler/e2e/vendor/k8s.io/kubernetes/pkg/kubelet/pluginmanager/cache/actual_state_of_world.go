@@ -77,9 +77,10 @@ var _ ActualStateOfWorld = &actualStateOfWorld{}
 
 // PluginInfo holds information of a plugin
 type PluginInfo struct {
-	SocketPath           string
-	FoundInDeprecatedDir bool
-	Timestamp            time.Time
+	SocketPath string
+	Timestamp  time.Time
+	Handler    PluginHandler
+	Name       string
 }
 
 func (asw *actualStateOfWorld) AddPlugin(pluginInfo PluginInfo) error {

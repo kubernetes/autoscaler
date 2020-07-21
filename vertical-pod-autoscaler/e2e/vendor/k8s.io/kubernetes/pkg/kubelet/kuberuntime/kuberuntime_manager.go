@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	goruntime "runtime"
 	"time"
 
 	cadvisorapi "github.com/google/cadvisor/info/v1"
@@ -100,6 +101,7 @@ type kubeGenericRuntimeManager struct {
 
 	// Health check results.
 	livenessManager proberesults.Manager
+	startupManager  proberesults.Manager
 
 	// If true, enforce container cpu limits with CFS quota support
 	cpuCFSQuota bool
@@ -150,13 +152,14 @@ type LegacyLogProvider interface {
 func NewKubeGenericRuntimeManager(
 	recorder record.EventRecorder,
 	livenessManager proberesults.Manager,
+	startupManager proberesults.Manager,
 	seccompProfileRoot string,
 	containerRefManager *kubecontainer.RefManager,
 	machineInfo *cadvisorapi.MachineInfo,
 	podStateProvider podStateProvider,
 	osInterface kubecontainer.OSInterface,
 	runtimeHelper kubecontainer.RuntimeHelper,
-	httpClient types.HttpGetter,
+	httpClient types.HTTPGetter,
 	imageBackOff *flowcontrol.Backoff,
 	serializeImagePulls bool,
 	imagePullQPS float32,
@@ -175,6 +178,7 @@ func NewKubeGenericRuntimeManager(
 		cpuCFSQuotaPeriod:   cpuCFSQuotaPeriod,
 		seccompProfileRoot:  seccompProfileRoot,
 		livenessManager:     livenessManager,
+		startupManager:      startupManager,
 		containerRefManager: containerRefManager,
 		machineInfo:         machineInfo,
 		osInterface:         osInterface,
@@ -188,7 +192,7 @@ func NewKubeGenericRuntimeManager(
 		logReduction:        logreduction.NewLogReduction(identicalErrorDelay),
 	}
 
-	typedVersion, err := kubeRuntimeManager.runtimeService.Version(kubeRuntimeAPIVersion)
+	typedVersion, err := kubeRuntimeManager.getTypedVersion()
 	if err != nil {
 		klog.Errorf("Get runtime version failed: %v", err)
 		return nil, err
@@ -243,6 +247,17 @@ func (m *kubeGenericRuntimeManager) Type() string {
 	return m.runtimeName
 }
 
+// SupportsSingleFileMapping returns whether the container runtime supports single file mappings or not.
+// It is supported on Windows only if the container runtime is containerd.
+func (m *kubeGenericRuntimeManager) SupportsSingleFileMapping() bool {
+	switch goruntime.GOOS {
+	case "windows":
+		return m.Type() != types.DockerContainerRuntime
+	default:
+		return true
+	}
+}
+
 func newRuntimeVersion(version string) (*utilversion.Version, error) {
 	if ver, err := utilversion.ParseSemantic(version); err == nil {
 		return ver, err
@@ -253,17 +268,15 @@ func newRuntimeVersion(version string) (*utilversion.Version, error) {
 func (m *kubeGenericRuntimeManager) getTypedVersion() (*runtimeapi.VersionResponse, error) {
 	typedVersion, err := m.runtimeService.Version(kubeRuntimeAPIVersion)
 	if err != nil {
-		klog.Errorf("Get remote runtime typed version failed: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("get remote runtime typed version failed: %v", err)
 	}
 	return typedVersion, nil
 }
 
 // Version returns the version information of the container runtime.
 func (m *kubeGenericRuntimeManager) Version() (kubecontainer.Version, error) {
-	typedVersion, err := m.runtimeService.Version(kubeRuntimeAPIVersion)
+	typedVersion, err := m.getTypedVersion()
 	if err != nil {
-		klog.Errorf("Get remote runtime version failed: %v", err)
 		return nil, err
 	}
 
@@ -420,7 +433,7 @@ func (m *kubeGenericRuntimeManager) podSandboxChanged(pod *v1.Pod, podStatus *ku
 	// Needs to create a new sandbox when readySandboxCount > 1 or the ready sandbox is not the latest one.
 	sandboxStatus := podStatus.SandboxStatuses[0]
 	if readySandboxCount > 1 {
-		klog.V(2).Infof("More than 1 sandboxes for pod %q are ready. Need to reconcile them", format.Pod(pod))
+		klog.V(2).Infof("Multiple sandboxes are ready for Pod %q. Need to reconcile them", format.Pod(pod))
 		return true, sandboxStatus.Metadata.Attempt + 1, sandboxStatus.Id
 	}
 	if sandboxStatus.State != runtimeapi.PodSandboxState_SANDBOX_READY {
@@ -436,7 +449,7 @@ func (m *kubeGenericRuntimeManager) podSandboxChanged(pod *v1.Pod, podStatus *ku
 
 	// Needs to create a new sandbox when the sandbox does not have an IP address.
 	if !kubecontainer.IsHostNetworkPod(pod) && sandboxStatus.Network.Ip == "" {
-		klog.V(2).Infof("Sandbox for pod %q has no IP address.  Need to start a new one", format.Pod(pod))
+		klog.V(2).Infof("Sandbox for pod %q has no IP address. Need to start a new one", format.Pod(pod))
 		return true, sandboxStatus.Metadata.Attempt + 1, sandboxStatus.Id
 	}
 
@@ -590,6 +603,9 @@ func (m *kubeGenericRuntimeManager) computePodActions(pod *v1.Pod, podStatus *ku
 		} else if liveness, found := m.livenessManager.Get(containerStatus.ID); found && liveness == proberesults.Failure {
 			// If the container failed the liveness probe, we should kill it.
 			message = fmt.Sprintf("Container %s failed liveness probe", container.Name)
+		} else if startup, found := m.startupManager.Get(containerStatus.ID); found && startup == proberesults.Failure {
+			// If the container failed the startup probe, we should kill it.
+			message = fmt.Sprintf("Container %s failed startup probe", container.Name)
 		} else {
 			// Keep the container.
 			keepCount++
@@ -681,12 +697,13 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 	// by container garbage collector.
 	m.pruneInitContainersBeforeStart(pod, podStatus)
 
-	// We pass the value of the PRIMARY podIP down to generatePodSandboxConfig and
-	// generateContainerConfig, which in turn passes it to various other
-	// functions, in order to facilitate functionality that requires this
-	// value (hosts file and downward API) and avoid races determining
+	// We pass the value of the PRIMARY podIP and list of podIPs down to
+	// generatePodSandboxConfig and generateContainerConfig, which in turn
+	// passes it to various other functions, in order to facilitate functionality
+	// that requires this value (hosts file and downward API) and avoid races determining
 	// the pod IP in cases where a container requires restart but the
-	// podIP isn't in the status manager yet.
+	// podIP isn't in the status manager yet. The list of podIPs is used to
+	// generate the hosts file.
 	//
 	// We default to the IPs in the passed-in pod status, and overwrite them if the
 	// sandbox needs to be (re)started.
@@ -712,7 +729,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 			if referr != nil {
 				klog.Errorf("Couldn't make a ref to pod %q: '%v'", format.Pod(pod), referr)
 			}
-			m.recorder.Eventf(ref, v1.EventTypeWarning, events.FailedCreatePodSandBox, "Failed create pod sandbox: %v", err)
+			m.recorder.Eventf(ref, v1.EventTypeWarning, events.FailedCreatePodSandBox, "Failed to create pod sandbox: %v", err)
 			return
 		}
 		klog.V(4).Infof("Created PodSandbox %q for pod %q", podSandboxID, format.Pod(pod))
@@ -760,19 +777,20 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 	// Helper containing boilerplate common to starting all types of containers.
 	// typeName is a label used to describe this type of container in log messages,
 	// currently: "container", "init container" or "ephemeral container"
-	start := func(typeName string, container *v1.Container) error {
-		startContainerResult := kubecontainer.NewSyncResult(kubecontainer.StartContainer, container.Name)
+	start := func(typeName string, spec *startSpec) error {
+		startContainerResult := kubecontainer.NewSyncResult(kubecontainer.StartContainer, spec.container.Name)
 		result.AddSyncResult(startContainerResult)
 
-		isInBackOff, msg, err := m.doBackOff(pod, container, podStatus, backOff)
+		isInBackOff, msg, err := m.doBackOff(pod, spec.container, podStatus, backOff)
 		if isInBackOff {
 			startContainerResult.Fail(err, msg)
-			klog.V(4).Infof("Backing Off restarting %v %+v in pod %v", typeName, container, format.Pod(pod))
+			klog.V(4).Infof("Backing Off restarting %v %+v in pod %v", typeName, spec.container, format.Pod(pod))
 			return err
 		}
 
-		klog.V(4).Infof("Creating %v %+v in pod %v", typeName, container, format.Pod(pod))
-		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, container, pod, podStatus, pullSecrets, podIP); err != nil {
+		klog.V(4).Infof("Creating %v %+v in pod %v", typeName, spec.container, format.Pod(pod))
+		// NOTE (aramase) podIPs are populated for single stack and dual stack clusters. Send only podIPs.
+		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, spec, pod, podStatus, pullSecrets, podIP, podIPs); err != nil {
 			startContainerResult.Fail(err, msg)
 			// known errors that are logged in other places are logged at higher levels here to avoid
 			// repetitive log spam
@@ -794,15 +812,14 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 	// containers cannot be specified on pod creation.
 	if utilfeature.DefaultFeatureGate.Enabled(features.EphemeralContainers) {
 		for _, idx := range podContainerChanges.EphemeralContainersToStart {
-			c := (*v1.Container)(&pod.Spec.EphemeralContainers[idx].EphemeralContainerCommon)
-			start("ephemeral container", c)
+			start("ephemeral container", ephemeralContainerStartSpec(&pod.Spec.EphemeralContainers[idx]))
 		}
 	}
 
 	// Step 6: start the init container.
 	if container := podContainerChanges.NextInitContainerToStart; container != nil {
 		// Start the next init container.
-		if err := start("init container", container); err != nil {
+		if err := start("init container", containerStartSpec(container)); err != nil {
 			return
 		}
 
@@ -812,7 +829,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 
 	// Step 7: start containers in podContainerChanges.ContainersToStart.
 	for _, idx := range podContainerChanges.ContainersToStart {
-		start("container", &pod.Spec.Containers[idx])
+		start("container", containerStartSpec(&pod.Spec.Containers[idx]))
 	}
 
 	return

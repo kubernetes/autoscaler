@@ -25,9 +25,10 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
-	libipvs "github.com/docker/libnetwork/ipvs"
 	"k8s.io/klog"
+	libipvs "k8s.io/kubernetes/third_party/forked/ipvs"
 	utilexec "k8s.io/utils/exec"
 )
 
@@ -199,6 +200,17 @@ func (runner *runner) GetRealServers(vs *VirtualServer) ([]*RealServer, error) {
 		rss = append(rss, dst)
 	}
 	return rss, nil
+}
+
+// ConfigureTimeouts is the equivalent to running "ipvsadm --set" to configure tcp, tcpfin and udp timeouts
+func (runner *runner) ConfigureTimeouts(tcpTimeout, tcpFinTimeout, udpTimeout time.Duration) error {
+	ipvsConfig := &libipvs.Config{
+		TimeoutTCP:    tcpTimeout,
+		TimeoutTCPFin: tcpFinTimeout,
+		TimeoutUDP:    udpTimeout,
+	}
+
+	return runner.ipvsHandle.SetConfig(ipvsConfig)
 }
 
 // toVirtualServer converts an IPVS Service to the equivalent VirtualServer structure.

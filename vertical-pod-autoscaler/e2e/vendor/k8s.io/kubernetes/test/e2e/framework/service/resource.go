@@ -17,15 +17,16 @@ limitations under the License.
 package service
 
 import (
-	"fmt"
+	"context"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/test/e2e/framework"
+	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 )
 
 // GetServicesProxyRequest returns a request for a service proxy.
@@ -64,16 +65,16 @@ func UpdateService(c clientset.Interface, namespace, serviceName string, update 
 	var service *v1.Service
 	var err error
 	for i := 0; i < 3; i++ {
-		service, err = c.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
+		service, err = c.CoreV1().Services(namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 		if err != nil {
 			return service, err
 		}
 
 		update(service)
 
-		service, err = c.CoreV1().Services(namespace).Update(service)
+		service, err = c.CoreV1().Services(namespace).Update(context.TODO(), service, metav1.UpdateOptions{})
 
-		if !errors.IsConflict(err) && !errors.IsServerTimeout(err) {
+		if !apierrors.IsConflict(err) && !apierrors.IsServerTimeout(err) {
 			return service, err
 		}
 	}
@@ -94,23 +95,11 @@ func GetIngressPoint(ing *v1.LoadBalancerIngress) string {
 	return host
 }
 
-// EnableAndDisableInternalLB returns two functions for enabling and disabling the internal load balancer
-// setting for the supported cloud providers (currently GCE/GKE and Azure) and empty functions for others.
-func EnableAndDisableInternalLB() (enable func(svc *v1.Service), disable func(svc *v1.Service)) {
-	return framework.TestContext.CloudConfig.Provider.EnableAndDisableInternalLB()
-}
-
-// DescribeSvc logs the output of kubectl describe svc for the given namespace
-func DescribeSvc(ns string) {
-	framework.Logf("\nOutput of kubectl describe svc:\n")
-	desc, _ := framework.RunKubectl(
-		"describe", "svc", fmt.Sprintf("--namespace=%v", ns))
-	framework.Logf(desc)
-}
-
 // GetServiceLoadBalancerCreationTimeout returns a timeout value for creating a load balancer of a service.
 func GetServiceLoadBalancerCreationTimeout(cs clientset.Interface) time.Duration {
-	if nodes := framework.GetReadySchedulableNodesOrDie(cs); len(nodes.Items) > LargeClusterMinNodesNumber {
+	nodes, err := e2enode.GetReadySchedulableNodes(cs)
+	framework.ExpectNoError(err)
+	if len(nodes.Items) > LargeClusterMinNodesNumber {
 		return LoadBalancerCreateTimeoutLarge
 	}
 	return LoadBalancerCreateTimeoutDefault
