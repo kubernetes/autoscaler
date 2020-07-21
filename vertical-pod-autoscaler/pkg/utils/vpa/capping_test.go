@@ -26,6 +26,11 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
+var (
+	requestsAndLimits vpa_types.ContainerControlledValues = vpa_types.ContainerControlledValuesRequestsAndLimits
+	requestsOnly      vpa_types.ContainerControlledValues = vpa_types.ContainerControlledValuesRequestsOnly
+)
+
 func TestRecommendationNotAvailable(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
 	podRecommendation := vpa_types.RecommendedPodResources{
@@ -47,7 +52,7 @@ func TestRecommendationNotAvailable(t *testing.T) {
 	assert.Empty(t, res.ContainerRecommendations)
 }
 
-func TestRecommendationCappedToLimit(t *testing.T) {
+func TestRecommendationToLimitCapping(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
 	pod.Spec.Containers[0].Resources.Limits =
 		apiv1.ResourceList{
@@ -59,31 +64,87 @@ func TestRecommendationCappedToLimit(t *testing.T) {
 			{
 				ContainerName: "ctr-name",
 				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(8000, 1),
 				},
 				UpperBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(9000, 1),
 				},
 			},
 		},
 	}
-	policy := vpa_types.PodResourcePolicy{}
-	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &policy, nil, pod)
-	assert.Nil(t, err)
-	assert.Equal(t, apiv1.ResourceList{
-		apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
-		apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
-	}, res.ContainerRecommendations[0].Target)
+	requestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
+	requestsOnly := vpa_types.ContainerControlledValuesRequestsOnly
+	for _, tc := range []struct {
+		name               string
+		policy             vpa_types.PodResourcePolicy
+		expectedTarget     apiv1.ResourceList
+		expectedUpperBound apiv1.ResourceList
+		expectedAnnotation bool
+	}{
+		{
+			name:   "no capping for default policy",
+			policy: vpa_types.PodResourcePolicy{},
+			expectedTarget: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(8000, 1),
+			},
+			expectedUpperBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(9000, 1),
+			},
+		}, {
+			name: "no capping for RequestsAndLimits policy",
+			policy: vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+					ContainerName:    vpa_types.DefaultContainerResourcePolicy,
+					ControlledValues: &requestsAndLimits,
+				}},
+			},
+			expectedTarget: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(8000, 1),
+			},
+			expectedUpperBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(9000, 1),
+			},
+		}, {
+			name: "capping for RequestsOnly policy",
+			policy: vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+					ContainerName:    vpa_types.DefaultContainerResourcePolicy,
+					ControlledValues: &requestsOnly,
+				}},
+			},
+			expectedTarget: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+			},
+			expectedUpperBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+			},
+			expectedAnnotation: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &tc.policy, nil, pod)
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedTarget, res.ContainerRecommendations[0].Target)
 
-	assert.Contains(t, annotations, "ctr-name")
-	assert.Contains(t, annotations["ctr-name"], "memory capped to container limit")
+			if tc.expectedAnnotation {
+				assert.Contains(t, annotations, "ctr-name")
+				assert.Contains(t, annotations["ctr-name"], "memory capped to container limit")
+			} else {
+				assert.NotContains(t, annotations, "ctr-name")
+			}
 
-	assert.Equal(t, apiv1.ResourceList{
-		apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
-		apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
-	}, res.ContainerRecommendations[0].UpperBound)
+			assert.Equal(t, tc.expectedUpperBound, res.ContainerRecommendations[0].UpperBound)
+
+		})
+	}
 }
 
 func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
@@ -605,11 +666,13 @@ func TestApplyPodLimitRange(t *testing.T) {
 }
 
 func TestApplyLimitRangeMinToRequest(t *testing.T) {
+	requestsOnly := vpa_types.ContainerControlledValuesRequestsOnly
 	tests := []struct {
 		name              string
 		resources         vpa_types.RecommendedPodResources
 		pod               apiv1.Pod
 		limitRange        apiv1.LimitRangeItem
+		policy            *vpa_types.PodResourcePolicy
 		expect            vpa_types.RecommendedPodResources
 		expectAnnotations []string
 	}{
@@ -703,6 +766,12 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 					apiv1.ResourceMemory: resource.MustParse("500M"),
 				},
 			},
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+					ContainerName:    vpa_types.DefaultContainerResourcePolicy,
+					ControlledValues: &requestsOnly,
+				}},
+			},
 			expect: vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					{
@@ -724,7 +793,7 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			calculator := fakeLimitRangeCalculator{containerLimitRange: tc.limitRange}
 			processor := NewCappingRecommendationProcessor(&calculator)
-			processedRecommendation, annotations, err := processor.Apply(&tc.resources, nil, nil, &tc.pod)
+			processedRecommendation, annotations, err := processor.Apply(&tc.resources, tc.policy, nil, &tc.pod)
 			assert.NoError(t, err)
 			assert.Contains(t, annotations, "container")
 			assert.ElementsMatch(t, tc.expectAnnotations, annotations["container"])
