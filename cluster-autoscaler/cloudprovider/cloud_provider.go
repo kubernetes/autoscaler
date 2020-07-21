@@ -43,8 +43,6 @@ const (
 	MagnumProviderName = "magnum"
 	// KubemarkProviderName gets the provider name of kubemark
 	KubemarkProviderName = "kubemark"
-	// HuaweicloudProviderName gets the provider name of huaweicloud
-	HuaweicloudProviderName = "huaweicloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
