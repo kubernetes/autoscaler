@@ -164,6 +164,15 @@ func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResou
 	return defaultPolicy
 }
 
+// GetContainerControlledValues returns controlled resource values
+func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_types.ContainerControlledValues {
+	containerPolicy := GetContainerResourcePolicy(name, vpaResourcePolicy)
+	if containerPolicy == nil || containerPolicy.ControlledValues == nil {
+		return vpa_types.ContainerControlledValuesRequestsAndLimits
+	}
+	return *containerPolicy.ControlledValues
+}
+
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
 // If object doesn't exits it is created.
 func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointInterface,

@@ -109,6 +109,7 @@ func getCappedRecommendationForContainer(
 	}
 	// containerPolicy can be nil (user does not have to configure it).
 	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
+	containerControlledValues := GetContainerControlledValues(container.Name, policy)
 
 	cappedRecommendations := containerRecommendation.DeepCopy()
 
@@ -123,9 +124,11 @@ func getCappedRecommendationForContainer(
 			cappingAnnotations = append(cappingAnnotations, annotations...)
 		}
 		// TODO: If limits and policy are conflicting, set some condition on the VPA.
-		annotations = capRecommendationToContainerLimit(recommendation, container)
-		if genAnnotations {
-			cappingAnnotations = append(cappingAnnotations, annotations...)
+		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
+			annotations = capRecommendationToContainerLimit(recommendation, container)
+			if genAnnotations {
+				cappingAnnotations = append(cappingAnnotations, annotations...)
+			}
 		}
 	}
 
