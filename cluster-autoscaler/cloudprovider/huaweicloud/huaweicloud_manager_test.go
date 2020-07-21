@@ -134,9 +134,9 @@ var (
 )
 
 // create fake service client
-func createTestServiceClient() *huawei_cloud_sdk_go.ServiceClient {
-	return &huawei_cloud_sdk_go.ServiceClient{
-		ProviderClient: &huawei_cloud_sdk_go.ProviderClient{},
+func createTestServiceClient() *huaweicloudsdk.ServiceClient {
+	return &huaweicloudsdk.ServiceClient{
+		ProviderClient: &huaweicloudsdk.ProviderClient{},
 		Endpoint:       th.GetEndpoint() + "/huaweitest/",
 	}
 }
@@ -147,7 +147,7 @@ func createTestHuaweicloudManager() *huaweicloudCloudManager {
 	return &huaweicloudCloudManager{
 		clusterClient: sc,
 		clusterName:   clusterUUID,
-		timeIncrement:  waitTimeStep,
+		timeIncrement: waitTimeStep,
 	}
 }
 

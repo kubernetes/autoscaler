@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package services
 
 import (
@@ -9,7 +25,7 @@ import (
 )
 
 type serviceResult struct {
-	huawei_cloud_sdk_go.Result
+	huaweicloudsdk.Result
 }
 
 // Extract interprets a GetResult, CreateResult or UpdateResult as a concrete
@@ -43,7 +59,7 @@ type UpdateResult struct {
 // DeleteResult is the response from a Delete request. Call its ExtractErr
 // method to interpret it as a Service.
 type DeleteResult struct {
-	huawei_cloud_sdk_go.ErrResult
+	huaweicloudsdk.ErrResult
 }
 
 // Service represents an OpenStack Service.
@@ -67,6 +83,7 @@ type Service struct {
 	Extra map[string]interface{} `json:"-"`
 }
 
+// UnmarshalJSON ...
 func (r *Service) UnmarshalJSON(b []byte) error {
 	type tmp Service
 	var s struct {
@@ -109,14 +126,14 @@ func (p ServicePage) IsEmpty() (bool, error) {
 }
 
 // NextPageURL extracts the "next" link from the links section of the result.
-func (r ServicePage) NextPageURL() (string, error) {
+func (p ServicePage) NextPageURL() (string, error) {
 	var s struct {
 		Links struct {
 			Next     string `json:"next"`
 			Previous string `json:"previous"`
 		} `json:"links"`
 	}
-	err := r.ExtractInto(&s)
+	err := p.ExtractInto(&s)
 	if err != nil {
 		return "", err
 	}

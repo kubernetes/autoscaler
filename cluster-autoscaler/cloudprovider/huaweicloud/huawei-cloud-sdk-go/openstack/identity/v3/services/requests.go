@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package services
 
 import (
@@ -25,7 +41,7 @@ type CreateOpts struct {
 
 // ToServiceCreateMap formats a CreateOpts into a create request.
 func (opts CreateOpts) ToServiceCreateMap() (map[string]interface{}, error) {
-	b, err := huawei_cloud_sdk_go.BuildRequestBody(opts, "service")
+	b, err := huaweicloudsdk.BuildRequestBody(opts, "service")
 	if err != nil {
 		return nil, err
 	}
@@ -42,13 +58,13 @@ func (opts CreateOpts) ToServiceCreateMap() (map[string]interface{}, error) {
 }
 
 // Create adds a new service of the requested type to the catalog.
-func Create(client *huawei_cloud_sdk_go.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
+func Create(client *huaweicloudsdk.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
 	b, err := opts.ToServiceCreateMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(createURL(client), &b, &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+	_, r.Err = client.Post(createURL(client), &b, &r.Body, &huaweicloudsdk.RequestOpts{
 		OkCodes: []int{201},
 	})
 	return
@@ -71,12 +87,12 @@ type ListOpts struct {
 
 // ToServiceListMap builds a list query from the list options.
 func (opts ListOpts) ToServiceListMap() (string, error) {
-	q, err := huawei_cloud_sdk_go.BuildQueryString(opts)
+	q, err := huaweicloudsdk.BuildQueryString(opts)
 	return q.String(), err
 }
 
 // List enumerates the services available to a specific user.
-func List(client *huawei_cloud_sdk_go.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+func List(client *huaweicloudsdk.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 	url := listURL(client)
 	if opts != nil {
 		query, err := opts.ToServiceListMap()
@@ -91,7 +107,7 @@ func List(client *huawei_cloud_sdk_go.ServiceClient, opts ListOptsBuilder) pagin
 }
 
 // Get returns additional information about a service, given its ID.
-func Get(client *huawei_cloud_sdk_go.ServiceClient, serviceID string) (r GetResult) {
+func Get(client *huaweicloudsdk.ServiceClient, serviceID string) (r GetResult) {
 	_, r.Err = client.Get(serviceURL(client, serviceID), &r.Body, nil)
 	return
 }
@@ -116,7 +132,7 @@ type UpdateOpts struct {
 
 // ToServiceUpdateMap formats a UpdateOpts into an update request.
 func (opts UpdateOpts) ToServiceUpdateMap() (map[string]interface{}, error) {
-	b, err := huawei_cloud_sdk_go.BuildRequestBody(opts, "service")
+	b, err := huaweicloudsdk.BuildRequestBody(opts, "service")
 	if err != nil {
 		return nil, err
 	}
@@ -133,13 +149,13 @@ func (opts UpdateOpts) ToServiceUpdateMap() (map[string]interface{}, error) {
 }
 
 // Update updates an existing Service.
-func Update(client *huawei_cloud_sdk_go.ServiceClient, serviceID string, opts UpdateOptsBuilder) (r UpdateResult) {
+func Update(client *huaweicloudsdk.ServiceClient, serviceID string, opts UpdateOptsBuilder) (r UpdateResult) {
 	b, err := opts.ToServiceUpdateMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Patch(updateURL(client, serviceID), &b, &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+	_, r.Err = client.Patch(updateURL(client, serviceID), &b, &r.Body, &huaweicloudsdk.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return
@@ -148,7 +164,7 @@ func Update(client *huawei_cloud_sdk_go.ServiceClient, serviceID string, opts Up
 // Delete removes an existing service.
 // It either deletes all associated endpoints, or fails until all endpoints
 // are deleted.
-func Delete(client *huawei_cloud_sdk_go.ServiceClient, serviceID string) (r DeleteResult) {
+func Delete(client *huaweicloudsdk.ServiceClient, serviceID string) (r DeleteResult) {
 	_, r.Err = client.Delete(serviceURL(client, serviceID), nil)
 	return
 }

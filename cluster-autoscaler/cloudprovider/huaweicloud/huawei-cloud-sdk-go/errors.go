@@ -1,4 +1,20 @@
-package huawei_cloud_sdk_go
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package huaweicloudsdk
 
 import (
 	"encoding/json"
@@ -56,7 +72,7 @@ const (
 	ELB2006IpPortAlreadyPresent = "Member with address .*. and protocol_port .*. already present in pool .*."
 	ELB2007MemberNotFound       = "member .*. could not be found"
 
-	ELB6101QuotaExceeded  = "Quota exceeded for resources: \\['listener'\\]"
+	ELB6101QuotaExceeded = "Quota exceeded for resources: \\['listener'\\]"
 	ELB2541QuotaExceeded = "Quota exceeded for resources: \\['pool'\\]"
 	ELBb015QuotaExceeded = "Quota exceeded for resources: \\['l7policy'\\]"
 	ELB1071QuotaExceeded = "Quota exceeded for resources: \\['loadbalancer'\\]"
@@ -65,62 +81,62 @@ const (
 //Common Error.
 const (
 	//Com1000
-	CE_MissingInputCode    = "Com.1000" //client error
-	CE_MissingInputMessage = "Missing input for argument [%s]"
+	CEMissingInputCode    = "Com.1000" //client error
+	CEMissingInputMessage = "Missing input for argument [%s]"
 
 	//Com1001
-	CE_StreamControlApiCode    = "Com.1001" //server error
-	CE_StreamControlApiMessage = "The maximum request receiving rate is exceeded"
+	CEStreamControlApiCode    = "Com.1001" //server error
+	CEStreamControlApiMessage = "The maximum request receiving rate is exceeded"
 
 	//Com1002
-	CE_InvalidInputCode    = "Com.1002" //client error
-	CE_InvalidInputMessage = "Invalid input provided for argument [%s]"
+	CEInvalidInputCode    = "Com.1002" //client error
+	CEInvalidInputMessage = "Invalid input provided for argument [%s]"
 
-	CE_OptionTypeNotStructCode    = "Com.1002" //client error
-	CE_OptionTypeNotStructMessage = "Options type is not a struct"
+	CEOptionTypeNotStructCode    = "Com.1002" //client error
+	CEOptionTypeNotStructMessage = "Options type is not a struct"
 
 	//Com1003
-	CE_ResourceNotFoundCode    = "Com.1003" //client error
-	CE_ResourceNotFoundMessage = "Unable to find %s with name %s"
+	CEResourceNotFoundCode    = "Com.1003" //client error
+	CEResourceNotFoundMessage = "Unable to find %s with name %s"
 
-	CE_MultipleResourcesFoundCode    = "Com.1003" //client error
-	CE_MultipleResourcesFoundMessage = "Found %d %ss matching %s"
+	CEMultipleResourcesFoundCode    = "Com.1003" //client error
+	CEMultipleResourcesFoundMessage = "Found %d %ss matching %s"
 
-	CE_ErrUnexpectedTypeCode    = "Com.1003" //client error
-	CE_ErrUnexpectedTypeMessage = "Expected %s but got %s"
+	CEErrUnexpectedTypeCode    = "Com.1003" //client error
+	CEErrUnexpectedTypeMessage = "Expected %s but got %s"
 
 	//Com1004
-	CE_NoClientProvidedCode    = "Com.1004" //client error
-	CE_NoClientProvidedMessage = "A service client must be provided to find a resource ID by name"
+	CENoClientProvidedCode    = "Com.1004" //client error
+	CENoClientProvidedMessage = "A service client must be provided to find a resource ID by name"
 
-	CE_NoEndPointInCatalogCode    = "Com.1004" //client error
-	CE_NoEndPointInCatalogMessage = "No suitable endpoint could be found in the service catalog."
+	CENoEndPointInCatalogCode    = "Com.1004" //client error
+	CENoEndPointInCatalogMessage = "No suitable endpoint could be found in the service catalog."
 
 	//Com1005
-	CE_ApiNotFoundCode    = "Com.1005" //server error
-	CE_ApiNotFoundMessage = "API not found"
+	CEApiNotFoundCode    = "Com.1005" //server error
+	CEApiNotFoundMessage = "API not found"
 
 	//1006
-	CE_TimeoutErrorCode    = "Com.1006" //client error
-	CE_TimeoutErrorMessage = "The request timed out %s times(%s for retry), perhaps we should have the threshold raised a little?"
+	CETimeoutErrorCode    = "Com.1006" //client error
+	CETimeoutErrorMessage = "The request timed out %s times(%s for retry), perhaps we should have the threshold raised a little?"
 
-	CE_ReauthExceedCode    = "Com.1006" //client error
-	CE_ReauthExceedMessage = "Tried to re-authenticate 3 times with no success."
+	CEReauthExceedCode    = "Com.1006" //client error
+	CEReauthExceedMessage = "Tried to re-authenticate 3 times with no success."
 
-	CE_ReauthFuncErrorCode    = "Com.1006" //client error
-	CE_ReauthFuncErrorMessage = "Get reauth function error [%s]"
+	CEReauthFuncErrorCode    = "Com.1006" //client error
+	CEReauthFuncErrorMessage = "Get reauth function error [%s]"
 
 	//Com2000
 	//其他非典型错误，不再统一定义。
 )
 
-//UnifiedError, Unified definition of backend errors.
+// UnifiedError Unified definition of backend errors.
 type UnifiedError struct {
 	ErrCode    interface{} `json:"code"`
 	ErrMessage string      `json:"message"`
 }
 
-//Initialize SDK client error.
+// NewSystemCommonError Initialize SDK client error.
 func NewSystemCommonError(code, message string) error {
 	return &UnifiedError{
 		ErrCode:    code,
@@ -128,18 +144,18 @@ func NewSystemCommonError(code, message string) error {
 	}
 }
 
-//NewSystemServerError,Handle background API error codes.
+// NewSystemServerError Handle background API error codes.
 func NewSystemServerError(httpStatus int, responseContent string) error {
 	//e.Body {"error": {"message": "instance is not shutoff.","code": "IMG.0008"}}
 	return ParseSeverError(httpStatus, responseContent)
 }
 
-//Error,Implement the Error() interface.
+// Error Implement the Error() interface.
 func (e UnifiedError) Error() string {
 	return fmt.Sprintf("{\"ErrorCode\":\"%s\",\"Message\":\"%s\"}", e.ErrCode, e.ErrMessage)
 }
 
-//ErrorCode,Error code converted to string type.
+// ErrorCode Error code converted to string type.
 func (e UnifiedError) ErrorCode() string {
 	if s, ok := e.ErrCode.(string); ok {
 		return s
@@ -152,21 +168,21 @@ func (e UnifiedError) ErrorCode() string {
 	return ""
 }
 
-//Message,Return error message.
+// Message Return error message.
 func (e UnifiedError) Message() string {
 	return e.ErrMessage
 }
 
-// OneLevelError,Define the error code structure and match the error code of one layer of json structure
+// OneLevelError Define the error code structure and match the error code of one layer of json structure
 type OneLevelError struct {
-	Message    string
-	Request_id string
-	ErrCode    string `json:"error_code"`
-	ErrMsg     string `json:"error_msg"`
-	Code	   string `json:"code"`
+	Message   string
+	RequestID string
+	ErrCode   string `json:"error_code"`
+	ErrMsg    string `json:"error_msg"`
+	Code      string `json:"code"`
 }
 
-// ParseSeverError,This function uses json serialization to parse background API error codes.
+// ParseSeverError This function uses json serialization to parse background API error codes.
 func ParseSeverError(httpStatus int, responseContent string) error {
 	//一层结构如下：
 	//第一种：{"error_msg": "Instance *89973356-f733-418b-95b2-f6fc27244f18 could not be found.","err_code": 404}
@@ -239,14 +255,14 @@ func ParseSeverError(httpStatus int, responseContent string) error {
 	}
 }
 
-//MatchErrorCode,Match the error code according to the error message
+// MatchErrorCode Match the error code according to the error message
 func MatchErrorCode(httpStatus int, message string) string {
 	//common error
-	if ok, _ := regexp.MatchString(CE_ApiNotFoundMessage, message); ok {
-		return CE_ApiNotFoundCode
+	if ok, _ := regexp.MatchString(CEApiNotFoundMessage, message); ok {
+		return CEApiNotFoundCode
 	}
-	if ok, _ := regexp.MatchString(CE_StreamControlApiMessage, message); ok {
-		return CE_StreamControlApiCode
+	if ok, _ := regexp.MatchString(CEStreamControlApiMessage, message); ok {
+		return CEStreamControlApiCode
 	}
 
 	//ECS error

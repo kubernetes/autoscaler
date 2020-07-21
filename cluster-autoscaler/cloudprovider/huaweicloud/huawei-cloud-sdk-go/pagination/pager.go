@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package pagination
 
 import (
@@ -35,7 +51,7 @@ type Page interface {
 
 // Pager knows how to advance through a specific resource collection, one page at a time.
 type Pager struct {
-	client *huawei_cloud_sdk_go.ServiceClient
+	client *huaweicloudsdk.ServiceClient
 
 	initialURL string
 
@@ -51,7 +67,7 @@ type Pager struct {
 
 // NewPager constructs a manually-configured pager.
 // Supply the URL for the first page, a function that requests a specific page given a URL, and a function that counts a page.
-func NewPager(client *huawei_cloud_sdk_go.ServiceClient, initialURL string, createPage func(r PageResult) Page) Pager {
+func NewPager(client *huaweicloudsdk.ServiceClient, initialURL string, createPage func(r PageResult) Page) Pager {
 	return Pager{
 		client:     client,
 		initialURL: initialURL,
@@ -189,7 +205,7 @@ func (p Pager) AllPages() (Page, error) {
 		err = p.EachPage(func(page Page) (bool, error) {
 			b := page.GetBody().([]byte)
 			pagesSlice = append(pagesSlice, b)
-			// seperate pages with a comma
+			// separate pages with a comma
 			pagesSlice = append(pagesSlice, []byte{10})
 			return true, nil
 		})
@@ -231,8 +247,8 @@ func (p Pager) AllPages() (Page, error) {
 
 		expected := "map[string]interface{}/[]byte/[]interface{}"
 		actual := fmt.Sprintf("%T", pb)
-		message := fmt.Sprintf(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeMessage, expected, actual)
-		err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_ErrUnexpectedTypeCode, message)
+		message := fmt.Sprintf(huaweicloudsdk.CEErrUnexpectedTypeMessage, expected, actual)
+		err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEErrUnexpectedTypeCode, message)
 		return nil, err
 	}
 
@@ -244,7 +260,7 @@ func (p Pager) AllPages() (Page, error) {
 	page := reflect.New(pageType)
 	// Set the page body to be the concatenated pages.
 	page.Elem().FieldByName("Body").Set(body)
-	// Set any additional headers that were pass along. The `objectstorage` pacakge,
+	// Set any additional headers that were pass along. The `objectstorage` package,
 	// for example, passes a Content-Type header.
 	h := make(http.Header)
 	for k, v := range p.Headers {

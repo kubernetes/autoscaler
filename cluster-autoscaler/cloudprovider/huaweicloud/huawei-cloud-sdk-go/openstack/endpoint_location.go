@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package openstack
 
 import (
@@ -10,8 +26,8 @@ import (
 	tokens3 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huawei-cloud-sdk-go/openstack/identity/v3/tokens"
 
 	"errors"
-	"strings"
 	"os"
+	"strings"
 )
 
 // service have same endpoint address in different location
@@ -19,28 +35,28 @@ var endpointSchemaList = map[string]string{
 	"COMPUTE":  "https://ecs.%(region)s.%(domain)s/v2/%(projectID)s/",
 	"ECSV1.1":  "https://ecs.%(region)s.%(domain)s/v1.1/%(projectID)s/",
 	"ECSV2":    "https://ecs.%(region)s.%(domain)s/v2/%(projectID)s/",
-	"ECS":  "https://ecs.%(region)s.%(domain)s/v1/%(projectID)s/",
+	"ECS":      "https://ecs.%(region)s.%(domain)s/v1/%(projectID)s/",
 	"IMAGE":    "https://ims.%(region)s.%(domain)s/",
 	"NETWORK":  "https://vpc.%(region)s.%(domain)s/",
 	"VOLUMEV2": "https://evs.%(region)s.%(domain)s/v2/%(projectID)s/",
 	//"ANTIDDOS":      "https://antiddos.%(region)s.%(domain)s/",
 	//"BSS":           "https://bss.%(region)s.%(domain)s/",
 	"BSSV1":     "https://bss.%(domain)s/v1.0/",
-	"BSSINTLV1":  "https://bss.%(domain)s/v1.0/",
-	"VPC":     "https://vpc.%(region)s.%(domain)s/v1/%(projectID)s/",
-	"CESV1":   "https://ces.%(region)s.%(domain)s/V1.0/%(projectID)s/",
-	"VPCV2.0": "https://vpc.%(region)s.%(domain)s/v2.0/%(projectID)s/",
-	"ASV1":    "https://as.%(region)s.%(domain)s/autoscaling-api/v1/%(projectID)s/",
-	"ASV2":    "https://as.%(region)s.%(domain)s/autoscaling-api/v2/%(projectID)s/",
-	"DNS":     "https://dns.%(region)s.%(domain)s/",
-	"FGSV2":   "https://functiongraph.%(region)s.%(domain)s/v2/%(projectID)s/",
-	"RDSV3":   "https://rds.%(region)s.%(domain)s/v3/%(projectID)s/",
-	"IDENTITY": "https://iam.%(domain)s/v3",
+	"BSSINTLV1": "https://bss.%(domain)s/v1.0/",
+	"VPC":       "https://vpc.%(region)s.%(domain)s/v1/%(projectID)s/",
+	"CESV1":     "https://ces.%(region)s.%(domain)s/V1.0/%(projectID)s/",
+	"VPCV2.0":   "https://vpc.%(region)s.%(domain)s/v2.0/%(projectID)s/",
+	"ASV1":      "https://as.%(region)s.%(domain)s/autoscaling-api/v1/%(projectID)s/",
+	"ASV2":      "https://as.%(region)s.%(domain)s/autoscaling-api/v2/%(projectID)s/",
+	"DNS":       "https://dns.%(region)s.%(domain)s/",
+	"FGSV2":     "https://functiongraph.%(region)s.%(domain)s/v2/%(projectID)s/",
+	"RDSV3":     "https://rds.%(region)s.%(domain)s/v3/%(projectID)s/",
+	"IDENTITY":  "https://iam.%(domain)s/v3",
 	/*
 		Sample Call to retrieve cluster info: https://cce.cn-north-1.myhuaweicloud.com/api/v3/projects/017a290a8242480e82de8db804c1718d/clusters/19d4f935-4c45-11ea-b2e7-0255ac101eee
 		Huawei Cloud API Doc: https://support.huaweicloud.com/api-cce/cce_02_0237.html
 		https://{cce_endpoint}/api/v3/projects/{project_id}/clusters/{cluster_id}
-	 */
+	*/
 	"CCEV3": "https://cce.%(region)s.%(domain)s/api/v3/projects/%(projectID)s/",
 }
 
@@ -54,7 +70,7 @@ criteria and when none do. The minimum that can be specified is a Type, but you
 will also often need to specify a Name and/or a Region depending on what's
 available on your OpenStack deployment.
 */
-func V2EndpointURL(catalog *tokens2.ServiceCatalog, opts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+func V2EndpointURL(catalog *tokens2.ServiceCatalog, opts huaweicloudsdk.EndpointOpts) (string, error) {
 	// Extract Endpoints from the catalog entries that match the requested Type, Name if provided, and Region if provided.
 	var endpoints = make([]tokens2.Endpoint, 0, 1)
 	for _, entry := range catalog.Entries {
@@ -74,19 +90,19 @@ func V2EndpointURL(catalog *tokens2.ServiceCatalog, opts huawei_cloud_sdk_go.End
 		//		return "", err
 
 		message := fmt.Sprintf("Discovered %d matching endpoints: %#v", len(endpoints), endpoints)
-		err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", message)
+		err := huaweicloudsdk.NewSystemCommonError("Com.2000", message)
 		return "", err
 	}
 
 	// Extract the appropriate URL from the matching Endpoint.
 	for _, endpoint := range endpoints {
 		switch opts.Availability {
-		case huawei_cloud_sdk_go.AvailabilityPublic:
-			return huawei_cloud_sdk_go.NormalizeURL(endpoint.PublicURL), nil
-		case huawei_cloud_sdk_go.AvailabilityInternal:
-			return huawei_cloud_sdk_go.NormalizeURL(endpoint.InternalURL), nil
-		case huawei_cloud_sdk_go.AvailabilityAdmin:
-			return huawei_cloud_sdk_go.NormalizeURL(endpoint.AdminURL), nil
+		case huaweicloudsdk.AvailabilityPublic:
+			return huaweicloudsdk.NormalizeURL(endpoint.PublicURL), nil
+		case huaweicloudsdk.AvailabilityInternal:
+			return huaweicloudsdk.NormalizeURL(endpoint.InternalURL), nil
+		case huaweicloudsdk.AvailabilityAdmin:
+			return huaweicloudsdk.NormalizeURL(endpoint.AdminURL), nil
 		default:
 			//			err := &ErrInvalidAvailabilityProvided{}
 			//			err.Argument = "Availability"
@@ -94,8 +110,8 @@ func V2EndpointURL(catalog *tokens2.ServiceCatalog, opts huawei_cloud_sdk_go.End
 			//			return "", err
 
 			value := fmt.Sprintf("Availability:%+v", opts.Availability)
-			message := fmt.Sprintf(huawei_cloud_sdk_go.CE_InvalidInputMessage, value)
-			err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_InvalidInputCode, message)
+			message := fmt.Sprintf(huaweicloudsdk.CEInvalidInputMessage, value)
+			err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEInvalidInputCode, message)
 			return "", err
 		}
 	}
@@ -104,12 +120,12 @@ func V2EndpointURL(catalog *tokens2.ServiceCatalog, opts huawei_cloud_sdk_go.End
 	//	err := &gophercloud.ErrEndpointNotFound{}
 	//	return "", err
 
-	err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_NoEndPointInCatalogCode, huawei_cloud_sdk_go.CE_NoEndPointInCatalogMessage)
+	err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CENoEndPointInCatalogCode, huaweicloudsdk.CENoEndPointInCatalogMessage)
 	return "", err
 }
 
-// Extract Endpoints from the catalog entries that match the requested Type, Interface, Name if provided, and Region if provided.
-func V3ExtractEndpointURL(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk_go.EndpointOpts, tokenOptions tokens3.AuthOptionsBuilder) (string, error) {
+// V3ExtractEndpointURL Extract Endpoints from the catalog entries that match the requested Type, Interface, Name if provided, and Region if provided.
+func V3ExtractEndpointURL(catalog *tokens3.ServiceCatalog, opts huaweicloudsdk.EndpointOpts, tokenOptions tokens3.AuthOptionsBuilder) (string, error) {
 
 	if opts.Type == "" {
 		return "", errors.New("Service type can not be empty.")
@@ -128,8 +144,8 @@ func V3ExtractEndpointURL(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk
 	return V3EndpointURL(catalog, opts)
 }
 
-// Extract Endpoints from the catalog entries that match the requested Type, Interface, Name if provided, and Region if provided.
-func V3TokenIdExtractEndpointURL(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk_go.EndpointOpts, tokenIdOptions tokenAuth.TokenIdOptions) (string, error) {
+// V3TokenIdExtractEndpointURL Extract Endpoints from the catalog entries that match the requested Type, Interface, Name if provided, and Region if provided.
+func V3TokenIdExtractEndpointURL(catalog *tokens3.ServiceCatalog, opts huaweicloudsdk.EndpointOpts, tokenIdOptions tokenAuth.TokenIdOptions) (string, error) {
 
 	if opts.Type == "" {
 		return "", errors.New("Service type can not be empty.")
@@ -156,25 +172,25 @@ criteria and when none do. The minimum that can be specified is a Type, but you
 will also often need to specify a Name and/or a Region depending on what's
 available on your OpenStack deployment.
 */
-func V3EndpointURL(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+func V3EndpointURL(catalog *tokens3.ServiceCatalog, opts huaweicloudsdk.EndpointOpts) (string, error) {
 	var endpoints = make([]tokens3.Endpoint, 0, 1)
 	for _, entry := range catalog.Entries {
 		if (entry.Type == opts.Type) && (opts.Name == "" || entry.Name == opts.Name) {
 			for _, endpoint := range entry.Endpoints {
-				if opts.Availability != huawei_cloud_sdk_go.AvailabilityAdmin &&
-					opts.Availability != huawei_cloud_sdk_go.AvailabilityPublic &&
-					opts.Availability != huawei_cloud_sdk_go.AvailabilityInternal {
+				if opts.Availability != huaweicloudsdk.AvailabilityAdmin &&
+					opts.Availability != huaweicloudsdk.AvailabilityPublic &&
+					opts.Availability != huaweicloudsdk.AvailabilityInternal {
 					//					err := &ErrInvalidAvailabilityProvided{}
 					//					err.Argument = "Availability"
 					//					err.Value = opts.Availability
 					//					return "", err
 
 					value := fmt.Sprintf("Availability:%+v", opts.Availability)
-					message := fmt.Sprintf(huawei_cloud_sdk_go.CE_InvalidInputMessage, value)
-					err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_InvalidInputCode, message)
+					message := fmt.Sprintf(huaweicloudsdk.CEInvalidInputMessage, value)
+					err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEInvalidInputCode, message)
 					return "", err
 				}
-				if (opts.Availability == huawei_cloud_sdk_go.Availability(endpoint.Interface)) &&
+				if (opts.Availability == huaweicloudsdk.Availability(endpoint.Interface)) &&
 					(opts.Region == "" || endpoint.Region == opts.Region) {
 					endpoints = append(endpoints, endpoint)
 				}
@@ -187,28 +203,26 @@ func V3EndpointURL(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk_go.End
 		//return "", ErrMultipleMatchingEndpointsV3{Endpoints: endpoints}
 
 		message := fmt.Sprintf("Discovered %d matching endpoints: %#v", len(endpoints), endpoints)
-		err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", message)
+		err := huaweicloudsdk.NewSystemCommonError("Com.2000", message)
 		return "", err
 	}
 
 	// Extract the URL from the matching Endpoint.
 	for _, endpoint := range endpoints {
-		return huawei_cloud_sdk_go.NormalizeURL(endpoint.URL), nil
+		return huaweicloudsdk.NormalizeURL(endpoint.URL), nil
 	}
 
 	// Report an error if there were no matching endpoints.
 	//	err := &gophercloud.ErrEndpointNotFound{}
 	//	return "", err
 
-	err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_NoEndPointInCatalogCode, huawei_cloud_sdk_go.CE_NoEndPointInCatalogMessage)
+	err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CENoEndPointInCatalogCode, huaweicloudsdk.CENoEndPointInCatalogMessage)
 	return "", err
 }
 
-/*
-   GetEndpointURLForAKSKAuth discovers the endpoint  from V3EndpointURL function firstly,
-   if the endpoint is null then concat the service type and domain as the endpoint
-*/
-func GetEndpointURLForAKSKAuth(catalog *tokens3.ServiceCatalog, opts huawei_cloud_sdk_go.EndpointOpts, akskOptions aksk.AKSKOptions) (string, error) {
+// GetEndpointURLForAKSKAuth discovers the endpoint  from V3EndpointURL function firstly,
+// if the endpoint is null then concat the service type and domain as the endpoint
+func GetEndpointURLForAKSKAuth(catalog *tokens3.ServiceCatalog, opts huaweicloudsdk.EndpointOpts, akskOptions aksk.AKSKOptions) (string, error) {
 
 	if akskOptions.Cloud != "" {
 		akskOptions.Domain = akskOptions.Cloud

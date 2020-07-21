@@ -1,4 +1,20 @@
-package huawei_cloud_sdk_go
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package huaweicloudsdk
 
 import (
 	"fmt"
@@ -105,7 +121,7 @@ func NormalizePathURL(basePath, rawPath string) (string, error) {
 
 }
 
-// InitStructWithDefaultTag,Initialize the structure instance using the structure tag.
+// InitStructWithDefaultTag Initialize the structure instance using the structure tag.
 func InitStructWithDefaultTag(bean interface{}) {
 	configType := reflect.TypeOf(bean)
 	for i := 0; i < configType.Elem().NumField(); i++ {
@@ -131,7 +147,7 @@ func InitStructWithDefaultTag(bean interface{}) {
 	}
 }
 
-// IsInStrSlice, Determine if the string is in the array.
+// IsInStrSlice Determine if the string is in the array.
 func IsInStrSlice(sliceStr []string, s string) bool {
 	for _, v := range sliceStr {
 		if v == s {
@@ -141,15 +157,15 @@ func IsInStrSlice(sliceStr []string, s string) bool {
 	return false
 }
 
-// EnableDebug, SDK log switch defaults value is false.
+// EnableDebug SDK log switch defaults value is false.
 var EnableDebug bool
 
-// Logger, define the logger struct.
+// Logger define the logger struct.
 type Logger struct {
 	DebugEnable bool `default:"false"`
 }
 
-// Debug, Format the log information and print the information to the console.
+// Debug Format the log information and print the information to the console.
 func (log *Logger) Debug(format string, v ...interface{}) {
 	if log.DebugEnable {
 		msg := fmt.Sprintf("[DEBUG] "+format, v...)
@@ -176,8 +192,8 @@ func printMsg(msg string) {
 	fmt.Println(string(append(append(buf, msg...))))
 }
 
-// GetLogger ,Return log initialization structure instance.
-func GetLogger() (*Logger) {
+// GetLogger Return log initialization structure instance.
+func GetLogger() *Logger {
 	log := new(Logger)
 	log.DebugEnable = EnableDebug
 	return log

@@ -1,4 +1,20 @@
-package huawei_cloud_sdk_go
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package huaweicloudsdk
 
 import (
 	"bytes"
@@ -250,8 +266,10 @@ func (r HeaderResult) ExtractInto(to interface{}) error {
 // RFC3339Milli describes a common time format used by some API responses.
 const RFC3339Milli = "2006-01-02T15:04:05.999999Z"
 
+// JSONRFC3339Milli ...
 type JSONRFC3339Milli time.Time
 
+// UnmarshalJSON ...
 func (jt *JSONRFC3339Milli) UnmarshalJSON(data []byte) error {
 	b := bytes.NewBuffer(data)
 	dec := json.NewDecoder(b)
@@ -267,10 +285,13 @@ func (jt *JSONRFC3339Milli) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// RFC3339MilliNoZ ...
 const RFC3339MilliNoZ = "2006-01-02T15:04:05.999999"
 
+// JSONRFC3339MilliNoZ ...
 type JSONRFC3339MilliNoZ time.Time
 
+// UnmarshalJSON ...
 func (jt *JSONRFC3339MilliNoZ) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -287,8 +308,10 @@ func (jt *JSONRFC3339MilliNoZ) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// JSONRFC1123 ...
 type JSONRFC1123 time.Time
 
+// UnmarshalJSON ...
 func (jt *JSONRFC1123) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -305,8 +328,10 @@ func (jt *JSONRFC1123) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// JSONUnix ...
 type JSONUnix time.Time
 
+// UnmarshalJSON ...
 func (jt *JSONUnix) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -327,8 +352,10 @@ func (jt *JSONUnix) UnmarshalJSON(data []byte) error {
 // RFC3339NoZ is the time format used in Heat (Orchestration).
 const RFC3339NoZ = "2006-01-02T15:04:05"
 
+// JSONRFC3339NoZ ...
 type JSONRFC3339NoZ time.Time
 
+// UnmarshalJSON ...
 func (jt *JSONRFC3339NoZ) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {

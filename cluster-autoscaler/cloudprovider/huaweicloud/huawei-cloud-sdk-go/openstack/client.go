@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package openstack
 
 import (
@@ -32,7 +48,7 @@ const (
 	v3 = "v3"
 )
 
-// MyRoundTripper, Rewrite RoundTrip to achieve reauth limit 3 times
+// MyRoundTripper Rewrite RoundTrip to achieve reauth limit 3 times
 type MyRoundTripper struct {
 	// http.RoundTripper interface.
 	rt http.RoundTripper
@@ -42,7 +58,7 @@ type MyRoundTripper struct {
 }
 
 //Initialize httpclient according to the config parameter.
-func newHTTPClient(conf *huawei_cloud_sdk_go.Config) http.Client {
+func newHTTPClient(conf *huaweicloudsdk.Config) http.Client {
 
 	hc := new(http.Client)
 
@@ -62,7 +78,7 @@ func newHTTPClient(conf *huawei_cloud_sdk_go.Config) http.Client {
 
 }
 
-//RoundTrip,Implement the RoundTrip interface function.The reauth default setting is three times.
+//RoundTrip Implement the RoundTrip interface function.The reauth default setting is three times.
 func (mrt *MyRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
 	response, err := mrt.rt.RoundTrip(request)
 	if response == nil {
@@ -80,8 +96,8 @@ func (mrt *MyRoundTripper) RoundTrip(request *http.Request) (*http.Response, err
 }
 
 /*
-Initialize the provider client based on the incoming config configuration，and returns a Provider Client
-instance that's ready to request SDK service API.
+AuthenticatedClientWithOptions Initialize the provider client based on the incoming config configuration，and returns
+a Provider Client instance that's ready to request SDK service API.
 
 Example of Creating a Service Client with options
 
@@ -92,7 +108,7 @@ Example of Creating a Service Client with options
 		Region: os.Getenv("OS_REGION_NAME"),
 	})
 */
-func AuthenticatedClientWithOptions(options auth.AuthOptionsProvider, conf *huawei_cloud_sdk_go.Config) (*huawei_cloud_sdk_go.ProviderClient, error) {
+func AuthenticatedClientWithOptions(options auth.AuthOptionsProvider, conf *huaweicloudsdk.Config) (*huaweicloudsdk.ProviderClient, error) {
 	client, err := NewClient(options.GetIdentityEndpoint(), options.GetDomainId(), options.GetProjectId(), conf)
 	if err != nil {
 		return nil, err
@@ -125,8 +141,8 @@ Example:
 		Region: os.Getenv("OS_REGION_NAME"),
 	})
 */
-func AuthenticatedClient(options auth.AuthOptionsProvider) (*huawei_cloud_sdk_go.ProviderClient, error) {
-	client, err := NewClient(options.GetIdentityEndpoint(), options.GetDomainId(), options.GetProjectId(), huawei_cloud_sdk_go.NewConfig())
+func AuthenticatedClient(options auth.AuthOptionsProvider) (*huaweicloudsdk.ProviderClient, error) {
+	client, err := NewClient(options.GetIdentityEndpoint(), options.GetDomainId(), options.GetProjectId(), huaweicloudsdk.NewConfig())
 	if err != nil {
 		return nil, err
 	}
@@ -152,10 +168,10 @@ A basic example of using this would be:
 	provider, err := openstack.NewClient(ao.IdentityEndpoint)
 	client, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
 */
-func NewClient(endpoint, domainID, projectID string, conf *huawei_cloud_sdk_go.Config) (*huawei_cloud_sdk_go.ProviderClient, error) {
+func NewClient(endpoint, domainID, projectID string, conf *huaweicloudsdk.Config) (*huaweicloudsdk.ProviderClient, error) {
 	if endpoint == "" {
-		message := fmt.Sprintf(huawei_cloud_sdk_go.CE_MissingInputMessage, "IdentityEndpoint")
-		err := huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_MissingInputCode, message)
+		message := fmt.Sprintf(huaweicloudsdk.CEMissingInputMessage, "IdentityEndpoint")
+		err := huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CEMissingInputCode, message)
 		return nil, err
 	}
 	u, err := url.Parse(endpoint)
@@ -164,14 +180,14 @@ func NewClient(endpoint, domainID, projectID string, conf *huawei_cloud_sdk_go.C
 	}
 
 	//if domainID == "" {
-	//	message := fmt.Sprintf(gophercloud.CE_MissingInputMessage, "domainID")
-	//	err := gophercloud.NewSystemCommonError(gophercloud.CE_MissingInputCode, message)
+	//	message := fmt.Sprintf(gophercloud.CEMissingInputMessage, "domainID")
+	//	err := gophercloud.NewSystemCommonError(gophercloud.CEMissingInputCode, message)
 	//	return nil, err
 	//}
 	//
 	//if projectID == "" {
-	//	message := fmt.Sprintf(gophercloud.CE_MissingInputMessage, "projectID")
-	//	err := gophercloud.NewSystemCommonError(gophercloud.CE_MissingInputCode, message)
+	//	message := fmt.Sprintf(gophercloud.CEMissingInputMessage, "projectID")
+	//	err := gophercloud.NewSystemCommonError(gophercloud.CEMissingInputCode, message)
 	//	return nil, err
 	//}
 
@@ -185,10 +201,10 @@ func NewClient(endpoint, domainID, projectID string, conf *huawei_cloud_sdk_go.C
 		base = u.String()
 	}
 
-	endpoint = huawei_cloud_sdk_go.NormalizeURL(endpoint)
-	base = huawei_cloud_sdk_go.NormalizeURL(base)
+	endpoint = huaweicloudsdk.NormalizeURL(endpoint)
+	base = huaweicloudsdk.NormalizeURL(base)
 
-	p := new(huawei_cloud_sdk_go.ProviderClient)
+	p := new(huaweicloudsdk.ProviderClient)
 	p.IdentityBase = base
 	p.IdentityEndpoint = endpoint
 	p.DomainID = domainID
@@ -202,7 +218,7 @@ func NewClient(endpoint, domainID, projectID string, conf *huawei_cloud_sdk_go.C
 
 // Authenticate or re-authenticate against the most recent identity service
 // supported at the provided endpoint.
-func Authenticate(client *huawei_cloud_sdk_go.ProviderClient, options auth.AuthOptionsProvider) error {
+func Authenticate(client *huaweicloudsdk.ProviderClient, options auth.AuthOptionsProvider) error {
 	versions := []*utils.Version{
 		{ID: v2, Priority: 20, Suffix: "/v2.0/"},
 		{ID: v3, Priority: 30, Suffix: "/v3/"},
@@ -218,9 +234,9 @@ func Authenticate(client *huawei_cloud_sdk_go.ProviderClient, options auth.AuthO
 	if isTokenAuthOptions {
 		switch chosen.ID {
 		case v2:
-			return tokenAuthV2(client, endpoint, authOptions, huawei_cloud_sdk_go.EndpointOpts{})
+			return tokenAuthV2(client, endpoint, authOptions, huaweicloudsdk.EndpointOpts{})
 		case v3:
-			return tokenAuthV3(client, endpoint, &authOptions, huawei_cloud_sdk_go.EndpointOpts{})
+			return tokenAuthV3(client, endpoint, &authOptions, huaweicloudsdk.EndpointOpts{})
 		default:
 			// The switch statement must be out of date from the versions list.
 			return fmt.Errorf("Unrecognized identity version: %s", chosen.ID)
@@ -229,16 +245,14 @@ func Authenticate(client *huawei_cloud_sdk_go.ProviderClient, options auth.AuthO
 		akskOptions, isAKSKOptions := options.(akskAuth.AKSKOptions)
 
 		if isAKSKOptions {
-			return akskAuthV3(client, endpoint, akskOptions, huawei_cloud_sdk_go.EndpointOpts{})
-		} else {
-			TokenIdOptions, isTokenIdOptions := options.(tokenAuth.TokenIdOptions)
-
-			if isTokenIdOptions {
-				return tokenIDAuthV3(client, endpoint, TokenIdOptions, huawei_cloud_sdk_go.EndpointOpts{})
-			} else {
-				return fmt.Errorf("Unrecognized auth options provider: %s", reflect.TypeOf(options))
-			}
+			return akskAuthV3(client, endpoint, akskOptions, huaweicloudsdk.EndpointOpts{})
 		}
+		TokenIdOptions, isTokenIdOptions := options.(tokenAuth.TokenIdOptions)
+
+		if isTokenIdOptions {
+			return tokenIDAuthV3(client, endpoint, TokenIdOptions, huaweicloudsdk.EndpointOpts{})
+		}
+		return fmt.Errorf("Unrecognized auth options provider: %s", reflect.TypeOf(options))
 	}
 
 }
@@ -248,7 +262,7 @@ func getEntryByServiceId(entries []tokens3.CatalogEntry, serviceId string) *toke
 		return nil
 	}
 
-	for idx, _ := range entries {
+	for idx := range entries {
 		if entries[idx].ID == serviceId {
 			return &entries[idx]
 		}
@@ -257,7 +271,7 @@ func getEntryByServiceId(entries []tokens3.CatalogEntry, serviceId string) *toke
 	return nil
 }
 
-func tokenIDAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, tokenIdOptions tokenAuth.TokenIdOptions, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func tokenIDAuthV3(client *huaweicloudsdk.ProviderClient, endpoint string, tokenIdOptions tokenAuth.TokenIdOptions, eo huaweicloudsdk.EndpointOpts) error {
 	// Override the generated service endpoint with the one returned by the version endpoint.
 
 	client.TokenID = tokenIdOptions.AuthToken
@@ -313,7 +327,7 @@ func tokenIDAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, 
 			}
 		}
 
-		client.EndpointLocator = func(opts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+		client.EndpointLocator = func(opts huaweicloudsdk.EndpointOpts) (string, error) {
 			return V3TokenIdExtractEndpointURL(&tokens3.ServiceCatalog{
 				Entries: entries,
 			}, opts, tokenIdOptions)
@@ -327,13 +341,12 @@ func tokenIDAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, 
 	}
 
 	if client.EndpointLocator == nil {
-		return huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_NoEndPointInCatalogCode, huawei_cloud_sdk_go.CE_NoEndPointInCatalogMessage)
-	} else {
-		return nil
+		return huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CENoEndPointInCatalogCode, huaweicloudsdk.CENoEndPointInCatalogMessage)
 	}
+	return nil
 }
 
-func akskAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, options akskAuth.AKSKOptions, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func akskAuthV3(client *huaweicloudsdk.ProviderClient, endpoint string, options akskAuth.AKSKOptions, eo huaweicloudsdk.EndpointOpts) error {
 	v3Client, err := NewIdentityV3(client, eo)
 	if err != nil {
 		return err
@@ -387,7 +400,7 @@ func akskAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, opt
 			}
 		}
 
-		client.EndpointLocator = func(opts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+		client.EndpointLocator = func(opts huaweicloudsdk.EndpointOpts) (string, error) {
 			return GetEndpointURLForAKSKAuth(&tokens3.ServiceCatalog{
 				Entries: entries,
 			}, opts, options)
@@ -401,19 +414,18 @@ func akskAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, opt
 	}
 
 	if client.EndpointLocator == nil {
-		return huawei_cloud_sdk_go.NewSystemCommonError(huawei_cloud_sdk_go.CE_NoEndPointInCatalogCode, huawei_cloud_sdk_go.CE_NoEndPointInCatalogMessage)
-	} else {
-		return nil
+		return huaweicloudsdk.NewSystemCommonError(huaweicloudsdk.CENoEndPointInCatalogCode, huaweicloudsdk.CENoEndPointInCatalogMessage)
 	}
+	return nil
 
 }
 
 // AuthenticateV2 explicitly authenticates against the identity v2 endpoint.
-func AuthenticateV2(client *huawei_cloud_sdk_go.ProviderClient, options tokenAuth.TokenOptions, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func AuthenticateV2(client *huaweicloudsdk.ProviderClient, options tokenAuth.TokenOptions, eo huaweicloudsdk.EndpointOpts) error {
 	return tokenAuthV2(client, "", options, eo)
 }
 
-func tokenAuthV2(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, options tokenAuth.TokenOptions, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func tokenAuthV2(client *huaweicloudsdk.ProviderClient, endpoint string, options tokenAuth.TokenOptions, eo huaweicloudsdk.EndpointOpts) error {
 	v2Client, err := NewIdentityV2(client, eo)
 	if err != nil {
 		return err
@@ -464,7 +476,7 @@ func tokenAuthV2(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, op
 		}
 	}
 	client.TokenID = token.ID
-	client.EndpointLocator = func(opts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+	client.EndpointLocator = func(opts huaweicloudsdk.EndpointOpts) (string, error) {
 		return V2EndpointURL(catalog, opts)
 	}
 
@@ -472,11 +484,11 @@ func tokenAuthV2(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, op
 }
 
 // AuthenticateV3 explicitly authenticates against the identity v3 service.
-func AuthenticateV3(client *huawei_cloud_sdk_go.ProviderClient, options tokens3.AuthOptionsBuilder, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func AuthenticateV3(client *huaweicloudsdk.ProviderClient, options tokens3.AuthOptionsBuilder, eo huaweicloudsdk.EndpointOpts) error {
 	return tokenAuthV3(client, "", options, eo)
 }
 
-func tokenAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, opts tokens3.AuthOptionsBuilder, eo huawei_cloud_sdk_go.EndpointOpts) error {
+func tokenAuthV3(client *huaweicloudsdk.ProviderClient, endpoint string, opts tokens3.AuthOptionsBuilder, eo huaweicloudsdk.EndpointOpts) error {
 	// Override the generated service endpoint with the one returned by the version endpoint.
 	v3Client, err := NewIdentityV3(client, eo)
 	if err != nil {
@@ -530,7 +542,7 @@ func tokenAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, op
 			return nil
 		}
 	}
-	client.EndpointLocator = func(endpointOpts huawei_cloud_sdk_go.EndpointOpts) (string, error) {
+	client.EndpointLocator = func(endpointOpts huaweicloudsdk.EndpointOpts) (string, error) {
 		return V3ExtractEndpointURL(catalog, endpointOpts, opts)
 	}
 
@@ -539,11 +551,11 @@ func tokenAuthV3(client *huawei_cloud_sdk_go.ProviderClient, endpoint string, op
 
 // NewIdentityV2 creates a ServiceClient that may be used to interact with the
 // v2 identity service.
-func NewIdentityV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewIdentityV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	endpoint := client.IdentityBase + "v2.0/"
 	clientType := "identity"
 	var err error
-	if !reflect.DeepEqual(eo, huawei_cloud_sdk_go.EndpointOpts{}) {
+	if !reflect.DeepEqual(eo, huaweicloudsdk.EndpointOpts{}) {
 		eo.ApplyDefaults(clientType)
 		endpoint, err = client.EndpointLocator(eo)
 		if err != nil {
@@ -551,7 +563,7 @@ func NewIdentityV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_s
 		}
 	}
 
-	return &huawei_cloud_sdk_go.ServiceClient{
+	return &huaweicloudsdk.ServiceClient{
 		ProviderClient: client,
 		Endpoint:       endpoint,
 		Type:           clientType,
@@ -560,11 +572,11 @@ func NewIdentityV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_s
 
 // NewIdentityV3 creates a ServiceClient that may be used to access the v3
 // identity service.
-func NewIdentityV3(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewIdentityV3(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	endpoint := client.IdentityBase + "v3/"
 	clientType := "identity"
 	var err error
-	if !reflect.DeepEqual(eo, huawei_cloud_sdk_go.EndpointOpts{}) {
+	if !reflect.DeepEqual(eo, huaweicloudsdk.EndpointOpts{}) {
 		eo.ApplyDefaults(clientType)
 		endpoint, err = client.EndpointLocator(eo)
 		if err != nil {
@@ -579,15 +591,15 @@ func NewIdentityV3(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_s
 		endpoint = endpoint + "v3/"
 	}
 
-	return &huawei_cloud_sdk_go.ServiceClient{
+	return &huaweicloudsdk.ServiceClient{
 		ProviderClient: client,
 		Endpoint:       endpoint,
 		Type:           clientType,
 	}, nil
 }
 
-func initClientOpts(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts, clientType string) (*huawei_cloud_sdk_go.ServiceClient, error) {
-	sc := new(huawei_cloud_sdk_go.ServiceClient)
+func initClientOpts(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts, clientType string) (*huaweicloudsdk.ServiceClient, error) {
+	sc := new(huaweicloudsdk.ServiceClient)
 	eo.ApplyDefaults(clientType)
 	url, err := client.EndpointLocator(eo)
 	if err != nil {
@@ -601,19 +613,19 @@ func initClientOpts(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_
 
 // NewObjectStorageV1 creates a ServiceClient that may be used with the v1
 // object storage package.
-func NewObjectStorageV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewObjectStorageV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "object-store")
 }
 
 // NewComputeV2 creates a ServiceClient that may be used with the v2 compute
 // package.
-func NewComputeV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewComputeV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "compute")
 }
 
 // NewNetworkV2 creates a ServiceClient that may be used with the v2 network
 // package.
-func NewNetworkV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewNetworkV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "network")
 	sc.ResourceBase = sc.Endpoint + "v2.0/"
 	return sc, err
@@ -621,46 +633,46 @@ func NewNetworkV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sd
 
 // NewBlockStorageV1 creates a ServiceClient that may be used to access the v1
 // block storage service.
-func NewBlockStorageV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewBlockStorageV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "volume")
 }
 
 // NewBlockStorageV2 creates a ServiceClient that may be used to access the v2
 // block storage service.
-func NewBlockStorageV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewBlockStorageV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "volumev2")
 }
 
 // NewBlockStorageV3 creates a ServiceClient that may be used to access the v3 block storage service.
-func NewBlockStorageV3(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewBlockStorageV3(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "volumev3")
 }
 
 // NewSharedFileSystemV2 creates a ServiceClient that may be used to access the v2 shared file system service.
-func NewSharedFileSystemV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewSharedFileSystemV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "sharev2")
 }
 
 // NewCDNV1 creates a ServiceClient that may be used to access the OpenStack v1
 // CDN service.
-func NewCDNV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewCDNV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "cdn")
 }
 
 // NewOrchestrationV1 creates a ServiceClient that may be used to access the v1
 // orchestration service.
-func NewOrchestrationV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewOrchestrationV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "orchestration")
 }
 
 // NewDBV1 creates a ServiceClient that may be used to access the v1 DB service.
-func NewDBV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewDBV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "database")
 }
 
 // NewDNSV2 creates a ServiceClient that may be used to access the v2 DNS
 // service.
-func NewDNSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewDNSV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "dns")
 	sc.ResourceBase = sc.Endpoint + "v2/"
 	return sc, err
@@ -668,7 +680,7 @@ func NewDNSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go
 
 // NewImageServiceV2 creates a ServiceClient that may be used to access the v2
 // image service.
-func NewImageServiceV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewImageServiceV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "image")
 	sc.ResourceBase = sc.Endpoint + "v2/"
 	return sc, err
@@ -676,7 +688,7 @@ func NewImageServiceV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_clo
 
 // NewLoadBalancerV2 creates a ServiceClient that may be used to access the v2
 // load balancer service.
-func NewLoadBalancerV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewLoadBalancerV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "load-balancer")
 	sc.ResourceBase = sc.Endpoint + "v2.0/"
 	return sc, err
@@ -684,23 +696,24 @@ func NewLoadBalancerV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_clo
 
 // NewECSV1 creates a ServiceClient that may be used to access the v1
 // ecs service.
-func NewECSV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewECSV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "ecs")
 }
 
 // NewECSV1_1 creates a ServiceClient that may be used to access the v1.1
 // ecs service.
-func NewECSV1_1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewECSV1_1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "ecsv1.1")
 }
 
 // NewECSV2 creates a ServiceClient that may be used to access the v2
 // ecs service.
-func NewECSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewECSV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	return initClientOpts(client, eo, "ecsv2")
 }
 
-func NewIMSV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+// NewIMSV1 ...
+func NewIMSV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "image")
 	sc.ResourceBase = sc.Endpoint + "v1/"
 	return sc, err
@@ -708,7 +721,7 @@ func NewIMSV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go
 
 // NewIMSV2 creates a ServiceClient that may be used to access the v2
 // image service.
-func NewIMSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewIMSV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "image")
 	sc.ResourceBase = sc.Endpoint + "v2/"
 	return sc, err
@@ -716,28 +729,28 @@ func NewIMSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go
 
 // NewBSSV1 creates a ServiceClient that may be used to access the v1.0
 // BSS service.
-func NewBSSV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewBSSV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "bssv1")
 	return sc, err
 }
 
-// NewBSS-INTLV1 creates a ServiceClient that may be used to access the v1.0
+// NewBSSIntlV1 creates a ServiceClient that may be used to access the v1.0
 // BSS-INTLV1 service.
-func NewBSSIntlV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewBSSIntlV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "bss-intlv1")
 	return sc, err
 }
 
 // NewVPCV1 creates a ServiceClient that may be used with the v1 network
 // package.
-func NewVPCV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewVPCV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "vpc")
 	return sc, err
 }
 
 // NewCESV1 creates a ServiceClient that may be used with the v1 cloud eye service
 // package.
-func NewCESV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewCESV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	type details struct {
 		Details string `json:"details"`
 		Code    string `json:"code"`
@@ -760,9 +773,9 @@ func NewCESV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go
 			code = cesErr.Details.Code
 			message = cesErr.Details.Details
 		} else {
-			code = huawei_cloud_sdk_go.MatchErrorCode(httpStatus, message)
+			code = huaweicloudsdk.MatchErrorCode(httpStatus, message)
 		}
-		return &huawei_cloud_sdk_go.UnifiedError{
+		return &huaweicloudsdk.UnifiedError{
 			ErrCode:    code,
 			ErrMessage: message,
 		}
@@ -771,44 +784,44 @@ func NewCESV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go
 	return sc, err
 }
 
-
 // NewVPCV2 creates a ServiceClient that may be used with the v2.0 vpc
 // package.
-func NewVPCV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewVPCV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "vpcv2.0")
 	return sc, err
 }
 
 // NewASV1 creates a ServiceClient that may be used with the v1 as
 // package.
-func NewASV1(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewASV1(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "asv1")
 	return sc, err
 }
 
 // NewASV2 creates a ServiceClient that may be used with the v2 as
 // package.
-func NewASV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewASV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "asv2")
 	return sc, err
 }
 
 // NewFGSV2 creates a ServiceClient that may be used with the v2 as
 // package.
-func NewFGSV2(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
-    sc, err := initClientOpts(client, eo, "fgsv2")
-    return sc, err
+func NewFGSV2(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
+	sc, err := initClientOpts(client, eo, "fgsv2")
+	return sc, err
 }
+
 // NewRDSV3 creates a ServiceClient that may be used with the v3 rds
 // package.
-func NewRDSV3(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewRDSV3(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "rdsv3")
 	return sc, err
 }
 
-// NewCCE creates a ServiceClient that may be used with the v3 CCE
+// NewCCEV3 creates a ServiceClient that may be used with the v3 CCE
 // package.
-func NewCCEV3(client *huawei_cloud_sdk_go.ProviderClient, eo huawei_cloud_sdk_go.EndpointOpts) (*huawei_cloud_sdk_go.ServiceClient, error) {
+func NewCCEV3(client *huaweicloudsdk.ProviderClient, eo huaweicloudsdk.EndpointOpts) (*huaweicloudsdk.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "ccev3")
 	return sc, err
 }

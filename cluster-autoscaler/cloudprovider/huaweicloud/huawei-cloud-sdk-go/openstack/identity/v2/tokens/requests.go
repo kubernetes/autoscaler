@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package tokens
 
 import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huawei-cloud-sdk-go"
@@ -70,7 +86,7 @@ func (opts AuthOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 		}
 	}
 
-	b, err := huawei_cloud_sdk_go.BuildRequestBody(v2Opts, "auth")
+	b, err := huaweicloudsdk.BuildRequestBody(v2Opts, "auth")
 	if err != nil {
 		return nil, err
 	}
@@ -81,13 +97,13 @@ func (opts AuthOptions) ToTokenV2CreateMap() (map[string]interface{}, error) {
 // Generally, rather than interact with this call directly, end users should
 // call openstack.AuthenticatedClient(), which abstracts all of the gory details
 // about navigating service catalogs and such.
-func Create(client *huawei_cloud_sdk_go.ServiceClient, auth AuthOptionsBuilder) (r CreateResult) {
+func Create(client *huaweicloudsdk.ServiceClient, auth AuthOptionsBuilder) (r CreateResult) {
 	b, err := auth.ToTokenV2CreateMap()
 	if err != nil {
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(CreateURL(client), b, &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+	_, r.Err = client.Post(CreateURL(client), b, &r.Body, &huaweicloudsdk.RequestOpts{
 		OkCodes:     []int{200, 203},
 		MoreHeaders: map[string]string{"X-Auth-Token": ""},
 	})
@@ -95,8 +111,8 @@ func Create(client *huawei_cloud_sdk_go.ServiceClient, auth AuthOptionsBuilder) 
 }
 
 // Get validates and retrieves information for user's token.
-func Get(client *huawei_cloud_sdk_go.ServiceClient, token string) (r GetResult) {
-	_, r.Err = client.Get(GetURL(client, token), &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+func Get(client *huaweicloudsdk.ServiceClient, token string) (r GetResult) {
+	_, r.Err = client.Get(GetURL(client, token), &r.Body, &huaweicloudsdk.RequestOpts{
 		OkCodes: []int{200, 203},
 	})
 	return

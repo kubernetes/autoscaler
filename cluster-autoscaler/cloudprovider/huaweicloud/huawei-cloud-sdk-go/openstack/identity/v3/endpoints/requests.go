@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package endpoints
 
 import (
@@ -5,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huawei-cloud-sdk-go/pagination"
 )
 
+// CreateOptsBuilder ...
 type CreateOptsBuilder interface {
 	ToEndpointCreateMap() (map[string]interface{}, error)
 }
@@ -14,7 +31,7 @@ type CreateOptsBuilder interface {
 type CreateOpts struct {
 	// Availability is the interface type of the Endpoint (admin, internal,
 	// or public), referenced by the gophercloud.Availability type.
-	Availability huawei_cloud_sdk_go.Availability `json:"interface" required:"true"`
+	Availability huaweicloudsdk.Availability `json:"interface" required:"true"`
 
 	// Name is the name of the Endpoint.
 	Name string `json:"name" required:"true"`
@@ -32,11 +49,11 @@ type CreateOpts struct {
 
 // ToEndpointCreateMap builds a request body from the Endpoint Create options.
 func (opts CreateOpts) ToEndpointCreateMap() (map[string]interface{}, error) {
-	return huawei_cloud_sdk_go.BuildRequestBody(opts, "endpoint")
+	return huaweicloudsdk.BuildRequestBody(opts, "endpoint")
 }
 
 // Create inserts a new Endpoint into the service catalog.
-func Create(client *huawei_cloud_sdk_go.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
+func Create(client *huaweicloudsdk.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
 	b, err := opts.ToEndpointCreateMap()
 	if err != nil {
 		r.Err = err
@@ -56,7 +73,7 @@ type ListOptsBuilder interface {
 type ListOpts struct {
 	// Availability is the interface type of the Endpoint (admin, internal,
 	// or public), referenced by the gophercloud.Availability type.
-	Availability huawei_cloud_sdk_go.Availability `q:"interface"`
+	Availability huaweicloudsdk.Availability `q:"interface"`
 
 	// ServiceID is the ID of the service the Endpoint refers to.
 	ServiceID string `q:"service_id"`
@@ -70,16 +87,16 @@ type ListOpts struct {
 
 // ToEndpointListParams builds a list request from the List options.
 func (opts ListOpts) ToEndpointListParams() (string, error) {
-	q, err := huawei_cloud_sdk_go.BuildQueryString(opts)
+	q, err := huaweicloudsdk.BuildQueryString(opts)
 	return q.String(), err
 }
 
 // List enumerates endpoints in a paginated collection, optionally filtered
 // by ListOpts criteria.
-func List(client *huawei_cloud_sdk_go.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+func List(client *huaweicloudsdk.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 	u := listURL(client)
 	if opts != nil {
-		q, err := huawei_cloud_sdk_go.BuildQueryString(opts)
+		q, err := huaweicloudsdk.BuildQueryString(opts)
 		if err != nil {
 			return pagination.Pager{Err: err}
 		}
@@ -100,7 +117,7 @@ type UpdateOptsBuilder interface {
 type UpdateOpts struct {
 	// Availability is the interface type of the Endpoint (admin, internal,
 	// or public), referenced by the gophercloud.Availability type.
-	Availability huawei_cloud_sdk_go.Availability `json:"interface,omitempty"`
+	Availability huaweicloudsdk.Availability `json:"interface,omitempty"`
 
 	// Name is the name of the Endpoint.
 	Name string `json:"name,omitempty"`
@@ -118,11 +135,11 @@ type UpdateOpts struct {
 
 // ToEndpointUpdateMap builds an update request body from the Update options.
 func (opts UpdateOpts) ToEndpointUpdateMap() (map[string]interface{}, error) {
-	return huawei_cloud_sdk_go.BuildRequestBody(opts, "endpoint")
+	return huaweicloudsdk.BuildRequestBody(opts, "endpoint")
 }
 
 // Update changes an existing endpoint with new data.
-func Update(client *huawei_cloud_sdk_go.ServiceClient, endpointID string, opts UpdateOptsBuilder) (r UpdateResult) {
+func Update(client *huaweicloudsdk.ServiceClient, endpointID string, opts UpdateOptsBuilder) (r UpdateResult) {
 	b, err := opts.ToEndpointUpdateMap()
 	if err != nil {
 		r.Err = err
@@ -133,7 +150,7 @@ func Update(client *huawei_cloud_sdk_go.ServiceClient, endpointID string, opts U
 }
 
 // Delete removes an endpoint from the service catalog.
-func Delete(client *huawei_cloud_sdk_go.ServiceClient, endpointID string) (r DeleteResult) {
+func Delete(client *huaweicloudsdk.ServiceClient, endpointID string) (r DeleteResult) {
 	_, r.Err = client.Delete(endpointURL(client, endpointID), nil)
 	return
 }

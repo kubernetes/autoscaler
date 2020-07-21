@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package endpoints
 
 import (
@@ -6,7 +22,7 @@ import (
 )
 
 type commonResult struct {
-	huawei_cloud_sdk_go.Result
+	huaweicloudsdk.Result
 }
 
 // Extract interprets a GetResult, CreateResult or UpdateResult as a concrete
@@ -34,7 +50,7 @@ type UpdateResult struct {
 // DeleteResult is the response from a Delete operation. Call its ExtractErr
 // method to determine if the call succeeded or failed.
 type DeleteResult struct {
-	huawei_cloud_sdk_go.ErrResult
+	huaweicloudsdk.ErrResult
 }
 
 // Endpoint describes the entry point for another service's API.
@@ -44,7 +60,7 @@ type Endpoint struct {
 
 	// Availability is the interface type of the Endpoint (admin, internal,
 	// or public), referenced by the gophercloud.Availability type.
-	Availability huawei_cloud_sdk_go.Availability `json:"interface"`
+	Availability huaweicloudsdk.Availability `json:"interface"`
 
 	// Name is the name of the Endpoint.
 	Name string `json:"name"`

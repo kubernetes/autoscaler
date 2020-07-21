@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package tokens
 
 import (
@@ -73,7 +89,7 @@ func (opts *TokenOptions) ToTokenV3CreateMap(scope map[string]interface{}) (map[
 	return gophercloudAuthOpts.ToTokenV3CreateMap(scope)
 }
 
-// ToTokenV3CreateMap builds a scope request body from TokenOptions.
+// ToTokenV3ScopeMap builds a scope request body from TokenOptions.
 func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 	if opts.Scope.ProjectName != "" {
 		// ProjectName provided: either DomainID or DomainName must also be supplied.
@@ -81,13 +97,13 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 		if opts.Scope.DomainID == "" && opts.Scope.DomainName == "" {
 			//return nil, gophercloud.ErrScopeDomainIDOrDomainName{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
 			return nil, err
 		}
 		if opts.Scope.ProjectID != "" {
 			//return nil, gophercloud.ErrScopeProjectIDOrProjectName{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide at most one of ProjectID or ProjectName in a Scope")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide at most one of ProjectID or ProjectName in a Scope")
 			return nil, err
 		}
 
@@ -115,7 +131,7 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 		if opts.Scope.DomainID != "" || opts.Scope.DomainName != "" {
 			//return nil, gophercloud.ErrScopeProjectIDAlone{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "ProjectID must be supplied alone in a Scope")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "ProjectID must be supplied alone in a Scope")
 			return nil, err
 		}
 		//		if opts.Scope.DomainName != "" {
@@ -133,7 +149,7 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 		if opts.Scope.DomainName != "" {
 			//return nil, gophercloud.ErrScopeDomainIDOrDomainName{}
 
-			err := huawei_cloud_sdk_go.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
+			err := huaweicloudsdk.NewSystemCommonError("Com.2000", "You must provide exactly one of DomainID or DomainName in a Scope with ProjectName")
 			return nil, err
 		}
 
@@ -155,11 +171,12 @@ func (opts *TokenOptions) ToTokenV3ScopeMap() (map[string]interface{}, error) {
 	return nil, nil
 }
 
+// CanReauth ...
 func (opts *TokenOptions) CanReauth() bool {
 	return opts.AllowReauth
 }
 
-func subjectTokenHeaders(c *huawei_cloud_sdk_go.ServiceClient, subjectToken string) map[string]string {
+func subjectTokenHeaders(c *huaweicloudsdk.ServiceClient, subjectToken string) map[string]string {
 	return map[string]string{
 		"X-Subject-Token": subjectToken,
 	}
@@ -167,7 +184,7 @@ func subjectTokenHeaders(c *huawei_cloud_sdk_go.ServiceClient, subjectToken stri
 
 // Create authenticates and either generates a new token, or changes the Scope
 // of an existing token.
-func Create(c *huawei_cloud_sdk_go.ServiceClient, opts AuthOptionsBuilder) (r CreateResult) {
+func Create(c *huaweicloudsdk.ServiceClient, opts AuthOptionsBuilder) (r CreateResult) {
 	scope, err := opts.ToTokenV3ScopeMap()
 	if err != nil {
 		r.Err = err
@@ -180,7 +197,7 @@ func Create(c *huawei_cloud_sdk_go.ServiceClient, opts AuthOptionsBuilder) (r Cr
 		return
 	}
 
-	resp, err := c.Post(tokenURL(c), b, &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+	resp, err := c.Post(tokenURL(c), b, &r.Body, &huaweicloudsdk.RequestOpts{
 		MoreHeaders: map[string]string{"X-Auth-Token": ""},
 	})
 	r.Err = err
@@ -191,8 +208,8 @@ func Create(c *huawei_cloud_sdk_go.ServiceClient, opts AuthOptionsBuilder) (r Cr
 }
 
 // Get validates and retrieves information about another token.
-func Get(c *huawei_cloud_sdk_go.ServiceClient, token string) (r GetResult) {
-	resp, err := c.Get(tokenURL(c), &r.Body, &huawei_cloud_sdk_go.RequestOpts{
+func Get(c *huaweicloudsdk.ServiceClient, token string) (r GetResult) {
+	resp, err := c.Get(tokenURL(c), &r.Body, &huaweicloudsdk.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(c, token),
 		OkCodes:     []int{200, 203},
 	})
@@ -204,8 +221,8 @@ func Get(c *huawei_cloud_sdk_go.ServiceClient, token string) (r GetResult) {
 }
 
 // Validate determines if a specified token is valid or not.
-func Validate(c *huawei_cloud_sdk_go.ServiceClient, token string) (bool, error) {
-	resp, err := c.Request("HEAD", tokenURL(c), &huawei_cloud_sdk_go.RequestOpts{
+func Validate(c *huaweicloudsdk.ServiceClient, token string) (bool, error) {
+	resp, err := c.Request("HEAD", tokenURL(c), &huaweicloudsdk.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(c, token),
 		OkCodes:     []int{200, 204, 404},
 	})
@@ -217,8 +234,8 @@ func Validate(c *huawei_cloud_sdk_go.ServiceClient, token string) (bool, error) 
 }
 
 // Revoke immediately makes specified token invalid.
-func Revoke(c *huawei_cloud_sdk_go.ServiceClient, token string) (r RevokeResult) {
-	_, r.Err = c.Delete(tokenURL(c), &huawei_cloud_sdk_go.RequestOpts{
+func Revoke(c *huaweicloudsdk.ServiceClient, token string) (r RevokeResult) {
+	_, r.Err = c.Delete(tokenURL(c), &huaweicloudsdk.RequestOpts{
 		MoreHeaders: subjectTokenHeaders(c, token),
 	})
 	return
