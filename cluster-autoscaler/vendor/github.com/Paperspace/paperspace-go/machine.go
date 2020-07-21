@@ -93,12 +93,12 @@ type MachineUpdateParams struct {
 	DynamicPublicIP        bool   `json:"dynamicPublicIp,omitempty"`
 }
 
-func NewMachineListParams() *MachineListParams {
+func NewMachineListParams() MachineListParams {
 	machineListParams := MachineListParams{
 		Filter: make(map[string]string),
 	}
 
-	return &machineListParams
+	return machineListParams
 }
 
 func (c Client) CreateMachine(params MachineCreateParams) (Machine, error) {

@@ -105,12 +105,12 @@ type ClusterUpdateS3Params struct {
 	SecretKey string `json:"secretKey,omitempty"`
 }
 
-func NewClusterListParams() *ClusterListParams {
+func NewClusterListParams() ClusterListParams {
 	clusterListParams := ClusterListParams{
 		Filter: make(map[string]string),
 	}
 
-	return &clusterListParams
+	return clusterListParams
 }
 
 func (c Client) CreateCluster(params ClusterCreateParams) (Cluster, error) {
