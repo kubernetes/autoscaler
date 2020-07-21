@@ -5,15 +5,16 @@ import (
 )
 
 type AutoscalingGroup struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Min         int    `json:"min"`
-	Max         int    `json:"max"`
-	Current     int    `json:"current"`
-	MachineType string `json:"machineType"`
-	TemplateID  string `json:"templateId"`
-	ScriptID    string `json:"scriptId"`
-	NetworkID   string `json:"networkId"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Min         int       `json:"min"`
+	Max         int       `json:"max"`
+	Current     int       `json:"current"`
+	MachineType string    `json:"machineType"`
+	TemplateID  string    `json:"templateId"`
+	ScriptID    string    `json:"scriptId"`
+	NetworkID   string    `json:"networkId"`
+	Nodes       []Machine `json:"nodes"`
 }
 
 type AutoscalingGroupCreateParams struct {
@@ -34,12 +35,15 @@ type AutoscalingGroupDeleteParams struct {
 
 type AutoscalingGroupGetParams struct {
 	RequestParams
+
+	IncludeNodes bool `json:"includeNodes"`
 }
 
 type AutoscalingGroupListParams struct {
 	RequestParams
 
-	Filter map[string]string `json:"filter"`
+	Filter       map[string]string `json:"filter"`
+	IncludeNodes bool              `json:"includeNodes"`
 }
 
 type AutoscalingGroupUpdateAttributeParams struct {
@@ -72,7 +76,7 @@ func (c Client) GetAutoscalingGroup(id string, params AutoscalingGroupGetParams)
 	autoscalingGroup := AutoscalingGroup{}
 
 	url := fmt.Sprintf("/autoscalingGroups/%s", id)
-	_, err := c.Request("GET", url, nil, &autoscalingGroup, params.RequestParams)
+	_, err := c.Request("GET", url, params, &autoscalingGroup, params.RequestParams)
 
 	return autoscalingGroup, err
 }
