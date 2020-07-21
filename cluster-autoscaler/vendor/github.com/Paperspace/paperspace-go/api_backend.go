@@ -68,16 +68,13 @@ func (c *APIBackend) request(method string, url string,
 
 	fullURL := fmt.Sprintf("%s%s", c.BaseURL, url)
 
-	if requestParams.Context == nil {
-		req, err = http.NewRequest(method, fullURL, body)
-		if err != nil {
-			return res, err
-		}
-	} else {
-		req, err = http.NewRequestWithContext(requestParams.Context, method, fullURL, body)
-		if err != nil {
-			return res, err
-		}
+	req, err = http.NewRequest(method, fullURL, body)
+	if err != nil {
+		return res, err
+	}
+
+	if requestParams.Context != nil {
+		req = req.WithContext(requestParams.Context)
 	}
 
 	req.Header.Add("Accept", "application/json")
