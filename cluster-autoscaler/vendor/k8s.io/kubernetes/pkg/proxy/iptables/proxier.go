@@ -284,7 +284,7 @@ func NewProxier(ipt utiliptables.Interface,
 
 	// Generate the masquerade mark to use for SNAT rules.
 	masqueradeValue := 1 << uint(masqueradeBit)
-	masqueradeMark := fmt.Sprintf("%#08x/%#08x", masqueradeValue, masqueradeValue)
+	masqueradeMark := fmt.Sprintf("%#08x", masqueradeValue)
 
 	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying)
 
@@ -900,10 +900,20 @@ func (proxier *Proxier) syncProxyRules() {
 	// this so that it is easier to flush and change, for example if the mark
 	// value should ever change.
 	// NB: THIS MUST MATCH the corresponding code in the kubelet
+	writeLine(proxier.natRules, []string{
+		"-A", string(kubePostroutingChain),
+		"-m", "mark", "!", "--mark", fmt.Sprintf("%s/%s", proxier.masqueradeMark, proxier.masqueradeMark),
+		"-j", "RETURN",
+	}...)
+	// Clear the mark to avoid re-masquerading if the packet re-traverses the network stack.
+	writeLine(proxier.natRules, []string{
+		"-A", string(kubePostroutingChain),
+		// XOR proxier.masqueradeMark to unset it
+		"-j", "MARK", "--xor-mark", proxier.masqueradeMark,
+	}...)
 	masqRule := []string{
 		"-A", string(kubePostroutingChain),
 		"-m", "comment", "--comment", `"kubernetes service traffic requiring SNAT"`,
-		"-m", "mark", "--mark", proxier.masqueradeMark,
 		"-j", "MASQUERADE",
 	}
 	if proxier.iptables.HasRandomFully() {
@@ -919,7 +929,7 @@ func (proxier *Proxier) syncProxyRules() {
 	// value should ever change.
 	writeLine(proxier.natRules, []string{
 		"-A", string(KubeMarkMasqChain),
-		"-j", "MARK", "--set-xmark", proxier.masqueradeMark,
+		"-j", "MARK", "--or-mark", proxier.masqueradeMark,
 	}...)
 
 	// Accumulate NAT chains to keep.
@@ -1070,8 +1080,13 @@ func (proxier *Proxier) syncProxyRules() {
 					"-d", utilproxy.ToCIDR(net.ParseIP(externalIP)),
 					"--dport", strconv.Itoa(svcInfo.Port()),
 				)
-				// We have to SNAT packets to external IPs.
-				writeLine(proxier.natRules, append(args, "-j", string(KubeMarkMasqChain))...)
+
+				destChain := svcXlbChain
+				// We have to SNAT packets to external IPs if externalTrafficPolicy is cluster.
+				if !(utilfeature.DefaultFeatureGate.Enabled(features.ExternalPolicyForExternalIP) && svcInfo.OnlyNodeLocalEndpoints()) {
+					destChain = svcChain
+					writeLine(proxier.natRules, append(args, "-j", string(KubeMarkMasqChain))...)
+				}
 
 				// Allow traffic for external IPs that does not come from a bridge (i.e. not from a container)
 				// nor from a local process to be forwarded to the service.
@@ -1080,11 +1095,11 @@ func (proxier *Proxier) syncProxyRules() {
 				externalTrafficOnlyArgs := append(args,
 					"-m", "physdev", "!", "--physdev-is-in",
 					"-m", "addrtype", "!", "--src-type", "LOCAL")
-				writeLine(proxier.natRules, append(externalTrafficOnlyArgs, "-j", string(svcChain))...)
+				writeLine(proxier.natRules, append(externalTrafficOnlyArgs, "-j", string(destChain))...)
 				dstLocalOnlyArgs := append(args, "-m", "addrtype", "--dst-type", "LOCAL")
 				// Allow traffic bound for external IPs that happen to be recognized as local IPs to stay local.
 				// This covers cases like GCE load-balancers which get added to the local routing table.
-				writeLine(proxier.natRules, append(dstLocalOnlyArgs, "-j", string(svcChain))...)
+				writeLine(proxier.natRules, append(dstLocalOnlyArgs, "-j", string(destChain))...)
 			} else {
 				// No endpoints.
 				writeLine(proxier.filterRules,
@@ -1500,7 +1515,7 @@ func (proxier *Proxier) syncProxyRules() {
 	writeLine(proxier.filterRules,
 		"-A", string(kubeForwardChain),
 		"-m", "comment", "--comment", `"kubernetes forwarding rules"`,
-		"-m", "mark", "--mark", proxier.masqueradeMark,
+		"-m", "mark", "--mark", fmt.Sprintf("%s/%s", proxier.masqueradeMark, proxier.masqueradeMark),
 		"-j", "ACCEPT",
 	)
 

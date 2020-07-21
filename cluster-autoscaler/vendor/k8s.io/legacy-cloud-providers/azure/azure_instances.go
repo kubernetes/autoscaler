@@ -35,6 +35,10 @@ const (
 	vmPowerStatePrefix      = "PowerState/"
 	vmPowerStateStopped     = "stopped"
 	vmPowerStateDeallocated = "deallocated"
+
+	// nodeNameEnvironmentName is the environment variable name for getting node name.
+	// It is only used for out-of-tree cloud provider.
+	nodeNameEnvironmentName = "NODE_NAME"
 )
 
 var (
@@ -74,7 +78,7 @@ func (az *Cloud) NodeAddresses(ctx context.Context, name types.NodeName) ([]v1.N
 	}
 
 	if az.UseInstanceMetadata {
-		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeUnsafe)
+		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -233,16 +237,23 @@ func (az *Cloud) InstanceShutdownByProviderID(ctx context.Context, providerID st
 func (az *Cloud) isCurrentInstance(name types.NodeName, metadataVMName string) (bool, error) {
 	var err error
 	nodeName := mapNodeNameToVMName(name)
+
+	// VMSS vmName is not same with hostname, use hostname instead.
 	if az.VMType == vmTypeVMSS {
-		// VMSS vmName is not same with hostname, use hostname instead.
 		metadataVMName, err = os.Hostname()
 		if err != nil {
 			return false, err
 		}
+
+		// Use name from env variable "NODE_NAME" if it is set.
+		nodeNameEnv := os.Getenv(nodeNameEnvironmentName)
+		if nodeNameEnv != "" {
+			metadataVMName = nodeNameEnv
+		}
 	}
 
 	metadataVMName = strings.ToLower(metadataVMName)
-	return (metadataVMName == nodeName), err
+	return (metadataVMName == nodeName), nil
 }
 
 // InstanceID returns the cloud provider ID of the specified instance.
@@ -260,7 +271,7 @@ func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, e
 	}
 
 	if az.UseInstanceMetadata {
-		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeUnsafe)
+		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeDefault)
 		if err != nil {
 			return "", err
 		}
@@ -347,7 +358,7 @@ func (az *Cloud) InstanceType(ctx context.Context, name types.NodeName) (string,
 	}
 
 	if az.UseInstanceMetadata {
-		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeUnsafe)
+		metadata, err := az.metadata.GetMetadata(azcache.CacheReadTypeDefault)
 		if err != nil {
 			return "", err
 		}
