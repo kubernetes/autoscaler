@@ -29,3 +29,7 @@ func schemaURL(c *gophercloud.ServiceClient, typeName string) string {
 func templateURL(c *gophercloud.ServiceClient, typeName string) string {
 	return c.ServiceURL("resource_types", typeName, "template")
 }
+
+func markUnhealthyURL(c *gophercloud.ServiceClient, stackName, stackID, resourceName string) string {
+	return c.ServiceURL("stacks", stackName, stackID, "resources", resourceName)
+}
