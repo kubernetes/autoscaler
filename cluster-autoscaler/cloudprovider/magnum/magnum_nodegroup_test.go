@@ -25,10 +25,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 )
+
+const testNodeGroupUUID = "013701a6-4fcb-457d-91a4-44113d0f9b8d"
 
 type magnumManagerMock struct {
 	mock.Mock
@@ -44,9 +48,9 @@ func (m *magnumManagerMock) updateNodeCount(nodegroup string, nodes int) error {
 	return args.Error(0)
 }
 
-func (m *magnumManagerMock) getNodes(nodegroup string) ([]string, error) {
+func (m *magnumManagerMock) getNodes(nodegroup string) ([]cloudprovider.Instance, error) {
 	args := m.Called(nodegroup)
-	return args.Get(0).([]string), args.Error(1)
+	return args.Get(0).([]cloudprovider.Instance), args.Error(1)
 }
 
 func (m *magnumManagerMock) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
@@ -54,61 +58,43 @@ func (m *magnumManagerMock) deleteNodes(nodegroup string, nodes []NodeRef, updat
 	return args.Error(0)
 }
 
-func (m *magnumManagerMock) getClusterStatus() (string, error) {
-	args := m.Called()
+func (m *magnumManagerMock) isNodeInNodeGroup(node *apiv1.Node, nodegroup string) (bool, error) {
+	args := m.Called(node, nodegroup)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *magnumManagerMock) autoDiscoverNodeGroups(cfgs []magnumAutoDiscoveryConfig) ([]*nodegroups.NodeGroup, error) {
+	args := m.Called(cfgs)
+	return args.Get(0).([]*nodegroups.NodeGroup), args.Error(1)
+}
+
+func (m *magnumManagerMock) fetchNodeGroupStackIDs(nodegroup string) (nodeGroupStacks, error) {
+	args := m.Called(nodegroup)
+	return args.Get(0).(nodeGroupStacks), args.Error(1)
+}
+
+func (m *magnumManagerMock) uniqueNameAndIDForNodeGroup(nodegroup string) (string, string, error) {
+	args := m.Called(nodegroup)
+	return args.String(0), args.String(1), args.Error(2)
+}
+
+func (m *magnumManagerMock) nodeGroupForNode(node *apiv1.Node) (string, error) {
+	args := m.Called(node)
 	return args.String(0), args.Error(1)
 }
 
-func (m *magnumManagerMock) canUpdate() (bool, string, error) {
-	args := m.Called()
-	return args.Bool(0), args.String(1), args.Error(2)
-}
-
-func (m *magnumManagerMock) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
-	return &schedulerframework.NodeInfo{}, nil
-}
-
 func createTestNodeGroup(manager magnumManager) *magnumNodeGroup {
-	current := 1
 	ng := magnumNodeGroup{
-		magnumManager:       manager,
-		id:                  "TestNodeGroup",
-		clusterUpdateMutex:  &sync.Mutex{},
-		minSize:             1,
-		maxSize:             10,
-		targetSize:          &current,
-		waitTimeStep:        100 * time.Millisecond,
-		deleteBatchingDelay: 250 * time.Millisecond,
+		magnumManager:     manager,
+		id:                "TestNodeGroup",
+		UUID:              testNodeGroupUUID,
+		clusterUpdateLock: &sync.Mutex{},
+		minSize:           1,
+		maxSize:           10,
+		targetSize:        1,
+		deletedNodes:      make(map[string]time.Time),
 	}
 	return &ng
-}
-
-func TestWaitForClusterStatus(t *testing.T) {
-	manager := &magnumManagerMock{}
-	ng := createTestNodeGroup(manager)
-
-	// Test all working normally
-	t.Run("success", func(t *testing.T) {
-		manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
-		err := ng.waitForClusterStatus(clusterStatusUpdateComplete, 200*time.Millisecond)
-		assert.NoError(t, err)
-	})
-
-	// Test timeout
-	t.Run("timeout", func(t *testing.T) {
-		manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Times(2)
-		err := ng.waitForClusterStatus(clusterStatusUpdateComplete, 200*time.Millisecond)
-		assert.Error(t, err)
-		assert.Equal(t, "timeout (200ms) waiting for UPDATE_COMPLETE status", err.Error())
-	})
-
-	// Test error returned from manager
-	t.Run("manager error", func(t *testing.T) {
-		manager.On("getClusterStatus").Return("", errors.New("manager error")).Once()
-		err := ng.waitForClusterStatus(clusterStatusUpdateComplete, 200*time.Millisecond)
-		assert.Error(t, err)
-		assert.Equal(t, "error waiting for UPDATE_COMPLETE status: manager error", err.Error())
-	})
 }
 
 func TestIncreaseSize(t *testing.T) {
@@ -117,14 +103,10 @@ func TestIncreaseSize(t *testing.T) {
 
 	// Test all working normally
 	t.Run("success", func(t *testing.T) {
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(1, nil).Once()
-		manager.On("canUpdate").Return(true, "", nil).Once()
-		manager.On("updateNodeCount", "TestNodeGroup", 2).Return(nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
+		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(nil).Once()
 		err := ng.IncreaseSize(1)
 		assert.NoError(t, err)
-		assert.Equal(t, 2, *ng.targetSize, "target size not updated")
+		assert.Equal(t, 2, ng.targetSize, "target size not updated")
 	})
 
 	// Test negative increase
@@ -141,90 +123,108 @@ func TestIncreaseSize(t *testing.T) {
 		assert.Equal(t, "size increase must be positive", err.Error())
 	})
 
-	// Test current total nodes fails
-	t.Run("node group size fails", func(t *testing.T) {
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(0, errors.New("manager error")).Once()
-		err := ng.IncreaseSize(1)
-		assert.Error(t, err)
-		assert.Equal(t, "could not check current nodegroup size: manager error", err.Error())
-	})
-
 	// Test increase too large
 	t.Run("increase too large", func(t *testing.T) {
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(1, nil).Once()
+		ng.targetSize = 1
 		err := ng.IncreaseSize(10)
 		assert.Error(t, err)
 		assert.Equal(t, "size increase too large, desired:11 max:10", err.Error())
 	})
 
-	// Test cluster status prevents update
-	t.Run("status prevents update", func(t *testing.T) {
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(1, nil).Once()
-		manager.On("canUpdate").Return(false, clusterStatusUpdateInProgress, nil).Once()
-		err := ng.IncreaseSize(1)
-		assert.Error(t, err)
-		assert.Equal(t, "can not add nodes, cluster is in UPDATE_IN_PROGRESS status", err.Error())
-	})
-
-	// Test cluster status check fails
-	t.Run("status check fails", func(t *testing.T) {
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(1, nil).Once()
-		manager.On("canUpdate").Return(false, "", errors.New("manager error")).Once()
-		err := ng.IncreaseSize(1)
-		assert.Error(t, err)
-		assert.Equal(t, "can not increase node count: manager error", err.Error())
-	})
-
 	// Test update node count fails
 	t.Run("update node count fails", func(t *testing.T) {
-		*ng.targetSize = 1
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(1, nil).Once()
-		manager.On("canUpdate").Return(true, "", nil).Once()
-		manager.On("updateNodeCount", "TestNodeGroup", 2).Return(errors.New("manager error")).Once()
+		ng.targetSize = 1
+		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(errors.New("manager error")).Once()
 		err := ng.IncreaseSize(1)
 		assert.Error(t, err)
 		assert.Equal(t, "could not increase cluster size: manager error", err.Error())
 	})
 }
 
-var machineIDs []string
+func TestDecreaseSize(t *testing.T) {
+	manager := &magnumManagerMock{}
+	ng := createTestNodeGroup(manager)
+	ng.targetSize = 3
+
+	// Test all working normally
+	t.Run("success", func(t *testing.T) {
+		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(nil).Once()
+		err := ng.DecreaseTargetSize(-1)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, ng.targetSize, "target size not updated")
+	})
+
+	// Test positive decrease
+	t.Run("positive decrease", func(t *testing.T) {
+		err := ng.DecreaseTargetSize(1)
+		assert.Error(t, err)
+		assert.Equal(t, "size decrease must be negative", err.Error())
+	})
+
+	// Test zero decrease
+	t.Run("zero decrease", func(t *testing.T) {
+		err := ng.DecreaseTargetSize(0)
+		assert.Error(t, err)
+		assert.Equal(t, "size decrease must be negative", err.Error())
+	})
+
+	// Test decrease too large
+	t.Run("decrease too large", func(t *testing.T) {
+		ng.targetSize = 3
+		err := ng.DecreaseTargetSize(-4)
+		assert.Error(t, err)
+		assert.Equal(t, "size decrease too large, desired:-1 min:1", err.Error())
+	})
+
+	// Test update node count fails
+	t.Run("update node count fails", func(t *testing.T) {
+		ng.targetSize = 3
+		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(errors.New("manager error")).Once()
+		err := ng.DecreaseTargetSize(-1)
+		assert.Error(t, err)
+		assert.Equal(t, "could not decrease target size: manager error", err.Error())
+	})
+}
+
+var systemUUIDs []string
 
 var nodesToDelete []*apiv1.Node
 var nodeRefs []NodeRef
 
 func init() {
-	machineIDs = []string{
-		"4d030dc5f2944154aaba43a004f9fccc",
-		"ce120bf512f14497be3c1b07ac9a433a",
-		"7cce782693dd4805bc8e2735d3600433",
-		"8bf92ce193f7401c9a24d1dc2e75dc5d",
-		"1ef6ab6407c3482185fbff428271a6a0",
+	postDeleteSleepDuration = 100 * time.Millisecond
+
+	systemUUIDs = []string{
+		"4d030dc5-f294-4154-aaba-43a004f9fccc",
+		"ce120bf5-12f1-4497-be3c-1b07ac9a433a",
+		"7cce7826-93dd-4805-bc8e-2735d3600433",
+		"8bf92ce1-93f7-401c-9a24-d1dc2e75dc5d",
+		"1ef6ab64-07c3-4821-85fb-ff428271a6a0",
 	}
-	for i, machineID := range machineIDs {
+
+	for i, UUID := range systemUUIDs {
 		nodeRefs = append(nodeRefs,
 			NodeRef{Name: fmt.Sprintf("cluster-abc-minion-%d", i+1),
-				MachineID:  machineID,
-				ProviderID: fmt.Sprintf("openstack:///%s", machineID),
-				IPs:        []string{fmt.Sprintf("10.0.0.%d", 100+i)},
+				SystemUUID: UUID,
+				ProviderID: fmt.Sprintf("openstack:///%s", UUID),
+				IsFake:     false,
 			},
 		)
 	}
 
-	for i := 0; i < 5; i++ {
+	for i, UUID := range systemUUIDs {
 		node := apiv1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: fmt.Sprintf("cluster-abc-minion-%d", i+1),
+				UID:  "ac558cdb-c7da-11e9-b4fd-fa163ecf721a", // need any UID or it is assumed to be a fake node
 			},
 			Status: apiv1.NodeStatus{
 				NodeInfo: apiv1.NodeSystemInfo{
-					MachineID: machineIDs[i],
-				},
-				Addresses: []apiv1.NodeAddress{
-					{Type: apiv1.NodeInternalIP, Address: fmt.Sprintf("10.0.0.%d", 100+i)},
+					SystemUUID: UUID,
 				},
 			},
 			Spec: apiv1.NodeSpec{
-				ProviderID: fmt.Sprintf("openstack:///%s", machineIDs[i]),
+				ProviderID: fmt.Sprintf("openstack:///%s", UUID),
 			},
 		}
 
@@ -235,153 +235,87 @@ func init() {
 func TestDeleteNodes(t *testing.T) {
 	manager := &magnumManagerMock{}
 	ng := createTestNodeGroup(manager)
-	ng.deleteBatchingDelay = 25 * time.Millisecond
 
 	// Test all working normally
 	t.Run("success", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		manager.On("canUpdate").Return(true, clusterStatusUpdateComplete, nil).Once()
-		manager.On("deleteNodes", "TestNodeGroup", nodeRefs, 5).Return(nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(5, nil).Once()
+		ng.targetSize = 10
+		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(nil).Once()
 		err := ng.DeleteNodes(nodesToDelete)
 		assert.NoError(t, err)
-		assert.Equal(t, 5, *ng.targetSize)
+		assert.Equal(t, 5, ng.targetSize)
 	})
-
-	// Test cluster status check failing
-	t.Run("cluster status check fail", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		manager.On("canUpdate").Return(false, "", errors.New("manager error")).Once()
-		err := ng.DeleteNodes(nodesToDelete)
-		assert.Error(t, err)
-		assert.Equal(t, "could not check if cluster is ready to delete nodes: manager error", err.Error())
-	})
-
-	// Test cluster status prevents update
-	t.Run("cluster status prevents update", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		manager.On("canUpdate").Return(false, clusterStatusUpdateInProgress, nil).Once()
-		err := ng.DeleteNodes(nodesToDelete)
-		assert.Error(t, err)
-		assert.Equal(t, fmt.Sprintf("can not delete nodes, cluster is in %s status", clusterStatusUpdateInProgress), err.Error())
-	})
-
-	// Test error returned when checking current cluster size before deleting
-	t.Run("current size check fail", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(0, errors.New("manager error")).Once()
-		err := ng.DeleteNodes(nodesToDelete)
-		assert.Error(t, err)
-		assert.Equal(t, "could not get current node count: manager error", err.Error())
-	})
-
-	// Test trying to delete more nodes than minimum would allow, when the initial target size is out of sync with the cluster
-	t.Run("delete below min", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.minSize = 8
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		err := ng.DeleteNodes(nodesToDelete)
-		assert.Error(t, err)
-		assert.Equal(t, "deleting nodes would take nodegroup below minimum size", err.Error())
-	})
-	ng.minSize = 1
 
 	// Test call to deleteNodes on manager failing
-	t.Run("deleteNodes fails", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		manager.On("canUpdate").Return(true, clusterStatusUpdateComplete, nil).Once()
-		manager.On("deleteNodes", "TestNodeGroup", nodeRefs, 5).Return(errors.New("manager error")).Once()
+	t.Run("error", func(t *testing.T) {
+		ng.targetSize = 10
+		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(errors.New("manager error")).Once()
 		err := ng.DeleteNodes(nodesToDelete)
 		assert.Error(t, err)
 		assert.Equal(t, "manager error deleting nodes: manager error", err.Error())
 	})
-
-	// Test final call to get new cluster size fails
-	t.Run("get size after delete fails", func(t *testing.T) {
-		*ng.targetSize = 10
-		ng.deleteNodesCachedSizeAt = time.Time{}
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-		manager.On("canUpdate").Return(true, clusterStatusUpdateComplete, nil).Once()
-		manager.On("deleteNodes", "TestNodeGroup", nodeRefs, 5).Return(nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Once()
-		manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
-		manager.On("nodeGroupSize", "TestNodeGroup").Return(0, errors.New("manager error")).Once()
-		err := ng.DeleteNodes(nodesToDelete)
-		assert.Error(t, err)
-		assert.Equal(t, "could not check new cluster size after scale down: manager error", err.Error())
-		assert.Equal(t, 5, *ng.targetSize, "targetSize should have been set to expected size 5, it is %d", *ng.targetSize)
-	})
 }
 
-func TestDeleteNodesBatching(t *testing.T) {
+// TestNodes checks that the NodeGroup takes into account
+// nodes that have recently been requested for deletion
+// when retrieving the list of Instances, reporting them
+// as InstanceDeleting to prevent the autoscaler from trying
+// to delete them multiple times.
+func TestNodes(t *testing.T) {
 	manager := &magnumManagerMock{}
 	ng := createTestNodeGroup(manager)
-	*ng.targetSize = 10
+	ng.targetSize = 6
 
-	// Test all working normally
-	manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-	manager.On("canUpdate").Return(true, "", nil).Once()
-	manager.On("deleteNodes", "TestNodeGroup", nodeRefs, 5).Return(nil).Once()
-	manager.On("nodeGroupSize", "TestNodeGroup").Return(5, nil).Once()
-	manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Once()
-	manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
-
-	go func() {
-		time.Sleep(time.Millisecond * 100)
-		err := ng.DeleteNodes(nodesToDelete[3:5])
-		assert.NoError(t, err, "Delete call that should have been batched did not return nil")
-	}()
-
-	err := ng.DeleteNodes(nodesToDelete[0:3])
-	assert.NoError(t, err)
-	assert.Equal(t, 5, *ng.targetSize)
-	manager.AssertExpectations(t)
-}
-
-func TestDeleteNodesBatchBelowMin(t *testing.T) {
-	manager := &magnumManagerMock{}
-	ng := createTestNodeGroup(manager)
-	ng.minSize = 8
-	*ng.targetSize = 10
-
-	// Try to batch 5 nodes for deletion when minSize only allows for two to be deleted
-
-	manager.On("nodeGroupSize", "TestNodeGroup").Return(10, nil).Once()
-	manager.On("canUpdate").Return(true, "", nil).Once()
-	manager.On("deleteNodes", "TestNodeGroup", nodeRefs[0:2], 8).Return(nil).Once()
-	manager.On("nodeGroupSize", "TestNodeGroup").Return(8, nil).Once()
-	manager.On("getClusterStatus").Return(clusterStatusUpdateInProgress, nil).Once()
-	manager.On("getClusterStatus").Return(clusterStatusUpdateComplete, nil).Once()
-
-	for i := 1; i < 5; i++ {
-		go func(i int) {
-			// Wait and preserve order
-			time.Sleep(time.Millisecond*100 + 25*time.Millisecond*time.Duration(i))
-			err := ng.DeleteNodes(nodesToDelete[i : i+1])
-			if i == 1 {
-				// One node should be added to the batch
-				assert.NoError(t, err, "Delete call that should have been batched did not return nil")
-			} else {
-				// The rest should fail
-				assert.Error(t, err)
-				assert.Equal(t, "deleting nodes would take nodegroup below minimum size", err.Error())
-			}
-		}(i)
+	// Nodes which are running, should be reported as is.
+	runningNodes := []cloudprovider.Instance{
+		{Id: "openstack:///1", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+		{Id: "openstack:///2", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+		{Id: "openstack:///3", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
 	}
 
-	err := ng.DeleteNodes(nodesToDelete[0:1])
+	// Nodes which have been requested for deleting but the state may not be updated yet on the OpenStack side.
+	deletingNodes := []cloudprovider.Instance{
+		{Id: "openstack:///4", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+		{Id: "openstack:///5", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+		{Id: "openstack:///6", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}},
+	}
+
+	// How the deleting nodes should be reported.
+	expectedDeletingNodes := []cloudprovider.Instance{
+		{Id: "openstack:///4", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}},
+		{Id: "openstack:///5", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}},
+		{Id: "openstack:///6", Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}},
+	}
+
+	nodesToDelete := []*apiv1.Node{
+		{Spec: apiv1.NodeSpec{ProviderID: "openstack:///4"}},
+		{Spec: apiv1.NodeSpec{ProviderID: "openstack:///5"}},
+		{Spec: apiv1.NodeSpec{ProviderID: "openstack:///6"}},
+	}
+
+	manager.On("deleteNodes", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	err := ng.DeleteNodes(nodesToDelete)
+	require.NoError(t, err)
+
+	allNodes := append(runningNodes, deletingNodes...)
+	expectedNodes := append(runningNodes, expectedDeletingNodes...)
+
+	manager.On("getNodes", testNodeGroupUUID).Return(allNodes, nil).Once()
+
+	nodes, err := ng.Nodes()
 	assert.NoError(t, err)
-	manager.AssertExpectations(t)
+	assert.ElementsMatch(t, expectedNodes, nodes)
+
+	// After some time the nodes have actually been deleted in OpenStack.
+	// The deleted nodes map should be cleaned after 10 minutes.
+	for node, deletedTime := range ng.deletedNodes {
+		// Fast forward time by 20 minutes.
+		ng.deletedNodes[node] = deletedTime.Add(-20 * time.Minute)
+	}
+
+	manager.On("getNodes", testNodeGroupUUID).Return(runningNodes, nil).Once()
+
+	nodes, err = ng.Nodes()
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, runningNodes, nodes)
+	assert.Equalf(t, 0, len(ng.deletedNodes), "node group deletedNodes map was not cleaned")
 }

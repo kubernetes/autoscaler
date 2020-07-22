@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Client is an interface that expects a Get method similar to http.Get. This
