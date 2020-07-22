@@ -19,42 +19,60 @@ package magnum
 import (
 	"fmt"
 	"io"
-	"os"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 const (
-	defaultManager = "heat"
+	// Magnum microversion that must be requested to use the node groups API.
+	microversionNodeGroups = "1.9"
 )
 
 // magnumManager is an interface for the basic interactions with the cluster.
 type magnumManager interface {
 	nodeGroupSize(nodegroup string) (int, error)
 	updateNodeCount(nodegroup string, nodes int) error
-	getNodes(nodegroup string) ([]string, error)
+	getNodes(nodegroup string) ([]cloudprovider.Instance, error)
 	deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error
-	getClusterStatus() (string, error)
-	canUpdate() (bool, string, error)
-	templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error)
+	autoDiscoverNodeGroups(cfgs []magnumAutoDiscoveryConfig) ([]*nodegroups.NodeGroup, error)
+	fetchNodeGroupStackIDs(nodegroup string) (nodeGroupStacks, error)
+	uniqueNameAndIDForNodeGroup(nodegroup string) (string, string, error)
+	nodeGroupForNode(node *apiv1.Node) (string, error)
 }
 
-// createMagnumManager creates the desired implementation of magnumManager.
-// Currently reads the environment variable MAGNUM_MANAGER to find which to create,
-// and falls back to a default if the variable is not found.
+// createMagnumManager creates the necessary OpenStack clients and returns
+// an instance of magnumManagerImpl.
 func createMagnumManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (magnumManager, error) {
-	// For now get manager from env var, can consider adding flag later
-	manager, ok := os.LookupEnv("MAGNUM_MANAGER")
-	if !ok {
-		manager = defaultManager
+	cfg, err := readConfig(configReader)
+	if err != nil {
+		return nil, err
 	}
 
-	switch manager {
-	case "heat":
-		return createMagnumManagerHeat(configReader, discoverOpts, opts)
+	provider, err := createProviderClient(cfg, opts)
+	if err != nil {
+		return nil, fmt.Errorf("could not create provider client: %v", err)
 	}
 
-	return nil, fmt.Errorf("magnum manager does not exist: %s", manager)
+	clusterClient, err := createClusterClient(cfg, provider, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	clusterClient.Microversion = microversionNodeGroups
+
+	// This replaces the cluster name with a UUID if the name was given in the parameters.
+	err = checkClusterUUID(provider, clusterClient, opts)
+	if err != nil {
+		return nil, fmt.Errorf("could not check cluster UUID: %v", err)
+	}
+
+	heatClient, err := createHeatClient(cfg, provider, opts)
+	if err != nil {
+		return nil, fmt.Errorf("could not create heat client: %v", err)
+	}
+
+	return createMagnumManagerImpl(clusterClient, heatClient, opts)
 }
