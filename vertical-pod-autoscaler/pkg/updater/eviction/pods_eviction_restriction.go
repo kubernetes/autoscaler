@@ -17,6 +17,7 @@ limitations under the License.
 package eviction
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -133,7 +134,7 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder
 			Name:      podToEvict.Name,
 		},
 	}
-	err := e.client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
+	err := e.client.CoreV1().Pods(podToEvict.Namespace).Evict(context.TODO(), eviction)
 	if err != nil {
 		klog.Errorf("failed to evict pod %s/%s, error: %v", podToEvict.Namespace, podToEvict.Name, err)
 		return err

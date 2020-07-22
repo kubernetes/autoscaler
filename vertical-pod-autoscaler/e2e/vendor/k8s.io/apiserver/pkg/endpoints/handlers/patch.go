@@ -26,8 +26,9 @@ import (
 	jsonpatch "github.com/evanphx/json-patch"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
+	metainternalversionscheme "k8s.io/apimachinery/pkg/apis/meta/internalversion/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -48,6 +49,7 @@ import (
 	"k8s.io/apiserver/pkg/util/dryrun"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	utiltrace "k8s.io/utils/trace"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -59,11 +61,11 @@ const (
 func PatchResource(r rest.Patcher, scope *RequestScope, admit admission.Interface, patchTypes []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		// For performance tracking purposes.
-		trace := utiltrace.New("Patch", utiltrace.Field{"url", req.URL.Path})
+		trace := utiltrace.New("Patch", utiltrace.Field{Key: "url", Value: req.URL.Path}, utiltrace.Field{Key: "user-agent", Value: &lazyTruncatedUserAgent{req}}, utiltrace.Field{Key: "client", Value: &lazyClientIP{req}})
 		defer trace.LogIfLong(500 * time.Millisecond)
 
 		if isDryRun(req.URL) && !utilfeature.DefaultFeatureGate.Enabled(features.DryRun) {
-			scope.err(errors.NewBadRequest("the dryRun alpha feature is disabled"), w, req)
+			scope.err(errors.NewBadRequest("the dryRun feature is disabled"), w, req)
 			return
 		}
 
@@ -110,7 +112,7 @@ func PatchResource(r rest.Patcher, scope *RequestScope, admit admission.Interfac
 		}
 
 		options := &metav1.PatchOptions{}
-		if err := metainternalversion.ParameterCodec.DecodeParameters(req.URL.Query(), scope.MetaGroupVersion, options); err != nil {
+		if err := metainternalversionscheme.ParameterCodec.DecodeParameters(req.URL.Query(), scope.MetaGroupVersion, options); err != nil {
 			err = errors.NewBadRequest(err.Error())
 			scope.err(err, w, req)
 			return
@@ -341,7 +343,7 @@ func (p *jsonPatcher) applyJSPatch(versionedJS []byte) (patchedJS []byte, retErr
 		// TODO(liggitt): drop this once golang json parser limits stack depth (https://github.com/golang/go/issues/31789)
 		if len(p.patchBytes) > 1024*1024 {
 			v := []interface{}{}
-			if err := json.Unmarshal(p.patchBytes, v); err != nil {
+			if err := json.Unmarshal(p.patchBytes, &v); err != nil {
 				return nil, errors.NewBadRequest(fmt.Sprintf("error decoding patch: %v", err))
 			}
 		}
@@ -365,7 +367,7 @@ func (p *jsonPatcher) applyJSPatch(versionedJS []byte) (patchedJS []byte, retErr
 		// TODO(liggitt): drop this once golang json parser limits stack depth (https://github.com/golang/go/issues/31789)
 		if len(p.patchBytes) > 1024*1024 {
 			v := map[string]interface{}{}
-			if err := json.Unmarshal(p.patchBytes, v); err != nil {
+			if err := json.Unmarshal(p.patchBytes, &v); err != nil {
 				return nil, errors.NewBadRequest(fmt.Sprintf("error decoding patch: %v", err))
 			}
 		}
@@ -433,7 +435,13 @@ func (p *applyPatcher) applyPatchToCurrentObject(obj runtime.Object) (runtime.Ob
 	if p.fieldManager == nil {
 		panic("FieldManager must be installed to run apply")
 	}
-	return p.fieldManager.Apply(obj, p.patch, p.options.FieldManager, force)
+
+	patchObj := &unstructured.Unstructured{Object: map[string]interface{}{}}
+	if err := yaml.Unmarshal(p.patch, &patchObj.Object); err != nil {
+		return nil, errors.NewBadRequest(fmt.Sprintf("error decoding YAML: %v", err))
+	}
+
+	return p.fieldManager.Apply(obj, patchObj, p.options.FieldManager, force)
 }
 
 func (p *applyPatcher) createNewObject() (runtime.Object, error) {
@@ -573,12 +581,28 @@ func (p *patcher) patchResource(ctx context.Context, scope *RequestScope) (runti
 
 	wasCreated := false
 	p.updatedObjectInfo = rest.DefaultUpdatedObjectInfo(nil, p.applyPatch, p.applyAdmission)
-	result, err := finishRequest(p.timeout, func() (runtime.Object, error) {
+	requestFunc := func() (runtime.Object, error) {
 		// Pass in UpdateOptions to override UpdateStrategy.AllowUpdateOnCreate
 		options := patchToUpdateOptions(p.options)
 		updateObject, created, updateErr := p.restPatcher.Update(ctx, p.name, p.updatedObjectInfo, p.createValidation, p.updateValidation, p.forceAllowCreate, options)
 		wasCreated = created
 		return updateObject, updateErr
+	}
+	result, err := finishRequest(p.timeout, func() (runtime.Object, error) {
+		result, err := requestFunc()
+		// If the object wasn't committed to storage because it's serialized size was too large,
+		// it is safe to remove managedFields (which can be large) and try again.
+		if isTooLargeError(err) && p.patchType != types.ApplyPatchType {
+			if _, accessorErr := meta.Accessor(p.restPatcher.New()); accessorErr == nil {
+				p.updatedObjectInfo = rest.DefaultUpdatedObjectInfo(nil, p.applyPatch, p.applyAdmission, func(_ context.Context, obj, _ runtime.Object) (runtime.Object, error) {
+					accessor, _ := meta.Accessor(obj)
+					accessor.SetManagedFields(nil)
+					return obj, nil
+				})
+				result, err = requestFunc()
+			}
+		}
+		return result, err
 	})
 	return result, wasCreated, err
 }

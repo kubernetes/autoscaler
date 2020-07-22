@@ -19,6 +19,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,13 +62,13 @@ func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namesp
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).List(options)
+				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).Watch(options)
+				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&autoscalingk8siov1beta1.VerticalPodAutoscaler{},

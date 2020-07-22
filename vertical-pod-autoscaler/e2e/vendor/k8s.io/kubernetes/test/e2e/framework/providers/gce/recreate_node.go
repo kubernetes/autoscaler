@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -29,7 +30,14 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
+	e2eskipper "k8s.io/kubernetes/test/e2e/framework/skipper"
 	testutils "k8s.io/kubernetes/test/utils"
+)
+
+const (
+	// recreateNodeReadyAgainTimeout is how long a node is allowed to become "Ready" after it is recreated before
+	// the test is considered failed.
+	recreateNodeReadyAgainTimeout = 10 * time.Minute
 )
 
 func nodeNames(nodes []v1.Node) []string {
@@ -47,7 +55,7 @@ var _ = ginkgo.Describe("Recreate [Feature:Recreate]", func() {
 	var ps *testutils.PodStore
 	systemNamespace := metav1.NamespaceSystem
 	ginkgo.BeforeEach(func() {
-		framework.SkipUnlessProviderIs("gce", "gke")
+		e2eskipper.SkipUnlessProviderIs("gce", "gke")
 		var err error
 		numNodes, err := e2enode.TotalRegistered(f.ClientSet)
 		framework.ExpectNoError(err)
@@ -76,7 +84,7 @@ var _ = ginkgo.Describe("Recreate [Feature:Recreate]", func() {
 			// Make sure that addon/system pods are running, so dump
 			// events for the kube-system namespace on failures
 			ginkgo.By(fmt.Sprintf("Collecting events from namespace %q.", systemNamespace))
-			events, err := f.ClientSet.CoreV1().Events(systemNamespace).List(metav1.ListOptions{})
+			events, err := f.ClientSet.CoreV1().Events(systemNamespace).List(context.TODO(), metav1.ListOptions{})
 			framework.ExpectNoError(err)
 
 			for _, e := range events.Items {
@@ -100,9 +108,9 @@ func testRecreate(c clientset.Interface, ps *testutils.PodStore, systemNamespace
 		framework.Failf("Test failed; failed to start the restart instance group command.")
 	}
 
-	err = WaitForNodeBootIdsToChange(c, nodes, framework.RecreateNodeReadyAgainTimeout)
+	err = WaitForNodeBootIdsToChange(c, nodes, recreateNodeReadyAgainTimeout)
 	if err != nil {
-		framework.Failf("Test failed; failed to recreate at least one node in %v.", framework.RecreateNodeReadyAgainTimeout)
+		framework.Failf("Test failed; failed to recreate at least one node in %v.", recreateNodeReadyAgainTimeout)
 	}
 
 	nodesAfter, err := e2enode.CheckReady(c, len(nodes), framework.RestartNodeReadyAgainTimeout)

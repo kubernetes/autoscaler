@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
 	"github.com/stretchr/testify/assert"
@@ -59,6 +60,9 @@ type mockPrometheusAPI struct {
 func (m mockPrometheusAPI) AlertManagers(ctx context.Context) (prometheusv1.AlertManagersResult, error) {
 	panic("not implemented")
 }
+func (m mockPrometheusAPI) Alerts(ctx context.Context) (prometheusv1.AlertsResult, error) {
+	panic("not implemented")
+}
 func (m mockPrometheusAPI) CleanTombstones(ctx context.Context) error {
 	panic("not implemented")
 }
@@ -71,10 +75,16 @@ func (m mockPrometheusAPI) DeleteSeries(ctx context.Context, matches []string, s
 func (m mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult, error) {
 	panic("not implemented")
 }
+func (m mockPrometheusAPI) LabelNames(ctx context.Context) ([]string, error) {
+	panic("not implemented")
+}
 func (m mockPrometheusAPI) LabelValues(ctx context.Context, label string) (prommodel.LabelValues, error) {
 	panic("not implemented")
 }
-func (m mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, error) {
+func (m mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, api.Warnings, error) {
+	panic("not implemented")
+}
+func (m mockPrometheusAPI) Rules(ctx context.Context) (prometheusv1.RulesResult, error) {
 	panic("not implemented")
 }
 func (m mockPrometheusAPI) Snapshot(ctx context.Context, skipHead bool) (prometheusv1.SnapshotResult, error) {
@@ -83,23 +93,26 @@ func (m mockPrometheusAPI) Snapshot(ctx context.Context, skipHead bool) (prometh
 func (m mockPrometheusAPI) Targets(ctx context.Context) (prometheusv1.TargetsResult, error) {
 	panic("not implemented")
 }
+func (m mockPrometheusAPI) TargetsMetadata(ctx context.Context, _, _, _ string) ([]prometheusv1.MetricMetadata, error) {
+	panic("not implemented")
+}
 
-func (m mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, error) {
+func (m mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, api.Warnings, error) {
 	args := m.Called(ctx, query, ts)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(prommodel.Value)
 	}
-	return returnArg, args.Error(1)
+	return returnArg, nil, args.Error(1)
 }
 
-func (m mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, error) {
+func (m mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, api.Warnings, error) {
 	args := m.Called(ctx, query, r)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(prommodel.Value)
 	}
-	return returnArg, args.Error(1)
+	return returnArg, nil, args.Error(1)
 }
 
 func TestGetEmptyClusterHistory(t *testing.T) {

@@ -33,7 +33,6 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 	"k8s.io/kubernetes/test/e2e/framework/testfiles"
-	"k8s.io/kubernetes/test/e2e/framework/viperconfig"
 	"k8s.io/kubernetes/test/e2e/generated"
 	"k8s.io/kubernetes/test/utils/image"
 )
@@ -51,14 +50,6 @@ func handleFlags() {
 func TestMain(m *testing.M) {
 	// Register test flags, then parse flags.
 	handleFlags()
-
-	// Now that we know which Viper config (if any) was chosen,
-	// parse it and update those options which weren't already set via command line flags
-	// (which have higher priority).
-	if err := viperconfig.ViperizeFlags(*viperConfig, "e2e", flag.CommandLine); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
 
 	if framework.TestContext.ListImages {
 		for _, v := range image.GetImageConfigs() {
