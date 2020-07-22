@@ -41,7 +41,7 @@ func NewCounter(opts *CounterOpts) *Counter {
 		lazyMetric:  lazyMetric{},
 	}
 	kc.setPrometheusCounter(noop)
-	kc.lazyInit(kc, BuildFQName(opts.Namespace, opts.Subsystem, opts.Name))
+	kc.lazyInit(kc)
 	return kc
 }
 
@@ -92,7 +92,7 @@ func NewCounterVec(opts *CounterOpts, labels []string) *CounterVec {
 		originalLabels: labels,
 		lazyMetric:     lazyMetric{},
 	}
-	cv.lazyInit(cv, BuildFQName(opts.Namespace, opts.Subsystem, opts.Name))
+	cv.lazyInit(cv)
 	return cv
 }
 

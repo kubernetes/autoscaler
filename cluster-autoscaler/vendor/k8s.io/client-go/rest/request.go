@@ -603,7 +603,7 @@ func (r *Request) Watch() (watch.Interface, error) {
 	if err != nil {
 		// The watch stream mechanism handles many common partial data errors, so closed
 		// connections can be retried in many cases.
-		if net.IsProbableEOF(err) {
+		if net.IsProbableEOF(err) || net.IsTimeout(err) {
 			return watch.NewEmptyWatch(), nil
 		}
 		return nil, err
@@ -806,24 +806,19 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 			r.backoff.UpdateBackoff(r.URL(), err, resp.StatusCode)
 		}
 		if err != nil {
-			// "Connection reset by peer", "Connection refused" or "apiserver is shutting down" are usually a transient errors.
+			// "Connection reset by peer" is usually a transient error.
 			// Thus in case of "GET" operations, we simply retry it.
 			// We are not automatically retrying "write" operations, as
 			// they are not idempotent.
-			if r.verb != "GET" {
+			if !net.IsConnectionReset(err) || r.verb != "GET" {
 				return err
 			}
-			// For connection errors and apiserver shutdown errors retry.
-			if net.IsConnectionReset(err) || net.IsConnectionRefused(err) {
-				// For the purpose of retry, we set the artificial "retry-after" response.
-				// TODO: Should we clean the original response if it exists?
-				resp = &http.Response{
-					StatusCode: http.StatusInternalServerError,
-					Header:     http.Header{"Retry-After": []string{"1"}},
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
-				}
-			} else {
-				return err
+			// For the purpose of retry, we set the artificial "retry-after" response.
+			// TODO: Should we clean the original response if it exists?
+			resp = &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Header:     http.Header{"Retry-After": []string{"1"}},
+				Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
 			}
 		}
 
