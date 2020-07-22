@@ -17,13 +17,17 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"fmt"
+	"sync"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
-	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/master/ports"
+	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
 	"k8s.io/kubernetes/test/e2e/system"
 
 	"k8s.io/klog"
@@ -40,22 +44,23 @@ type Collection struct {
 
 // Grabber provides functions which grab metrics from components
 type Grabber struct {
-	client                    clientset.Interface
-	externalClient            clientset.Interface
-	grabFromAPIServer         bool
-	grabFromControllerManager bool
-	grabFromKubelets          bool
-	grabFromScheduler         bool
-	grabFromClusterAutoscaler bool
-	masterName                string
-	registeredMaster          bool
+	client                            clientset.Interface
+	externalClient                    clientset.Interface
+	grabFromAPIServer                 bool
+	grabFromControllerManager         bool
+	grabFromKubelets                  bool
+	grabFromScheduler                 bool
+	grabFromClusterAutoscaler         bool
+	masterName                        string
+	registeredMaster                  bool
+	waitForControllerManagerReadyOnce sync.Once
 }
 
 // NewMetricsGrabber returns new metrics which are initialized.
 func NewMetricsGrabber(c clientset.Interface, ec clientset.Interface, kubelets bool, scheduler bool, controllers bool, apiServer bool, clusterAutoscaler bool) (*Grabber, error) {
 	registeredMaster := false
 	masterName := ""
-	nodeList, err := c.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := c.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +105,7 @@ func (g *Grabber) HasRegisteredMaster() bool {
 
 // GrabFromKubelet returns metrics from kubelet
 func (g *Grabber) GrabFromKubelet(nodeName string) (KubeletMetrics, error) {
-	nodes, err := g.client.CoreV1().Nodes().List(metav1.ListOptions{FieldSelector: fields.Set{api.ObjectNameField: nodeName}.AsSelector().String()})
+	nodes, err := g.client.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{FieldSelector: fields.Set{"metadata.name": nodeName}.AsSelector().String()})
 	if err != nil {
 		return KubeletMetrics{}, err
 	}
@@ -160,7 +165,29 @@ func (g *Grabber) GrabFromControllerManager() (ControllerManagerMetrics, error) 
 	if !g.registeredMaster {
 		return ControllerManagerMetrics{}, fmt.Errorf("Master's Kubelet is not registered. Skipping ControllerManager's metrics gathering")
 	}
-	output, err := g.getMetricsFromPod(g.client, fmt.Sprintf("%v-%v", "kube-controller-manager", g.masterName), metav1.NamespaceSystem, ports.InsecureKubeControllerManagerPort)
+
+	var err error
+	podName := fmt.Sprintf("%v-%v", "kube-controller-manager", g.masterName)
+	g.waitForControllerManagerReadyOnce.Do(func() {
+		if readyErr := e2epod.WaitForPodsReady(g.client, metav1.NamespaceSystem, podName, 0); readyErr != nil {
+			err = fmt.Errorf("error waiting for controller manager pod to be ready: %w", readyErr)
+			return
+		}
+
+		var lastMetricsFetchErr error
+		if metricsWaitErr := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
+			_, lastMetricsFetchErr = g.getMetricsFromPod(g.client, podName, metav1.NamespaceSystem, ports.InsecureKubeControllerManagerPort)
+			return lastMetricsFetchErr == nil, nil
+		}); metricsWaitErr != nil {
+			err = fmt.Errorf("error waiting for controller manager pod to expose metrics: %v; %v", metricsWaitErr, lastMetricsFetchErr)
+			return
+		}
+	})
+	if err != nil {
+		return ControllerManagerMetrics{}, err
+	}
+
+	output, err := g.getMetricsFromPod(g.client, podName, metav1.NamespaceSystem, ports.InsecureKubeControllerManagerPort)
 	if err != nil {
 		return ControllerManagerMetrics{}, err
 	}
@@ -214,7 +241,7 @@ func (g *Grabber) Grab() (Collection, error) {
 	}
 	if g.grabFromKubelets {
 		result.KubeletMetrics = make(map[string]KubeletMetrics)
-		nodes, err := g.client.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, err := g.client.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			errs = append(errs, err)
 		} else {
@@ -241,7 +268,7 @@ func (g *Grabber) getMetricsFromPod(client clientset.Interface, podName string, 
 		SubResource("proxy").
 		Name(fmt.Sprintf("%v:%v", podName, port)).
 		Suffix("metrics").
-		Do().Raw()
+		Do(context.TODO()).Raw()
 	if err != nil {
 		return "", err
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"time"
 
 	k8sapiv1 "k8s.io/api/core/v1"
@@ -62,7 +63,7 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 	var metricsSnapshots []*ContainerMetricsSnapshot
 
 	podMetricsInterface := c.metricsGetter.PodMetricses(k8sapiv1.NamespaceAll)
-	podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{})
+	podMetricsList, err := podMetricsInterface.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

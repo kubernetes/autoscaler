@@ -291,7 +291,7 @@ func waitForServer(cfg restclient.Config, deadline time.Duration) error {
 
 	var connected bool
 	wait.JitterUntil(func() {
-		if _, err := cli.Get().AbsPath("/healthz").Do().Raw(); err != nil {
+		if _, err := cli.Get().AbsPath("/healthz").Do(context.TODO()).Raw(); err != nil {
 			klog.Infof("Failed to connect to apiserver: %v", err)
 			return
 		}
@@ -344,7 +344,7 @@ func requestNodeCertificate(client certificatesv1beta1.CertificateSigningRequest
 		return nil, err
 	}
 
-	req, err := csr.RequestCertificate(client, csrData, name, usages, privateKey)
+	req, err := csr.RequestCertificate(client, csrData, name, certificates.KubeAPIServerClientKubeletSignerName, usages, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -352,11 +352,12 @@ func requestNodeCertificate(client certificatesv1beta1.CertificateSigningRequest
 	ctx, cancel := context.WithTimeout(context.Background(), 3600*time.Second)
 	defer cancel()
 
+	klog.V(2).Infof("Waiting for client certificate to be issued")
 	return csr.WaitForCertificate(ctx, client, req)
 }
 
 // This digest should include all the relevant pieces of the CSR we care about.
-// We can't direcly hash the serialized CSR because of random padding that we
+// We can't directly hash the serialized CSR because of random padding that we
 // regenerate every loop and we include usages which are not contained in the
 // CSR. This needs to be kept up to date as we add new fields to the node
 // certificates and with ensureCompatible.
