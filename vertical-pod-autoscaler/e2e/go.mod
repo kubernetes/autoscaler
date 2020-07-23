@@ -6,17 +6,10 @@ module k8s.io/autoscaler/vertical-pod-autoscaler/e2e
 go 1.14
 
 require (
-	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b // indirect
-	github.com/checkpoint-restore/go-criu v0.0.0-20190109184317-bdb7599cd87b // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
-	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
-	github.com/godbus/dbus v4.1.0+incompatible // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
-	github.com/gorilla/mux v1.7.3 // indirect
-	github.com/heketi/heketi v9.0.1-0.20191108182613-7340ee406820+incompatible // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.7.0
-	github.com/opencontainers/runc v1.0.0-rc2.0.20190611121236-6cc515888830 // indirect
 	github.com/prometheus/procfs v0.0.6 // indirect
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
 	golang.org/x/sys v0.0.0-20191112214154-59a1497f0cea // indirect
@@ -42,7 +35,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.18.3
 	k8s.io/cloud-provider => k8s.io/cloud-provider v0.18.3
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.18.3
-	k8s.io/code-generator => k8s.io/code-generator v0.18.4-rc.0
+	k8s.io/code-generator => k8s.io/code-generator v0.18.6-rc.0
 	k8s.io/component-base => k8s.io/component-base v0.18.3
 	k8s.io/cri-api => k8s.io/cri-api v0.18.7-rc.0
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.18.3
