@@ -671,28 +671,38 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) ([]cloud
 			if minSize, err := strconv.Atoi(*val); err == nil {
 				spec.MinSize = minSize
 			} else {
-				return asgs, fmt.Errorf("invalid minimum size specified for vmss: %s", err)
+				klog.Warningf("ignoring nodegroup %q because of invalid minimum size specified for vmss: %s", *scaleSet.Name, err)
+				continue
 			}
 		} else {
-			return asgs, fmt.Errorf("no minimum size specified for vmss: %s", *scaleSet.Name)
+			klog.Warningf("ignoring nodegroup %q because of no minimum size specified for vmss", *scaleSet.Name)
+			continue
 		}
 		if spec.MinSize < 0 {
-			return asgs, fmt.Errorf("minimum size must be a non-negative number of nodes")
+			klog.Warningf("ignoring nodegroup %q because of minimum size must be a non-negative number of nodes", *scaleSet.Name)
+			continue
 		}
 		if val, ok := scaleSet.Tags["max"]; ok {
 			if maxSize, err := strconv.Atoi(*val); err == nil {
 				spec.MaxSize = maxSize
 			} else {
-				return asgs, fmt.Errorf("invalid maximum size specified for vmss: %s", err)
+				klog.Warningf("ignoring nodegroup %q because of invalid maximum size specified for vmss: %s", *scaleSet.Name, err)
+				continue
 			}
 		} else {
-			return asgs, fmt.Errorf("no maximum size specified for vmss: %s", *scaleSet.Name)
+			klog.Warningf("ignoring nodegroup %q because of no maximum size specified for vmss", *scaleSet.Name)
+			continue
 		}
 		if spec.MaxSize < spec.MinSize {
-			return asgs, fmt.Errorf("maximum size must be greater than minimum size")
+			klog.Warningf("ignoring nodegroup %q because of maximum size must be greater than minimum size: max=%d < min=%d", *scaleSet.Name, spec.MaxSize, spec.MinSize)
+			continue
 		}
 
-		asg, _ := NewScaleSet(spec, m)
+		asg, err := NewScaleSet(spec, m)
+		if err != nil {
+			klog.Warningf("ignoring nodegroup %q %s", *scaleSet.Name, err)
+			continue
+		}
 		asgs = append(asgs, asg)
 	}
 
