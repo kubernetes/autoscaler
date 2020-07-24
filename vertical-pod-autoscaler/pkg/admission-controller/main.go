@@ -24,6 +24,7 @@ import (
 	"os"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
@@ -56,14 +57,15 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	port            = flag.Int("port", 8000, "The port to listen on.")
-	address         = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace       = os.Getenv("NAMESPACE")
-	serviceName     = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
-	webhookAddress  = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort     = flag.String("webhook-port", "", "Server Port for Webhook")
-	registerWebhook = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
-	registerByURL   = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	port               = flag.Int("port", 8000, "The port to listen on.")
+	address            = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace          = os.Getenv("NAMESPACE")
+	serviceName        = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
+	webhookAddress     = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort        = flag.String("webhook-port", "", "Server Port for Webhook")
+	registerWebhook    = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
+	registerByURL      = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 )
 
 func main() {
@@ -83,7 +85,7 @@ func main() {
 	}
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	vpaLister := vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{}))
+	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), *vpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
@@ -102,11 +104,16 @@ func main() {
 	if err != nil {
 		klog.Fatalf("Unable to get hostname: %v", err)
 	}
+
+	statusNamespace := status.AdmissionControllerStatusNamespace
+	if *vpaObjectNamespace != "" {
+		statusNamespace = *vpaObjectNamespace
+	}
 	stopCh := make(chan struct{})
 	statusUpdater := status.NewUpdater(
 		kubeClient,
 		status.AdmissionControllerStatusName,
-		status.AdmissionControllerStatusNamespace,
+		statusNamespace,
 		statusUpdateInterval,
 		hostname,
 	)
