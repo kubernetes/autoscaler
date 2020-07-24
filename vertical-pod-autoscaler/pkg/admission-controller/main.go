@@ -106,8 +106,8 @@ func main() {
 	}
 
 	statusNamespace := status.AdmissionControllerStatusNamespace
-	if *vpaObjectNamespace != "" {
-		statusNamespace = *vpaObjectNamespace
+	if namespace != "" {
+		statusNamespace = namespace
 	}
 	stopCh := make(chan struct{})
 	statusUpdater := status.NewUpdater(

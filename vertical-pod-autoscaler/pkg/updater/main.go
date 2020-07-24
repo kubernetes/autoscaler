@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -60,7 +61,8 @@ var (
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
-	vpaNamespace = flag.String("namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
+	namespace          = os.Getenv("NAMESPACE")
+	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 )
 
 const defaultResyncPeriod time.Duration = 10 * time.Minute
@@ -88,9 +90,9 @@ func main() {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
-	statusNamespace := status.AdmissionControllerStatusNamespace
-	if *vpaNamespace != "" {
-		statusNamespace = *vpaNamespace
+	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
+	if namespace != "" {
+		admissionControllerStatusNamespace = namespace
 	}
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
@@ -101,12 +103,12 @@ func main() {
 		*evictionRateBurst,
 		*evictionToleranceFraction,
 		*useAdmissionControllerStatus,
-		statusNamespace,
+		admissionControllerStatusNamespace,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		nil,
 		targetSelectorFetcher,
 		priority.NewProcessor(),
-		*vpaNamespace,
+		*vpaObjectNamespace,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
