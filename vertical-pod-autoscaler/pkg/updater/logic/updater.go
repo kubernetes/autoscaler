@@ -74,10 +74,12 @@ func NewUpdater(
 	evictionRateBurst int,
 	evictionToleranceFraction float64,
 	useAdmissionControllerStatus bool,
+	statusNamespace string,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
+	namespace string,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -85,8 +87,8 @@ func NewUpdater(
 		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
 	}
 	return &updater{
-		vpaLister:                    vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
-		podLister:                    newPodLister(kubeClient),
+		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
+		podLister:                    newPodLister(kubeClient, namespace),
 		eventRecorder:                newEventRecorder(kubeClient),
 		evictionFactory:              factory,
 		recommendationProcessor:      recommendationProcessor,
@@ -98,7 +100,7 @@ func NewUpdater(
 		statusValidator: status.NewValidator(
 			kubeClient,
 			status.AdmissionControllerStatusName,
-			status.AdmissionControllerStatusNamespace,
+			statusNamespace,
 		),
 	}, nil
 }
@@ -278,7 +280,7 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	return result
 }
 
-func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
+func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.PodLister {
 	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
 		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)

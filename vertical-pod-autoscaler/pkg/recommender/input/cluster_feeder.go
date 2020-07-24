@@ -49,9 +49,7 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
-const (
-	defaultResyncPeriod time.Duration = 10 * time.Minute
-)
+const defaultResyncPeriod time.Duration = 10 * time.Minute
 
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
@@ -106,10 +104,10 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
 // Deprecated; Use ClusterStateFeederFactory instead.
-func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool) ClusterStateFeeder {
+func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool, namespace string) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
-	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient, namespace)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory)
 	return ClusterStateFeederFactory{
 		PodLister:           podLister,
@@ -117,7 +115,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		KubeClient:          kubeClient,
 		MetricsClient:       newMetricsClient(config),
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
-		VpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), namespace),
 		ClusterState:        clusterState,
 		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		MemorySaveMode:      memorySave,
@@ -131,14 +129,14 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 }
 
 // WatchEvictionEventsWithRetries watches new Events with reason=Evicted and passes them to the observer.
-func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer oom.Observer) {
+func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer oom.Observer, namespace string) {
 	go func() {
 		options := metav1.ListOptions{
 			FieldSelector: "reason=Evicted",
 		}
 
 		for {
-			watchInterface, err := kubeClient.CoreV1().Events("").Watch(context.TODO(), options)
+			watchInterface, err := kubeClient.CoreV1().Events(namespace).Watch(context.TODO(), options)
 			if err != nil {
 				klog.Errorf("Cannot initialize watching events. Reason %v", err)
 				continue
@@ -166,9 +164,9 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
-func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler) v1lister.PodLister {
+func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
+	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
 	indexer, controller := cache.NewIndexerInformer(
 		podListWatch,
 		&apiv1.Pod{},
@@ -183,10 +181,10 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodLister, oom.Observer) {
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, oomObserver)
-	WatchEvictionEventsWithRetries(kubeClient, oomObserver)
+	podLister := newPodClients(kubeClient, oomObserver, namespace)
+	WatchEvictionEventsWithRetries(kubeClient, oomObserver, namespace)
 	return podLister, oomObserver
 }
 
@@ -215,13 +213,15 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
-				ContainerName: containerName}
+				ContainerName: containerName,
+			}
 			klog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
 			for _, sample := range sampleList {
 				if err := feeder.clusterState.AddSample(
 					&model.ContainerUsageSampleWithKey{
 						ContainerUsageSample: sample,
-						Container:            containerID}); err != nil {
+						Container:            containerID,
+					}); err != nil {
 					klog.Warningf("Error adding metric sample for container %v: %v", containerID, err)
 				}
 			}
@@ -257,7 +257,6 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	for namespace := range namespaces {
 		klog.V(3).Infof("Fetching checkpoints from namespace %s", namespace)
 		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(context.TODO(), metav1.ListOptions{})
-
 		if err != nil {
 			klog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
@@ -318,7 +317,8 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	for _, vpaCRD := range vpaCRDs {
 		vpaID := model.VpaID{
 			Namespace: vpaCRD.Namespace,
-			VpaName:   vpaCRD.Name}
+			VpaName:   vpaCRD.Name,
+		}
 
 		selector, conditions := feeder.getSelector(vpaCRD)
 		klog.Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
