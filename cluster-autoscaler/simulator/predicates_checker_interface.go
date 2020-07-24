@@ -18,10 +18,12 @@ package simulator
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
 
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker interface {
 	FitsAnyNode(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod) (string, error)
+	FitsAnyNodeMatching(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error)
 	CheckPredicates(clusterSnapshot ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError
 }
