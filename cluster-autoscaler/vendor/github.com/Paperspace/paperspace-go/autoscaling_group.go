@@ -36,14 +36,14 @@ type AutoscalingGroupDeleteParams struct {
 type AutoscalingGroupGetParams struct {
 	RequestParams
 
-	IncludeNodes bool `json:"includeNodes"`
+	IncludeNodes bool `json:"includeNodes,omitempty"`
 }
 
 type AutoscalingGroupListParams struct {
 	RequestParams
 
-	Filter       map[string]string `json:"filter"`
-	IncludeNodes bool              `json:"includeNodes"`
+	Filter       map[string]string `json:"filter,omitempty"`
+	IncludeNodes bool              `json:"includeNodes,omitempty"`
 }
 
 type AutoscalingGroupUpdateAttributeParams struct {
