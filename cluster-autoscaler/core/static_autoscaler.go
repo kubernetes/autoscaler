@@ -57,6 +57,9 @@ const (
 	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
 	// How long should Cluster Autoscaler wait for nodes to become ready after start.
 	nodesNotReadyAfterStartTimeout = 10 * time.Minute
+
+	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
+	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -795,6 +798,12 @@ func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos
 			klog.Warningf("Couldn't find template for node group %s", nodeGroup)
 			continue
 		}
+
+		if nodeTemplate.Node().Annotations == nil {
+			nodeTemplate.Node().Annotations = make(map[string]string)
+		}
+		nodeTemplate.Node().Annotations[NodeUpcomingAnnotation] = "true"
+
 		for i := 0; i < numberOfNodes; i++ {
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
