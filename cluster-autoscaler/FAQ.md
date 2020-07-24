@@ -326,7 +326,7 @@ number of replicas when cluster grows and decrease the number of replicas if clu
 
 Configuration of dynamic overprovisioning:
 
-1. (For 1.10, and below) Enable priority preemption in your cluster. 
+1. (For 1.10, and below) Enable priority preemption in your cluster.
 
 For GCE, it can be done by exporting following env
 variables before executing kube-up (more details [here](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)):
@@ -920,13 +920,13 @@ Cluster Autoscaler depends on `go modules` mechanism for dependency management, 
 during build process. `go.mod` file is just used to generate the `vendor` directory and further compilation
 is run against set of libraries stored in `vendor`. `vendor` directory can be regenerated using [`update-vendor.sh`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script.
 The `update-vendor.sh` script is responsible for autogenerating `go.mod` file used by Cluster Autoscaler. The base
-of the file is `go.mod` file coming from [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) repository. 
+of the file is `go.mod` file coming from [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) repository.
 On top of that script adds modifications as defined
-locally in [`go.mod-extra`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/go.mod-extra) file. 
+locally in [`go.mod-extra`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/go.mod-extra) file.
 
 Note: It is important that one should **never manually edit** `go.mod` file as it is regenerated
 on each `update-vendor.sh` call. Any extra libraries or version overrides should be put in `go.mod-extra` file (syntax of the file
-is same as syntax of `go.mod` file). 
+is same as syntax of `go.mod` file).
 
 Finally `vendor` directry is materialized and validation tests are run.
 
@@ -938,7 +938,8 @@ Execution of `update-vendor.sh` can be parametrized using command line argumets:
  - `-f` - kubernetes/kubernetes fork to use. On `master` it defaults to `git@github.com:kubernetes/kubernetes.git`
  - `-r` - revision in kubernetes/kubernetes which should be used to get base `go.mod` file
  - `-d` - specifies script workdir; useful to speed up execution if script needs to be run multiple times, because updating vendor resulted in some compilation errors on Cluster-Autoscaler side which need to be fixed
- 
+ - `-o` - overrides go version check, which may be useful if CA needs to use a different go version than the one in kubernetes go.mod file
+
 Example execution looks like this:
 ```
 ./hack/update-vendor.sh -d/tmp/ca-update-vendor.ou1l -fgit@github.com:kubernetes/kubernetes.git -rmaster
