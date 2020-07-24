@@ -54,7 +54,7 @@ var (
 	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
-	vpaNamespace        = flag.String("namespace", apiv1.NamespaceAll, "Namespace to search for pod stats and VPA objects. Empty means all namespaces will be used.")
+	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
 )
 
 // Aggregation configuration flags
@@ -80,7 +80,7 @@ func main() {
 	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaNamespace)
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
@@ -103,7 +103,7 @@ func main() {
 			CtrPodNameLabel:        *ctrPodNameLabel,
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
-			Namespace:              *vpaNamespace,
+			Namespace:              *vpaObjectNamespace,
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {

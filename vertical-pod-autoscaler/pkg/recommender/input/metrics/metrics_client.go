@@ -54,7 +54,7 @@ type metricsClient struct {
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
 // It requires an instance of PodMetricsesGetter, which is used for underlying communication with metrics server.
-// namespace limits queries to particular namespace, empty strings means all namespaces.
+// namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
 func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace string) MetricsClient {
 	return &metricsClient{
 		metricsGetter: metricsGetter,
