@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	"k8s.io/api/admissionregistration/v1beta1"
+	admissionregistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -59,43 +59,44 @@ func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *t
 // by creating MutatingWebhookConfiguration.
 func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool) {
 	time.Sleep(10 * time.Second)
-	client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
+	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
 		if err2 := client.Delete(context.TODO(), webhookConfigName, metav1.DeleteOptions{}); err2 != nil {
 			klog.Fatal(err2)
 		}
 	}
-	RegisterClientConfig := v1beta1.WebhookClientConfig{}
+	RegisterClientConfig := admissionregistration.WebhookClientConfig{}
 	if !registerByURL {
-		RegisterClientConfig.Service = &v1beta1.ServiceReference{
+		RegisterClientConfig.Service = &admissionregistration.ServiceReference{
 			Namespace: namespace,
 			Name:      serviceName,
 		}
 	} else {
 		RegisterClientConfig.URL = &url
 	}
-	sideEffects := v1beta1.SideEffectClassNone
+	sideEffects := admissionregistration.SideEffectClassNone
 	RegisterClientConfig.CABundle = caCert
-	webhookConfig := &v1beta1.MutatingWebhookConfiguration{
+	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
 		},
-		Webhooks: []v1beta1.MutatingWebhook{
+		Webhooks: []admissionregistration.MutatingWebhook{
 			{
-				Name: "vpa.k8s.io",
-				Rules: []v1beta1.RuleWithOperations{
+				Name:                    "vpa.k8s.io",
+				AdmissionReviewVersions: []string{"v1beta1"},
+				Rules: []admissionregistration.RuleWithOperations{
 					{
-						Operations: []v1beta1.OperationType{v1beta1.Create},
-						Rule: v1beta1.Rule{
+						Operations: []admissionregistration.OperationType{admissionregistration.Create},
+						Rule: admissionregistration.Rule{
 							APIGroups:   []string{""},
 							APIVersions: []string{"v1"},
 							Resources:   []string{"pods"},
 						},
 					},
 					{
-						Operations: []v1beta1.OperationType{v1beta1.Create, v1beta1.Update},
-						Rule: v1beta1.Rule{
+						Operations: []admissionregistration.OperationType{admissionregistration.Create, admissionregistration.Update},
+						Rule: admissionregistration.Rule{
 							APIGroups:   []string{"autoscaling.k8s.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"verticalpodautoscalers"},
