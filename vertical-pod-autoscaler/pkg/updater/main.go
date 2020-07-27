@@ -19,8 +19,10 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -29,6 +31,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -57,11 +60,12 @@ var (
 
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
+
+	namespace          = os.Getenv("NAMESPACE")
+	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
 )
 
-const (
-	defaultResyncPeriod time.Duration = 10 * time.Minute
-)
+const defaultResyncPeriod time.Duration = 10 * time.Minute
 
 func main() {
 	klog.InitFlags(nil)
@@ -86,6 +90,10 @@ func main() {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
+	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
+	if namespace != "" {
+		admissionControllerStatusNamespace = namespace
+	}
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -95,10 +103,12 @@ func main() {
 		*evictionRateBurst,
 		*evictionToleranceFraction,
 		*useAdmissionControllerStatus,
+		admissionControllerStatusNamespace,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		nil,
 		targetSelectorFetcher,
 		priority.NewProcessor(),
+		*vpaObjectNamespace,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

@@ -22,7 +22,7 @@ import (
 
 	k8sapiv1 "k8s.io/api/core/v1"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -84,7 +84,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 	fakeMetricsGetter.AddReactor("list", "pods", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
 	})
-	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1())
+	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1(), "")
 }
 
 func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsList {

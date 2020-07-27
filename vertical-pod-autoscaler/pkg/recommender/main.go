@@ -20,6 +20,7 @@ import (
 	"flag"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -53,6 +54,7 @@ var (
 	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
 	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
+	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
 )
 
 // Aggregation configuration flags
@@ -78,7 +80,7 @@ func main() {
 	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace)
 
 	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
 	if err != nil {
@@ -101,6 +103,7 @@ func main() {
 			CtrPodNameLabel:        *ctrPodNameLabel,
 			CtrNameLabel:           *ctrNameLabel,
 			CadvisorMetricsJobName: *prometheusJobName,
+			Namespace:              *vpaObjectNamespace,
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {
@@ -114,7 +117,6 @@ func main() {
 		recommender.RunOnce()
 		healthCheck.UpdateLastActivity()
 	}
-
 }
 
 func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
