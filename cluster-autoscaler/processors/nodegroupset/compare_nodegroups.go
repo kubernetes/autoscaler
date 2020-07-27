@@ -31,9 +31,9 @@ const (
 	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
 	// can differ between groups in the same NodeGroupSet
 	MaxFreeDifferenceRatio = 0.05
-	// MaxMemoryDifferenceInKiloBytes describes how much memory
-	// capacity can differ but still be considered equal.
-	MaxMemoryDifferenceInKiloBytes = 256000
+	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
+	// groups in the same NodeGroupSet
+	MaxCapacityMemoryDifferenceRatio = 0.015
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
@@ -50,19 +50,23 @@ var BasicIgnoredLabels = map[string]bool{
 // similar enough to be considered a part of a single NodeGroupSet.
 type NodeInfoComparator func(n1, n2 *schedulernodeinfo.NodeInfo) bool
 
-func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
+func resourceMapsWithinTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
 	maxDifferenceRatio float64) bool {
 	for _, qtyList := range resources {
-		if len(qtyList) != 2 {
-			return false
-		}
-		larger := math.Max(float64(qtyList[0].MilliValue()), float64(qtyList[1].MilliValue()))
-		smaller := math.Min(float64(qtyList[0].MilliValue()), float64(qtyList[1].MilliValue()))
-		if larger-smaller > larger*maxDifferenceRatio {
+		if !resourceListWithinTolerance(qtyList, maxDifferenceRatio) {
 			return false
 		}
 	}
 	return true
+}
+
+func resourceListWithinTolerance(qtyList []resource.Quantity, maxDifferenceRatio float64) bool {
+	if len(qtyList) != 2 {
+		return false
+	}
+	larger := math.Max(float64(qtyList[0].MilliValue()), float64(qtyList[1].MilliValue()))
+	smaller := math.Min(float64(qtyList[0].MilliValue()), float64(qtyList[1].MilliValue()))
+	return larger-smaller <= larger*maxDifferenceRatio
 }
 
 func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
@@ -120,9 +124,7 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredL
 		}
 		switch kind {
 		case apiv1.ResourceMemory:
-			// For memory capacity we allow a small tolerance
-			memoryDifference := math.Abs(float64(qtyList[0].Value()) - float64(qtyList[1].Value()))
-			if memoryDifference > MaxMemoryDifferenceInKiloBytes {
+			if !resourceListWithinTolerance(qtyList, MaxCapacityMemoryDifferenceRatio) {
 				return false
 			}
 		default:
@@ -136,10 +138,10 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredL
 	}
 
 	// For allocatable and free we allow resource quantities to be within a few % of each other
-	if !compareResourceMapsWithTolerance(allocatable, MaxAllocatableDifferenceRatio) {
+	if !resourceMapsWithinTolerance(allocatable, MaxAllocatableDifferenceRatio) {
 		return false
 	}
-	if !compareResourceMapsWithTolerance(free, MaxFreeDifferenceRatio) {
+	if !resourceMapsWithinTolerance(free, MaxFreeDifferenceRatio) {
 		return false
 	}
 
