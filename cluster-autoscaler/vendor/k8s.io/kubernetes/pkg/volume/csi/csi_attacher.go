@@ -28,7 +28,7 @@ import (
 
 	"k8s.io/klog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	storage "k8s.io/api/storage/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -195,8 +195,19 @@ func (c *csiAttacher) VolumesAreAttached(specs []*volume.Spec, nodeName types.No
 		}
 
 		attachID := getAttachmentName(volumeHandle, driverName, string(nodeName))
+		var attach *storage.VolumeAttachment
+		if c.plugin.volumeAttachmentLister != nil {
+			attach, err = c.plugin.volumeAttachmentLister.Get(attachID)
+			if err == nil {
+				attached[spec] = attach.Status.Attached
+				continue
+			}
+			klog.V(4).Info(log("attacher.VolumesAreAttached failed in AttachmentLister for attach.ID=%v: %v. Probing the API server.", attachID, err))
+		}
+		// The cache lookup is not setup or the object is not found in the cache.
+		// Get the object from the API server.
 		klog.V(4).Info(log("probing attachment status for VolumeAttachment %v", attachID))
-		attach, err := c.k8s.StorageV1().VolumeAttachments().Get(attachID, meta.GetOptions{})
+		attach, err = c.k8s.StorageV1().VolumeAttachments().Get(attachID, meta.GetOptions{})
 		if err != nil {
 			attached[spec] = false
 			klog.Error(log("attacher.VolumesAreAttached failed for attach.ID=%v: %v", attachID, err))
@@ -226,13 +237,19 @@ func (c *csiAttacher) MountDevice(spec *volume.Spec, devicePath string, deviceMo
 		return errors.New(log("attacher.MountDevice failed, deviceMountPath is empty"))
 	}
 
+	corruptedDir := false
 	mounted, err := isDirMounted(c.plugin, deviceMountPath)
 	if err != nil {
 		klog.Error(log("attacher.MountDevice failed while checking mount status for dir [%s]", deviceMountPath))
-		return err
+		if isCorruptedDir(deviceMountPath) {
+			corruptedDir = true // leave to CSI driver to handle corrupted mount
+			klog.Warning(log("attacher.MountDevice detected corrupted mount for dir [%s]", deviceMountPath))
+		} else {
+			return err
+		}
 	}
 
-	if mounted {
+	if mounted && !corruptedDir {
 		klog.V(4).Info(log("attacher.MountDevice skipping mount, dir already mounted [%s]", deviceMountPath))
 		return nil
 	}
@@ -248,7 +265,7 @@ func (c *csiAttacher) MountDevice(spec *volume.Spec, devicePath string, deviceMo
 
 	// Store volume metadata for UnmountDevice. Keep it around even if the
 	// driver does not support NodeStage, UnmountDevice still needs it.
-	if err = os.MkdirAll(deviceMountPath, 0750); err != nil {
+	if err = os.MkdirAll(deviceMountPath, 0750); err != nil && !corruptedDir {
 		return errors.New(log("attacher.MountDevice failed to create dir %#v:  %v", deviceMountPath, err))
 	}
 	klog.V(4).Info(log("created target path successfully [%s]", deviceMountPath))

@@ -47,7 +47,7 @@ const (
 	errLeaseFailed       = "AcquireDiskLeaseFailed"
 	errLeaseIDMissing    = "LeaseIdMissing"
 	errContainerNotFound = "ContainerNotFound"
-	errDiskBlobNotFound  = "DiskBlobNotFound"
+	errDiskNotFound      = "is not found"
 )
 
 var defaultBackOff = kwait.Backoff{
@@ -100,6 +100,11 @@ func (c *controllerCommon) getNodeVMSet(nodeName types.NodeName, crt cacheReadTy
 // return (lun, error)
 func (c *controllerCommon) AttachDisk(isManagedDisk bool, diskName, diskURI string, nodeName types.NodeName, cachingMode compute.CachingTypes) (int32, error) {
 	diskEncryptionSetID := ""
+	vmset, err := c.getNodeVMSet(nodeName, cacheReadTypeUnsafe)
+	if err != nil {
+		return -1, err
+	}
+
 	if isManagedDisk {
 		diskName := path.Base(diskURI)
 		resourceGroup, err := getResourceGroupFromDiskURI(diskURI)
@@ -119,9 +124,12 @@ func (c *controllerCommon) AttachDisk(isManagedDisk bool, diskName, diskURI stri
 			attachErr := fmt.Sprintf(
 				"disk(%s) already attached to node(%s), could not be attached to node(%s)",
 				diskURI, *disk.ManagedBy, nodeName)
-			attachedNode := path.Base(*disk.ManagedBy)
+			attachedNode, err := vmset.GetNodeNameByProviderID(*disk.ManagedBy)
+			if err != nil {
+				return -1, err
+			}
 			klog.V(2).Infof("found dangling volume %s attached to node %s", diskURI, attachedNode)
-			danglingErr := volerr.NewDanglingError(attachErr, types.NodeName(attachedNode), "")
+			danglingErr := volerr.NewDanglingError(attachErr, attachedNode, "")
 			return -1, danglingErr
 		}
 
@@ -129,11 +137,6 @@ func (c *controllerCommon) AttachDisk(isManagedDisk bool, diskName, diskURI stri
 			disk.DiskProperties.Encryption.DiskEncryptionSetID != nil {
 			diskEncryptionSetID = *disk.DiskProperties.Encryption.DiskEncryptionSetID
 		}
-	}
-
-	vmset, err := c.getNodeVMSet(nodeName, cacheReadTypeUnsafe)
-	if err != nil {
-		return -1, err
 	}
 
 	instanceid, err := c.cloud.InstanceID(context.TODO(), nodeName)
@@ -313,4 +316,46 @@ func filterDetachingDisks(unfilteredDisks []compute.DataDisk) []compute.DataDisk
 		}
 	}
 	return filteredDisks
+}
+
+func (c *controllerCommon) filterNonExistingDisks(ctx context.Context, unfilteredDisks []compute.DataDisk) []compute.DataDisk {
+	filteredDisks := []compute.DataDisk{}
+	for _, disk := range unfilteredDisks {
+		filter := false
+		if disk.ManagedDisk != nil && disk.ManagedDisk.ID != nil {
+			diskURI := *disk.ManagedDisk.ID
+			exist, err := c.cloud.checkDiskExists(ctx, diskURI)
+			if err != nil {
+				klog.Errorf("checkDiskExists(%s) failed with error: %v", diskURI, err)
+			} else {
+				// only filter disk when checkDiskExists returns <false, nil>
+				filter = !exist
+				if filter {
+					klog.Errorf("disk(%s) does not exist, removed from data disk list", diskURI)
+				}
+			}
+		}
+
+		if !filter {
+			filteredDisks = append(filteredDisks, disk)
+		}
+	}
+	return filteredDisks
+}
+
+func (c *controllerCommon) checkDiskExists(ctx context.Context, diskURI string) (bool, error) {
+	diskName := path.Base(diskURI)
+	resourceGroup, err := getResourceGroupFromDiskURI(diskURI)
+	if err != nil {
+		return false, err
+	}
+
+	if _, err := c.cloud.DisksClient.Get(ctx, resourceGroup, diskName); err != nil {
+		if strings.Contains(err.Error(), errDiskNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }

@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog"
@@ -42,10 +43,20 @@ func (as *availabilitySet) AttachDisk(isManagedDisk bool, diskName, diskURI stri
 		return err
 	}
 
-	disks := filterDetachingDisks(*vm.StorageProfile.DataDisks)
+	disks := make([]compute.DataDisk, len(*vm.StorageProfile.DataDisks))
+	copy(disks, *vm.StorageProfile.DataDisks)
 
 	if isManagedDisk {
 		managedDisk := &compute.ManagedDiskParameters{ID: &diskURI}
+		if diskEncryptionSetID == "" {
+			if vm.StorageProfile.OsDisk != nil &&
+				vm.StorageProfile.OsDisk.ManagedDisk != nil &&
+				vm.StorageProfile.OsDisk.ManagedDisk.DiskEncryptionSet != nil &&
+				vm.StorageProfile.OsDisk.ManagedDisk.DiskEncryptionSet.ID != nil {
+				// set diskEncryptionSet as value of os disk by default
+				diskEncryptionSetID = *vm.StorageProfile.OsDisk.ManagedDisk.DiskEncryptionSet.ID
+			}
+		}
 		if diskEncryptionSetID != "" {
 			managedDisk.DiskEncryptionSet = &compute.DiskEncryptionSetParameters{ID: &diskEncryptionSetID}
 		}
@@ -87,16 +98,16 @@ func (as *availabilitySet) AttachDisk(isManagedDisk bool, diskName, diskURI stri
 
 	_, err = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "attach_disk")
 	if err != nil {
-		klog.Errorf("azureDisk - attach disk(%s, %s) failed, err: %v", diskName, diskURI, err)
-		detail := err.Error()
-		if strings.Contains(detail, errLeaseFailed) || strings.Contains(detail, errDiskBlobNotFound) {
-			// if lease cannot be acquired or disk not found, immediately detach the disk and return the original error
-			klog.V(2).Infof("azureDisk - err %v, try detach disk(%s, %s)", err, diskName, diskURI)
-			as.DetachDisk(diskName, diskURI, nodeName)
+		klog.Errorf("azureDisk - attach disk(%s, %s) on rg(%s) vm(%s) failed, err: %v", diskName, diskURI, nodeResourceGroup, vmName, err)
+		if strings.Contains(err.Error(), errDiskNotFound) {
+			klog.Errorf("azureDisk - begin to filterNonExistingDisks(%s, %s) on rg(%s) vm(%s)", diskName, diskURI, nodeResourceGroup, vmName)
+			disks := as.filterNonExistingDisks(ctx, *newVM.VirtualMachineProperties.StorageProfile.DataDisks)
+			newVM.VirtualMachineProperties.StorageProfile.DataDisks = &disks
+			_, err = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "attach_disk")
 		}
-	} else {
-		klog.V(2).Infof("azureDisk - attach disk(%s, %s) succeeded", diskName, diskURI)
 	}
+
+	klog.V(2).Infof("azureDisk - update(%s): vm(%s) - attach disk(%s, %s) returned with %v", nodeResourceGroup, vmName, diskName, diskURI, err)
 	return err
 }
 
@@ -116,7 +127,8 @@ func (as *availabilitySet) DetachDisk(diskName, diskURI string, nodeName types.N
 		return nil, err
 	}
 
-	disks := filterDetachingDisks(*vm.StorageProfile.DataDisks)
+	disks := make([]compute.DataDisk, len(*vm.StorageProfile.DataDisks))
+	copy(disks, *vm.StorageProfile.DataDisks)
 
 	bFoundDisk := false
 	for i, disk := range disks {
@@ -125,7 +137,7 @@ func (as *availabilitySet) DetachDisk(diskName, diskURI string, nodeName types.N
 			(disk.ManagedDisk != nil && diskURI != "" && strings.EqualFold(*disk.ManagedDisk.ID, diskURI)) {
 			// found the disk
 			klog.V(2).Infof("azureDisk - detach disk: name %q uri %q", diskName, diskURI)
-			disks = append(disks[:i], disks[i+1:]...)
+			disks[i].ToBeDetached = to.BoolPtr(true)
 			bFoundDisk = true
 			break
 		}
@@ -151,7 +163,19 @@ func (as *availabilitySet) DetachDisk(diskName, diskURI string, nodeName types.N
 	// Invalidate the cache right after updating
 	defer as.cloud.vmCache.Delete(vmName)
 
-	return as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
+	httpResponse, err := as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
+	if err != nil {
+		klog.Errorf("azureDisk - detach disk(%s, %s) on rg(%s) vm(%s) failed, err: %v", diskName, diskURI, nodeResourceGroup, vmName, err)
+		if strings.Contains(err.Error(), errDiskNotFound) {
+			klog.Errorf("azureDisk - begin to filterNonExistingDisks(%s, %s) on rg(%s) vm(%s)", diskName, diskURI, nodeResourceGroup, vmName)
+			disks := as.filterNonExistingDisks(ctx, *vm.StorageProfile.DataDisks)
+			newVM.VirtualMachineProperties.StorageProfile.DataDisks = &disks
+			httpResponse, err = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
+		}
+	}
+
+	klog.V(2).Infof("azureDisk - update(%s): vm(%s) - detach disk(%s, %s) returned with %v", nodeResourceGroup, vmName, diskName, diskURI, err)
+	return httpResponse, err
 }
 
 // GetDataDisks gets a list of data disks attached to the node.

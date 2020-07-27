@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "atmostevery.go",
         "conflict.go",
         "fields.go",
         "gvkparser.go",
@@ -23,16 +24,17 @@ go_library(
         "//staging/src/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/kube-openapi/pkg/schemaconv:go_default_library",
         "//vendor/k8s.io/kube-openapi/pkg/util/proto:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/fieldpath:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/merge:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/typed:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/value:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/fieldpath:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/merge:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/typed:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/value:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
     srcs = [
+        "atmostevery_test.go",
         "conflict_test.go",
         "fields_test.go",
         "managedfields_test.go",
@@ -50,10 +52,10 @@ go_test(
         "//staging/src/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/kube-openapi/pkg/util/proto:go_default_library",
         "//vendor/k8s.io/kube-openapi/pkg/util/proto/testing:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/fieldpath:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/merge:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/typed:go_default_library",
-        "//vendor/sigs.k8s.io/structured-merge-diff/value:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/fieldpath:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/merge:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/typed:go_default_library",
+        "//vendor/sigs.k8s.io/structured-merge-diff/v2/value:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

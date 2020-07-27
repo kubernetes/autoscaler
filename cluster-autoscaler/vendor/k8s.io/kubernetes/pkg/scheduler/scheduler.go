@@ -335,6 +335,8 @@ func New(client clientset.Interface,
 		configProducerArgs: &frameworkplugins.ConfigProducerArgs{},
 	}
 
+	metrics.Register()
+
 	var sched *Scheduler
 	source := options.schedulerAlgorithmSource
 	switch {
@@ -366,7 +368,6 @@ func New(client clientset.Interface,
 	default:
 		return nil, fmt.Errorf("unsupported algorithm source: %v", source)
 	}
-	metrics.Register()
 	// Additional tweaks to the config produced by the configurator.
 	sched.Recorder = recorder
 	sched.DisablePreemption = options.disablePreemption
@@ -633,6 +634,9 @@ func (sched *Scheduler) scheduleOne(ctx context.Context) {
 			// Pod did not fit anywhere, so it is counted as a failure. If preemption
 			// succeeds, the pod should get counted as a success the next time we try to
 			// schedule it. (hopefully)
+			metrics.PodScheduleFailures.Inc()
+		} else if err == core.ErrNoNodesAvailable {
+			// No nodes available is counted as unschedulable rather than an error.
 			metrics.PodScheduleFailures.Inc()
 		} else {
 			klog.Errorf("error selecting node for pod: %v", err)

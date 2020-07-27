@@ -69,7 +69,7 @@ func toPullableImageID(id string, image *dockertypes.ImageInspect) string {
 	// Default to the image ID, but if RepoDigests is not empty, use
 	// the first digest instead.
 	imageID := DockerImageIDPrefix + id
-	if image != nil && len(image.RepoDigests) > 0 {
+	if len(image.RepoDigests) > 0 {
 		imageID = DockerPullableImageIDPrefix + image.RepoDigests[0]
 	}
 	return imageID

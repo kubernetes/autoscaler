@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "exec.go",
-        "metrics.go",
-    ],
+    srcs = ["exec.go"],
     importmap = "k8s.io/kubernetes/vendor/k8s.io/client-go/plugin/pkg/client/auth/exec",
     importpath = "k8s.io/client-go/plugin/pkg/client/auth/exec",
     visibility = ["//visibility:public"],
@@ -19,7 +16,6 @@ go_library(
         "//staging/src/k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1:go_default_library",
         "//staging/src/k8s.io/client-go/pkg/apis/clientauthentication/v1beta1:go_default_library",
         "//staging/src/k8s.io/client-go/tools/clientcmd/api:go_default_library",
-        "//staging/src/k8s.io/client-go/tools/metrics:go_default_library",
         "//staging/src/k8s.io/client-go/transport:go_default_library",
         "//staging/src/k8s.io/client-go/util/connrotation:go_default_library",
         "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
@@ -30,10 +26,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "exec_test.go",
-        "metrics_test.go",
-    ],
+    srcs = ["exec_test.go"],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
@@ -41,7 +34,6 @@ go_test(
         "//staging/src/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//staging/src/k8s.io/client-go/pkg/apis/clientauthentication:go_default_library",
         "//staging/src/k8s.io/client-go/tools/clientcmd/api:go_default_library",
-        "//staging/src/k8s.io/client-go/tools/metrics:go_default_library",
         "//staging/src/k8s.io/client-go/transport:go_default_library",
     ],
 )

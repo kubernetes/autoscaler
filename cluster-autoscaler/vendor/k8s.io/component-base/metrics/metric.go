@@ -63,7 +63,6 @@ implements kubeCollector to get deferred registration behavior. You must call la
 with the kubeCollector itself as an argument.
 */
 type lazyMetric struct {
-	fqName              string
 	isDeprecated        bool
 	isHidden            bool
 	isCreated           bool
@@ -82,8 +81,7 @@ func (r *lazyMetric) IsCreated() bool {
 // lazyInit provides the lazyMetric with a reference to the kubeCollector it is supposed
 // to allow lazy initialization for. It should be invoked in the factory function which creates new
 // kubeCollector type objects.
-func (r *lazyMetric) lazyInit(self kubeCollector, fqName string) {
-	r.fqName = fqName
+func (r *lazyMetric) lazyInit(self kubeCollector) {
 	r.self = self
 }
 
@@ -100,7 +98,7 @@ func (r *lazyMetric) determineDeprecationStatus(version semver.Version) {
 			r.isDeprecated = true
 		}
 		if ShouldShowHidden() {
-			klog.Warningf("Hidden metrics (%s) have been manually overridden, showing this very deprecated metric.", r.fqName)
+			klog.Warningf("Hidden metrics have been manually overridden, showing this very deprecated metric.")
 			return
 		}
 		if shouldHide(&version, selfVersion) {
@@ -156,11 +154,6 @@ func (r *lazyMetric) ClearState() {
 	r.isCreated = false
 	r.markDeprecationOnce = *(new(sync.Once))
 	r.createOnce = *(new(sync.Once))
-}
-
-// FQName returns the fully-qualified metric name of the collector.
-func (r *lazyMetric) FQName() string {
-	return r.fqName
 }
 
 /*

@@ -16,8 +16,8 @@ limitations under the License.
 
 package events
 
-// Container event reason list
 const (
+	// Container event reason list
 	CreatedContainer        = "Created"
 	StartedContainer        = "Started"
 	FailedToCreateContainer = "Failed"
@@ -26,28 +26,22 @@ const (
 	PreemptContainer        = "Preempting"
 	BackOffStartContainer   = "BackOff"
 	ExceededGracePeriod     = "ExceededGracePeriod"
-)
 
-// Pod event reason list
-const (
+	// Pod event reason list
 	FailedToKillPod                = "FailedKillPod"
 	FailedToCreatePodContainer     = "FailedCreatePodContainer"
 	FailedToMakePodDataDirectories = "Failed"
 	NetworkNotReady                = "NetworkNotReady"
-)
 
-// Image event reason list
-const (
+	// Image event reason list
 	PullingImage            = "Pulling"
 	PulledImage             = "Pulled"
 	FailedToPullImage       = "Failed"
 	FailedToInspectImage    = "InspectFailed"
 	ErrImageNeverPullPolicy = "ErrImageNeverPull"
 	BackOffPullImage        = "BackOff"
-)
 
-// kubelet event reason list
-const (
+	// kubelet event reason list
 	NodeReady                            = "NodeReady"
 	NodeNotReady                         = "NodeNotReady"
 	NodeSchedulable                      = "NodeSchedulable"
@@ -72,32 +66,22 @@ const (
 	SandboxChanged                       = "SandboxChanged"
 	FailedCreatePodSandBox               = "FailedCreatePodSandBox"
 	FailedStatusPodSandBox               = "FailedPodSandBoxStatus"
-)
 
-// Image manager event reason list
-const (
+	// Image manager event reason list
 	InvalidDiskCapacity = "InvalidDiskCapacity"
 	FreeDiskSpaceFailed = "FreeDiskSpaceFailed"
-)
 
-// Probe event reason list
-const (
+	// Probe event reason list
 	ContainerUnhealthy    = "Unhealthy"
 	ContainerProbeWarning = "ProbeWarning"
-)
 
-// Pod worker event reason list
-const (
+	// Pod worker event reason list
 	FailedSync = "FailedSync"
-)
 
-// Config event reason list
-const (
+	// Config event reason list
 	FailedValidation = "FailedValidation"
-)
 
-// Lifecycle hooks
-const (
+	// Lifecycle hooks
 	FailedPostStartHook = "FailedPostStartHook"
 	FailedPreStopHook   = "FailedPreStopHook"
 )

@@ -19,7 +19,7 @@ limitations under the License.
 package azure
 
 import (
-	"fmt"
+	"context"
 	"strings"
 	"sync"
 	"time"
@@ -35,10 +35,12 @@ var (
 	vmssNameSeparator  = "_"
 	vmssCacheSeparator = "#"
 
+	vmssKey                 = "k8svmssKey"
 	vmssVirtualMachinesKey  = "k8svmssVirtualMachinesKey"
 	availabilitySetNodesKey = "k8sAvailabilitySetNodesKey"
 
 	availabilitySetNodesCacheTTL = 15 * time.Minute
+	vmssTTL                      = 10 * time.Minute
 	vmssVirtualMachinesTTL       = 10 * time.Minute
 )
 
@@ -50,8 +52,44 @@ type vmssVirtualMachinesEntry struct {
 	lastUpdate     time.Time
 }
 
-func (ss *scaleSet) makeVmssVMName(scaleSetName, instanceID string) string {
-	return fmt.Sprintf("%s%s%s", scaleSetName, vmssNameSeparator, instanceID)
+type vmssEntry struct {
+	vmss       *compute.VirtualMachineScaleSet
+	lastUpdate time.Time
+}
+
+func (ss *scaleSet) newVMSSCache() (*timedCache, error) {
+	getter := func(key string) (interface{}, error) {
+		localCache := &sync.Map{} // [vmssName]*vmssEntry
+
+		allResourceGroups, err := ss.GetResourceGroups()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, resourceGroup := range allResourceGroups.List() {
+			allScaleSets, err := ss.VirtualMachineScaleSetsClient.List(context.Background(), resourceGroup)
+			if err != nil {
+				klog.Errorf("VirtualMachineScaleSetsClient.List failed: %v", err)
+				return nil, err
+			}
+
+			for i := range allScaleSets {
+				scaleSet := allScaleSets[i]
+				if scaleSet.Name == nil || *scaleSet.Name == "" {
+					klog.Warning("failed to get the name of VMSS")
+					continue
+				}
+				localCache.Store(*scaleSet.Name, &vmssEntry{
+					vmss:       &scaleSet,
+					lastUpdate: time.Now().UTC(),
+				})
+			}
+		}
+
+		return localCache, nil
+	}
+
+	return newTimedcache(vmssTTL, getter)
 }
 
 func extractVmssVMName(name string) (string, string, error) {
@@ -71,6 +109,26 @@ func extractVmssVMName(name string) (string, string, error) {
 func (ss *scaleSet) newVMSSVirtualMachinesCache() (*timedCache, error) {
 	getter := func(key string) (interface{}, error) {
 		localCache := &sync.Map{} // [nodeName]*vmssVirtualMachinesEntry
+
+		oldCache := make(map[string]vmssVirtualMachinesEntry)
+
+		if ss.vmssVMCache != nil {
+			// get old cache before refreshing the cache
+			entry, exists, err := ss.vmssVMCache.store.GetByKey(vmssVirtualMachinesKey)
+			if err != nil {
+				return nil, err
+			}
+			if exists {
+				cached := entry.(*cacheEntry).data
+				if cached != nil {
+					virtualMachines := cached.(*sync.Map)
+					virtualMachines.Range(func(key, value interface{}) bool {
+						oldCache[key.(string)] = *value.(*vmssVirtualMachinesEntry)
+						return true
+					})
+				}
+			}
+		}
 
 		allResourceGroups, err := ss.GetResourceGroups()
 		if err != nil {
@@ -104,7 +162,37 @@ func (ss *scaleSet) newVMSSVirtualMachinesCache() (*timedCache, error) {
 						virtualMachine: &vm,
 						lastUpdate:     time.Now().UTC(),
 					})
+
+					if _, exists := oldCache[computerName]; exists {
+						delete(oldCache, computerName)
+					}
 				}
+			}
+
+			// add old missing cache data with nil entries to prevent aggressive
+			// ARM calls during cache invalidation
+			for name, vmEntry := range oldCache {
+				// if the nil cache entry has existed for 15 minutes in the cache
+				// then it should not be added back to the cache
+				if vmEntry.virtualMachine == nil || time.Since(vmEntry.lastUpdate) > 15*time.Minute {
+					klog.V(5).Infof("ignoring expired entries from old cache for %s", name)
+					continue
+				}
+				lastUpdate := time.Now().UTC()
+				if vmEntry.virtualMachine == nil {
+					// if this is already a nil entry then keep the time the nil
+					// entry was first created, so we can cleanup unwanted entries
+					lastUpdate = vmEntry.lastUpdate
+				}
+
+				klog.V(5).Infof("adding old entries to new cache for %s", name)
+				localCache.Store(name, &vmssVirtualMachinesEntry{
+					resourceGroup:  vmEntry.resourceGroup,
+					vmssName:       vmEntry.vmssName,
+					instanceID:     vmEntry.instanceID,
+					virtualMachine: nil,
+					lastUpdate:     lastUpdate,
+				})
 			}
 		}
 
