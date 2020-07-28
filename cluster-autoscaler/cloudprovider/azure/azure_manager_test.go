@@ -735,34 +735,28 @@ func TestListScalesets(t *testing.T) {
 			}},
 		},
 		{
-			name:              "InvalidMin",
-			specs:             map[string]string{"min": "some-invalid-string"},
-			expectedErrString: "invalid minimum size specified for vmss:",
+			name:  "InvalidMin",
+			specs: map[string]string{"min": "some-invalid-string"},
 		},
 		{
-			name:              "NoMin",
-			specs:             map[string]string{"max": "50"},
-			expectedErrString: fmt.Sprintf("no minimum size specified for vmss: %s", vmssName),
+			name:  "NoMin",
+			specs: map[string]string{"max": "50"},
 		},
 		{
-			name:              "InvalidMax",
-			specs:             map[string]string{"min": "5", "max": "some-invalid-string"},
-			expectedErrString: "invalid maximum size specified for vmss:",
+			name:  "InvalidMax",
+			specs: map[string]string{"min": "5", "max": "some-invalid-string"},
 		},
 		{
-			name:              "NoMax",
-			specs:             map[string]string{"min": "5"},
-			expectedErrString: fmt.Sprintf("no maximum size specified for vmss: %s", vmssName),
+			name:  "NoMax",
+			specs: map[string]string{"min": "5"},
 		},
 		{
-			name:              "MinLessThanZero",
-			specs:             map[string]string{"min": "-4", "max": "20"},
-			expectedErrString: fmt.Sprintf("minimum size must be a non-negative number of nodes"),
+			name:  "MinLessThanZero",
+			specs: map[string]string{"min": "-4", "max": "20"},
 		},
 		{
-			name:              "MinGreaterThanMax",
-			specs:             map[string]string{"min": "50", "max": "5"},
-			expectedErrString: "maximum size must be greater than minimum size",
+			name:  "MinGreaterThanMax",
+			specs: map[string]string{"min": "50", "max": "5"},
 		},
 		{
 			name:              "ListVMSSFail",
@@ -792,13 +786,18 @@ func TestListScalesets(t *testing.T) {
 			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
 			asgs, err := manager.listScaleSets(specs)
-			if tc.expectedErrString != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedErrString)
+			if tc.expected != nil {
+				assert.NoError(t, err)
+				assert.True(t, assert.ObjectsAreEqualValues(tc.expected, asgs), "expected %#v, but found: %#v", tc.expected, asgs)
 				return
 			}
-			assert.NoError(t, err)
-			assert.True(t, assert.ObjectsAreEqualValues(tc.expected, asgs), "expected %#v, but found: %#v", tc.expected, asgs)
+			assert.Len(t, asgs, 0)
+			if tc.expectedErrString == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), tc.expectedErrString)
 		})
 	}
 }
