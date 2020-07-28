@@ -31,8 +31,10 @@ import (
 var _ cloudprovider.NodeGroup = (*NodeGroup)(nil)
 
 const (
-	psksLabelNamespace = "ks.paperspace.com"
+	psksLabelNamespace = "paperspace.com"
 	nodeIDLabel        = psksLabelNamespace + "/node-id"
+	poolNameLabel      = psksLabelNamespace + "/pool-name"
+	poolTypeLabel      = psksLabelNamespace + "/pool-type"
 )
 
 var (
@@ -46,7 +48,7 @@ var (
 type NodeGroup struct {
 	id        string
 	clusterID string
-	client    nodeGroupClient
+	manager   *Manager
 	asg       psgo.AutoscalingGroup
 
 	minSize int
@@ -95,7 +97,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		},
 	}
 
-	err := n.client.UpdateAutoscalingGroup(n.id, req)
+	err := n.manager.client.UpdateAutoscalingGroup(n.id, req)
 	if err != nil {
 		return err
 	}
@@ -121,7 +123,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("cannot delete node %q with provider ID %q on node pool %q: node ID label %q is missing", node.Name, node.Spec.ProviderID, n.id, nodeIDLabel)
 		}
 
-		err := n.client.DeleteMachine(nodeID, psgo.MachineDeleteParams{RequestParams: psgo.RequestParams{Context: ctx}})
+		err := n.manager.client.DeleteMachine(nodeID, psgo.MachineDeleteParams{RequestParams: psgo.RequestParams{Context: ctx}})
 		if err != nil {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",
 				n.clusterID, n.id, nodeID, err)
@@ -158,7 +160,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 		},
 	}
 
-	err := n.client.UpdateAutoscalingGroup(n.id, req)
+	err := n.manager.client.UpdateAutoscalingGroup(n.id, req)
 	if err != nil {
 		return err
 	}
@@ -201,7 +203,14 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
 func (n *NodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	node, err := n.manager.buildNodeFromTemplate(n.asg)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(n.asg.ID))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side.

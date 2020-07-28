@@ -20,12 +20,21 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
+	"strconv"
+	"strings"
 
 	psgo "github.com/paperspace/paperspace-go"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 type nodeGroupClient interface {
@@ -57,14 +66,17 @@ type Config struct {
 
 	// Token is the User's Access Token associated with the cluster where
 	// Paperspace Cluster Autoscaler is running.
-	APIKey string `json:"apiToken"`
+	APIKey string `json:"apiKey"`
 
 	// URL points to Paperspace API. If empty, defaults to
 	// https://api.paperspace.com/
 	URL string `json:"url"`
+
+	// URL points to Paperspace API. If empty, defaults to false
+	Debug bool `json:"debug"`
 }
 
-func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptions, instanceTypes map[string]string) (*Manager, error) {
+func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovider.NodeGroupDiscoveryOptions, instanceTypes map[string]string) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
 		body, err := ioutil.ReadAll(configReader)
@@ -77,17 +89,16 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 		}
 	}
 
-	// todo process config
 	if cfg.APIKey == "" {
 		return nil, errors.New("access token is not provided")
-	}
-	if cfg.ClusterID == "" {
-		return nil, errors.New("cluster ID is not provided")
 	}
 
 	apiBackend := psgo.NewAPIBackend()
 	if cfg.URL != "" {
 		apiBackend.BaseURL = cfg.URL
+	}
+	if cfg.Debug {
+		apiBackend.Debug = cfg.Debug
 	}
 
 	client := psgo.NewClientWithBackend(apiBackend)
@@ -96,10 +107,30 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 	//specs, err := do.ParseASGAutoDiscoverySpecs()
 	//if err != nil {
 
+	// parse static options
+	var nodeGroups []*NodeGroup
+	for _, nodeGroupSpec := range nodeGroupSpecs {
+		specs := strings.Split(nodeGroupSpec, ":")
+		if len(specs) != 3 {
+			return nil, errors.New(fmt.Sprintf("Static ASG definition invalid: %s", specs))
+		}
+		min, _ := strconv.Atoi(specs[0])
+		max, _ := strconv.Atoi(specs[1])
+		id := specs[2]
+		nodeGroups = append(nodeGroups, &NodeGroup{
+			id:        id,
+			clusterID: cfg.ClusterID,
+			manager:   nil,
+			asg:       psgo.AutoscalingGroup{},
+			minSize:   min,
+			maxSize:   max,
+		})
+	}
+
 	m := &Manager{
 		client:     client,
 		clusterID:  cfg.ClusterID,
-		nodeGroups: make([]*NodeGroup, 0),
+		nodeGroups: nodeGroups,
 	}
 
 	return m, nil
@@ -109,12 +140,20 @@ func newManager(configReader io.Reader, do cloudprovider.NodeGroupDiscoveryOptio
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
 	ctx := context.Background()
-	req := psgo.AutoscalingGroupListParams{
+	params := psgo.AutoscalingGroupListParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
 		Filter:        nil,
 		IncludeNodes:  true,
 	}
-	autoscalingGroups, err := m.client.GetAutoscalingGroups(req)
+	if len(m.nodeGroups) > 0 {
+		var ids []string
+		for _, nodeGroup := range m.nodeGroups {
+			ids = append(ids, nodeGroup.id)
+		}
+		params.Filter = make(map[string]string, 1)
+		params.Filter["where"] = fmt.Sprintf(`id: { inq: ["%s"] }`, strings.Join(ids, `", "`))
+	}
+	autoscalingGroups, err := m.client.GetAutoscalingGroups(params)
 	if err != nil {
 		return err
 	}
@@ -127,7 +166,7 @@ func (m *Manager) Refresh() error {
 		groups = append(groups, &NodeGroup{
 			id:        asg.ID,
 			clusterID: m.clusterID,
-			client:    m.client,
+			manager:   m,
 			asg:       asg,
 			minSize:   asg.Min,
 			maxSize:   asg.Max,
@@ -140,4 +179,76 @@ func (m *Manager) Refresh() error {
 
 	m.nodeGroups = groups
 	return nil
+}
+
+type vmType struct {
+	Label string
+	CPU   int64
+	GPU   int64
+	RAM   int64
+}
+
+func (m *Manager) getMachineType(machineType string) vmType {
+	// TODO real solution
+	if machineType == "C5" {
+		return vmType{
+			Label: "C5",
+			CPU:   4,
+			GPU:   0,
+			RAM:   8589934592,
+		}
+	}
+	return vmType{}
+}
+
+func (m *Manager) buildGenericLabels(vmType vmType, nodeName string) map[string]string {
+	result := make(map[string]string)
+	// TODO: extract it somehow
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelInstanceType] = vmType.Label
+	result[apiv1.LabelHostname] = nodeName
+	return result
+}
+
+func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node, error) {
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-tmpl-%d", asg.ID, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+
+	vmType := m.getMachineType(asg.MachineType)
+
+	// TODO: get a real value.
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmType.CPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmType.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmType.RAM, resource.DecimalSI)
+
+	// TODO: use proper allocatable!!
+	node.Status.Allocatable = node.Status.Capacity
+
+	// NodeLabels
+	//node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
+	// GenericLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(vmType, nodeName))
+	node.Labels[poolNameLabel] = "metal-cpu"
+	node.Labels[poolTypeLabel] = "cpu"
+	if vmType.GPU > 0 {
+		node.Labels[poolNameLabel] = "metal-gpu"
+		node.Labels[poolTypeLabel] = "gpu"
+	}
+
+	//node.Spec.Taints = extractTaintsFromAsg(template.Tags)
+
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	return &node, nil
 }

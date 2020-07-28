@@ -188,7 +188,7 @@ func BuildPaperspace(
 	}
 
 	var instanceTypes map[string]string
-	manager, err := newManager(configFile, do, instanceTypes)
+	manager, err := newManager(configFile, opts.NodeGroups, do, instanceTypes)
 	if err != nil {
 		klog.Fatalf("Failed to create Paperspace manager: %v", err)
 	}
