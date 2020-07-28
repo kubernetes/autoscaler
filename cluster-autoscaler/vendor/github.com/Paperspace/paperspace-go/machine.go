@@ -17,14 +17,14 @@ type Machine struct {
 	ID                     string       `json:"id"`
 	Name                   string       `json:"name"`
 	OS                     string       `json:"os"`
-	RAM                    string       `json:"ram"`
+	RAM                    int64        `json:"ram,string"`
 	CPUs                   int          `json:"cpus"`
 	GPU                    string       `json:"gpu"`
 	State                  MachineState `json:"state"`
 	Region                 string       `json:"region"`
-	StorageTotal           int          `json:"storageTotal"`
-	StorageUsed            int          `json:"storageUsed"`
-	UsageRate              float64      `json:"usageRate"`
+	StorageTotal           int64        `json:"storageTotal,string"`
+	StorageUsed            int64        `json:"storageUsed,string"`
+	UsageRate              string       `json:"usageRate"`
 	ShutdownTimeoutInHours int          `json:"shutdownTimeoutInHours"`
 	ShutdownTimeoutForces  bool         `json:"shutdownTimeoutForces"`
 	AutoSnapshotFrequency  int          `json:"autoSnapshotFrequency"`
