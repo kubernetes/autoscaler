@@ -181,32 +181,12 @@ func (m *Manager) Refresh() error {
 	return nil
 }
 
-type vmType struct {
-	Label string
-	CPU   int64
-	GPU   int64
-	RAM   int64
-}
-
-func (m *Manager) getMachineType(machineType string) vmType {
-	// TODO real solution
-	if machineType == "C5" {
-		return vmType{
-			Label: "C5",
-			CPU:   4,
-			GPU:   0,
-			RAM:   8589934592,
-		}
-	}
-	return vmType{}
-}
-
-func (m *Manager) buildGenericLabels(vmType vmType, nodeName string) map[string]string {
+func (m *Manager) buildGenericLabels(machineType *MachineType, nodeName string) map[string]string {
 	result := make(map[string]string)
 	// TODO: extract it somehow
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
-	result[apiv1.LabelInstanceType] = vmType.Label
+	result[apiv1.LabelInstanceType] = machineType.Label
 	result[apiv1.LabelHostname] = nodeName
 	return result
 }
@@ -225,13 +205,16 @@ func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node,
 		Capacity: apiv1.ResourceList{},
 	}
 
-	vmType := m.getMachineType(asg.MachineType)
+	machineType, err := machineTypeForLabel(asg.MachineType)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: get a real value.
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmType.CPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmType.GPU, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmType.RAM, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(machineType.CPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(machineType.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(machineType.RAM, resource.DecimalSI)
 
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
@@ -239,10 +222,10 @@ func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node,
 	// NodeLabels
 	//node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(vmType, nodeName))
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(machineType, nodeName))
 	node.Labels[poolNameLabel] = "metal-cpu"
 	node.Labels[poolTypeLabel] = "cpu"
-	if vmType.GPU > 0 {
+	if machineType.GPU > 0 {
 		node.Labels[poolNameLabel] = "metal-gpu"
 		node.Labels[poolTypeLabel] = "gpu"
 	}

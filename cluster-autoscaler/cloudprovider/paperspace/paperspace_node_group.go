@@ -114,9 +114,8 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	ctx := context.Background()
 	for _, node := range nodes {
-		// todo handle this
-		nodeID, ok := node.Labels[nodeIDLabel]
-		if !ok {
+		nodeID := toNodeID(node.Spec.ProviderID)
+		if nodeID == "" {
 			// CA creates fake node objects to represent upcoming VMs that
 			// haven't registered as nodes yet. We cannot delete the node at
 			// this point.

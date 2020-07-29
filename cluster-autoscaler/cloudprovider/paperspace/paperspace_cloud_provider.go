@@ -86,12 +86,10 @@ func (ps *paperspaceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // occurred. Must be implemented.
 func (ps *paperspaceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
-	// todo replace with refs
 	nodeID := toNodeID(providerID)
 
 	klog.V(5).Infof("checking nodegroup for node ID: %q", nodeID)
 
-	// todo replace with map lookup
 	for _, group := range ps.manager.nodeGroups {
 		klog.V(5).Infof("iterating over node group %q", group.Id())
 		nodes, err := group.Nodes()
