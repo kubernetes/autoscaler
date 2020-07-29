@@ -68,7 +68,10 @@ type MachineTemplateSpec struct {
 }
 
 // MachineSetStatus is the internal autoscaler Schema for MachineSetStatus
-type MachineSetStatus struct{}
+type MachineSetStatus struct {
+	// Replicas is the most recently observed number of replicas.
+	Replicas int32 `json:"replicas"`
+}
 
 // MachineSetList is the internal autoscaler Schema for MachineSetList
 type MachineSetList struct {
