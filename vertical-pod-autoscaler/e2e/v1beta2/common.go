@@ -366,7 +366,7 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 // InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
 func InstallRawVPA(f *framework.Framework, obj interface{}) error {
 	vpaClientSet := getVpaClientSet(f)
-	err := vpaClientSet.AutoscalingV1().RESTClient().Post().
+	err := vpaClientSet.AutoscalingV1beta2().RESTClient().Post().
 		Namespace(f.Namespace.Name).
 		Resource("verticalpodautoscalers").
 		Body(obj).
@@ -385,7 +385,7 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 		Value: *newStatus,
 	}})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	_, err = getVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	_, err = getVpaClientSet(f).AutoscalingV1beta2().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
