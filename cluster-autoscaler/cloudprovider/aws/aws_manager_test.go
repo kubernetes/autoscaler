@@ -302,7 +302,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, map[string]string{}}, nil, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
@@ -541,7 +541,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, newLaunchConfigurationInstanceTypeCache()}, nil, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s, map[string]string{}}, nil, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
