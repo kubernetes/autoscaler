@@ -65,6 +65,7 @@ func SetupWebhookCert(namespaceName string) *certContext {
 	signedCert, err := utils.NewSignedCert(
 		&cert.Config{
 			CommonName: WebhookServiceName + "." + namespaceName + ".svc",
+			AltNames:   cert.AltNames{DNSNames: []string{WebhookServiceName + "." + namespaceName + ".svc"}},
 			Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		},
 		key, signingCert, signingKey,
