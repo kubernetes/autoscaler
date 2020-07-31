@@ -160,7 +160,7 @@ type ContainerResourcePolicy struct {
 
 	// Specifies whether this container should only ever scale up its resources
 	// +optional
-	PreventScaleDown bool `json:"PreventScaleDown,omitempty" protobuf:"bytes,7,opt,name=PreventScaleDown"`
+	PreventScaleDown bool `json:"preventScaleDown,omitempty" protobuf:"bytes,7,opt,name=preventScaleDown"`
 }
 
 const (
