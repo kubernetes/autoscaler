@@ -40,11 +40,6 @@ func NewProcessor() PriorityProcessor {
 type defaultPriorityProcessor struct {
 }
 
-type ContainerScaling struct {
-	outsideRecommendedRange bool
-	scaleUp bool
-}
-
 func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
 	recommendation *vpa_types.RecommendedPodResources) PodPriority {
 	outsideRecommendedRange := false

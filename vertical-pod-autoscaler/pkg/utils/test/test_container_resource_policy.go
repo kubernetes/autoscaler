@@ -21,7 +21,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
-// RecommendationBuilder helps building test instances of RecommendedPodResources.
+// ContainerResourcePolicyBuilder helps building test instances of ContainerResourcePolicy.
 type ContainerResourcePolicyBuilder interface {
 	WithContainer(containerName string) ContainerResourcePolicyBuilder
 	WithMinAllowed(cpu, memory string) ContainerResourcePolicyBuilder
@@ -32,7 +32,7 @@ type ContainerResourcePolicyBuilder interface {
 	Get() vpa_types.ContainerResourcePolicy
 }
 
-// Recommendation returns a new ContainerResourcePolicyBuilder.
+// ContainerResourcePolicy returns a new ContainerResourcePolicyBuilder.
 func ContainerResourcePolicy() ContainerResourcePolicyBuilder {
 	return &containerResourcePolicyBuilder{}
 }
