@@ -1,5 +1,5 @@
-cluster-autoscaler
-==================
+cluster-autoscaler-chart
+========================
 
 Scales Kubernetes worker nodes within autoscaling groups.
 
