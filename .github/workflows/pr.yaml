@@ -1,0 +1,42 @@
+jobs:
+  changes:
+    outputs:
+      charts: ${{ steps.filter.outputs.charts }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: filter
+        uses: dorny/paths-filter@v2.2.0
+        with:
+          filters: |
+            charts:
+              - 'charts/cluster-autoscaler/Chart.yaml'
+              - 'charts/cluster-autoscaler/*'
+          token: ${{ secrets.GITHUB_TOKEN }}
+  helm-lint-test:
+    if: ${{ needs.changes.outputs.charts == 'true' }}
+    name: Helm chart
+    needs:
+      - changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+      - id: lint
+        name: Run chart-testing (lint)
+        uses: helm/chart-testing-action@v1.0.0-rc.2
+        with:
+          command: lint
+      # Only build a kind cluster if there are chart changes to test.
+      - if: steps.lint.outputs.changed == 'true'
+        name: Create kind cluster
+        uses: helm/kind-action@v1.0.0-alpha.3
+      - name: Run chart-testing (install)
+        uses: helm/chart-testing-action@v1.0.0-rc.2
+        with:
+          command: install
+name: Lint and Test Charts
+on: pull_request
