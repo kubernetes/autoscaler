@@ -17,7 +17,9 @@
 # Generates the a CA cert, a server key, and a server cert signed by the CA.
 # reference:
 # https://github.com/kubernetes/kubernetes/blob/master/plugin/pkg/admission/webhook/gencerts.sh
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
 
 CN_BASE="vpa_webhook"
 TMP_DIR="/tmp/vpa-certs"
@@ -38,7 +40,13 @@ EOF
 
 # Create a certificate authority
 openssl genrsa -out ${TMP_DIR}/caKey.pem 2048
+set +o errexit
 openssl req -x509 -new -nodes -key ${TMP_DIR}/caKey.pem -days 100000 -out ${TMP_DIR}/caCert.pem -subj "/CN=${CN_BASE}_ca" -addext "subjectAltName = DNS:${CN_BASE}_ca"
+if [[ $? -ne 0 ]]; then
+  echo "ERROR: Failed to create CA certificate for self-signing. If the error is \"unknown option -addext\", update your openssl version or deploy VPA from the vpa-release-0.8 branch."
+  exit 1
+fi
+set -o errexit
 
 # Create a server certiticate
 openssl genrsa -out ${TMP_DIR}/serverKey.pem 2048
