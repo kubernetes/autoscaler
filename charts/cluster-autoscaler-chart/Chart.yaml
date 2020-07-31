@@ -13,7 +13,7 @@ maintainers:
     name: gjtempleton
   - email: scott.crooks@gmail.com
     name: sc250024
-name: cluster-autoscaler
+name: cluster-autoscaler-chart
 sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
