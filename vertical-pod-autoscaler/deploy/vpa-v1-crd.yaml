@@ -51,6 +51,9 @@ spec:
                     properties:
                       containerName:
                         type: string
+                      controlledValues:
+                        type: string
+                        enum: ["RequestsAndLimits", "RequestsOnly"]
                       mode:
                         type: string
                         enum: ["Auto", "Off"]
