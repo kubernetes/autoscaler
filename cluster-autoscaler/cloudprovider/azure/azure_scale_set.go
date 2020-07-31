@@ -584,6 +584,12 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	// Labels from the Scale Set's Tags
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
+
+	// Taints from the Scale Set's Tags
+	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
 }
