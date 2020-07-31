@@ -1,0 +1,21 @@
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Fetch history
+        run: git fetch --prune --unshallow
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.0.0-rc.2
+name: Release Charts
+on:
+  push:
+    branches:
+      - master
