@@ -306,7 +306,7 @@ func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainer
 }
 
 // ContainerStateAggregatorProxy is a wrapper for ContainerStateAggregator
-// that creates CnontainerStateAgregator for container if it is no longer
+// that creates ContainerStateAgregator for container if it is no longer
 // present in the cluster state.
 type ContainerStateAggregatorProxy struct {
 	containerID ContainerID

@@ -59,7 +59,7 @@ const (
 	// epsilon is the minimal weight kept in histograms, it should be small enough that old samples
 	// (just inside MemoryAggregationWindowLength) added with minSampleWeight are still kept
 	epsilon = 0.001 * minSampleWeight
-	// DefaultMemoryAggregationIntervalCount is the default value for MemoryAggregationIntevalCount.
+	// DefaultMemoryAggregationIntervalCount is the default value for MemoryAggregationIntervalCount.
 	DefaultMemoryAggregationIntervalCount = 8
 	// DefaultMemoryAggregationInterval is the default value for MemoryAggregationInterval.
 	// which the peak memory usage is computed.
