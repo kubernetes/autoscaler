@@ -98,6 +98,13 @@ and run the following command inside the `vertical-pod-autoscaler` directory:
 Note: the script currently reads environment variables: `$REGISTRY` and `$TAG`.
 Make sure you leave them unset unless you want to use a non-default version of VPA.
 
+
+Note: If you are seeing following error during this step:
+```
+unknown option -addext
+```
+please upgrade openssl to a version that supports -addext option or use ./hack/vpa-up.sh on the [0.8 release branch](https://github.com/kubernetes/autoscaler/tree/vpa-release-0.8).
+
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
 [architecture](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview))
