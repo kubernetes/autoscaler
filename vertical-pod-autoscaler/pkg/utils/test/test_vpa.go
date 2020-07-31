@@ -147,7 +147,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			Recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: b.recommendedContainerResources,
 			},
-			Conditions:     b.conditions,
+			Conditions: b.conditions,
 		},
 	}
 }

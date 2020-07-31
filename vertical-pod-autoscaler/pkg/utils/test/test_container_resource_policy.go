@@ -42,7 +42,7 @@ type containerResourcePolicyBuilder struct {
 	minAllowed       core.ResourceList
 	maxAllowed       core.ResourceList
 	ControlledValues *vpa_types.ContainerControlledValues
-	PreventScaleDown      bool
+	PreventScaleDown bool
 }
 
 func (b *containerResourcePolicyBuilder) WithContainer(containerName string) ContainerResourcePolicyBuilder {
@@ -84,6 +84,6 @@ func (b *containerResourcePolicyBuilder) Get() vpa_types.ContainerResourcePolicy
 		MinAllowed:       b.minAllowed,
 		MaxAllowed:       b.maxAllowed,
 		ControlledValues: b.ControlledValues,
-		PreventScaleDown:      b.PreventScaleDown,
+		PreventScaleDown: b.PreventScaleDown,
 	}
 }

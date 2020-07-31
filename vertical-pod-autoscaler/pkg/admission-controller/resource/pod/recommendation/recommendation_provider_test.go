@@ -320,28 +320,28 @@ func TestUpdateResourceRequests(t *testing.T) {
 			},
 		},
 		{
-			name:             "prevent scale down container scales up",
-			pod:              initialized,
-			vpa:              vpaHighTargetAndPreventScaleDown,
-			expectedAction:   true,
-			expectedCPU:      resource.MustParse("3"),
-			expectedMem:      resource.MustParse("500Mi"),
+			name:           "prevent scale down container scales up",
+			pod:            initialized,
+			vpa:            vpaHighTargetAndPreventScaleDown,
+			expectedAction: true,
+			expectedCPU:    resource.MustParse("3"),
+			expectedMem:    resource.MustParse("500Mi"),
 		},
 		{
-			name:             "prevent scale down container does not scale down",
-			pod:              initialized,
-			vpa:              vpaLowTargetAndPreventScaleDown,
-			expectedAction:   true,
-			expectedCPU:      resource.MustParse("2"),
-			expectedMem:      resource.MustParse("100Mi"),
+			name:           "prevent scale down container does not scale down",
+			pod:            initialized,
+			vpa:            vpaLowTargetAndPreventScaleDown,
+			expectedAction: true,
+			expectedCPU:    resource.MustParse("2"),
+			expectedMem:    resource.MustParse("100Mi"),
 		},
 		{
-			name:             "prevent scale down container one resource scales up",
-			pod:              initialized,
-			vpa:              vpaMixedTargetAndPreventScaleDown,
-			expectedAction:   true,
-			expectedCPU:      resource.MustParse("2"),
-			expectedMem:      resource.MustParse("200Mi"),
+			name:           "prevent scale down container one resource scales up",
+			pod:            initialized,
+			vpa:            vpaMixedTargetAndPreventScaleDown,
+			expectedAction: true,
+			expectedCPU:    resource.MustParse("2"),
+			expectedMem:    resource.MustParse("200Mi"),
 		},
 	}
 
@@ -410,4 +410,3 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	}
 }
-

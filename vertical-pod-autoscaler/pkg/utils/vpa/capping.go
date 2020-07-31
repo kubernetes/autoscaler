@@ -40,7 +40,7 @@ var (
 	cappedToLimit                  cappingAction = "capped to container limit"
 	cappedProportionallyToMaxLimit cappingAction = "capped to fit Max in container LimitRange"
 	cappedProportionallyToMinLimit cappingAction = "capped to fit Min in container LimitRange"
-	cappedToPreventScaleDown            cappingAction = "capped to prevent scale down of PreventScaleDown container"
+	cappedToPreventScaleDown       cappingAction = "capped to prevent scale down of PreventScaleDown container"
 )
 
 func toCappingAnnotation(resourceName apiv1.ResourceName, action cappingAction) string {

@@ -75,7 +75,7 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 				// If container is PreventScaleDown, then flag as 'outside recommended range' only if the request is
 				// below the lower bound. Requests above the upper bound for these containers is fine.
 				if crp.PreventScaleDown {
-					if (hasLowerBound && request.Cmp(lowerBound) < 0) {
+					if hasLowerBound && request.Cmp(lowerBound) < 0 {
 						outsideRecommendedRange = true
 					}
 				} else if (hasLowerBound && request.Cmp(lowerBound) < 0) ||

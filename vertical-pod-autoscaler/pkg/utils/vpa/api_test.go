@@ -59,8 +59,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	observedVpaBuilder := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").
 		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get())
 
-
-		testCases := []struct {
+	testCases := []struct {
 		caseName       string
 		updatedVpa     *vpa_types.VerticalPodAutoscaler
 		observedVpa    *vpa_types.VerticalPodAutoscaler
@@ -126,7 +125,6 @@ func TestPodMatchesVPA(t *testing.T) {
 	vpaBuilder := test.VerticalPodAutoscaler().
 		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("1", "100M").WithMaxAllowed("3", "1G").Get()).
 		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200M").GetContainerResources())
-
 
 	vpa := vpaBuilder.Get()
 	otherNamespaceVPA := vpaBuilder.WithNamespace("other").Get()

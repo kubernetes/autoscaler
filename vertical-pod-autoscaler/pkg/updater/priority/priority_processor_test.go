@@ -236,7 +236,7 @@ func TestGetUpdatePriority(t *testing.T) {
 				Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: true,
-				ResourceDiff:            (10.0 - 4) / 4.0,  // |(total request - total recommended)| / total request
+				ResourceDiff:            (10.0 - 4) / 4.0, // |(total request - total recommended)| / total request
 				ScaleUp:                 true,
 			},
 		}, {
@@ -248,12 +248,12 @@ func TestGetUpdatePriority(t *testing.T) {
 				Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            (16.0 - 10.0) / 16.0,  // (total request - total recommended) / total request
+				ResourceDiff:            (16.0 - 10.0) / 16.0, // (total request - total recommended) / total request
 				ScaleUp:                 false,
 			},
 		}, {
 			name: "one PreventScaleDown container above upper bound and one normal container above upper bound",
-			pod:  test.Pod().WithName("POD1").
+			pod: test.Pod().WithName("POD1").
 				AddContainer(test.BuildTestContainer(containerName, "16", "")).
 				AddContainer(test.BuildTestContainer("test-container-2", "18", "")).Get(),
 			vpa: test.VerticalPodAutoscaler().
@@ -264,12 +264,12 @@ func TestGetUpdatePriority(t *testing.T) {
 				Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: true,
-				ResourceDiff:            (34.0 - 20.0) / 34.0,  // (total request - total recommended) / total request
+				ResourceDiff:            (34.0 - 20.0) / 34.0, // (total request - total recommended) / total request
 				ScaleUp:                 false,
 			},
 		}, {
 			name: "one PreventScaleDown container above upper bound and one normal container below lower bound",
-			pod:  test.Pod().WithName("POD1").
+			pod: test.Pod().WithName("POD1").
 				AddContainer(test.BuildTestContainer(containerName, "16", "")).
 				AddContainer(test.BuildTestContainer("test-container-2", "4", "")).Get(),
 			vpa: test.VerticalPodAutoscaler().
@@ -280,7 +280,7 @@ func TestGetUpdatePriority(t *testing.T) {
 				Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: true,
-				ResourceDiff:            (20.0 - 20.0) / 20.0,  // (total request - total recommended) / total request
+				ResourceDiff:            (20.0 - 20.0) / 20.0, // (total request - total recommended) / total request
 				ScaleUp:                 true,
 			},
 		},
