@@ -90,9 +90,6 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	}
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
-
-	updatePriority := calc.priorityProcessor.GetUpdatePriority(pod, calc.vpa, processedRecommendation)
-
 	quickOOM := false
 	for i := range pod.Status.ContainerStatuses {
 		cs := &pod.Status.ContainerStatuses[i]
@@ -119,9 +116,11 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		}
 	}
 
+	updatePriority := calc.priorityProcessor.GetUpdatePriority(pod, calc.vpa, processedRecommendation)
+
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
-	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
+	// - the pod lives for at least 12h and the resource diff is >= MinChangePriority.
 	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold.
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
@@ -144,6 +143,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		klog.V(2).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
+
 	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,

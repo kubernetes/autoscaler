@@ -39,7 +39,8 @@ func parseLabelSelector(selector string) labels.Selector {
 func TestGetMatchingVpa(t *testing.T) {
 	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).
 		AddContainer(test.Container().WithName("i-am-container").Get())
-	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
+	vpaBuilder := test.VerticalPodAutoscaler().
+		AppendRecommendation(test.Recommendation().WithContainer("i-am-container").GetContainerResources())
 	testCases := []struct {
 		name            string
 		pod             *core.Pod

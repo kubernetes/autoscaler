@@ -40,7 +40,12 @@ func NewProcessor() PriorityProcessor {
 type defaultPriorityProcessor struct {
 }
 
-func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.VerticalPodAutoscaler,
+type ContainerScaling struct {
+	outsideRecommendedRange bool
+	scaleUp bool
+}
+
+func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
 	recommendation *vpa_types.RecommendedPodResources) PodPriority {
 	outsideRecommendedRange := false
 	scaleUp := false
@@ -52,6 +57,7 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
 	for _, podContainer := range pod.Spec.Containers {
+		crp := vpa_api_util.GetContainerResourcePolicy(podContainer.Name, vpa.Spec.ResourcePolicy)
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s priority calculations",
 				annotations.VpaObservedContainersLabel, pod.GetAnnotations()[annotations.VpaObservedContainersLabel], podContainer.Name)
@@ -70,7 +76,14 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
-				if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
+
+				// If container is PreventScaleDown, then flag as 'outside recommended range' only if the request is
+				// below the lower bound. Requests above the upper bound for these containers is fine.
+				if crp.PreventScaleDown {
+					if (hasLowerBound && request.Cmp(lowerBound) < 0) {
+						outsideRecommendedRange = true
+					}
+				} else if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
 					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
 				}

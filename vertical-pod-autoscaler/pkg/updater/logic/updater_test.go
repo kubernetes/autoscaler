@@ -160,10 +160,8 @@ func testRunOnceBase(
 	podLister.On("List").Return(pods, nil)
 
 	vpaObj := test.VerticalPodAutoscaler().
-		WithContainer(containerName).
-		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("1", "100M").WithMaxAllowed("3", "1G").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200M").GetContainerResources()).
 		Get()
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()

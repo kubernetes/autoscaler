@@ -40,6 +40,7 @@ var (
 	cappedToLimit                  cappingAction = "capped to container limit"
 	cappedProportionallyToMaxLimit cappingAction = "capped to fit Max in container LimitRange"
 	cappedProportionallyToMinLimit cappingAction = "capped to fit Min in container LimitRange"
+	cappedToPreventScaleDown            cappingAction = "capped to prevent scale down of PreventScaleDown container"
 )
 
 func toCappingAnnotation(resourceName apiv1.ResourceName, action cappingAction) string {
@@ -123,12 +124,17 @@ func getCappedRecommendationForContainer(
 			cappingAnnotations = append(cappingAnnotations, limitAnnotations...)
 			cappingAnnotations = append(cappingAnnotations, annotations...)
 		}
+
 		// TODO: If limits and policy are conflicting, set some condition on the VPA.
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
 			annotations = capRecommendationToContainerLimit(recommendation, container)
 			if genAnnotations {
 				cappingAnnotations = append(cappingAnnotations, annotations...)
 			}
+		}
+
+		if containerPolicy != nil {
+			applyContainerResourcePolicy(recommendation, container, containerPolicy)
 		}
 	}
 
@@ -275,6 +281,20 @@ func getContainer(containerName string, pod *apiv1.Pod) *apiv1.Container {
 		}
 	}
 	return nil
+}
+
+// applyContainerResourcePolicy updates recommendation to be request if PreventScaleDown has been defined and the recommendation would scale the container down
+func applyContainerResourcePolicy(recommendation apiv1.ResourceList, container apiv1.Container, containerResourcePolicy *vpa_types.ContainerResourcePolicy) []string {
+	annotations := make([]string, 0)
+
+	for resourceName, recommended := range recommendation {
+		containerRequest := container.Resources.Requests[resourceName]
+		if containerResourcePolicy.PreventScaleDown && recommended.Cmp(containerRequest) < 0 {
+			recommendation[resourceName] = container.Resources.Requests[resourceName]
+			annotations = append(annotations, toCappingAnnotation(resourceName, cappedToPreventScaleDown))
+		}
+	}
+	return annotations
 }
 
 // applyContainerLimitRange updates recommendation if recommended resources are outside of limits defined in VPA resources policy

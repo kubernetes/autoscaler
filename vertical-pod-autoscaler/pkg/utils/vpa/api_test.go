@@ -51,13 +51,16 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 func TestUpdateVpaIfNeeded(t *testing.T) {
-	updatedVpa := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName).
+	updatedVpa := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
 		AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get()
 	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "200").Get()
 	updatedVpa.Status.Recommendation = recommendation
-	observedVpaBuilder := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName)
+	observedVpaBuilder := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get())
 
-	testCases := []struct {
+
+		testCases := []struct {
 		caseName       string
 		updatedVpa     *vpa_types.VerticalPodAutoscaler
 		observedVpa    *vpa_types.VerticalPodAutoscaler
@@ -66,25 +69,29 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 		{
 			caseName:   "Doesn't update if no changes.",
 			updatedVpa: updatedVpa,
-			observedVpa: observedVpaBuilder.WithTarget("5", "200").
+			observedVpa: observedVpaBuilder.
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "200").GetContainerResources()).
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: false,
 		}, {
 			caseName:   "Updates on recommendation change.",
 			updatedVpa: updatedVpa,
-			observedVpa: observedVpaBuilder.WithTarget("10", "200").
+			observedVpa: observedVpaBuilder.
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("10", "200").GetContainerResources()).
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition change.",
 			updatedVpa: updatedVpa,
-			observedVpa: observedVpaBuilder.WithTarget("5", "200").
+			observedVpa: observedVpaBuilder.
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "200").GetContainerResources()).
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionFalse, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition added.",
 			updatedVpa: updatedVpa,
-			observedVpa: observedVpaBuilder.WithTarget("5", "200").
+			observedVpa: observedVpaBuilder.
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "200").GetContainerResources()).
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).
 				AppendCondition(vpa_types.LowConfidence, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
@@ -117,10 +124,9 @@ func TestPodMatchesVPA(t *testing.T) {
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().
-		WithContainer(containerName).
-		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G")
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("1", "100M").WithMaxAllowed("3", "1G").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200M").GetContainerResources())
+
 
 	vpa := vpaBuilder.Get()
 	otherNamespaceVPA := vpaBuilder.WithNamespace("other").Get()
@@ -141,10 +147,9 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().
-		WithContainer(containerName).
-		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G")
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200M").GetContainerResources()).
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("1", "100M").WithMaxAllowed("3", "1G").Get())
+
 	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
 	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()

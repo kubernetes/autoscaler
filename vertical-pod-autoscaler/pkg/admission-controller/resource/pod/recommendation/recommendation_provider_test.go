@@ -55,20 +55,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 	containerName := "container1"
 	vpaName := "vpa1"
 	labels := map[string]string{"app": "testingApp"}
-	vpaBuilder := test.VerticalPodAutoscaler().
-		WithName(vpaName).
-		WithContainer(containerName).
-		WithTarget("2", "200Mi").
-		WithMinAllowed("1", "100Mi").
-		WithMaxAllowed("3", "1Gi")
-	vpa := vpaBuilder.Get()
+	vpaBuilder := test.VerticalPodAutoscaler().WithName(vpaName)
+
+	vpa := vpaBuilder.
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200Mi").GetContainerResources()).
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("1", "100Mi").WithMaxAllowed("3", "1Gi").Get()).Get()
 
 	uninitialized := test.Pod().WithName("test_uninitialized").
 		AddContainer(test.Container().WithName(containerName).Get()).
 		WithLabels(labels).Get()
 
 	initializedContainer := test.Container().WithName(containerName).
-		WithCPURequest(resource.MustParse("1")).WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
+		WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
@@ -95,15 +93,48 @@ func TestUpdateResourceRequests(t *testing.T) {
 	limitsNoRequestsPod := test.Pod().WithName("test_initialized").
 		AddContainer(limitsNoRequestsContainer).WithLabels(labels).Get()
 
-	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
-	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
-	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
-	vpaWithExabyteRecommendation := vpaBuilder.WithTarget("1Ei", "1Ei").WithMaxAllowed("1Ei", "1Ei").Get()
+	targetBelowMinVPA := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("3", "150Mi").GetContainerResources()).Get()
 
-	resourceRequestsAndLimitsVPA := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsAndLimits).Get()
-	resourceRequestsOnlyVPA := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).Get()
-	resourceRequestsOnlyVPAHighTarget := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).
-		WithTarget("3", "500Mi").WithMaxAllowed("5", "1Gi").Get()
+	targetAboveMaxVPA := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("7", "2Gi").GetContainerResources()).Get()
+
+	vpaWithHighMemory := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMaxAllowed("3", "3Gi").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "1000Mi").GetContainerResources()).Get()
+
+	vpaWithExabyteRecommendation := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithMaxAllowed("1Ei", "1Ei").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("1Ei", "1Ei").GetContainerResources()).Get()
+
+	resourceRequestsAndLimitsVPA := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsAndLimits).WithMinAllowed("1", "100Mi").WithMaxAllowed("3", "1Gi").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200Mi").GetContainerResources()).Get()
+
+	resourceRequestsOnlyVPA := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("2", "200Mi").GetContainerResources()).Get()
+
+	resourceRequestsOnlyVPAHighTarget := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).WithMaxAllowed("5", "1Gi").Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("3", "500Mi").GetContainerResources()).Get()
+
+	// CPU and memory targets are higher than requests. We expect container resources to scale up.
+	vpaHighTargetAndPreventScaleDown := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).WithPreventScaleDown(true).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("3", "500Mi").GetContainerResources()).Get()
+
+	// CPU and memory targets are lower than requests.  We expect container resources to remain the same.
+	vpaLowTargetAndPreventScaleDown := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).WithPreventScaleDown(true).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("1", "10Mi").GetContainerResources()).Get()
+
+	// CPU target is lower and memory target is higher than the current requests. We expect CPU to stay the same, and memory to scale up.
+	vpaMixedTargetAndPreventScaleDown := vpaBuilder.
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).WithPreventScaleDown(true).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("10m", "200Mi").GetContainerResources()).Get()
 
 	vpaWithEmptyRecommendation := vpaBuilder.Get()
 	vpaWithEmptyRecommendation.Status.Recommendation = &vpa_types.RecommendedPodResources{}
@@ -288,6 +319,30 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:             "PreventScaleDown container scales up",
+			pod:              initialized,
+			vpa:              vpaHighTargetAndPreventScaleDown,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("3"),
+			expectedMem:      resource.MustParse("500Mi"),
+		},
+		{
+			name:             "PreventScaleDown container does not scale down",
+			pod:              initialized,
+			vpa:              vpaLowTargetAndPreventScaleDown,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("100Mi"),
+		},
+		{
+			name:             "PreventScaleDown container one resource scales up",
+			pod:              initialized,
+			vpa:              vpaMixedTargetAndPreventScaleDown,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -355,3 +410,4 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	}
 }
+

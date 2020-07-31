@@ -157,6 +157,10 @@ type ContainerResourcePolicy struct {
 	// The default is "RequestsAndLimits".
 	// +optional
 	ControlledValues *ContainerControlledValues `json:"controlledValues,omitempty" protobuf:"bytes,6,rep,name=controlledValues"`
+
+	// Specifies whether this container should only ever scale up its resources
+	// +optional
+	PreventScaleDown bool `json:"PreventScaleDown,omitempty" protobuf:"bytes,7,opt,name=PreventScaleDown"`
 }
 
 const (

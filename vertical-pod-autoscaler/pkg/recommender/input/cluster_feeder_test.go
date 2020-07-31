@@ -200,7 +200,9 @@ func TestLoadPods(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			vpa := test.VerticalPodAutoscaler().WithName("testVpa").WithContainer("container").WithNamespace("testNamespace").WithTargetRef(tc.targetRef).Get()
+			vpa := test.VerticalPodAutoscaler().WithName("testVpa").WithNamespace("testNamespace").WithTargetRef(tc.targetRef).
+				AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer("container").Get()).Get()
+
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
 

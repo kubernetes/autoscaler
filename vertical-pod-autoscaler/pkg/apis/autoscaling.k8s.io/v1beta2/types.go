@@ -147,6 +147,9 @@ type ContainerResourcePolicy struct {
 	// for the container. The default is no maximum.
 	// +optional
 	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+	// Specifies whether this container should only ever scale up its resources
+	// +optional
+	PreventScaleDown bool `json:"PreventScaleDown,omitempty" protobuf:"bytes,5,opt,name=PreventScaleDown"`
 }
 
 const (

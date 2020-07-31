@@ -102,7 +102,7 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 	return GetAddAnnotationPatch(ResourceUpdatesAnnotation, vpaUpdates)
 }
 
-func TestClalculatePatches_ResourceUpdates(t *testing.T) {
+func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	tests := []struct {
 		name                 string
 		pod                  *core.Pod
@@ -253,7 +253,10 @@ func TestClalculatePatches_ResourceUpdates(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp)
-			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
+			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().
+				AppendRecommendation(test.Recommendation().WithContainer("test").GetContainerResources()).WithName("name").
+				AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer("test").Get()).
+				Get())
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {
@@ -295,7 +298,9 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
 	c := NewResourceUpdatesCalculator(&frp)
-	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
+	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").
+		AppendRecommendation(test.Recommendation().WithContainer("test").GetContainerResources()).
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer("test").Get()).Get())
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
 	if assert.Len(t, patches, 3, "unexpected number of patches") {

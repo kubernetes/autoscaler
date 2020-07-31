@@ -58,7 +58,9 @@ func (c *fakePatchCalculator) CalculatePatches(_ *apiv1.Pod, _ *vpa_types.Vertic
 }
 
 func TestGetPatches(t *testing.T) {
-	testVpa := test.VerticalPodAutoscaler().WithName("name").WithContainer("testy-container").Get()
+	testVpa := test.VerticalPodAutoscaler().WithName("name").
+		AppendRecommendation(test.Recommendation().WithContainer("testy-container").GetContainerResources()).
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer("testy-container").Get()).Get()
 	testPatchRecord := resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  "some/path",

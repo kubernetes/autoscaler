@@ -28,59 +28,46 @@ import (
 // VerticalPodAutoscalerBuilder helps building test instances of VerticalPodAutoscaler.
 type VerticalPodAutoscalerBuilder interface {
 	WithName(vpaName string) VerticalPodAutoscalerBuilder
-	WithContainer(containerName string) VerticalPodAutoscalerBuilder
 	WithNamespace(namespace string) VerticalPodAutoscalerBuilder
 	WithUpdateMode(updateMode vpa_types.UpdateMode) VerticalPodAutoscalerBuilder
 	WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder
-	WithMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
-	WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
-	WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
-	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
-	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
-	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
+
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
+
+	AppendContainerResourcePolicy(vpa_types.ContainerResourcePolicy) VerticalPodAutoscalerBuilder
 	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
+
 	Get() *vpa_types.VerticalPodAutoscaler
 }
 
 // VerticalPodAutoscaler returns a new VerticalPodAutoscalerBuilder.
 func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 	return &verticalPodAutoscalerBuilder{
-		recommendation:          Recommendation(),
-		appendedRecommendations: []vpa_types.RecommendedContainerResources{},
-		namespace:               "default",
-		conditions:              []vpa_types.VerticalPodAutoscalerCondition{},
+		namespace:                     "default",
+		conditions:                    []vpa_types.VerticalPodAutoscalerCondition{},
+		containerResourcePolicies:     []vpa_types.ContainerResourcePolicy{},
+		recommendedContainerResources: []vpa_types.RecommendedContainerResources{},
 	}
 }
 
 type verticalPodAutoscalerBuilder struct {
-	vpaName                 string
-	containerName           string
-	namespace               string
-	updatePolicy            *vpa_types.PodUpdatePolicy
-	creationTimestamp       time.Time
-	minAllowed              core.ResourceList
-	maxAllowed              core.ResourceList
-	ControlledValues        *vpa_types.ContainerControlledValues
-	recommendation          RecommendationBuilder
-	conditions              []vpa_types.VerticalPodAutoscalerCondition
-	annotations             map[string]string
-	targetRef               *autoscaling.CrossVersionObjectReference
-	appendedRecommendations []vpa_types.RecommendedContainerResources
+	vpaName                       string
+	namespace                     string
+	updatePolicy                  *vpa_types.PodUpdatePolicy
+	creationTimestamp             time.Time
+	annotations                   map[string]string
+	targetRef                     *autoscaling.CrossVersionObjectReference
+	conditions                    []vpa_types.VerticalPodAutoscalerCondition
+	containerResourcePolicies     []vpa_types.ContainerResourcePolicy
+	recommendedContainerResources []vpa_types.RecommendedContainerResources
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.vpaName = vpaName
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithContainer(containerName string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.containerName = containerName
 	return &c
 }
 
@@ -102,42 +89,6 @@ func (b *verticalPodAutoscalerBuilder) WithUpdateMode(updateMode vpa_types.Updat
 func (b *verticalPodAutoscalerBuilder) WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.creationTimestamp = timestamp
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.minAllowed = Resources(cpu, memory)
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.maxAllowed = Resources(cpu, memory)
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithControlledValues(mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.ControlledValues = &mode
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.recommendation = c.recommendation.WithTarget(cpu, memory)
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.recommendation = c.recommendation.WithLowerBound(cpu, memory)
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder {
-	c := *b
-	c.recommendation = c.recommendation.WithUpperBound(cpu, memory)
 	return &c
 }
 
@@ -165,27 +116,20 @@ func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.V
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) AppendContainerResourcePolicy(containerResourcePolicy vpa_types.ContainerResourcePolicy) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.containerResourcePolicies = append(c.containerResourcePolicies, containerResourcePolicy)
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.appendedRecommendations = append(c.appendedRecommendations, recommendation)
+	c.recommendedContainerResources = append(c.recommendedContainerResources, recommendation)
 	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
-	if b.containerName == "" {
-		panic("Must call WithContainer() before Get()")
-	}
-	resourcePolicy := vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		ContainerName:    b.containerName,
-		MinAllowed:       b.minAllowed,
-		MaxAllowed:       b.maxAllowed,
-		ControlledValues: b.ControlledValues,
-	}}}
-
-	recommendation := b.recommendation.WithContainer(b.containerName).Get()
-	for _, rec := range b.appendedRecommendations {
-		recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, rec)
-	}
+	resourcePolicy := vpa_types.PodResourcePolicy{ContainerPolicies: b.containerResourcePolicies}
 
 	return &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: meta.ObjectMeta{
@@ -200,7 +144,9 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			TargetRef:      b.targetRef,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
-			Recommendation: recommendation,
+			Recommendation: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: b.recommendedContainerResources,
+			},
 			Conditions:     b.conditions,
 		},
 	}

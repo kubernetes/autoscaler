@@ -42,7 +42,10 @@ func TestSortPriority(t *testing.T) {
 	pod3 := test.Pod().WithName("POD3").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get()
 	pod4 := test.Pod().WithName("POD4").AddContainer(test.BuildTestContainer(containerName, "3", "")).Get()
 
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("10", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ResourceDiff: 4.0},
@@ -67,7 +70,10 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.BuildTestContainer(containerName, "8", "")).Get()
 	pod3 := test.Pod().WithName("POD3").AddContainer(test.BuildTestContainer(containerName, "10", "")).Get()
 
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("5", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
@@ -91,7 +97,10 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 
 func TestUpdateNotRequired(t *testing.T) {
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("4", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("4", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{"POD1": {
 		ResourceDiff: 0.0,
@@ -112,7 +121,10 @@ func TestUseProcessor(t *testing.T) {
 	recommendationProcessor := &test.RecommendationProcessorMock{}
 	recommendationProcessor.On("Apply").Return(processedRecommendation, nil)
 
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("5", "5M").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "5M").GetContainerResources()).
+		Get()
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
@@ -140,10 +152,10 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	}
 
 	// Both pods are within the recommended range.
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.25},
@@ -174,10 +186,10 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	}
 
 	// Pods 1 and 2 are within the recommended range.
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.25},
@@ -216,10 +228,10 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 	}
 
 	// Pod is within the recommended range.
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
@@ -252,10 +264,10 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 	}
 
 	// Pod is within the recommended range.
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-		WithTarget("4", "8Gi").
-		WithLowerBound("2", "5Gi").
-		WithUpperBound("5", "10Gi").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("4", "8Gi").WithLowerBound("2", "5Gi").WithUpperBound("5", "10Gi").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ScaleUp: true, ResourceDiff: 0.0},
@@ -288,10 +300,10 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	}
 
 	// Pod is within the recommended range.
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ScaleUp: true, ResourceDiff: 0.0},
@@ -350,10 +362,10 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 			}
 
 			// Pod is within the recommended range.
-			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-				WithTarget("5", "").
-				WithLowerBound("1", "").
-				WithUpperBound("6", "").Get()
+			vpa := test.VerticalPodAutoscaler().
+				AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+				Get()
 
 			priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 				"POD1": {ScaleUp: true, ResourceDiff: 0.25}})
@@ -435,10 +447,10 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 			}
 
 			// Pod is within the recommended range.
-			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
-				WithTarget("5", "").
-				WithLowerBound("1", "").
-				WithUpperBound("6", "").Get()
+			vpa := test.VerticalPodAutoscaler().
+				AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+				AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("5", "").WithLowerBound("1", "").WithUpperBound("6", "").GetContainerResources()).
+				Get()
 
 			vpa.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
@@ -480,7 +492,10 @@ func TestAdmission(t *testing.T) {
 	pod3 := test.Pod().WithName("POD3").AddContainer(test.BuildTestContainer(containerName, "1", "")).Get()
 	pod4 := test.Pod().WithName("POD4").AddContainer(test.BuildTestContainer(containerName, "3", "")).Get()
 
-	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get()
+	vpa := test.VerticalPodAutoscaler().
+		AppendContainerResourcePolicy(test.ContainerResourcePolicy().WithContainer(containerName).Get()).
+		AppendRecommendation(test.Recommendation().WithContainer(containerName).WithTarget("10", "").GetContainerResources()).
+		Get()
 
 	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
 		"POD1": {ScaleUp: true, ResourceDiff: 4.0},
