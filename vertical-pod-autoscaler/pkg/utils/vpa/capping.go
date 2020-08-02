@@ -201,10 +201,8 @@ func applyVPAPolicyForContainer(containerName string,
 			recommendation[resourceName] = cappedToMin
 			cappedToMax, _ := maybeCapToPolicyMax(cappedToMin, resourceName, containerPolicy)
 			recommendation[resourceName] = cappedToMax
-
-			if containerPolicy.PreventScaleDown && recommended.Cmp(oldRecommendation[resourceName]) < 0 {
-				recommendation[resourceName] = oldRecommendation[resourceName]
-			}
+			cappedToPreventScaleDown, _ := maybeCapToPreventScaleDown(recommended, oldRecommendation[resourceName], containerPolicy)
+			recommendation[resourceName] = cappedToPreventScaleDown
 		}
 	}
 
@@ -215,10 +213,15 @@ func applyVPAPolicyForContainer(containerName string,
 	return cappedRecommendations, nil
 }
 
-// maybeCapToPreventScaleDown updates recommendation to be request if PreventScaleDown has been defined and the recommendation would scale the container down
-func maybeCapToPreventScaleDown(recommended resource.Quantity, resourceName apiv1.ResourceName,
+// maybeCapToPreventScaleDown prevents a recommendation reducing if PreventScaleDown has been defined in the container policy
+func maybeCapToPreventScaleDown(recommended resource.Quantity, oldRecommended resource.Quantity,
 	containerPolicy *vpa_types.ContainerResourcePolicy) (resource.Quantity, bool) {
-	return maybeCapToMin(recommended, resourceName, containerPolicy.MinAllowed)
+
+	if containerPolicy.PreventScaleDown && recommended.Cmp(oldRecommended) < 0 {
+		return oldRecommended, true
+	}
+
+	return recommended, false
 }
 
 func maybeCapToPolicyMin(recommended resource.Quantity, resourceName apiv1.ResourceName,
