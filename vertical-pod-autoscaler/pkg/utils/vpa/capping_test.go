@@ -222,6 +222,7 @@ var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.Recommende
 		},
 	},
 }
+
 var applyTestCases = []struct {
 	PodRecommendation         *vpa_types.RecommendedPodResources
 	Policy                    *vpa_types.PodResourcePolicy
