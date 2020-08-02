@@ -209,9 +209,15 @@ func applyVPAPolicyForContainer(containerName string,
 		}
 	}
 
-	process(cappedRecommendations.Target, oldContainerRecommendation.Target)
-	process(cappedRecommendations.LowerBound, oldContainerRecommendation.LowerBound)
-	process(cappedRecommendations.UpperBound, oldContainerRecommendation.UpperBound)
+	if oldContainerRecommendation != nil {
+		process(cappedRecommendations.Target, oldContainerRecommendation.Target)
+		process(cappedRecommendations.LowerBound, oldContainerRecommendation.LowerBound)
+		process(cappedRecommendations.UpperBound, oldContainerRecommendation.UpperBound)
+	} else {
+		process(cappedRecommendations.Target, nil)
+		process(cappedRecommendations.LowerBound, nil)
+		process(cappedRecommendations.UpperBound, nil)
+	}
 
 	return cappedRecommendations, nil
 }

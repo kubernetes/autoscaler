@@ -294,8 +294,7 @@ func TestApplyVpa(t *testing.T) {
 		},
 	}
 
-	// We set the old recommendation to same as the current since it's unimportant for this test
-	res, err := ApplyVPAPolicy(&podRecommendation, &podRecommendation, &policy)
+	res, err := ApplyVPAPolicy(&podRecommendation, nil, &policy)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
