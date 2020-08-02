@@ -293,7 +293,8 @@ func TestApplyVpa(t *testing.T) {
 		},
 	}
 
-	res, err := ApplyVPAPolicy(&podRecommendation, &policy)
+	// We set the old recommendation to same as the current since it's unimportant for this test
+	res, err := ApplyVPAPolicy(&podRecommendation, &podRecommendation, &policy)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
@@ -314,6 +315,105 @@ func TestApplyVpa(t *testing.T) {
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
 	}, res.ContainerRecommendations[0].UpperBound)
+}
+
+func TestApplyVpaWithScaleDownProtection(t *testing.T) {
+	containerName := "ctr"
+
+	oldPodRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4000, 1),
+				},
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(70, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+				},
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(80, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(8000, 1),
+				},
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(90, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(9000, 1),
+				},
+			},
+		},
+	}
+
+	podRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(20, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+				},
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+				},
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5500, 1),
+				},
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+				},
+			},
+		},
+	}
+
+	// Policy is unrestrictive with its bounds, but does have PreventScaleDown enabled
+	policy := vpa_types.PodResourcePolicy{
+		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+			{
+				ContainerName: containerName,
+				MinAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(1000, 1),
+				},
+				MaxAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(100, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(10000, 1),
+				},
+				PreventScaleDown: true,
+			},
+		},
+	}
+
+	// The old recommendation is higher than the current so we expect the recommendation _not_ to scale down
+	res, err := ApplyVPAPolicy(&podRecommendation, &oldPodRecommendation, &policy)
+	assert.Nil(t, err)
+
+	// Lower bound should increase from (10, 4000) to (20, 4300)
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(20, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+	}, res.ContainerRecommendations[0].LowerBound)
+
+	// Target should not decrease, despite the new recommendation being lower
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(70, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+	}, res.ContainerRecommendations[0].Target)
+
+	// Upper bound should not decrease, despite the new recommendation being lower
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(80, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(8000, 1),
+	}, res.ContainerRecommendations[0].UpperBound)
+
+	// Uncapped target reduces, as it isn't affected by PreventScaleDown
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+	}, res.ContainerRecommendations[0].UncappedTarget)
+
 }
 
 type fakeLimitRangeCalculator struct {

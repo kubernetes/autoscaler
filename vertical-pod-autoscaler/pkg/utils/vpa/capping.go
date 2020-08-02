@@ -183,6 +183,7 @@ func applyVPAPolicy(recommendation apiv1.ResourceList, policy *vpa_types.Contain
 
 func applyVPAPolicyForContainer(containerName string,
 	containerRecommendation *vpa_types.RecommendedContainerResources,
+	oldContainerRecommendation *vpa_types.RecommendedContainerResources,
 	policy *vpa_types.PodResourcePolicy) (*vpa_types.RecommendedContainerResources, error) {
 	if containerRecommendation == nil {
 		return nil, fmt.Errorf("no recommendation available for container name %v", containerName)
@@ -194,20 +195,30 @@ func applyVPAPolicyForContainer(containerName string,
 		return cappedRecommendations, nil
 	}
 
-	process := func(recommendation apiv1.ResourceList) {
+	process := func(recommendation apiv1.ResourceList, oldRecommendation apiv1.ResourceList) {
 		for resourceName, recommended := range recommendation {
 			cappedToMin, _ := maybeCapToPolicyMin(recommended, resourceName, containerPolicy)
 			recommendation[resourceName] = cappedToMin
 			cappedToMax, _ := maybeCapToPolicyMax(cappedToMin, resourceName, containerPolicy)
 			recommendation[resourceName] = cappedToMax
+
+			if containerPolicy.PreventScaleDown && recommended.Cmp(oldRecommendation[resourceName]) < 0 {
+				recommendation[resourceName] = oldRecommendation[resourceName]
+			}
 		}
 	}
 
-	process(cappedRecommendations.Target)
-	process(cappedRecommendations.LowerBound)
-	process(cappedRecommendations.UpperBound)
+	process(cappedRecommendations.Target, oldContainerRecommendation.Target)
+	process(cappedRecommendations.LowerBound, oldContainerRecommendation.LowerBound)
+	process(cappedRecommendations.UpperBound, oldContainerRecommendation.UpperBound)
 
 	return cappedRecommendations, nil
+}
+
+// maybeCapToPreventScaleDown updates recommendation to be request if PreventScaleDown has been defined and the recommendation would scale the container down
+func maybeCapToPreventScaleDown(recommended resource.Quantity, resourceName apiv1.ResourceName,
+	containerPolicy *vpa_types.ContainerResourcePolicy) (resource.Quantity, bool) {
+	return maybeCapToMin(recommended, resourceName, containerPolicy.MinAllowed)
 }
 
 func maybeCapToPolicyMin(recommended resource.Quantity, resourceName apiv1.ResourceName,
@@ -239,7 +250,7 @@ func maybeCapToMin(recommended resource.Quantity, resourceName apiv1.ResourceNam
 }
 
 // ApplyVPAPolicy returns a recommendation, adjusted to obey policy.
-func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources,
+func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources, oldPodRecommendation *vpa_types.RecommendedPodResources,
 	policy *vpa_types.PodResourcePolicy) (*vpa_types.RecommendedPodResources, error) {
 	if podRecommendation == nil {
 		return nil, nil
@@ -251,11 +262,14 @@ func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources,
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
 		containerName := containerRecommendation.ContainerName
-		updatedContainerResources, err := applyVPAPolicyForContainer(containerName,
-			&containerRecommendation, policy)
+
+		oldContainerRecommendation := GetRecommendationForContainer(containerName, oldPodRecommendation)
+
+		updatedContainerResources, err := applyVPAPolicyForContainer(containerName, &containerRecommendation, oldContainerRecommendation, policy)
 		if err != nil {
 			return nil, fmt.Errorf("cannot apply policy on recommendation for container name %v", containerName)
 		}
+
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
 	return &vpa_types.RecommendedPodResources{ContainerRecommendations: updatedRecommendations}, nil

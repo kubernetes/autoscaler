@@ -98,7 +98,7 @@ func (r *recommender) UpdateVPAs() {
 		}
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		had := vpa.HasRecommendation()
-		vpa.UpdateRecommendation(getCappedRecommendation(vpa.ID, resources, observedVpa.Spec.ResourcePolicy))
+		vpa.UpdateRecommendation(getCappedRecommendation(vpa, resources, observedVpa.Spec.ResourcePolicy))
 		if vpa.HasRecommendation() && !had {
 			metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 		}
@@ -131,8 +131,10 @@ func (r *recommender) UpdateVPAs() {
 // resources, setting the UncappedTarget to the calculated recommended target
 // and if necessary, capping the Target, LowerBound and UpperBound according
 // to the ResourcePolicy.
-func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodResources,
+func getCappedRecommendation(vpa *model.Vpa, resources logic.RecommendedPodResources,
 	policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+
+	// create the NEW recommendation for this pod
 	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 	for containerName, res := range resources {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
@@ -144,9 +146,13 @@ func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodRe
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{containerResources}
-	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, policy)
+
+	// get the OLD recommendation
+	oldRecommendation := vpa.Recommendation
+
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, oldRecommendation, policy)
 	if err != nil {
-		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpaID.Namespace, vpaID.VpaName, err)
+		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpa.ID.Namespace, vpa.ID.VpaName, err)
 		return recommendation
 	}
 	return cappedRecommendation
