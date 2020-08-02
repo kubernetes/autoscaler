@@ -201,8 +201,11 @@ func applyVPAPolicyForContainer(containerName string,
 			recommendation[resourceName] = cappedToMin
 			cappedToMax, _ := maybeCapToPolicyMax(cappedToMin, resourceName, containerPolicy)
 			recommendation[resourceName] = cappedToMax
-			cappedToPreventScaleDown, _ := maybeCapToPreventScaleDown(recommended, oldRecommendation[resourceName], containerPolicy)
-			recommendation[resourceName] = cappedToPreventScaleDown
+
+			if oldContainerRecommendation != nil {
+				cappedToPreventScaleDown, _ := maybeCapToPreventScaleDown(recommended, oldRecommendation[resourceName], containerPolicy)
+				recommendation[resourceName] = cappedToPreventScaleDown
+			}
 		}
 	}
 
