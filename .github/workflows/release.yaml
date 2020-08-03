@@ -4,16 +4,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Fetch history
-        run: git fetch --prune --unshallow
+        with:
+          fetch-depth: 0
+
       - name: Configure Git
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-      - env:
-          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.0.0-rc.2
+
+      - name: Package
+        shell: bash
+        run: hack/helm-release-chart.sh
+
+      - name: Create Pull Request branch
+        run: |
+          git checkout -b gh-pages-pull-request
+
+      # Note that this will fail if branch already exists - i.e. we can only have one bot raised PR at a time
+      - name: Push Git Branch
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages-pull-request
+
+      # Note that this will silently fail if the PR already exists
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: gh-pages-pull-request
+          destination_branch: gh-pages
+          pr_title: "Helm Chart: Update Helm repository"
+          pr_body: "Automatically created from Helm Release workflow."
+
 name: Release Charts
 on:
   push:
