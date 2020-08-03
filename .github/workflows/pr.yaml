@@ -11,8 +11,8 @@ jobs:
         with:
           filters: |
             charts:
-              - 'charts/cluster-autoscaler/Chart.yaml'
-              - 'charts/cluster-autoscaler/*'
+              - 'charts/**/Chart.yaml'
+              - 'charts/**/*'
           token: ${{ secrets.GITHUB_TOKEN }}
   helm-lint-test:
     if: ${{ needs.changes.outputs.charts == 'true' }}
