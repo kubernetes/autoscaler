@@ -889,7 +889,7 @@ func (fDC *fakeDisksClient) Get(ctx context.Context, resourceGroupName string, d
 
 	return result, autorest.DetailedError{
 		StatusCode: http.StatusNotFound,
-		Message:    "Not such Disk",
+		Message:    fmt.Sprintf("Disk %s is not found.", diskName),
 	}
 }
 
@@ -959,7 +959,7 @@ func (f *fakeVMSet) DetachDisk(diskName, diskURI string, nodeName types.NodeName
 	return nil, fmt.Errorf("unimplemented")
 }
 
-func (f *fakeVMSet) GetDataDisks(nodeName types.NodeName) ([]compute.DataDisk, error) {
+func (f *fakeVMSet) GetDataDisks(nodeName types.NodeName, crt cacheReadType) ([]compute.DataDisk, error) {
 	return nil, fmt.Errorf("unimplemented")
 }
 

@@ -66,11 +66,13 @@ const (
 	nodeLabelRole  = "kubernetes.io/role"
 	nicFailedState = "Failed"
 
-	storageAccountNameMaxLength = 24
+	storageAccountNameMaxLength   = 24
+	frontendIPConfigNameMaxLength = 80
+	loadBalancerRuleNameMaxLength = 80
 )
 
 var errNotInVMSet = errors.New("vm is not in the vmset")
-var providerIDRE = regexp.MustCompile(`^` + CloudProviderName + `://(?:.*)/Microsoft.Compute/virtualMachines/(.+)$`)
+var providerIDRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/Microsoft.Compute/virtualMachines/(.+)$`)
 var backendPoolIDRE = regexp.MustCompile(`^/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Network/loadBalancers/(.+)/backendAddressPools/(?:.*)`)
 var nicResourceGroupRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/networkInterfaces/(?:.*)`)
 var publicIPResourceGroupRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/publicIPAddresses/(?:.*)`)
@@ -162,8 +164,8 @@ func isMasterNode(node *v1.Node) bool {
 }
 
 // returns the deepest child's identifier from a full identifier string.
-func getLastSegment(ID string) (string, error) {
-	parts := strings.Split(ID, "/")
+func getLastSegment(ID, separator string) (string, error) {
+	parts := strings.Split(ID, separator)
 	name := parts[len(parts)-1]
 	if len(name) == 0 {
 		return "", fmt.Errorf("resource name was missing from identifier")
@@ -275,12 +277,21 @@ func getBackendPoolName(clusterName string, service *v1.Service) string {
 	return clusterName
 }
 
-func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protocol, port int32, subnetName *string) string {
+func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protocol, port int32) string {
 	prefix := az.getRulePrefix(service)
-	if subnetName == nil {
-		return fmt.Sprintf("%s-%s-%d", prefix, protocol, port)
+	ruleName := fmt.Sprintf("%s-%s-%d", prefix, protocol, port)
+	subnet := subnet(service)
+	if subnet == nil {
+		return ruleName
 	}
-	return fmt.Sprintf("%s-%s-%s-%d", prefix, *subnetName, protocol, port)
+
+	// Load balancer rule name must be less or equal to 80 characters, so excluding the hyphen two segments cannot exceed 79
+	subnetSegment := *subnet
+	if len(ruleName)+len(subnetSegment)+1 > loadBalancerRuleNameMaxLength {
+		subnetSegment = subnetSegment[:loadBalancerRuleNameMaxLength-len(ruleName)-1]
+	}
+
+	return fmt.Sprintf("%s-%s-%s-%d", prefix, subnetSegment, protocol, port)
 }
 
 func (az *Cloud) getSecurityRuleName(service *v1.Service, port v1.ServicePort, sourceAddrPrefix string) string {
@@ -318,10 +329,17 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 	return strings.HasPrefix(*fip.Name, baseName)
 }
 
-func (az *Cloud) getFrontendIPConfigName(service *v1.Service, subnetName *string) string {
+func (az *Cloud) getFrontendIPConfigName(service *v1.Service) string {
 	baseName := az.GetLoadBalancerName(context.TODO(), "", service)
+	subnetName := subnet(service)
 	if subnetName != nil {
-		return fmt.Sprintf("%s-%s", baseName, *subnetName)
+		ipcName := fmt.Sprintf("%s-%s", baseName, *subnetName)
+
+		// Azure lb front end configuration name must not exceed 80 characters
+		if len(ipcName) > frontendIPConfigNameMaxLength {
+			ipcName = ipcName[:frontendIPConfigNameMaxLength]
+		}
+		return ipcName
 	}
 	return baseName
 }
@@ -375,14 +393,14 @@ func (as *availabilitySet) GetInstanceIDByNodeName(name string) (string, error) 
 	var machine compute.VirtualMachine
 	var err error
 
-	machine, err = as.getVirtualMachine(types.NodeName(name))
+	machine, err = as.getVirtualMachine(types.NodeName(name), cacheReadTypeUnsafe)
 	if err == cloudprovider.InstanceNotFound {
 		return "", cloudprovider.InstanceNotFound
 	}
 	if err != nil {
 		if as.CloudProviderBackoff {
 			klog.V(2).Infof("GetInstanceIDByNodeName(%s) backing off", name)
-			machine, err = as.GetVirtualMachineWithRetry(types.NodeName(name))
+			machine, err = as.GetVirtualMachineWithRetry(types.NodeName(name), cacheReadTypeUnsafe)
 			if err != nil {
 				klog.V(2).Infof("GetInstanceIDByNodeName(%s) abort backoff", name)
 				return "", err
@@ -403,7 +421,7 @@ func (as *availabilitySet) GetInstanceIDByNodeName(name string) (string, error) 
 
 // GetPowerStatusByNodeName returns the power state of the specified node.
 func (as *availabilitySet) GetPowerStatusByNodeName(name string) (powerState string, err error) {
-	vm, err := as.getVirtualMachine(types.NodeName(name))
+	vm, err := as.getVirtualMachine(types.NodeName(name), cacheReadTypeDefault)
 	if err != nil {
 		return powerState, err
 	}
@@ -436,7 +454,7 @@ func (as *availabilitySet) GetNodeNameByProviderID(providerID string) (types.Nod
 
 // GetInstanceTypeByNodeName gets the instance type by node name.
 func (as *availabilitySet) GetInstanceTypeByNodeName(name string) (string, error) {
-	machine, err := as.getVirtualMachine(types.NodeName(name))
+	machine, err := as.getVirtualMachine(types.NodeName(name), cacheReadTypeUnsafe)
 	if err != nil {
 		klog.Errorf("as.GetInstanceTypeByNodeName(%s) failed: as.getVirtualMachine(%s) err=%v", name, name, err)
 		return "", err
@@ -448,7 +466,7 @@ func (as *availabilitySet) GetInstanceTypeByNodeName(name string) (string, error
 // GetZoneByNodeName gets availability zone for the specified node. If the node is not running
 // with availability zone, then it returns fault domain.
 func (as *availabilitySet) GetZoneByNodeName(name string) (cloudprovider.Zone, error) {
-	vm, err := as.getVirtualMachine(types.NodeName(name))
+	vm, err := as.getVirtualMachine(types.NodeName(name), cacheReadTypeUnsafe)
 	if err != nil {
 		return cloudprovider.Zone{}, err
 	}
@@ -465,12 +483,12 @@ func (as *availabilitySet) GetZoneByNodeName(name string) (cloudprovider.Zone, e
 		failureDomain = as.makeZone(to.String(vm.Location), zoneID)
 	} else {
 		// Availability zone is not used for the node, falling back to fault domain.
-		failureDomain = strconv.Itoa(int(*vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain))
+		failureDomain = strconv.Itoa(int(to.Int32(vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain)))
 	}
 
 	zone := cloudprovider.Zone{
-		FailureDomain: failureDomain,
-		Region:        to.String(vm.Location),
+		FailureDomain: strings.ToLower(failureDomain),
+		Region:        strings.ToLower(to.String(vm.Location)),
 	}
 	return zone, nil
 }
@@ -498,7 +516,7 @@ func (as *availabilitySet) GetIPByNodeName(name string) (string, string, error) 
 	publicIP := ""
 	if ipConfig.PublicIPAddress != nil && ipConfig.PublicIPAddress.ID != nil {
 		pipID := *ipConfig.PublicIPAddress.ID
-		pipName, err := getLastSegment(pipID)
+		pipName, err := getLastSegment(pipID, "/")
 		if err != nil {
 			return "", "", fmt.Errorf("failed to publicIP name for node %q with pipID %q", name, pipID)
 		}
@@ -568,7 +586,7 @@ func (as *availabilitySet) getAgentPoolAvailabiliySets(nodes []*v1.Node) (agentP
 			// already added in the list
 			continue
 		}
-		asName, err := getLastSegment(asID)
+		asName, err := getLastSegment(asID, "/")
 		if err != nil {
 			klog.Errorf("as.getNodeAvailabilitySet - Node (%s)- getLastSegment(%s), err=%v", nodeName, asID, err)
 			return nil, err
@@ -649,7 +667,7 @@ func extractResourceGroupByNicID(nicID string) (string, error) {
 func (as *availabilitySet) getPrimaryInterfaceWithVMSet(nodeName, vmSetName string) (network.Interface, error) {
 	var machine compute.VirtualMachine
 
-	machine, err := as.GetVirtualMachineWithRetry(types.NodeName(nodeName))
+	machine, err := as.GetVirtualMachineWithRetry(types.NodeName(nodeName), cacheReadTypeDefault)
 	if err != nil {
 		klog.V(2).Infof("GetPrimaryInterface(%s, %s) abort backoff", nodeName, vmSetName)
 		return network.Interface{}, err
@@ -659,7 +677,7 @@ func (as *availabilitySet) getPrimaryInterfaceWithVMSet(nodeName, vmSetName stri
 	if err != nil {
 		return network.Interface{}, err
 	}
-	nicName, err := getLastSegment(primaryNicID)
+	nicName, err := getLastSegment(primaryNicID, "/")
 	if err != nil {
 		return network.Interface{}, err
 	}

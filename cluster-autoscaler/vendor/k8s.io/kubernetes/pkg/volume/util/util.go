@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -29,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
+	apiruntime "k8s.io/apimachinery/pkg/runtime"
 	utypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
@@ -196,7 +197,7 @@ func LoadPodFromFile(filePath string) (*v1.Pod, error) {
 	pod := &v1.Pod{}
 
 	codec := legacyscheme.Codecs.UniversalDecoder()
-	if err := runtime.DecodeInto(codec, podDef, pod); err != nil {
+	if err := apiruntime.DecodeInto(codec, podDef, pod); err != nil {
 		return nil, fmt.Errorf("failed decoding file: %v", err)
 	}
 	return pod, nil
@@ -589,4 +590,60 @@ func HasMountRefs(mountPath string, mountRefs []string) bool {
 		}
 	}
 	return false
+}
+
+//WriteVolumeCache flush disk data given the spcified mount path
+func WriteVolumeCache(deviceMountPath string, exec mount.Exec) error {
+	// If runtime os is windows, execute Write-VolumeCache powershell command on the disk
+	if runtime.GOOS == "windows" {
+		cmd := fmt.Sprintf("Get-Volume -FilePath %s | Write-Volumecache", deviceMountPath)
+		output, err := exec.Run("powershell", "/c", cmd)
+		klog.Infof("command (%q) execeuted: %v, output: %q", cmd, err, string(output))
+		if err != nil {
+			return fmt.Errorf("command (%q) failed: %v, output: %q", cmd, err, string(output))
+		}
+	}
+	// For linux runtime, it skips because unmount will automatically flush disk data
+	return nil
+}
+
+// IsMultiAttachAllowed checks if attaching this volume to multiple nodes is definitely not allowed/possible.
+// In its current form, this function can only reliably say for which volumes it's definitely forbidden. If it returns
+// false, it is not guaranteed that multi-attach is actually supported by the volume type and we must rely on the
+// attacher to fail fast in such cases.
+// Please see https://github.com/kubernetes/kubernetes/issues/40669 and https://github.com/kubernetes/kubernetes/pull/40148#discussion_r98055047
+func IsMultiAttachAllowed(volumeSpec *volume.Spec) bool {
+	if volumeSpec == nil {
+		// we don't know if it's supported or not and let the attacher fail later in cases it's not supported
+		return true
+	}
+
+	if volumeSpec.Volume != nil {
+		// Check for volume types which are known to fail slow or cause trouble when trying to multi-attach
+		if volumeSpec.Volume.AzureDisk != nil ||
+			volumeSpec.Volume.Cinder != nil {
+			return false
+		}
+	}
+
+	// Only if this volume is a persistent volume, we have reliable information on whether it's allowed or not to
+	// multi-attach. We trust in the individual volume implementations to not allow unsupported access modes
+	if volumeSpec.PersistentVolume != nil {
+		// Check for persistent volume types which do not fail when trying to multi-attach
+		if len(volumeSpec.PersistentVolume.Spec.AccessModes) == 0 {
+			// No access mode specified so we don't know for sure. Let the attacher fail if needed
+			return true
+		}
+
+		// check if this volume is allowed to be attached to multiple PODs/nodes, if yes, return false
+		for _, accessMode := range volumeSpec.PersistentVolume.Spec.AccessModes {
+			if accessMode == v1.ReadWriteMany || accessMode == v1.ReadOnlyMany {
+				return true
+			}
+		}
+		return false
+	}
+
+	// we don't know if it's supported or not and let the attacher fail later in cases it's not supported
+	return true
 }

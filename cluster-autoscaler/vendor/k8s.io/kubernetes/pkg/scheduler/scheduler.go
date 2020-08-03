@@ -187,6 +187,9 @@ func New(client clientset.Interface,
 	for _, opt := range opts {
 		opt(&options)
 	}
+
+	metrics.Register()
+
 	// Set up the configurator which can create schedulers from configs.
 	configurator := factory.NewConfigFactory(&factory.ConfigFactoryArgs{
 		Client:                         client,
@@ -290,7 +293,6 @@ func initPolicyFromConfigMap(client clientset.Interface, policyRef *kubeschedule
 
 // NewFromConfig returns a new scheduler using the provided Config.
 func NewFromConfig(config *factory.Config) *Scheduler {
-	metrics.Register()
 	return &Scheduler{
 		SchedulerCache:      config.SchedulerCache,
 		Algorithm:           config.Algorithm,
@@ -349,14 +351,14 @@ func (sched *Scheduler) schedule(pod *v1.Pod, pluginContext *framework.PluginCon
 // preempt tries to create room for a pod that has failed to schedule, by preempting lower priority pods if possible.
 // If it succeeds, it adds the name of the node where preemption has happened to the pod spec.
 // It returns the node name and an error if any.
-func (sched *Scheduler) preempt(fwk framework.Framework, preemptor *v1.Pod, scheduleErr error) (string, error) {
+func (sched *Scheduler) preempt(pluginContext *framework.PluginContext, fwk framework.Framework, preemptor *v1.Pod, scheduleErr error) (string, error) {
 	preemptor, err := sched.PodPreemptor.GetUpdatedPod(preemptor)
 	if err != nil {
 		klog.Errorf("Error getting the updated preemptor pod object: %v", err)
 		return "", err
 	}
 
-	node, victims, nominatedPodsToClear, err := sched.Algorithm.Preempt(preemptor, scheduleErr)
+	node, victims, nominatedPodsToClear, err := sched.Algorithm.Preempt(pluginContext, preemptor, scheduleErr)
 	if err != nil {
 		klog.Errorf("Error preempting victims to make room for %v/%v: %v", preemptor.Namespace, preemptor.Name, err)
 		return "", err
@@ -544,7 +546,7 @@ func (sched *Scheduler) scheduleOne() {
 					" No preemption is performed.")
 			} else {
 				preemptionStartTime := time.Now()
-				sched.preempt(fwk, pod, fitError)
+				sched.preempt(pluginContext, fwk, pod, fitError)
 				metrics.PreemptionAttempts.Inc()
 				metrics.SchedulingAlgorithmPremptionEvaluationDuration.Observe(metrics.SinceInSeconds(preemptionStartTime))
 				metrics.DeprecatedSchedulingAlgorithmPremptionEvaluationDuration.Observe(metrics.SinceInMicroseconds(preemptionStartTime))
@@ -554,6 +556,9 @@ func (sched *Scheduler) scheduleOne() {
 			// Pod did not fit anywhere, so it is counted as a failure. If preemption
 			// succeeds, the pod should get counted as a success the next time we try to
 			// schedule it. (hopefully)
+			metrics.PodScheduleFailures.Inc()
+		} else if err == core.ErrNoNodesAvailable {
+			// No nodes available is counted as unschedulable rather than an error.
 			metrics.PodScheduleFailures.Inc()
 		} else {
 			klog.Errorf("error selecting node for pod: %v", err)

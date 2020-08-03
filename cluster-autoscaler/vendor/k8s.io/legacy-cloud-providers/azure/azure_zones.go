@@ -53,7 +53,7 @@ func (az *Cloud) GetZoneID(zoneLabel string) string {
 // If the node is not running with availability zones, then it will fall back to fault domain.
 func (az *Cloud) GetZone(ctx context.Context) (cloudprovider.Zone, error) {
 	if az.UseInstanceMetadata {
-		metadata, err := az.metadata.GetMetadata()
+		metadata, err := az.metadata.GetMetadata(cacheReadTypeUnsafe)
 		if err != nil {
 			return cloudprovider.Zone{}, err
 		}
@@ -77,8 +77,8 @@ func (az *Cloud) GetZone(ctx context.Context) (cloudprovider.Zone, error) {
 		}
 
 		return cloudprovider.Zone{
-			FailureDomain: zone,
-			Region:        location,
+			FailureDomain: strings.ToLower(zone),
+			Region:        strings.ToLower(location),
 		}, nil
 	}
 	// if UseInstanceMetadata is false, get Zone name by calling ARM
