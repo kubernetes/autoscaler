@@ -19,9 +19,14 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
@@ -31,21 +36,64 @@ var (
 	vmssNameSeparator  = "_"
 	vmssCacheSeparator = "#"
 
-	nodeNameToScaleSetMappingKey = "k8sNodeNameToScaleSetMappingKey"
-	availabilitySetNodesKey      = "k8sAvailabilitySetNodesKey"
+	vmssKey                 = "k8svmssKey"
+	availabilitySetNodesKey = "k8sAvailabilitySetNodesKey"
 
-	vmssCacheTTL                      = time.Minute
-	vmssVMCacheTTL                    = time.Minute
-	availabilitySetNodesCacheTTL      = 5 * time.Minute
-	nodeNameToScaleSetMappingCacheTTL = 5 * time.Minute
+	availabilitySetNodesCacheTTL = 15 * time.Minute
+	vmssTTL                      = 10 * time.Minute
+	vmssVirtualMachinesTTL       = 10 * time.Minute
+
+	vmssVirtualMachinesCacheTTLDefaultInSeconds = 600
 )
 
-// nodeNameToScaleSetMapping maps nodeName to scaleSet name.
-// The map is required because vmss nodeName is not equal to its vmName.
-type nodeNameToScaleSetMapping map[string]string
+type vmssVirtualMachinesEntry struct {
+	resourceGroup  string
+	vmssName       string
+	instanceID     string
+	virtualMachine *compute.VirtualMachineScaleSetVM
+	lastUpdate     time.Time
+}
 
-func (ss *scaleSet) makeVmssVMName(scaleSetName, instanceID string) string {
-	return fmt.Sprintf("%s%s%s", scaleSetName, vmssNameSeparator, instanceID)
+type vmssEntry struct {
+	vmss          *compute.VirtualMachineScaleSet
+	resourceGroup string
+	lastUpdate    time.Time
+}
+
+func (ss *scaleSet) newVMSSCache() (*timedCache, error) {
+	getter := func(key string) (interface{}, error) {
+		localCache := &sync.Map{} // [vmssName]*vmssEntry
+
+		allResourceGroups, err := ss.GetResourceGroups()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, resourceGroup := range allResourceGroups.List() {
+			allScaleSets, err := ss.VirtualMachineScaleSetsClient.List(context.Background(), resourceGroup)
+			if err != nil {
+				klog.Errorf("VirtualMachineScaleSetsClient.List failed: %v", err)
+				return nil, err
+			}
+
+			for i := range allScaleSets {
+				scaleSet := allScaleSets[i]
+				if scaleSet.Name == nil || *scaleSet.Name == "" {
+					klog.Warning("failed to get the name of VMSS")
+					continue
+				}
+				localCache.Store(*scaleSet.Name, &vmssEntry{
+					vmss:          &scaleSet,
+					resourceGroup: resourceGroup,
+					lastUpdate:    time.Now().UTC(),
+				})
+			}
+		}
+
+		return localCache, nil
+	}
+
+	return newTimedcache(vmssTTL, getter)
 }
 
 func extractVmssVMName(name string) (string, string, error) {
@@ -62,66 +110,162 @@ func extractVmssVMName(name string) (string, string, error) {
 	return ssName, instanceID, nil
 }
 
-// vmssCache only holds vmss from ss.ResourceGroup because nodes from other resourceGroups
-// will be excluded from LB backends.
-func (ss *scaleSet) newVmssCache() (*timedCache, error) {
-	getter := func(key string) (interface{}, error) {
-		ctx, cancel := getContextWithCancel()
-		defer cancel()
-		result, err := ss.VirtualMachineScaleSetsClient.Get(ctx, ss.ResourceGroup, key)
-		exists, message, realErr := checkResourceExistsFromError(err)
-		if realErr != nil {
-			return nil, realErr
-		}
-
-		if !exists {
-			klog.V(2).Infof("Virtual machine scale set %q not found with message: %q", key, message)
-			return nil, nil
-		}
-
-		return &result, nil
+// getVMSSVMCache returns an *timedCache and cache key for a VMSS (creating that cache if new).
+func (ss *scaleSet) getVMSSVMCache(resourceGroup, vmssName string) (string, *timedCache, error) {
+	cacheKey := strings.ToLower(fmt.Sprintf("%s/%s", resourceGroup, vmssName))
+	if entry, ok := ss.vmssVMCache.Load(cacheKey); ok {
+		cache := entry.(*timedCache)
+		return cacheKey, cache, nil
 	}
 
-	return newTimedcache(vmssCacheTTL, getter)
+	cache, err := ss.newVMSSVirtualMachinesCache(resourceGroup, vmssName, cacheKey)
+	if err != nil {
+		return "", nil, err
+	}
+	ss.vmssVMCache.Store(cacheKey, cache)
+	return cacheKey, cache, nil
 }
 
-func (ss *scaleSet) newNodeNameToScaleSetMappingCache() (*timedCache, error) {
-	getter := func(key string) (interface{}, error) {
-		localCache := make(nodeNameToScaleSetMapping)
+// gcVMSSVMCache delete stale VMSS VMs caches from deleted VMSSes.
+func (ss *scaleSet) gcVMSSVMCache() error {
+	cached, err := ss.vmssCache.Get(vmssKey, cacheReadTypeUnsafe)
+	if err != nil {
+		return err
+	}
 
-		allResourceGroups, err := ss.GetResourceGroups()
+	vmsses := cached.(*sync.Map)
+	removed := map[string]bool{}
+	ss.vmssVMCache.Range(func(key, value interface{}) bool {
+		cacheKey := key.(string)
+		vlistIdx := cacheKey[strings.LastIndex(cacheKey, "/")+1:]
+		if _, ok := vmsses.Load(vlistIdx); !ok {
+			removed[cacheKey] = true
+		}
+		return true
+	})
+
+	for key := range removed {
+		ss.vmssVMCache.Delete(key)
+	}
+
+	return nil
+}
+
+// newVMSSVirtualMachinesCache instanciates a new VMs cache for VMs belonging to the provided VMSS.
+func (ss *scaleSet) newVMSSVirtualMachinesCache(resourceGroupName, vmssName, cacheKey string) (*timedCache, error) {
+	getter := func(key string) (interface{}, error) {
+		localCache := &sync.Map{} // [nodeName]*vmssVirtualMachinesEntry
+
+		oldCache := make(map[string]vmssVirtualMachinesEntry)
+
+		if vmssCache, ok := ss.vmssVMCache.Load(cacheKey); ok {
+			// get old cache before refreshing the cache
+			cache := vmssCache.(*timedCache)
+			entry, exists, err := cache.store.GetByKey(cacheKey)
+			if err != nil {
+				return nil, err
+			}
+			if exists {
+				cached := entry.(*cacheEntry).data
+				if cached != nil {
+					virtualMachines := cached.(*sync.Map)
+					virtualMachines.Range(func(key, value interface{}) bool {
+						oldCache[key.(string)] = *value.(*vmssVirtualMachinesEntry)
+						return true
+					})
+				}
+			}
+		}
+
+		vms, err := ss.listScaleSetVMs(vmssName, resourceGroupName)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, resourceGroup := range allResourceGroups.List() {
-			scaleSetNames, err := ss.listScaleSets(resourceGroup)
-			if err != nil {
-				return nil, err
+		for i := range vms {
+			vm := vms[i]
+			if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil {
+				klog.Warningf("failed to get computerName for vmssVM (%q)", vmssName)
+				continue
 			}
 
-			for _, ssName := range scaleSetNames {
-				vms, err := ss.listScaleSetVMs(ssName, resourceGroup)
-				if err != nil {
-					return nil, err
-				}
-
-				for _, vm := range vms {
-					if vm.OsProfile == nil || vm.OsProfile.ComputerName == nil {
-						klog.Warningf("failed to get computerName for vmssVM (%q)", ssName)
-						continue
-					}
-
-					computerName := strings.ToLower(*vm.OsProfile.ComputerName)
-					localCache[computerName] = ssName
-				}
+			computerName := strings.ToLower(*vm.OsProfile.ComputerName)
+			vmssVMCacheEntry := &vmssVirtualMachinesEntry{
+				resourceGroup:  resourceGroupName,
+				vmssName:       vmssName,
+				instanceID:     to.String(vm.InstanceID),
+				virtualMachine: &vm,
+				lastUpdate:     time.Now().UTC(),
 			}
+			// set cache entry to nil when the VM is under deleting.
+			if vm.VirtualMachineScaleSetVMProperties != nil &&
+				strings.EqualFold(to.String(vm.VirtualMachineScaleSetVMProperties.ProvisioningState), string(compute.ProvisioningStateDeleting)) {
+				klog.V(4).Infof("VMSS virtualMachine %q is under deleting, setting its cache to nil", computerName)
+				vmssVMCacheEntry.virtualMachine = nil
+			}
+			localCache.Store(computerName, vmssVMCacheEntry)
+
+			delete(oldCache, computerName)
+		}
+
+		// add old missing cache data with nil entries to prevent aggressive
+		// ARM calls during cache invalidation
+		for name, vmEntry := range oldCache {
+			// if the nil cache entry has existed for 15 minutes in the cache
+			// then it should not be added back to the cache
+			if vmEntry.virtualMachine == nil && time.Since(vmEntry.lastUpdate) > 15*time.Minute {
+				klog.V(5).Infof("ignoring expired entries from old cache for %s", name)
+				continue
+			}
+			lastUpdate := time.Now().UTC()
+			if vmEntry.virtualMachine == nil {
+				// if this is already a nil entry then keep the time the nil
+				// entry was first created, so we can cleanup unwanted entries
+				lastUpdate = vmEntry.lastUpdate
+			}
+
+			klog.V(5).Infof("adding old entries to new cache for %s", name)
+			localCache.Store(name, &vmssVirtualMachinesEntry{
+				resourceGroup:  vmEntry.resourceGroup,
+				vmssName:       vmEntry.vmssName,
+				instanceID:     vmEntry.instanceID,
+				virtualMachine: nil,
+				lastUpdate:     lastUpdate,
+			})
 		}
 
 		return localCache, nil
 	}
 
-	return newTimedcache(nodeNameToScaleSetMappingCacheTTL, getter)
+	return newTimedcache(vmssVirtualMachinesTTL, getter)
+}
+
+func (ss *scaleSet) deleteCacheForNode(nodeName string) error {
+	node, err := ss.getNodeIdentityByNodeName(nodeName, cacheReadTypeUnsafe)
+	if err != nil {
+		klog.Errorf("deleteCacheForNode(%s) failed with error: %v", nodeName, err)
+		return err
+	}
+
+	cacheKey, timedcache, err := ss.getVMSSVMCache(node.resourceGroup, node.vmssName)
+	if err != nil {
+		klog.Errorf("deleteCacheForNode(%s) failed with error: %v", nodeName, err)
+		return err
+	}
+
+	vmcache, err := timedcache.Get(cacheKey, cacheReadTypeUnsafe)
+	if err != nil {
+		klog.Errorf("deleteCacheForNode(%s) failed with error: %v", nodeName, err)
+		return err
+	}
+	virtualMachines := vmcache.(*sync.Map)
+	virtualMachines.Delete(nodeName)
+
+	if err := ss.gcVMSSVMCache(); err != nil {
+		klog.Errorf("deleteCacheForNode(%s) failed to gc stale vmss caches: %v", nodeName, err)
+	}
+
+	return nil
 }
 
 func (ss *scaleSet) newAvailabilitySetNodesCache() (*timedCache, error) {
@@ -151,111 +295,8 @@ func (ss *scaleSet) newAvailabilitySetNodesCache() (*timedCache, error) {
 	return newTimedcache(availabilitySetNodesCacheTTL, getter)
 }
 
-func buildVmssCacheKey(resourceGroup, name string) string {
-	// key is composed of <resourceGroup>#<vmName>
-	return fmt.Sprintf("%s%s%s", strings.ToLower(resourceGroup), vmssCacheSeparator, name)
-}
-
-func extractVmssCacheKey(key string) (string, string, error) {
-	// key is composed of <resourceGroup>#<vmName>
-	keyItems := strings.Split(key, vmssCacheSeparator)
-	if len(keyItems) != 2 {
-		return "", "", fmt.Errorf("key %q is not in format '<resourceGroup>#<vmName>'", key)
-	}
-
-	resourceGroup := keyItems[0]
-	vmName := keyItems[1]
-	return resourceGroup, vmName, nil
-}
-
-func (ss *scaleSet) newVmssVMCache() (*timedCache, error) {
-	getter := func(key string) (interface{}, error) {
-		// key is composed of <resourceGroup>#<vmName>
-		resourceGroup, vmName, err := extractVmssCacheKey(key)
-		if err != nil {
-			return nil, err
-		}
-
-		// vmName's format is 'scaleSetName_instanceID'
-		ssName, instanceID, err := extractVmssVMName(vmName)
-		if err != nil {
-			return nil, err
-		}
-
-		// Not found, the VM doesn't belong to any known scale sets.
-		if ssName == "" {
-			return nil, nil
-		}
-
-		ctx, cancel := getContextWithCancel()
-		defer cancel()
-		result, err := ss.VirtualMachineScaleSetVMsClient.Get(ctx, resourceGroup, ssName, instanceID)
-		exists, message, realErr := checkResourceExistsFromError(err)
-		if realErr != nil {
-			return nil, realErr
-		}
-
-		if !exists {
-			klog.V(2).Infof("Virtual machine scale set VM %q not found with message: %q", key, message)
-			return nil, nil
-		}
-
-		// Get instanceView for vmssVM.
-		if result.InstanceView == nil {
-			viewCtx, viewCancel := getContextWithCancel()
-			defer viewCancel()
-			view, err := ss.VirtualMachineScaleSetVMsClient.GetInstanceView(viewCtx, resourceGroup, ssName, instanceID)
-			// It is possible that the vmssVM gets removed just before this call. So check whether the VM exist again.
-			exists, message, realErr = checkResourceExistsFromError(err)
-			if realErr != nil {
-				return nil, realErr
-			}
-			if !exists {
-				klog.V(2).Infof("Virtual machine scale set VM %q not found with message: %q", key, message)
-				return nil, nil
-			}
-
-			result.InstanceView = &view
-		}
-
-		return &result, nil
-	}
-
-	return newTimedcache(vmssVMCacheTTL, getter)
-}
-
-func (ss *scaleSet) getScaleSetNameByNodeName(nodeName string) (string, error) {
-	getScaleSetName := func(nodeName string) (string, error) {
-		nodeNameMapping, err := ss.nodeNameToScaleSetMappingCache.Get(nodeNameToScaleSetMappingKey)
-		if err != nil {
-			return "", err
-		}
-
-		realMapping := nodeNameMapping.(nodeNameToScaleSetMapping)
-		if ssName, ok := realMapping[nodeName]; ok {
-			return ssName, nil
-		}
-
-		return "", nil
-	}
-
-	ssName, err := getScaleSetName(nodeName)
-	if err != nil {
-		return "", err
-	}
-
-	if ssName != "" {
-		return ssName, nil
-	}
-
-	// ssName is still not found, it is likely that new Nodes are created.
-	// Force refresh the cache and try again.
-	ss.nodeNameToScaleSetMappingCache.Delete(nodeNameToScaleSetMappingKey)
-	return getScaleSetName(nodeName)
-}
-
-func (ss *scaleSet) isNodeManagedByAvailabilitySet(nodeName string) (bool, error) {
-	cached, err := ss.availabilitySetNodesCache.Get(availabilitySetNodesKey)
+func (ss *scaleSet) isNodeManagedByAvailabilitySet(nodeName string, crt cacheReadType) (bool, error) {
+	cached, err := ss.availabilitySetNodesCache.Get(availabilitySetNodesKey, crt)
 	if err != nil {
 		return false, err
 	}

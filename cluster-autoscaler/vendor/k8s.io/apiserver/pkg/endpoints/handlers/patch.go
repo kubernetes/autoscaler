@@ -321,9 +321,7 @@ func (p *jsonPatcher) applyPatchToCurrentObject(currentObject runtime.Object) (r
 	}
 
 	if p.fieldManager != nil {
-		if objToUpdate, err = p.fieldManager.Update(currentObject, objToUpdate, managerOrUserAgent(p.options.FieldManager, p.userAgent)); err != nil {
-			return nil, fmt.Errorf("failed to update object (json PATCH for %v) managed fields: %v", p.kind, err)
-		}
+		objToUpdate = p.fieldManager.UpdateNoErrors(currentObject, objToUpdate, managerOrUserAgent(p.options.FieldManager, p.userAgent))
 	}
 	return objToUpdate, nil
 }
@@ -337,6 +335,15 @@ func (p *jsonPatcher) createNewObject() (runtime.Object, error) {
 func (p *jsonPatcher) applyJSPatch(versionedJS []byte) (patchedJS []byte, retErr error) {
 	switch p.patchType {
 	case types.JSONPatchType:
+		// sanity check potentially abusive patches
+		// TODO(liggitt): drop this once golang json parser limits stack depth (https://github.com/golang/go/issues/31789)
+		if len(p.patchBytes) > 1024*1024 {
+			v := []interface{}{}
+			if err := json.Unmarshal(p.patchBytes, &v); err != nil {
+				return nil, errors.NewBadRequest(fmt.Sprintf("error decoding patch: %v", err))
+			}
+		}
+
 		patchObj, err := jsonpatch.DecodePatch(p.patchBytes)
 		if err != nil {
 			return nil, errors.NewBadRequest(err.Error())
@@ -352,6 +359,15 @@ func (p *jsonPatcher) applyJSPatch(versionedJS []byte) (patchedJS []byte, retErr
 		}
 		return patchedJS, nil
 	case types.MergePatchType:
+		// sanity check potentially abusive patches
+		// TODO(liggitt): drop this once golang json parser limits stack depth (https://github.com/golang/go/issues/31789)
+		if len(p.patchBytes) > 1024*1024 {
+			v := map[string]interface{}{}
+			if err := json.Unmarshal(p.patchBytes, &v); err != nil {
+				return nil, errors.NewBadRequest(fmt.Sprintf("error decoding patch: %v", err))
+			}
+		}
+
 		return jsonpatch.MergePatch(versionedJS, p.patchBytes)
 	default:
 		// only here as a safety net - go-restful filters content-type
@@ -388,9 +404,7 @@ func (p *smpPatcher) applyPatchToCurrentObject(currentObject runtime.Object) (ru
 	}
 
 	if p.fieldManager != nil {
-		if newObj, err = p.fieldManager.Update(currentObject, newObj, managerOrUserAgent(p.options.FieldManager, p.userAgent)); err != nil {
-			return nil, fmt.Errorf("failed to update object (smp PATCH for %v) managed fields: %v", p.kind, err)
-		}
+		newObj = p.fieldManager.UpdateNoErrors(currentObject, newObj, managerOrUserAgent(p.options.FieldManager, p.userAgent))
 	}
 	return newObj, nil
 }

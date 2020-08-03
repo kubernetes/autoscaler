@@ -173,6 +173,9 @@ type Config struct {
 	// LoadBalancerResourceGroup determines the specific resource group of the load balancer user want to use, working
 	// with LoadBalancerName
 	LoadBalancerResourceGroup string `json:"loadBalancerResourceGroup,omitempty" yaml:"loadBalancerResourceGroup,omitempty"`
+
+	// VmssVirtualMachinesCacheTTLInSeconds sets the cache TTL for vmssVirtualMachines
+	VmssVirtualMachinesCacheTTLInSeconds int `json:"vmssVirtualMachinesCacheTTLInSeconds,omitempty" yaml:"vmssVirtualMachinesCacheTTLInSeconds,omitempty"`
 }
 
 var _ cloudprovider.Interface = (*Cloud)(nil)
@@ -229,6 +232,7 @@ type Cloud struct {
 	kubeClient       clientset.Interface
 	eventBroadcaster record.EventBroadcaster
 	eventRecorder    record.EventRecorder
+	routeUpdater     *delayedRouteUpdater
 
 	vmCache  *timedCache
 	lbCache  *timedCache
@@ -509,6 +513,10 @@ func (az *Cloud) InitializeCloudFromConfig(config *Config, fromSecret bool) erro
 		return err
 	}
 
+	// start delayed route updater.
+	az.routeUpdater = newDelayedRouteUpdater(az, routeUpdateInterval)
+	go az.routeUpdater.run()
+
 	return nil
 }
 
@@ -598,6 +606,7 @@ func initDiskControllers(az *Cloud) error {
 		resourceGroup:         az.ResourceGroup,
 		subscriptionID:        az.SubscriptionID,
 		cloud:                 az,
+		vmLockMap:             newLockMap(),
 	}
 
 	az.BlobDiskController = &BlobDiskController{common: common}

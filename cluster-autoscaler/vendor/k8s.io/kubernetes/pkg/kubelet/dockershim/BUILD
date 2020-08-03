@@ -78,6 +78,7 @@ go_library(
         "@io_bazel_rules_go//go/platform:windows": [
             "//pkg/kubelet/apis:go_default_library",
             "//pkg/kubelet/winstats:go_default_library",
+            "//vendor/github.com/Microsoft/hcsshim:go_default_library",
             "//vendor/golang.org/x/sys/windows/registry:go_default_library",
         ],
         "//conditions:default": [],
@@ -123,6 +124,9 @@ go_test(
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
     ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "//staging/src/k8s.io/api/core/v1:go_default_library",
+        ],
         "@io_bazel_rules_go//go/platform:linux": [
             "//staging/src/k8s.io/api/core/v1:go_default_library",
         ],
