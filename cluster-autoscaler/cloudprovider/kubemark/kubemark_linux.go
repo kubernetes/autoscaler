@@ -23,6 +23,9 @@ package kubemark
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -35,7 +38,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubemark"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	"os"
 
 	klog "k8s.io/klog/v2"
 )
@@ -120,6 +122,10 @@ func (kubemark *KubemarkCloudProvider) Pricing() (cloudprovider.PricingModel, er
 
 // NodeGroupForNode returns the node group for the given node.
 func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	// Skip nodes that are not managed by Kubemark Cloud Provider.
+	if !strings.HasPrefix(node.Spec.ProviderID, ProviderName) {
+		return nil, nil
+	}
 	nodeGroupName, err := kubemark.kubemarkController.GetNodeGroupForNode(node.ObjectMeta.Name)
 	if err != nil {
 		return nil, err
