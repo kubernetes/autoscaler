@@ -125,6 +125,15 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	}
 }
 
+func NewSimpleControllerFetcher(scaleNamespacer scale.ScalesGetter, mapper apimeta.RESTMapper,
+	informersMap map[WellKnownController]cache.SharedIndexInformer) ControllerFetcher {
+	return &controllerFetcher{
+		scaleNamespacer: scaleNamespacer,
+		mapper:          mapper,
+		informersMap:    informersMap,
+	}
+}
+
 func getOwnerController(owners []metav1.OwnerReference, namespace string) *ControllerKeyWithAPIVersion {
 	for _, owner := range owners {
 		if owner.Controller != nil && *owner.Controller {
