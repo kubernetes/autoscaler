@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -32,6 +33,7 @@ import (
 )
 
 func TestUtilization(t *testing.T) {
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
 	gpuLabel := GetGPULabel()
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
@@ -40,13 +42,13 @@ func TestUtilization(t *testing.T) {
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
-	utilInfo, err := CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
+	utilInfo, err := CalculateUtilization(node, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	node2 := BuildTestNode("node1", 2000, -1)
 
-	_, err = CalculateUtilization(node2, nodeInfo, false, false, gpuLabel)
+	_, err = CalculateUtilization(node2, nodeInfo, false, false, gpuLabel, testTime)
 	assert.Error(t, err)
 
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
@@ -57,12 +59,19 @@ func TestUtilization(t *testing.T) {
 	daemonSetPod4.Annotations = map[string]string{"cluster-autoscaler.kubernetes.io/daemonset-pod": "true"}
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, daemonSetPod3)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel, testTime)
+	assert.NoError(t, err)
+	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+
+	terminatedPod := BuildTestPod("podTerminated", 100, 200000)
+	terminatedPod.DeletionTimestamp = &metav1.Time{testTime.Add(-10 * time.Minute)}
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, terminatedPod)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
@@ -72,17 +81,17 @@ func TestUtilization(t *testing.T) {
 	}
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, mirrorPod)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true, gpuLabel)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/9.0, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, mirrorPod)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, mirrorPod, daemonSetPod3)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, true, true, gpuLabel)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, true, true, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1.0/8.0, utilInfo.Utilization, 0.01)
 
@@ -92,7 +101,7 @@ func TestUtilization(t *testing.T) {
 	RequestGpuForPod(gpuPod, 1)
 	TolerateGpuForPod(gpuPod)
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, gpuPod)
-	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
+	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
 
@@ -100,7 +109,7 @@ func TestUtilization(t *testing.T) {
 	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
 	AddGpuLabelToNode(gpuNode)
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod)
-	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
+	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
 }
@@ -251,8 +260,8 @@ func TestFindEmptyNodes(t *testing.T) {
 
 	clusterSnapshot := NewBasicClusterSnapshot()
 	InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
-
-	emptyNodes := FindEmptyNodesToRemove(clusterSnapshot, nodeNames)
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+	emptyNodes := FindEmptyNodesToRemove(clusterSnapshot, nodeNames, testTime)
 	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
 

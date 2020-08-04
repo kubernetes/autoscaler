@@ -34,6 +34,7 @@ import (
 )
 
 func TestDrain(t *testing.T) {
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
 	replicas := int32(5)
 
 	rc := apiv1.ReplicationController{
@@ -175,7 +176,7 @@ func TestDrain(t *testing.T) {
 			Name:              "bar",
 			Namespace:         "default",
 			OwnerReferences:   GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
-			DeletionTimestamp: &metav1.Time{Time: time.Now().Add(-time.Hour)},
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Hour)},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -220,6 +221,41 @@ func TestDrain(t *testing.T) {
 		},
 		Status: apiv1.PodStatus{
 			Phase: apiv1.PodSucceeded,
+		},
+	}
+
+	zeroGracePeriod := int64(0)
+	longTerminatingPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "bar",
+			Namespace:         "default",
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+			OwnerReferences:   GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:                      "node",
+			RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+			TerminationGracePeriodSeconds: &zeroGracePeriod,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodUnknown,
+		},
+	}
+	extendedGracePeriod := int64(6 * 60) // 6 minutes
+	longTerminatingPodWithExtendedGracePeriod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "bar",
+			Namespace:         "default",
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Duration(extendedGracePeriod/2) * time.Second)},
+			OwnerReferences:   GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:                      "node",
+			RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+			TerminationGracePeriodSeconds: &extendedGracePeriod,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodUnknown,
 		},
 	}
 
@@ -462,6 +498,24 @@ func TestDrain(t *testing.T) {
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
+			description:         "long terminating pod with 0 grace period",
+			pods:                []*apiv1.Pod{longTerminatingPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "long terminating pod with extended grace period",
+			pods:                []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
 			description:         "evicted pod",
 			pods:                []*apiv1.Pod{evictedPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
@@ -592,7 +646,7 @@ func TestDrain(t *testing.T) {
 
 		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
+		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, testTime)
 
 		if test.expectFatal {
 			assert.Equal(t, test.expectBlockingPod, blockingPod)
@@ -613,5 +667,110 @@ func TestDrain(t *testing.T) {
 		}
 
 		assert.ElementsMatch(t, test.expectDaemonSetPods, daemonSetPods)
+	}
+}
+
+func TestIsPodLongTerminating(t *testing.T) {
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+	twoMinGracePeriod := int64(2 * 60)
+	zeroGracePeriod := int64(0)
+
+	tests := []struct {
+		name string
+		pod  apiv1.Pod
+		want bool
+	}{
+		{
+			name: "No deletion timestamp",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: nil,
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Just deleted no grace period defined",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime}, // default Grace Period is 30s so this pod can still be terminating
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold with no grace period",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-3 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: nil,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Just deleted with grace period defined to 0",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold with grace period defined to 0",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold but not longer than grace period (2 min)",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &twoMinGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than grace period (2 min) and PodLongTerminatingExtraThreshold",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2*PodLongTerminatingExtraThreshold - time.Duration(twoMinGracePeriod)*time.Second)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &twoMinGracePeriod,
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := IsPodLongTerminating(&tc.pod, testTime); got != tc.want {
+				t.Errorf("IsPodLongTerminating() = %v, want %v", got, tc.want)
+			}
+		})
 	}
 }

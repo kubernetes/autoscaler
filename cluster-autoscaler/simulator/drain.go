@@ -36,7 +36,7 @@ import (
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
-	pdbs []*policyv1.PodDisruptionBudget) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
@@ -48,7 +48,7 @@ func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSyste
 		false,
 		nil,
 		0,
-		time.Now())
+		timestamp)
 
 	if err != nil {
 		return pods, daemonSetPods, blockingPod, err
@@ -67,7 +67,7 @@ func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSyste
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
-	pdbs []*policyv1.PodDisruptionBudget) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
@@ -79,7 +79,7 @@ func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWith
 		true,
 		listers,
 		minReplicaCount,
-		time.Now())
+		timestamp)
 	if err != nil {
 		return pods, daemonSetPods, blockingPod, err
 	}
