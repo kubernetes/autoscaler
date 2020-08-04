@@ -1,16 +1,16 @@
 # Cluster Autoscaler on Huawei Cloud 
 
 ## Overview
-The cluster autoscaler for [Huawei Cloud](https://www.huaweicloud.com/) scales worker nodes within any
-specified Huawei Cloud Container Engine (CCE) cluster's node pool where the `Autoscaler` label is on. 
+The cluster autoscaler for [Huawei ServiceStage](https://www.huaweicloud.com/intl/en-us/product/servicestage.html) scales worker nodes within any
+specified container cluster's node pool where the `Autoscaler` label is on. 
 It runs as a Deployment on a worker node in the cluster. This README will go over some of the necessary steps required 
 to get the cluster autoscaler up and running.
 
 Note: 
 
-1. Cluster autoscaler must be run on CCE v1.15.6 (Kubernetes v1.15) or later.
-2. Node pool attached to the CCE cluster must have the `Autoscaler` flag turned on, and minimum number of nodes and maximum
-number of nodes being set. Node pools can be managed under `Resource Management` in CCE console.
+1. Cluster autoscaler must be run on a version of Huawei container engine 1.15.6 or later.
+2. Node pool attached to the cluster must have the `Autoscaler` flag turned on, and minimum number of nodes and maximum
+number of nodes being set. Node pools can be managed by `Resource Management` from Huawei container engine console.
 3. If warnings about installing `autoscaler addon` are encountered after creating a node pool with `Autoscaler` flag on, 
 just ignore this warning and DO NOT install the addon.
 4. Do not build your image in a Huawei Cloud ECS. Build the image in a machine that has access to the Google Container Registry (GCR).
@@ -75,7 +75,7 @@ The following steps use Huawei SoftWare Repository for Container (SWR) as an exa
     ```
    
 5. For the cluster autoscaler to function normally, make sure the `Sharing Type` of the image is `Public`.
-    If the CCE has trouble pulling the image, go to SWR console and check whether the `Sharing Type` of the image is 
+    If the cluster has trouble pulling the image, go to SWR console and check whether the `Sharing Type` of the image is 
     `Private`. If it is, click `Edit` button on top right and set the `Sharing Type` to `Public`.
 
 ### Deploy Cluster Autoscaler
@@ -111,7 +111,7 @@ and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0
 
 - `region`
 
-    Fill in the region of the CCE here. For example, for region `Beijing4`:
+    Fill in the region of the cluster here. For example, for region `Beijing4`:
     ```
     region=cn-north-4
     ```
@@ -122,25 +122,24 @@ and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0
 
 #### Configure deployment
    An example deployment file is provided at [examples/cluster-autoscaler-deployment.yaml](examples/cluster-autoscaler-deployment.yaml). 
-   Change the `image` to the image you just pushed, the `cluster-name` to the CCE cluster's id and `nodes` to your
+   Change the `image` to the image you just pushed, the `cluster-name` to the cluster's id and `nodes` to your
    own configurations of the node pool with format
    ```
    {Minimum number of nodes}:{Maximum number of nodes}:{Node pool name}
    ```
-   The above parameters should match the parameters of the node pool you created. Currently, Huawei CCE only provides 
+   The above parameters should match the parameters of the node pool you created. Currently, Huawei ServiceStage only provides 
    autoscaling against a single node pool.
    
    More configuration options can be added to the cluster autoscaler, such as `scale-down-delay-after-add`, `scale-down-unneeded-time`, etc.
    See available configuration options [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca).
 
-#### Deploy cluster autoscaler on CCE
+#### Deploy cluster autoscaler on the cluster
+1. Log in to a machine which can manage the cluster with `kubectl`.
 
-1. Log in to a machine which can manage the CCE cluster with `kubectl`.
-
-    Make sure the machine has kubectl access to the CCE cluster. We recommend using a worker node to manage the cluster. Follow
+    Make sure the machine has kubectl access to the cluster. We recommend using a worker node to manage the cluster. Follow
     the instructions for 
 [Connecting to a Kubernetes Cluster Using kubectl](https://support.huaweicloud.com/intl/en-us/usermanual-cce/cce_01_0107.html)
-to set up kubectl access to CCE cluster if you cannot execute `kubectl` on your machine.
+to set up kubectl access to the cluster if you cannot execute `kubectl` on your machine.
 
 2. Create the Service Account:
     ```
@@ -158,7 +157,7 @@ to set up kubectl access to CCE cluster if you cannot execute `kubectl` on your 
     ```
 
 ### Testing
-Now the cluster autoscaler should be successfully deployed on the cluster. Check it on the CCE UI console, or execute
+Now the cluster autoscaler should be successfully deployed on the cluster. Check it by executing
 ```
 kubectl get pods -n kube-system
 ```
@@ -212,15 +211,15 @@ and will be removed by the cluster autoscaler
 
 ## Notes
 
-1. Huawei Cloud CCE cluster does not yet support autoscaling against multiple node pools within a single cluster, but 
-this is currently in development. For now, make sure that there's only one node pool with `Autoscaler` label
-on in the CCE cluster.
-2. If the version of the CCE cluster is v1.15.6 or older, log statements similar to the following may be present in the
+1. Huawei ServiceStage does not yet support autoscaling against multiple node pools within a single cluster, but 
+this is currently under development. For now, make sure that there's only one node pool with `Autoscaler` label
+on in the cluster.
+2. If the version of the cluster is v1.15.6 or older, log statements similar to the following may be present in the
 autoscaler pod logs:
     ```
     E0402 13:25:05.472999       1 reflector.go:178] k8s.io/client-go/informers/factory.go:135: Failed to list *v1.CSINode: the server could not find the requested resource
     ```
-    This is normal and will be fixed by a future version of CCE.
+    This is normal and will be fixed by a future version of cluster.
     
 ## Support & Contact Info
 
