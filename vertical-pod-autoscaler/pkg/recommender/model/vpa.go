@@ -35,7 +35,7 @@ type vpaAnnotationsMap map[string]string
 // Map from VPA condition type to condition.
 type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition
 
-func (conditionsMap *vpaConditionsMap) Set(
+func (conditionsMap *vpaConditionsMap) Set(now time.Time,
 	conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status bool, reason string, message string) *vpaConditionsMap {
 	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
@@ -237,7 +237,7 @@ func (vpa *Vpa) SetUpdateMode(updatePolicy *vpa_types.PodUpdatePolicy) {
 // UpdateConditions updates the conditions of VPA objects based on it's state.
 // PodsMatched is passed to indicate if there are currently active pods in the
 // cluster matching this VPA.
-func (vpa *Vpa) UpdateConditions(podsMatched bool) {
+func (vpa *Vpa) UpdateConditions(now time.Time, podsMatched bool) {
 	reason := ""
 	msg := ""
 	if podsMatched {
@@ -245,12 +245,12 @@ func (vpa *Vpa) UpdateConditions(podsMatched bool) {
 	} else {
 		reason = "NoPodsMatched"
 		msg = "No pods match this VPA object"
-		vpa.Conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
+		vpa.Conditions.Set(now, vpa_types.NoPodsMatched, true, reason, msg)
 	}
 	if vpa.HasRecommendation() {
-		vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
+		vpa.Conditions.Set(now, vpa_types.RecommendationProvided, true, "", "")
 	} else {
-		vpa.Conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
+		vpa.Conditions.Set(now, vpa_types.RecommendationProvided, false, reason, msg)
 	}
 
 }

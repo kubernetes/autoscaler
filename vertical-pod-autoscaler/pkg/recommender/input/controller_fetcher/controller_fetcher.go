@@ -41,16 +41,16 @@ import (
 	"k8s.io/klog"
 )
 
-type wellKnownController string
+type WellKnownController string
 
 const (
-	daemonSet             wellKnownController = "DaemonSet"
-	deployment            wellKnownController = "Deployment"
-	replicaSet            wellKnownController = "ReplicaSet"
-	statefulSet           wellKnownController = "StatefulSet"
-	replicationController wellKnownController = "ReplicationController"
-	job                   wellKnownController = "Job"
-	cronJob               wellKnownController = "CronJob"
+	daemonSet             WellKnownController = "DaemonSet"
+	deployment            WellKnownController = "Deployment"
+	replicaSet            WellKnownController = "ReplicaSet"
+	statefulSet           WellKnownController = "StatefulSet"
+	replicationController WellKnownController = "ReplicationController"
+	job                   WellKnownController = "Job"
+	cronJob               WellKnownController = "CronJob"
 )
 
 const (
@@ -79,7 +79,7 @@ type ControllerFetcher interface {
 type controllerFetcher struct {
 	scaleNamespacer scale.ScalesGetter
 	mapper          apimeta.RESTMapper
-	informersMap    map[wellKnownController]cache.SharedIndexInformer
+	informersMap    map[WellKnownController]cache.SharedIndexInformer
 }
 
 // NewControllerFetcher returns a new instance of controllerFetcher
@@ -96,7 +96,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		mapper.Reset()
 	}, discoveryResetPeriod, make(chan struct{}))
 
-	informersMap := map[wellKnownController]cache.SharedIndexInformer{
+	informersMap := map[WellKnownController]cache.SharedIndexInformer{
 		daemonSet:             factory.Apps().V1().DaemonSets().Informer(),
 		deployment:            factory.Apps().V1().Deployments().Informer(),
 		replicaSet:            factory.Apps().V1().ReplicaSets().Informer(),
@@ -202,7 +202,7 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 }
 
 func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
-	kind := wellKnownController(controllerKey.Kind)
+	kind := WellKnownController(controllerKey.Kind)
 	informer, exists := f.informersMap[kind]
 	if exists {
 		return getParentOfWellKnownController(informer, controllerKey)
@@ -241,7 +241,7 @@ func (c *ControllerKeyWithAPIVersion) groupKind() (schema.GroupKind, error) {
 }
 
 func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
-	kind := wellKnownController(key.ControllerKey.Kind)
+	kind := WellKnownController(key.ControllerKey.Kind)
 	_, exists := f.informersMap[kind]
 	return exists
 }

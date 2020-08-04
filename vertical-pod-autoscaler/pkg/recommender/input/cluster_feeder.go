@@ -58,10 +58,10 @@ type ClusterStateFeeder interface {
 	InitFromHistoryProvider(historyProvider history.HistoryProvider)
 
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
-	InitFromCheckpoints()
+	InitFromCheckpoints(now time.Time)
 
 	// LoadVPAs updates clusterState with current state of VPAs.
-	LoadVPAs()
+	LoadVPAs(now time.Time)
 
 	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
@@ -70,7 +70,7 @@ type ClusterStateFeeder interface {
 	LoadRealTimeMetrics()
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
-	GarbageCollectCheckpoints()
+	GarbageCollectCheckpoints(now time.Time)
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -105,6 +105,25 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
 // Deprecated; Use ClusterStateFeederFactory instead.
+func NewClusterStateFeederPlugin(config *rest.Config, clusterState *model.ClusterState, memorySave bool, metricsClient metrics.MetricsClient) ClusterStateFeeder {
+	kubeClient := kube_client.NewForConfigOrDie(config)
+	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
+	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory)
+	return ClusterStateFeederFactory{
+		PodLister:   podLister,
+		OOMObserver: oomObserver,
+		KubeClient:  kubeClient,
+		//MetricsClient:       newMetricsClient(config),
+		MetricsClient:       metricsClient,
+		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
+		VpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		ClusterState:        clusterState,
+		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		MemorySaveMode:      memorySave,
+		ControllerFetcher:   controllerFetcher,
+	}.Make()
+}
 func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
@@ -123,7 +142,6 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		ControllerFetcher:   controllerFetcher,
 	}.Make()
 }
-
 func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	metricsGetter := resourceclient.NewForConfigOrDie(config)
 	return metrics.NewMetricsClient(metricsGetter)
@@ -244,9 +262,9 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	return nil
 }
 
-func (feeder *clusterStateFeeder) InitFromCheckpoints() {
+func (feeder *clusterStateFeeder) InitFromCheckpoints(now time.Time) {
 	klog.V(3).Info("Initializing VPA from checkpoints")
-	feeder.LoadVPAs()
+	feeder.LoadVPAs(now)
 
 	namespaces := make(map[string]bool)
 	for _, v := range feeder.clusterState.Vpas {
@@ -272,9 +290,9 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	}
 }
 
-func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
+func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(now time.Time) {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
-	feeder.LoadVPAs()
+	feeder.LoadVPAs(now)
 
 	namspaceList, err := feeder.coreClient.Namespaces().List(metav1.ListOptions{})
 	if err != nil {
@@ -304,7 +322,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 }
 
 // Fetch VPA objects and load them into the cluster state.
-func (feeder *clusterStateFeeder) LoadVPAs() {
+func (feeder *clusterStateFeeder) LoadVPAs(now time.Time) {
 	// List VPA API objects.
 	vpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
@@ -330,7 +348,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 				if condition.delete {
 					delete(feeder.clusterState.Vpas[vpaID].Conditions, condition.conditionType)
 				} else {
-					feeder.clusterState.Vpas[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
+					feeder.clusterState.Vpas[vpaID].Conditions.Set(now, condition.conditionType, true, "", condition.message)
 				}
 			}
 		}

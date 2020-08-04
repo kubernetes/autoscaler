@@ -123,7 +123,7 @@ func TestUpdateConditions(t *testing.T) {
 			if tc.hasRecommendation {
 				vpa.Recommendation = test.Recommendation().WithContainer(containerName).WithTarget("5", "200").Get()
 			}
-			vpa.UpdateConditions(tc.podsMatched)
+			vpa.UpdateConditions(now, tc.podsMatched)
 			for _, condition := range tc.expectedConditions {
 				assert.Contains(t, vpa.Conditions, condition.Type)
 				actualCondition := vpa.Conditions[condition.Type]

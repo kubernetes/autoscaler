@@ -38,12 +38,12 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-var wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
+var wellKnownControllers = []WellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
 var trueVar = true
 
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
-	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
+	f.informersMap = make(map[WellKnownController]cache.SharedIndexInformer)
 	versioned := map[string][]metav1.APIResource{
 		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
 	}
@@ -98,7 +98,7 @@ func simpleControllerFetcher() *controllerFetcher {
 }
 
 func addController(controller *controllerFetcher, obj runtime.Object) {
-	kind := wellKnownController(obj.GetObjectKind().GroupVersionKind().Kind)
+	kind := WellKnownController(obj.GetObjectKind().GroupVersionKind().Kind)
 	_, ok := controller.informersMap[kind]
 	if ok {
 		controller.informersMap[kind].GetStore().Add(obj)

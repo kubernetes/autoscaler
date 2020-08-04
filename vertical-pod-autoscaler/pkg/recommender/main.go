@@ -86,7 +86,7 @@ func main() {
 	}
 
 	if useCheckpoints {
-		recommender.GetClusterStateFeeder().InitFromCheckpoints()
+		recommender.GetClusterStateFeeder().InitFromCheckpoints(time.Now())
 	} else {
 		config := history.PrometheusHistoryProviderConfig{
 			Address:                *prometheusAddress,
@@ -111,7 +111,7 @@ func main() {
 
 	ticker := time.Tick(*metricsFetcherInterval)
 	for range ticker {
-		recommender.RunOnce()
+		recommender.RunOnce(time.Now())
 		healthCheck.UpdateLastActivity()
 	}
 

@@ -48,19 +48,19 @@ var (
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
 type Recommender interface {
 	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
-	RunOnce()
+	RunOnce(now time.Time)
 	// GetClusterState returns ClusterState used by Recommender
 	GetClusterState() *model.ClusterState
 	// GetClusterStateFeeder returns ClusterStateFeeder used by Recommender
 	GetClusterStateFeeder() input.ClusterStateFeeder
 	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
-	UpdateVPAs()
+	UpdateVPAs(now time.Time)
 	// MaintainCheckpoints stores current checkpoints in API Server and garbage collect old ones
 	// MaintainCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
-	MaintainCheckpoints(ctx context.Context, minCheckpoints int)
+	MaintainCheckpoints(now time.Time, ctx context.Context, minCheckpoints int)
 	// GarbageCollect removes old AggregateCollectionStates
-	GarbageCollect()
+	GarbageCollect(now time.Time)
 }
 
 type recommender struct {
@@ -84,7 +84,7 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 }
 
 // Updates VPA CRD objects' statuses.
-func (r *recommender) UpdateVPAs() {
+func (r *recommender) UpdateVPAs(now time.Time) {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
 
@@ -104,7 +104,7 @@ func (r *recommender) UpdateVPAs() {
 			metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 		}
 		hasMatchingPods := vpa.PodCount > 0
-		vpa.UpdateConditions(hasMatchingPods)
+		vpa.UpdateConditions(now, hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 			klog.Warningf("%v", err)
 			klog.V(4).Infof("VPA dump")
@@ -153,29 +153,28 @@ func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodRe
 	return cappedRecommendation
 }
 
-func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
-	now := time.Now()
+func (r *recommender) MaintainCheckpoints(now time.Time, ctx context.Context, minCheckpointsPerRun int) {
 	if r.useCheckpoints {
 		if err := r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun); err != nil {
 			klog.Warningf("Failed to store checkpoints. Reason: %+v", err)
 		}
 		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
-			r.clusterStateFeeder.GarbageCollectCheckpoints()
+			r.clusterStateFeeder.GarbageCollectCheckpoints(now)
 		}
 	}
 
 }
 
-func (r *recommender) GarbageCollect() {
-	gcTime := time.Now()
+func (r *recommender) GarbageCollect(now time.Time) {
+	gcTime := now
 	if gcTime.Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
 		r.clusterState.GarbageCollectAggregateCollectionStates(gcTime)
 		r.lastAggregateContainerStateGC = gcTime
 	}
 }
 
-func (r *recommender) RunOnce() {
+func (r *recommender) RunOnce(now time.Time) {
 	timer := metrics_recommender.NewExecutionTimer()
 	defer timer.ObserveTotal()
 
@@ -185,7 +184,7 @@ func (r *recommender) RunOnce() {
 
 	klog.V(3).Infof("Recommender Run")
 
-	r.clusterStateFeeder.LoadVPAs()
+	r.clusterStateFeeder.LoadVPAs(now)
 	timer.ObserveStep("LoadVPAs")
 
 	r.clusterStateFeeder.LoadPods()
@@ -195,13 +194,13 @@ func (r *recommender) RunOnce() {
 	timer.ObserveStep("LoadMetrics")
 	klog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 
-	r.UpdateVPAs()
+	r.UpdateVPAs(now)
 	timer.ObserveStep("UpdateVPAs")
 
-	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
+	r.MaintainCheckpoints(now, ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.GarbageCollect()
+	r.GarbageCollect(now)
 	timer.ObserveStep("GarbageCollect")
 	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }

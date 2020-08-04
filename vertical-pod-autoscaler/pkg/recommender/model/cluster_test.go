@@ -68,7 +68,7 @@ func TestClusterAddSample(t *testing.T) {
 func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	addTestPod(cluster)
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -91,7 +91,7 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	addTestPod(cluster)
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -122,7 +122,7 @@ func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 func TestClusterGCAggregateContainerStateDeletesEmptyInactive(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	pod := addTestPod(cluster)
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -149,7 +149,7 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactive(t *testing.T) {
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	addTestPod(cluster)
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -171,7 +171,7 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	pod := addTestPod(cluster)
 	addTestContainer(cluster)
 
@@ -252,7 +252,7 @@ func addVpaObject(cluster *ClusterState, id VpaID, vpa *vpa_types.VerticalPodAut
 	return cluster.Vpas[id]
 }
 
-func addTestVpa(cluster *ClusterState) *Vpa {
+func AddTestVpa(cluster *ClusterState) *Vpa {
 	return addVpa(cluster, testVpaID, testAnnotations, testSelectorStr)
 }
 
@@ -270,7 +270,7 @@ func addTestContainer(cluster *ClusterState) *ContainerState {
 // VPA, the container and the aggregation are set correctly.
 func TestAddVpaThenAddPod(t *testing.T) {
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	assert.Empty(t, vpa.aggregateContainerStates)
 	addTestPod(cluster)
 	addTestContainer(cluster)
@@ -284,7 +284,7 @@ func TestAddPodThenAddVpa(t *testing.T) {
 	cluster := NewClusterState()
 	addTestPod(cluster)
 	addTestContainer(cluster)
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
 }
@@ -294,7 +294,7 @@ func TestAddPodThenAddVpa(t *testing.T) {
 // VPA are removed.
 func TestChangePodLabels(t *testing.T) {
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	addTestPod(cluster)
 	addTestContainer(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
@@ -308,7 +308,7 @@ func TestChangePodLabels(t *testing.T) {
 // Creates a VPA and verifies that annotation updates work properly.
 func TestUpdateAnnotations(t *testing.T) {
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	// Verify that the annotations match the test annotations.
 	assert.Equal(t, vpa.Annotations, testAnnotations)
 	// Update the annotations (non-empty).
@@ -327,7 +327,7 @@ func TestUpdateAnnotations(t *testing.T) {
 // between the pod and the VPA are updated correctly each time.
 func TestUpdatePodSelector(t *testing.T) {
 	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
+	vpa := AddTestVpa(cluster)
 	addTestPod(cluster)
 	addTestContainer(cluster)
 

@@ -53,16 +53,16 @@ type VpaTargetSelectorFetcher interface {
 	Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error)
 }
 
-type wellKnownController string
+type WellKnownController string
 
 const (
-	daemonSet             wellKnownController = "DaemonSet"
-	deployment            wellKnownController = "Deployment"
-	replicaSet            wellKnownController = "ReplicaSet"
-	statefulSet           wellKnownController = "StatefulSet"
-	replicationController wellKnownController = "ReplicationController"
-	job                   wellKnownController = "Job"
-	cronJob               wellKnownController = "CronJob"
+	daemonSet             WellKnownController = "DaemonSet"
+	deployment            WellKnownController = "Deployment"
+	replicaSet            WellKnownController = "ReplicaSet"
+	statefulSet           WellKnownController = "StatefulSet"
+	replicationController WellKnownController = "ReplicationController"
+	job                   WellKnownController = "Job"
+	cronJob               WellKnownController = "CronJob"
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
@@ -79,7 +79,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		mapper.Reset()
 	}, discoveryResetPeriod, make(chan struct{}))
 
-	informersMap := map[wellKnownController]cache.SharedIndexInformer{
+	informersMap := map[WellKnownController]cache.SharedIndexInformer{
 		daemonSet:             factory.Apps().V1().DaemonSets().Informer(),
 		deployment:            factory.Apps().V1().Deployments().Informer(),
 		replicaSet:            factory.Apps().V1().ReplicaSets().Informer(),
@@ -108,19 +108,27 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	}
 }
 
+func NewSimpleVpaTargetSelectorFetcher(scaleNamespacer scale.ScalesGetter, mapper apimeta.RESTMapper, informersMap map[WellKnownController]cache.SharedIndexInformer) VpaTargetSelectorFetcher {
+	return &vpaTargetSelectorFetcher{
+		scaleNamespacer: scaleNamespacer,
+		mapper:          mapper,
+		informersMap:    informersMap,
+	}
+}
+
 // vpaTargetSelectorFetcher implements VpaTargetSelectorFetcher interface
 // by querying API server for the controller pointed by VPA's targetRef
 type vpaTargetSelectorFetcher struct {
 	scaleNamespacer scale.ScalesGetter
 	mapper          apimeta.RESTMapper
-	informersMap    map[wellKnownController]cache.SharedIndexInformer
+	informersMap    map[WellKnownController]cache.SharedIndexInformer
 }
 
 func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
 		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object switch to v1beta2.")
 	}
-	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
+	kind := WellKnownController(vpa.Spec.TargetRef.Kind)
 	informer, exists := f.informersMap[kind]
 	if exists {
 		return getLabelSelector(informer, vpa.Spec.TargetRef.Kind, vpa.Namespace, vpa.Spec.TargetRef.Name)
