@@ -62,6 +62,13 @@ var (
 10: 
   - ".*t\\.large.*"
 `
+	wildcardMatchConfig = `
+5:
+  - ".*"
+10:
+  - ".t2\\.large.*"
+`
+
 	eoT2Micro = expander.Option{
 		Debug:     "t2.micro",
 		NodeGroup: test.NewTestNodeGroup("my-asg.t2.micro", 10, 1, 1, true, false, "t2.micro", nil, nil),
@@ -107,6 +114,14 @@ func TestPriorityExpanderCorrecltySelectsSingleMatchingOptionOutOfMany(t *testin
 	s, _, _, _ := getStrategyInstance(t, config)
 	ret := s.BestOption([]expander.Option{eoT2Large, eoM44XLarge}, nil)
 	assert.Equal(t, *ret, eoM44XLarge)
+}
+
+func TestPriorityExpanderDoesNotFallBackToRandomWhenHigherPriorityMatches(t *testing.T) {
+	s, _, _, _ := getStrategyInstance(t, wildcardMatchConfig)
+	for i := 0; i < 10; i++ {
+		ret := s.BestOption([]expander.Option{eoT2Large, eoT2Micro}, nil)
+		assert.Equal(t, *ret, eoT2Large)
+	}
 }
 
 func TestPriorityExpanderCorrecltySelectsOneOfTwoMatchingOptionsOutOfMany(t *testing.T) {
