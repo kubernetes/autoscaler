@@ -2,7 +2,7 @@
 
 To verify that cluster-autoscaler has started, run:
 
-  kubectl --namespace={{ .Release.Namespace }} get pods -l "app={{ template "cluster-autoscaler.name" . }},release={{ .Release.Name }}"
+  kubectl --namespace={{ .Release.Namespace }} get pods -l "app.kubernetes.io/name={{ template "cluster-autoscaler.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
 
 {{- else -}}
 
