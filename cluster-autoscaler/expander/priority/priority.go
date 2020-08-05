@@ -148,7 +148,6 @@ func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[s
 			}
 			best = append(best, option)
 			found = true
-			break
 		}
 		if !found {
 			msg := fmt.Sprintf("Priority expander: node group %s not found in priority expander configuration. "+
