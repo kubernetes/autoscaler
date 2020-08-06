@@ -17,7 +17,6 @@ limitations under the License.
 package target
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -31,14 +30,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/crdcache"
 	"k8s.io/client-go/discovery"
 	cacheddiscovery "k8s.io/client-go/discovery/cached"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
-	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 )
@@ -67,13 +64,11 @@ const (
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
-func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) VpaTargetSelectorFetcher {
+func NewVpaTargetSelectorFetcher(config *rest.Config, factory informers.SharedInformerFactory, crdCache crdcache.CrdCache) VpaTargetSelectorFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.Fatalf("Could not create discoveryClient: %v", err)
 	}
-	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
-	restClient := kubeClient.CoreV1().RESTClient()
 	cachedDiscoveryClient := cacheddiscovery.NewMemCacheClient(discoveryClient)
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 	go wait.Until(func() {
@@ -101,20 +96,19 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		}
 	}
 
-	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &vpaTargetSelectorFetcher{
-		scaleNamespacer: scaleNamespacer,
-		mapper:          mapper,
-		informersMap:    informersMap,
+		crdCache:     crdCache,
+		mapper:       mapper,
+		informersMap: informersMap,
 	}
 }
 
 // vpaTargetSelectorFetcher implements VpaTargetSelectorFetcher interface
 // by querying API server for the controller pointed by VPA's targetRef
 type vpaTargetSelectorFetcher struct {
-	scaleNamespacer scale.ScalesGetter
-	mapper          apimeta.RESTMapper
-	informersMap    map[wellKnownController]cache.SharedIndexInformer
+	mapper       apimeta.RESTMapper
+	informersMap map[wellKnownController]cache.SharedIndexInformer
+	crdCache     crdcache.CrdCache
 }
 
 func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
@@ -211,16 +205,8 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 
 	var lastError error
 	for _, mapping := range mappings {
-		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+		selector, err := f.crdCache.FetchSelector(mapping.Resource, namespace, name)
 		if err == nil {
-			if scale.Status.Selector == "" {
-				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)
-			}
-			selector, err := labels.Parse(scale.Status.Selector)
-			if err != nil {
-				return nil, err
-			}
 			return selector, nil
 		}
 		lastError = err

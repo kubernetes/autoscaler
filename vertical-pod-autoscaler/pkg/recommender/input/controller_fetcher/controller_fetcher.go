@@ -17,7 +17,6 @@ limitations under the License.
 package controllerfetcher
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -30,14 +29,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/crdcache"
 	"k8s.io/client-go/discovery"
 	cacheddiscovery "k8s.io/client-go/discovery/cached"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
-	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 )
@@ -78,19 +75,17 @@ type ControllerFetcher interface {
 }
 
 type controllerFetcher struct {
-	scaleNamespacer scale.ScalesGetter
-	mapper          apimeta.RESTMapper
-	informersMap    map[wellKnownController]cache.SharedIndexInformer
+	mapper       apimeta.RESTMapper
+	informersMap map[wellKnownController]cache.SharedIndexInformer
+	crdCache     crdcache.CrdCache
 }
 
 // NewControllerFetcher returns a new instance of controllerFetcher
-func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) ControllerFetcher {
+func NewControllerFetcher(config *rest.Config, factory informers.SharedInformerFactory, crdCache crdcache.CrdCache) ControllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.Fatalf("Could not create discoveryClient: %v", err)
 	}
-	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
-	restClient := kubeClient.CoreV1().RESTClient()
 	cachedDiscoveryClient := cacheddiscovery.NewMemCacheClient(discoveryClient)
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 	go wait.Until(func() {
@@ -118,11 +113,10 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		}
 	}
 
-	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &controllerFetcher{
-		scaleNamespacer: scaleNamespacer,
-		mapper:          mapper,
-		informersMap:    informersMap,
+		crdCache:     crdCache,
+		mapper:       mapper,
+		informersMap: informersMap,
 	}
 }
 
@@ -266,9 +260,8 @@ func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersi
 	}
 
 	for _, mapping := range mappings {
-		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(key.Namespace).Get(context.TODO(), groupResource, key.Name, metav1.GetOptions{})
-		if err == nil && scale != nil {
+		isScalable, err := f.crdCache.IsScalable(mapping.Resource, key.Namespace, key.Name)
+		if err == nil && isScalable {
 			return true
 		}
 	}
@@ -283,10 +276,9 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 
 	var lastError error
 	for _, mapping := range mappings {
-		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+		ownerReferences, err := f.crdCache.GetOwnerReferences(mapping.Resource, namespace, name)
 		if err == nil {
-			return getOwnerController(scale.OwnerReferences, namespace), nil
+			return getOwnerController(ownerReferences, namespace), nil
 		}
 		lastError = err
 	}
