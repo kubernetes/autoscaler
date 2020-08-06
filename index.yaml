@@ -1,0 +1,50 @@
+apiVersion: v1
+entries:
+  cluster-autoscaler-chart:
+  - apiVersion: v2
+    appVersion: 1.18.1
+    created: "2020-08-06T17:09:40.689867+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: ebf0707daf39c597793c5622bfc0eb9db05c70d7ebad7c3168ae82fedd02dc84
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler-chart
+    type: application
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.1/cluster-autoscaler-chart-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: 1.18.1
+    created: "2020-08-06T17:09:40.689867+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 8bd2350e60421cefb8d7b262d20eff7a77ab88547bd0d3d225d70e076e9797f2
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler-chart
+    type: application
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.0/cluster-autoscaler-chart-1.0.0.tgz
+    version: 1.0.0
+generated: "2020-08-06T17:09:40.688791+01:00"
