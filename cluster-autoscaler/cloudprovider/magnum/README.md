@@ -47,6 +47,30 @@ to match your cluster.
 | --nodes                     | Used to select a specific node group to autoscale and constrain its node count. Of the form `min:max:NodeGroupName`. Can be used multiple times. |
 | --node-group-auto-discovery | See below.                                                                                                                                       |
 
+#### Deployment with helm
+
+Alternatively, the autoscaler can be deployed with the cluster autoscaler helm chart.
+A minimal values.yaml file looks like:
+
+```yaml
+cloudProvider: "magnum"
+
+magnumClusterName: "cluster name or ID"
+
+autoscalingGroups:
+- name: default-worker
+  maxSize: 5
+  minSize: 1
+
+cloudConfigPath: "/etc/kubernetes/cloud-config"
+```
+
+For running on the master node and other suggested settings, see
+[examples/values-example.yaml](examples/values-example.yaml).
+To deploy with node group autodiscovery (for cluster autoscaler v1.19+), see
+[examples/values-autodiscovery.yaml](examples/values-autodiscovery.yaml).
+
+
 ## Node group auto discovery
 
 Instead of using `--nodes` to select specific node groups by name,
