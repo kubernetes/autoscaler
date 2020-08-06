@@ -17,4 +17,4 @@ name: cluster-autoscaler-chart
 sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
-version: 1.0.0
+version: 1.0.1
