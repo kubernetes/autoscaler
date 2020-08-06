@@ -45,10 +45,15 @@ You must provide some minimal configuration, either to specify instance groups o
 
 Either:
 
-- Set `autoDiscovery.clusterName` and tag your autoscaling groups appropriately (`--cloud-provider=aws` only) **or**
-- Set at least one ASG as an element in the `autoscalingGroups` array with its three values: `name`, `minSize` and `maxSize`.
+- Set `autoDiscovery.clusterName` and provide additional autodiscovery options if necessary **or**
+- Set static node group configurations for one or more node groups (using `autoscalingGroups` or `autoscalingGroupsnamePrefix`).
 
-To install the chart with the release name `my-release`:
+To create a valid configuration, follow instructions for your cloud provider:
+
+* [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
+* [GCE](#gce)
+* [Azure AKS](#azure-aks)
+* [OpenStack Magnum](#openstack-magnum)
 
 ### AWS - Using auto-discovery of tagged instance groups
 
@@ -162,6 +167,24 @@ The following parameters are required:
 - `azureResourceGroup: "your-aks-cluster-resource-group-name"`
 - `azureVMType: "AKS"`
 - `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+
+### OpenStack Magnum
+
+`cloudProvider: magnum` must be set, and then one of
+
+- `magnumClusterName=<cluster name or ID>` and `autoscalingGroups` with the names of node groups and min/max node counts
+- or `autoDiscovery.clusterName=<cluster name or ID>` with one or more `autoDiscovery.roles`.
+
+Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location
+of the cloud-config file on the host.
+
+Example values files can be found [here](../../cluster-autoscaler/cloudprovider/magnum/examples).
+
+Install the chart with
+
+```
+$ helm install my-release autoscaler/cluster-autoscaler-chart -f myvalues.yaml
+```
 
 ## Uninstalling the Chart
 
