@@ -3,6 +3,7 @@ package openstack
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
 	tokens2 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/identity/v2/tokens"
@@ -432,7 +433,11 @@ func NewImageServiceV2(client *gophercloud.ProviderClient, eo gophercloud.Endpoi
 // load balancer service.
 func NewLoadBalancerV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
 	sc, err := initClientOpts(client, eo, "load-balancer")
-	sc.ResourceBase = sc.Endpoint + "v2.0/"
+
+	// Fixes edge case having an OpenStack lb endpoint with trailing version number.
+	endpoint := strings.Replace(sc.Endpoint, "v2.0/", "", -1)
+
+	sc.ResourceBase = endpoint + "v2.0/"
 	return sc, err
 }
 
@@ -472,4 +477,9 @@ func NewContainerInfraV1(client *gophercloud.ProviderClient, eo gophercloud.Endp
 // NewWorkflowV2 creates a ServiceClient that may be used with the v2 workflow management package.
 func NewWorkflowV2(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
 	return initClientOpts(client, eo, "workflowv2")
+}
+
+// NewPlacementV1 creates a ServiceClient that may be used with the placement package.
+func NewPlacementV1(client *gophercloud.ProviderClient, eo gophercloud.EndpointOpts) (*gophercloud.ServiceClient, error) {
+	return initClientOpts(client, eo, "placement")
 }
