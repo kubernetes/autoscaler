@@ -38,7 +38,7 @@ Example to Create a Trust
         },
         TrusteeUserID: "ecb37e88cc86431c99d0332208cb6fbf",
         TrustorUserID: "959ed913a32c4ec88c041c98e61cbbc3",
-	}
+    }
 
     trust, err := trusts.Create(identityClient, createOpts).Extract()
     if err != nil {
