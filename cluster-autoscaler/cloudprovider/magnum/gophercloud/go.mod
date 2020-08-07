@@ -1,4 +1,4 @@
-module github.com/gophercloud/gophercloud
+module k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud
 
 require (
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
@@ -11,3 +11,4 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.7
 )
+
