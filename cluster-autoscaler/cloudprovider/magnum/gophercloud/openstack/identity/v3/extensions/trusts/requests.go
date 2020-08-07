@@ -52,7 +52,7 @@ type CreateOptsBuilder interface {
 // CreateOpts provides options used to create a new trust.
 type CreateOpts struct {
 	// Impersonation allows the trustee to impersonate the trustor.
-	Impersonation bool `json:"impersonation" required:"true"`
+	Impersonation bool `json:"impersonation"`
 
 	// TrusteeUserID is a user who is capable of consuming the trust.
 	TrusteeUserID string `json:"trustee_user_id" required:"true"`
