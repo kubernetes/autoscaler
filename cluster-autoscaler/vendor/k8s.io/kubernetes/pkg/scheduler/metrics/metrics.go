@@ -126,7 +126,7 @@ var (
 	PreemptionVictims = metrics.NewHistogram(
 		&metrics.HistogramOpts{
 			Subsystem: SchedulerSubsystem,
-			Name:      "pod_preemption_victims",
+			Name:      "preemption_victims",
 			Help:      "Number of selected preemption victims",
 			// we think #victims>50 is pretty rare, therefore [50, +Inf) is considered a single bucket.
 			Buckets:        metrics.LinearBuckets(5, 5, 10),
@@ -159,8 +159,8 @@ var (
 			Subsystem: SchedulerSubsystem,
 			Name:      "pod_scheduling_duration_seconds",
 			Help:      "E2e latency for a pod being scheduled which may include multiple scheduling attempts.",
-			// Start with 1ms with the last bucket being [~16s, Inf)
-			Buckets:        metrics.ExponentialBuckets(0.001, 2, 15),
+			// Start with 10ms with the last bucket being [~88m, Inf).
+			Buckets:        metrics.ExponentialBuckets(0.01, 2, 20),
 			StabilityLevel: metrics.ALPHA,
 		},
 		[]string{"attempts"})
