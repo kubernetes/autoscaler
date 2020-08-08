@@ -189,6 +189,13 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 				CloudProviderRateLimitQPS:         1,
 				CloudProviderRateLimitQPSWrite:    1,
 			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
 		},
 	}
 
@@ -246,6 +253,13 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 				CloudProviderRateLimitQPSWrite:    1,
 			},
 			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
 				CloudProviderRateLimit:            false,
 				CloudProviderRateLimitBucket:      5,
 				CloudProviderRateLimitBucketWrite: 5,
@@ -398,6 +412,13 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 				CloudProviderRateLimitQPSWrite:    1,
 			},
 			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
 				CloudProviderRateLimit:            true,
 				CloudProviderRateLimitBucket:      5,
 				CloudProviderRateLimitBucketWrite: 5,

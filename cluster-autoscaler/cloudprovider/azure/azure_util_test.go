@@ -19,13 +19,31 @@ package azure
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"k8s.io/legacy-cloud-providers/azure/clients/diskclient/mockdiskclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient/mockinterfaceclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient/mockstorageaccountclient"
+	"k8s.io/legacy-cloud-providers/azure/clients/vmclient/mockvmclient"
 	"k8s.io/legacy-cloud-providers/azure/retry"
 )
+
+const (
+	testAccountName            = "account"
+	storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
+		"header is formed correctly including the signature"
+)
+
+func GetTestAzureUtil(t *testing.T) *AzUtil {
+	return &AzUtil{manager: newTestAzureManager(t)}
+}
 
 func TestSplitBlobURI(t *testing.T) {
 	expectedAccountName := "vhdstorage8h8pjybi9hbsl6"
@@ -277,4 +295,263 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 		real := isAzureRequestsThrottled(test.rerr)
 		assert.Equal(t, test.expected, real, test.desc)
 	}
+}
+
+func TestDeleteBlob(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	azUtil := GetTestAzureUtil(t)
+	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
+	mockSAClient.EXPECT().ListKeys(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		testAccountName).Return(storage.AccountListKeysResult{
+		Keys: &[]storage.AccountKey{
+			{Value: to.StringPtr("dmFsdWUK")},
+		},
+	}, nil)
+	azUtil.manager.azClient.storageAccountsClient = mockSAClient
+
+	err := azUtil.DeleteBlob(testAccountName, "vhd", "blob")
+	assert.True(t, strings.Contains(err.Error(), storageAccountClientErrMsg))
+}
+
+func TestDeleteVirtualMachine(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	azUtil := GetTestAzureUtil(t)
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	azUtil.manager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMClient.EXPECT().Get(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vm",
+		gomock.Any()).Return(compute.VirtualMachine{}, errInternal)
+
+	err := azUtil.DeleteVirtualMachine("rg", "vm")
+	assert.NoError(t, err)
+
+	mockVMClient.EXPECT().Get(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vm",
+		gomock.Any()).Return(compute.VirtualMachine{
+		VirtualMachineProperties: &compute.VirtualMachineProperties{
+			StorageProfile: &compute.StorageProfile{
+				OsDisk: &compute.OSDisk{},
+			},
+		},
+	}, nil)
+	err = azUtil.DeleteVirtualMachine("rg", "vm")
+	expectedErr := fmt.Errorf("os disk does not have a VHD URI")
+	assert.Equal(t, expectedErr, err)
+
+	mockVMClient.EXPECT().Get(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vm",
+		gomock.Any()).Return(compute.VirtualMachine{
+		VirtualMachineProperties: &compute.VirtualMachineProperties{
+			StorageProfile: &compute.StorageProfile{
+				OsDisk: &compute.OSDisk{
+					Vhd: &compute.VirtualHardDisk{
+						URI: to.StringPtr("https://vhdstorage8h8pjybi9hbsl6.blob.core.windows.net" +
+							"/vhds/osdisks/disk1234.vhd"),
+					},
+				},
+			},
+			NetworkProfile: &compute.NetworkProfile{
+				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
+					{ID: to.StringPtr("foo/bar")},
+				},
+			},
+		},
+	}, nil)
+	mockVMClient.EXPECT().Delete(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vm").Return(nil).Times(2)
+	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
+	mockSAClient.EXPECT().ListKeys(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vhdstorage8h8pjybi9hbsl6").Return(storage.AccountListKeysResult{
+		Keys: &[]storage.AccountKey{
+			{Value: to.StringPtr("dmFsdWUK")},
+		},
+	}, nil)
+	azUtil.manager.azClient.storageAccountsClient = mockSAClient
+	mockNICClient := mockinterfaceclient.NewMockInterface(ctrl)
+	mockNICClient.EXPECT().Delete(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"bar").Return(nil).Times(2)
+	azUtil.manager.azClient.interfacesClient = mockNICClient
+	err = azUtil.DeleteVirtualMachine("rg", "vm")
+	assert.True(t, strings.Contains(err.Error(), "no such host"))
+
+	mockVMClient.EXPECT().Get(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"vm",
+		gomock.Any()).Return(compute.VirtualMachine{
+		VirtualMachineProperties: &compute.VirtualMachineProperties{
+			StorageProfile: &compute.StorageProfile{
+				OsDisk: &compute.OSDisk{
+					Name:        to.StringPtr("disk"),
+					ManagedDisk: &compute.ManagedDiskParameters{},
+				},
+			},
+			NetworkProfile: &compute.NetworkProfile{
+				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
+					{ID: to.StringPtr("foo/bar")},
+				},
+			},
+		},
+	}, nil)
+	mockDiskClient := mockdiskclient.NewMockInterface(ctrl)
+	mockDiskClient.EXPECT().Delete(
+		gomock.Any(),
+		azUtil.manager.config.ResourceGroup,
+		"disk").Return(nil)
+	azUtil.manager.azClient.disksClient = mockDiskClient
+	err = azUtil.DeleteVirtualMachine("rg", "vm")
+	assert.NoError(t, err)
+}
+
+func TestNormalizeMasterResourcesForScaling(t *testing.T) {
+	templateMap := map[string]interface{}{
+		resourcesFieldName: []interface{}{
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmExtensionType,
+			},
+			map[string]interface{}{
+				nameFieldName: 1,
+				typeFieldName: vmResourceType,
+			},
+			map[string]interface{}{
+				nameFieldName: "foo",
+				typeFieldName: vmResourceType,
+			},
+			map[string]interface{}{
+				nameFieldName:       "variables('masterVMNamePrefix')",
+				typeFieldName:       vmResourceType,
+				propertiesFieldName: "foo",
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: "foo",
+				},
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: map[string]interface{}{
+						vmSizeFieldName: "size",
+					},
+				},
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: map[string]interface{}{},
+					osProfileFieldName:       "foo",
+				},
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: map[string]interface{}{},
+					osProfileFieldName: map[string]interface{}{
+						customDataFieldName: "data",
+					},
+				},
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: map[string]interface{}{},
+					storageProfileFieldName:  "foo",
+				},
+			},
+			map[string]interface{}{
+				nameFieldName: "variables('masterVMNamePrefix')",
+				typeFieldName: vmResourceType,
+				propertiesFieldName: map[string]interface{}{
+					hardwareProfileFieldName: map[string]interface{}{},
+					storageProfileFieldName: map[string]interface{}{
+						imageReferenceFieldName: "image",
+					},
+				},
+			},
+		},
+	}
+	err := normalizeMasterResourcesForScaling(templateMap)
+	assert.Equal(t, 9, len(templateMap[resourcesFieldName].([]interface{})))
+	assert.NoError(t, err)
+}
+
+func TestNormalizeForK8sVMASScalingUp(t *testing.T) {
+	templateMap := map[string]interface{}{
+		resourcesFieldName: []interface{}{
+			map[string]interface{}{
+				typeFieldName: nsgResourceType,
+			},
+			map[string]interface{}{
+				typeFieldName: nsgResourceType,
+			},
+		},
+	}
+	err := normalizeForK8sVMASScalingUp(templateMap)
+	expectedErr := fmt.Errorf("found 2 resources with type %s in the template. "+
+		"There should only be 1", nsgResourceType)
+	assert.Equal(t, expectedErr, err)
+
+	templateMap = map[string]interface{}{
+		resourcesFieldName: []interface{}{
+			map[string]interface{}{
+				typeFieldName: rtResourceType,
+			},
+			map[string]interface{}{
+				typeFieldName: rtResourceType,
+			},
+		},
+	}
+	expectedErr = fmt.Errorf("found 2 resources with type %s in the template. "+
+		"There should only be 1", rtResourceType)
+	err = normalizeForK8sVMASScalingUp(templateMap)
+	assert.Equal(t, expectedErr, err)
+
+	templateMap = map[string]interface{}{
+		resourcesFieldName: []interface{}{
+			map[string]interface{}{
+				typeFieldName: nsgResourceType,
+			},
+			map[string]interface{}{
+				dependsOnFieldName: []interface{}{nsgResourceType, "foo"},
+			},
+		},
+	}
+	err = normalizeForK8sVMASScalingUp(templateMap)
+	for _, resource := range templateMap[resourcesFieldName].([]interface{}) {
+		deps, ok := resource.([]interface{})
+		if ok {
+			for _, dep := range deps {
+				if names, ok := dep.(map[string]interface{})[dependsOnFieldName]; ok {
+					assert.Equal(t, 1, len(names.([]interface{})))
+				}
+			}
+		}
+	}
+	assert.NoError(t, err)
 }
