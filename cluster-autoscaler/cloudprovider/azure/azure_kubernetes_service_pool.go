@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice"
 	klog "k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -90,12 +90,12 @@ func (agentPool *AKSAgentPool) getAKSNodeCount() (count int, err error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	managedCluster, err := agentPool.manager.azClient.managedContainerServicesClient.Get(ctx,
+	managedCluster, rerr := agentPool.manager.azClient.managedKubernetesServicesClient.Get(ctx,
 		agentPool.resourceGroup,
 		agentPool.clusterName)
-	if err != nil {
-		klog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
-		return -1, err
+	if rerr != nil {
+		klog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, rerr.Error())
+		return -1, rerr.Error()
 	}
 
 	pool := agentPool.GetAKSAgentPool(managedCluster.AgentPoolProfiles)
@@ -115,12 +115,12 @@ func (agentPool *AKSAgentPool) setAKSNodeCount(count int) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	managedCluster, err := agentPool.manager.azClient.managedContainerServicesClient.Get(ctx,
+	managedCluster, rerr := agentPool.manager.azClient.managedKubernetesServicesClient.Get(ctx,
 		agentPool.resourceGroup,
 		agentPool.clusterName)
-	if err != nil {
-		klog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
-		return err
+	if rerr != nil {
+		klog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, rerr.Error())
+		return rerr.Error()
 	}
 
 	pool := agentPool.GetAKSAgentPool(managedCluster.AgentPoolProfiles)
@@ -133,23 +133,16 @@ func (agentPool *AKSAgentPool) setAKSNodeCount(count int) error {
 	updateCtx, updateCancel := getContextWithCancel()
 	defer updateCancel()
 	*pool.Count = int32(count)
-	aksClient := agentPool.manager.azClient.managedContainerServicesClient
-	future, err := aksClient.CreateOrUpdate(updateCtx, agentPool.resourceGroup,
-		agentPool.clusterName, managedCluster)
-	if err != nil {
-		klog.Errorf("Failed to update AKS cluster (%q): %v", agentPool.clusterName, err)
-		return err
+	aksClient := agentPool.manager.azClient.managedKubernetesServicesClient
+	rerr = aksClient.CreateOrUpdate(updateCtx, agentPool.resourceGroup,
+		agentPool.clusterName, managedCluster, "")
+	if rerr != nil {
+		klog.Errorf("Failed to update AKS cluster (%q): %v", agentPool.clusterName, rerr.Error())
+		return rerr.Error()
 	}
 
-	err = future.WaitForCompletionRef(updateCtx, aksClient.Client)
-	isSuccess, realError := isSuccessHTTPResponse(future.Response(), err)
-	if isSuccess {
-		klog.V(3).Infof("aksClient.CreateOrUpdate for aks cluster %q success", agentPool.clusterName)
-		return nil
-	}
-
-	klog.Errorf("aksClient.CreateOrUpdate for aks cluster %q failed: %v", agentPool.clusterName, realError)
-	return realError
+	klog.Infof("aksClient.CreateOrUpdate for aks cluster %q succeeded", agentPool.clusterName)
+	return nil
 }
 
 //GetNodeCount returns the count of nodes from the managed agent pool profile
@@ -263,7 +256,7 @@ func (agentPool *AKSAgentPool) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	targetSize := int(currentSize) + delta
+	targetSize := currentSize + delta
 	if targetSize > agentPool.MaxSize() {
 		return fmt.Errorf("size-increasing request of %d is bigger than max size %d", targetSize, agentPool.MaxSize())
 	}
@@ -336,7 +329,9 @@ func (agentPool *AKSAgentPool) IsAKSNode(tags map[string]*string) bool {
 func (agentPool *AKSAgentPool) GetNodes() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
+	klog.V(6).Infof("GetNodes: starting list aks node pools in %s", agentPool.nodeResourceGroup)
 	vmList, rerr := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)
+	klog.V(6).Infof("GetNodes: list finished, len(vmlist) = %d, err = %s", len(vmList), rerr.Error())
 	if rerr != nil {
 		klog.Errorf("Azure client list vm error : %v", rerr.Error())
 		return nil, rerr.Error()
