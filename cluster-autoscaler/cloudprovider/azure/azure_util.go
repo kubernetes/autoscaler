@@ -144,11 +144,12 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 
 	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
 	var nicName string
+	var err error
 	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
 	if nicID == nil {
 		klog.Warningf("NIC ID is not set for VM (%s/%s)", rg, name)
 	} else {
-		nicName, err := resourceName(*nicID)
+		nicName, err = resourceName(*nicID)
 		if err != nil {
 			return err
 		}

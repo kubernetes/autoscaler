@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
@@ -31,6 +30,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	klog "k8s.io/klog/v2"
+	"k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/diskclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient"
@@ -147,7 +147,7 @@ type azClient struct {
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
 	storageAccountsClient           storageaccountclient.Interface
-	managedContainerServicesClient  containerservice.ManagedClustersClient
+	managedKubernetesServicesClient containerserviceclient.Interface
 }
 
 // newServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
@@ -242,12 +242,9 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	disksClient := diskclient.New(diskClientConfig)
 	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
-	managedContainerServicesClient := containerservice.NewManagedClustersClient(cfg.SubscriptionID)
-	managedContainerServicesClient.BaseURI = env.ResourceManagerEndpoint
-	managedContainerServicesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	managedContainerServicesClient.PollingDelay = 5 * time.Second
-	managedContainerServicesClient.Sender = autorest.CreateSender()
-	klog.V(5).Infof("Created Managed Container services client with authorizer: %v", managedContainerServicesClient)
+	aksClientConfig := azClientConfig.WithRateLimiter(cfg.KubernetesServiceRateLimit)
+	kubernetesServicesClient := containerserviceclient.New(aksClientConfig)
+	klog.V(5).Infof("Created kubernetes services client with authorizer: %v", kubernetesServicesClient)
 
 	return &azClient{
 		disksClient:                     disksClient,
@@ -257,6 +254,6 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		deploymentsClient:               deploymentsClient,
 		virtualMachinesClient:           virtualMachinesClient,
 		storageAccountsClient:           storageAccountsClient,
-		managedContainerServicesClient:  managedContainerServicesClient,
+		managedKubernetesServicesClient: kubernetesServicesClient,
 	}, nil
 }
