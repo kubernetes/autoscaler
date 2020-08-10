@@ -80,12 +80,13 @@ set +o errexit
 
   if [ ! -d ${K8S_REPO} ]; then
     echo "Cloning ${K8S_FORK} into ${K8S_REPO}"
-    git clone ${K8S_FORK} ${K8S_REPO} >&${BASH_XTRACEFD} 2>&1
+    git clone --depth 1 ${K8S_FORK} ${K8S_REPO} >&${BASH_XTRACEFD} 2>&1
   fi
 
   pushd ${K8S_REPO} >/dev/null
-  git checkout ${K8S_REV} >&${BASH_XTRACEFD} 2>&1
-  K8S_REV_PARSED=$(git rev-parse ${K8S_REV})
+  git fetch --depth 1 origin ${K8S_REV} >&${BASH_XTRACEFD} 2>&1
+  git checkout FETCH_HEAD >&${BASH_XTRACEFD} 2>&1
+  K8S_REV_PARSED=$(git rev-parse FETCH_HEAD)
   popd >/dev/null
 
 
