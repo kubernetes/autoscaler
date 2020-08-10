@@ -3,6 +3,7 @@ package paperspace
 import (
 	"context"
 	"net/http"
+	"os"
 )
 
 type RequestParams struct {
@@ -17,15 +18,23 @@ type Client struct {
 
 // client that makes requests to Gradient API
 func NewClient() *Client {
-	return &Client{
+	client := Client{
 		Backend: NewAPIBackend(),
 	}
+
+	apiKey := os.Getenv("PAPERSPACE_APIKEY")
+	if apiKey != "" {
+		client.APIKey = apiKey
+	}
+
+	return &client
 }
 
 func NewClientWithBackend(backend Backend) *Client {
-	return &Client{
-		Backend: backend,
-	}
+	client := NewClient()
+	client.Backend = backend
+
+	return client
 }
 
 func (c *Client) Request(method string, url string, params, result interface{}, requestParams RequestParams) (*http.Response, error) {

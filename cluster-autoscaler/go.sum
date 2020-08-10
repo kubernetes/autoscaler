@@ -276,8 +276,8 @@ github.com/opencontainers/runtime-spec v1.0.0 h1:O6L965K88AilqnxeYPks/75HLpp4IG+
 github.com/opencontainers/runtime-spec v1.0.0/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/selinux v0.0.0-20170621221121-4a2974bf1ee9 h1:vVmQZ2IaaEe1MiuvZQbcydTbnlTG0OnZO5/4j7VZv0A=
 github.com/opencontainers/selinux v0.0.0-20170621221121-4a2974bf1ee9/go.mod h1:+BLncwf63G4dgOzykXAxcmnFlUaOlkDdmw/CqsW6pjs=
-github.com/paperspace/paperspace-go v0.1.2 h1:btdMxk+v1XW2vKfyZyZBzHd92M717n75EFsS07O+xfw=
-github.com/paperspace/paperspace-go v0.1.2/go.mod h1:NJfEFinBUAAA224WFqemX45O7KW4BEIrKEMNV4o5klc=
+github.com/paperspace/paperspace-go v0.2.0 h1:zlKEvKHz60WoQj8vZ6V6osucEj0ewcjgmMjscWOdv5Y=
+github.com/paperspace/paperspace-go v0.2.0/go.mod h1:fh6bwO/SH3/9LwS75Bzc9pZDvEoiEMXl6pa15X6ZUsg=
 github.com/pborman/uuid v1.2.0 h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=
 github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=

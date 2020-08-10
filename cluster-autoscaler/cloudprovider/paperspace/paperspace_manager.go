@@ -24,6 +24,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 
@@ -89,8 +90,12 @@ func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovide
 		}
 	}
 
-	if cfg.APIKey == "" {
-		return nil, errors.New("access token is not provided")
+	clusterID := os.Getenv("PAPERSPACE_CLUSTER_ID")
+	if cfg.ClusterID != "" {
+		clusterID = cfg.ClusterID
+	}
+	if clusterID == "" {
+		return nil, errors.New("cluster id is not provided")
 	}
 
 	apiBackend := psgo.NewAPIBackend()
@@ -102,7 +107,14 @@ func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovide
 	}
 
 	client := psgo.NewClientWithBackend(apiBackend)
-	client.APIKey = cfg.APIKey
+
+	if cfg.APIKey != "" {
+		client.APIKey = cfg.APIKey
+	}
+
+	if client.APIKey == "" {
+		return nil, errors.New("access token is not provided")
+	}
 
 	//specs, err := do.ParseASGAutoDiscoverySpecs()
 	//if err != nil {
@@ -117,19 +129,20 @@ func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovide
 		min, _ := strconv.Atoi(specs[0])
 		max, _ := strconv.Atoi(specs[1])
 		id := specs[2]
-		nodeGroups = append(nodeGroups, &NodeGroup{
+		nodeGroup := &NodeGroup{
 			id:        id,
 			clusterID: cfg.ClusterID,
 			manager:   nil,
 			asg:       psgo.AutoscalingGroup{},
 			minSize:   min,
 			maxSize:   max,
-		})
+		}
+		nodeGroups = append(nodeGroups, nodeGroup)
 	}
 
 	m := &Manager{
 		client:     client,
-		clusterID:  cfg.ClusterID,
+		clusterID:  clusterID,
 		nodeGroups: nodeGroups,
 	}
 
@@ -142,7 +155,6 @@ func (m *Manager) Refresh() error {
 	ctx := context.Background()
 	params := psgo.AutoscalingGroupListParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
-		Filter:        nil,
 		IncludeNodes:  true,
 	}
 	if len(m.nodeGroups) > 0 {
@@ -150,8 +162,25 @@ func (m *Manager) Refresh() error {
 		for _, nodeGroup := range m.nodeGroups {
 			ids = append(ids, nodeGroup.id)
 		}
-		params.Filter = make(map[string]string, 1)
-		params.Filter["where"] = fmt.Sprintf(`id: { inq: ["%s"] }`, strings.Join(ids, `", "`))
+		jsonIDs, err := json.Marshal(ids)
+		if err != nil {
+			return err
+		}
+		whereFilter := fmt.Sprintf(`{"id": { "inq": %s }}`, jsonIDs)
+		where := make(map[string]interface{})
+		err = json.Unmarshal([]byte(whereFilter), &where)
+		if err != nil {
+			return err
+		}
+		params.Filter.Where = where
+	} else {
+		whereFilter := fmt.Sprintf(`{"clusterId": "%s"}`, m.clusterID)
+		where := make(map[string]interface{})
+		err := json.Unmarshal([]byte(whereFilter), &where)
+		if err != nil {
+			return err
+		}
+		params.Filter.Where = where
 	}
 	autoscalingGroups, err := m.client.GetAutoscalingGroups(params)
 	if err != nil {

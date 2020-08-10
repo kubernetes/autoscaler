@@ -67,7 +67,7 @@ type ClusterGetParams struct {
 type ClusterListParams struct {
 	RequestParams
 
-	Filter map[string]string `json:"filter"`
+	Filter Filter `json:"filter,omitempty"`
 }
 
 type ClusterUpdateAttributeParams struct {
@@ -106,11 +106,7 @@ type ClusterUpdateS3Params struct {
 }
 
 func NewClusterListParams() ClusterListParams {
-	clusterListParams := ClusterListParams{
-		Filter: make(map[string]string),
-	}
-
-	return clusterListParams
+	return ClusterListParams{}
 }
 
 func (c Client) CreateCluster(params ClusterCreateParams) (Cluster, error) {

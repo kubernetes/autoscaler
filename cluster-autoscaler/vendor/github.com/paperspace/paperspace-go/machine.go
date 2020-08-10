@@ -71,7 +71,7 @@ type MachineGetParams struct {
 type MachineListParams struct {
 	RequestParams
 
-	Filter map[string]string `json:"filter,omitempty"`
+	Filter Filter `json:"filter,omitempty"`
 }
 
 type MachineUpdateAttributeParams struct {
@@ -94,11 +94,7 @@ type MachineUpdateParams struct {
 }
 
 func NewMachineListParams() MachineListParams {
-	machineListParams := MachineListParams{
-		Filter: make(map[string]string),
-	}
-
-	return machineListParams
+	return MachineListParams{}
 }
 
 func (c Client) CreateMachine(params MachineCreateParams) (Machine, error) {

@@ -10,6 +10,7 @@ import (
 	"math"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"time"
 )
 
@@ -24,14 +25,31 @@ type APIBackend struct {
 }
 
 func NewAPIBackend() *APIBackend {
-	return &APIBackend{
+	apiBackend := APIBackend{
 		BaseURL: DefaultBaseURL,
-		Debug:   false,
 		HTTPClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},
 		RetryCount: 0,
 	}
+
+	baseURL := os.Getenv("PAPERSPACE_BASEURL")
+	if baseURL != "" {
+		apiBackend.BaseURL = baseURL
+	}
+
+	debug := os.Getenv("PAPERSPACE_DEBUG")
+	if debug != "" {
+		apiBackend.Debug = true
+	}
+	
+	debugBody := os.Getenv("PAPERSPACE_DEBUG_BODY")
+	if debugBody != "" {
+		apiBackend.DebugBody = true
+	}
+
+
+	return &apiBackend
 }
 
 func (c *APIBackend) Request(method string, url string,
