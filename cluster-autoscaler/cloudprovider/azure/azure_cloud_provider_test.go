@@ -41,7 +41,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
-			ResourceGroup:       "test",
+			ResourceGroup:       "rg",
 			VMType:              vmTypeVMSS,
 			MaxDeploymentsCount: 2,
 			Deployment:          "deployment",
@@ -222,6 +222,13 @@ func TestBuildAzure(t *testing.T) {
 				CloudProviderRateLimitQPSWrite:    1,
 			},
 			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
 				CloudProviderRateLimit:            false,
 				CloudProviderRateLimitBucket:      5,
 				CloudProviderRateLimitBucketWrite: 5,
