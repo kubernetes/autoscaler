@@ -24,17 +24,17 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	extensionclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/crdcache"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	dynamic "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/restmapper"
-	scalefake "k8s.io/client-go/scale/fake"
-	core "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -45,7 +45,7 @@ func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
 	versioned := map[string][]metav1.APIResource{
-		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
+		"Foo": {{Kind: "Foo", Name: "foos", Group: "foo"}, {Kind: "Scale", Name: "scales", Group: "foo"}},
 	}
 	fakeMapper := []*restmapper.APIGroupResources{
 		{
@@ -59,33 +59,20 @@ func simpleControllerFetcher() *controllerFetcher {
 	mapper := restmapper.NewDiscoveryRESTMapper(fakeMapper)
 	f.mapper = mapper
 
-	scaleNamespacer := &scalefake.FakeScaleClient{}
-	f.scaleNamespacer = scaleNamespacer
-
-	//return not found if if tries to find the scale subresouce on bah
-	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
-		groupResource := schema.GroupResource{}
-		error := apierrors.NewNotFound(groupResource, "Foo")
-		return true, nil, error
-	})
-
-	//resource that can scale
-	scaleNamespacer.AddReactor("get", "iCanScale", func(action core.Action) (handled bool, ret runtime.Object, err error) {
-
-		ret = &autoscalingv1.Scale{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "Scaler",
-				Namespace: "foo",
-			},
-			Spec: autoscalingv1.ScaleSpec{
-				Replicas: 5,
-			},
-			Status: autoscalingv1.ScaleStatus{
-				Replicas: 5,
-			},
-		}
-		return true, ret, nil
-	})
+	scaleSubResource := &extensionsv1.CustomResourceSubresources{
+		Scale: &extensionsv1.CustomResourceSubresourceScale{},
+	}
+	scaleCRD := test.CustomResourceDefinition().WithName("scale").WithSubresources(scaleSubResource).
+		WithGroupVersion("Foo", "Foo").Get()
+	fooCRD := test.CustomResourceDefinition().WithName("foo").
+		WithGroupVersion("Foo", "Foo").Get()
+	iCanScaleObj := test.Unstructured().WithName("iCanScale").WithNamespace("test-namesapce").
+		WithApiVersionKind(test.CrdApiVersionAndKind(scaleCRD)).Get()
+	bahObj := test.Unstructured().WithName("bah").WithNamespace("test-namesapce").
+		WithApiVersionKind(test.CrdApiVersionAndKind(fooCRD)).Get()
+	dynamicClient := dynamic.NewSimpleDynamicClient(runtime.NewScheme(), iCanScaleObj, bahObj)
+	extensionClient := extensionclient.NewSimpleClientset(scaleCRD, fooCRD)
+	f.crdCache = crdcache.NewCrdCache(dynamicClient, extensionClient, time.Minute*10)
 
 	for _, kind := range wellKnownControllers {
 		f.informersMap[kind] = cache.NewSharedIndexInformer(
