@@ -63,7 +63,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
-	newNodeNames := make([]string, 0)
+	newNodeNames := make(map[string]bool)
 
 	if err := estimator.clusterSnapshot.Fork(); err != nil {
 		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
@@ -80,16 +80,18 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 
 	for _, podInfo := range podInfos {
 		found := false
-		for _, nodeName := range newNodeNames {
-			if err := estimator.predicateChecker.CheckPredicates(estimator.clusterSnapshot, podInfo.pod, nodeName); err == nil {
-				found = true
-				if err := estimator.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
-					klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
-					return 0
-				}
-				break
+
+		nodeName, err := estimator.predicateChecker.FitsAnyNodeMatching(estimator.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+			return newNodeNames[nodeInfo.Node().Name]
+		})
+		if err == nil {
+			found = true
+			if err := estimator.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
+				return 0
 			}
 		}
+
 		if !found {
 			// Add new node
 			newNodeName, err := estimator.addNewNodeToSnapshot(nodeTemplate, newNodeNameTimestamp, newNodeNameIndex)
@@ -103,7 +105,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
 				return 0
 			}
-			newNodeNames = append(newNodeNames, newNodeName)
+			newNodeNames[newNodeName] = true
 		}
 	}
 	return len(newNodeNames)
