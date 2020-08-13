@@ -701,7 +701,9 @@ CA doesn't remove underutilized nodes if they are running pods [that it shouldn'
 * there was a failed attempt to remove this particular node, in which case Cluster Autoscaler
   will wait for extra 5 minutes before considering it for removal again,
 
-* using large custom value for `--scale-down-delay-after-delete` or `--scan-interval`, which delays CA action.
+* using large custom value for `--scale-down-delay-after-delete` or `--scan-interval`, which delays CA action,
+
+* node is requested with high CPU/memory. 
 
 ### How to set PDBs to enable CA to move kube-system pods?
 
