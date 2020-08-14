@@ -18,7 +18,6 @@ limitations under the License.
 
 package aws
 
-// InstanceType is spec of EC2 instance
 type InstanceType struct {
 	InstanceType string
 	VCPU         int64
@@ -214,16 +213,22 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 	},
-	"c5a.large": {
-		InstanceType: "c5a.large",
-		VCPU:         2,
-		MemoryMb:     4096,
+	"c5a.12xlarge": {
+		InstanceType: "c5a.12xlarge",
+		VCPU:         48,
+		MemoryMb:     98304,
 		GPU:          0,
 	},
-	"c5a.xlarge": {
-		InstanceType: "c5a.xlarge",
-		VCPU:         4,
-		MemoryMb:     8192,
+	"c5a.16xlarge": {
+		InstanceType: "c5a.16xlarge",
+		VCPU:         64,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c5a.24xlarge": {
+		InstanceType: "c5a.24xlarge",
+		VCPU:         96,
+		MemoryMb:     196608,
 		GPU:          0,
 	},
 	"c5a.2xlarge": {
@@ -244,22 +249,64 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 	},
-	"c5a.12xlarge": {
-		InstanceType: "c5a.12xlarge",
+	"c5a.large": {
+		InstanceType: "c5a.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"c5a.xlarge": {
+		InstanceType: "c5a.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"c5ad.12xlarge": {
+		InstanceType: "c5ad.12xlarge",
 		VCPU:         48,
 		MemoryMb:     98304,
 		GPU:          0,
 	},
-	"c5a.16xlarge": {
-		InstanceType: "c5a.16xlarge",
+	"c5ad.16xlarge": {
+		InstanceType: "c5ad.16xlarge",
 		VCPU:         64,
 		MemoryMb:     131072,
 		GPU:          0,
 	},
-	"c5a.24xlarge": {
-		InstanceType: "c5a.24xlarge",
+	"c5ad.24xlarge": {
+		InstanceType: "c5ad.24xlarge",
 		VCPU:         96,
 		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"c5ad.2xlarge": {
+		InstanceType: "c5ad.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"c5ad.4xlarge": {
+		InstanceType: "c5ad.4xlarge",
+		VCPU:         16,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"c5ad.8xlarge": {
+		InstanceType: "c5ad.8xlarge",
+		VCPU:         32,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c5ad.large": {
+		InstanceType: "c5ad.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"c5ad.xlarge": {
+		InstanceType: "c5ad.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
 		GPU:          0,
 	},
 	"c5d": {
@@ -426,6 +473,66 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"c6g.xlarge": {
 		InstanceType: "c6g.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"c6gd": {
+		InstanceType: "c6gd",
+		VCPU:         64,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"c6gd.12xlarge": {
+		InstanceType: "c6gd.12xlarge",
+		VCPU:         48,
+		MemoryMb:     98304,
+		GPU:          0,
+	},
+	"c6gd.16xlarge": {
+		InstanceType: "c6gd.16xlarge",
+		VCPU:         64,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c6gd.2xlarge": {
+		InstanceType: "c6gd.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"c6gd.4xlarge": {
+		InstanceType: "c6gd.4xlarge",
+		VCPU:         16,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"c6gd.8xlarge": {
+		InstanceType: "c6gd.8xlarge",
+		VCPU:         32,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c6gd.large": {
+		InstanceType: "c6gd.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"c6gd.medium": {
+		InstanceType: "c6gd.medium",
+		VCPU:         1,
+		MemoryMb:     2048,
+		GPU:          0,
+	},
+	"c6gd.metal": {
+		InstanceType: "c6gd.metal",
+		VCPU:         64,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c6gd.xlarge": {
+		InstanceType: "c6gd.xlarge",
 		VCPU:         4,
 		MemoryMb:     8192,
 		GPU:          0,
@@ -764,6 +871,12 @@ var InstanceTypes = map[string]*InstanceType{
 		InstanceType: "i3p.16xlarge",
 		VCPU:         64,
 		MemoryMb:     499712,
+		GPU:          0,
+	},
+	"inf1": {
+		InstanceType: "inf1",
+		VCPU:         96,
+		MemoryMb:     0,
 		GPU:          0,
 	},
 	"inf1.24xlarge": {
@@ -1300,6 +1413,66 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 	},
+	"m6gd": {
+		InstanceType: "m6gd",
+		VCPU:         64,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"m6gd.12xlarge": {
+		InstanceType: "m6gd.12xlarge",
+		VCPU:         48,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"m6gd.16xlarge": {
+		InstanceType: "m6gd.16xlarge",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m6gd.2xlarge": {
+		InstanceType: "m6gd.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"m6gd.4xlarge": {
+		InstanceType: "m6gd.4xlarge",
+		VCPU:         16,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"m6gd.8xlarge": {
+		InstanceType: "m6gd.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"m6gd.large": {
+		InstanceType: "m6gd.large",
+		VCPU:         2,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"m6gd.medium": {
+		InstanceType: "m6gd.medium",
+		VCPU:         1,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"m6gd.metal": {
+		InstanceType: "m6gd.metal",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m6gd.xlarge": {
+		InstanceType: "m6gd.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
 	"p2": {
 		InstanceType: "p2",
 		VCPU:         64,
@@ -1830,6 +2003,66 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"r6g.xlarge": {
 		InstanceType: "r6g.xlarge",
+		VCPU:         4,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"r6gd": {
+		InstanceType: "r6gd",
+		VCPU:         64,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"r6gd.12xlarge": {
+		InstanceType: "r6gd.12xlarge",
+		VCPU:         48,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"r6gd.16xlarge": {
+		InstanceType: "r6gd.16xlarge",
+		VCPU:         64,
+		MemoryMb:     524288,
+		GPU:          0,
+	},
+	"r6gd.2xlarge": {
+		InstanceType: "r6gd.2xlarge",
+		VCPU:         8,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"r6gd.4xlarge": {
+		InstanceType: "r6gd.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"r6gd.8xlarge": {
+		InstanceType: "r6gd.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"r6gd.large": {
+		InstanceType: "r6gd.large",
+		VCPU:         2,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"r6gd.medium": {
+		InstanceType: "r6gd.medium",
+		VCPU:         1,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"r6gd.metal": {
+		InstanceType: "r6gd.metal",
+		VCPU:         64,
+		MemoryMb:     524288,
+		GPU:          0,
+	},
+	"r6gd.xlarge": {
+		InstanceType: "r6gd.xlarge",
 		VCPU:         4,
 		MemoryMb:     32768,
 		GPU:          0,
