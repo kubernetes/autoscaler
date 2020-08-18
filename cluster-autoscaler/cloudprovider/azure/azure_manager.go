@@ -513,7 +513,7 @@ func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, e
 	case vmTypeStandard:
 		return NewAgentPool(s, m)
 	case vmTypeVMSS:
-		return NewScaleSet(s, m)
+		return NewScaleSet(s, m, -1)
 	case vmTypeAKS:
 		return NewAKSAgentPool(s, m)
 	default:
@@ -700,7 +700,12 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) ([]cloud
 			continue
 		}
 
-		asg, err := NewScaleSet(spec, m)
+		curSize := int64(-1)
+		if scaleSet.Sku != nil && scaleSet.Sku.Capacity != nil {
+			curSize = *scaleSet.Sku.Capacity
+		}
+
+		asg, err := NewScaleSet(spec, m, curSize)
 		if err != nil {
 			klog.Warningf("ignoring nodegroup %q %s", *scaleSet.Name, err)
 			continue
