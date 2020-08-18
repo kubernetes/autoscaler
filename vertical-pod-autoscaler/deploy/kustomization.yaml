@@ -3,6 +3,4 @@ resources:
 - recommender-deployment.yaml
 - updater-deployment.yaml
 - vpa-rbac.yaml
-
-crds:
 - vpa-v1-crd.yaml
