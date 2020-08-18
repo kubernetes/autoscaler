@@ -89,7 +89,7 @@ type ScaleSet struct {
 }
 
 // NewScaleSet creates a new NewScaleSet.
-func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, error) {
+func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (*ScaleSet, error) {
 	scaleSet := &ScaleSet{
 		azureRef: azureRef{
 			Name: spec.Name,
@@ -97,7 +97,7 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, erro
 		minSize: spec.MinSize,
 		maxSize: spec.MaxSize,
 		manager: az,
-		curSize: -1,
+		curSize: curSize,
 	}
 
 	if az.config.VmssCacheTTL != 0 {
