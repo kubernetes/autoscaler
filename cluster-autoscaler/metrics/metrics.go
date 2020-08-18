@@ -125,6 +125,14 @@ var (
 		},
 	)
 
+	maxNodesCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "max_nodes_count",
+			Help:      "Maximum number of nodes in all node groups",
+		},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -257,6 +265,7 @@ func RegisterAll() {
 	legacyregistry.MustRegister(nodesCount)
 	legacyregistry.MustRegister(nodeGroupsCount)
 	legacyregistry.MustRegister(unschedulablePodsCount)
+	legacyregistry.MustRegister(maxNodesCount)
 	legacyregistry.MustRegister(lastActivity)
 	legacyregistry.MustRegister(functionDuration)
 	legacyregistry.MustRegister(functionDurationSummary)
@@ -324,6 +333,11 @@ func UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
 func UpdateUnschedulablePodsCount(podsCount int) {
 	unschedulablePodsCount.Set(float64(podsCount))
+}
+
+// UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
+func UpdateMaxNodesCount(nodesCount int) {
+	maxNodesCount.Set(float64(nodesCount))
 }
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.
