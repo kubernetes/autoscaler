@@ -751,7 +751,7 @@ func TestListScalesets(t *testing.T) {
 				minSize:           5,
 				maxSize:           50,
 				manager:           manager,
-				curSize:           -1,
+				curSize:           3,
 				sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
 			}},
 		},
@@ -857,7 +857,7 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		minSize:           minVal,
 		maxSize:           maxVal,
 		manager:           manager,
-		curSize:           -1,
+		curSize:           3,
 		sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
