@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -62,7 +61,9 @@ func (m *asgCache) Register(asg cloudprovider.NodeGroup) bool {
 
 	for i := range m.registeredAsgs {
 		if existing := m.registeredAsgs[i]; strings.EqualFold(existing.Id(), asg.Id()) {
-			if reflect.DeepEqual(existing, asg) {
+			e := existing.(*ScaleSet)
+			a := asg.(*ScaleSet)
+			if e.minSize == a.minSize && e.maxSize == a.maxSize && e.curSize == a.curSize {
 				return false
 			}
 
@@ -181,7 +182,7 @@ func (m *asgCache) regenerate() error {
 
 	m.instanceToAsg = newCache
 
-	// Incalidating unowned instance cache.
+	// Invalidating unowned instance cache.
 	m.invalidateUnownedInstanceCache()
 
 	return nil
