@@ -77,8 +77,8 @@ From the above config following part defines the webhook service:
 
 ```yaml
 Service:
-      Name:        vpa-webhook
-      Namespace:   kube-system
+  Name:        vpa-webhook
+  Namespace:   kube-system
 ```
 
 Check that the service actually exists:
