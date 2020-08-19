@@ -29,11 +29,13 @@ import (
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/dynamic"
 	fakedynamic "k8s.io/client-go/dynamic/fake"
@@ -439,24 +441,50 @@ func selectorFromScalableResource(u *unstructured.Unstructured) (labels.Selector
 }
 
 func createResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
-	if _, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Create(context.TODO(), resource.DeepCopy(), metav1.CreateOptions{}); err != nil {
+	if _, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Create(context.TODO(), resource, metav1.CreateOptions{}); err != nil {
 		return err
 	}
-	return informer.Informer().GetStore().Add(resource.DeepCopy())
+
+	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+
+		return true, nil
+	})
 }
 
 func updateResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
-	if _, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Update(context.TODO(), resource.DeepCopy(), metav1.UpdateOptions{}); err != nil {
+	updateResult, err := client.Resource(gvr).Namespace(resource.GetNamespace()).Update(context.TODO(), resource, metav1.UpdateOptions{})
+	if err != nil {
 		return err
 	}
-	return informer.Informer().GetStore().Update(resource.DeepCopy())
+
+	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+		result, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil {
+			return false, err
+		}
+		return reflect.DeepEqual(updateResult, result), nil
+	})
 }
 
 func deleteResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
 	if err := client.Resource(gvr).Namespace(resource.GetNamespace()).Delete(context.TODO(), resource.GetName(), metav1.DeleteOptions{}); err != nil {
 		return err
 	}
-	return informer.Informer().GetStore().Delete(resource)
+
+	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
+		if err != nil && apierrors.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
 }
 
 func deleteTestConfigs(t *testing.T, controller *machineController, testConfigs ...*testConfig) error {
@@ -469,15 +497,15 @@ func deleteTestConfigs(t *testing.T, controller *machineController, testConfigs 
 			}
 		}
 		for i := range config.machines {
-			if err := controller.machineInformer.Informer().GetStore().Delete(config.machines[i]); err != nil {
+			if err := deleteResource(controller.managementClient, controller.machineInformer, controller.machineResource, config.machines[i]); err != nil {
 				return err
 			}
 		}
-		if err := controller.machineSetInformer.Informer().GetStore().Delete(config.machineSet); err != nil {
+		if err := deleteResource(controller.managementClient, controller.machineSetInformer, controller.machineSetResource, config.machineSet); err != nil {
 			return err
 		}
 		if config.machineDeployment != nil {
-			if err := controller.machineDeploymentInformer.Informer().GetStore().Delete(config.machineDeployment); err != nil {
+			if err := deleteResource(controller.managementClient, controller.machineDeploymentInformer, controller.machineDeploymentResource, config.machineDeployment); err != nil {
 				return err
 			}
 		}
@@ -644,9 +672,11 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 	if err := unstructured.SetNestedField(machine.Object, "does-not-match", "spec", "providerID"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if err := controller.machineInformer.Informer().GetStore().Update(machine); err != nil {
+
+	if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
 		t.Fatalf("unexpected error updating machine, got %v", err)
 	}
+
 	machine, err = controller.findMachineByProviderID(normalizedProviderString(testConfig.nodes[0].Spec.ProviderID))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
