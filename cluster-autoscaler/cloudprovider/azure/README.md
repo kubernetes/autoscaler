@@ -146,6 +146,14 @@ In addition, cluster-autoscaler exposes a `AZURE_VMSS_CACHE_TTL` environment var
 | ----------- | ------- | -------------------- | ----------------- |
 | VmssCacheTTL | 15 | AZURE_VMSS_CACHE_TTL | vmssCacheTTL |
 
+The `AZURE_VMSS_VMS_CACHE_TTL` environment variable affects the `GetScaleSetVms` (VMSS VM List) calls rate. The default value is 300 seconds.
+A configurable jitter (`AZURE_VMSS_VMS_CACHE_JITTER` environment variable, default 0) expresses the maximum number of second that will be subtracted from that initial VMSS cache TTL after a new VMSS is discovered by the cluster-autoscaler: this can prevent a dogpile effect on clusters having many VMSS.
+
+| Config Name | Default | Environment Variable | Cloud Config File |
+| ----------- | ------- | -------------------- | ----------------- |
+| vmssVmsCacheTTL | 300 | AZURE_VMSS_VMS_CACHE_TTL | vmssVmsCacheTTL |
+| vmssVmsCacheJitter | 0 | AZURE_VMSS_VMS_CACHE_JITTER | vmssVmsCacheJitter |
+
 When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
 
 ### Standard deployment
