@@ -888,7 +888,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		// when fetched from the API
 		for _, node := range nodesToBeDeleted {
 			// Ensure the update has propogated
-			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) {
+			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Minute, func() (bool, error) {
 				m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 				if err != nil {
 					return false, err
