@@ -982,6 +982,7 @@ k8s.io/apiserver/plugin/pkg/authorizer/webhook
 # k8s.io/client-go v0.0.0 => /tmp/ca-update-vendor.xPNh/kubernetes/staging/src/k8s.io/client-go
 ## explicit
 k8s.io/client-go/discovery
+k8s.io/client-go/discovery/cached/memory
 k8s.io/client-go/discovery/fake
 k8s.io/client-go/dynamic
 k8s.io/client-go/dynamic/dynamicinformer
@@ -1177,7 +1178,9 @@ k8s.io/client-go/plugin/pkg/client/auth/exec
 k8s.io/client-go/rest
 k8s.io/client-go/rest/fake
 k8s.io/client-go/rest/watch
+k8s.io/client-go/restmapper
 k8s.io/client-go/scale
+k8s.io/client-go/scale/fake
 k8s.io/client-go/scale/scheme
 k8s.io/client-go/scale/scheme/appsint
 k8s.io/client-go/scale/scheme/appsv1beta1
