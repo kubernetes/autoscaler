@@ -1,0 +1,6 @@
+resources:
+- admission-controller-deployment.yaml
+- recommender-deployment.yaml
+- updater-deployment.yaml
+- vpa-rbac.yaml
+- vpa-v1-crd.yaml
