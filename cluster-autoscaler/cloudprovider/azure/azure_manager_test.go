@@ -52,6 +52,8 @@ const validAzureCfg = `{
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
 	"vmssCacheTTL": 60,
+	"vmssVmsCacheTTL": 240,
+	"vmssVmsCacheJitter": 120,
 	"maxDeploymentsCount": 8,
 	"cloudProviderRateLimit": false,
 	"routeRateLimit": {
@@ -75,6 +77,8 @@ const validAzureCfgForStandardVMType = `{
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
 	"vmssCacheTTL": 60,
+	"vmssVmsCacheTTL": 240,
+	"vmssVmsCacheJitter": 120,
 	"maxDeploymentsCount": 8,
 	"cloudProviderRateLimit": false,
 	"routeRateLimit": {
@@ -121,6 +125,8 @@ const validAzureCfgForStandardVMTypeWithoutDeploymentParameters = `{
         "routeTableName": "fakeName",
         "primaryAvailabilitySetName": "fakeName",
         "vmssCacheTTL": 60,
+	"vmssVmsCacheTTL": 240,
+	"vmssVmsCacheJitter": 120,
         "maxDeploymentsCount": 8,
         "cloudProviderRateLimit": false,
         "routeRateLimit": {
@@ -145,6 +151,8 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		AADClientID:         "fakeId",
 		AADClientSecret:     "fakeId",
 		VmssCacheTTL:        60,
+		VmssVmsCacheTTL:     240,
+		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
 		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
 			RateLimitConfig: azclients.RateLimitConfig{
@@ -215,6 +223,8 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 		AADClientID:         "fakeId",
 		AADClientSecret:     "fakeId",
 		VmssCacheTTL:        60,
+		VmssVmsCacheTTL:     240,
+		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
 		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
 			RateLimitConfig: azclients.RateLimitConfig{
@@ -369,6 +379,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		UseManagedIdentityExtension:  true,
 		UserAssignedIdentityID:       "UserAssignedIdentityID",
 		VmssCacheTTL:                 100,
+		VmssVmsCacheTTL:              110,
+		VmssVmsCacheJitter:           90,
 		MaxDeploymentsCount:          8,
 		CloudProviderBackoff:         true,
 		CloudProviderBackoffRetries:  1,
@@ -444,6 +456,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	os.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
 	os.Setenv("ARM_USER_ASSIGNED_IDENTITY_ID", "UserAssignedIdentityID")
 	os.Setenv("AZURE_VMSS_CACHE_TTL", "100")
+	os.Setenv("AZURE_VMSS_VMS_CACHE_TTL", "110")
+	os.Setenv("AZURE_VMSS_VMS_CACHE_JITTER", "90")
 	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "8")
 	os.Setenv("ENABLE_BACKOFF", "true")
 	os.Setenv("BACKOFF_RETRIES", "1")
@@ -748,11 +762,12 @@ func TestListScalesets(t *testing.T) {
 				azureRef: azureRef{
 					Name: vmssName,
 				},
-				minSize:           5,
-				maxSize:           50,
-				manager:           manager,
-				curSize:           3,
-				sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
+				minSize:                5,
+				maxSize:                50,
+				manager:                manager,
+				curSize:                3,
+				sizeRefreshPeriod:      defaultVmssSizeRefreshPeriod,
+				instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
 			}},
 		},
 		{
@@ -854,11 +869,12 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		azureRef: azureRef{
 			Name: vmssName,
 		},
-		minSize:           minVal,
-		maxSize:           maxVal,
-		manager:           manager,
-		curSize:           3,
-		sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
+		minSize:                minVal,
+		maxSize:                maxVal,
+		manager:                manager,
+		curSize:                3,
+		sizeRefreshPeriod:      defaultVmssSizeRefreshPeriod,
+		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
