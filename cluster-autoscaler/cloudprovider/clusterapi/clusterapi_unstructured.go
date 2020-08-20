@@ -78,7 +78,7 @@ func (r unstructuredScalableResource) ProviderIDs() ([]string, error) {
 	return providerIds, nil
 }
 
-func (r unstructuredScalableResource) Replicas() (int32, error) {
+func (r unstructuredScalableResource) Replicas() (int, error) {
 	gvr, err := r.GroupVersionResource()
 	if err != nil {
 		return 0, err
@@ -91,10 +91,17 @@ func (r unstructuredScalableResource) Replicas() (int32, error) {
 	if s == nil {
 		return 0, fmt.Errorf("unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
 	}
-	return s.Spec.Replicas, nil
+	return int(s.Spec.Replicas), nil
 }
 
-func (r unstructuredScalableResource) SetSize(nreplicas int32) error {
+func (r unstructuredScalableResource) SetSize(nreplicas int) error {
+	switch {
+	case nreplicas > r.maxSize:
+		return fmt.Errorf("size increase too large - desired:%d max:%d", nreplicas, r.maxSize)
+	case nreplicas < r.minSize:
+		return fmt.Errorf("size decrease too large - desired:%d min:%d", nreplicas, r.minSize)
+	}
+
 	gvr, err := r.GroupVersionResource()
 	if err != nil {
 		return err
@@ -109,7 +116,7 @@ func (r unstructuredScalableResource) SetSize(nreplicas int32) error {
 		return fmt.Errorf("unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
 	}
 
-	s.Spec.Replicas = nreplicas
+	s.Spec.Replicas = int32(nreplicas)
 	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Update(gvr.GroupResource(), s)
 	return updateErr
 }
