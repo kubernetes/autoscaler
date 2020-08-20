@@ -43,10 +43,10 @@ import (
 )
 
 var (
-	defaultVmssSizeRefreshPeriod = 15 * time.Second
-	vmssInstancesRefreshPeriod   = 5 * time.Minute
-	vmssContextTimeout           = 3 * time.Minute
-	vmssSizeMutex                sync.Mutex
+	defaultVmssSizeRefreshPeriod      = 15 * time.Second
+	defaultVmssInstancesRefreshPeriod = 5 * time.Minute
+	vmssContextTimeout                = 3 * time.Minute
+	vmssSizeMutex                     sync.Mutex
 )
 
 var scaleSetStatusCache struct {
@@ -83,6 +83,9 @@ type ScaleSet struct {
 	lastSizeRefresh   time.Time
 	sizeRefreshPeriod time.Duration
 
+	instancesRefreshPeriod time.Duration
+	instancesRefreshJitter int
+
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
 	lastInstanceRefresh time.Time
@@ -98,12 +101,20 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (
 		maxSize: spec.MaxSize,
 		manager: az,
 		curSize: curSize,
+
+		instancesRefreshJitter: az.config.VmssVmsCacheJitter,
 	}
 
 	if az.config.VmssCacheTTL != 0 {
 		scaleSet.sizeRefreshPeriod = time.Duration(az.config.VmssCacheTTL) * time.Second
 	} else {
 		scaleSet.sizeRefreshPeriod = defaultVmssSizeRefreshPeriod
+	}
+
+	if az.config.VmssVmsCacheTTL != 0 {
+		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVmsCacheTTL) * time.Second
+	} else {
+		scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
 	}
 
 	return scaleSet, nil
@@ -682,25 +693,33 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	defer scaleSet.instanceMutex.Unlock()
 
 	if int64(len(scaleSet.instanceCache)) == curSize &&
-		scaleSet.lastInstanceRefresh.Add(vmssInstancesRefreshPeriod).After(time.Now()) {
+		scaleSet.lastInstanceRefresh.Add(scaleSet.instancesRefreshPeriod).After(time.Now()) {
 		klog.V(4).Infof("Nodes: returns with curSize %d", curSize)
 		return scaleSet.instanceCache, nil
 	}
 
 	klog.V(4).Infof("Nodes: starts to get VMSS VMs")
+
+	lastRefresh := time.Now()
+	if scaleSet.lastInstanceRefresh.IsZero() && scaleSet.instancesRefreshJitter > 0 {
+		// new VMSS: spread future refreshs
+		splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
+		lastRefresh = time.Now().Add(-time.Second * time.Duration(splay))
+	}
+
 	vms, rerr := scaleSet.GetScaleSetVms()
 	if rerr != nil {
 		if isAzureRequestsThrottled(rerr) {
-			// Log a warning and update the instance refresh time so that it would retry after next vmssInstancesRefreshPeriod.
+			// Log a warning and update the instance refresh time so that it would retry after next scaleSet.instanceRefreshPeriod.
 			klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
-			scaleSet.lastInstanceRefresh = time.Now()
+			scaleSet.lastInstanceRefresh = lastRefresh
 			return scaleSet.instanceCache, nil
 		}
 		return nil, rerr.Error()
 	}
 
 	scaleSet.instanceCache = buildInstanceCache(vms)
-	scaleSet.lastInstanceRefresh = time.Now()
+	scaleSet.lastInstanceRefresh = lastRefresh
 	klog.V(4).Infof("Nodes: returns")
 	return scaleSet.instanceCache, nil
 }
@@ -765,7 +784,7 @@ func instanceStatusFromVM(vm compute.VirtualMachineScaleSetVM) *cloudprovider.In
 func (scaleSet *ScaleSet) invalidateInstanceCache() {
 	scaleSet.instanceMutex.Lock()
 	// Set the instanceCache as outdated.
-	scaleSet.lastInstanceRefresh = time.Now().Add(-1 * vmssInstancesRefreshPeriod)
+	scaleSet.lastInstanceRefresh = time.Now().Add(-1 * scaleSet.instancesRefreshPeriod)
 	scaleSet.instanceMutex.Unlock()
 }
 
