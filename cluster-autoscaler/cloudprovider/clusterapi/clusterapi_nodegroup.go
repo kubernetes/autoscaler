@@ -53,11 +53,7 @@ func (ng *nodegroup) MaxSize() int {
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
 func (ng *nodegroup) TargetSize() (int, error) {
-	size, err := ng.scalableResource.Replicas()
-	if err != nil {
-		return 0, err
-	}
-	return int(size), nil
+	return ng.scalableResource.Replicas()
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
@@ -73,12 +69,8 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	intSize := int(size)
 
-	if intSize+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", intSize+delta, ng.MaxSize())
-	}
-	return ng.scalableResource.SetSize(int32(intSize + delta))
+	return ng.scalableResource.SetSize(size + delta)
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned
@@ -118,7 +110,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 2: if deleting len(nodes) would make the replica count
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	if replicas-int32(len(nodes)) < int32(ng.MinSize()) {
+	if replicas-len(nodes) < ng.MinSize() {
 		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %q, minSize is %q ", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
@@ -187,7 +179,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 			size, delta, len(nodes))
 	}
 
-	return ng.scalableResource.SetSize(int32(size + delta))
+	return ng.scalableResource.SetSize(size + delta)
 }
 
 // Id returns an unique identifier of the node group.
@@ -268,10 +260,31 @@ func (ng *nodegroup) Autoprovisioned() bool {
 	return false
 }
 
-func newNodegroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+	// Ensure that the resulting node group would be allowed based on the autodiscovery specs if defined
+	if !controller.allowedByAutoDiscoverySpecs(unstructuredScalableResource) {
+		return nil, nil
+	}
+
 	scalableResource, err := newUnstructuredScalableResource(controller, unstructuredScalableResource)
 	if err != nil {
 		return nil, err
+	}
+
+	replicas, found, err := unstructured.NestedInt64(unstructuredScalableResource.UnstructuredContent(), "spec", "replicas")
+	if err != nil {
+		return nil, err
+	}
+
+	// We don't scale from 0 so nodes must belong to a nodegroup
+	// that has a scale size of at least 1.
+	if found && replicas == 0 {
+		return nil, nil
+	}
+
+	// Ensure the node group would have the capacity to scale
+	if scalableResource.MaxSize()-scalableResource.MinSize() < 1 {
+		return nil, nil
 	}
 
 	return &nodegroup{
