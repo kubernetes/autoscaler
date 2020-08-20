@@ -141,6 +141,12 @@ type Config struct {
 	// VMSS metadata cache TTL in seconds, only applies for vmss type
 	VmssCacheTTL int64 `json:"vmssCacheTTL" yaml:"vmssCacheTTL"`
 
+	// VMSS instances cache TTL in seconds, only applies for vmss type
+	VmssVmsCacheTTL int64 `json:"vmssVmsCacheTTL" yaml:"vmssVmsCacheTTL"`
+
+	// Jitter in seconds subtracted from the VMSS cache TTL before the first refresh
+	VmssVmsCacheJitter int `json:"vmssVmsCacheJitter" yaml:"vmssVmsCacheJitter"`
+
 	// number of latest deployments that will not be deleted
 	MaxDeploymentsCount int64 `json:"maxDeploymentsCount" yaml:"maxDeploymentsCount"`
 
@@ -336,6 +342,20 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 			cfg.VmssCacheTTL, err = strconv.ParseInt(vmssCacheTTL, 10, 0)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse AZURE_VMSS_CACHE_TTL %q: %v", vmssCacheTTL, err)
+			}
+		}
+
+		if vmssVmsCacheTTL := os.Getenv("AZURE_VMSS_VMS_CACHE_TTL"); vmssVmsCacheTTL != "" {
+			cfg.VmssVmsCacheTTL, err = strconv.ParseInt(vmssVmsCacheTTL, 10, 0)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_VMSS_VMS_CACHE_TTL %q: %v", vmssVmsCacheTTL, err)
+			}
+		}
+
+		if vmssVmsCacheJitter := os.Getenv("AZURE_VMSS_VMS_CACHE_JITTER"); vmssVmsCacheJitter != "" {
+			cfg.VmssVmsCacheJitter, err = strconv.Atoi(vmssVmsCacheJitter)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_VMSS_VMS_CACHE_JITTER %q: %v", vmssVmsCacheJitter, err)
 			}
 		}
 
