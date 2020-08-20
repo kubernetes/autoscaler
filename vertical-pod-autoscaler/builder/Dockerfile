@@ -18,6 +18,9 @@ LABEL maintainer="Beata Skiba	<bskiba@google.com>"
 ENV GOPATH /gopath/
 ENV PATH $GOPATH/bin:$PATH
 
+ARG GOARCH
+ARG LDFLAGS
+
 RUN go version
 RUN go get github.com/tools/godep
 RUN godep version
