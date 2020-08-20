@@ -24,7 +24,7 @@ package paperspace
 //	"testing"
 //
 //	"github.com/digitalocean/godo"
-//	psgo "github.com/paperspace/paperspace-go"
+//	psgo "github.com/Paperspace/paperspace-go"
 //	"github.com/stretchr/testify/assert"
 //	"github.com/stretchr/testify/mock"
 //	apiv1 "k8s.io/api/core/v1"

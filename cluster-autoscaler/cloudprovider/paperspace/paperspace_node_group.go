@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	psgo "github.com/paperspace/paperspace-go"
+	psgo "github.com/Paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
