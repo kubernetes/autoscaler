@@ -43,12 +43,16 @@ import (
 	fakekube "k8s.io/client-go/kubernetes/fake"
 	fakescale "k8s.io/client-go/scale/fake"
 	clientgotesting "k8s.io/client-go/testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 type testControllerShutdownFunc func()
 
 type testConfig struct {
 	spec              *testSpec
+	clusterName       string
+	namespace         string
 	machineDeployment *unstructured.Unstructured
 	machineSet        *unstructured.Unstructured
 	machines          []*unstructured.Unstructured
@@ -59,6 +63,7 @@ type testSpec struct {
 	annotations             map[string]string
 	machineDeploymentName   string
 	machineSetName          string
+	clusterName             string
 	namespace               string
 	nodeCount               int
 	rootIsMachineDeployment bool
@@ -162,7 +167,7 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 				return true, nil, err
 			}
 
-			replicas, found, err := unstructured.NestedInt64(u.Object, "spec", "replicas")
+			replicas, found, err := unstructured.NestedInt64(u.UnstructuredContent(), "spec", "replicas")
 			if err != nil {
 				return true, nil, err
 			}
@@ -214,7 +219,7 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 	}
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient)
+	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{})
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}
@@ -229,37 +234,42 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 	}
 }
 
-func createMachineSetTestConfig(namespace, namePrefix string, nodeCount int, annotations map[string]string) *testConfig {
-	return createTestConfigs(createTestSpecs(namespace, namePrefix, 1, nodeCount, false, annotations)...)[0]
+func createMachineSetTestConfig(namespace, clusterName, namePrefix string, nodeCount int, annotations map[string]string) *testConfig {
+	return createTestConfigs(createTestSpecs(namespace, clusterName, namePrefix, 1, nodeCount, false, annotations)...)[0]
 }
 
-func createMachineSetTestConfigs(namespace, namePrefix string, configCount, nodeCount int, annotations map[string]string) []*testConfig {
-	return createTestConfigs(createTestSpecs(namespace, namePrefix, configCount, nodeCount, false, annotations)...)
+func createMachineSetTestConfigs(namespace, clusterName, namePrefix string, configCount, nodeCount int, annotations map[string]string) []*testConfig {
+	return createTestConfigs(createTestSpecs(namespace, clusterName, namePrefix, configCount, nodeCount, false, annotations)...)
 }
 
-func createMachineDeploymentTestConfig(namespace, namePrefix string, nodeCount int, annotations map[string]string) *testConfig {
-	return createTestConfigs(createTestSpecs(namespace, namePrefix, 1, nodeCount, true, annotations)...)[0]
+func createMachineDeploymentTestConfig(namespace, clusterName, namePrefix string, nodeCount int, annotations map[string]string) *testConfig {
+	return createTestConfigs(createTestSpecs(namespace, clusterName, namePrefix, 1, nodeCount, true, annotations)...)[0]
 }
 
-func createMachineDeploymentTestConfigs(namespace, namePrefix string, configCount, nodeCount int, annotations map[string]string) []*testConfig {
-	return createTestConfigs(createTestSpecs(namespace, namePrefix, configCount, nodeCount, true, annotations)...)
+func createMachineDeploymentTestConfigs(namespace, clusterName, namePrefix string, configCount, nodeCount int, annotations map[string]string) []*testConfig {
+	return createTestConfigs(createTestSpecs(namespace, clusterName, namePrefix, configCount, nodeCount, true, annotations)...)
 }
 
-func createTestSpecs(namespace, namePrefix string, scalableResourceCount, nodeCount int, isMachineDeployment bool, annotations map[string]string) []testSpec {
+func createTestSpecs(namespace, clusterName, namePrefix string, scalableResourceCount, nodeCount int, isMachineDeployment bool, annotations map[string]string) []testSpec {
 	var specs []testSpec
 
 	for i := 0; i < scalableResourceCount; i++ {
-		specs = append(specs, testSpec{
-			annotations:             annotations,
-			machineDeploymentName:   fmt.Sprintf("%s-%d", namePrefix, i),
-			machineSetName:          fmt.Sprintf("%s-%d", namePrefix, i),
-			namespace:               namespace,
-			nodeCount:               nodeCount,
-			rootIsMachineDeployment: isMachineDeployment,
-		})
+		specs = append(specs, createTestSpec(namespace, clusterName, fmt.Sprintf("%s-%d", namePrefix, i), nodeCount, isMachineDeployment, annotations))
 	}
 
 	return specs
+}
+
+func createTestSpec(namespace, clusterName, name string, nodeCount int, isMachineDeployment bool, annotations map[string]string) testSpec {
+	return testSpec{
+		annotations:             annotations,
+		machineDeploymentName:   name,
+		machineSetName:          name,
+		clusterName:             clusterName,
+		namespace:               namespace,
+		nodeCount:               nodeCount,
+		rootIsMachineDeployment: isMachineDeployment,
+	}
 }
 
 func createTestConfigs(specs ...testSpec) []*testConfig {
@@ -267,12 +277,15 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 
 	for i, spec := range specs {
 		config := &testConfig{
-			spec:     &specs[i],
-			nodes:    make([]*corev1.Node, spec.nodeCount),
-			machines: make([]*unstructured.Unstructured, spec.nodeCount),
+			spec:        &specs[i],
+			namespace:   spec.namespace,
+			clusterName: spec.clusterName,
+			nodes:       make([]*corev1.Node, spec.nodeCount),
+			machines:    make([]*unstructured.Unstructured, spec.nodeCount),
 		}
 
 		machineSetLabels := map[string]string{
+			"clusterName":    spec.clusterName,
 			"machineSetName": spec.machineSetName,
 		}
 
@@ -286,7 +299,8 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 					"uid":       spec.machineSetName,
 				},
 				"spec": map[string]interface{}{
-					"replicas": int64(spec.nodeCount),
+					"clusterName": spec.clusterName,
+					"replicas":    int64(spec.nodeCount),
 				},
 				"status": map[string]interface{}{},
 			},
@@ -300,6 +314,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 			machineSetLabels["machineDeploymentName"] = spec.machineDeploymentName
 
 			machineDeploymentLabels := map[string]string{
+				"clusterName":           spec.clusterName,
 				"machineDeploymentName": spec.machineDeploymentName,
 			}
 
@@ -313,7 +328,8 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 						"uid":       spec.machineDeploymentName,
 					},
 					"spec": map[string]interface{}{
-						"replicas": int64(spec.nodeCount),
+						"clusterName": spec.clusterName,
+						"replicas":    int64(spec.nodeCount),
 					},
 					"status": map[string]interface{}{},
 				},
@@ -341,7 +357,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 		}
 
 		for j := 0; j < spec.nodeCount; j++ {
-			config.nodes[j], config.machines[j] = makeLinkedNodeAndMachine(j, spec.namespace, machineOwner, machineSetLabels)
+			config.nodes[j], config.machines[j] = makeLinkedNodeAndMachine(j, spec.namespace, spec.clusterName, machineOwner, machineSetLabels)
 		}
 
 		result = append(result, config)
@@ -353,7 +369,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 // makeLinkedNodeAndMachine creates a node and machine. The machine
 // has its NodeRef set to the new node and the new machine's owner
 // reference is set to owner.
-func makeLinkedNodeAndMachine(i int, namespace string, owner metav1.OwnerReference, machineLabels map[string]string) (*corev1.Node, *unstructured.Unstructured) {
+func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1.OwnerReference, machineLabels map[string]string) (*corev1.Node, *unstructured.Unstructured) {
 	node := &corev1.Node{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Node",
@@ -378,7 +394,8 @@ func makeLinkedNodeAndMachine(i int, namespace string, owner metav1.OwnerReferen
 				"namespace": namespace,
 			},
 			"spec": map[string]interface{}{
-				"providerID": fmt.Sprintf("test:////%s-%s-nodeid-%d", namespace, owner.Name, i),
+				"clusterName": clusterName,
+				"providerID":  fmt.Sprintf("test:////%s-%s-nodeid-%d", namespace, owner.Name, i),
 			},
 			"status": map[string]interface{}{
 				"nodeRef": map[string]interface{}{
@@ -420,24 +437,6 @@ func addTestConfigs(t *testing.T, controller *machineController, testConfigs ...
 		}
 	}
 	return nil
-}
-
-func selectorFromScalableResource(u *unstructured.Unstructured) (labels.Selector, error) {
-	unstructuredSelector, found, err := unstructured.NestedMap(u.Object, "spec", "selector")
-	if err != nil {
-		return nil, err
-	}
-
-	if !found {
-		return nil, fmt.Errorf("expected field spec.selector on scalable resource type")
-	}
-
-	labelSelector := &metav1.LabelSelector{}
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredSelector, labelSelector); err != nil {
-		return nil, err
-	}
-
-	return metav1.LabelSelectorAsSelector(labelSelector)
 }
 
 func createResource(client dynamic.Interface, informer informers.GenericInformer, gvr schema.GroupVersionResource, resource *unstructured.Unstructured) error {
@@ -560,7 +559,7 @@ func TestControllerFindMachine(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+			testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 				nodeGroupMinSizeAnnotationKey: "1",
 				nodeGroupMaxSizeAnnotationKey: "10",
 			})
@@ -576,7 +575,7 @@ func TestControllerFindMachine(t *testing.T) {
 }
 
 func TestControllerFindMachineOwner(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -625,7 +624,7 @@ func TestControllerFindMachineOwner(t *testing.T) {
 }
 
 func TestControllerFindMachineByProviderID(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -687,7 +686,7 @@ func TestControllerFindMachineByProviderID(t *testing.T) {
 }
 
 func TestControllerFindNodeByNodeName(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -786,7 +785,8 @@ func TestControllerListMachinesForScalableResource(t *testing.T) {
 
 	t.Run("MachineSet", func(t *testing.T) {
 		namespace := RandomString(6)
-		testConfig1 := createMachineSetTestConfig(namespace, RandomString(6), 5, map[string]string{
+		clusterName := RandomString(6)
+		testConfig1 := createMachineSetTestConfig(namespace, clusterName, RandomString(6), 5, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -795,7 +795,7 @@ func TestControllerListMachinesForScalableResource(t *testing.T) {
 		// nodes and the additional machineset to the existing set of
 		// test objects in the controller. This gives us two
 		// machinesets, each with their own machines and linked nodes.
-		testConfig2 := createMachineSetTestConfig(namespace, RandomString(6), 5, map[string]string{
+		testConfig2 := createMachineSetTestConfig(namespace, clusterName, RandomString(6), 5, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -805,7 +805,8 @@ func TestControllerListMachinesForScalableResource(t *testing.T) {
 
 	t.Run("MachineDeployment", func(t *testing.T) {
 		namespace := RandomString(6)
-		testConfig1 := createMachineDeploymentTestConfig(namespace, RandomString(6), 5, map[string]string{
+		clusterName := RandomString(6)
+		testConfig1 := createMachineDeploymentTestConfig(namespace, clusterName, RandomString(6), 5, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -814,7 +815,7 @@ func TestControllerListMachinesForScalableResource(t *testing.T) {
 		// nodes, machineset, and the additional machineset to the existing set of
 		// test objects in the controller. This gives us two
 		// machinedeployments, each with their own machineSet, machines and linked nodes.
-		testConfig2 := createMachineDeploymentTestConfig(namespace, RandomString(6), 5, map[string]string{
+		testConfig2 := createMachineDeploymentTestConfig(namespace, clusterName, RandomString(6), 5, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -845,7 +846,7 @@ func TestControllerLookupNodeGroupForNonExistentNode(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -853,7 +854,7 @@ func TestControllerLookupNodeGroupForNonExistentNode(t *testing.T) {
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -884,7 +885,7 @@ func TestControllerNodeGroupForNodeWithMissingMachineOwner(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -892,7 +893,7 @@ func TestControllerNodeGroupForNodeWithMissingMachineOwner(t *testing.T) {
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		})
@@ -901,7 +902,7 @@ func TestControllerNodeGroupForNodeWithMissingMachineOwner(t *testing.T) {
 }
 
 func TestControllerNodeGroupForNodeWithMissingSetMachineOwner(t *testing.T) {
-	testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -943,7 +944,7 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "1",
 		})
@@ -951,7 +952,7 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+		testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "1",
 		})
@@ -980,19 +981,20 @@ func TestControllerNodeGroups(t *testing.T) {
 	defer stop()
 
 	namespace := RandomString(6)
+	clusterName := RandomString(6)
 
 	// Test #1: zero nodegroups
 	assertNodegroupLen(t, controller, 0)
 
 	// Test #2: add 5 machineset-based nodegroups
-	machineSetConfigs := createMachineSetTestConfigs(namespace, RandomString(6), 5, 1, annotations)
+	machineSetConfigs := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 5, 1, annotations)
 	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 5)
 
 	// Test #2: add 2 machinedeployment-based nodegroups
-	machineDeploymentConfigs := createMachineDeploymentTestConfigs(namespace, RandomString(6), 2, 1, annotations)
+	machineDeploymentConfigs := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 2, 1, annotations)
 	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1016,14 +1018,14 @@ func TestControllerNodeGroups(t *testing.T) {
 	}
 
 	// Test #5: machineset with no scaling bounds results in no nodegroups
-	machineSetConfigs = createMachineSetTestConfigs(namespace, RandomString(6), 5, 1, annotations)
+	machineSetConfigs = createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 5, 1, annotations)
 	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	assertNodegroupLen(t, controller, 0)
 
 	// Test #6: machinedeployment with no scaling bounds results in no nodegroups
-	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, RandomString(6), 2, 1, annotations)
+	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 2, 1, annotations)
 	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1035,7 +1037,7 @@ func TestControllerNodeGroups(t *testing.T) {
 	}
 
 	// Test #7: machineset with bad scaling bounds results in an error and no nodegroups
-	machineSetConfigs = createMachineSetTestConfigs(namespace, RandomString(6), 5, 1, annotations)
+	machineSetConfigs = createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 5, 1, annotations)
 	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1044,7 +1046,7 @@ func TestControllerNodeGroups(t *testing.T) {
 	}
 
 	// Test #8: machinedeployment with bad scaling bounds results in an error and no nodegroups
-	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, RandomString(6), 2, 1, annotations)
+	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 2, 1, annotations)
 	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1108,19 +1110,19 @@ func TestControllerNodeGroupsNodeCount(t *testing.T) {
 
 	t.Run("MachineSet", func(t *testing.T) {
 		for _, tc := range testCases {
-			test(t, tc, createMachineSetTestConfigs(RandomString(6), RandomString(6), tc.nodeGroups, tc.nodesPerGroup, annotations))
+			test(t, tc, createMachineSetTestConfigs(RandomString(6), RandomString(6), RandomString(6), tc.nodeGroups, tc.nodesPerGroup, annotations))
 		}
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
 		for _, tc := range testCases {
-			test(t, tc, createMachineDeploymentTestConfigs(RandomString(6), RandomString(6), tc.nodeGroups, tc.nodesPerGroup, annotations))
+			test(t, tc, createMachineDeploymentTestConfigs(RandomString(6), RandomString(6), RandomString(6), tc.nodeGroups, tc.nodesPerGroup, annotations))
 		}
 	})
 }
 
 func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -1168,7 +1170,7 @@ func TestControllerFindMachineFromNodeAnnotation(t *testing.T) {
 }
 
 func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 3, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 3, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -1210,7 +1212,7 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 }
 
 func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 3, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 3, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -1262,7 +1264,7 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 }
 
 func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
-	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), 3, map[string]string{
+	testConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 3, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "10",
 	})
@@ -1333,7 +1335,7 @@ func TestControllerGetAPIVersionGroup(t *testing.T) {
 }
 
 func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
-	testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), 1, map[string]string{
+	testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "1",
 	})
@@ -1567,4 +1569,431 @@ func RandomString(n int) string {
 		result[i] = CharSet[rnd.Intn(len(CharSet))]
 	}
 	return string(result)
+}
+
+func Test_machineController_allowedByAutoDiscoverySpecs(t *testing.T) {
+	for _, tc := range []struct {
+		name               string
+		testSpec           testSpec
+		autoDiscoverySpecs []*clusterAPIAutoDiscoveryConfig
+		additionalLabels   map[string]string
+		shouldMatch        bool
+	}{{
+		name:     "autodiscovery specs includes permissive spec that should match any MachineSet",
+		testSpec: createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, false, nil),
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{labelSelector: labels.NewSelector()},
+			{clusterName: "foo", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: true,
+	}, {
+		name:     "autodiscovery specs includes permissive spec that should match any MachineDeployment",
+		testSpec: createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, true, nil),
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{labelSelector: labels.NewSelector()},
+			{clusterName: "foo", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: true,
+	}, {
+		name:             "autodiscovery specs includes a restrictive spec that should match specific MachineSet",
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil),
+		additionalLabels: map[string]string{"color": "green"},
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{clusterName: "foo", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "green"})},
+			{clusterName: "wombat", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: true,
+	}, {
+		name:             "autodiscovery specs includes a restrictive spec that should match specific MachineDeployment",
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil),
+		additionalLabels: map[string]string{"color": "green"},
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{clusterName: "foo", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "green"})},
+			{clusterName: "wombat", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: true,
+	}, {
+		name:             "autodiscovery specs does not include any specs that should match specific MachineSet",
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil),
+		additionalLabels: map[string]string{"color": "green"},
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{clusterName: "test", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "blue"})},
+			{clusterName: "wombat", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: false,
+	}, {
+		name:             "autodiscovery specs does not include any specs that should match specific MachineDeployment",
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil),
+		additionalLabels: map[string]string{"color": "green"},
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{clusterName: "test", namespace: "default", labelSelector: labels.SelectorFromSet(labels.Set{"color": "blue"})},
+			{clusterName: "wombat", namespace: "bar", labelSelector: labels.Nothing()},
+		},
+		shouldMatch: false,
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			testConfigs := createTestConfigs(tc.testSpec)
+			resource := testConfigs[0].machineSet
+			if tc.testSpec.rootIsMachineDeployment {
+				resource = testConfigs[0].machineDeployment
+			}
+			if tc.additionalLabels != nil {
+				resource.SetLabels(labels.Merge(resource.GetLabels(), tc.additionalLabels))
+			}
+			c := &machineController{
+				autoDiscoverySpecs: tc.autoDiscoverySpecs,
+			}
+
+			got := c.allowedByAutoDiscoverySpecs(resource)
+			if got != tc.shouldMatch {
+				t.Errorf("allowedByAutoDiscoverySpecs got = %v, want %v", got, tc.shouldMatch)
+			}
+		})
+	}
+}
+
+func Test_machineController_listScalableResources(t *testing.T) {
+	uniqueMDConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, nil)
+
+	mdTestConfigs := createMachineDeploymentTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, nil)
+	mdTestConfigs = append(mdTestConfigs, uniqueMDConfig)
+
+	allMachineDeployments := make([]*unstructured.Unstructured, 0, len(mdTestConfigs))
+	for i := range mdTestConfigs {
+		allMachineDeployments = append(allMachineDeployments, mdTestConfigs[i].machineDeployment)
+	}
+
+	uniqueMSConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, nil)
+
+	msTestConfigs := createMachineSetTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, nil)
+	msTestConfigs = append(msTestConfigs, uniqueMSConfig)
+
+	allMachineSets := make([]*unstructured.Unstructured, 0, len(msTestConfigs))
+	for i := range msTestConfigs {
+		allMachineSets = append(allMachineSets, msTestConfigs[i].machineSet)
+	}
+
+	allTestConfigs := append(mdTestConfigs, msTestConfigs...)
+	allScalableResources := append(allMachineDeployments, allMachineSets...)
+
+	for _, tc := range []struct {
+		name               string
+		autoDiscoverySpecs []*clusterAPIAutoDiscoveryConfig
+		want               []*unstructured.Unstructured
+		wantErr            bool
+	}{{
+		name:               "undefined autodiscovery results in returning all scalable resources",
+		autoDiscoverySpecs: nil,
+		want:               allScalableResources,
+		wantErr:            false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineSet only returns that MachineSet",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+		},
+		want:    []*unstructured.Unstructured{uniqueMSConfig.machineSet},
+		wantErr: false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineDeployment only returns that MachineDeployment",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+		},
+		want:    []*unstructured.Unstructured{uniqueMDConfig.machineDeployment},
+		wantErr: false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment and unique MachineSet only returns those scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+		},
+		want:    []*unstructured.Unstructured{uniqueMDConfig.machineDeployment, uniqueMSConfig.machineSet},
+		wantErr: false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment, unique MachineSet, and a permissive config returns all scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+			{labelSelector: labels.NewSelector()},
+		},
+		want:    allScalableResources,
+		wantErr: false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment, unique MachineSet, and a restrictive returns unique scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+			{namespace: RandomString(6), clusterName: RandomString(6), labelSelector: labels.Nothing()},
+		},
+		want:    []*unstructured.Unstructured{uniqueMDConfig.machineDeployment, uniqueMSConfig.machineSet},
+		wantErr: false,
+	}, {
+		name: "autodiscovery configuration to match against a restrictive config returns no scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: RandomString(6), clusterName: RandomString(6), labelSelector: labels.Nothing()},
+		},
+		want:    nil,
+		wantErr: false,
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, stop := mustCreateTestController(t, allTestConfigs...)
+			defer stop()
+			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
+
+			got, err := c.listScalableResources()
+			if (err != nil) != tc.wantErr {
+				t.Errorf("listScalableRsources() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+
+			if len(got) != len(tc.want) {
+				t.Errorf("listScalableRsources() expected length of got to be = %v, got %v", len(tc.want), len(got))
+			}
+
+			// Sort results as order is not guaranteed.
+			sort.Slice(got, func(i, j int) bool {
+				return got[i].GetName() < got[j].GetName()
+			})
+			sort.Slice(tc.want, func(i, j int) bool {
+				return tc.want[i].GetName() < tc.want[j].GetName()
+			})
+
+			if err == nil && !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("listScalableRsources() got = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func Test_machineController_nodeGroupForNode(t *testing.T) {
+	uniqueMDConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+
+	mdTestConfigs := createMachineDeploymentTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+	mdTestConfigs = append(mdTestConfigs, uniqueMDConfig)
+
+	allMachineDeployments := make([]*unstructured.Unstructured, 0, len(mdTestConfigs))
+	for i := range mdTestConfigs {
+		allMachineDeployments = append(allMachineDeployments, mdTestConfigs[i].machineDeployment)
+	}
+
+	uniqueMSConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+
+	msTestConfigs := createMachineSetTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+	msTestConfigs = append(msTestConfigs, uniqueMSConfig)
+
+	allMachineSets := make([]*unstructured.Unstructured, 0, len(msTestConfigs))
+	for i := range msTestConfigs {
+		allMachineSets = append(allMachineSets, msTestConfigs[i].machineSet)
+	}
+
+	allTestConfigs := append(mdTestConfigs, msTestConfigs...)
+
+	for _, tc := range []struct {
+		name               string
+		autoDiscoverySpecs []*clusterAPIAutoDiscoveryConfig
+		node               *corev1.Node
+		scalableResource   *unstructured.Unstructured
+		wantErr            bool
+	}{{
+		name:               "undefined autodiscovery results in returning MachineSet resource for given node",
+		autoDiscoverySpecs: nil,
+		node:               msTestConfigs[0].nodes[0],
+		scalableResource:   msTestConfigs[0].machineSet,
+		wantErr:            false,
+	}, {
+		name:               "undefined autodiscovery results in returning MachineDeployment resource for given node",
+		autoDiscoverySpecs: nil,
+		node:               mdTestConfigs[0].nodes[0],
+		scalableResource:   mdTestConfigs[0].machineDeployment,
+		wantErr:            false,
+	}, {
+		name: "autodiscovery configuration to match against a restrictive config does not return a nodegroup",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: RandomString(6), clusterName: RandomString(6), labelSelector: labels.Nothing()},
+		},
+		node:             msTestConfigs[0].nodes[0],
+		scalableResource: nil,
+		wantErr:          false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineSet returns nodegroup for that MachineSet",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+		},
+		node:             uniqueMSConfig.nodes[0],
+		scalableResource: uniqueMSConfig.machineSet,
+		wantErr:          false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineDeployment returns nodegroup for that MachineDeployment",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+		},
+		node:             uniqueMDConfig.nodes[0],
+		scalableResource: uniqueMDConfig.machineDeployment,
+		wantErr:          false,
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, stop := mustCreateTestController(t, allTestConfigs...)
+			defer stop()
+			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
+
+			got, err := c.nodeGroupForNode(tc.node)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("nodeGroupForNode() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+
+			if got == nil && tc.scalableResource != nil {
+				t.Error("expected a node group to be returned, got nil")
+				return
+			}
+
+			if tc.scalableResource == nil && got != nil {
+				t.Errorf("expected nil node group, got: %v", got)
+				return
+			}
+
+			if tc.scalableResource != nil && !reflect.DeepEqual(got.scalableResource.unstructured, tc.scalableResource) {
+				t.Errorf("nodeGroupForNode() got = %v, want node group for scalable resource %v", got, tc.scalableResource)
+			}
+		})
+	}
+}
+
+func Test_machineController_nodeGroups(t *testing.T) {
+	uniqueMDConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+
+	mdTestConfigs := createMachineDeploymentTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+	mdTestConfigs = append(mdTestConfigs, uniqueMDConfig)
+
+	allMachineDeployments := make([]*unstructured.Unstructured, 0, len(mdTestConfigs))
+	for i := range mdTestConfigs {
+		allMachineDeployments = append(allMachineDeployments, mdTestConfigs[i].machineDeployment)
+	}
+
+	uniqueMSConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+
+	msTestConfigs := createMachineSetTestConfigs(RandomString(6), RandomString(6), RandomString(6), 5, 1, map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	})
+	msTestConfigs = append(msTestConfigs, uniqueMSConfig)
+
+	allMachineSets := make([]*unstructured.Unstructured, 0, len(msTestConfigs))
+	for i := range msTestConfigs {
+		allMachineSets = append(allMachineSets, msTestConfigs[i].machineSet)
+	}
+
+	allTestConfigs := append(mdTestConfigs, msTestConfigs...)
+	allScalableResources := append(allMachineDeployments, allMachineSets...)
+
+	for _, tc := range []struct {
+		name                      string
+		autoDiscoverySpecs        []*clusterAPIAutoDiscoveryConfig
+		expectedScalableResources []*unstructured.Unstructured
+		wantErr                   bool
+	}{{
+		name:                      "undefined autodiscovery results in returning nodegroups for all scalable resources",
+		autoDiscoverySpecs:        nil,
+		expectedScalableResources: allScalableResources,
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineSet only returns nodegroup for that MachineSet",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+		},
+		expectedScalableResources: []*unstructured.Unstructured{uniqueMSConfig.machineSet},
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against unique MachineDeployment only returns nodegroup for that MachineDeployment",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+		},
+		expectedScalableResources: []*unstructured.Unstructured{uniqueMDConfig.machineDeployment},
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment and unique MachineSet only returns nodegroups for those scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+		},
+		expectedScalableResources: []*unstructured.Unstructured{uniqueMDConfig.machineDeployment, uniqueMSConfig.machineSet},
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment, unique MachineSet, and a permissive config returns nodegroups for all scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+			{labelSelector: labels.NewSelector()},
+		},
+		expectedScalableResources: allScalableResources,
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against both unique MachineDeployment, unique MachineSet, and a restrictive returns nodegroups for unique scalable resources",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: uniqueMDConfig.namespace, clusterName: uniqueMDConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMDConfig.machineDeployment.GetLabels())},
+			{namespace: uniqueMSConfig.namespace, clusterName: uniqueMSConfig.clusterName, labelSelector: labels.SelectorFromSet(uniqueMSConfig.machineSet.GetLabels())},
+			{namespace: RandomString(6), clusterName: RandomString(6), labelSelector: labels.Nothing()},
+		},
+		expectedScalableResources: []*unstructured.Unstructured{uniqueMDConfig.machineDeployment, uniqueMSConfig.machineSet},
+		wantErr:                   false,
+	}, {
+		name: "autodiscovery configuration to match against a restrictive config returns no nodegroups",
+		autoDiscoverySpecs: []*clusterAPIAutoDiscoveryConfig{
+			{namespace: RandomString(6), clusterName: RandomString(6), labelSelector: labels.Nothing()},
+		},
+		expectedScalableResources: nil,
+		wantErr:                   false,
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, stop := mustCreateTestController(t, allTestConfigs...)
+			defer stop()
+			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
+
+			got, err := c.nodeGroups()
+			if (err != nil) != tc.wantErr {
+				t.Errorf("nodeGroups() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+
+			if len(got) != len(tc.expectedScalableResources) {
+				t.Errorf("nodeGroups() expected length of got to be = %v, got %v", len(tc.expectedScalableResources), len(got))
+			}
+
+			// Sort results as order is not guaranteed.
+			sort.Slice(got, func(i, j int) bool {
+				return got[i].scalableResource.Name() < got[j].scalableResource.Name()
+			})
+			sort.Slice(tc.expectedScalableResources, func(i, j int) bool {
+				return tc.expectedScalableResources[i].GetName() < tc.expectedScalableResources[j].GetName()
+			})
+
+			if err == nil {
+				for i := range got {
+					if !reflect.DeepEqual(got[i].scalableResource.unstructured, tc.expectedScalableResources[i]) {
+						t.Errorf("nodeGroups() got = %v, expected to consist of nodegroups for scalable resources: %v", got, tc.expectedScalableResources)
+					}
+				}
+			}
+		})
+	}
 }
