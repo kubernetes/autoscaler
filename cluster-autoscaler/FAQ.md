@@ -247,6 +247,10 @@ This does not guarantee similar node groups will have exactly the same sizes:
   same set of pending pods. If you run pods that can only go to a single node group
   (for example due to nodeSelector on zone label) CA will only add nodes to
   this particular node group.
+* On AWS, node groups that have at least one provisioned instance may be preferred
+ over node groups that have none. This can lead to all nodes being provisioned in a
+ single AZ. To work around this, add the `cluster-autoscaler.kubernetes.io/hardware-configuration-id`
+ label to all similar nodes and specify the same value
 
 You can opt-out a node group from being automatically balanced with other node
 groups using the same instance type by giving it any custom label.

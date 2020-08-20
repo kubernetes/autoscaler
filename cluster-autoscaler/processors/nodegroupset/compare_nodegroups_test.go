@@ -96,6 +96,44 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 	checkNodesSimilarWithPods(t, n1, n4, []*apiv1.Pod{p1}, []*apiv1.Pod{p4}, IsNodeInfoSimilar, true)
 }
 
+func TestNodesSimilarHardwareConfigurationLabels(t *testing.T) {
+	nodeGroupHwConfigLabel := "node.kubernetes.io/autoscaler-hardware-configuration-id"
+
+	n1 := BuildTestNode("node1", 1000, 2000)
+	n1.ObjectMeta.Labels["test-label"] = "test-value"
+	n1.ObjectMeta.Labels["character"] = "winnie the pooh"
+	n2 := BuildTestNode("node2", 1000, 2000)
+	n2.ObjectMeta.Labels["test-label"] = "test-value"
+
+	// No hardware-configuration-id labels
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, false)
+
+	// Empty hardware-configuration-id labels
+	n1.ObjectMeta.Labels[nodeGroupHwConfigLabel] = ""
+	n2.ObjectMeta.Labels[nodeGroupHwConfigLabel] = ""
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, false)
+
+	// Only one hardware-configuration-id non empty
+	n1.ObjectMeta.Labels[nodeGroupHwConfigLabel] = ""
+	n2.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah"
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, false)
+
+	// Only one hardware-configuration-id present
+	delete(n1.ObjectMeta.Labels, nodeGroupHwConfigLabel)
+	n2.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah"
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, false)
+
+	// Different vales for hardware-configuration-id
+	n1.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah1"
+	n2.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah2"
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, false)
+
+	// Same values for hardware-configuration-id
+	n1.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah"
+	n2.ObjectMeta.Labels[nodeGroupHwConfigLabel] = "blah"
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
+ }
+
 func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
 	n1 := BuildTestNode("node1", 1000, 1000)
 

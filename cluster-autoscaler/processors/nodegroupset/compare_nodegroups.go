@@ -25,6 +25,8 @@ import (
 )
 
 const (
+	// NodeGroupHwConfigLabel is a label specifying the type of hardware configuration that the nodes have
+	NodeGroupHwConfigLabel = "node.kubernetes.io/autoscaler-hardware-configuration-id"
 	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between
 	// groups in the same NodeGroupSet
 	MaxAllocatableDifferenceRatio = 0.05
@@ -87,11 +89,12 @@ func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string
 	return true
 }
 
-// IsNodeInfoSimilar returns true if two NodeInfos are similar enough to consider
-// that the NodeGroups they come from are part of the same NodeGroupSet. The criteria are
-// somewhat arbitrary, but generally we check if resources provided by both nodes
-// are similar enough to likely be the same type of machine and if the set of labels
-// is the same (except for a pre-defined set of labels like hostname or zone).
+// IsNodeInfoSimilar returns true if two NodeInfos have the same hardware configuration or
+ // are similar enough to consider that the NodeGroups they come from are part of the same
+ // NodeGroupSet. The criteria are somewhat arbitrary, but generally we check if resources
+ // provided by both nodes are similar enough to likely be the same type of machine and if
+ // the set of labels is the same (except for a pre-defined set of labels like hostname or
+ // zone).
 func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return IsCloudProviderNodeInfoSimilar(n1, n2, BasicIgnoredLabels)
 }
@@ -99,6 +102,12 @@ func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 // IsCloudProviderNodeInfoSimilar remains the same logic of IsNodeInfoSimilar with the
 // customized set of labels that should be ignored when comparing the similarity of two NodeInfos.
 func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
+	n1HwConfig := n1.Node().Labels[NodeGroupHwConfigLabel]
+	n2HwConfig := n2.Node().Labels[NodeGroupHwConfigLabel]
+	if n1HwConfig != "" && n1HwConfig == n2HwConfig {
+		return true
+	}
+
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
