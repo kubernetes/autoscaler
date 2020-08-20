@@ -15,7 +15,8 @@
 FROM gcr.io/distroless/static:latest
 MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 
-COPY recommender /
+ARG ARCH
+COPY recommender-$ARCH /recommender
 
 ENTRYPOINT ["/recommender"]
 CMD ["--v=4", "--stderrthreshold=info", "--prometheus-address=http://prometheus.monitoring.svc"]

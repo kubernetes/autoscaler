@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -58,6 +58,7 @@ spec:
         memory: "1024Mi"
         cpu: "1000m"
 `
+
 const pod2Yaml = `
 apiVersion: v1
 kind: Pod
@@ -121,7 +122,8 @@ func newSpecClientTestCase() *specClientTestCase {
 		podYamls: []string{pod1Yaml, pod2Yaml},
 	}
 }
-func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int) BasicContainerSpec {
+
+func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int64) BasicContainerSpec {
 	containerID := model.ContainerID{
 		PodID:         podID,
 		ContainerName: containerName,
