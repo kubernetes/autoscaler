@@ -278,7 +278,7 @@ Please see the [AKS autoscaler documentation][] for details.
 
 ## Rate limit and back-off retries
 
-The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by environment variables or cloud config file.
+The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by either environment variables, or cloud config file. With config file, defaults values are false or 0.
 
 | Config Name | Default | Environment Variable | Cloud Config File |
 | ----------- | ------- | -------------------- | ----------------- |

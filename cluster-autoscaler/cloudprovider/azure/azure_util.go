@@ -560,6 +560,10 @@ func validateConfig(cfg *Config) error {
 		return fmt.Errorf("ARM Client ID not set")
 	}
 
+	if cfg.CloudProviderBackoff && cfg.CloudProviderBackoffRetries == 0 {
+		return fmt.Errorf("Cloud provider backoff is enabled but retries are not set")
+	}
+
 	return nil
 }
 
