@@ -522,50 +522,6 @@ func matchDiscoveryConfig(labels map[string]*string, configs []labelAutoDiscover
 	return true
 }
 
-func validateConfig(cfg *Config) error {
-	if cfg.ResourceGroup == "" {
-		return fmt.Errorf("resource group not set")
-	}
-
-	if cfg.VMType == vmTypeStandard {
-		if cfg.Deployment == "" {
-			return fmt.Errorf("deployment not set")
-		}
-
-		if len(cfg.DeploymentParameters) == 0 {
-			return fmt.Errorf("deploymentParameters not set")
-		}
-	}
-
-	if cfg.VMType == vmTypeAKS {
-		// Cluster name is a mandatory param to proceed.
-		if cfg.ClusterName == "" {
-			return fmt.Errorf("cluster name not set for type %+v", cfg.VMType)
-		}
-	}
-
-	if cfg.SubscriptionID == "" {
-		return fmt.Errorf("subscription ID not set")
-	}
-
-	if cfg.UseManagedIdentityExtension {
-		return nil
-	}
-
-	if cfg.TenantID == "" {
-		return fmt.Errorf("tenant ID not set")
-	}
-
-	if cfg.AADClientID == "" {
-		return fmt.Errorf("ARM Client ID not set")
-	}
-
-	if cfg.CloudProviderBackoff && cfg.CloudProviderBackoffRetries == 0 {
-		return fmt.Errorf("Cloud provider backoff is enabled but retries are not set")
-	}
-
-	return nil
-}
 
 // getLastSegment gets the last segment (splitting by '/'.)
 func getLastSegment(ID string) (string, error) {
