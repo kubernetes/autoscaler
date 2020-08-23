@@ -304,54 +304,6 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, *expectedConfig, *manager.config, "unexpected azure manager configuration, expected: %v, actual: %v", *expectedConfig, *manager.config)
-	discoveryOpts := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: []string{
-		"label:cluster-autoscaler-enabled=true,cluster-autoscaler-name=fake-cluster",
-		"label:test-tag=test-value,another-test-tag=another-test-value",
-	}}
-	timeLayout := "2006-01-02 15:04:05"
-	timeBenchMark, _ := time.Parse(timeLayout, "2000-01-01 00:00:00")
-	fakeDeployments := map[string]resources.DeploymentExtended{
-		"cluster-autoscaler-0001": {
-			Name: to.StringPtr("cluster-autoscaler-0001"),
-			Properties: &resources.DeploymentPropertiesExtended{
-				ProvisioningState: to.StringPtr("Succeeded"),
-				Parameters: map[string]interface{}{
-					"PoolName01VMSize": to.StringPtr("PoolName01"),
-				},
-				Template: map[string]interface{}{
-					"resources": []interface{}{
-						map[string]interface{}{
-							"type": "Microsoft.Compute/virtualMachines/extensions",
-							"name": "cluster-autoscaler-0001-resourceName",
-							"properties": map[string]interface{}{
-								"hardwareProfile": map[string]interface{}{
-									"VMSize": "10G",
-								},
-							},
-						},
-					},
-				},
-				Timestamp: &date.Time{Time: timeBenchMark},
-			},
-		},
-	}
-	manager.azClient.deploymentsClient = &DeploymentsClientMock{
-		FakeStore: fakeDeployments,
-	}
-	specs, err2 := parseLabelAutoDiscoverySpecs(discoveryOpts)
-	assert.NoError(t, err2)
-	result, err3 := manager.getFilteredAutoscalingGroups(specs)
-	expectedNodeGroup := []cloudprovider.NodeGroup{(*AgentPool)(nil)}
-	assert.NoError(t, err3)
-	assert.Equal(t, expectedNodeGroup, result, "NodeGroup does not match, expected: %v, actual: %v", expectedNodeGroup, result)
-
-	// parseLabelAutoDiscoverySpecs with invalid NodeGroupDiscoveryOptions
-	invalidDiscoveryOpts := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: []string{"label:keywithoutvalue"}}
-	specs, err4 := parseLabelAutoDiscoverySpecs(invalidDiscoveryOpts)
-	expectedCfg := []labelAutoDiscoveryConfig([]labelAutoDiscoveryConfig(nil))
-	expectedErr := fmt.Errorf("invalid key=value pair [keywithoutvalue]")
-	assert.Equal(t, expectedCfg, specs, "Return labelAutoDiscoveryConfig does not match, expected: %v, actual: %v", expectedCfg, specs)
-	assert.Equal(t, expectedErr, err4, "parseLabelAutoDiscoverySpecs return error does not match, expected: %v, actual: %v", expectedErr, err4)
 }
 
 func TestCreateAzureManagerValidConfigForStandardVMTypeWithoutDeploymentParameters(t *testing.T) {
@@ -679,59 +631,6 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	assert.Equal(t, expectedErr, err, "manager.fetchExplicitAsgs return error does not match, expected: %v, actual: %v", expectedErr, err)
 }
 
-func TestParseLabelAutoDiscoverySpecs(t *testing.T) {
-	testCases := []struct {
-		name        string
-		specs       []string
-		expected    []labelAutoDiscoveryConfig
-		expectedErr bool
-	}{
-		{
-			name: "ValidSpec",
-			specs: []string{
-				"label:cluster-autoscaler-enabled=true,cluster-autoscaler-name=fake-cluster",
-				"label:test-tag=test-value,another-test-tag=another-test-value",
-			},
-			expected: []labelAutoDiscoveryConfig{
-				{Selector: map[string]string{"cluster-autoscaler-enabled": "true", "cluster-autoscaler-name": "fake-cluster"}},
-				{Selector: map[string]string{"test-tag": "test-value", "another-test-tag": "another-test-value"}},
-			},
-		},
-		{
-			name:        "MissingAutoDiscoverLabel",
-			specs:       []string{"test-tag=test-value,another-test-tag"},
-			expectedErr: true,
-		},
-		{
-			name:        "InvalidAutoDiscoerLabel",
-			specs:       []string{"invalid:test-tag=test-value,another-test-tag"},
-			expectedErr: true,
-		},
-		{
-			name:        "MissingValue",
-			specs:       []string{"label:test-tag="},
-			expectedErr: true,
-		},
-		{
-			name:        "MissingKey",
-			specs:       []string{"label:=test-val"},
-			expectedErr: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ngdo := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
-			actual, err := parseLabelAutoDiscoverySpecs(ngdo)
-			if tc.expectedErr {
-				assert.Error(t, err)
-				return
-			}
-			assert.NoError(t, err)
-			assert.True(t, assert.ObjectsAreEqualValues(tc.expected, actual), "expected %#v, but found: %#v", tc.expected, actual)
-		})
-	}
-}
 
 func TestListScalesets(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -745,7 +644,7 @@ func TestListScalesets(t *testing.T) {
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
 	testCases := []struct {
@@ -860,7 +759,7 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
 	asgs, err := manager.getFilteredAutoscalingGroups(specs)
@@ -894,16 +793,17 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	manager.config.VMType = vmTypeAKS
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
-	asgs1, err1 := manager.getFilteredAutoscalingGroups(specs)
-	assert.Nil(t, asgs1)
-	assert.Nil(t, err1)
+	expectedErr := fmt.Errorf("vmType \"aks\" does not support autodiscovery")
+	asgs, err2 := manager.getFilteredAutoscalingGroups(specs)
+	assert.Nil(t, asgs)
+	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 
 	manager.config.VMType = "invalidVMType"
-	expectedErr := fmt.Errorf("vmType \"invalidVMType\" not supported")
-	asgs, err2 := manager.getFilteredAutoscalingGroups(specs)
+	expectedErr = fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
+	asgs, err2 = manager.getFilteredAutoscalingGroups(specs)
 	assert.Nil(t, asgs)
 	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 }
@@ -935,7 +835,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 	manager.asgAutoDiscoverySpecs = specs
 

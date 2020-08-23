@@ -39,24 +39,8 @@ const (
 	scaleToZeroSupportedStandard = false
 	scaleToZeroSupportedVMSS     = true
 	refreshInterval              = 1 * time.Minute
-
-	vmssTagMin                     = "min"
-	vmssTagMax                     = "max"
-	autoDiscovererTypeLabel        = "label"
-	labelAutoDiscovererKeyMinNodes = "min"
-	labelAutoDiscovererKeyMaxNodes = "max"
 )
 
-var validLabelAutoDiscovererKeys = strings.Join([]string{
-	labelAutoDiscovererKeyMinNodes,
-	labelAutoDiscovererKeyMaxNodes,
-}, ", ")
-
-// A labelAutoDiscoveryConfig specifies how to autodiscover Azure scale sets.
-type labelAutoDiscoveryConfig struct {
-	// Key-values to match on.
-	Selector map[string]string
-}
 
 // AzureManager handles Azure communication and data caching.
 type AzureManager struct {
@@ -69,7 +53,6 @@ type AzureManager struct {
 	asgAutoDiscoverySpecs []labelAutoDiscoveryConfig
 	explicitlyConfigured  map[string]bool
 }
-
 
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
@@ -109,7 +92,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 	}
 	manager.asgCache = cache
 
-	specs, err := parseLabelAutoDiscoverySpecs(discoveryOpts)
+	specs, err := ParseLabelAutoDiscoverySpecs(discoveryOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -271,21 +254,11 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []labelAutoDiscoveryC
 		return nil, nil
 	}
 
-	switch m.config.VMType {
-	case vmTypeVMSS:
-		asgs, err = m.listScaleSets(filter)
-	case vmTypeStandard:
-		asgs, err = m.listAgentPools(filter)
-	case vmTypeAKS:
-		return nil, nil
-	default:
-		err = fmt.Errorf("vmType %q not supported", m.config.VMType)
-	}
-	if err != nil {
-		return nil, err
+	if m.config.VMType == vmTypeVMSS {
+		return m.listScaleSets(filter)
 	}
 
-	return asgs, nil
+	return nil, fmt.Errorf("vmType %q does not support autodiscovery", m.config.VMType)
 }
 
 // listScaleSets gets a list of scale sets and instanceIDs.
@@ -362,79 +335,5 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) ([]cloud
 	}
 
 	return asgs, nil
-}
-
-// listAgentPools gets a list of agent pools and instanceIDs.
-// Note: filter won't take effect for agent pools.
-func (m *AzureManager) listAgentPools(filter []labelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-	deploy, err := m.azClient.deploymentsClient.Get(ctx, m.config.ResourceGroup, m.config.Deployment)
-	if err != nil {
-		klog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", m.config.ResourceGroup, m.config.Deployment, err)
-		return nil, err
-	}
-
-	parameters := deploy.Properties.Parameters.(map[string]interface{})
-	for k := range parameters {
-		if k == "masterVMSize" || !strings.HasSuffix(k, "VMSize") {
-			continue
-		}
-
-		poolName := strings.TrimRight(k, "VMSize")
-		spec := &dynamic.NodeGroupSpec{
-			Name:               poolName,
-			MinSize:            1,
-			MaxSize:            -1,
-			SupportScaleToZero: scaleToZeroSupportedStandard,
-		}
-		asg, _ := NewAgentPool(spec, m)
-		asgs = append(asgs, asg)
-	}
-
-	return asgs, nil
-}
-
-// ParseLabelAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
-// parsed into configuration appropriate for ASG autodiscovery.
-func parseLabelAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]labelAutoDiscoveryConfig, error) {
-	cfgs := make([]labelAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
-	var err error
-	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
-		cfgs[i], err = parseLabelAutoDiscoverySpec(spec)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return cfgs, nil
-}
-
-// parseLabelAutoDiscoverySpec parses a single spec and returns the corredponding node group spec.
-func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) {
-	cfg := labelAutoDiscoveryConfig{
-		Selector: make(map[string]string),
-	}
-
-	tokens := strings.Split(spec, ":")
-	if len(tokens) != 2 {
-		return cfg, fmt.Errorf("spec \"%s\" should be discoverer:key=value,key=value", spec)
-	}
-	discoverer := tokens[0]
-	if discoverer != autoDiscovererTypeLabel {
-		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
-	}
-
-	for _, arg := range strings.Split(tokens[1], ",") {
-		kv := strings.Split(arg, "=")
-		if len(kv) != 2 {
-			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
-		}
-		k, v := kv[0], kv[1]
-		if k == "" || v == "" {
-			return cfg, fmt.Errorf("empty value not allowed in key=value tag pairs")
-		}
-		cfg.Selector[k] = v
-	}
-	return cfg, nil
 }
 
