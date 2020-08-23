@@ -495,33 +495,6 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	return agentIndex, nil
 }
 
-func matchDiscoveryConfig(labels map[string]*string, configs []labelAutoDiscoveryConfig) bool {
-	if len(configs) == 0 {
-		return false
-	}
-
-	for _, c := range configs {
-		if len(c.Selector) == 0 {
-			return false
-		}
-
-		for k, v := range c.Selector {
-			value, ok := labels[k]
-			if !ok {
-				return false
-			}
-
-			if len(v) > 0 {
-				if value == nil || *value != v {
-					return false
-				}
-			}
-		}
-	}
-
-	return true
-}
-
 
 // getLastSegment gets the last segment (splitting by '/'.)
 func getLastSegment(ID string) (string, error) {
