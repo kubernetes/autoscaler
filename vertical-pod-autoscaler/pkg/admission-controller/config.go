@@ -76,6 +76,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		RegisterClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
+	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
@@ -103,8 +104,9 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						},
 					},
 				},
-				ClientConfig: RegisterClientConfig,
-				SideEffects:  &sideEffects,
+				FailurePolicy: &failurePolicy,
+				ClientConfig:  RegisterClientConfig,
+				SideEffects:   &sideEffects,
 			},
 		},
 	}
