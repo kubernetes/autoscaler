@@ -8,11 +8,11 @@
 $ helm repo add autoscaler https://kubernetes.github.io/autoscaler
 
 # Method 1 - Using Autodiscovery
-$ helm install my-release autoscaler/cluster-autoscaler \
+$ helm install my-release autoscaler/cluster-autoscaler-chart \
 --set 'autoDiscovery.clusterName'=<CLUSTER NAME>
 
 # Method 2 - Specifying groups manually
-$ helm install my-release autoscaler/cluster-autoscaler \
+$ helm install my-release autoscaler/cluster-autoscaler-chart \
 --set "autoscalingGroups[0].name=your-asg-name" \
 --set "autoscalingGroups[0].maxSize=10" \
 --set "autoscalingGroups[0].minSize=1"
@@ -61,7 +61,7 @@ Auto-discovery finds ASGs tags as below and automatically manages them based on 
 - Set `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME>
+$ helm install my-release autoscaler/cluster-autoscaler-chart --set autoDiscovery.clusterName=<CLUSTER NAME>
 ```
 
 #### Specifying groups manually
@@ -72,7 +72,7 @@ Without autodiscovery, specify an array of elements each containing ASG name, mi
 - Either provide a yaml file setting `autoscalingGroups` (see values.yaml) or use `--set` e.g.:
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler \
+$ helm install my-release autoscaler/cluster-autoscaler-chart \
 --set "autoscalingGroups[0].name=your-asg-name" \
 --set "autoscalingGroups[0].maxSize=10" \
 --set "autoscalingGroups[0].minSize=1"
@@ -133,7 +133,7 @@ The following parameters are required:
 To use Managed Instance Group (MIG) auto-discovery, provide a YAML file setting `autoscalingGroupsnamePrefix` (see values.yaml) or use `--set` when installing the Chart - e.g.
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler \
+$ helm install my-release autoscaler/cluster-autoscaler-chart \
 --set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefi[0].minSize=1" \
 --set autoDiscovery.clusterName=<CLUSTER NAME> \
 --set cloudProvider=gce
