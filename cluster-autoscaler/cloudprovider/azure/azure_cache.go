@@ -55,27 +55,25 @@ func newAsgCache() (*asgCache, error) {
 }
 
 // Register registers a node group if it hasn't been registered.
-func (m *asgCache) Register(asg cloudprovider.NodeGroup) bool {
+func (m *asgCache) Register(newAsg cloudprovider.NodeGroup) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	for i := range m.registeredAsgs {
-		if existing := m.registeredAsgs[i]; strings.EqualFold(existing.Id(), asg.Id()) {
-			e := existing.(*ScaleSet)
-			a := asg.(*ScaleSet)
-			if e.minSize == a.minSize && e.maxSize == a.maxSize && e.curSize == a.curSize {
+		if existing := m.registeredAsgs[i]; strings.EqualFold(existing.Id(), newAsg.Id()) {
+			if existing.MinSize() == newAsg.MinSize() && existing.MaxSize() == newAsg.MaxSize() {
 				return false
 			}
 
-			m.registeredAsgs[i] = asg
-			klog.V(4).Infof("ASG %q updated", asg.Id())
+			m.registeredAsgs[i] = newAsg
+			klog.V(4).Infof("ASG %q updated", newAsg.Id())
 			m.invalidateUnownedInstanceCache()
 			return true
 		}
 	}
 
-	klog.V(4).Infof("Registering ASG %q", asg.Id())
-	m.registeredAsgs = append(m.registeredAsgs, asg)
+	klog.V(4).Infof("Registering ASG %q", newAsg.Id())
+	m.registeredAsgs = append(m.registeredAsgs, newAsg)
 	m.invalidateUnownedInstanceCache()
 	return true
 }
