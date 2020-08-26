@@ -631,7 +631,6 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	assert.Equal(t, expectedErr, err, "manager.fetchExplicitAsgs return error does not match, expected: %v, actual: %v", expectedErr, err)
 }
 
-
 func TestListScalesets(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
