@@ -335,11 +335,11 @@ func getBoundaryRecommendation(recommendation apiv1.ResourceList, container apiv
 	if boundaryLimit == nil {
 		return apiv1.ResourceList{}
 	}
-	cpuMaxRequest := GetBoundaryRequest(container.Resources.Requests.Cpu(), container.Resources.Limits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
-	memMaxRequest := GetBoundaryRequest(container.Resources.Requests.Memory(), container.Resources.Limits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
+	boundaryCpu := GetBoundaryRequest(container.Resources.Requests.Cpu(), container.Resources.Limits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
+	boundaryMem := GetBoundaryRequest(container.Resources.Requests.Memory(), container.Resources.Limits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
 	return apiv1.ResourceList{
-		apiv1.ResourceCPU:    *cpuMaxRequest,
-		apiv1.ResourceMemory: *memMaxRequest,
+		apiv1.ResourceCPU:    *boundaryCpu,
+		apiv1.ResourceMemory: *boundaryMem,
 	}
 }
 
