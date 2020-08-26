@@ -577,13 +577,13 @@ func TestApplyPodLimitRange(t *testing.T) {
 				{
 					ContainerName: "container1",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2000000000000m"),
+						apiv1.ResourceMemory: resource.MustParse("2000000000"),
 					},
 				},
 				{
 					ContainerName: "container2",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2000000000000m"),
+						apiv1.ResourceMemory: resource.MustParse("2000000000"),
 					},
 				},
 			},
@@ -644,13 +644,13 @@ func TestApplyPodLimitRange(t *testing.T) {
 				{
 					ContainerName: "container1",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2000000000000m"),
+						apiv1.ResourceMemory: resource.MustParse("2000000000"),
 					},
 				},
 				{
 					ContainerName: "container2",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceMemory: resource.MustParse("2000000000000m"),
+						apiv1.ResourceMemory: resource.MustParse("2000000000"),
 					},
 				},
 			},
@@ -870,13 +870,13 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 					{
 						ContainerName: "container-1",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewMilliQuantity(357913941333, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(357913941, resource.BinarySI),
 						},
 					},
 					{
 						ContainerName: "container-2",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewMilliQuantity(715827882666, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(715827882, resource.BinarySI),
 						},
 					},
 				},
@@ -895,13 +895,13 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 					{
 						ContainerName: "container-1",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewMilliQuantity(1431655765333, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(1431655766, resource.BinarySI),
 						},
 					},
 					{
 						ContainerName: "container-2",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewMilliQuantity(2863311530666, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(2863311531, resource.BinarySI),
 						},
 					},
 				},
