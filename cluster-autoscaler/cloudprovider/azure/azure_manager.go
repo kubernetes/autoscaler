@@ -41,7 +41,6 @@ const (
 	refreshInterval              = 1 * time.Minute
 )
 
-
 // AzureManager handles Azure communication and data caching.
 type AzureManager struct {
 	config   *Config
@@ -53,7 +52,6 @@ type AzureManager struct {
 	asgAutoDiscoverySpecs []labelAutoDiscoveryConfig
 	explicitlyConfigured  map[string]bool
 }
-
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
 func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
@@ -336,4 +334,3 @@ func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) ([]cloud
 
 	return asgs, nil
 }
-
