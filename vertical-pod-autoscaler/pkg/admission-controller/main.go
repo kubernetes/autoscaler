@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"net/http"
@@ -86,8 +87,12 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
-	certs := initCerts(*certsConfiguration)
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+	// load certs
+	kpr, err := NewKeypairReloader(*certsConfiguration)
+	if err != nil {
+		klog.Fatal(err)
+	}
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), *vpaObjectNamespace)
@@ -98,7 +103,7 @@ func main() {
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
-	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
+	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
@@ -132,13 +137,16 @@ func main() {
 		healthCheck.UpdateLastActivity()
 	})
 	server := &http.Server{
-		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(certs.serverCert, certs.serverKey, *minTlsVersion, *ciphers),
+		Addr: fmt.Sprintf(":%d", *port),
 	}
+	// this will check if there are new certs before every tls handshake
+	t := &tls.Config{GetCertificate: kpr.GetCertificateFunc()}
+	server.TLSConfig = t
+
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
+			selfRegistration(kubeClient, kpr.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)

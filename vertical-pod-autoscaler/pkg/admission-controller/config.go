@@ -26,6 +26,7 @@ import (
 	admissionregistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 )
 
@@ -71,6 +72,19 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 		Certificates: []tls.Certificate{sCert},
 		CipherSuites: ciphersuites,
 	}
+}
+
+// get a clientset with in-cluster config.
+func getClient() *kubernetes.Clientset {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		klog.Fatal(err)
+	}
+	return clientset
 }
 
 // register this webhook admission controller with the kube-apiserver
