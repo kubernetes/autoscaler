@@ -9,6 +9,7 @@ require (
 	github.com/prometheus/common v0.4.1
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
+	github.com/fsnotify/fsnotify v1.4.9
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	k8s.io/api v0.18.3

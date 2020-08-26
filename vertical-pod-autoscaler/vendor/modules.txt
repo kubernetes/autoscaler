@@ -7,6 +7,9 @@ github.com/blang/semver
 github.com/davecgh/go-spew/spew
 # github.com/evanphx/json-patch v4.2.0+incompatible
 github.com/evanphx/json-patch
+# github.com/fsnotify/fsnotify v1.4.9
+## explicit
+github.com/fsnotify/fsnotify
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
