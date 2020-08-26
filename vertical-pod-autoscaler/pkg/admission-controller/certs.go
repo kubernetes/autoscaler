@@ -59,7 +59,6 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 	result := &KeypairReloader{
 		certPath: *config.tlsCertFile,
 		keyPath:  *config.tlsPrivateKey,
-		caPath:   *config.clientCaFile,
 		caCert:   readFile(*config.clientCaFile),
 	}
 	cert, err := tls.LoadX509KeyPair(*config.tlsCertFile, *config.tlsPrivateKey)
@@ -99,7 +98,7 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 
 				// watch for errors
 			case err := <-watcher.Errors:
-				klog.Infof("error", err)
+				klog.Infof("error: %v", err)
 			}
 		}
 	}()
@@ -110,14 +109,12 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 // reload loads updated cert and key whenever they are updated
 func (kpr *KeypairReloader) reload() error {
 	newCert, err := tls.LoadX509KeyPair(kpr.certPath, kpr.keyPath)
-	caCert := readFile(kpr.caPath)
 	if err != nil {
 		return err
 	}
 	kpr.certMu.Lock()
 	defer kpr.certMu.Unlock()
 	kpr.cert = &newCert
-	kpr.caCert = caCert
 	return nil
 }
 
