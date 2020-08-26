@@ -372,6 +372,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		for i := range pod.Spec.Containers {
 			request := (*fieldGetter(resources[i]))[resourceName]
 			cappedContainerRequest, _ := scaleQuantityProportionally(&request, &sumRecommendation, &minLimit)
+			if resourceName == apiv1.ResourceMemory {
+				cappedContainerRequest.RoundUp(resource.Scale(0))
+			}
 			(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 		}
 		return resources
@@ -391,6 +394,11 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	for i := range pod.Spec.Containers {
 		limit := (*fieldGetter(resources[i]))[resourceName]
 		cappedContainerRequest, _ := scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit)
+		if resourceName == apiv1.ResourceMemory {
+			// Round down
+			cappedContainerRequest.Sub(*resource.NewMilliQuantity(999, cappedContainerRequest.Format))
+			cappedContainerRequest.RoundUp(resource.Scale(0))
+		}
 		(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 	}
 	return resources
