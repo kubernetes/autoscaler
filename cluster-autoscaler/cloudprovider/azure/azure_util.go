@@ -495,7 +495,6 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	return agentIndex, nil
 }
 
-
 // getLastSegment gets the last segment (splitting by '/'.)
 func getLastSegment(ID string) (string, error) {
 	parts := strings.Split(strings.TrimSpace(ID), "/")
