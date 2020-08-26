@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"time"
 
 	admissionregistration "k8s.io/api/admissionregistration/v1"
@@ -43,16 +42,6 @@ func getClient() *kubernetes.Clientset {
 		klog.Fatal(err)
 	}
 	return clientset
-}
-
-func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *tls.Config {
-	sCert, err := tls.X509KeyPair(serverCert, serverKey)
-	if err != nil {
-		klog.Fatal(err)
-	}
-	return &tls.Config{
-		Certificates: []tls.Certificate{sCert},
-	}
 }
 
 // register this webhook admission controller with the kube-apiserver

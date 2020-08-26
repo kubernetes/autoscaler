@@ -17,10 +17,23 @@ limitations under the License.
 package main
 
 import (
+	"crypto/tls"
 	"io/ioutil"
+	"sync"
 
+	"github.com/fsnotify/fsnotify"
 	"k8s.io/klog"
 )
+
+// KeypairReloader structs holds cert path and certs
+type KeypairReloader struct {
+	certMu   sync.RWMutex
+	cert     *tls.Certificate
+	caCert   []byte
+	certPath string
+	keyPath  string
+	caPath   string
+}
 
 type certsContainer struct {
 	caCert, serverKey, serverCert []byte
@@ -41,10 +54,78 @@ func readFile(filePath string) []byte {
 	return res
 }
 
-func initCerts(config certsConfig) certsContainer {
-	res := certsContainer{}
-	res.caCert = readFile(*config.clientCaFile)
-	res.serverCert = readFile(*config.tlsCertFile)
-	res.serverKey = readFile(*config.tlsPrivateKey)
-	return res
+// NewKeypairReloader will load certs on first run and trigger a goroutine for fsnotify watcher
+func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
+	result := &KeypairReloader{
+		certPath: *config.tlsCertFile,
+		keyPath:  *config.tlsPrivateKey,
+		caPath:   *config.clientCaFile,
+		caCert:   readFile(*config.clientCaFile),
+	}
+	cert, err := tls.LoadX509KeyPair(*config.tlsCertFile, *config.tlsPrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	result.cert = &cert
+
+	// creates a new file watcher
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			watcher.Close()
+		}
+	}()
+
+	if err := watcher.Add("/etc/tls-certs"); err != nil {
+		return nil, err
+	}
+
+	go func() {
+		for {
+			select {
+			// watch for events
+			case event := <-watcher.Events:
+				// fsnotify.create events will tell us if there are new certs
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					klog.Info("Reloading certs")
+					if err := result.reload(); err != nil {
+						klog.Infof("Could not load new certs: %v", err)
+					}
+				}
+
+				// watch for errors
+			case err := <-watcher.Errors:
+				klog.Infof("error", err)
+			}
+		}
+	}()
+
+	return result, nil
+}
+
+// reload loads updated cert and key whenever they are updated
+func (kpr *KeypairReloader) reload() error {
+	newCert, err := tls.LoadX509KeyPair(kpr.certPath, kpr.keyPath)
+	caCert := readFile(kpr.caPath)
+	if err != nil {
+		return err
+	}
+	kpr.certMu.Lock()
+	defer kpr.certMu.Unlock()
+	kpr.cert = &newCert
+	kpr.caCert = caCert
+	return nil
+}
+
+// GetCertificateFunc will return function which will be used as tls.Config.GetCertificate
+func (kpr *KeypairReloader) GetCertificateFunc() func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	return func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		kpr.certMu.RLock()
+		defer kpr.certMu.RUnlock()
+		return kpr.cert, nil
+	}
 }

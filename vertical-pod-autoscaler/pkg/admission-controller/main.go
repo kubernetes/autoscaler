@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 
@@ -78,7 +79,11 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
-	certs := initCerts(*certsConfiguration)
+	// load certs
+	kpr, err := NewKeypairReloader(*certsConfiguration)
+	if err != nil {
+		klog.Fatal(err)
+	}
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -128,13 +133,16 @@ func main() {
 	})
 	clientset := getClient()
 	server := &http.Server{
-		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
+		Addr: fmt.Sprintf(":%d", *port),
 	}
+	// this will check if there are new certs before every tls handshake
+	t := &tls.Config{GetCertificate: kpr.GetCertificateFunc()}
+	server.TLSConfig = t
+
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
 		if *registerWebhook {
-			selfRegistration(clientset, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
+			selfRegistration(clientset, kpr.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
