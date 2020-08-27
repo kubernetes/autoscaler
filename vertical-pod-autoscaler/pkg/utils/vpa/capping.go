@@ -371,9 +371,11 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	if minLimit.Cmp(sumRecommendation) > 0 && !sumLimit.IsZero() {
 		for i := range pod.Spec.Containers {
 			request := (*fieldGetter(resources[i]))[resourceName]
-			cappedContainerRequest, _ := scaleQuantityProportionally(&request, &sumRecommendation, &minLimit)
+			var cappedContainerRequest *resource.Quantity
 			if resourceName == apiv1.ResourceMemory {
-				cappedContainerRequest.RoundUp(resource.Scale(0))
+				cappedContainerRequest, _ = scaleQuantityProportionally(&request, &sumRecommendation, &minLimit, roundUpToFullUnit)
+			} else {
+				cappedContainerRequest, _ = scaleQuantityProportionally(&request, &sumRecommendation, &minLimit, noRounding)
 			}
 			(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 		}
@@ -393,11 +395,11 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	}
 	for i := range pod.Spec.Containers {
 		limit := (*fieldGetter(resources[i]))[resourceName]
-		cappedContainerRequest, _ := scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit)
+		var cappedContainerRequest *resource.Quantity
 		if resourceName == apiv1.ResourceMemory {
-			// Round down
-			cappedContainerRequest.Sub(*resource.NewMilliQuantity(999, cappedContainerRequest.Format))
-			cappedContainerRequest.RoundUp(resource.Scale(0))
+			cappedContainerRequest, _ = scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit, roundDownToFullUnit)
+		} else {
+			cappedContainerRequest, _ = scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit, noRounding)
 		}
 		(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 	}
