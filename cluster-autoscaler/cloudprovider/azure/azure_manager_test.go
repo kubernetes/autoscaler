@@ -304,54 +304,6 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, *expectedConfig, *manager.config, "unexpected azure manager configuration, expected: %v, actual: %v", *expectedConfig, *manager.config)
-	discoveryOpts := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: []string{
-		"label:cluster-autoscaler-enabled=true,cluster-autoscaler-name=fake-cluster",
-		"label:test-tag=test-value,another-test-tag=another-test-value",
-	}}
-	timeLayout := "2006-01-02 15:04:05"
-	timeBenchMark, _ := time.Parse(timeLayout, "2000-01-01 00:00:00")
-	fakeDeployments := map[string]resources.DeploymentExtended{
-		"cluster-autoscaler-0001": {
-			Name: to.StringPtr("cluster-autoscaler-0001"),
-			Properties: &resources.DeploymentPropertiesExtended{
-				ProvisioningState: to.StringPtr("Succeeded"),
-				Parameters: map[string]interface{}{
-					"PoolName01VMSize": to.StringPtr("PoolName01"),
-				},
-				Template: map[string]interface{}{
-					"resources": []interface{}{
-						map[string]interface{}{
-							"type": "Microsoft.Compute/virtualMachines/extensions",
-							"name": "cluster-autoscaler-0001-resourceName",
-							"properties": map[string]interface{}{
-								"hardwareProfile": map[string]interface{}{
-									"VMSize": "10G",
-								},
-							},
-						},
-					},
-				},
-				Timestamp: &date.Time{Time: timeBenchMark},
-			},
-		},
-	}
-	manager.azClient.deploymentsClient = &DeploymentsClientMock{
-		FakeStore: fakeDeployments,
-	}
-	specs, err2 := parseLabelAutoDiscoverySpecs(discoveryOpts)
-	assert.NoError(t, err2)
-	result, err3 := manager.getFilteredAutoscalingGroups(specs)
-	expectedNodeGroup := []cloudprovider.NodeGroup{(*AgentPool)(nil)}
-	assert.NoError(t, err3)
-	assert.Equal(t, expectedNodeGroup, result, "NodeGroup does not match, expected: %v, actual: %v", expectedNodeGroup, result)
-
-	// parseLabelAutoDiscoverySpecs with invalid NodeGroupDiscoveryOptions
-	invalidDiscoveryOpts := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: []string{"label:keywithoutvalue"}}
-	specs, err4 := parseLabelAutoDiscoverySpecs(invalidDiscoveryOpts)
-	expectedCfg := []labelAutoDiscoveryConfig([]labelAutoDiscoveryConfig(nil))
-	expectedErr := fmt.Errorf("invalid key=value pair [keywithoutvalue]")
-	assert.Equal(t, expectedCfg, specs, "Return labelAutoDiscoveryConfig does not match, expected: %v, actual: %v", expectedCfg, specs)
-	assert.Equal(t, expectedErr, err4, "parseLabelAutoDiscoverySpecs return error does not match, expected: %v, actual: %v", expectedErr, err4)
 }
 
 func TestCreateAzureManagerValidConfigForStandardVMTypeWithoutDeploymentParameters(t *testing.T) {
@@ -679,60 +631,6 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	assert.Equal(t, expectedErr, err, "manager.fetchExplicitAsgs return error does not match, expected: %v, actual: %v", expectedErr, err)
 }
 
-func TestParseLabelAutoDiscoverySpecs(t *testing.T) {
-	testCases := []struct {
-		name        string
-		specs       []string
-		expected    []labelAutoDiscoveryConfig
-		expectedErr bool
-	}{
-		{
-			name: "ValidSpec",
-			specs: []string{
-				"label:cluster-autoscaler-enabled=true,cluster-autoscaler-name=fake-cluster",
-				"label:test-tag=test-value,another-test-tag=another-test-value",
-			},
-			expected: []labelAutoDiscoveryConfig{
-				{Selector: map[string]string{"cluster-autoscaler-enabled": "true", "cluster-autoscaler-name": "fake-cluster"}},
-				{Selector: map[string]string{"test-tag": "test-value", "another-test-tag": "another-test-value"}},
-			},
-		},
-		{
-			name:        "MissingAutoDiscoverLabel",
-			specs:       []string{"test-tag=test-value,another-test-tag"},
-			expectedErr: true,
-		},
-		{
-			name:        "InvalidAutoDiscoerLabel",
-			specs:       []string{"invalid:test-tag=test-value,another-test-tag"},
-			expectedErr: true,
-		},
-		{
-			name:        "MissingValue",
-			specs:       []string{"label:test-tag="},
-			expectedErr: true,
-		},
-		{
-			name:        "MissingKey",
-			specs:       []string{"label:=test-val"},
-			expectedErr: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ngdo := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
-			actual, err := parseLabelAutoDiscoverySpecs(ngdo)
-			if tc.expectedErr {
-				assert.Error(t, err)
-				return
-			}
-			assert.NoError(t, err)
-			assert.True(t, assert.ObjectsAreEqualValues(tc.expected, actual), "expected %#v, but found: %#v", tc.expected, actual)
-		})
-	}
-}
-
 func TestListScalesets(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -745,7 +643,7 @@ func TestListScalesets(t *testing.T) {
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
 	testCases := []struct {
@@ -860,7 +758,7 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
 	asgs, err := manager.getFilteredAutoscalingGroups(specs)
@@ -894,16 +792,17 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	manager.config.VMType = vmTypeAKS
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
-	asgs1, err1 := manager.getFilteredAutoscalingGroups(specs)
-	assert.Nil(t, asgs1)
-	assert.Nil(t, err1)
+	expectedErr := fmt.Errorf("vmType \"aks\" does not support autodiscovery")
+	asgs, err2 := manager.getFilteredAutoscalingGroups(specs)
+	assert.Nil(t, asgs)
+	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 
 	manager.config.VMType = "invalidVMType"
-	expectedErr := fmt.Errorf("vmType \"invalidVMType\" not supported")
-	asgs, err2 := manager.getFilteredAutoscalingGroups(specs)
+	expectedErr = fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
+	asgs, err2 = manager.getFilteredAutoscalingGroups(specs)
 	assert.Nil(t, asgs)
 	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 }
@@ -935,7 +834,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
-	specs, err := parseLabelAutoDiscoverySpecs(ngdo)
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 	manager.asgAutoDiscoverySpecs = specs
 
@@ -955,226 +854,6 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	manager.fetchAutoAsgs()
 	asgs = manager.asgCache.get()
 	assert.Equal(t, 1, len(asgs))
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithNoConfigReturnsNoError(t *testing.T) {
-	err := InitializeCloudProviderRateLimitConfig(nil)
-	assert.Nil(t, err, "err should be nil")
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithNoRateLimitSettingsReturnsDefaults(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
-
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitQPSDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitBucketDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitQPSDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitBucketDefault)
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-
-	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets)
-
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitReadQPSEnvVar)
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-	os.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
-	os.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
-
-	err := InitializeCloudProviderRateLimitConfig(emptyConfig)
-
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-
-	os.Unsetenv(rateLimitReadQPSEnvVar)
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitWriteQPSEnvVar)
-	os.Unsetenv(rateLimitWriteBucketsEnvVar)
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadySetInConfig(t *testing.T) {
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	configWithRateLimits := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
-			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
-			CloudProviderRateLimitQPS:         rateLimitReadQPS,
-			CloudProviderRateLimitQPSWrite:    rateLimitWriteQPS,
-		},
-	}
-
-	os.Setenv(rateLimitReadQPSEnvVar, "99")
-	os.Setenv(rateLimitReadBucketsEnvVar, "99")
-	os.Setenv(rateLimitWriteQPSEnvVar, "99")
-	os.Setenv(rateLimitWriteBucketsEnvVar, "99")
-
-	err := InitializeCloudProviderRateLimitConfig(configWithRateLimits)
-
-	assert.NoError(t, err)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-
-	os.Unsetenv(rateLimitReadQPSEnvVar)
-	os.Unsetenv(rateLimitReadBucketsEnvVar)
-	os.Unsetenv(rateLimitWriteQPSEnvVar)
-	os.Unsetenv(rateLimitWriteBucketsEnvVar)
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	invalidSetting := "invalid"
-	testCases := []struct {
-		desc                                 string
-		isInvalidRateLimitReadQPSEnvVar      bool
-		isInvalidRateLimitReadBucketsEnvVar  bool
-		isInvalidRateLimitWriteQPSEnvVar     bool
-		isInvalidRateLimitWriteBucketsEnvVar bool
-		expectedErr                          bool
-		expectedErrMsg                       error
-	}{
-		{
-			desc:                            "an error shall be returned if invalid rateLimitReadQPSEnvVar",
-			isInvalidRateLimitReadQPSEnvVar: true,
-			expectedErr:                     true,
-			expectedErrMsg:                  fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitReadQPSEnvVar, invalidSetting),
-		},
-		{
-			desc:                                "an error shall be returned if invalid rateLimitReadBucketsEnvVar",
-			isInvalidRateLimitReadBucketsEnvVar: true,
-			expectedErr:                         true,
-			expectedErrMsg:                      fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitReadBucketsEnvVar, invalidSetting),
-		},
-		{
-			desc:                             "an error shall be returned if invalid rateLimitWriteQPSEnvVar",
-			isInvalidRateLimitWriteQPSEnvVar: true,
-			expectedErr:                      true,
-			expectedErrMsg:                   fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitWriteQPSEnvVar, invalidSetting),
-		},
-		{
-			desc:                                 "an error shall be returned if invalid rateLimitWriteBucketsEnvVar",
-			isInvalidRateLimitWriteBucketsEnvVar: true,
-			expectedErr:                          true,
-			expectedErrMsg:                       fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitWriteBucketsEnvVar, invalidSetting),
-		},
-	}
-
-	for i, test := range testCases {
-		if test.isInvalidRateLimitReadQPSEnvVar {
-			os.Setenv(rateLimitReadQPSEnvVar, invalidSetting)
-		} else {
-			os.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-		}
-		if test.isInvalidRateLimitReadBucketsEnvVar {
-			os.Setenv(rateLimitReadBucketsEnvVar, invalidSetting)
-		} else {
-			os.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-		}
-		if test.isInvalidRateLimitWriteQPSEnvVar {
-			os.Setenv(rateLimitWriteQPSEnvVar, invalidSetting)
-		} else {
-			os.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
-		}
-		if test.isInvalidRateLimitWriteBucketsEnvVar {
-			os.Setenv(rateLimitWriteBucketsEnvVar, invalidSetting)
-		} else {
-			os.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
-		}
-
-		err := InitializeCloudProviderRateLimitConfig(emptyConfig)
-
-		assert.Equal(t, test.expectedErr, err != nil, "TestCase[%d]: %s, return error: %v", i, test.desc, err)
-		assert.Equal(t, test.expectedErrMsg, err, "TestCase[%d]: %s, expected: %v, return: %v", i, test.desc, test.expectedErrMsg, err)
-
-		os.Unsetenv(rateLimitReadQPSEnvVar)
-		os.Unsetenv(rateLimitReadBucketsEnvVar)
-		os.Unsetenv(rateLimitWriteQPSEnvVar)
-		os.Unsetenv(rateLimitWriteBucketsEnvVar)
-	}
-}
-
-func TestOverrideDefaultRateLimitConfig(t *testing.T) {
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	defaultConfigWithRateLimits := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
-			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
-			CloudProviderRateLimitQPS:         rateLimitReadQPS,
-			CloudProviderRateLimitQPSWrite:    rateLimitWriteQPS,
-		},
-	}
-
-	configWithRateLimits := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimit:            true,
-			CloudProviderRateLimitBucket:      0,
-			CloudProviderRateLimitBucketWrite: 0,
-			CloudProviderRateLimitQPS:         0,
-			CloudProviderRateLimitQPSWrite:    0,
-		},
-	}
-
-	newconfig := overrideDefaultRateLimitConfig(&defaultConfigWithRateLimits.RateLimitConfig, &configWithRateLimits.RateLimitConfig)
-
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitQPS, newconfig.CloudProviderRateLimitQPS)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitBucket, newconfig.CloudProviderRateLimitBucket)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitQPSWrite, newconfig.CloudProviderRateLimitQPSWrite)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitBucketWrite, newconfig.CloudProviderRateLimitBucketWrite)
-
-	falseCloudProviderRateLimit := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimit: false,
-		},
-	}
-	newconfig = overrideDefaultRateLimitConfig(&defaultConfigWithRateLimits.RateLimitConfig, &falseCloudProviderRateLimit.RateLimitConfig)
-	assert.Equal(t, &falseCloudProviderRateLimit.RateLimitConfig, newconfig)
-}
-
-func TestGetSubscriptionIdFromInstanceMetadata(t *testing.T) {
-	// metadataURL in azure_manager.go is not available for our tests, expect fail.
-	result, err := getSubscriptionIdFromInstanceMetadata()
-	expected := ""
-	assert.NotNil(t, err.Error())
-	assert.Equal(t, expected, result, "Verify return result failed, expected: %v, actual: %v", expected, result)
 }
 
 func TestManagerRefreshAndCleanup(t *testing.T) {
