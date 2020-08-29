@@ -252,10 +252,9 @@ func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node,
 	//node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(machineType, nodeName))
-	node.Labels[poolNameLabel] = "metal-cpu"
+	node.Labels[poolNameLabel] = machineType
 	node.Labels[poolTypeLabel] = "cpu"
 	if machineType.GPU > 0 {
-		node.Labels[poolNameLabel] = "metal-gpu"
 		node.Labels[poolTypeLabel] = "gpu"
 	}
 
