@@ -19,13 +19,14 @@ package signers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/jmespath/go-jmespath"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // EcsRamRoleSigner is kind of signer
@@ -123,7 +124,7 @@ func (signer *EcsRamRoleSigner) refreshApi(request *requests.CommonRequest) (res
 
 func (signer *EcsRamRoleSigner) refreshCredential(response *responses.CommonResponse) (err error) {
 	if response.GetHttpStatus() != http.StatusOK {
-		fmt.Println("refresh Ecs sts token err, httpStatus: " + string(response.GetHttpStatus()) + ", message = " + response.GetHttpContentString())
+		fmt.Printf("refresh Ecs sts token err, httpStatus: %d, message = %s\n", response.GetHttpStatus(), response.GetHttpContentString())
 		return
 	}
 	var data interface{}
