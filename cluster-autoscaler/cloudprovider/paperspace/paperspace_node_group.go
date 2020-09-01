@@ -103,7 +103,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	}
 
 	// update internal cache
-	n.asg.Current = &targetSize
+	n.asg.Current = targetSize
 	return nil
 }
 
@@ -155,7 +155,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	req := psgo.AutoscalingGroupUpdateParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
 		Attributes: psgo.AutoscalingGroupUpdateAttributeParams{
-			Current: targetSize,
+			Current: &targetSize,
 		},
 	}
 
