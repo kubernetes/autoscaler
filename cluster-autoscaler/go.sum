@@ -20,8 +20,8 @@ github.com/Microsoft/hcsshim v0.0.0-20190417211021-672e52e9209d h1:u64+IetywsPQ0
 github.com/Microsoft/hcsshim v0.0.0-20190417211021-672e52e9209d/go.mod h1:Op3hHsoHPAvb6lceZHDtd9OkTew38wNoXnJs8iY7rUg=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46 h1:lsxEuwrXEAokXB9qhlbKWPpo3KMLZQ5WB5WLQRW1uq0=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
-github.com/Paperspace/paperspace-go v0.3.0 h1:3WZjceCnwcRvh64vqWBnB5yOMJYxH5uC+2AL2e3iO8M=
-github.com/Paperspace/paperspace-go v0.3.0/go.mod h1:dtV/8NzfKc0mPp8zw6Gu2mUvWL5wvOYp/BV+0oaqoc0=
+github.com/Paperspace/paperspace-go v0.3.1-beta2 h1:/O12uMcL6N+t8EuZ0n5ZPAmg1bnKZfd9Bzw5cWMhv3s=
+github.com/Paperspace/paperspace-go v0.3.1-beta2/go.mod h1:dtV/8NzfKc0mPp8zw6Gu2mUvWL5wvOYp/BV+0oaqoc0=
 github.com/PuerkitoBio/purell v1.1.0 h1:rmGxhojJlM0tuKtfdvliR84CFHljx9ag64t2xmVkjK4=
 github.com/PuerkitoBio/purell v1.1.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV/sSk/8dngufqelfh6jnri85riMAaF/M=
