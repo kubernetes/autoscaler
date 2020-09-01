@@ -189,8 +189,8 @@ func (m *Manager) Refresh() error {
 
 	var groups []*NodeGroup
 	for _, asg := range autoscalingGroups {
-		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d",
-			asg.ID, asg.Name, asg.Min, asg.Max)
+		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d current: %d",
+			asg.ID, asg.Name, asg.Min, asg.Max, asg.Current)
 
 		groups = append(groups, &NodeGroup{
 			id:        asg.ID,
@@ -252,7 +252,7 @@ func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node,
 	//node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(machineType, nodeName))
-	node.Labels[poolNameLabel] = machineType
+	node.Labels[poolNameLabel] = machineType.Label
 	node.Labels[poolTypeLabel] = "cpu"
 	if machineType.GPU > 0 {
 		node.Labels[poolTypeLabel] = "gpu"
