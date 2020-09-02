@@ -24,7 +24,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
@@ -295,23 +294,6 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
-	loggingQuota := klogx.PodsLoggingQuota()
-
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod) bool {
-		if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, nodename); err != nil {
-			klogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseMessage())
-			return false
-		}
-
-		klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
-		if err := clusterSnapshot.AddPod(pod, nodename); err != nil {
-			klog.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, nodename, err)
-			return false
-		}
-		newHints[podKey(pod)] = nodename
-		return true
-	}
-
 	pods = tpu.ClearTPURequests(pods)
 
 	// remove pods from clusterSnapshot first
@@ -330,30 +312,32 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 		foundPlace := false
 		targetNode := ""
 
-		loggingQuota.Reset()
-
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
-		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint {
-			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod) {
+		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && hintedNode != removedNode {
+			if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
+				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
+				if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
+					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
+				}
+				newHints[podKey(pod)] = hintedNode
 				foundPlace = true
 				targetNode = hintedNode
 			}
 		}
 
 		if !foundPlace {
-			for nodeName := range nodes {
-				if nodeName == removedNode {
-					continue
+			newNodeName, err := predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+				return nodeInfo.Node().Name != removedNode
+			})
+			if err == nil {
+				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
+				if err := clusterSnapshot.AddPod(pod, newNodeName); err != nil {
+					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
 				}
-				if tryNodeForPod(nodeName, pod) {
-					foundPlace = true
-					targetNode = nodeName
-					break
-				}
-			}
-			if !foundPlace {
-				klogx.V(4).Over(loggingQuota).Infof("%v other nodes evaluated for %s/%s", -loggingQuota.Left(), pod.Namespace, pod.Name)
+				newHints[podKey(pod)] = newNodeName
+				targetNode = newNodeName
+			} else {
 				return fmt.Errorf("failed to find place for %s", podKey(pod))
 			}
 		}
