@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/stretchr/testify/assert"
@@ -268,6 +269,13 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 			desc: "http.StatusTooManyRequests error should return true",
 			rerr: &retry.Error{
 				HTTPStatusCode: http.StatusTooManyRequests,
+			},
+			expected: true,
+		},
+		{
+			desc: "Nul HTTP code and non-expired Retry-After should return true",
+			rerr: &retry.Error{
+				RetryAfter: time.Now().Add(time.Hour),
 			},
 			expected: true,
 		},
