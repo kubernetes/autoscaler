@@ -128,8 +128,9 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 				n.clusterID, n.id, nodeID, err)
 		}
 
-		// decrement the count by one  after a successful delete
-		n.asg.Current--
+		if err := n.DecreaseTargetSize(-1); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -245,6 +246,7 @@ func toInstances(nodes []psgo.Machine) []cloudprovider.Instance {
 	for _, nd := range nodes {
 		instances = append(instances, toInstance(nd))
 	}
+
 	return instances
 }
 
