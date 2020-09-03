@@ -426,3 +426,249 @@ func TestUtilNormalizedProviderID(t *testing.T) {
 		})
 	}
 }
+
+func Test_clusterNameFromResource(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		resource *unstructured.Unstructured
+		want     string
+	}{{
+		name: "cluster name not set, v1alpha1 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "",
+	}, {
+		name: "cluster name not set, v1alpha1 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "",
+	}, {
+		name: "cluster name set in MachineSet labels, v1alpha1 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+					"labels": map[string]interface{}{
+						deprecatedClusterNameLabel: "bar",
+					},
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in MachineDeployment, v1alpha1 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+					"labels": map[string]interface{}{
+						deprecatedClusterNameLabel: "bar",
+					},
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in Machine template labels, v1alpha1 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+					"template": map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"labels": map[string]interface{}{
+								deprecatedClusterNameLabel: "bar",
+							},
+						},
+					},
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in Machine template, v1alpha1 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.k8s.io/v1alpha1",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+					"template": map[string]interface{}{
+						"metadata": map[string]interface{}{
+							"labels": map[string]interface{}{
+								deprecatedClusterNameLabel: "bar",
+							},
+						},
+					},
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name not set, v1alpha2 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha2",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "",
+	}, {
+		name: "cluster name not set, v1alpha2 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha2",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "",
+	}, {
+		name: "cluster name set in MachineSet labels, v1alpha2 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha2",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+					"labels": map[string]interface{}{
+						clusterNameLabel: "bar",
+					},
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in MachineDeployment, v1alpha2 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha2",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+					"labels": map[string]interface{}{
+						clusterNameLabel: "bar",
+					},
+				},
+				"spec": map[string]interface{}{
+					"replicas": int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in spec, v1alpha3 MachineSet",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineSetKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha3",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"clusterName": "bar",
+					"replicas":    int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}, {
+		name: "cluster name set in spec, v1alpha3 MachineDeployment",
+		resource: &unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"kind":       machineDeploymentKind,
+				"apiVersion": "cluster.x-k8s.io/v1alpha3",
+				"metadata": map[string]interface{}{
+					"name":      "foo",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"clusterName": "bar",
+					"replicas":    int64(1),
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+		want: "bar",
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := clusterNameFromResource(tc.resource); got != tc.want {
+				t.Errorf("clusterNameFromResource() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}

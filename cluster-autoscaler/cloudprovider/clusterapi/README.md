@@ -31,6 +31,37 @@ Please note, this example only shows the cloud provider options, you will
 most likely need other command line flags. For more information you can invoke
 `cluster-autoscaler --help` to see a full list of options.
 
+## Configuring node group auto discovery
+
+If you do not configure node group auto discovery, cluster autoscaler will attempt
+to match nodes against any scalable resources found in any namespace and belonging
+to any Cluster.
+
+Limiting cluster autoscaler to only match against resources in the blue namespace
+
+```
+--node-group-auto-discovery=clusterapi:namespace=blue
+```
+
+Limiting cluster autoscaler to only match against resources belonging to Cluster test1
+
+```
+--node-group-auto-discovery=clusterapi:clusterName=test1
+```
+
+Limiting cluster autoscaler to only match against resources matching the provided labels
+
+```
+--node-group-auto-discovery=clusterapi:color=green,shape=square
+```
+
+These can be mixed and matched in any combination, for example to only match resources
+in the staging namespace, belonging to the purple cluster, with the label owner=jim:
+
+```
+--node-group-auto-discovery=clusterapi:namespace=staging,clusterName=purple,owner=jim
+```
+
 ## Enabling Autoscaling
 
 To enable the automatic scaling of components in your cluster-api managed
