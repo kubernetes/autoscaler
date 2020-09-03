@@ -592,11 +592,16 @@ func convertResourceGroupNameToLower(resourceID string) (string, error) {
 	return strings.Replace(resourceID, resourceGroup, strings.ToLower(resourceGroup), 1), nil
 }
 
-// isAzureRequestsThrottled returns true when the err is http.StatusTooManyRequests (429).
+// isAzureRequestsThrottled returns true when the err is http.StatusTooManyRequests (429),
+// and when err shows the requests was not executed due to an ongoing throttling period.
 func isAzureRequestsThrottled(rerr *retry.Error) bool {
 	klog.V(6).Infof("isAzureRequestsThrottled: starts for error %v", rerr)
 	if rerr == nil {
 		return false
+	}
+
+	if rerr.HTTPStatusCode == 0 && rerr.RetryAfter.After(time.Now()) {
+		return true
 	}
 
 	return rerr.HTTPStatusCode == http.StatusTooManyRequests
