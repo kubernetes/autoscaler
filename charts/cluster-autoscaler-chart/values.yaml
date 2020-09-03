@@ -129,7 +129,6 @@ extraArgs:
   # scale-down-delay-after-delete: 0s
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
-  # skip-nodes-with-local-storage: false
   # skip-nodes-with-system-pods: true
 
 # extraEnv -- Additional container environment variables.
