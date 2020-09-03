@@ -15,7 +15,13 @@ import (
 )
 
 var DefaultBaseURL = "https://api.paperspace.io"
-var SuccessStatusCodes = []int{200, 201, 202, 203, 204}
+var SuccessStatusCodes = []int{
+	http.StatusOK,
+	http.StatusCreated,
+	http.StatusAccepted,
+	http.StatusNonAuthoritativeInfo,
+	http.StatusNoContent,
+}
 
 type APIBackend struct {
 	BaseURL    string
