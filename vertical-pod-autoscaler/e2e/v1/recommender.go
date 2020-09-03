@@ -384,10 +384,10 @@ func deleteRecommender(c clientset.Interface) error {
 		fmt.Println("Could not list pods.", err)
 		return err
 	}
-	fmt.Print("Pods list items:", len(podList.Items))
+	fmt.Println("Pods list items:", len(podList.Items))
 	for _, pod := range podList.Items {
 		if strings.HasPrefix(pod.Name, "vpa-recommender") {
-			fmt.Print("Deleting pod.", namespace, pod.Name)
+			fmt.Println("Deleting pod.", namespace, pod.Name)
 			err := c.CoreV1().Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
 			if err != nil {
 				return err
