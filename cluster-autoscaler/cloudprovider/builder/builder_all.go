@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mcm"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
@@ -44,6 +45,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.DigitalOceanProviderName,
 	cloudprovider.HuaweicloudProviderName,
 	clusterapi.ProviderName,
+	cloudprovider.MCMProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -71,6 +73,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return packet.BuildPacket(opts, do, rl)
 	case clusterapi.ProviderName:
 		return clusterapi.BuildClusterAPI(opts, do, rl)
+	case mcm.ProviderName:
+		return mcm.BuildMCM(opts, do, rl)
 	}
 	return nil
 }

@@ -45,6 +45,8 @@ const (
 	KubemarkProviderName = "kubemark"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
 	HuaweicloudProviderName = "huaweicloud"
+	// MCMProviderName gets teh provider name of machine controller manager
+	MCMProviderName = "mcm"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
