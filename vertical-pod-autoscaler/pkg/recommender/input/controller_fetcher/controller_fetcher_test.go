@@ -353,6 +353,31 @@ func TestControllerFetcher(t *testing.T) {
 				Name: "iCanScale", Kind: "Scale", Namespace: "test-namesapce"}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
 			expectedError: nil,
 		},
+		{
+			name: "pod, parent is node",
+			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+			objects: []runtime.Object{&appsv1.Deployment{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "Deployment",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namesapce",
+					// Parent is a node
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "v1",
+							Controller: &trueVar,
+							Kind:       "Node",
+							Name:       "node",
+						},
+					},
+				},
+			}},
+			expectedKey:   nil,
+			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := simpleControllerFetcher()
