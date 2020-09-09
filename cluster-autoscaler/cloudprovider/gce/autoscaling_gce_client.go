@@ -34,9 +34,9 @@ import (
 )
 
 const (
-	defaultOperationWaitTimeout  = 20 * time.Second
-	defaultOperationPollInterval = 100 * time.Millisecond
-
+	defaultOperationWaitTimeout          = 20 * time.Second
+	defaultOperationPollInterval         = 100 * time.Millisecond
+	defaultOperationDeletionPollInterval = 1 * time.Second
 	// ErrorCodeQuotaExceeded is error code used in InstanceErrorInfo if quota exceeded error occurs.
 	ErrorCodeQuotaExceeded = "QUOTA_EXCEEDED"
 
@@ -73,8 +73,9 @@ type autoscalingGceClientV1 struct {
 	projectId string
 
 	// These can be overridden, e.g. for testing.
-	operationWaitTimeout  time.Duration
-	operationPollInterval time.Duration
+	operationWaitTimeout          time.Duration
+	operationPollInterval         time.Duration
+	operationDeletionPollInterval time.Duration
 }
 
 // NewAutoscalingGceClientV1 creates a new client for communicating with GCE v1 API.
@@ -85,17 +86,18 @@ func NewAutoscalingGceClientV1(client *http.Client, projectId string) (*autoscal
 	}
 
 	return &autoscalingGceClientV1{
-		projectId:             projectId,
-		gceService:            gceService,
-		operationWaitTimeout:  defaultOperationWaitTimeout,
-		operationPollInterval: defaultOperationPollInterval,
+		projectId:                     projectId,
+		gceService:                    gceService,
+		operationWaitTimeout:          defaultOperationWaitTimeout,
+		operationPollInterval:         defaultOperationPollInterval,
+		operationDeletionPollInterval: defaultOperationDeletionPollInterval,
 	}, nil
 }
 
 // NewCustomAutoscalingGceClientV1 creates a new client using custom server url and timeouts
 // for communicating with GCE v1 API.
 func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl string,
-	waitTimeout, pollInterval time.Duration) (*autoscalingGceClientV1, error) {
+		waitTimeout, pollInterval time.Duration, deletionPollInterval time.Duration) (*autoscalingGceClientV1, error) {
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
@@ -103,10 +105,11 @@ func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl s
 	gceService.BasePath = serverUrl
 
 	return &autoscalingGceClientV1{
-		projectId:             projectId,
-		gceService:            gceService,
-		operationWaitTimeout:  waitTimeout,
-		operationPollInterval: pollInterval,
+		projectId:                     projectId,
+		gceService:                    gceService,
+		operationWaitTimeout:          waitTimeout,
+		operationPollInterval:         pollInterval,
+		operationDeletionPollInterval: deletionPollInterval,
 	}, nil
 }
 
@@ -169,11 +172,15 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 	if err != nil {
 		return err
 	}
-	return client.waitForOp(op, migRef.Project, migRef.Zone)
+	return client.waitForOp(op, migRef.Project, migRef.Zone, false)
 }
 
-func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string) error {
-	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(client.operationPollInterval) {
+func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string, isDeletion bool) error {
+	pollInterval := client.operationPollInterval
+	if isDeletion {
+		pollInterval = client.operationDeletionPollInterval
+	}
+	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(pollInterval) {
 		klog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		registerRequest("zone_operations", "get")
 		if op, err := client.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
@@ -200,7 +207,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	if err != nil {
 		return err
 	}
-	return client.waitForOp(op, migRef.Project, migRef.Zone)
+	return client.waitForOp(op, migRef.Project, migRef.Zone, true)
 }
 
 func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
