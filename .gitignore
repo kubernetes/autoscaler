@@ -4,6 +4,8 @@
 # OSX trash
 .DS_Store
 
+cluster-autoscaler/dev
+
 # Eclipse files
 .classpath
 .project
