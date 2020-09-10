@@ -1,3 +1,11 @@
+# Fork
+
+This is a fork of [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) developed for the [gardener/machine-controller-manager](https://github.com/gardener/machine-controller-manager) and [gardener/gardener](https://github.com/gardener/gardener) project.   
+
+Find more details about this fork in [FORK.md](./FORK.md).
+
+**TL;DR** Support for Machine-controller-manager is added to cluster-autoscaler. It means cluster-autoscaler now works for all cloud-providers which MCM supports which are AWS, GCP, Azure, Openstack, Alibaba, Packet, vSphere.
+
 # Kubernetes Autoscaler
 
 [![Build Status](https://travis-ci.org/kubernetes/autoscaler.svg?branch=master)](https://travis-ci.org/kubernetes/autoscaler) [![GoDoc Widget]][GoDoc]

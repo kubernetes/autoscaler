@@ -1,0 +1,49 @@
+autoscaler:
+  template: 'default'
+  base_definition:
+    repo: ~
+    traits:
+      version:
+        preprocess:
+          'inject-commit-hash'
+        inject_effective_version: true
+      publish:
+        dockerimages:
+          cluster-autoscaler:
+            inputs:
+              repos:
+                source: ~ # default
+              steps:
+                build: ~
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/autoscaler/cluster-autoscaler'
+            dockerfile: 'Dockerfile'
+            dir: 'cluster-autoscaler'
+    steps:
+      check:
+        image: 'eu.gcr.io/gardener-project/gardener/autoscaler/autoscaling-builder:0.2'
+      test:
+        image: 'eu.gcr.io/gardener-project/gardener/autoscaler/autoscaling-builder:0.2'
+      build:
+        image: 'eu.gcr.io/gardener-project/gardener/autoscaler/autoscaling-builder:0.2'
+        output_dir: 'binary'
+  jobs:
+    head-update:
+      traits:
+        draft_release: ~
+    pull-request:
+      traits:
+        pull-request: ~
+    release:
+      traits:
+        version:
+          preprocess: 'finalize'
+        release:
+          nextversion: 'bump_minor'
+        slack:
+          default_channel: 'internal_scp_workspace'
+          channel_cfgs:
+            internal_scp_workspace:
+              channel_name: 'C0170QTBJUW' # gardener-mcm
+              slack_cfg_name: 'scp_workspace'
+        component_descriptor: ~

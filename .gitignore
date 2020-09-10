@@ -4,6 +4,7 @@
 # OSX trash
 .DS_Store
 
+# Ignore development related files
 cluster-autoscaler/dev
 
 # Eclipse files
@@ -29,4 +30,3 @@ cluster-autoscaler/dev
 *.un~
 Session.vim
 .netrwhist
-
