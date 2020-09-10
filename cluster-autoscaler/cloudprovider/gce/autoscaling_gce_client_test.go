@@ -73,7 +73,7 @@ func TestWaitForOp(t *testing.T) {
 
 	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
 
-	err := g.waitForOp(operation, projectId, zoneB)
+	err := g.waitForOp(operation, projectId, zoneB, false)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -94,6 +94,6 @@ func TestWaitForOpTimeout(t *testing.T) {
 
 	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
 
-	err := g.waitForOp(operation, projectId, zoneB)
+	err := g.waitForOp(operation, projectId, zoneB, false)
 	assert.Error(t, err)
 }
