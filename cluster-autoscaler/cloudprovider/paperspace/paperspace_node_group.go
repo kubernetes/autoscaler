@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	psgo "github.com/Paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
@@ -50,6 +51,7 @@ type NodeGroup struct {
 	clusterID string
 	manager   *Manager
 	asg       psgo.AutoscalingGroup
+	mutex     sync.Mutex
 
 	minSize int
 	maxSize int
@@ -112,6 +114,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+
 	ctx := context.Background()
 	for _, node := range nodes {
 		nodeID := toNodeID(node.Spec.ProviderID)
@@ -127,7 +132,6 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",
 				n.clusterID, n.id, nodeID, err)
 		}
-
 		if err := n.DecreaseTargetSize(-1); err != nil {
 			return err
 		}

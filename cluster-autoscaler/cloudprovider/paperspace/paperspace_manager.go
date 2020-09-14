@@ -27,6 +27,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	psgo "github.com/Paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
@@ -56,6 +57,7 @@ var _ nodeGroupClient = (*psgo.Client)(nil)
 type Manager struct {
 	client     nodeGroupClient
 	clusterID  string
+	mutex      sync.Mutex
 	nodeGroups []*NodeGroup
 }
 
@@ -152,6 +154,9 @@ func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovide
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	ctx := context.Background()
 	params := psgo.AutoscalingGroupListParams{
 		RequestParams: psgo.RequestParams{Context: ctx},

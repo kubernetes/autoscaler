@@ -102,8 +102,7 @@ func (ps *paperspaceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 			// CA uses node.Spec.ProviderID when looking for (un)registered nodes,
 			// so we need to use it here too.
 
-			forceProvider := os.Getenv("PAPERSPACE_FORCE_PROVIDER")
-			if forceProvider == "" && node.Id != providerID {
+			if node.Id != providerID {
 				continue
 			}
 
