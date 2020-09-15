@@ -27,6 +27,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	psgo "github.com/Paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
@@ -56,6 +57,7 @@ var _ nodeGroupClient = (*psgo.Client)(nil)
 type Manager struct {
 	client     nodeGroupClient
 	clusterID  string
+	mutex      sync.Mutex
 	nodeGroups []*NodeGroup
 }
 
@@ -152,6 +154,9 @@ func newManager(configReader io.Reader, nodeGroupSpecs []string, do cloudprovide
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	ctx := context.Background()
 	params := psgo.AutoscalingGroupListParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
@@ -189,8 +194,8 @@ func (m *Manager) Refresh() error {
 
 	var groups []*NodeGroup
 	for _, asg := range autoscalingGroups {
-		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d",
-			asg.ID, asg.Name, asg.Min, asg.Max)
+		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d current: %d",
+			asg.ID, asg.Name, asg.Min, asg.Max, asg.Current)
 
 		groups = append(groups, &NodeGroup{
 			id:        asg.ID,
@@ -252,10 +257,9 @@ func (m *Manager) buildNodeFromTemplate(asg psgo.AutoscalingGroup) (*apiv1.Node,
 	//node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, m.buildGenericLabels(machineType, nodeName))
-	node.Labels[poolNameLabel] = "metal-cpu"
+	node.Labels[poolNameLabel] = machineType.Label
 	node.Labels[poolTypeLabel] = "cpu"
 	if machineType.GPU > 0 {
-		node.Labels[poolNameLabel] = "metal-gpu"
 		node.Labels[poolTypeLabel] = "gpu"
 	}
 

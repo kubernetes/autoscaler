@@ -101,6 +101,7 @@ func (ps *paperspaceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 			klog.V(6).Infof("checking node has: %q want: %q", node.Id, providerID)
 			// CA uses node.Spec.ProviderID when looking for (un)registered nodes,
 			// so we need to use it here too.
+
 			if node.Id != providerID {
 				continue
 			}

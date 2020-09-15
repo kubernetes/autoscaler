@@ -15,6 +15,13 @@ import (
 )
 
 var DefaultBaseURL = "https://api.paperspace.io"
+var SuccessStatusCodes = []int{
+	http.StatusOK,
+	http.StatusCreated,
+	http.StatusAccepted,
+	http.StatusNonAuthoritativeInfo,
+	http.StatusNoContent,
+}
 
 type APIBackend struct {
 	BaseURL    string
@@ -42,12 +49,11 @@ func NewAPIBackend() *APIBackend {
 	if debug != "" {
 		apiBackend.Debug = true
 	}
-	
+
 	debugBody := os.Getenv("PAPERSPACE_DEBUG_BODY")
 	if debugBody != "" {
 		apiBackend.DebugBody = true
 	}
-
 
 	return &apiBackend
 }
@@ -125,7 +131,15 @@ func (c *APIBackend) request(method string, url string,
 		c.debug(string(responseDump))
 	}
 
-	if res.StatusCode != 200 {
+	isSuccessResponse := false
+	for _, statusCode := range SuccessStatusCodes {
+		if res.StatusCode == statusCode {
+			isSuccessResponse = true
+			break
+		}
+	}
+
+	if !isSuccessResponse {
 		defer res.Body.Close()
 		errorBody, err := ioutil.ReadAll(res.Body)
 		if err != nil {

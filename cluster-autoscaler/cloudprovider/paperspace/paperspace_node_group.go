@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	psgo "github.com/Paperspace/paperspace-go"
 	apiv1 "k8s.io/api/core/v1"
@@ -50,6 +51,7 @@ type NodeGroup struct {
 	clusterID string
 	manager   *Manager
 	asg       psgo.AutoscalingGroup
+	mutex     sync.Mutex
 
 	minSize int
 	maxSize int
@@ -93,7 +95,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	req := psgo.AutoscalingGroupUpdateParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
 		Attributes: psgo.AutoscalingGroupUpdateAttributeParams{
-			Current: targetSize,
+			Current: &targetSize,
 		},
 	}
 
@@ -112,6 +114,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+
 	ctx := context.Background()
 	for _, node := range nodes {
 		nodeID := toNodeID(node.Spec.ProviderID)
@@ -127,9 +132,9 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",
 				n.clusterID, n.id, nodeID, err)
 		}
-
-		// decrement the count by one  after a successful delete
-		n.asg.Current--
+		if err := n.DecreaseTargetSize(-1); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -155,7 +160,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	req := psgo.AutoscalingGroupUpdateParams{
 		RequestParams: psgo.RequestParams{Context: ctx},
 		Attributes: psgo.AutoscalingGroupUpdateAttributeParams{
-			Current: targetSize,
+			Current: &targetSize,
 		},
 	}
 
@@ -245,6 +250,7 @@ func toInstances(nodes []psgo.Machine) []cloudprovider.Instance {
 	for _, nd := range nodes {
 		instances = append(instances, toInstance(nd))
 	}
+
 	return instances
 }
 

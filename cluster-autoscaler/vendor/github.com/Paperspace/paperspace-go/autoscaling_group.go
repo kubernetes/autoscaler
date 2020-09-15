@@ -50,9 +50,9 @@ type AutoscalingGroupListParams struct {
 
 type AutoscalingGroupUpdateAttributeParams struct {
 	Name        string `json:"name,omitempty"`
-	Min         int    `json:"min,omitempty"`
-	Max         int    `json:"max,omitempty"`
-	Current     int    `json:"current,omitempty"`
+	Min         *int   `json:"min,omitempty"`
+	Max         *int   `json:"max,omitempty"`
+	Current     *int   `json:"current,omitempty"`
 	MachineType string `json:"machineType,omitempty"`
 	TemplateID  string `json:"templateId,omitempty"`
 	ScriptID    string `json:"startupScriptId,omitempty"`

@@ -292,6 +292,15 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 		return err
 	}
 
+	// XXX: Added to handle provider id that is missing
+	for _, node := range nodes {
+		providerPrefix, prefixOK := node.ObjectMeta.Labels["provider.autoscaler/prefix"]
+		providerNodeName, nodeNameOK := node.ObjectMeta.Labels["provider.autoscaler/nodeName"]
+		if prefixOK && nodeNameOK {
+			node.Spec.ProviderID = fmt.Sprintf("%s://%s", providerPrefix, providerNodeName)
+		}
+	}
+
 	cloudProviderNodeInstances, err := csr.getCloudProviderNodeInstances()
 	if err != nil {
 		return err
