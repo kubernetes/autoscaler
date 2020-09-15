@@ -40,6 +40,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 var (
@@ -216,6 +217,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 			return scaleSet.curSize, nil
 		}
 		return -1, rerr.Error()
+	}
+
+	// If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
+	if set.VirtualMachineScaleSetProperties != nil && strings.EqualFold(to.String(set.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.ProvisioningStateUpdating)) {
+		klog.V(5).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
+		return scaleSet.curSize, nil
 	}
 
 	vmssSizeMutex.Lock()
