@@ -20,12 +20,20 @@ import (
 	"flag"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/klog"
 )
 
 var (
 	safetyMarginFraction = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
 	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
 	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
+
+	targetCPUPercentile        = flag.Float64("recommendation-target-cpu-percentile", 0.9, `Percentile of cpu usage histogram for target recommendation for a pod`)
+	lowerBoundCPUPercentile    = flag.Float64("recommendation-lower-bound-cpu-percentile", 0.5, `Percentile of cpu usage histogram for lower bound recommendation for a pod`)
+	upperBoundCPUPercentile    = flag.Float64("recommendation-upper-bound-cpu-percentile", 0.95, `Percentile of cpu usage histogram for upper bound recommendation for a pod`)
+	targetMemoryPercentile     = flag.Float64("recommendation-target-memory-percentile", 0.9, `Percentile of memory peaks histogram for target recommendation for a pod`)
+	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Percentile of memory peaks histogram for lower bound recommendation for a pod`)
+	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Percentile of memory peaks histogram for upper bound recommendation for a pod`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -99,13 +107,19 @@ func FilterControlledResources(estimation model.Resources, controlledResources [
 
 // CreatePodResourceRecommender returns the primary recommender.
 func CreatePodResourceRecommender() PodResourceRecommender {
-	targetCPUPercentile := 0.9
-	lowerBoundCPUPercentile := 0.5
-	upperBoundCPUPercentile := 0.95
+	targetCPUPercentile := *targetCPUPercentile
+	lowerBoundCPUPercentile := *lowerBoundCPUPercentile
+	upperBoundCPUPercentile := *upperBoundCPUPercentile
 
-	targetMemoryPeaksPercentile := 0.9
-	lowerBoundMemoryPeaksPercentile := 0.5
-	upperBoundMemoryPeaksPercentile := 0.95
+	if lowerBoundCPUPercentile <= 0 || lowerBoundCPUPercentile > targetCPUPercentile || targetCPUPercentile > upperBoundCPUPercentile {
+		klog.Fatalf("Please make sure lowerBoundCPUPercentile > 0 and lowerBoundCPUPercentile <= targetCPUPercentile <= upperBoundCPUPercentile")
+	}
+	targetMemoryPeaksPercentile := *targetMemoryPercentile
+	lowerBoundMemoryPeaksPercentile := *lowerBoundMemoryPercentile
+	upperBoundMemoryPeaksPercentile := *upperBoundMemoryPercentile
+	if lowerBoundMemoryPeaksPercentile <= 0 || lowerBoundMemoryPeaksPercentile > targetMemoryPeaksPercentile || targetMemoryPeaksPercentile > upperBoundMemoryPeaksPercentile {
+		klog.Fatalf("Please make sure lowerBoundMemoryPercentile > 0 and lowerBoundMemoryPercentile <= targetMemoryPercentile <= upperBoundMemoryPercentile")
+	}
 
 	targetEstimator := NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
