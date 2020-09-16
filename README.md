@@ -1,5 +1,7 @@
 # Fork
 
+[![reuse compliant](https://reuse.software/badge/reuse-compliant.svg)](https://reuse.software/)
+
 This is a fork of [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) developed for the [gardener/machine-controller-manager](https://github.com/gardener/machine-controller-manager) and [gardener/gardener](https://github.com/gardener/gardener) project.   
 
 Find more details about this fork in [FORK.md](./FORK.md).

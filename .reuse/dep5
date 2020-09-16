@@ -1,0 +1,712 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Gardener fork of kubernetes/autoscaler
+Upstream-Contact: The Gardener project <gardener@googlegroups.com>
+Source: https://github.com/gardener/autoscaler
+Comment: This is a fork of kubernetes/autoscaler (https://github.com/kubernetes/autoscaler)
+  developed for the gardener/machine-controller-manager (https://github.com/gardener/machine-controller-manager)
+  and gardener/gardener (https://github.com/gardener/gardener) projects.
+  See FORK.md for details.
+
+# --------------------------------------------------
+# source code
+
+Files: **
+Copyright: 2016-2018 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: .ci/**
+Copyright: 2018-2020 SAP SE or an SAP affiliate company and Gardener contributors
+License: Apache-2.0
+
+# --------------------------------------------------
+# documentation
+
+Files:
+  CONTRIBUTING.md
+  FORK.md
+Copyright: 2020 SAP SE or an SAP affiliate company and Gardener contributors
+License: CC-BY-4.0
+
+# --------------------------------------------------
+# source dependencies
+
+Files: cluster-autoscaler/vendor/cloud.google.com/go/**
+Copyright: 2014 Google Inc. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/contrib.go.opencensus.io/exporter/ocagent/**
+Copyright: 2018, OpenCensus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/aliyun/alibaba-cloud-sdk-go/**
+Copyright: 2009-present, Alibaba Cloud All rights reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/armon/circbuf/**
+Copyright: 2013 Armon Dadgar
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/aws/aws-sdk-go/**
+Copyright: 2014-2015 Stripe, Inc.
+Copyright: 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/azure-sdk-for-go/**
+Copyright: Microsoft and contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-ansiterm/**
+Copyright: 2015 Microsoft Corporatio
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/**
+Copyright: 2015 Microsoft Corporation
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/beorn7/perks/**
+Copyright: 2013 Blake Mizerany
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/blang/semver/**
+Copyright: 2014 Benedikt Lang <github at benediktlang.de>
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/census-instrumentation/opencensus-proto/**
+Copyright: 2018, OpenCensus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/clusterhq/flocker-go/**
+Copyright: 2014-2016 ClusterHQ
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/codedellemc/goscaleio/**
+Copyright: 2015 Clint Kitson
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/container-storage-interface/spec/**
+Copyright: 2017 Saad Ali 
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/containerd/console/**
+Copyright: 2017 Michael Crosby
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/containerd/containerd/**
+Copyright: 2013-2016 Docker, Inc
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/containernetworking/cni/**
+Copyright: 2015 CNI authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/etcd/**
+Copyright: 2015 The etcd Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/go-semver/**
+Copyright: Copyright 2018 CoreOS, Inc
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/go-systemd/**
+Copyright: 2014-2016 Docker, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/pkg/**
+Copyright: 2014 CoreOS, Inc
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/rkt/**
+Copyright: 2015 The rkt Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/cyphar/filepath-securejoin/**
+Copyright: 2014-2015 Docker Inc & Go Authors. All rights reserved.
+Copyright: 2017 SUSE LLC. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/d2g/dhcp4/**
+Copyright: 2013 Skagerrak Software Limited. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/d2g/dhcp4client/**
+Copyright: 2020 Dan Goldsmith
+License: MPL-2.0
+
+Files: cluster-autoscaler/vendor/github.com/davecgh/go-spew/**
+Copyright: 2012-2016 Dave Collins <dave@davec.name>
+License: ISC
+
+Files: cluster-autoscaler/vendor/github.com/dgrijalva/jwt-go/**
+Copyright: 2012 Dave Grijalva
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/docker/distribution/**
+Copyright: 2013 Damien Le Berrigaud and Nick Wade
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/docker/**
+Copyright: 2013-2018 Docker, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/go-connections/**
+Copyright: 2015 Docker, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/go-units/**
+Copyright: 2015 Docker, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/libnetwork/**
+Copyright: 2015 Docker, inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/spdystream/**
+Copyright: 2011 The Go Authors. All rights reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/elazarl/go-bindata-assetfs/**
+Copyright: 2014, Elazar Leibovich
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/emicklei/go-restful/**
+Copyright: 2012,2013 Ernest Micklei
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/emicklei/go-restful-swagger12/**
+Copyright: 2017 Ernest Micklei
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/euank/go-kmsg-parser/**
+Copyright: 2016 Euan Kemp
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/evanphx/json-patch/**
+Copyright: 2014, Evan Phoenix
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/fatih/camelcase/**
+Copyright: 2015 Fatih Arslan
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/fsnotify/fsnotify/**
+Copyright: 2012 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/gardener/machine-controller-manager/**
+Copyright: 2018-2020 SAP SE or an SAP affiliate company and Gardener contributors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/ghodss/yaml/**
+Copyright: 2012 The Go Authors. All rights reserved.
+Copyright: 2014 Sam Ghods
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/go-ini/ini/**
+Copyright: 2016 Unknwon
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonpointer/**
+Copyright: 2013 sigu-399 ( https://github.com/sigu-399 )
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonreference/**
+Copyright: 2013 sigu-399 ( https://github.com/sigu-399 )
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/spec/**
+Copyright: 2015 go-swagger maintainers
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/swag/**
+Copyright: 2015 go-swagger maintainers
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/godbus/dbus/**
+Copyright: 2013, Georg Reinke (<guelfey at gmail dot com>), Google
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/gogo/protobuf/**
+Copyright: 2013, The GoGo Authors. All rights reserved.
+Copyright: 2010 The Go Authors.  All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/golang/glog/**
+Copyright: BSD-3-Clause
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/groupcache/**
+Copyright: 2013 Google Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/mock/**
+Copyright: 2010 Google Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/protobuf/**
+Copyright: 2010-2017 The Go Authors.  All rights reserved.
+Copyright: 2008 Google Inc.  All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/btree/**
+Copyright: 2014 Google Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/google/cadvisor/**
+Copyright: 2014-2016 Google Inc. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/google/gofuzz/**
+Copyright: 2014 Google Inc. All rights reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/google/uuid/**
+Copyright: 2009,2014 Google Inc. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/googleapis/gnostic/**
+Copyright: 2017 Google Inc. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/gophercloud/gophercloud/**
+Copyright: 2017 Google Inc. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/gorilla/websocket/**
+Copyright: 2013 The Gorilla WebSocket Authors. All rights reserved.
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/gregjones/httpcache/**
+Copyright: 2013 The Gorilla WebSocket Authors. All rights reserved.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/hashicorp/golang-lru/**
+Copyright: 2020 Armon Dadgar, Hashicorp
+License: MPL-2.0
+
+Files: cluster-autoscaler/vendor/github.com/heketi/heketi/**
+Copyright: 2015-2016 The heketi Authors
+License: LGPL-3.0-or-later or Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/imdario/mergo/**
+Copyright: 2012 The Go Authors. All rights reserved.
+Copyright: 2013 Dario Castañé. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/inconshreveable/mousetrap/**
+Copyright: 2014 Alan Shreve
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/JeffAshton/win_pdh/**
+Copyright: 2010 The win_pdh Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/jmespath/go-jmespath/**
+Copyright: 2015 James Saryerwinnie
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/json-iterator/go/**
+Copyright: 2016 json-iterator
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/kardianos/osext/**
+Copyright: 2012 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/kr/fs/**
+Copyright: 2012 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/libopenstorage/openstorage/**
+Copyright: 2015 Openstorage.org
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/lpabon/godbc/**
+Copyright: 2014 The godbc Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mailru/easyjson/**
+Copyright: 2016 Mail.Ru Group
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/marstr/guid/**
+Copyright: 2016 Martin Strobel
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/mattn/go-shellwords/**
+Copyright: 2017 Yasuhiro Matsumoto
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/matttproud/golang_protobuf_extensions/**
+Copyright: 2012 Matt T. Proud (matt.proud@gmail.com)
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mesos/mesos-go/**
+Copyright: 2013-2015, Mesosphere, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Microsoft/go-winio/**
+Copyright: 2015 Microsoft
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Microsoft/hcsshim/**
+Copyright: 2015 Microsoft
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/miekg/dns/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/mindprince/gonvml/**
+Copyright: 1993-2016 NVIDIA Corporation.  All rights reserved.
+Copyright: 2017 Google Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mistifyio/go-zfs/**
+Copyright: 2014, OmniTI Computer Consulting, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mitchellh/mapstructure/**
+Copyright: 2013 Mitchell Hashimoto
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/modern-go/concurrent/**
+Copyright: 2018 Tao Wen
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/modern-go/reflect2/**
+Copyright: 2018 Tao Wen
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mohae/deepcopy/**
+Copyright: 2014-2016, Joel Scoble (github.com/mohae), all rights reserved.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/mrunalp/fileutils/**
+Copyright: 2014 Docker, Inc.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mxk/go-flowrate/**
+Copyright: 2014 The Go-FlowRate Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/Nvveen/Gotty/**
+Copyright: 2012 Neal van Veen. All rights reserved.
+License: BSD-2-Clause-FreeBSD
+
+Files: cluster-autoscaler/vendor/github.com/NYTimes/gziphandler/**
+Copyright: 2015 The New York Times Company
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/go-digest/**
+Copyright: 2016 Docker, Inc. All rights reserved
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/image-spec/**
+Copyright: Copyright 2016 The Linux Foundation
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/runc/**
+Copyright: 2012-2015 Docker, Inc.
+Copyright: 2016, 2017 SUSE LLC
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/runtime-spec/**
+Copyright: 2015 The Linux Foundation.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/selinux/**
+Copyright: 2017 Daniel J Walsh
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/pborman/uuid/**
+Copyright: 2009,2014 Google Inc. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/peterbourgon/diskv/**
+Copyright: 2011-2012 Peter Bourgon
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/pkg/errors/**
+Copyright: 2015, Dave Cheney <dave@cheney.net>
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/pkg/sftp/**
+Copyright: 2013, Dave Cheney
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/pmezard/go-difflib/**
+Copyright: 2013, Patrick Mezard
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/pquerna/ffjson/**
+Copyright: 2014, Paul Querna
+Copyright: 2009-2015 The Go Authors. All rights reserved.
+Copyright: 2007-2014, Lloyd Hilaiel <me@lloyd.io>
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/client_golang/**
+Copyright: 2010 The Go Authors
+Copyright: 2012-2015 The Prometheus Authors
+Copyright: 2013 Matt T. Proud
+Copyright: 2013-2015 Blake Mizerany, Björn Rabenstein
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/client_model/**
+Copyright:  2012-2015 The Prometheus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/common/**
+Copyright: 2013-2015 The Prometheus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/procfs/**
+Copyright: 2014-2018 The Prometheus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/PuerkitoBio/purell/**
+Copyright: 2012, Martin Angers
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/PuerkitoBio/urlesc/**
+Copyright: 2009-2012 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/quobyte/api/**
+Copyright: 2016, Quobyte Inc.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/rancher/go-rancher/**
+Copyright: 2014-2015 [Rancher Labs, Inc.](http://rancher.com)
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/renstrom/dedent/**
+Copyright: 2015 Peter Renström
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Rican7/retry/**
+Copyright: 2016 Trevor N. Suarez (Rican7)
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/rubiojr/go-vhd/**
+Copyright: 2015 Sergio Rubio
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/satori/go.uuid/**
+Copyright: 2013-2018 by Maxim Bublis <b@codemonkey.ru>
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/seccomp/libseccomp-golang/**
+Copyright: 2015 Matthew Heon <mheon@redhat.com>
+Copyright: 2015 Paul Moore <pmoore@redhat.com>
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/sirupsen/logrus/**
+Copyright: 2012 Miki Tebeka <miki.tebeka@gmail.com>.
+Copyright: 2013 The Go Authors. All rights reserved.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/spf13/afero/**
+Copyright: 2013 tsuru authors. All rights reserved.
+Copyright: 2014 Steve Francia <spf@spf13.com>.
+Copyright: 2015 The Go Authors
+Copyright: 2015 Jerry Jacobs <jerry.jacobs@xor-gate.org>.
+Copyright: 2016-present Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>
+Copyright: 2015 The Hugo Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/spf13/cobra/**
+Copyright: 2013 Steve Francia <spf@spf13.com>.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/spf13/pflag/**
+Copyright: 2012 Alex Ogier. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/stretchr/objx/**
+Copyright: 2014 Stretchr, Inc.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/stretchr/testify/**
+Copyright: 2012 - 2013 Mat Ryer and Tyler Bunnell
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/syndtr/gocapability/**
+Copyright: 2013 Suryandaru Triandana <syndtr@gmail.com>
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/github.com/ugorji/go/**
+Copyright: 2012-2015 Ugorji Nwoke. All rights reserved.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/vishvananda/netlink/**
+Copyright: 2014 Docker, Inc.
+Copyright: 2014 Vishvananda Ishaya.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/vishvananda/netns/**
+Copyright: 2014 Docker, Inc.
+Copyright: 2014 Vishvananda Ishaya.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/**
+Copyright: 2014-2018 VMware, Inc. All Rights Reserved
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/vim25/xml/**
+Copyright: Copyright: 2009-2014 The Go Authors. All rights reserved.
+Copyright: 2014 VMware, Inc. All Rights Reserved. 
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/vmware/photon-controller-go-sdk/**
+Copyright: 2016-2017 VMware, Inc. All Rights Reserved.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/vmware/photon-controller-go-sdk/SSPI/**
+Copyright: 2012 The Go Authors. All rights reserved.
+Copyright: 2017 VMware, Inc. All Rights Reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/xanzy/go-cloudstack/**
+Copyright: 2016, Sander van Harmelen
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/xanzy/go-cloudstack/cloudstack/**
+Copyright: 2016, Sander van Harmelen
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opencensus.io/**
+Copyright: 2017-2018, OpenCensus Authors
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/golang.org/x/crypto/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/exp/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/net/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/oauth2/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/sync/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/sys/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/text/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/time/**
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/google.golang.org/api/**
+Copyright: 2011 Google Inc. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/google.golang.org/api/googleapi/internal/uritemplates/**
+Copyright: 2013 Joshua Tacoma
+License: MIT
+
+Files: cluster-autoscaler/vendor/google.golang.org/genproto/**
+Copyright: 2019 Google LLC
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/grpc/**
+Copyright: 2014-2017 gRPC authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/gopkg.in/gcfg.v1/**
+Copyright: 2012 Péter Surányi.
+Copyright: 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/gopkg.in/inf.v0/**
+Copyright: 2012 Péter Surányi.
+Copyright: 2009 The Go Authors. All rights reserved. 
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/gopkg.in/square/go-jose.v2/**
+Copyright: 2010-2016 Square Inc.
+Copyright: 2016 Zbigniew Mandziejewicz
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/gopkg.in/square/go-jose.v2/json/**
+Copyright: 2012 The Go Authors. All rights reserved.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/gopkg.in/warnings.v0/**
+Copyright: 2012 The Go Authors. All rights reserved.
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/gopkg.in/yaml.v2/**
+Copyright: 2006 Kirill Simonov
+Copyright: 2011-2016 Canonical Ltd.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/api/**
+Copyright: 2014-2018 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/apiextensions-apiserver/**
+Copyright: 2017 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/apimachinery/**
+Copyright: The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/apiserver/**
+Copyright: 2014-2017 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/cli-runtime/**
+Copyright: 2014-2018 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/client-go/**
+Copyright: 2014-2018 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/csi-api/**
+Copyright: 2018 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/**
+Copyright: 2016 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-proxy/**
+Copyright: 2017 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kubelet/**
+Copyright: 2017 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kubernetes/**
+Copyright: 2014 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/utils/**
+Copyright: 2014 The Kubernetes Authors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/sigs.k8s.io/yaml/**
+Copyright: 2012 The Go Authors. All rights reserved.
+Copyright: 2014 Sam Ghods
+License: MIT and BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/vbom.ml/util/**
+Copyright: 2015 Frits van Bommel
+License: MIT
