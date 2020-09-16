@@ -19,6 +19,7 @@
 
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
 ARCH ?= amd64
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
 GOLANG_VERSION = 1.12.1
@@ -42,7 +43,7 @@ sub-push-%:
 
 all-container: test $(addprefix sub-container-,$(ALL_ARCH))
 
-all-push: $(addprefix sub-push-,$(ALL_ARCH))
+all-push: $(addprefix sub-push-,$(ALL_ARCH)) push-multi-arch
 container: .container-$(ARCH)
 .container-$(ARCH):
 	cp -r * $(TEMP_DIR)
@@ -57,11 +58,6 @@ container: .container-$(ARCH)
 
 	docker build -t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
 
-ifeq ($(ARCH), amd64)
-	# This is for to maintain the backward compatibility
-	docker tag $(MULTI_ARCH_IMG):$(TAG) $(IMAGE):$(TAG)
-endif
-
 test:
 	docker run --rm -it -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
@@ -73,13 +69,13 @@ test:
 push: .push-$(ARCH)
 .push-$(ARCH): .container-$(ARCH)
 	gcloud docker -- push $(MULTI_ARCH_IMG):$(TAG)
-ifeq ($(ARCH), amd64)
-	gcloud docker -- push $(IMAGE):$(TAG)
-endif
+
+push-multi-arch:
+	docker manifest create --amend $(IMAGE):$(TAG) $(shell echo $(ALL_ARCH) | sed -e "s~[^ ]*~$(IMAGE)\-&:$(TAG)~g")
+	@for arch in $(ALL_ARCH); do docker manifest annotate --arch $${arch} $(IMAGE):$(TAG) $(IMAGE)-$${arch}:$(TAG); done
+	gcloud docker -- manifest push --purge $(IMAGE):$(TAG)
 
 clean: $(addprefix sub-clean-,$(ALL_ARCH))
 sub-clean-%:
 	docker rmi -f $(IMAGE)-$*:$(TAG) || true
-ifeq ($(ARCH), amd64)
-	docker rmi -f $(IMAGE):$(TAG)
-endif
+
