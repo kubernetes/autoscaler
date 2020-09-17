@@ -461,7 +461,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	for _, node := range scaleDownCandidates {
 		nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(node.Name)
 		if err != nil {
-			klog.Errorf("Can't retrive scale-down candidate %s from snapshot, err: %v", node.Name, err)
+			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
 			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
 			continue
 		}
