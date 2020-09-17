@@ -452,6 +452,14 @@ func getNewItemFunc(listObj runtime.Object, v reflect.Value) func() runtime.Obje
 
 func (s *store) Count(key string) (int64, error) {
 	key = path.Join(s.pathPrefix, key)
+
+	// We need to make sure the key ended with "/" so that we only get children "directories".
+	// e.g. if we have key "/a", "/a/b", "/ab", getting keys with prefix "/a" will return all three,
+	// while with prefix "/a/" will return only "/a/b" which is the correct answer.
+	if !strings.HasSuffix(key, "/") {
+		key += "/"
+	}
+
 	startTime := time.Now()
 	getResp, err := s.client.KV.Get(context.Background(), key, clientv3.WithRange(clientv3.GetPrefixRangeEnd(key)), clientv3.WithCountOnly())
 	metrics.RecordEtcdRequestLatency("listWithCount", key, startTime)
@@ -572,7 +580,7 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 		fromRV = &parsedRV
 	}
 
-	var returnedRV, continueRV int64
+	var returnedRV, continueRV, withRev int64
 	var continueKey string
 	switch {
 	case s.pagingEnabled && len(pred.Continue) > 0:
@@ -593,7 +601,7 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 		// continueRV==0 is invalid.
 		// If continueRV < 0, the request is for the latest resource version.
 		if continueRV > 0 {
-			options = append(options, clientv3.WithRev(continueRV))
+			withRev = continueRV
 			returnedRV = continueRV
 		}
 	case s.pagingEnabled && pred.Limit > 0:
@@ -604,11 +612,11 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 				// and returnedRV is then set to the revision we get from the etcd response.
 			case metav1.ResourceVersionMatchExact:
 				returnedRV = int64(*fromRV)
-				options = append(options, clientv3.WithRev(returnedRV))
+				withRev = returnedRV
 			case "": // legacy case
 				if *fromRV > 0 {
 					returnedRV = int64(*fromRV)
-					options = append(options, clientv3.WithRev(returnedRV))
+					withRev = returnedRV
 				}
 			default:
 				return fmt.Errorf("unknown ResourceVersionMatch value: %v", match)
@@ -625,7 +633,7 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 				// and returnedRV is then set to the revision we get from the etcd response.
 			case metav1.ResourceVersionMatchExact:
 				returnedRV = int64(*fromRV)
-				options = append(options, clientv3.WithRev(returnedRV))
+				withRev = returnedRV
 			case "": // legacy case
 			default:
 				return fmt.Errorf("unknown ResourceVersionMatch value: %v", match)
@@ -633,6 +641,9 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 		}
 
 		options = append(options, clientv3.WithPrefix())
+	}
+	if withRev != 0 {
+		options = append(options, clientv3.WithRev(withRev))
 	}
 
 	// loop until we have filled the requested limit from etcd or there are no more results
@@ -695,6 +706,10 @@ func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, 
 			break
 		}
 		key = string(lastKey) + "\x00"
+		if withRev == 0 {
+			withRev = returnedRV
+			options = append(options, clientv3.WithRev(withRev))
+		}
 	}
 
 	// instruct the client to begin querying from immediately after the last key we returned
