@@ -585,6 +585,22 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		klet.runtimeClassManager = runtimeclass.NewManager(kubeDeps.KubeClient)
 	}
 
+	if containerRuntime == kubetypes.RemoteContainerRuntime && utilfeature.DefaultFeatureGate.Enabled(features.CRIContainerLogRotation) {
+		// setup containerLogManager for CRI container runtime
+		containerLogManager, err := logs.NewContainerLogManager(
+			klet.runtimeService,
+			kubeDeps.OSInterface,
+			kubeCfg.ContainerLogMaxSize,
+			int(kubeCfg.ContainerLogMaxFiles),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize container log manager: %v", err)
+		}
+		klet.containerLogManager = containerLogManager
+	} else {
+		klet.containerLogManager = logs.NewStubContainerLogManager()
+	}
+
 	runtime, err := kuberuntime.NewKubeGenericRuntimeManager(
 		kubecontainer.FilterEventRecorder(kubeDeps.Recorder),
 		klet.livenessManager,
@@ -605,6 +621,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		kubeDeps.RemoteImageService,
 		kubeDeps.ContainerManager.InternalContainerLifecycle(),
 		kubeDeps.dockerLegacyService,
+		klet.containerLogManager,
 		klet.runtimeClassManager,
 	)
 	if err != nil {
@@ -654,6 +671,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	}
 	klet.containerGC = containerGC
 	klet.containerDeletor = newPodContainerDeletor(klet.containerRuntime, integer.IntMax(containerGCPolicy.MaxPerPodContainer, minDeadContainerInPod))
+	klet.sandboxDeleter = newPodSandboxDeleter(klet.containerRuntime)
 
 	// setup imageManager
 	imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, crOptions.PodSandboxImage)
@@ -661,21 +679,6 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		return nil, fmt.Errorf("failed to initialize image manager: %v", err)
 	}
 	klet.imageManager = imageManager
-
-	if containerRuntime == kubetypes.RemoteContainerRuntime && utilfeature.DefaultFeatureGate.Enabled(features.CRIContainerLogRotation) {
-		// setup containerLogManager for CRI container runtime
-		containerLogManager, err := logs.NewContainerLogManager(
-			klet.runtimeService,
-			kubeCfg.ContainerLogMaxSize,
-			int(kubeCfg.ContainerLogMaxFiles),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize container log manager: %v", err)
-		}
-		klet.containerLogManager = containerLogManager
-	} else {
-		klet.containerLogManager = logs.NewStubContainerLogManager()
-	}
 
 	if kubeCfg.ServerTLSBootstrap && kubeDeps.TLSOptions != nil && utilfeature.DefaultFeatureGate.Enabled(features.RotateKubeletServerCertificate) {
 		klet.serverCertificateManager, err = kubeletcertificate.NewKubeletServerCertificateManager(klet.kubeClient, kubeCfg, klet.nodeName, klet.getLastObservedNodeAddresses, certDirectory)
@@ -1096,6 +1099,9 @@ type Kubelet struct {
 	// trigger deleting containers in a pod
 	containerDeletor *podContainerDeletor
 
+	// trigger deleting sandboxes in a pod
+	sandboxDeleter *podSandboxDeleter
+
 	// config iptables util rules
 	makeIPTablesUtilChains bool
 
@@ -1233,7 +1239,6 @@ func (kl *Kubelet) StartGarbageCollection() {
 func (kl *Kubelet) initializeModules() error {
 	// Prometheus metrics.
 	metrics.Register(
-		kl.runtimeCache,
 		collectors.NewVolumeStatsCollector(kl),
 		collectors.NewLogMetricsCollector(kl.StatsProvider.ListPodStats),
 	)
@@ -1524,6 +1529,8 @@ func (kl *Kubelet) syncPod(o syncPodOptions) error {
 		if !pcm.Exists(pod) && !firstSync {
 			if err := kl.killPod(pod, nil, podStatus, nil); err == nil {
 				podKilled = true
+			} else {
+				klog.Errorf("killPod for pod %q (podStatus=%v) failed: %v", format.Pod(pod), podStatus, err)
 			}
 		}
 		// Create and Update pod's Cgroups
@@ -1867,6 +1874,9 @@ func (kl *Kubelet) syncLoopIteration(configCh <-chan kubetypes.PodUpdate, handle
 				klog.V(4).Infof("SyncLoop (PLEG): ignore irrelevant event: %#v", e)
 			}
 		}
+		if e.Type == pleg.ContainerRemoved {
+			kl.deletePodSandbox(e.ID)
+		}
 
 		if e.Type == pleg.ContainerDied {
 			if containerID, ok := e.Data.(string); ok {
@@ -2191,6 +2201,16 @@ func (kl *Kubelet) fastStatusUpdateOnce() {
 			kl.syncNodeStatus()
 			return
 		}
+	}
+}
+
+func (kl *Kubelet) deletePodSandbox(podID types.UID) {
+	if podStatus, err := kl.podCache.Get(podID); err == nil {
+		toKeep := 1
+		if kl.IsPodDeleted(podID) {
+			toKeep = 0
+		}
+		kl.sandboxDeleter.deleteSandboxesInPod(podStatus, toKeep)
 	}
 }
 

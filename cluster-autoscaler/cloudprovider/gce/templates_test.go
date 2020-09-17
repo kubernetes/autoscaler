@@ -28,8 +28,8 @@ import (
 	gce "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	quota "k8s.io/apiserver/pkg/quota/v1"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	quota "k8s.io/kubernetes/pkg/quota/v1"
 
 	"github.com/stretchr/testify/assert"
 )
