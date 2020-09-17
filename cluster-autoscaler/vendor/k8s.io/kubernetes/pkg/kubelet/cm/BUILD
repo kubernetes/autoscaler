@@ -26,7 +26,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/features:go_default_library",
-        "//pkg/kubelet/apis/podresources/v1alpha1:go_default_library",
         "//pkg/kubelet/cm/cpumanager:go_default_library",
         "//pkg/kubelet/cm/cpuset:go_default_library",
         "//pkg/kubelet/cm/topologymanager:go_default_library",
@@ -43,6 +42,7 @@ go_library(
         "//staging/src/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//staging/src/k8s.io/apiserver/pkg/util/feature:go_default_library",
         "//staging/src/k8s.io/cri-api/pkg/apis:go_default_library",
+        "//staging/src/k8s.io/kubelet/pkg/apis/podresources/v1alpha1:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:aix": [
@@ -56,7 +56,6 @@ go_library(
             "//pkg/apis/core/v1/helper/qos:go_default_library",
             "//pkg/kubelet/cadvisor:go_default_library",
             "//pkg/kubelet/cm/containermap:go_default_library",
-            "//pkg/kubelet/cm/cpumanager/topology:go_default_library",
             "//pkg/kubelet/cm/devicemanager:go_default_library",
             "//pkg/kubelet/cm/util:go_default_library",
             "//pkg/kubelet/events:go_default_library",
@@ -118,7 +117,6 @@ go_library(
             "//pkg/apis/core/v1/helper/qos:go_default_library",
             "//pkg/kubelet/cadvisor:go_default_library",
             "//pkg/kubelet/cm/containermap:go_default_library",
-            "//pkg/kubelet/cm/cpumanager/topology:go_default_library",
             "//pkg/kubelet/cm/devicemanager:go_default_library",
             "//pkg/kubelet/cm/util:go_default_library",
             "//pkg/kubelet/events:go_default_library",
