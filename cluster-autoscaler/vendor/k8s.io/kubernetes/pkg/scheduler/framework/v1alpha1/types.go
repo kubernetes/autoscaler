@@ -73,6 +73,7 @@ type PodInfo struct {
 	RequiredAntiAffinityTerms  []AffinityTerm
 	PreferredAffinityTerms     []WeightedAffinityTerm
 	PreferredAntiAffinityTerms []WeightedAffinityTerm
+	ParseError                 error
 }
 
 // AffinityTerm is a processed version of v1.PodAffinityTerm.
@@ -88,53 +89,50 @@ type WeightedAffinityTerm struct {
 	Weight int32
 }
 
-func newAffinityTerm(pod *v1.Pod, term *v1.PodAffinityTerm) *AffinityTerm {
+func newAffinityTerm(pod *v1.Pod, term *v1.PodAffinityTerm) (*AffinityTerm, error) {
 	namespaces := schedutil.GetNamespacesFromPodAffinityTerm(pod, term)
 	selector, err := metav1.LabelSelectorAsSelector(term.LabelSelector)
 	if err != nil {
-		klog.Errorf("Cannot process label selector: %v", err)
-		return nil
+		return nil, err
 	}
-	return &AffinityTerm{Namespaces: namespaces, Selector: selector, TopologyKey: term.TopologyKey}
+	return &AffinityTerm{Namespaces: namespaces, Selector: selector, TopologyKey: term.TopologyKey}, nil
 }
 
 // getAffinityTerms receives a Pod and affinity terms and returns the namespaces and
 // selectors of the terms.
-func getAffinityTerms(pod *v1.Pod, v1Terms []v1.PodAffinityTerm) []AffinityTerm {
+func getAffinityTerms(pod *v1.Pod, v1Terms []v1.PodAffinityTerm) ([]AffinityTerm, error) {
 	if v1Terms == nil {
-		return nil
+		return nil, nil
 	}
 
 	var terms []AffinityTerm
 	for _, term := range v1Terms {
-		t := newAffinityTerm(pod, &term)
-		if t == nil {
-			// We get here if the label selector failed to process, this is not supposed
-			// to happen because the pod should have been validated by the api server.
-			return nil
+		t, err := newAffinityTerm(pod, &term)
+		if err != nil {
+			// We get here if the label selector failed to process
+			return nil, err
 		}
 		terms = append(terms, *t)
 	}
-	return terms
+	return terms, nil
 }
 
 // getWeightedAffinityTerms returns the list of processed affinity terms.
-func getWeightedAffinityTerms(pod *v1.Pod, v1Terms []v1.WeightedPodAffinityTerm) []WeightedAffinityTerm {
+func getWeightedAffinityTerms(pod *v1.Pod, v1Terms []v1.WeightedPodAffinityTerm) ([]WeightedAffinityTerm, error) {
 	if v1Terms == nil {
-		return nil
+		return nil, nil
 	}
 
 	var terms []WeightedAffinityTerm
 	for _, term := range v1Terms {
-		t := newAffinityTerm(pod, &term.PodAffinityTerm)
-		if t == nil {
-			// We get here if the label selector failed to process, this is not supposed
-			// to happen because the pod should have been validated by the api server.
-			return nil
+		t, err := newAffinityTerm(pod, &term.PodAffinityTerm)
+		if err != nil {
+			// We get here if the label selector failed to process
+			return nil, err
 		}
 		terms = append(terms, WeightedAffinityTerm{AffinityTerm: *t, Weight: term.Weight})
 	}
-	return terms
+	return terms, nil
 }
 
 // NewPodInfo return a new PodInfo
@@ -150,12 +148,32 @@ func NewPodInfo(pod *v1.Pod) *PodInfo {
 		}
 	}
 
+	// Attempt to parse the affinity terms
+	var parseErr error
+	requiredAffinityTerms, err := getAffinityTerms(pod, schedutil.GetPodAffinityTerms(pod.Spec.Affinity))
+	if err != nil {
+		parseErr = fmt.Errorf("requiredAffinityTerms: %w", err)
+	}
+	requiredAntiAffinityTerms, err := getAffinityTerms(pod, schedutil.GetPodAntiAffinityTerms(pod.Spec.Affinity))
+	if err != nil {
+		parseErr = fmt.Errorf("requiredAntiAffinityTerms: %w", err)
+	}
+	weightedAffinityTerms, err := getWeightedAffinityTerms(pod, preferredAffinityTerms)
+	if err != nil {
+		parseErr = fmt.Errorf("preferredAffinityTerms: %w", err)
+	}
+	weightedAntiAffinityTerms, err := getWeightedAffinityTerms(pod, preferredAntiAffinityTerms)
+	if err != nil {
+		parseErr = fmt.Errorf("preferredAntiAffinityTerms: %w", err)
+	}
+
 	return &PodInfo{
 		Pod:                        pod,
-		RequiredAffinityTerms:      getAffinityTerms(pod, schedutil.GetPodAffinityTerms(pod.Spec.Affinity)),
-		RequiredAntiAffinityTerms:  getAffinityTerms(pod, schedutil.GetPodAntiAffinityTerms(pod.Spec.Affinity)),
-		PreferredAffinityTerms:     getWeightedAffinityTerms(pod, preferredAffinityTerms),
-		PreferredAntiAffinityTerms: getWeightedAffinityTerms(pod, preferredAntiAffinityTerms),
+		RequiredAffinityTerms:      requiredAffinityTerms,
+		RequiredAntiAffinityTerms:  requiredAntiAffinityTerms,
+		PreferredAffinityTerms:     weightedAffinityTerms,
+		PreferredAntiAffinityTerms: weightedAntiAffinityTerms,
+		ParseError:                 parseErr,
 	}
 }
 
@@ -177,6 +195,9 @@ type NodeInfo struct {
 
 	// The subset of pods with affinity.
 	PodsWithAffinity []*PodInfo
+
+	// The subset of pods with required anti-affinity.
+	PodsWithRequiredAntiAffinity []*PodInfo
 
 	// Ports allocated on the node.
 	UsedPorts HostPortInfo
@@ -439,6 +460,9 @@ func (n *NodeInfo) Clone() *NodeInfo {
 	if len(n.PodsWithAffinity) > 0 {
 		clone.PodsWithAffinity = append([]*PodInfo(nil), n.PodsWithAffinity...)
 	}
+	if len(n.PodsWithRequiredAntiAffinity) > 0 {
+		clone.PodsWithRequiredAntiAffinity = append([]*PodInfo(nil), n.PodsWithRequiredAntiAffinity...)
+	}
 	return clone
 }
 
@@ -468,9 +492,11 @@ func (n *NodeInfo) AddPod(pod *v1.Pod) {
 	n.NonZeroRequested.MilliCPU += non0CPU
 	n.NonZeroRequested.Memory += non0Mem
 	n.Pods = append(n.Pods, podInfo)
-	affinity := pod.Spec.Affinity
-	if affinity != nil && (affinity.PodAffinity != nil || affinity.PodAntiAffinity != nil) {
+	if podWithAffinity(pod) {
 		n.PodsWithAffinity = append(n.PodsWithAffinity, podInfo)
+	}
+	if podWithRequiredAntiAffinity(pod) {
+		n.PodsWithRequiredAntiAffinity = append(n.PodsWithRequiredAntiAffinity, podInfo)
 	}
 
 	// Consume ports when pods added.
@@ -479,33 +505,54 @@ func (n *NodeInfo) AddPod(pod *v1.Pod) {
 	n.Generation = nextGeneration()
 }
 
-// RemovePod subtracts pod information from this NodeInfo.
-func (n *NodeInfo) RemovePod(pod *v1.Pod) error {
-	k1, err := GetPodKey(pod)
-	if err != nil {
-		return err
-	}
+func podWithAffinity(p *v1.Pod) bool {
+	affinity := p.Spec.Affinity
+	return affinity != nil && (affinity.PodAffinity != nil || affinity.PodAntiAffinity != nil)
+}
 
-	for i := range n.PodsWithAffinity {
-		k2, err := GetPodKey(n.PodsWithAffinity[i].Pod)
+func podWithRequiredAntiAffinity(p *v1.Pod) bool {
+	affinity := p.Spec.Affinity
+	return affinity != nil && affinity.PodAntiAffinity != nil &&
+		len(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution) != 0
+}
+
+func removeFromSlice(s []*PodInfo, k string) []*PodInfo {
+	for i := range s {
+		k2, err := GetPodKey(s[i].Pod)
 		if err != nil {
 			klog.Errorf("Cannot get pod key, err: %v", err)
 			continue
 		}
-		if k1 == k2 {
+		if k == k2 {
 			// delete the element
-			n.PodsWithAffinity[i] = n.PodsWithAffinity[len(n.PodsWithAffinity)-1]
-			n.PodsWithAffinity = n.PodsWithAffinity[:len(n.PodsWithAffinity)-1]
+			s[i] = s[len(s)-1]
+			s = s[:len(s)-1]
 			break
 		}
 	}
+	return s
+}
+
+// RemovePod subtracts pod information from this NodeInfo.
+func (n *NodeInfo) RemovePod(pod *v1.Pod) error {
+	k, err := GetPodKey(pod)
+	if err != nil {
+		return err
+	}
+	if podWithAffinity(pod) {
+		n.PodsWithAffinity = removeFromSlice(n.PodsWithAffinity, k)
+	}
+	if podWithRequiredAntiAffinity(pod) {
+		n.PodsWithRequiredAntiAffinity = removeFromSlice(n.PodsWithRequiredAntiAffinity, k)
+	}
+
 	for i := range n.Pods {
 		k2, err := GetPodKey(n.Pods[i].Pod)
 		if err != nil {
 			klog.Errorf("Cannot get pod key, err: %v", err)
 			continue
 		}
-		if k1 == k2 {
+		if k == k2 {
 			// delete the element
 			n.Pods[i] = n.Pods[len(n.Pods)-1]
 			n.Pods = n.Pods[:len(n.Pods)-1]
@@ -539,6 +586,9 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) error {
 func (n *NodeInfo) resetSlicesIfEmpty() {
 	if len(n.PodsWithAffinity) == 0 {
 		n.PodsWithAffinity = nil
+	}
+	if len(n.PodsWithRequiredAntiAffinity) == 0 {
+		n.PodsWithRequiredAntiAffinity = nil
 	}
 	if len(n.Pods) == 0 {
 		n.Pods = nil
@@ -605,6 +655,12 @@ func (n *NodeInfo) SetNode(node *v1.Node) error {
 	n.TransientInfo = NewTransientSchedulerInfo()
 	n.Generation = nextGeneration()
 	return nil
+}
+
+// RemoveNode removes the node object, leaving all other tracking information.
+func (n *NodeInfo) RemoveNode() {
+	n.node = nil
+	n.Generation = nextGeneration()
 }
 
 // FilterOutPods receives a list of pods and filters out those whose node names
