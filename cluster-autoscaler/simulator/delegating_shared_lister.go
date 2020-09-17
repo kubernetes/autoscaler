@@ -62,6 +62,11 @@ func (lister *unsetNodeInfoLister) HavePodsWithAffinityList() ([]*schedulerframe
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+// HavePodsWithRequiredAntiAffinityList always returns an error.
+func (lister *unsetNodeInfoLister) HavePodsWithRequiredAntiAffinityList() ([]*schedulerframework.NodeInfo, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
 // Get always returns an error
 func (lister *unsetNodeInfoLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
