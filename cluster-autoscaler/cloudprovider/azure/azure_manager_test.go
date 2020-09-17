@@ -42,6 +42,8 @@ const validAzureCfg = `{
 	"routeTableName": "fakeName",
 	"primaryAvailabilitySetName": "fakeName",
 	"vmssCacheTTL": 60,
+	"vmssVmsCacheTTL": 240,
+	"vmssVmsCacheJitter": 120,
 	"maxDeploymentsCount": 8,
 	"cloudProviderRateLimit": false,
 	"routeRateLimit": {
@@ -65,6 +67,8 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		AADClientID:         "fakeId",
 		AADClientSecret:     "fakeId",
 		VmssCacheTTL:        60,
+		VmssVmsCacheTTL:     240,
+		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
 		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
 			RateLimitConfig: azclients.RateLimitConfig{
@@ -218,11 +222,12 @@ func TestListScalesets(t *testing.T) {
 				azureRef: azureRef{
 					Name: vmssName,
 				},
-				minSize:           5,
-				maxSize:           50,
-				manager:           manager,
-				curSize:           3,
-				sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
+				minSize:                5,
+				maxSize:                50,
+				manager:                manager,
+				curSize:                3,
+				sizeRefreshPeriod:      defaultVmssSizeRefreshPeriod,
+				instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
 			}},
 		},
 		{
@@ -324,11 +329,12 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		azureRef: azureRef{
 			Name: vmssName,
 		},
-		minSize:           minVal,
-		maxSize:           maxVal,
-		manager:           manager,
-		curSize:           3,
-		sizeRefreshPeriod: defaultVmssSizeRefreshPeriod,
+		minSize:                minVal,
+		maxSize:                maxVal,
+		manager:                manager,
+		curSize:                3,
+		sizeRefreshPeriod:      defaultVmssSizeRefreshPeriod,
+		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
