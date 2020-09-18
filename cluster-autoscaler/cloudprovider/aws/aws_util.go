@@ -31,9 +31,10 @@ import (
 )
 
 var (
-	ec2MetaDataServiceUrl        = "http://169.254.169.254/latest/dynamic/instance-identity/document"
-	ec2PricingServiceUrlTemplate = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
-	staticListLastUpdateTime     = "2019-10-14"
+	ec2MetaDataServiceUrl          = "http://169.254.169.254/latest/dynamic/instance-identity/document"
+	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
+	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
+	staticListLastUpdateTime       = "2019-10-14"
 )
 
 type response struct {
@@ -53,6 +54,13 @@ type productAttributes struct {
 
 // GenerateEC2InstanceTypes returns a map of ec2 resources
 func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
+	var pricingUrlTemplate string
+	if strings.HasPrefix(region, "cn-") {
+		pricingUrlTemplate = ec2PricingServiceUrlTemplateCN
+	} else {
+		pricingUrlTemplate = ec2PricingServiceUrlTemplate
+	}
+
 	instanceTypes := make(map[string]*InstanceType)
 
 	resolver := endpoints.DefaultResolver()
@@ -64,7 +72,7 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 				continue
 			}
 
-			url := fmt.Sprintf(ec2PricingServiceUrlTemplate, r.ID())
+			url := fmt.Sprintf(pricingUrlTemplate, r.ID())
 			klog.V(1).Infof("fetching %s\n", url)
 			res, err := http.Get(url)
 			if err != nil {
