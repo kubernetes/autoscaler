@@ -514,24 +514,32 @@ func deleteTestConfigs(t *testing.T, controller *machineController, testConfigs 
 
 func TestControllerFindMachine(t *testing.T) {
 	type testCase struct {
-		description    string
-		name           string
-		namespace      string
-		lookupSucceeds bool
+		description             string
+		name                    string
+		namespace               string
+		useDeprecatedAnnotation bool
+		lookupSucceeds          bool
 	}
 
 	var testCases = []testCase{{
-		description:    "lookup fails",
-		lookupSucceeds: false,
-		name:           "machine-does-not-exist",
-		namespace:      "namespace-does-not-exist",
+		description:             "lookup fails",
+		lookupSucceeds:          false,
+		useDeprecatedAnnotation: false,
+		name:                    "machine-does-not-exist",
+		namespace:               "namespace-does-not-exist",
 	}, {
-		description:    "lookup fails in valid namespace",
-		lookupSucceeds: false,
-		name:           "machine-does-not-exist-in-existing-namespace",
+		description:             "lookup fails in valid namespace",
+		lookupSucceeds:          false,
+		useDeprecatedAnnotation: false,
+		name:                    "machine-does-not-exist-in-existing-namespace",
 	}, {
-		description:    "lookup succeeds",
-		lookupSucceeds: true,
+		description:             "lookup succeeds",
+		lookupSucceeds:          true,
+		useDeprecatedAnnotation: false,
+	}, {
+		description:             "lookup succeeds with deprecated annotation",
+		lookupSucceeds:          true,
+		useDeprecatedAnnotation: true,
 	}}
 
 	test := func(t *testing.T, tc testCase, testConfig *testConfig) {
@@ -568,6 +576,19 @@ func TestControllerFindMachine(t *testing.T) {
 			}
 			if tc.namespace == "" {
 				tc.namespace = testConfig.machines[0].GetNamespace()
+			}
+			if tc.useDeprecatedAnnotation {
+				for i := range testConfig.machines {
+					n := testConfig.nodes[i]
+					annotations := n.GetAnnotations()
+					val, ok := annotations[machineAnnotationKey]
+					if !ok {
+						t.Fatal("node did not contain machineAnnotationKey")
+					}
+					delete(annotations, machineAnnotationKey)
+					annotations[deprecatedMachineAnnotationKey] = val
+					n.SetAnnotations(annotations)
+				}
 			}
 			test(t, tc, testConfig)
 		})
