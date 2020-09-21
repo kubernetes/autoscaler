@@ -17,6 +17,7 @@ limitations under the License.
 package packet
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -84,10 +85,12 @@ func TestListPacketDevices(t *testing.T) {
 	} else {
 		// Set up a mock Packet API
 		m = newTestPacketManagerRest(t, server.URL)
+		t.Logf("server URL: %v", server.URL)
+		t.Logf("default packetManagerNodePool baseURL: %v", m.packetManagerNodePools["default"].baseURL)
 		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponse).Times(2)
 	}
 
-	_, err := m.listPacketDevices()
+	_, err := m.listPacketDevices(context.TODO())
 	assert.NoError(t, err)
 
 	c, err := m.nodeGroupSize("pool3")
