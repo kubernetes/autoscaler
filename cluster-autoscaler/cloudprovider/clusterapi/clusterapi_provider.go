@@ -140,30 +140,42 @@ func newProvider(
 
 // BuildClusterAPI builds CloudProvider implementation for machine api.
 func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	externalConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeConfigPath)
+	managementKubeconfig := opts.CloudConfig
+	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
+		managementKubeconfig = opts.KubeConfigPath
+	}
+
+	managementConfig, err := clientcmd.BuildConfigFromFlags("", managementKubeconfig)
 	if err != nil {
-		klog.Fatalf("cannot build config: %v", err)
+		klog.Fatalf("cannot build management cluster config: %v", err)
+	}
+
+	workloadKubeconfig := opts.KubeConfigPath
+
+	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
+	if err != nil {
+		klog.Fatalf("cannot build workload cluster config: %v", err)
 	}
 
 	// Grab a dynamic interface that we can create informers from
-	managementClient, err := dynamic.NewForConfig(externalConfig)
+	managementClient, err := dynamic.NewForConfig(managementConfig)
 	if err != nil {
 		klog.Fatalf("could not generate dynamic client for config")
 	}
 
-	workloadClient, err := kubernetes.NewForConfig(externalConfig)
+	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
 	if err != nil {
 		klog.Fatalf("create kube clientset failed: %v", err)
 	}
 
-	managementDiscoveryClient, err := discovery.NewDiscoveryClientForConfig(externalConfig)
+	managementDiscoveryClient, err := discovery.NewDiscoveryClientForConfig(managementConfig)
 	if err != nil {
 		klog.Fatalf("create discovery client failed: %v", err)
 	}
 
 	cachedDiscovery := memory.NewMemCacheClient(managementDiscoveryClient)
 	managementScaleClient, err := scale.NewForConfig(
-		externalConfig,
+		managementConfig,
 		restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscovery),
 		dynamic.LegacyAPIPathResolverFunc,
 		scale.NewDiscoveryScaleKindResolver(managementDiscoveryClient))
