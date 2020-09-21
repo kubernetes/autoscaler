@@ -170,8 +170,9 @@ var (
 			"Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes."+
 			"Pods with nominatedNodeName set are always filtered out.")
 
-	ignoreTaintsFlag         = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
-	awsUseStaticInstanceList = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
+	ignoreTaintsFlag                   = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
+	awsUseStaticInstanceList           = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
+	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -240,6 +241,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		KubeConfigPath:                      *kubeConfigFile,
 		NodeDeletionDelayTimeout:            *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList:            *awsUseStaticInstanceList,
+		ClusterAPICloudConfigAuthoritative:  *clusterAPICloudConfigAuthoritative,
 	}
 }
 
