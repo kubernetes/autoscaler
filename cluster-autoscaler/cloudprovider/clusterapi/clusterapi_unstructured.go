@@ -129,15 +129,12 @@ func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstruct
 	}
 
 	annotations := u.GetAnnotations()
-	if _, ok := annotations[machineDeleteAnnotationKey]; ok {
-		delete(annotations, machineDeleteAnnotationKey)
-		u.SetAnnotations(annotations)
-		_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
+	delete(annotations, machineDeleteAnnotationKey)
+	delete(annotations, deprecatedMachineDeleteAnnotationKey)
+	u.SetAnnotations(annotations)
+	_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
 
-		return updateErr
-	}
-
-	return nil
+	return updateErr
 }
 
 func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructured.Unstructured) error {
@@ -154,6 +151,7 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 	}
 
 	annotations[machineDeleteAnnotationKey] = time.Now().String()
+	annotations[deprecatedMachineDeleteAnnotationKey] = time.Now().String()
 	u.SetAnnotations(annotations)
 
 	_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
