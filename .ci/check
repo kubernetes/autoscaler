@@ -34,12 +34,12 @@ fi
 # The `go <cmd>` commands requires to see the target repository to be part of a
 # Go workspace. Thus, if we are not yet in a Go workspace, let's create one
 # temporarily by using symbolic links.
-if [[ "${SOURCE_PATH}" != *"src/github.com/gardener/autoscaler" ]]; then
-  SOURCE_SYMLINK_PATH="${SOURCE_PATH}/tmp/src/github.com/gardener/autoscaler"
+if [[ "${SOURCE_PATH}" != *"src/k8s.io/autoscaler" ]]; then
+  SOURCE_SYMLINK_PATH="${SOURCE_PATH}/tmp/src/k8s.io/autoscaler"
   if [[ -d "${SOURCE_PATH}/tmp" ]]; then
     rm -rf "${SOURCE_PATH}/tmp"
   fi
-  mkdir -p "${SOURCE_PATH}/tmp/src/github.com/gardener"
+  mkdir -p "${SOURCE_PATH}/tmp/src/k8s.io"
   ln -s "${SOURCE_PATH}" "${SOURCE_SYMLINK_PATH}"
   cd "${SOURCE_SYMLINK_PATH}"
 
@@ -50,10 +50,11 @@ fi
 
 # Install Golint (linting tool).
 go get -u github.com/golang/lint/golint
+go get -u golang.org/x/lint/golint
 
 ###############################################################################
 
 PACKAGES="$(go list -e ./... | grep -vE '/tmp/|/vendor/')"
-LINT_FOLDERS="$(echo ${PACKAGES} | sed "s|github.com/gardener/autoscaler/cluster-autoscaler|.|g")"
+LINT_FOLDERS="$(echo ${PACKAGES} | sed "s|k8s.io/autoscaler/cluster-autoscaler|.|g")"
 
 #TODO: To add lint checking, after fixing issues

@@ -34,12 +34,12 @@ fi
 # The `go <cmd>` commands requires to see the target repository to be part of a
 # Go workspace. Thus, if we are not yet in a Go workspace, let's create one
 # temporarily by using symbolic links.
-if [[ "${SOURCE_PATH}" != *"src/github.com/gardener/autoscaler" ]]; then
-  SOURCE_SYMLINK_PATH="${SOURCE_PATH}/tmp/src/github.com/gardener/autoscaler"
+if [[ "${SOURCE_PATH}" != *"src/k8s.io/autoscaler" ]]; then
+  SOURCE_SYMLINK_PATH="${SOURCE_PATH}/tmp/src/k8s.io/autoscaler"
   if [[ -d "${SOURCE_PATH}/tmp" ]]; then
     rm -rf "${SOURCE_PATH}/tmp"
   fi
-  mkdir -p "${SOURCE_PATH}/tmp/src/github.com/gardener"
+  mkdir -p "${SOURCE_PATH}/tmp/src/k8s.io"
   ln -s "${SOURCE_PATH}" "${SOURCE_SYMLINK_PATH}"
   cd "${SOURCE_SYMLINK_PATH}"
 
@@ -50,7 +50,8 @@ fi
 
 ##############################################################################
 
-go test $(go list ./... | grep -v /vendor/)
+go test $(go list ./cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
+go test $(go list ./cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
 
 #TODO: Return success failure properly
 echo "CI tests are done"
