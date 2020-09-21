@@ -10,14 +10,6 @@ cluster.
 The cluster-api provider requires Kubernetes v1.16 or greater to run the
 v1alpha3 version of the API.
 
-## Cluster API Prerequisites
-
-Please be aware that currently the cluster autoscaler only supports CAPI
-clusters that have joined their management and workload clusters into a single
-cluster. For more information about this please see the
-[Cluster API Concepts documentations](https://cluster-api.sigs.k8s.io/user/concepts.html)
-and the [`clusterctl move` command documentation](https://cluster-api.sigs.k8s.io/user/concepts.html).
-
 ## Starting the Autoscaler
 
 To enable the Cluster API provider, you must first specify it in the command
@@ -61,6 +53,43 @@ in the staging namespace, belonging to the purple cluster, with the label owner=
 ```
 --node-group-auto-discovery=clusterapi:namespace=staging,clusterName=purple,owner=jim
 ```
+
+## Connecting cluster-autoscaler to Cluster API management and workload Clusters
+
+You will also need to provide the path to the kubeconfig(s) for the management
+and workload cluster you wish cluster-autoscaler to run against. To specify the
+kubeconfig path for the workload cluster to monitor, use the `--kubeconfig`
+option and supply the path to the kubeconfig. If the `--kubeconfig` option is
+not specified, cluster-autoscaler will attempt to use an in-cluster configuration.
+To specify the kubeconfig path for the management cluster to monitor, use the
+`--cloud-config` option and supply the path to the kubeconfig. If the
+`--cloud-config` option is not specified it will fall back to using the kubeconfig
+that was provided with the `--kubeconfig` option.
+
+Use in-cluster config for both management and workload cluster:
+```
+cluster-autoscaler --cloud-provider=clusterapi
+```
+
+Use in-cluster config for workload cluster, specify kubeconfig for management cluster:
+```
+cluster-autoscaler --cloud-provider=clusterapi --cloud-config=/mnt/kubeconfig
+```
+
+Use in-cluster config for management cluster, specify kubeconfig for workload cluster:
+```
+cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/kubeconfig --clusterapi-cloud-config-authoritative
+```
+
+Use separate kubeconfigs for both management and workload cluster:
+```
+cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/workload.kubeconfig --cloud-config=/mnt/management.kubeconfig
+```
+
+Use a single provided kubeconfig for both management and workload cluster:
+```
+cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/workload.kubeconfig
+``` 
 
 ## Enabling Autoscaling
 
