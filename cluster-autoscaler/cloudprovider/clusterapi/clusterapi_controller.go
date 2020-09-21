@@ -258,7 +258,12 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	if node == nil {
 		return nil, nil
 	}
-	return c.findMachine(node.Annotations[machineAnnotationKey])
+
+	machineID, ok := node.Annotations[machineAnnotationKey]
+	if !ok {
+		machineID = node.Annotations[deprecatedMachineAnnotationKey]
+	}
+	return c.findMachine(machineID)
 }
 
 func isFailedMachineProviderID(providerID normalizedProviderID) bool {
