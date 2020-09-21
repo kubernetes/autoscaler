@@ -101,12 +101,12 @@ resources depending on the type of cluster-api mechanism that you are using.
 
 There are two annotations that control how a cluster resource should be scaled:
 
-* `cluster.k8s.io/cluster-api-autoscaler-node-group-min-size` - This specifies
+* `cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size` - This specifies
   the minimum number of nodes for the associated resource group. The autoscaler
   will not scale the group below this number. Please note that currently the
   cluster-api provider will not scale down to zero nodes.
 
-* `cluster.k8s.io/cluster-api-autoscaler-node-group-max-size` - This specifies
+* `cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size` - This specifies
   the maximum number of nodes for the associated resource group. The autoscaler
   will not scale the group above this number.
 
