@@ -23,6 +23,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
@@ -531,6 +532,22 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 	taints := extractTaintsFromScaleSet(tags)
 	assert.Len(t, taints, 4)
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
+}
+
+func TestExtractAllocatableResourcesFromScaleSet(t *testing.T) {
+	tags := map[string]*string{
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "cpu"):               to.StringPtr("100m"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "memory"):            to.StringPtr("100M"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "ephemeral-storage"): to.StringPtr("20G"),
+	}
+
+	labels := extractAllocatableResourcesFromScaleSet(tags)
+
+	assert.Equal(t, resource.NewMilliQuantity(100, resource.DecimalSI).String(), labels["cpu"].String())
+	expectedMemory := resource.MustParse("100M")
+	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
+	expectedEphemeralStorage := resource.MustParse("20G")
+	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
 }
 
 func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
