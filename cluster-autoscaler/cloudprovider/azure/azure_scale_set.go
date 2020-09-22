@@ -601,6 +601,11 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmssType.MemoryMb*1024*1024, resource.DecimalSI)
 
+	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
+	for resourceName, val := range resourcesFromTags {
+		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
+	}
+
 	// TODO: set real allocatable.
 	node.Status.Allocatable = node.Status.Capacity
 
@@ -668,6 +673,25 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 	}
 
 	return taints
+}
+
+func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string]*resource.Quantity {
+	resources := make(map[string]*resource.Quantity)
+
+	for tagName, tagValue := range tags {
+		resourceName := strings.Split(tagName, nodeResourcesTagName)
+		if len(resourceName) < 2 || resourceName[1] == "" {
+			continue
+		}
+
+		quantity, err := resource.ParseQuantity(*tagValue)
+		if err != nil {
+			continue
+		}
+		resources[resourceName[1]] = &quantity
+	}
+
+	return resources
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
