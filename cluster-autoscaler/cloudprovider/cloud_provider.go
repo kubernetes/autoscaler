@@ -37,6 +37,8 @@ const (
 	BaiducloudProviderName = "baiducloud"
 	// DigitalOceanProviderName gets the provider name of digitalocean
 	DigitalOceanProviderName = "digitalocean"
+	// ExoscaleProviderName gets the provider name of exoscale
+	ExoscaleProviderName = "exoscale"
 	// GceProviderName gets the provider name of gce
 	GceProviderName = "gce"
 	// MagnumProviderName gets the provider name of magnum
