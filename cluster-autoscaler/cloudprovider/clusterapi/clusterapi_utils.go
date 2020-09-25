@@ -26,10 +26,12 @@ import (
 )
 
 const (
-	nodeGroupMinSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	nodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
-	clusterNameLabel              = "cluster.x-k8s.io/cluster-name"
-	deprecatedClusterNameLabel    = "cluster.k8s.io/cluster-name"
+	deprecatedNodeGroupMinSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
+	deprecatedNodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
+	nodeGroupMinSizeAnnotationKey           = "cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size"
+	nodeGroupMaxSizeAnnotationKey           = "cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size"
+	clusterNameLabel                        = "cluster.x-k8s.io/cluster-name"
+	deprecatedClusterNameLabel              = "cluster.k8s.io/cluster-name"
 )
 
 var (
@@ -61,6 +63,9 @@ type normalizedProviderID string
 func minSize(annotations map[string]string) (int, error) {
 	val, found := annotations[nodeGroupMinSizeAnnotationKey]
 	if !found {
+		val, found = annotations[deprecatedNodeGroupMinSizeAnnotationKey]
+	}
+	if !found {
 		return 0, errMissingMinAnnotation
 	}
 	i, err := strconv.Atoi(val)
@@ -76,6 +81,9 @@ func minSize(annotations map[string]string) (int, error) {
 // value is not of type int.
 func maxSize(annotations map[string]string) (int, error) {
 	val, found := annotations[nodeGroupMaxSizeAnnotationKey]
+	if !found {
+		val, found = annotations[deprecatedNodeGroupMaxSizeAnnotationKey]
+	}
 	if !found {
 		return 0, errMissingMaxAnnotation
 	}
