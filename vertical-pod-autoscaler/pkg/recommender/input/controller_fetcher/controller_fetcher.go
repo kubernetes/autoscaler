@@ -84,6 +84,36 @@ type controllerFetcher struct {
 	informersMap    map[wellKnownController]cache.SharedIndexInformer
 }
 
+func (f *controllerFetcher) periodicallyRemoveExpired(ctx context.Context, period time.Duration) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(period):
+			f.controllerCache.RemoveExpired()
+		}
+	}
+}
+
+func (f *controllerFetcher) periodicallyRefresh(ctx context.Context, period time.Duration) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(period):
+			for _, item := range f.controllerCache.GetKeysToRefresh() {
+				scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
+				f.controllerCache.Refresh(item.namespace, item.groupResource, item.name, scale, err)
+			}
+		}
+	}
+}
+
+func (f *controllerFetcher) Start(ctx context.Context, removePeriod, refreshPeriod time.Duration) {
+	go f.periodicallyRefresh(ctx, refreshPeriod)
+	go f.periodicallyRemoveExpired(ctx, removePeriod)
+}
+
 // NewControllerFetcher returns a new instance of controllerFetcher
 func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) ControllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
