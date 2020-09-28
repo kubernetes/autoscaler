@@ -32,7 +32,7 @@ if [ $# -eq 0 ]; then
 fi
 
 DEFAULT_REGISTRY="us.gcr.io/k8s-artifacts-prod/autoscaling"
-DEFAULT_TAG="0.8.0"
+DEFAULT_TAG="0.8.1"
 
 REGISTRY_TO_APPLY=${REGISTRY-$DEFAULT_REGISTRY}
 TAG_TO_APPLY=${TAG-$DEFAULT_TAG}
