@@ -68,7 +68,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithLabels(labels).Get()
 
 	initializedContainer := test.Container().WithName(containerName).
-		WithCPURequest(resource.MustParse("1")).WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
+		WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
@@ -179,6 +179,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedCPU:    resource.MustParse("0"),
 		},
 		{
+			name:           "nil recommendation",
 			pod:            initialized,
 			vpa:            vpaWithNilRecommendation,
 			expectedAction: true,
