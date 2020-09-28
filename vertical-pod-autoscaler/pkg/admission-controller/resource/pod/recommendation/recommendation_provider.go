@@ -46,23 +46,29 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 }
 
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
+// If addAll is set to true, containers w/o a recommendation are also added to the list, otherwise they're skipped (default behaviour).
 func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
-	annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
+	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
-			klog.V(2).Infof("no matching recommendation found for container %s", container.Name)
-			continue
+			if !addAll {
+				klog.V(2).Infof("no matching recommendation found for container %s, skipping", container.Name)
+				continue
+			}
+			klog.V(2).Infof("no matching recommendation found for container %s, using Pod request", container.Name)
+			resources[i].Requests = container.Resources.Requests
+		} else {
+			resources[i].Requests = recommendation.Target
 		}
-		resources[i].Requests = recommendation.Target
 		defaultLimit := core.ResourceList{}
 		if limitRange != nil {
 			defaultLimit = limitRange.Default
 		}
 		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(container.Resources.Limits, container.Resources.Requests, recommendation.Target, defaultLimit)
+			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(container.Resources.Limits, container.Resources.Requests, resources[i].Requests, defaultLimit)
 			if proportionalLimits != nil {
 				resources[i].Limits = proportionalLimits
 				if len(limitAnnotations) > 0 {
@@ -102,6 +108,6 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.UpdateMode == nil || *vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeOff {
 		resourcePolicy = vpa.Spec.ResourcePolicy
 	}
-	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, annotations)
+	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
 	return containerResources, annotations, nil
 }
