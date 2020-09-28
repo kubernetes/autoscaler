@@ -139,7 +139,7 @@ By default, the [`--min-replicas`](pkg/updater/main.go#L44) flag on the updater 
 spec:
   containers:
   - name: updater
-  - args:
+    args:
     - "--min-replicas=1"
 ```
 
