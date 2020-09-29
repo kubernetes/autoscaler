@@ -518,7 +518,6 @@ func (scaleSet *ScaleSet) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(), scaleSet.MaxSize())
 }
 
-
 // TemplateNodeInfo returns a node template for this scale set.
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	template, rerr := scaleSet.getVMSSInfo()
