@@ -29,7 +29,11 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 	result := make(map[string]string)
 
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+
 	result[kubeletapis.LabelOS] = buildInstanceOS(template)
+	result[apiv1.LabelOSStable] = buildInstanceOS(template)
+
 	result[apiv1.LabelInstanceType] = *template.Sku.Name
 	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
 
