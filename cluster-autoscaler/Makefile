@@ -4,7 +4,7 @@ all: $(addprefix build-arch-,$(ALL_ARCH))
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
-ENVVAR=CGO_ENABLED=0 GO111MODULE=off
+ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=staging-k8s.gcr.io
@@ -44,7 +44,7 @@ build-binary-arch-%: clean-arch-%
 	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
 
 test-unit: clean build
-	GO111MODULE=off go test --test.short -race ./... ${TAGS_FLAG}
+	go test --test.short -race ./... ${TAGS_FLAG}
 
 dev-release: dev-release-arch-$(GOARCH)
 
@@ -108,7 +108,6 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
-		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && GO111MODULE=off go test -race ./... ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... ${TAGS_FLAG}'
 
 .PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
