@@ -93,4 +93,3 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 	}
 	return set
 }
-

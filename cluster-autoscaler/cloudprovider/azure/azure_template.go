@@ -181,4 +181,3 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 
 	return taints
 }
-
