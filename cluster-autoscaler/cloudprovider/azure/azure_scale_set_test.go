@@ -18,7 +18,6 @@ package azure
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"testing"
 

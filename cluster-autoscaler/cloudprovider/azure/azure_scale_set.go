@@ -18,7 +18,6 @@ package azure
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strings"
 	"sync"
