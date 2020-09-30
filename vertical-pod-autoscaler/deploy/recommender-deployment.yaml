@@ -23,7 +23,7 @@ spec:
       serviceAccountName: vpa-recommender
       containers:
       - name: recommender
-        image: us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-recommender:0.8.0
+        image: us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-recommender:0.8.1
         imagePullPolicy: Always
         resources:
           limits:
