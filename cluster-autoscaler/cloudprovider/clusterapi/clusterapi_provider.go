@@ -21,14 +21,18 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached/memory"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/restmapper"
+	"k8s.io/client-go/scale"
+	"k8s.io/client-go/tools/clientcmd"
+	klog "k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -126,38 +130,60 @@ func newProvider(
 	name string,
 	rl *cloudprovider.ResourceLimiter,
 	controller *machineController,
-) (cloudprovider.CloudProvider, error) {
+) cloudprovider.CloudProvider {
 	return &provider{
 		providerName:    name,
 		resourceLimiter: rl,
 		controller:      controller,
-	}, nil
+	}
 }
 
 // BuildClusterAPI builds CloudProvider implementation for machine api.
 func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	externalConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeConfigPath)
+	managementKubeconfig := opts.CloudConfig
+	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
+		managementKubeconfig = opts.KubeConfigPath
+	}
+
+	managementConfig, err := clientcmd.BuildConfigFromFlags("", managementKubeconfig)
 	if err != nil {
-		klog.Fatalf("cannot build config: %v", err)
+		klog.Fatalf("cannot build management cluster config: %v", err)
+	}
+
+	workloadKubeconfig := opts.KubeConfigPath
+
+	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
+	if err != nil {
+		klog.Fatalf("cannot build workload cluster config: %v", err)
 	}
 
 	// Grab a dynamic interface that we can create informers from
-	dc, err := dynamic.NewForConfig(externalConfig)
+	managementClient, err := dynamic.NewForConfig(managementConfig)
 	if err != nil {
 		klog.Fatalf("could not generate dynamic client for config")
 	}
 
-	kubeClient, err := kubernetes.NewForConfig(externalConfig)
+	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
 	if err != nil {
 		klog.Fatalf("create kube clientset failed: %v", err)
 	}
 
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(externalConfig)
+	managementDiscoveryClient, err := discovery.NewDiscoveryClientForConfig(managementConfig)
 	if err != nil {
 		klog.Fatalf("create discovery client failed: %v", err)
 	}
 
-	controller, err := newMachineController(dc, kubeClient, discoveryClient)
+	cachedDiscovery := memory.NewMemCacheClient(managementDiscoveryClient)
+	managementScaleClient, err := scale.NewForConfig(
+		managementConfig,
+		restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscovery),
+		dynamic.LegacyAPIPathResolverFunc,
+		scale.NewDiscoveryScaleKindResolver(managementDiscoveryClient))
+	if err != nil {
+		klog.Fatalf("create scale client failed: %v", err)
+	}
+
+	controller, err := newMachineController(managementClient, workloadClient, managementDiscoveryClient, managementScaleClient, do)
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -170,10 +196,5 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatal(err)
 	}
 
-	provider, err := newProvider(ProviderName, rl, controller)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	return provider
+	return newProvider(ProviderName, rl, controller)
 }

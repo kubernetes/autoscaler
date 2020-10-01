@@ -17,7 +17,6 @@ limitations under the License.
 package clusterapi
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -27,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -34,9 +34,11 @@ import (
 	"k8s.io/client-go/informers"
 	kubeinformers "k8s.io/client-go/informers"
 	kubeclient "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
-	"k8s.io/utils/pointer"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 const (
@@ -49,6 +51,12 @@ const (
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
 	failedMachinePrefix           = "failed-machine-"
+	machineDeploymentKind         = "MachineDeployment"
+	machineSetKind                = "MachineSet"
+	machineKind                   = "Machine"
+	autoDiscovererTypeClusterAPI  = "clusterapi"
+	autoDiscovererClusterNameKey  = "clusterName"
+	autoDiscovererNamespaceKey    = "namespace"
 )
 
 // machineController watches for Nodes, Machines, MachineSets and
@@ -56,20 +64,21 @@ const (
 // cluster. Additionally, it adds indices to the node informers to
 // satisfy lookup by node.Spec.ProviderID.
 type machineController struct {
-	kubeInformerFactory       kubeinformers.SharedInformerFactory
-	machineInformerFactory    dynamicinformer.DynamicSharedInformerFactory
-	machineDeploymentInformer informers.GenericInformer
-	machineInformer           informers.GenericInformer
-	machineSetInformer        informers.GenericInformer
-	nodeInformer              cache.SharedIndexInformer
-	dynamicclient             dynamic.Interface
-	machineSetResource        *schema.GroupVersionResource
-	machineResource           *schema.GroupVersionResource
-	machineDeploymentResource *schema.GroupVersionResource
-	accessLock                sync.Mutex
+	workloadInformerFactory     kubeinformers.SharedInformerFactory
+	managementInformerFactory   dynamicinformer.DynamicSharedInformerFactory
+	machineDeploymentInformer   informers.GenericInformer
+	machineInformer             informers.GenericInformer
+	machineSetInformer          informers.GenericInformer
+	nodeInformer                cache.SharedIndexInformer
+	managementClient            dynamic.Interface
+	managementScaleClient       scale.ScalesGetter
+	machineSetResource          schema.GroupVersionResource
+	machineResource             schema.GroupVersionResource
+	machineDeploymentResource   schema.GroupVersionResource
+	machineDeploymentsAvailable bool
+	accessLock                  sync.Mutex
+	autoDiscoverySpecs          []*clusterAPIAutoDiscoveryConfig
 }
-
-type machineSetFilterFunc func(machineSet *MachineSet) error
 
 func indexMachineByProviderID(obj interface{}) ([]string, error) {
 	u, ok := obj.(*unstructured.Unstructured)
@@ -77,7 +86,7 @@ func indexMachineByProviderID(obj interface{}) ([]string, error) {
 		return nil, nil
 	}
 
-	providerID, found, err := unstructured.NestedString(u.Object, "spec", "providerID")
+	providerID, found, err := unstructured.NestedString(u.UnstructuredContent(), "spec", "providerID")
 	if err != nil || !found {
 		return nil, nil
 	}
@@ -98,31 +107,20 @@ func indexNodeByProviderID(obj interface{}) ([]string, error) {
 	return []string{}, nil
 }
 
-func (c *machineController) findMachine(id string) (*Machine, error) {
-	item, exists, err := c.machineInformer.Informer().GetStore().GetByKey(id)
-	if err != nil {
-		return nil, err
-	}
-
-	if !exists {
-		return nil, nil
-	}
-
-	u, ok := item.(*unstructured.Unstructured)
-	if !ok {
-		return nil, fmt.Errorf("internal error; unexpected type: %T", item)
-	}
-
-	machine := newMachineFromUnstructured(u.DeepCopy())
-	if machine == nil {
-		return nil, nil
-	}
-
-	return machine, nil
+func (c *machineController) findMachine(id string) (*unstructured.Unstructured, error) {
+	return c.findResourceByKey(c.machineInformer.Informer().GetStore(), id)
 }
 
-func (c *machineController) findMachineDeployment(id string) (*MachineDeployment, error) {
-	item, exists, err := c.machineDeploymentInformer.Informer().GetStore().GetByKey(id)
+func (c *machineController) findMachineSet(id string) (*unstructured.Unstructured, error) {
+	return c.findResourceByKey(c.machineSetInformer.Informer().GetStore(), id)
+}
+
+func (c *machineController) findMachineDeployment(id string) (*unstructured.Unstructured, error) {
+	return c.findResourceByKey(c.machineDeploymentInformer.Informer().GetStore(), id)
+}
+
+func (c *machineController) findResourceByKey(store cache.Store, key string) (*unstructured.Unstructured, error) {
+	item, exists, err := store.GetByKey(key)
 	if err != nil {
 		return nil, err
 	}
@@ -136,62 +134,50 @@ func (c *machineController) findMachineDeployment(id string) (*MachineDeployment
 		return nil, fmt.Errorf("internal error; unexpected type: %T", item)
 	}
 
-	machineDeployment := newMachineDeploymentFromUnstructured(u.DeepCopy())
-	if machineDeployment == nil {
+	// Verify the resource is allowed by the autodiscovery configuration
+	if !c.allowedByAutoDiscoverySpecs(u) {
 		return nil, nil
 	}
 
-	return machineDeployment, nil
+	return u.DeepCopy(), nil
 }
 
 // findMachineOwner returns the machine set owner for machine, or nil
 // if there is no owner. A DeepCopy() of the object is returned on
 // success.
-func (c *machineController) findMachineOwner(machine *Machine) (*MachineSet, error) {
+func (c *machineController) findMachineOwner(machine *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	machineOwnerRef := machineOwnerRef(machine)
 	if machineOwnerRef == nil {
 		return nil, nil
 	}
 
-	store := c.machineSetInformer.Informer().GetStore()
-	item, exists, err := store.GetByKey(fmt.Sprintf("%s/%s", machine.Namespace, machineOwnerRef.Name))
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
+	return c.findMachineSet(fmt.Sprintf("%s/%s", machine.GetNamespace(), machineOwnerRef.Name))
+}
+
+// findMachineSetOwner returns the owner for the machineSet, or nil
+// if there is no owner. A DeepCopy() of the object is returned on
+// success.
+func (c *machineController) findMachineSetOwner(machineSet *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	machineSetOwnerRef := machineSetOwnerRef(machineSet)
+	if machineSetOwnerRef == nil {
 		return nil, nil
 	}
 
-	u, ok := item.(*unstructured.Unstructured)
-	if !ok {
-		return nil, fmt.Errorf("internal error; unexpected type: %T", item)
-	}
-
-	u = u.DeepCopy()
-	machineSet := newMachineSetFromUnstructured(u)
-	if machineSet == nil {
-		return nil, nil
-	}
-
-	if !machineIsOwnedByMachineSet(machine, machineSet) {
-		return nil, nil
-	}
-
-	return machineSet, nil
+	return c.findMachineDeployment(fmt.Sprintf("%s/%s", machineSet.GetNamespace(), machineSetOwnerRef.Name))
 }
 
 // run starts shared informers and waits for the informer cache to
 // synchronize.
 func (c *machineController) run(stopCh <-chan struct{}) error {
-	c.kubeInformerFactory.Start(stopCh)
-	c.machineInformerFactory.Start(stopCh)
+	c.workloadInformerFactory.Start(stopCh)
+	c.managementInformerFactory.Start(stopCh)
 
 	syncFuncs := []cache.InformerSynced{
 		c.nodeInformer.HasSynced,
 		c.machineInformer.Informer().HasSynced,
 		c.machineSetInformer.Informer().HasSynced,
 	}
-	if c.machineDeploymentResource != nil {
+	if c.machineDeploymentsAvailable {
 		syncFuncs = append(syncFuncs, c.machineDeploymentInformer.Informer().HasSynced)
 	}
 
@@ -203,9 +189,43 @@ func (c *machineController) run(stopCh <-chan struct{}) error {
 	return nil
 }
 
+func (c *machineController) findScalableResourceByProviderID(providerID normalizedProviderID) (*unstructured.Unstructured, error) {
+	machine, err := c.findMachineByProviderID(providerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if machine == nil {
+		return nil, nil
+	}
+
+	machineSet, err := c.findMachineOwner(machine)
+	if err != nil {
+		return nil, err
+	}
+
+	if machineSet == nil {
+		return nil, nil
+	}
+
+	if c.machineDeploymentsAvailable {
+		machineDeployment, err := c.findMachineSetOwner(machineSet)
+		if err != nil {
+			return nil, err
+		}
+
+		// If a matching machineDeployment was found return it
+		if machineDeployment != nil {
+			return machineDeployment, nil
+		}
+	}
+
+	return machineSet, nil
+}
+
 // findMachineByProviderID finds machine matching providerID. A
 // DeepCopy() of the object is returned on success.
-func (c *machineController) findMachineByProviderID(providerID normalizedProviderID) (*Machine, error) {
+func (c *machineController) findMachineByProviderID(providerID normalizedProviderID) (*unstructured.Unstructured, error) {
 	objs, err := c.machineInformer.Informer().GetIndexer().ByIndex(machineProviderIDIndex, string(providerID))
 	if err != nil {
 		return nil, err
@@ -219,20 +239,11 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 		if !ok {
 			return nil, fmt.Errorf("internal error; unexpected type %T", objs[0])
 		}
-		machine := newMachineFromUnstructured(u.DeepCopy())
-		if machine != nil {
-			return machine, nil
-		}
+		return u.DeepCopy(), nil
 	}
 
 	if isFailedMachineProviderID(providerID) {
-		machine, err := c.findMachine(machineKeyFromFailedProviderID(providerID))
-		if err != nil {
-			return nil, err
-		}
-		if machine != nil {
-			return machine.DeepCopy(), nil
-		}
+		return c.findMachine(machineKeyFromFailedProviderID(providerID))
 	}
 
 	// If the machine object has no providerID--maybe actuator
@@ -247,7 +258,12 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	if node == nil {
 		return nil, nil
 	}
-	return c.findMachine(node.Annotations[machineAnnotationKey])
+
+	machineID, ok := node.Annotations[machineAnnotationKey]
+	if !ok {
+		machineID = node.Annotations[deprecatedMachineAnnotationKey]
+	}
+	return c.findMachine(machineID)
 }
 
 func isFailedMachineProviderID(providerID normalizedProviderID) bool {
@@ -280,29 +296,6 @@ func (c *machineController) findNodeByNodeName(name string) (*corev1.Node, error
 	return node.DeepCopy(), nil
 }
 
-// machinesInMachineSet returns all the machines that belong to
-// machineSet. For each machine in the set a DeepCopy() of the object
-// is returned.
-func (c *machineController) machinesInMachineSet(machineSet *MachineSet) ([]*Machine, error) {
-	machines, err := c.listMachines(machineSet.Namespace, labels.SelectorFromSet(machineSet.Labels))
-	if err != nil {
-		return nil, err
-	}
-	if machines == nil {
-		return nil, nil
-	}
-
-	var result []*Machine
-
-	for _, machine := range machines {
-		if machineIsOwnedByMachineSet(machine, machineSet) {
-			result = append(result, machine)
-		}
-	}
-
-	return result, nil
-}
-
 // getCAPIGroup returns a string that specifies the group for the API.
 // It will return either the value from the
 // CAPI_GROUP environment variable, or the default value i.e cluster.x-k8s.io.
@@ -319,57 +312,64 @@ func getCAPIGroup() string {
 // Machines and MachineSet as they are added, updated and deleted on
 // the cluster.
 func newMachineController(
-	dynamicclient dynamic.Interface,
-	kubeclient kubeclient.Interface,
-	discoveryclient discovery.DiscoveryInterface,
+	managementClient dynamic.Interface,
+	workloadClient kubeclient.Interface,
+	managementDiscoveryClient discovery.DiscoveryInterface,
+	managementScaleClient scale.ScalesGetter,
+	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 ) (*machineController, error) {
-	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeclient, 0)
-	informerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicclient, 0, metav1.NamespaceAll, nil)
+	workloadInformerFactory := kubeinformers.NewSharedInformerFactory(workloadClient, 0)
+	managementInformerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(managementClient, 0, metav1.NamespaceAll, nil)
+
+	autoDiscoverySpecs, err := parseAutoDiscovery(discoveryOpts.NodeGroupAutoDiscoverySpecs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse auto discovery configuration: %v", err)
+	}
 
 	CAPIGroup := getCAPIGroup()
-	CAPIVersion, err := getAPIGroupPreferredVersion(discoveryclient, CAPIGroup)
+	CAPIVersion, err := getAPIGroupPreferredVersion(managementDiscoveryClient, CAPIGroup)
 	if err != nil {
 		return nil, fmt.Errorf("could not find preferred version for CAPI group %q: %v", CAPIGroup, err)
 	}
 	klog.Infof("Using version %q for API group %q", CAPIVersion, CAPIGroup)
 
-	var gvrMachineDeployment *schema.GroupVersionResource
+	var gvrMachineDeployment schema.GroupVersionResource
 	var machineDeploymentInformer informers.GenericInformer
 
-	machineDeployment, err := groupVersionHasResource(discoveryclient,
+	machineDeploymentAvailable, err := groupVersionHasResource(managementDiscoveryClient,
 		fmt.Sprintf("%s/%s", CAPIGroup, CAPIVersion), resourceNameMachineDeployment)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate if resource %q is available for group %q: %v",
 			resourceNameMachineDeployment, fmt.Sprintf("%s/%s", CAPIGroup, CAPIVersion), err)
 	}
 
-	if machineDeployment {
-		gvrMachineDeployment = &schema.GroupVersionResource{
+	if machineDeploymentAvailable {
+		gvrMachineDeployment = schema.GroupVersionResource{
 			Group:    CAPIGroup,
 			Version:  CAPIVersion,
 			Resource: resourceNameMachineDeployment,
 		}
-		machineDeploymentInformer = informerFactory.ForResource(*gvrMachineDeployment)
+		machineDeploymentInformer = managementInformerFactory.ForResource(gvrMachineDeployment)
 		machineDeploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 	}
 
-	gvrMachineSet := &schema.GroupVersionResource{
+	gvrMachineSet := schema.GroupVersionResource{
 		Group:    CAPIGroup,
 		Version:  CAPIVersion,
 		Resource: resourceNameMachineSet,
 	}
-	machineSetInformer := informerFactory.ForResource(*gvrMachineSet)
+	machineSetInformer := managementInformerFactory.ForResource(gvrMachineSet)
 	machineSetInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 
-	gvrMachine := &schema.GroupVersionResource{
+	gvrMachine := schema.GroupVersionResource{
 		Group:    CAPIGroup,
 		Version:  CAPIVersion,
 		Resource: resourceNameMachine,
 	}
-	machineInformer := informerFactory.ForResource(*gvrMachine)
+	machineInformer := managementInformerFactory.ForResource(gvrMachine)
 	machineInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
 
-	nodeInformer := kubeInformerFactory.Core().V1().Nodes().Informer()
+	nodeInformer := workloadInformerFactory.Core().V1().Nodes().Informer()
 	nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{})
 
 	if err := machineInformer.Informer().GetIndexer().AddIndexers(cache.Indexers{
@@ -385,16 +385,19 @@ func newMachineController(
 	}
 
 	return &machineController{
-		kubeInformerFactory:       kubeInformerFactory,
-		machineInformerFactory:    informerFactory,
-		machineDeploymentInformer: machineDeploymentInformer,
-		machineInformer:           machineInformer,
-		machineSetInformer:        machineSetInformer,
-		nodeInformer:              nodeInformer,
-		dynamicclient:             dynamicclient,
-		machineSetResource:        gvrMachineSet,
-		machineResource:           gvrMachine,
-		machineDeploymentResource: gvrMachineDeployment,
+		autoDiscoverySpecs:          autoDiscoverySpecs,
+		workloadInformerFactory:     workloadInformerFactory,
+		managementInformerFactory:   managementInformerFactory,
+		machineDeploymentInformer:   machineDeploymentInformer,
+		machineInformer:             machineInformer,
+		machineSetInformer:          machineSetInformer,
+		nodeInformer:                nodeInformer,
+		managementClient:            managementClient,
+		managementScaleClient:       managementScaleClient,
+		machineSetResource:          gvrMachineSet,
+		machineResource:             gvrMachine,
+		machineDeploymentResource:   gvrMachineDeployment,
+		machineDeploymentsAvailable: machineDeploymentAvailable,
 	}, nil
 }
 
@@ -428,190 +431,128 @@ func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup s
 	return "", fmt.Errorf("failed to find API group %q", APIGroup)
 }
 
-func (c *machineController) machineSetProviderIDs(machineSet *MachineSet) ([]string, error) {
-	machines, err := c.machinesInMachineSet(machineSet)
+func (c *machineController) scalableResourceProviderIDs(scalableResource *unstructured.Unstructured) ([]string, error) {
+	machines, err := c.listMachinesForScalableResource(scalableResource)
 	if err != nil {
 		return nil, fmt.Errorf("error listing machines: %v", err)
 	}
 
 	var providerIDs []string
 	for _, machine := range machines {
-		if machine.Spec.ProviderID == nil || *machine.Spec.ProviderID == "" {
-			klog.Warningf("Machine %q has no providerID", machine.Name)
+		providerID, found, err := unstructured.NestedString(machine.UnstructuredContent(), "spec", "providerID")
+		if err != nil {
+			return nil, err
 		}
 
-		if machine.Spec.ProviderID != nil && *machine.Spec.ProviderID != "" {
-			providerIDs = append(providerIDs, *machine.Spec.ProviderID)
-			continue
+		if found {
+			if providerID != "" {
+				providerIDs = append(providerIDs, providerID)
+				continue
+			}
 		}
 
-		if machine.Status.FailureMessage != nil {
-			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.Name, *machine.Status.FailureMessage)
+		klog.Warningf("Machine %q has no providerID", machine.GetName())
+
+		failureMessage, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "failureMessage")
+		if err != nil {
+			return nil, err
+		}
+
+		if found {
+			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
 			// Provide a fake ID to allow the autoscaler to track machines that will never
 			// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
 			// Fake ID needs to be recognised later and converted into a machine key.
 			// Use an underscore as a separator between namespace and name as it is not a
 			// valid character within a namespace name.
-			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.Namespace, machine.Name))
+			providerIDs = append(providerIDs, fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.GetNamespace(), machine.GetName()))
 			continue
 		}
 
-		if machine.Status.NodeRef == nil {
-			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.Name)
-			continue
-		}
-
-		if machine.Status.NodeRef.Kind != "Node" {
-			klog.Errorf("Status.NodeRef of machine %q does not reference a node (rather %q)", machine.Name, machine.Status.NodeRef.Kind)
-			continue
-		}
-
-		node, err := c.findNodeByNodeName(machine.Status.NodeRef.Name)
+		_, found, err = unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
 		if err != nil {
-			return nil, fmt.Errorf("unknown node %q", machine.Status.NodeRef.Name)
+			return nil, err
 		}
 
-		if node != nil {
-			providerIDs = append(providerIDs, node.Spec.ProviderID)
+		if !found {
+			klog.V(4).Infof("Status.NodeRef of machine %q is currently nil", machine.GetName())
+			continue
+		}
+
+		nodeRefKind, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "nodeRef", "kind")
+		if err != nil {
+			return nil, err
+		}
+
+		if found && nodeRefKind != "Node" {
+			klog.Errorf("Status.NodeRef of machine %q does not reference a node (rather %q)", machine.GetName(), nodeRefKind)
+			continue
+		}
+
+		nodeRefName, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "nodeRef", "name")
+		if err != nil {
+			return nil, err
+		}
+
+		if found {
+			node, err := c.findNodeByNodeName(nodeRefName)
+			if err != nil {
+				return nil, fmt.Errorf("unknown node %q", nodeRefName)
+			}
+
+			if node != nil {
+				providerIDs = append(providerIDs, node.Spec.ProviderID)
+			}
 		}
 	}
 
-	klog.V(4).Infof("nodegroup %s has nodes %v", machineSet.Name, providerIDs)
+	klog.V(4).Infof("nodegroup %s has nodes %v", scalableResource.GetName(), providerIDs)
+
 	return providerIDs, nil
 }
 
-func (c *machineController) filterAllMachineSets(f machineSetFilterFunc) error {
-	return c.filterMachineSets(metav1.NamespaceAll, f)
-}
-
-func (c *machineController) filterMachineSets(namespace string, f machineSetFilterFunc) error {
-	machineSets, err := c.listMachineSets(namespace, labels.Everything())
-	if err != nil {
-		return nil
-	}
-	for _, machineSet := range machineSets {
-		if err := f(machineSet); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *machineController) machineSetNodeGroups() ([]*nodegroup, error) {
-	var nodegroups []*nodegroup
-
-	if err := c.filterAllMachineSets(func(machineSet *MachineSet) error {
-		if machineSetHasMachineDeploymentOwnerRef(machineSet) {
-			return nil
-		}
-		ng, err := newNodegroupFromMachineSet(c, machineSet)
-		if err != nil {
-			return err
-		}
-		if ng.MaxSize()-ng.MinSize() > 0 && pointer.Int32PtrDerefOr(machineSet.Spec.Replicas, 0) > 0 {
-			nodegroups = append(nodegroups, ng)
-		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return nodegroups, nil
-}
-
-func (c *machineController) machineDeploymentNodeGroups() ([]*nodegroup, error) {
-	machineDeployments, err := c.listMachineDeployments(metav1.NamespaceAll, labels.Everything())
-	if err != nil {
-		return nil, err
-	}
-
-	var nodegroups []*nodegroup
-
-	for _, md := range machineDeployments {
-		ng, err := newNodegroupFromMachineDeployment(c, md)
-		if err != nil {
-			return nil, err
-		}
-		// add nodegroup iff it has the capacity to scale
-		if ng.MaxSize()-ng.MinSize() > 0 && pointer.Int32PtrDerefOr(md.Spec.Replicas, 0) > 0 {
-			nodegroups = append(nodegroups, ng)
-		}
-	}
-
-	return nodegroups, nil
-}
-
 func (c *machineController) nodeGroups() ([]*nodegroup, error) {
-	machineSets, err := c.machineSetNodeGroups()
+	scalableResources, err := c.listScalableResources()
 	if err != nil {
 		return nil, err
 	}
 
-	if c.machineDeploymentResource != nil {
-		machineDeployments, err := c.machineDeploymentNodeGroups()
+	nodegroups := make([]*nodegroup, 0, len(scalableResources))
+
+	for _, r := range scalableResources {
+		ng, err := newNodeGroupFromScalableResource(c, r)
 		if err != nil {
 			return nil, err
 		}
-		machineSets = append(machineSets, machineDeployments...)
-	}
 
-	return machineSets, nil
+		if ng != nil {
+			nodegroups = append(nodegroups, ng)
+		}
+	}
+	return nodegroups, nil
 }
 
 func (c *machineController) nodeGroupForNode(node *corev1.Node) (*nodegroup, error) {
-	machine, err := c.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+	scalableResource, err := c.findScalableResourceByProviderID(normalizedProviderString(node.Spec.ProviderID))
 	if err != nil {
 		return nil, err
 	}
-	if machine == nil {
+	if scalableResource == nil {
 		return nil, nil
 	}
 
-	machineSet, err := c.findMachineOwner(machine)
-	if err != nil {
-		return nil, err
-	}
-
-	if machineSet == nil {
-		return nil, nil
-	}
-
-	if c.machineDeploymentResource != nil {
-		if ref := machineSetMachineDeploymentRef(machineSet); ref != nil {
-			key := fmt.Sprintf("%s/%s", machineSet.Namespace, ref.Name)
-			machineDeployment, err := c.findMachineDeployment(key)
-			if err != nil {
-				return nil, fmt.Errorf("unknown MachineDeployment %q: %v", key, err)
-			}
-			if machineDeployment == nil {
-				return nil, fmt.Errorf("unknown MachineDeployment %q", key)
-			}
-			nodegroup, err := newNodegroupFromMachineDeployment(c, machineDeployment)
-			if err != nil {
-				return nil, fmt.Errorf("failed to build nodegroup for node %q: %v", node.Name, err)
-			}
-			// We don't scale from 0 so nodes must belong
-			// to a nodegroup that has a scale size of at
-			// least 1.
-			if nodegroup.MaxSize()-nodegroup.MinSize() < 1 {
-				return nil, nil
-			}
-			return nodegroup, nil
-		}
-	}
-
-	nodegroup, err := newNodegroupFromMachineSet(c, machineSet)
+	nodegroup, err := newNodeGroupFromScalableResource(c, scalableResource)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build nodegroup for node %q: %v", node.Name, err)
 	}
 
-	// We don't scale from 0 so nodes must belong to a nodegroup
-	// that has a scale size of at least 1.
-	if nodegroup.MaxSize()-nodegroup.MinSize() < 1 {
+	// the nodegroup will be nil if it doesn't match the autodiscovery configuration
+	// or if it doesn't meet the scaling requirements
+	if nodegroup == nil {
 		return nil, nil
 	}
 
-	klog.V(4).Infof("node %q is in nodegroup %q", node.Name, machineSet.Name)
+	klog.V(4).Infof("node %q is in nodegroup %q", node.Name, nodegroup.Id())
 	return nodegroup, nil
 }
 
@@ -639,80 +580,116 @@ func (c *machineController) findNodeByProviderID(providerID normalizedProviderID
 	return node.DeepCopy(), nil
 }
 
-func (c *machineController) getMachine(namespace, name string, options metav1.GetOptions) (*Machine, error) {
-	u, err := c.dynamicclient.Resource(*c.machineResource).Namespace(namespace).Get(context.TODO(), name, options)
-	if err != nil {
-		return nil, err
+func (c *machineController) listMachinesForScalableResource(r *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	switch r.GetKind() {
+	case machineSetKind, machineDeploymentKind:
+		unstructuredSelector, found, err := unstructured.NestedMap(r.UnstructuredContent(), "spec", "selector")
+		if err != nil {
+			return nil, err
+		}
+
+		if !found {
+			return nil, fmt.Errorf("expected field spec.selector on scalable resource type")
+		}
+
+		labelSelector := &metav1.LabelSelector{}
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredSelector, labelSelector); err != nil {
+			return nil, err
+		}
+
+		selector, err := metav1.LabelSelectorAsSelector(labelSelector)
+		if err != nil {
+			return nil, err
+		}
+
+		return listResources(c.machineInformer.Lister().ByNamespace(r.GetNamespace()), clusterNameFromResource(r), selector)
+	default:
+		return nil, fmt.Errorf("unknown scalable resource kind %s", r.GetKind())
 	}
-	return newMachineFromUnstructured(u.DeepCopy()), nil
 }
 
-func (c *machineController) getMachineSet(namespace, name string, options metav1.GetOptions) (*MachineSet, error) {
-	u, err := c.dynamicclient.Resource(*c.machineSetResource).Namespace(namespace).Get(context.TODO(), name, options)
+func (c *machineController) listScalableResources() ([]*unstructured.Unstructured, error) {
+	scalableResources, err := c.listResources(c.machineSetInformer.Lister())
 	if err != nil {
 		return nil, err
 	}
-	return newMachineSetFromUnstructured(u.DeepCopy()), nil
+
+	if c.machineDeploymentsAvailable {
+		machineDeployments, err := c.listResources(c.machineDeploymentInformer.Lister())
+		if err != nil {
+			return nil, err
+		}
+
+		scalableResources = append(scalableResources, machineDeployments...)
+	}
+	return scalableResources, nil
 }
 
-func (c *machineController) getMachineDeployment(namespace, name string, options metav1.GetOptions) (*MachineDeployment, error) {
-	u, err := c.dynamicclient.Resource(*c.machineDeploymentResource).Namespace(namespace).Get(context.TODO(), name, options)
-	if err != nil {
-		return nil, err
-	}
-	return newMachineDeploymentFromUnstructured(u.DeepCopy()), nil
-}
-
-func (c *machineController) listMachines(namespace string, selector labels.Selector) ([]*Machine, error) {
-	objs, err := c.machineInformer.Lister().ByNamespace(namespace).List(selector)
-	if err != nil {
-		return nil, err
+func (c *machineController) listResources(lister cache.GenericLister) ([]*unstructured.Unstructured, error) {
+	if len(c.autoDiscoverySpecs) == 0 {
+		return listResources(lister.ByNamespace(metav1.NamespaceAll), "", labels.Everything())
 	}
 
-	var machines []*Machine
-
-	for _, x := range objs {
-		u := x.(*unstructured.Unstructured).DeepCopy()
-		if machine := newMachineFromUnstructured(u); machine != nil {
-			machines = append(machines, machine)
+	var results []*unstructured.Unstructured
+	tracker := map[string]bool{}
+	for _, spec := range c.autoDiscoverySpecs {
+		resources, err := listResources(lister.ByNamespace(spec.namespace), spec.clusterName, spec.labelSelector)
+		if err != nil {
+			return nil, err
+		}
+		for i := range resources {
+			r := resources[i]
+			key := fmt.Sprintf("%s-%s-%s", r.GetKind(), r.GetNamespace(), r.GetName())
+			if _, ok := tracker[key]; !ok {
+				results = append(results, r)
+				tracker[key] = true
+			}
 		}
 	}
 
-	return machines, nil
+	return results, nil
 }
 
-func (c *machineController) listMachineSets(namespace string, selector labels.Selector) ([]*MachineSet, error) {
-	objs, err := c.machineSetInformer.Lister().ByNamespace(namespace).List(selector)
+func listResources(lister cache.GenericNamespaceLister, clusterName string, selector labels.Selector) ([]*unstructured.Unstructured, error) {
+	objs, err := lister.List(selector)
 	if err != nil {
 		return nil, err
 	}
 
-	var machineSets []*MachineSet
-
+	results := make([]*unstructured.Unstructured, 0, len(objs))
 	for _, x := range objs {
-		u := x.(*unstructured.Unstructured).DeepCopy()
-		if machineSet := newMachineSetFromUnstructured(u); machineSet != nil {
-			machineSets = append(machineSets, machineSet)
+		u, ok := x.(*unstructured.Unstructured)
+		if !ok {
+			return nil, fmt.Errorf("expected unstructured resource from lister, not %T", x)
 		}
+
+		// if clusterName is not empty and the clusterName does not match the resource, do not return it as part of the results
+		if clusterName != "" && clusterNameFromResource(u) != clusterName {
+			continue
+		}
+
+		// if we are listing MachineSets, do not return MachineSets that are owned by a MachineDeployment
+		if u.GetKind() == machineSetKind && machineSetHasMachineDeploymentOwnerRef(u) {
+			continue
+		}
+
+		results = append(results, u.DeepCopy())
 	}
 
-	return machineSets, nil
+	return results, nil
 }
 
-func (c *machineController) listMachineDeployments(namespace string, selector labels.Selector) ([]*MachineDeployment, error) {
-	objs, err := c.machineDeploymentInformer.Lister().ByNamespace(namespace).List(selector)
-	if err != nil {
-		return nil, err
+func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstructured) bool {
+	// If no autodiscovery configuration fall back to previous behavior of allowing all
+	if len(c.autoDiscoverySpecs) == 0 {
+		return true
 	}
 
-	var machineDeployments []*MachineDeployment
-
-	for _, x := range objs {
-		u := x.(*unstructured.Unstructured).DeepCopy()
-		if machineDeployment := newMachineDeploymentFromUnstructured(u); machineDeployment != nil {
-			machineDeployments = append(machineDeployments, machineDeployment)
+	for _, spec := range c.autoDiscoverySpecs {
+		if allowedByAutoDiscoverySpec(spec, r) {
+			return true
 		}
 	}
 
-	return machineDeployments, nil
+	return false
 }
