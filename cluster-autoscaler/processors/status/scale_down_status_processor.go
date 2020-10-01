@@ -88,8 +88,6 @@ const (
 	ScaleDownNoUnneeded
 	// ScaleDownNoNodeDeleted - unneeded nodes present but not available for deletion.
 	ScaleDownNoNodeDeleted
-	// ScaleDownNodeDeleted - a node was deleted.
-	ScaleDownNodeDeleted
 	// ScaleDownNodeDeleteStarted - a node deletion process was started.
 	ScaleDownNodeDeleteStarted
 	// ScaleDownNotTried - the scale down wasn't even attempted, e.g. an autoscaling iteration was skipped, or
