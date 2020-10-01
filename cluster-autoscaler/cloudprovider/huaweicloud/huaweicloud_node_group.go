@@ -46,7 +46,6 @@ type NodeGroup struct {
 	nodePoolSizeTmp     int
 	getNodePoolSizeTime time.Time
 
-	deleteMutex        *sync.Mutex
 	clusterUpdateMutex *sync.Mutex
 }
 
@@ -134,20 +133,19 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. This function
 // should wait until node group size is updated.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	// use ng.deleteMutex to update ng.nodePoolSizeTmp, ng.getNodePoolSizeTime and ng.nodesToDelete
-	ng.deleteMutex.Lock()
-	currentSize, err := checkAndUpdate(ng, nodes)
-	ng.deleteMutex.Unlock()
-	if err != nil {
-		return err
-	}
-
 	// start the process of deleting nodes
 	ng.clusterUpdateMutex.Lock()
 	defer ng.clusterUpdateMutex.Unlock()
 
+	// check whether deleting the nodes will cause the size of the node pool below minimum size
+	// and update ng.nodesToDelete (as well as ng.nodePoolSizeTmp and ng.getNodePoolSizeTime if necessary)
+	currentSize, err := checkAndUpdate(ng, nodes)
+	if err != nil {
+		return err
+	}
+
 	// get the unique ids of the nodes to be deleted
-	nodeIDs, finished, err := getNodeIDsToDelete(ng, nodes, currentSize)
+	nodeIDs, finished, err := getNodeIDsToDelete(ng)
 	if finished { // nodes have been deleted by other goroutine
 		return nil
 	}
@@ -215,26 +213,13 @@ func checkAndUpdate(ng *NodeGroup, nodes []*apiv1.Node) (int, error) {
 // getNodeIDsToDelete checks whether there're still nodes waiting for being deleted. If there're no nodes
 // to delete, it will return true, representing that the process of deleting the nodes has been finished;
 // otherwise, it will return a slice of node ids to be deleted.
-func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]string, bool, error) {
+func getNodeIDsToDelete(ng *NodeGroup) ([]string, bool, error) {
 	// check whether the nodes has already been deleted by other goroutine
-	ng.deleteMutex.Lock()
 	// If current goroutine is not the first one to acquire the ng.clusterUpdateMutex,
 	// it's possible that the nodes have already been deleted, which makes ng.nodesToDelete to be empty.
 	if len(ng.nodesToDelete) == 0 {
-		ng.deleteMutex.Unlock()
 		return nil, true, nil
 	}
-	ng.deleteMutex.Unlock()
-
-	// wait for more nodes to be added to ng.nodesToDelete
-	time.Sleep(ng.deleteWaitTime)
-
-	// get a copy of the nodes to be deleted and release the lock
-	ng.deleteMutex.Lock()
-	nodes = make([]*apiv1.Node, len(ng.nodesToDelete))
-	copy(nodes, ng.nodesToDelete)
-	ng.nodesToDelete = nil
-	ng.deleteMutex.Unlock()
 
 	// check whether the cluster is available for deleting nodes
 	canUpdate, status, err := ng.huaweiCloudManager.canUpdate()
@@ -245,17 +230,15 @@ func getNodeIDsToDelete(ng *NodeGroup, nodes []*apiv1.Node, currentSize int) ([]
 		return nil, false, fmt.Errorf("cluster is in %s status, cannot perform node deletion now", status)
 	}
 
-	// check again whether deleting the nodes is valid
-	if currentSize-len(nodes) < ng.MinSize() {
-		return nil, false, fmt.Errorf("the size of the node pool is not sufficient for deleting the nodes, target size:%d, minimum size:%d", currentSize-len(nodes), ng.MinSize())
-	}
-
 	nodeIDs := make([]string, 0)
-	for _, node := range nodes {
+	for _, node := range ng.nodesToDelete {
 		// the node.Spec.ProviderID is the node's uid
 		klog.Infof("Delete node with node id: %s", node.Spec.ProviderID)
 		nodeIDs = append(nodeIDs, node.Spec.ProviderID)
 	}
+
+	ng.nodesToDelete = nil
+
 	return nodeIDs, false, nil
 }
 

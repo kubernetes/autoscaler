@@ -43,7 +43,6 @@ func createTestNodeGroup(manager *huaweicloudCloudManager) *NodeGroup {
 	size := nodePoolNodeCount
 	return &NodeGroup{
 		huaweiCloudManager: manager,
-		deleteMutex:        &sync.Mutex{},
 		clusterUpdateMutex: &sync.Mutex{},
 		nodePoolName:       nodePoolName,
 		nodePoolId:         nodePoolUID,
