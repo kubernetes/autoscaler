@@ -529,7 +529,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 
-			if scaleDownStatus.Result == status.ScaleDownNodeDeleted {
+			if scaleDownStatus.Result == status.ScaleDownNodeDeleteStarted {
 				a.lastScaleDownDeleteTime = currentTime
 				a.clusterStateRegistry.Recalculate()
 			}
