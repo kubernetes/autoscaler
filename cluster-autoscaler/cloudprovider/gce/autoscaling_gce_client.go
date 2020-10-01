@@ -156,7 +156,7 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "", err)
+				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
 			}
 		}
 		return 0, err
@@ -354,7 +354,7 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.Inst
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return nil, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "", err)
+				return nil, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
 			}
 		}
 		return nil, err
