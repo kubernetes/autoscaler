@@ -237,3 +237,25 @@ func (l *HttpServerMock) handle(url string) string {
 	args := l.Called(url)
 	return args.String(0)
 }
+
+// NewHttpServerMock creates new HttpServerMock.
+func NewHttpServerMockWithStatusCode() *HttpServerMock {
+	httpServerMock := &HttpServerMock{}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/",
+		func(w http.ResponseWriter, req *http.Request) {
+			code, result := httpServerMock.handleWithStatusCode(req.URL.Path)
+			w.WriteHeader(code)
+			w.Write([]byte(result))
+			//w.Write([]byte("status: " + string(code) + "\n" + result))
+		})
+
+	server := httptest.NewServer(mux)
+	httpServerMock.Server = server
+	return httpServerMock
+}
+
+func (l *HttpServerMock) handleWithStatusCode(url string) (int, string) {
+	args := l.Called(url)
+	return args.Int(0), args.String(1)
+}
