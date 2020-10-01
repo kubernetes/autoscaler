@@ -26,7 +26,9 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/api/googleapi"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	gce "google.golang.org/api/compute/v1"
@@ -152,6 +154,11 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			if err.Code == http.StatusNotFound {
+				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "", err)
+			}
+		}
 		return 0, err
 	}
 	return igm.TargetSize, nil
@@ -345,6 +352,11 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.Inst
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			if err.Code == http.StatusNotFound {
+				return nil, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "", err)
+			}
+		}
 		return nil, err
 	}
 	templateUrl, err := url.Parse(igm.InstanceTemplate)
