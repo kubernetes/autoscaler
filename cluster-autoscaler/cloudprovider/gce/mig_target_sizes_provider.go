@@ -56,9 +56,9 @@ func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, 
 
 	newTargetSizes, err := c.fillInMigTargetSizeCache()
 
-	// if we still do not have value here return an error
 	size, found := newTargetSizes[migRef]
 	if err != nil || !found {
+		// fallback to querying for single mig
 		targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
 		if err != nil {
 			return 0, err
