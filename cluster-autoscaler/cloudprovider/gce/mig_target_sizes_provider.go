@@ -17,9 +17,9 @@ limitations under the License.
 package gce
 
 import (
-	"fmt"
-	klog "k8s.io/klog/v2"
 	"sync"
+
+	klog "k8s.io/klog/v2"
 )
 
 // MigTargetSizesProvider allows obtaining target sizes of MIGs
@@ -55,20 +55,16 @@ func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, 
 	}
 
 	newTargetSizes, err := c.fillInMigTargetSizeCache()
-	if err != nil {
-		// fallback to querying for single mig
+
+	// if we still do not have value here return an error
+	size, found := newTargetSizes[migRef]
+	if err != nil || !found {
 		targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
 		if err != nil {
 			return 0, err
 		}
 		c.cache.SetMigTargetSize(migRef, targetSize)
 		return targetSize, nil
-	}
-
-	// if we still do not have value here return an error
-	size, found := newTargetSizes[migRef]
-	if !found {
-		return 0, fmt.Errorf("Could not get target size for mig %v", migRef.String())
 	}
 
 	// we are good

@@ -58,6 +58,9 @@ const (
 	// ConfigurationError is an error related to bad configuration provided
 	// by a user.
 	ConfigurationError AutoscalerErrorType = "configurationError"
+	// NodeGroupDoesNotExistError signifies that a NodeGroup
+	// does not exist.
+	NodeGroupDoesNotExistError AutoscalerErrorType = "nodeGroupDoesNotExistError"
 )
 
 // NewAutoscalerError returns new autoscaler error with a message constructed from format string
