@@ -238,7 +238,7 @@ func (l *HttpServerMock) handle(url string) string {
 	return args.String(0)
 }
 
-// NewHttpServerMock creates new HttpServerMock.
+// NewHttpServerMockWithStatusCode creates new HttpServerMock.
 func NewHttpServerMockWithStatusCode() *HttpServerMock {
 	httpServerMock := &HttpServerMock{}
 	mux := http.NewServeMux()
