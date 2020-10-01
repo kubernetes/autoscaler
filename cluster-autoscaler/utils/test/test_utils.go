@@ -225,7 +225,7 @@ func NewHttpServerMock() *HttpServerMock {
 	mux.HandleFunc("/",
 		func(w http.ResponseWriter, req *http.Request) {
 			result := httpServerMock.handle(req.URL.Path)
-			w.Write([]byte(result))
+			_, _ = w.Write([]byte(result))
 		})
 
 	server := httptest.NewServer(mux)
@@ -246,8 +246,7 @@ func NewHttpServerMockWithStatusCode() *HttpServerMock {
 		func(w http.ResponseWriter, req *http.Request) {
 			code, result := httpServerMock.handleWithStatusCode(req.URL.Path)
 			w.WriteHeader(code)
-			w.Write([]byte(result))
-			//w.Write([]byte("status: " + string(code) + "\n" + result))
+			_, _ = w.Write([]byte(result))
 		})
 
 	server := httptest.NewServer(mux)
