@@ -20,30 +20,28 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 const (
-	machineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
-	machineAnnotationKey       = "cluster.k8s.io/machine"
-	debugFormat                = "%s (min: %d, max: %d, replicas: %d)"
+	// deprecatedMachineDeleteAnnotationKey should not be removed until minimum cluster-api support is v1alpha3
+	deprecatedMachineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
+	// TODO: determine what currently relies on deprecatedMachineAnnotationKey to determine when it can be removed
+	deprecatedMachineAnnotationKey = "cluster.k8s.io/machine"
+	machineDeleteAnnotationKey     = "cluster.x-k8s.io/delete-machine"
+	machineAnnotationKey           = "cluster.x-k8s.io/machine"
+	debugFormat                    = "%s (min: %d, max: %d, replicas: %d)"
 )
 
 type nodegroup struct {
 	machineController *machineController
-	scalableResource  scalableResource
+	scalableResource  *unstructuredScalableResource
 }
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
-
-func (ng *nodegroup) Name() string {
-	return ng.scalableResource.Name()
-}
-
-func (ng *nodegroup) Namespace() string {
-	return ng.scalableResource.Namespace()
-}
 
 func (ng *nodegroup) MinSize() int {
 	return ng.scalableResource.MinSize()
@@ -59,7 +57,7 @@ func (ng *nodegroup) MaxSize() int {
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
 func (ng *nodegroup) TargetSize() (int, error) {
-	return int(ng.scalableResource.Replicas()), nil
+	return ng.scalableResource.Replicas()
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
@@ -70,11 +68,13 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
-	size := int(ng.scalableResource.Replicas())
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ng.MaxSize())
+
+	size, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return err
 	}
-	return ng.scalableResource.SetSize(int32(size + delta))
+
+	return ng.scalableResource.SetSize(size + delta)
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned
@@ -82,6 +82,19 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 // group. This function should wait until node group size is updated.
 // Implementation required.
 func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+	ng.machineController.accessLock.Lock()
+	defer ng.machineController.accessLock.Unlock()
+
+	replicas, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return err
+	}
+
+	// if we are at minSize already we wail early.
+	if int(replicas) <= ng.MinSize() {
+		return fmt.Errorf("min size reached, nodes will not be deleted")
+	}
+
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
@@ -99,12 +112,10 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	}
 
 	// Step 2: if deleting len(nodes) would make the replica count
-	// <= 0, then the request to delete that many nodes is bogus
+	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	replicas := ng.scalableResource.Replicas()
-
-	if replicas-int32(len(nodes)) <= 0 {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are <= 0 ", len(nodes), ng.Id())
+	if replicas-len(nodes) < ng.MinSize() {
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %q, minSize is %q ", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
 	// Step 3: annotate the corresponding machine that it is a
@@ -126,9 +137,6 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			continue
 		}
 
-		if machine.Annotations == nil {
-			machine.Annotations = map[string]string{}
-		}
 		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
 			return err
@@ -139,6 +147,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		}
 
 		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
+			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
 		}
 
@@ -174,7 +183,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 			size, delta, len(nodes))
 	}
 
-	return ng.scalableResource.SetSize(int32(size + delta))
+	return ng.scalableResource.SetSize(size + delta)
 }
 
 // Id returns an unique identifier of the node group.
@@ -184,13 +193,17 @@ func (ng *nodegroup) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (ng *nodegroup) Debug() string {
-	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), ng.scalableResource.Replicas())
+	replicas, err := ng.scalableResource.Replicas()
+	if err != nil {
+		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(), ng.MaxSize(), err)
+	}
+	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), replicas)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // This includes instances that might have not become a kubernetes node yet.
 func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
-	nodes, err := ng.scalableResource.Nodes()
+	providerIDs, err := ng.scalableResource.ProviderIDs()
 	if err != nil {
 		return nil, err
 	}
@@ -199,10 +212,10 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 	// The IDs returned here are used to check if a node is registered or not and
 	// must match the ID on the Node object itself.
 	// https://github.com/kubernetes/autoscaler/blob/a973259f1852303ba38a3a61eeee8489cf4e1b13/cluster-autoscaler/clusterstate/clusterstate.go#L967-L985
-	instances := make([]cloudprovider.Instance, len(nodes))
-	for i := range nodes {
+	instances := make([]cloudprovider.Instance, len(providerIDs))
+	for i := range providerIDs {
 		instances[i] = cloudprovider.Instance{
-			Id: nodes[i],
+			Id: providerIDs[i],
 		}
 	}
 
@@ -231,7 +244,10 @@ func (ng *nodegroup) Exist() bool {
 // Create creates the node group on the cloud nodegroup side.
 // Implementation optional.
 func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
-	return nil, cloudprovider.ErrAlreadyExist
+	if ng.Exist() {
+		return nil, cloudprovider.ErrAlreadyExist
+	}
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud nodegroup side. This will
@@ -248,22 +264,33 @@ func (ng *nodegroup) Autoprovisioned() bool {
 	return false
 }
 
-func newNodegroupFromMachineSet(controller *machineController, machineSet *MachineSet) (*nodegroup, error) {
-	scalableResource, err := newMachineSetScalableResource(controller, machineSet)
-	if err != nil {
-		return nil, err
+func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+	// Ensure that the resulting node group would be allowed based on the autodiscovery specs if defined
+	if !controller.allowedByAutoDiscoverySpecs(unstructuredScalableResource) {
+		return nil, nil
 	}
-	return &nodegroup{
-		machineController: controller,
-		scalableResource:  scalableResource,
-	}, nil
-}
 
-func newNodegroupFromMachineDeployment(controller *machineController, machineDeployment *MachineDeployment) (*nodegroup, error) {
-	scalableResource, err := newMachineDeploymentScalableResource(controller, machineDeployment)
+	scalableResource, err := newUnstructuredScalableResource(controller, unstructuredScalableResource)
 	if err != nil {
 		return nil, err
 	}
+
+	replicas, found, err := unstructured.NestedInt64(unstructuredScalableResource.UnstructuredContent(), "spec", "replicas")
+	if err != nil {
+		return nil, err
+	}
+
+	// We don't scale from 0 so nodes must belong to a nodegroup
+	// that has a scale size of at least 1.
+	if found && replicas == 0 {
+		return nil, nil
+	}
+
+	// Ensure the node group would have the capacity to scale
+	if scalableResource.MaxSize()-scalableResource.MinSize() < 1 {
+		return nil, nil
+	}
+
 	return &nodegroup{
 		machineController: controller,
 		scalableResource:  scalableResource,
