@@ -21,7 +21,7 @@ entries:
     sources:
     - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
     urls:
-    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.3/cluster-autoscaler-chart-1.0.4.tgz
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.4/cluster-autoscaler-chart-1.0.4.tgz
     version: 1.0.4
   - apiVersion: v2
     appVersion: 1.18.1
