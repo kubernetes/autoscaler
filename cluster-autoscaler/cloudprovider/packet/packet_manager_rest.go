@@ -173,6 +173,7 @@ type packetManagerNodePool struct {
 }
 
 type packetManagerRest struct {
+	authToken              string
 	packetManagerNodePools map[string]*packetManagerNodePool
 }
 
@@ -304,6 +305,13 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		klog.Fatalf("No \"default\" or [Global] nodepool definition was found")
 	}
 
+	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
+	if len(packetAuthToken) == 0 {
+		klog.Fatalf("PACKET_AUTH_TOKEN is required and missing")
+	}
+
+	manager.authToken = packetAuthToken
+
 	for nodepool := range cfg.Nodegroupdef {
 		if opts.ClusterName == "" && cfg.Nodegroupdef[nodepool].ClusterName == "" {
 			klog.Fatalf("The cluster-name parameter must be set")
@@ -330,14 +338,12 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 }
 
 func (mgr *packetManagerRest) request(ctx context.Context, method, url string, jsonData []byte) ([]byte, error) {
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("X-Auth-Token", packetAuthToken)
+	req.Header.Set("X-Auth-Token", mgr.authToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
