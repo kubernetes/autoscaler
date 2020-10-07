@@ -103,7 +103,7 @@ Note: If you are seeing following error during this step:
 ```
 unknown option -addext
 ```
-please upgrade openssl to a version that supports -addext option or use ./hack/vpa-up.sh on the [0.8 release branch](https://github.com/kubernetes/autoscaler/tree/vpa-release-0.8).
+please upgrade openssl to version 1.1.1 or higher (needs to support -addext option) or use ./hack/vpa-up.sh on the [0.8 release branch](https://github.com/kubernetes/autoscaler/tree/vpa-release-0.8).
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
