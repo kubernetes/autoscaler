@@ -1,6 +1,6 @@
 version: 2.1
 
-context: architect
+
 
 executors:
   workspace:
@@ -87,6 +87,7 @@ workflows:
             tags:
               only: /^v.*/
       - dockerbuild:
+          context: architect
           requires:
             - build
           filters:
