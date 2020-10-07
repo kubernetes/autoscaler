@@ -38,5 +38,19 @@ jobs:
         uses: helm/chart-testing-action@v1.0.0-rc.2
         with:
           command: install
+  helm-docs-validate:
+    if: ${{ needs.changes.outputs.charts == 'true' }}
+    name: Helm Docs
+    needs:
+      - changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run helm-docs
+        uses: docker://jnorwood/helm-docs:v1.3.0
+      - name: Check for changes
+        run: git diff --quiet charts/*/README.md
+
 name: Lint and Test Charts
 on: pull_request

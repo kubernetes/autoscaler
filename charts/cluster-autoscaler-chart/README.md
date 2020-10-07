@@ -1,5 +1,4 @@
-cluster-autoscaler-chart
-========================
+# cluster-autoscaler-chart
 
 Scales Kubernetes worker nodes within autoscaling groups.
 
@@ -286,7 +285,7 @@ Containers:
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
 
-## Chart Values
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -335,8 +334,8 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | resources | object | `{}` | Pod resource requests and limits. |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
-| service.labels | object | `{}` | Labels to add to service |
 | service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips. |
+| service.labels | object | `{}` | Labels to add to service |
 | service.loadBalancerIP | string | `""` | IP address to assign to load balancer (if supported). |
 | service.loadBalancerSourceRanges | list | `[]` | List of IP CIDRs allowed access to load balancer (if supported). |
 | service.portName | string | `"http"` | Name for service port. |

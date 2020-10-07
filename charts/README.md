@@ -27,8 +27,6 @@ $ pre-commit install
 
 ### Install hook dependencies
 
-The pre-commit hooks themselves call binaries under the hood; they can be installed via the following command:
+The pre-commit hooks themselves call binaries under the hood; they can be installed via the [instructions found here](https://github.com/norwoodj/helm-docs#installation).
 
-```shell
-$ brew install helm norwoodj/tap/helm-docs
-```
+Note: You should ensure that whichever installation method you are using you either install the same version of helm-docs as used in the PR workflow to ensure your PR passes CI checks or update the version used by the workflow to match.
