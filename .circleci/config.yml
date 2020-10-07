@@ -1,59 +1,57 @@
-# TODO the workflow is unnecessary complicated due to some deficiencies in our
-# deployment pipeline as of time of writing. Therefore the push to Aliyun is
-# kind of optional in pull requests so that it does not block the push to the
-# app catalog. This is to have faster iterations when working on a daily basis.
-# Nevertheless we want the image push to Aliyun to be finished before we want to
-# push to the app catalog in case we merge to master or push a tag, which
-# indicates a new release. This is to have a more reliable pipeline, with the
-# caveat that it takes longer and sometimes even breaks. Once the situation got
-# improved we can simplify the circle config again as modified in the pull
-# request linked below.
-#
-#     https://github.com/giantswarm/aws-operator/pull/2347
-#
 version: 2.1
 
-orbs:
-  architect: giantswarm/architect@0.10.2
+jobs:
+  build:
+    machine:
+      image: "ubuntu-1604:201903-01"
+
+    steps:
+      - checkout
+
+      - run:
+          name: Test and Build
+          command: |
+            cd cluster-autoscaler
+            go build -o cluster-autoscaler
+
+      - run:
+          name: Docker build
+          command: |
+            cd cluster-autoscaler
+            docker build -t quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 .
+
+      - run:
+          name: Docker login
+          command: |
+            echo -n "${QUAY_PASSWORD}" | docker login --username "${QUAY_USERNAME}" --password-stdin quay.io
+
+      - run:
+          name: Docker push (SHA1 tag)
+          command: |
+            docker push quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1
+
+      - run:
+          name: Docker push release (only for a tagged release)
+          command: |
+            if [ ! -z "${CIRCLE_TAG}" ] && [ -z "${CIRCLE_BRANCH}" ]
+            then
+                docker tag quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 quay.io/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+                docker push quay.io/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+
+                # China
+                echo -n "${ALIYUN_PASSWORD}" | docker login --username "${ALIYUN_USERNAME}" --password-stdin registry-intl.cn-shanghai.aliyuncs.com
+                docker tag quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 registry-intl.cn-shanghai.aliyuncs.com/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+                docker push registry-intl.cn-shanghai.aliyuncs.com/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+            else
+                echo "Not pushing release tag"
+            fi
 
 workflows:
-  build:
+  version: 2
+  build-and-push:
     jobs:
-      - architect/go-build:
-          name: go-build
-          binary: cluster-autoscaler
-          working_directory: cluster-autoscaler
-          resource_class: large
+      - build:
           filters:
-            tags:
-              only: /^v.*/
-
-      # Ensure that for every commit (all branches), and for every new release tag,
-      # an image is pushed to Quay.
-      - architect/push-to-docker:
-          name: push-to-quay
-          image: "quay.io/giantswarm/aws-operator"
-          working_directory: cluster-autoscaler
-          username_envar: "QUAY_USERNAME"
-          password_envar: "QUAY_PASSWORD"
-          requires:
-            - go-build
-          filters:
-            tags:
-              only: /^v.*/
-
-      # Ensure that for every commit to master, and for every new release tag,
-      # an image gets pushed to the Aliyun registry.
-      - architect/push-to-docker:
-          name: push-to-aliyun
-          image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-operator"
-          working_directory: cluster-autoscaler
-          username_envar: "ALIYUN_USERNAME"
-          password_envar: "ALIYUN_PASSWORD"
-          requires:
-            - go-build
-          filters:
-            branches:
-              only: master
+            # Trigger job also on git tag.
             tags:
               only: /^v.*/
