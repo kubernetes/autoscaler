@@ -30,7 +30,7 @@ jobs:
   dockerbuild:
     executor: workspace
     docker:
-      - image: "golang:1.14"
+      - image: "docker:stable-git"
 
     environment:
       IMAGE_NAME: cluster-autoscaler-giantswarm
