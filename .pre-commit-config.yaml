@@ -10,5 +10,6 @@ repos:
     rev: v0.1.9
   - hooks:
       - id: helm-docs
+        files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
     repo: https://github.com/norwoodj/helm-docs
-    rev: v0.13.0
+    rev: v1.3.0
