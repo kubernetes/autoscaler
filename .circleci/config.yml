@@ -2,7 +2,7 @@ version: 2.1
 
 executors:
   workspace:
-    working_directory: /tmp
+    working_directory: /workspace
 
 jobs:
   build:
@@ -38,12 +38,12 @@ jobs:
     steps:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
-          at: /tmp/cluster-autoscaler
+          at: /workspace/cluster-autoscaler
 
       - run:
           name: Docker build
           command: |
-            cd /tmp/cluster-autoscaler/cluster-autoscaler
+            cd /workspace/cluster-autoscaler/cluster-autoscaler
             docker build -t quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_SHA1 .
 
       - run:
@@ -82,6 +82,8 @@ workflows:
             tags:
               only: /^v.*/
       - dockerbuild:
+          requires:
+            - build
           filters:
             # Trigger job also on git tag.
             tags:
