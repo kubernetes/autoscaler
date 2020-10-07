@@ -48,6 +48,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
+
+	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -148,6 +150,11 @@ func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeplo
 	}
 	machineObject, err := m.machineclient.Machines(m.namespace).Get(context.TODO(), machine.Name, metav1.GetOptions{})
 	if err != nil {
+		if kube_errors.IsNotFound(err) {
+			// Machine has been removed.
+			klog.V(4).Infof("Machine was removed before it could be retrieved: %v", err)
+			return nil, nil
+		}
 		return nil, fmt.Errorf("Unable to fetch Machine object %s %+v", machine.Name, err)
 	}
 
@@ -377,11 +384,18 @@ func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeploym
 	// Bearing O(n2) complexity, assuming we will not have lot of nodes/machines, open for optimisations.
 	for _, machine := range machinelist.Items {
 		if strings.Contains(machine.Name, md.Name) {
+			var found bool
 			for _, node := range nodelist.Items {
 				if machine.Labels["node"] == node.Name {
 					nodes = append(nodes, node.Spec.ProviderID)
+					found = true;
 					break
 				}
+			}
+			if !found {
+				// No node found - either the machine has not registered yet or AWS is unable to fufill the request.
+				// Report a special ID so that the autoscaler can track it as an unregistered node.
+				nodes = append(nodes, fmt.Sprintf("requested://%s", machine.Name))
 			}
 		}
 	}

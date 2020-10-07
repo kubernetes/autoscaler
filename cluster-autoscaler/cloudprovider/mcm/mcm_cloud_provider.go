@@ -143,7 +143,7 @@ func (mcm *mcmCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	}
 
 	if ref == nil {
-		klog.Infof("Skipped node %v, not managed by this controller", node.Spec.ProviderID)
+		klog.V(4).Infof("Skipped node %v, it's either been removed or it's not managed by this controller", node.Spec.ProviderID)
 		return nil, nil
 	}
 
@@ -206,7 +206,11 @@ func ReferenceFromProviderID(m *McmManager, id string) (*Ref, error) {
 	for _, machine := range machines.Items {
 		machineID := strings.Split(machine.Spec.ProviderID, "/")
 		nodeID := strings.Split(id, "/")
-		if machineID[len(machineID)-1] == nodeID[len(nodeID)-1] {
+		// If registered, the ID will match the AWS instance ID.
+		// If unregistered, the ID will match the machine name.
+		if machineID[len(machineID)-1] == nodeID[len(nodeID)-1] ||
+			nodeID[len(nodeID)-1] == machine.Name {
+
 			Name = machine.Name
 			Namespace = machine.Namespace
 			break
@@ -215,6 +219,7 @@ func ReferenceFromProviderID(m *McmManager, id string) (*Ref, error) {
 
 	if Name == "" {
 		// Could not find any machine corresponds to node %+v", id
+		klog.V(4).Infof("No machine found for node ID %q", id)
 		return nil, nil
 	}
 	return &Ref{
@@ -301,15 +306,6 @@ func (machinedeployment *MachineDeployment) DecreaseTargetSize(delta int) error 
 	if err != nil {
 		return err
 	}
-	nodes, err := machinedeployment.mcmManager.GetMachineDeploymentNodes(machinedeployment)
-	if err != nil {
-		return err
-	}
-
-	if int(size)+delta < len(nodes) {
-		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %s", size, delta, nodes)
-	}
-
 	return machinedeployment.mcmManager.SetMachineDeploymentSize(machinedeployment, size+int64(delta))
 }
 
