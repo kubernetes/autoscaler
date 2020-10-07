@@ -4,6 +4,10 @@
 
 This repository contains autoscaling-related components for Kubernetes.
 
+## GiantSwarm
+
+This repository contains some customizations made by Giant Swarm that will be contributed upstream.
+
 ## What's inside
 
 [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) - a component that automatically adjusts the size of a Kubernetes
