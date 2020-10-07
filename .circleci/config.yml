@@ -30,12 +30,15 @@ jobs:
   dockerbuild:
     executor: workspace
     docker:
-      - image: "docker:stable-git"
+      - image: "docker:19.03.13-git"
 
     environment:
       IMAGE_NAME: cluster-autoscaler-giantswarm
 
     steps:
+      - setup_remote_docker:
+        version: 19.03.13
+
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: /workspace/cluster-autoscaler
