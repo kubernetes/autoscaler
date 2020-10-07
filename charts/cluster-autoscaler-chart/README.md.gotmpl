@@ -252,7 +252,7 @@ For Kubernetes clusters that use Amazon EKS, the service account can be configur
 
 In order to accomplish this, you will first need to create a new IAM role with the above mentions policies.  Take care in [configuring the trust relationship](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts-technical-overview.html#iam-role-configuration) to restrict access just to the service account used by cluster autoscaler.
 
-Once you have the IAM role configured, you would then need to `--set rbac.serviceAccountAnnotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
+Once you have the IAM role configured, you would then need to `--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
 
 ## Troubleshooting
 
