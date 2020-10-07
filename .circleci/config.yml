@@ -1,5 +1,7 @@
 version: 2.1
 
+context: architect
+
 executors:
   workspace:
     working_directory: /workspace
