@@ -1,9 +1,17 @@
 version: 2.1
 
+executors:
+  workspace:
+    working_directory: /tmp
+
 jobs:
   build:
-    machine:
-      image: "ubuntu-1604:201903-01"
+    executor: workspace
+    docker:
+      - image: "golang:1.14"
+
+    environment:
+      IMAGE_NAME: cluster-autoscaler-giantswarm
 
     steps:
       - checkout
@@ -14,11 +22,29 @@ jobs:
             cd cluster-autoscaler
             go build -o cluster-autoscaler
 
+      - persist_to_workspace:
+          root: cluster-autoscaler
+          paths:
+            - cluster-autoscaler
+
+  dockerbuild:
+    executor: workspace
+    docker:
+      - image: "golang:1.14"
+
+    environment:
+      IMAGE_NAME: cluster-autoscaler-giantswarm
+
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp/cluster-autoscaler
+
       - run:
           name: Docker build
           command: |
-            cd cluster-autoscaler
-            docker build -t quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 .
+            cd /tmp/cluster-autoscaler/cluster-autoscaler
+            docker build -t quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_SHA1 .
 
       - run:
           name: Docker login
@@ -28,20 +54,20 @@ jobs:
       - run:
           name: Docker push (SHA1 tag)
           command: |
-            docker push quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1
+            docker push quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_SHA1
 
       - run:
           name: Docker push release (only for a tagged release)
           command: |
             if [ ! -z "${CIRCLE_TAG}" ] && [ -z "${CIRCLE_BRANCH}" ]
             then
-                docker tag quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 quay.io/giantswarm/cluster-autoscaler:$CIRCLE_TAG
-                docker push quay.io/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+                docker tag quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_SHA1 quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_TAG
+                docker push quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_TAG
 
                 # China
                 echo -n "${ALIYUN_PASSWORD}" | docker login --username "${ALIYUN_USERNAME}" --password-stdin registry-intl.cn-shanghai.aliyuncs.com
-                docker tag quay.io/giantswarm/cluster-autoscaler:$CIRCLE_SHA1 registry-intl.cn-shanghai.aliyuncs.com/giantswarm/cluster-autoscaler:$CIRCLE_TAG
-                docker push registry-intl.cn-shanghai.aliyuncs.com/giantswarm/cluster-autoscaler:$CIRCLE_TAG
+                docker tag quay.io/giantswarm/$IMAGE_NAME:$CIRCLE_SHA1 registry-intl.cn-shanghai.aliyuncs.com/giantswarm/$IMAGE_NAME:$CIRCLE_TAG
+                docker push registry-intl.cn-shanghai.aliyuncs.com/giantswarm/$IMAGE_NAME:$CIRCLE_TAG
             else
                 echo "Not pushing release tag"
             fi
@@ -51,6 +77,11 @@ workflows:
   build-and-push:
     jobs:
       - build:
+          filters:
+            # Trigger job also on git tag.
+            tags:
+              only: /^v.*/
+      - dockerbuild:
           filters:
             # Trigger job also on git tag.
             tags:
