@@ -1,0 +1,59 @@
+# TODO the workflow is unnecessary complicated due to some deficiencies in our
+# deployment pipeline as of time of writing. Therefore the push to Aliyun is
+# kind of optional in pull requests so that it does not block the push to the
+# app catalog. This is to have faster iterations when working on a daily basis.
+# Nevertheless we want the image push to Aliyun to be finished before we want to
+# push to the app catalog in case we merge to master or push a tag, which
+# indicates a new release. This is to have a more reliable pipeline, with the
+# caveat that it takes longer and sometimes even breaks. Once the situation got
+# improved we can simplify the circle config again as modified in the pull
+# request linked below.
+#
+#     https://github.com/giantswarm/aws-operator/pull/2347
+#
+version: 2.1
+
+orbs:
+  architect: giantswarm/architect@0.10.2
+
+workflows:
+  build:
+    jobs:
+      - architect/go-build:
+          name: go-build
+          binary: cluster-autoscaler
+          working_directory: cluster-autoscaler
+          resource_class: large
+          filters:
+            tags:
+              only: /^v.*/
+
+      # Ensure that for every commit (all branches), and for every new release tag,
+      # an image is pushed to Quay.
+      - architect/push-to-docker:
+          name: push-to-quay
+          image: "quay.io/giantswarm/aws-operator"
+          working_directory: cluster-autoscaler
+          username_envar: "QUAY_USERNAME"
+          password_envar: "QUAY_PASSWORD"
+          requires:
+            - go-build
+          filters:
+            tags:
+              only: /^v.*/
+
+      # Ensure that for every commit to master, and for every new release tag,
+      # an image gets pushed to the Aliyun registry.
+      - architect/push-to-docker:
+          name: push-to-aliyun
+          image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-operator"
+          working_directory: cluster-autoscaler
+          username_envar: "ALIYUN_USERNAME"
+          password_envar: "ALIYUN_PASSWORD"
+          requires:
+            - go-build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
