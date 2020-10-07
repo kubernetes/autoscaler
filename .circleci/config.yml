@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - setup_remote_docker:
-        version: 19.03.13
+          version: 19.03.13
 
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
