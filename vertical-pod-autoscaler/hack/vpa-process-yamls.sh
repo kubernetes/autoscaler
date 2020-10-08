@@ -22,7 +22,8 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 function print_help {
   echo "ERROR! Usage: vpa-process-yamls.sh <action> [<component>]"
-  echo "<action> should be either 'create' or 'delete'."
+  echo "<action> should be either 'create', 'diff', 'print' or 'delete'."
+  echo "The 'print' action will print all resources that would be used by, e.g., 'kubectl diff'."
   echo "<component> might be one of 'admission-controller', 'updater', 'recommender'."
   echo "If <component> is set, only the deployment of that component will be processed,"
   echo "otherwise all components and configs will be processed."
@@ -40,9 +41,9 @@ fi
 
 ACTION=$1
 COMPONENTS="vpa-v1-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
-if [ ${ACTION} == delete ]; then
-  COMPONENTS+=" vpa-beta2-crd"
-fi
+case ${ACTION} in
+delete|diff|print) COMPONENTS+=" vpa-beta2-crd" ;;
+esac
 
 if [ $# -gt 1 ]; then
   COMPONENTS="$2-deployment"
@@ -57,6 +58,9 @@ for i in $COMPONENTS; do
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh || true)
     fi
   fi
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
+  if [[ ${ACTION} == print ]]; then
+    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml
+  else
+    ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
+  fi
 done
-
