@@ -115,7 +115,6 @@ func (client PeerExpressRouteCircuitConnectionsClient) GetSender(req *http.Reque
 func (client PeerExpressRouteCircuitConnectionsClient) GetResponder(resp *http.Response) (result PeerExpressRouteCircuitConnection, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -157,6 +156,9 @@ func (client PeerExpressRouteCircuitConnectionsClient) List(ctx context.Context,
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.PeerExpressRouteCircuitConnectionsClient", "List", resp, "Failure responding to request")
 	}
+	if result.percclr.hasNextLink() && result.percclr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -194,7 +196,6 @@ func (client PeerExpressRouteCircuitConnectionsClient) ListSender(req *http.Requ
 func (client PeerExpressRouteCircuitConnectionsClient) ListResponder(resp *http.Response) (result PeerExpressRouteCircuitConnectionListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

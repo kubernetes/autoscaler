@@ -1,5 +1,111 @@
 # Change Log
 
+## [v1.46.0] - 2020-10-05
+
+- #373 load balancers: add LB size field, currently in closed beta - @anitgandhi
+
+## [v1.45.0] - 2020-09-25
+
+**Note**: This release contains breaking changes to App Platform features currently in closed beta.
+
+- #369 update apps types to latest - @kamaln7
+- #368 Kubernetes: add taints field to node pool create and update requests - @timoreimann
+- #367 update apps types, address marshaling bug - @kamaln7
+
+## [v1.44.0] - 2020-09-08
+
+- #364 apps: support aggregate deployment logs - @kamaln7
+
+## [v1.43.0] - 2020-09-08
+
+- #362 update apps types - @kamaln7
+
+## [v1.42.1] - 2020-08-06
+
+- #360 domains: Allow for SRV records with port 0. - @andrewsomething
+
+## [v1.42.0] - 2020-07-22
+
+- #357 invoices: add category to InvoiceItem - @rbutler
+- #358 apps: add support for following logs - @nanzhong
+
+## [v1.41.0] - 2020-07-17
+
+- #355 kubernetes: Add support for surge upgrades - @varshavaradarajan
+
+## [v1.40.0] - 2020-07-16
+
+- #347 Make Rate limits thread safe - @roidelapluie
+- #353 Reuse TCP connection - @itsksaurabh
+
+## [v1.39.0] - 2020-07-14
+
+- #345, #346 Add app platform support [beta] - @nanzhong
+
+## [v1.38.0] - 2020-06-18
+
+- #341 Install 1-click applications on a Kubernetes cluster - @keladhruv
+- #340 Add RecordsByType, RecordsByName and RecordsByTypeAndName to the DomainsService - @viola
+
+## [v1.37.0] - 2020-06-01
+
+- #336 registry: URL encode repository names when building URLs. @adamwg
+- #335 Add 1-click service and request. @scottcrawford03
+
+## [v1.36.0] - 2020-05-12
+
+- #331 Expose expiry_seconds for Registry.DockerCredentials. @andrewsomething
+
+## [v1.35.1] - 2020-04-21
+
+- #328 Update vulnerable x/crypto dependency - @bentranter
+
+## [v1.35.0] - 2020-04-20
+
+- #326 Add TagCount field to registry/Repository - @nicktate
+- #325 Add DOCR EA routes - @nicktate
+- #324 Upgrade godo to Go 1.14 - @bentranter
+
+## [v1.34.0] - 2020-03-30
+
+- #320 Add VPC v3 attributes - @viola
+
+## [v1.33.1] - 2020-03-23
+
+- #318 upgrade github.com/stretchr/objx past 0.1.1 - @hilary
+
+## [v1.33.0] - 2020-03-20
+
+- #310 Add BillingHistory service and List endpoint - @rbutler
+- #316 load balancers: add new enable_backend_keepalive field - @anitgandhi
+
+## [v1.32.0] - 2020-03-04
+
+- #311 Add reset database user auth method - @zbarahal-do
+
+## [v1.31.0] - 2020-02-28
+
+- #305 invoices: GetPDF and GetCSV methods - @rbutler
+- #304 Add NewFromToken convenience method to init client - @bentranter
+- #301 invoices: Get, Summary, and List methods - @rbutler
+- #299 Fix param expiry_seconds for kubernetes.GetCredentials request - @velp
+
+## [v1.30.0] - 2020-02-03
+
+- #295 registry: support the created_at field - @adamwg
+- #293 doks: node pool labels - @snormore
+
+## [v1.29.0] - 2019-12-13
+
+- #288 Add Balance Get method - @rbutler
+- #286,#289 Deserialize meta field - @timoreimann
+
+## [v1.28.0] - 2019-12-04
+
+- #282 Add valid Redis eviction policy constants - @bentranter
+- #281 Remove databases info from top-level godoc string - @bentranter
+- #280 Fix VolumeSnapshotResourceType value volumesnapshot -> volume_snapshot - @aqche
+
 ## [v1.27.0] - 2019-11-18
 
 - #278 add mysql user auth settings for database users - @gregmankes

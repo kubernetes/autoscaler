@@ -139,7 +139,6 @@ func (client ObjectReplicationPoliciesClient) CreateOrUpdateSender(req *http.Req
 func (client ObjectReplicationPoliciesClient) CreateOrUpdateResponder(resp *http.Response) (result ObjectReplicationPolicy, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -234,7 +233,6 @@ func (client ObjectReplicationPoliciesClient) DeleteSender(req *http.Request) (*
 func (client ObjectReplicationPoliciesClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -328,7 +326,6 @@ func (client ObjectReplicationPoliciesClient) GetSender(req *http.Request) (*htt
 func (client ObjectReplicationPoliciesClient) GetResponder(resp *http.Response) (result ObjectReplicationPolicy, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -419,7 +416,6 @@ func (client ObjectReplicationPoliciesClient) ListSender(req *http.Request) (*ht
 func (client ObjectReplicationPoliciesClient) ListResponder(resp *http.Response) (result ObjectReplicationPolicies, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

@@ -127,7 +127,6 @@ func (client QueueServicesClient) GetServicePropertiesSender(req *http.Request) 
 func (client QueueServicesClient) GetServicePropertiesResponder(resp *http.Response) (result QueueServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -218,7 +217,6 @@ func (client QueueServicesClient) ListSender(req *http.Request) (*http.Response,
 func (client QueueServicesClient) ListResponder(resp *http.Response) (result ListQueueServices, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -315,7 +313,6 @@ func (client QueueServicesClient) SetServicePropertiesSender(req *http.Request) 
 func (client QueueServicesClient) SetServicePropertiesResponder(resp *http.Response) (result QueueServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

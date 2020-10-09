@@ -114,7 +114,6 @@ func (client VpnSiteLinkConnectionsClient) GetSender(req *http.Request) (*http.R
 func (client VpnSiteLinkConnectionsClient) GetResponder(resp *http.Response) (result VpnSiteLinkConnection, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

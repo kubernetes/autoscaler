@@ -135,7 +135,6 @@ func (client QueueClient) CreateSender(req *http.Request) (*http.Response, error
 func (client QueueClient) CreateResponder(resp *http.Response) (result Queue, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -233,7 +232,6 @@ func (client QueueClient) DeleteSender(req *http.Request) (*http.Response, error
 func (client QueueClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -330,7 +328,6 @@ func (client QueueClient) GetSender(req *http.Request) (*http.Response, error) {
 func (client QueueClient) GetResponder(resp *http.Response) (result Queue, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -389,6 +386,9 @@ func (client QueueClient) List(ctx context.Context, resourceGroupName string, ac
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "storage.QueueClient", "List", resp, "Failure responding to request")
 	}
+	if result.lqr.hasNextLink() && result.lqr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -431,7 +431,6 @@ func (client QueueClient) ListSender(req *http.Request) (*http.Response, error) 
 func (client QueueClient) ListResponder(resp *http.Response) (result ListQueueResource, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -569,7 +568,6 @@ func (client QueueClient) UpdateSender(req *http.Request) (*http.Response, error
 func (client QueueClient) UpdateResponder(resp *http.Response) (result Queue, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

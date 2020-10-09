@@ -74,6 +74,9 @@ func (client AvailablePrivateEndpointTypesClient) List(ctx context.Context, loca
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.AvailablePrivateEndpointTypesClient", "List", resp, "Failure responding to request")
 	}
+	if result.apetr.hasNextLink() && result.apetr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -109,7 +112,6 @@ func (client AvailablePrivateEndpointTypesClient) ListSender(req *http.Request) 
 func (client AvailablePrivateEndpointTypesClient) ListResponder(resp *http.Response) (result AvailablePrivateEndpointTypesResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -188,6 +190,9 @@ func (client AvailablePrivateEndpointTypesClient) ListByResourceGroup(ctx contex
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.AvailablePrivateEndpointTypesClient", "ListByResourceGroup", resp, "Failure responding to request")
 	}
+	if result.apetr.hasNextLink() && result.apetr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -224,7 +229,6 @@ func (client AvailablePrivateEndpointTypesClient) ListByResourceGroupSender(req 
 func (client AvailablePrivateEndpointTypesClient) ListByResourceGroupResponder(resp *http.Response) (result AvailablePrivateEndpointTypesResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

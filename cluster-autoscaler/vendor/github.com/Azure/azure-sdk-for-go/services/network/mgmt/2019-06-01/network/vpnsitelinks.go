@@ -111,7 +111,6 @@ func (client VpnSiteLinksClient) GetSender(req *http.Request) (*http.Response, e
 func (client VpnSiteLinksClient) GetResponder(resp *http.Response) (result VpnSiteLink, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -152,6 +151,9 @@ func (client VpnSiteLinksClient) ListByVpnSite(ctx context.Context, resourceGrou
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VpnSiteLinksClient", "ListByVpnSite", resp, "Failure responding to request")
 	}
+	if result.lvslr.hasNextLink() && result.lvslr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -188,7 +190,6 @@ func (client VpnSiteLinksClient) ListByVpnSiteSender(req *http.Request) (*http.R
 func (client VpnSiteLinksClient) ListByVpnSiteResponder(resp *http.Response) (result ListVpnSiteLinksResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

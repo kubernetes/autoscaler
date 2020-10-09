@@ -17,6 +17,7 @@ const (
 	databaseBackupsPath        = databaseBasePath + "/%s/backups"
 	databaseUsersPath          = databaseBasePath + "/%s/users"
 	databaseUserPath           = databaseBasePath + "/%s/users/%s"
+	databaseResetUserAuthPath  = databaseUserPath + "/reset_auth"
 	databaseDBPath             = databaseBasePath + "/%s/dbs/%s"
 	databaseDBsPath            = databaseBasePath + "/%s/dbs"
 	databasePoolPath           = databaseBasePath + "/%s/pools/%s"
@@ -68,8 +69,24 @@ const (
 	SQLAuthPluginCachingSHA2 = "caching_sha2_password"
 )
 
-// DatabasesService is an interface for interfacing with the databases endpoints
-// of the DigitalOcean API.
+// Redis eviction policies supported by the managed Redis product.
+const (
+	EvictionPolicyNoEviction     = "noeviction"
+	EvictionPolicyAllKeysLRU     = "allkeys_lru"
+	EvictionPolicyAllKeysRandom  = "allkeys_random"
+	EvictionPolicyVolatileLRU    = "volatile_lru"
+	EvictionPolicyVolatileRandom = "volatile_random"
+	EvictionPolicyVolatileTTL    = "volatile_ttl"
+)
+
+// The DatabasesService provides access to the DigitalOcean managed database
+// suite of products through the public API. Customers can create new database
+// clusters, migrate them  between regions, create replicas and interact with
+// their configurations. Each database service is refered to as a Database. A
+// SQL database service can have multiple databases residing in the system. To
+// help make these entities distinct from Databases in godo, we refer to them
+// here as DatabaseDBs.
+//
 // See: https://developers.digitalocean.com/documentation/v2#databases
 type DatabasesService interface {
 	List(context.Context, *ListOptions) ([]Database, *Response, error)
@@ -84,6 +101,7 @@ type DatabasesService interface {
 	ListUsers(context.Context, string, *ListOptions) ([]DatabaseUser, *Response, error)
 	CreateUser(context.Context, string, *DatabaseCreateUserRequest) (*DatabaseUser, *Response, error)
 	DeleteUser(context.Context, string, string) (*Response, error)
+	ResetUserAuth(context.Context, string, string, *DatabaseResetUserAuthRequest) (*DatabaseUser, *Response, error)
 	ListDBs(context.Context, string, *ListOptions) ([]DatabaseDB, *Response, error)
 	CreateDB(context.Context, string, *DatabaseCreateDBRequest) (*DatabaseDB, *Response, error)
 	GetDB(context.Context, string, string) (*DatabaseDB, *Response, error)
@@ -248,6 +266,11 @@ type DatabaseCreatePoolRequest struct {
 // DatabaseCreateUserRequest is used to create a new database user
 type DatabaseCreateUserRequest struct {
 	Name          string                     `json:"name"`
+	MySQLSettings *DatabaseMySQLUserSettings `json:"mysql_settings,omitempty"`
+}
+
+// DatabaseResetUserAuth request is used to reset a users DB auth
+type DatabaseResetUserAuthRequest struct {
 	MySQLSettings *DatabaseMySQLUserSettings `json:"mysql_settings,omitempty"`
 }
 
@@ -514,6 +537,20 @@ func (svc *DatabasesServiceOp) CreateUser(ctx context.Context, databaseID string
 	return root.User, resp, nil
 }
 
+func (svc *DatabasesServiceOp) ResetUserAuth(ctx context.Context, databaseID, userID string, resetAuth *DatabaseResetUserAuthRequest) (*DatabaseUser, *Response, error) {
+	path := fmt.Sprintf(databaseResetUserAuthPath, databaseID, userID)
+	req, err := svc.client.NewRequest(ctx, http.MethodPost, path, resetAuth)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(databaseUserRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.User, resp, nil
+}
+
 // DeleteUser will delete an existing database user
 func (svc *DatabasesServiceOp) DeleteUser(ctx context.Context, databaseID, userID string) (*Response, error) {
 	path := fmt.Sprintf(databaseUserPath, databaseID, userID)
@@ -733,6 +770,9 @@ func (svc *DatabasesServiceOp) GetEvictionPolicy(ctx context.Context, databaseID
 }
 
 // SetEvictionPolicy updates the eviction policy for a given Redis cluster.
+//
+// The valid eviction policies are documented by the exported string constants
+// with the prefix `EvictionPolicy`.
 func (svc *DatabasesServiceOp) SetEvictionPolicy(ctx context.Context, databaseID, policy string) (*Response, error) {
 	path := fmt.Sprintf(databaseEvictionPolicyPath, databaseID)
 	root := &evictionPolicyRoot{EvictionPolicy: policy}

@@ -135,7 +135,6 @@ func (client ManagementPoliciesClient) CreateOrUpdateSender(req *http.Request) (
 func (client ManagementPoliciesClient) CreateOrUpdateResponder(resp *http.Response) (result ManagementPolicy, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -227,7 +226,6 @@ func (client ManagementPoliciesClient) DeleteSender(req *http.Request) (*http.Re
 func (client ManagementPoliciesClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -318,7 +316,6 @@ func (client ManagementPoliciesClient) GetSender(req *http.Request) (*http.Respo
 func (client ManagementPoliciesClient) GetResponder(resp *http.Response) (result ManagementPolicy, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

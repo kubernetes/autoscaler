@@ -112,7 +112,6 @@ func (client ResourceNavigationLinksClient) ListSender(req *http.Request) (*http
 func (client ResourceNavigationLinksClient) ListResponder(resp *http.Response) (result ResourceNavigationLinksListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

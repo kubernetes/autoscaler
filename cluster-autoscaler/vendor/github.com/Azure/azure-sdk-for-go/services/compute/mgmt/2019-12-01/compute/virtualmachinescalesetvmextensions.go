@@ -118,7 +118,6 @@ func (client VirtualMachineScaleSetVMExtensionsClient) CreateOrUpdateSender(req 
 func (client VirtualMachineScaleSetVMExtensionsClient) CreateOrUpdateResponder(resp *http.Response) (result VirtualMachineExtension, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -198,7 +197,6 @@ func (client VirtualMachineScaleSetVMExtensionsClient) DeleteSender(req *http.Re
 func (client VirtualMachineScaleSetVMExtensionsClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -281,7 +279,6 @@ func (client VirtualMachineScaleSetVMExtensionsClient) GetSender(req *http.Reque
 func (client VirtualMachineScaleSetVMExtensionsClient) GetResponder(resp *http.Response) (result VirtualMachineExtension, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -363,7 +360,6 @@ func (client VirtualMachineScaleSetVMExtensionsClient) ListSender(req *http.Requ
 func (client VirtualMachineScaleSetVMExtensionsClient) ListResponder(resp *http.Response) (result VirtualMachineExtensionsListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -446,7 +442,6 @@ func (client VirtualMachineScaleSetVMExtensionsClient) UpdateSender(req *http.Re
 func (client VirtualMachineScaleSetVMExtensionsClient) UpdateResponder(resp *http.Response) (result VirtualMachineExtension, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

@@ -127,7 +127,6 @@ func (client BlobServicesClient) GetServicePropertiesSender(req *http.Request) (
 func (client BlobServicesClient) GetServicePropertiesResponder(resp *http.Response) (result BlobServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -218,7 +217,6 @@ func (client BlobServicesClient) ListSender(req *http.Request) (*http.Response, 
 func (client BlobServicesClient) ListResponder(resp *http.Response) (result BlobServiceItems, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -338,7 +336,6 @@ func (client BlobServicesClient) SetServicePropertiesSender(req *http.Request) (
 func (client BlobServicesClient) SetServicePropertiesResponder(resp *http.Response) (result BlobServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

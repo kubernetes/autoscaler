@@ -126,7 +126,6 @@ func (client PrivateLinkResourcesClient) ListByStorageAccountSender(req *http.Re
 func (client PrivateLinkResourcesClient) ListByStorageAccountResponder(resp *http.Response) (result PrivateLinkResourceListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

@@ -143,7 +143,6 @@ func (client FileSharesClient) CreateSender(req *http.Request) (*http.Response, 
 func (client FileSharesClient) CreateResponder(resp *http.Response) (result FileShare, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -241,7 +240,6 @@ func (client FileSharesClient) DeleteSender(req *http.Request) (*http.Response, 
 func (client FileSharesClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -342,7 +340,6 @@ func (client FileSharesClient) GetSender(req *http.Request) (*http.Response, err
 func (client FileSharesClient) GetResponder(resp *http.Response) (result FileShare, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -401,6 +398,9 @@ func (client FileSharesClient) List(ctx context.Context, resourceGroupName strin
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "storage.FileSharesClient", "List", resp, "Failure responding to request")
 	}
+	if result.fsi.hasNextLink() && result.fsi.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -446,7 +446,6 @@ func (client FileSharesClient) ListSender(req *http.Request) (*http.Response, er
 func (client FileSharesClient) ListResponder(resp *http.Response) (result FileShareItems, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -586,7 +585,6 @@ func (client FileSharesClient) RestoreSender(req *http.Request) (*http.Response,
 func (client FileSharesClient) RestoreResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByClosing())
 	result.Response = resp
@@ -687,7 +685,6 @@ func (client FileSharesClient) UpdateSender(req *http.Request) (*http.Response, 
 func (client FileSharesClient) UpdateResponder(resp *http.Response) (result FileShare, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

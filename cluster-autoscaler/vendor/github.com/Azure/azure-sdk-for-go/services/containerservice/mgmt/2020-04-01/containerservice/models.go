@@ -30,701 +30,6 @@ import (
 // The package's fully qualified name.
 const fqdn = "github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice"
 
-// AgentPoolMode enumerates the values for agent pool mode.
-type AgentPoolMode string
-
-const (
-	// System ...
-	System AgentPoolMode = "System"
-	// User ...
-	User AgentPoolMode = "User"
-)
-
-// PossibleAgentPoolModeValues returns an array of possible values for the AgentPoolMode const type.
-func PossibleAgentPoolModeValues() []AgentPoolMode {
-	return []AgentPoolMode{System, User}
-}
-
-// AgentPoolType enumerates the values for agent pool type.
-type AgentPoolType string
-
-const (
-	// AvailabilitySet ...
-	AvailabilitySet AgentPoolType = "AvailabilitySet"
-	// VirtualMachineScaleSets ...
-	VirtualMachineScaleSets AgentPoolType = "VirtualMachineScaleSets"
-)
-
-// PossibleAgentPoolTypeValues returns an array of possible values for the AgentPoolType const type.
-func PossibleAgentPoolTypeValues() []AgentPoolType {
-	return []AgentPoolType{AvailabilitySet, VirtualMachineScaleSets}
-}
-
-// Kind enumerates the values for kind.
-type Kind string
-
-const (
-	// KindAADIdentityProvider ...
-	KindAADIdentityProvider Kind = "AADIdentityProvider"
-	// KindOpenShiftManagedClusterBaseIdentityProvider ...
-	KindOpenShiftManagedClusterBaseIdentityProvider Kind = "OpenShiftManagedClusterBaseIdentityProvider"
-)
-
-// PossibleKindValues returns an array of possible values for the Kind const type.
-func PossibleKindValues() []Kind {
-	return []Kind{KindAADIdentityProvider, KindOpenShiftManagedClusterBaseIdentityProvider}
-}
-
-// LoadBalancerSku enumerates the values for load balancer sku.
-type LoadBalancerSku string
-
-const (
-	// Basic ...
-	Basic LoadBalancerSku = "basic"
-	// Standard ...
-	Standard LoadBalancerSku = "standard"
-)
-
-// PossibleLoadBalancerSkuValues returns an array of possible values for the LoadBalancerSku const type.
-func PossibleLoadBalancerSkuValues() []LoadBalancerSku {
-	return []LoadBalancerSku{Basic, Standard}
-}
-
-// ManagedClusterSKUName enumerates the values for managed cluster sku name.
-type ManagedClusterSKUName string
-
-const (
-	// ManagedClusterSKUNameBasic ...
-	ManagedClusterSKUNameBasic ManagedClusterSKUName = "Basic"
-)
-
-// PossibleManagedClusterSKUNameValues returns an array of possible values for the ManagedClusterSKUName const type.
-func PossibleManagedClusterSKUNameValues() []ManagedClusterSKUName {
-	return []ManagedClusterSKUName{ManagedClusterSKUNameBasic}
-}
-
-// ManagedClusterSKUTier enumerates the values for managed cluster sku tier.
-type ManagedClusterSKUTier string
-
-const (
-	// Free ...
-	Free ManagedClusterSKUTier = "Free"
-	// Paid ...
-	Paid ManagedClusterSKUTier = "Paid"
-)
-
-// PossibleManagedClusterSKUTierValues returns an array of possible values for the ManagedClusterSKUTier const type.
-func PossibleManagedClusterSKUTierValues() []ManagedClusterSKUTier {
-	return []ManagedClusterSKUTier{Free, Paid}
-}
-
-// NetworkMode enumerates the values for network mode.
-type NetworkMode string
-
-const (
-	// Bridge ...
-	Bridge NetworkMode = "bridge"
-	// Transparent ...
-	Transparent NetworkMode = "transparent"
-)
-
-// PossibleNetworkModeValues returns an array of possible values for the NetworkMode const type.
-func PossibleNetworkModeValues() []NetworkMode {
-	return []NetworkMode{Bridge, Transparent}
-}
-
-// NetworkPlugin enumerates the values for network plugin.
-type NetworkPlugin string
-
-const (
-	// Azure ...
-	Azure NetworkPlugin = "azure"
-	// Kubenet ...
-	Kubenet NetworkPlugin = "kubenet"
-)
-
-// PossibleNetworkPluginValues returns an array of possible values for the NetworkPlugin const type.
-func PossibleNetworkPluginValues() []NetworkPlugin {
-	return []NetworkPlugin{Azure, Kubenet}
-}
-
-// NetworkPolicy enumerates the values for network policy.
-type NetworkPolicy string
-
-const (
-	// NetworkPolicyAzure ...
-	NetworkPolicyAzure NetworkPolicy = "azure"
-	// NetworkPolicyCalico ...
-	NetworkPolicyCalico NetworkPolicy = "calico"
-)
-
-// PossibleNetworkPolicyValues returns an array of possible values for the NetworkPolicy const type.
-func PossibleNetworkPolicyValues() []NetworkPolicy {
-	return []NetworkPolicy{NetworkPolicyAzure, NetworkPolicyCalico}
-}
-
-// OpenShiftAgentPoolProfileRole enumerates the values for open shift agent pool profile role.
-type OpenShiftAgentPoolProfileRole string
-
-const (
-	// Compute ...
-	Compute OpenShiftAgentPoolProfileRole = "compute"
-	// Infra ...
-	Infra OpenShiftAgentPoolProfileRole = "infra"
-)
-
-// PossibleOpenShiftAgentPoolProfileRoleValues returns an array of possible values for the OpenShiftAgentPoolProfileRole const type.
-func PossibleOpenShiftAgentPoolProfileRoleValues() []OpenShiftAgentPoolProfileRole {
-	return []OpenShiftAgentPoolProfileRole{Compute, Infra}
-}
-
-// OpenShiftContainerServiceVMSize enumerates the values for open shift container service vm size.
-type OpenShiftContainerServiceVMSize string
-
-const (
-	// StandardD16sV3 ...
-	StandardD16sV3 OpenShiftContainerServiceVMSize = "Standard_D16s_v3"
-	// StandardD2sV3 ...
-	StandardD2sV3 OpenShiftContainerServiceVMSize = "Standard_D2s_v3"
-	// StandardD32sV3 ...
-	StandardD32sV3 OpenShiftContainerServiceVMSize = "Standard_D32s_v3"
-	// StandardD4sV3 ...
-	StandardD4sV3 OpenShiftContainerServiceVMSize = "Standard_D4s_v3"
-	// StandardD64sV3 ...
-	StandardD64sV3 OpenShiftContainerServiceVMSize = "Standard_D64s_v3"
-	// StandardD8sV3 ...
-	StandardD8sV3 OpenShiftContainerServiceVMSize = "Standard_D8s_v3"
-	// StandardDS12V2 ...
-	StandardDS12V2 OpenShiftContainerServiceVMSize = "Standard_DS12_v2"
-	// StandardDS13V2 ...
-	StandardDS13V2 OpenShiftContainerServiceVMSize = "Standard_DS13_v2"
-	// StandardDS14V2 ...
-	StandardDS14V2 OpenShiftContainerServiceVMSize = "Standard_DS14_v2"
-	// StandardDS15V2 ...
-	StandardDS15V2 OpenShiftContainerServiceVMSize = "Standard_DS15_v2"
-	// StandardDS4V2 ...
-	StandardDS4V2 OpenShiftContainerServiceVMSize = "Standard_DS4_v2"
-	// StandardDS5V2 ...
-	StandardDS5V2 OpenShiftContainerServiceVMSize = "Standard_DS5_v2"
-	// StandardE16sV3 ...
-	StandardE16sV3 OpenShiftContainerServiceVMSize = "Standard_E16s_v3"
-	// StandardE20sV3 ...
-	StandardE20sV3 OpenShiftContainerServiceVMSize = "Standard_E20s_v3"
-	// StandardE32sV3 ...
-	StandardE32sV3 OpenShiftContainerServiceVMSize = "Standard_E32s_v3"
-	// StandardE4sV3 ...
-	StandardE4sV3 OpenShiftContainerServiceVMSize = "Standard_E4s_v3"
-	// StandardE64sV3 ...
-	StandardE64sV3 OpenShiftContainerServiceVMSize = "Standard_E64s_v3"
-	// StandardE8sV3 ...
-	StandardE8sV3 OpenShiftContainerServiceVMSize = "Standard_E8s_v3"
-	// StandardF16s ...
-	StandardF16s OpenShiftContainerServiceVMSize = "Standard_F16s"
-	// StandardF16sV2 ...
-	StandardF16sV2 OpenShiftContainerServiceVMSize = "Standard_F16s_v2"
-	// StandardF32sV2 ...
-	StandardF32sV2 OpenShiftContainerServiceVMSize = "Standard_F32s_v2"
-	// StandardF64sV2 ...
-	StandardF64sV2 OpenShiftContainerServiceVMSize = "Standard_F64s_v2"
-	// StandardF72sV2 ...
-	StandardF72sV2 OpenShiftContainerServiceVMSize = "Standard_F72s_v2"
-	// StandardF8s ...
-	StandardF8s OpenShiftContainerServiceVMSize = "Standard_F8s"
-	// StandardF8sV2 ...
-	StandardF8sV2 OpenShiftContainerServiceVMSize = "Standard_F8s_v2"
-	// StandardGS2 ...
-	StandardGS2 OpenShiftContainerServiceVMSize = "Standard_GS2"
-	// StandardGS3 ...
-	StandardGS3 OpenShiftContainerServiceVMSize = "Standard_GS3"
-	// StandardGS4 ...
-	StandardGS4 OpenShiftContainerServiceVMSize = "Standard_GS4"
-	// StandardGS5 ...
-	StandardGS5 OpenShiftContainerServiceVMSize = "Standard_GS5"
-	// StandardL16s ...
-	StandardL16s OpenShiftContainerServiceVMSize = "Standard_L16s"
-	// StandardL32s ...
-	StandardL32s OpenShiftContainerServiceVMSize = "Standard_L32s"
-	// StandardL4s ...
-	StandardL4s OpenShiftContainerServiceVMSize = "Standard_L4s"
-	// StandardL8s ...
-	StandardL8s OpenShiftContainerServiceVMSize = "Standard_L8s"
-)
-
-// PossibleOpenShiftContainerServiceVMSizeValues returns an array of possible values for the OpenShiftContainerServiceVMSize const type.
-func PossibleOpenShiftContainerServiceVMSizeValues() []OpenShiftContainerServiceVMSize {
-	return []OpenShiftContainerServiceVMSize{StandardD16sV3, StandardD2sV3, StandardD32sV3, StandardD4sV3, StandardD64sV3, StandardD8sV3, StandardDS12V2, StandardDS13V2, StandardDS14V2, StandardDS15V2, StandardDS4V2, StandardDS5V2, StandardE16sV3, StandardE20sV3, StandardE32sV3, StandardE4sV3, StandardE64sV3, StandardE8sV3, StandardF16s, StandardF16sV2, StandardF32sV2, StandardF64sV2, StandardF72sV2, StandardF8s, StandardF8sV2, StandardGS2, StandardGS3, StandardGS4, StandardGS5, StandardL16s, StandardL32s, StandardL4s, StandardL8s}
-}
-
-// OrchestratorTypes enumerates the values for orchestrator types.
-type OrchestratorTypes string
-
-const (
-	// Custom ...
-	Custom OrchestratorTypes = "Custom"
-	// DCOS ...
-	DCOS OrchestratorTypes = "DCOS"
-	// DockerCE ...
-	DockerCE OrchestratorTypes = "DockerCE"
-	// Kubernetes ...
-	Kubernetes OrchestratorTypes = "Kubernetes"
-	// Swarm ...
-	Swarm OrchestratorTypes = "Swarm"
-)
-
-// PossibleOrchestratorTypesValues returns an array of possible values for the OrchestratorTypes const type.
-func PossibleOrchestratorTypesValues() []OrchestratorTypes {
-	return []OrchestratorTypes{Custom, DCOS, DockerCE, Kubernetes, Swarm}
-}
-
-// OSType enumerates the values for os type.
-type OSType string
-
-const (
-	// Linux ...
-	Linux OSType = "Linux"
-	// Windows ...
-	Windows OSType = "Windows"
-)
-
-// PossibleOSTypeValues returns an array of possible values for the OSType const type.
-func PossibleOSTypeValues() []OSType {
-	return []OSType{Linux, Windows}
-}
-
-// OutboundType enumerates the values for outbound type.
-type OutboundType string
-
-const (
-	// LoadBalancer ...
-	LoadBalancer OutboundType = "loadBalancer"
-	// UserDefinedRouting ...
-	UserDefinedRouting OutboundType = "userDefinedRouting"
-)
-
-// PossibleOutboundTypeValues returns an array of possible values for the OutboundType const type.
-func PossibleOutboundTypeValues() []OutboundType {
-	return []OutboundType{LoadBalancer, UserDefinedRouting}
-}
-
-// ResourceIdentityType enumerates the values for resource identity type.
-type ResourceIdentityType string
-
-const (
-	// None ...
-	None ResourceIdentityType = "None"
-	// SystemAssigned ...
-	SystemAssigned ResourceIdentityType = "SystemAssigned"
-)
-
-// PossibleResourceIdentityTypeValues returns an array of possible values for the ResourceIdentityType const type.
-func PossibleResourceIdentityTypeValues() []ResourceIdentityType {
-	return []ResourceIdentityType{None, SystemAssigned}
-}
-
-// ScaleSetEvictionPolicy enumerates the values for scale set eviction policy.
-type ScaleSetEvictionPolicy string
-
-const (
-	// Deallocate ...
-	Deallocate ScaleSetEvictionPolicy = "Deallocate"
-	// Delete ...
-	Delete ScaleSetEvictionPolicy = "Delete"
-)
-
-// PossibleScaleSetEvictionPolicyValues returns an array of possible values for the ScaleSetEvictionPolicy const type.
-func PossibleScaleSetEvictionPolicyValues() []ScaleSetEvictionPolicy {
-	return []ScaleSetEvictionPolicy{Deallocate, Delete}
-}
-
-// ScaleSetPriority enumerates the values for scale set priority.
-type ScaleSetPriority string
-
-const (
-	// Regular ...
-	Regular ScaleSetPriority = "Regular"
-	// Spot ...
-	Spot ScaleSetPriority = "Spot"
-)
-
-// PossibleScaleSetPriorityValues returns an array of possible values for the ScaleSetPriority const type.
-func PossibleScaleSetPriorityValues() []ScaleSetPriority {
-	return []ScaleSetPriority{Regular, Spot}
-}
-
-// StorageProfileTypes enumerates the values for storage profile types.
-type StorageProfileTypes string
-
-const (
-	// ManagedDisks ...
-	ManagedDisks StorageProfileTypes = "ManagedDisks"
-	// StorageAccount ...
-	StorageAccount StorageProfileTypes = "StorageAccount"
-)
-
-// PossibleStorageProfileTypesValues returns an array of possible values for the StorageProfileTypes const type.
-func PossibleStorageProfileTypesValues() []StorageProfileTypes {
-	return []StorageProfileTypes{ManagedDisks, StorageAccount}
-}
-
-// VMSizeTypes enumerates the values for vm size types.
-type VMSizeTypes string
-
-const (
-	// VMSizeTypesStandardA1 ...
-	VMSizeTypesStandardA1 VMSizeTypes = "Standard_A1"
-	// VMSizeTypesStandardA10 ...
-	VMSizeTypesStandardA10 VMSizeTypes = "Standard_A10"
-	// VMSizeTypesStandardA11 ...
-	VMSizeTypesStandardA11 VMSizeTypes = "Standard_A11"
-	// VMSizeTypesStandardA1V2 ...
-	VMSizeTypesStandardA1V2 VMSizeTypes = "Standard_A1_v2"
-	// VMSizeTypesStandardA2 ...
-	VMSizeTypesStandardA2 VMSizeTypes = "Standard_A2"
-	// VMSizeTypesStandardA2mV2 ...
-	VMSizeTypesStandardA2mV2 VMSizeTypes = "Standard_A2m_v2"
-	// VMSizeTypesStandardA2V2 ...
-	VMSizeTypesStandardA2V2 VMSizeTypes = "Standard_A2_v2"
-	// VMSizeTypesStandardA3 ...
-	VMSizeTypesStandardA3 VMSizeTypes = "Standard_A3"
-	// VMSizeTypesStandardA4 ...
-	VMSizeTypesStandardA4 VMSizeTypes = "Standard_A4"
-	// VMSizeTypesStandardA4mV2 ...
-	VMSizeTypesStandardA4mV2 VMSizeTypes = "Standard_A4m_v2"
-	// VMSizeTypesStandardA4V2 ...
-	VMSizeTypesStandardA4V2 VMSizeTypes = "Standard_A4_v2"
-	// VMSizeTypesStandardA5 ...
-	VMSizeTypesStandardA5 VMSizeTypes = "Standard_A5"
-	// VMSizeTypesStandardA6 ...
-	VMSizeTypesStandardA6 VMSizeTypes = "Standard_A6"
-	// VMSizeTypesStandardA7 ...
-	VMSizeTypesStandardA7 VMSizeTypes = "Standard_A7"
-	// VMSizeTypesStandardA8 ...
-	VMSizeTypesStandardA8 VMSizeTypes = "Standard_A8"
-	// VMSizeTypesStandardA8mV2 ...
-	VMSizeTypesStandardA8mV2 VMSizeTypes = "Standard_A8m_v2"
-	// VMSizeTypesStandardA8V2 ...
-	VMSizeTypesStandardA8V2 VMSizeTypes = "Standard_A8_v2"
-	// VMSizeTypesStandardA9 ...
-	VMSizeTypesStandardA9 VMSizeTypes = "Standard_A9"
-	// VMSizeTypesStandardB2ms ...
-	VMSizeTypesStandardB2ms VMSizeTypes = "Standard_B2ms"
-	// VMSizeTypesStandardB2s ...
-	VMSizeTypesStandardB2s VMSizeTypes = "Standard_B2s"
-	// VMSizeTypesStandardB4ms ...
-	VMSizeTypesStandardB4ms VMSizeTypes = "Standard_B4ms"
-	// VMSizeTypesStandardB8ms ...
-	VMSizeTypesStandardB8ms VMSizeTypes = "Standard_B8ms"
-	// VMSizeTypesStandardD1 ...
-	VMSizeTypesStandardD1 VMSizeTypes = "Standard_D1"
-	// VMSizeTypesStandardD11 ...
-	VMSizeTypesStandardD11 VMSizeTypes = "Standard_D11"
-	// VMSizeTypesStandardD11V2 ...
-	VMSizeTypesStandardD11V2 VMSizeTypes = "Standard_D11_v2"
-	// VMSizeTypesStandardD11V2Promo ...
-	VMSizeTypesStandardD11V2Promo VMSizeTypes = "Standard_D11_v2_Promo"
-	// VMSizeTypesStandardD12 ...
-	VMSizeTypesStandardD12 VMSizeTypes = "Standard_D12"
-	// VMSizeTypesStandardD12V2 ...
-	VMSizeTypesStandardD12V2 VMSizeTypes = "Standard_D12_v2"
-	// VMSizeTypesStandardD12V2Promo ...
-	VMSizeTypesStandardD12V2Promo VMSizeTypes = "Standard_D12_v2_Promo"
-	// VMSizeTypesStandardD13 ...
-	VMSizeTypesStandardD13 VMSizeTypes = "Standard_D13"
-	// VMSizeTypesStandardD13V2 ...
-	VMSizeTypesStandardD13V2 VMSizeTypes = "Standard_D13_v2"
-	// VMSizeTypesStandardD13V2Promo ...
-	VMSizeTypesStandardD13V2Promo VMSizeTypes = "Standard_D13_v2_Promo"
-	// VMSizeTypesStandardD14 ...
-	VMSizeTypesStandardD14 VMSizeTypes = "Standard_D14"
-	// VMSizeTypesStandardD14V2 ...
-	VMSizeTypesStandardD14V2 VMSizeTypes = "Standard_D14_v2"
-	// VMSizeTypesStandardD14V2Promo ...
-	VMSizeTypesStandardD14V2Promo VMSizeTypes = "Standard_D14_v2_Promo"
-	// VMSizeTypesStandardD15V2 ...
-	VMSizeTypesStandardD15V2 VMSizeTypes = "Standard_D15_v2"
-	// VMSizeTypesStandardD16sV3 ...
-	VMSizeTypesStandardD16sV3 VMSizeTypes = "Standard_D16s_v3"
-	// VMSizeTypesStandardD16V3 ...
-	VMSizeTypesStandardD16V3 VMSizeTypes = "Standard_D16_v3"
-	// VMSizeTypesStandardD1V2 ...
-	VMSizeTypesStandardD1V2 VMSizeTypes = "Standard_D1_v2"
-	// VMSizeTypesStandardD2 ...
-	VMSizeTypesStandardD2 VMSizeTypes = "Standard_D2"
-	// VMSizeTypesStandardD2sV3 ...
-	VMSizeTypesStandardD2sV3 VMSizeTypes = "Standard_D2s_v3"
-	// VMSizeTypesStandardD2V2 ...
-	VMSizeTypesStandardD2V2 VMSizeTypes = "Standard_D2_v2"
-	// VMSizeTypesStandardD2V2Promo ...
-	VMSizeTypesStandardD2V2Promo VMSizeTypes = "Standard_D2_v2_Promo"
-	// VMSizeTypesStandardD2V3 ...
-	VMSizeTypesStandardD2V3 VMSizeTypes = "Standard_D2_v3"
-	// VMSizeTypesStandardD3 ...
-	VMSizeTypesStandardD3 VMSizeTypes = "Standard_D3"
-	// VMSizeTypesStandardD32sV3 ...
-	VMSizeTypesStandardD32sV3 VMSizeTypes = "Standard_D32s_v3"
-	// VMSizeTypesStandardD32V3 ...
-	VMSizeTypesStandardD32V3 VMSizeTypes = "Standard_D32_v3"
-	// VMSizeTypesStandardD3V2 ...
-	VMSizeTypesStandardD3V2 VMSizeTypes = "Standard_D3_v2"
-	// VMSizeTypesStandardD3V2Promo ...
-	VMSizeTypesStandardD3V2Promo VMSizeTypes = "Standard_D3_v2_Promo"
-	// VMSizeTypesStandardD4 ...
-	VMSizeTypesStandardD4 VMSizeTypes = "Standard_D4"
-	// VMSizeTypesStandardD4sV3 ...
-	VMSizeTypesStandardD4sV3 VMSizeTypes = "Standard_D4s_v3"
-	// VMSizeTypesStandardD4V2 ...
-	VMSizeTypesStandardD4V2 VMSizeTypes = "Standard_D4_v2"
-	// VMSizeTypesStandardD4V2Promo ...
-	VMSizeTypesStandardD4V2Promo VMSizeTypes = "Standard_D4_v2_Promo"
-	// VMSizeTypesStandardD4V3 ...
-	VMSizeTypesStandardD4V3 VMSizeTypes = "Standard_D4_v3"
-	// VMSizeTypesStandardD5V2 ...
-	VMSizeTypesStandardD5V2 VMSizeTypes = "Standard_D5_v2"
-	// VMSizeTypesStandardD5V2Promo ...
-	VMSizeTypesStandardD5V2Promo VMSizeTypes = "Standard_D5_v2_Promo"
-	// VMSizeTypesStandardD64sV3 ...
-	VMSizeTypesStandardD64sV3 VMSizeTypes = "Standard_D64s_v3"
-	// VMSizeTypesStandardD64V3 ...
-	VMSizeTypesStandardD64V3 VMSizeTypes = "Standard_D64_v3"
-	// VMSizeTypesStandardD8sV3 ...
-	VMSizeTypesStandardD8sV3 VMSizeTypes = "Standard_D8s_v3"
-	// VMSizeTypesStandardD8V3 ...
-	VMSizeTypesStandardD8V3 VMSizeTypes = "Standard_D8_v3"
-	// VMSizeTypesStandardDS1 ...
-	VMSizeTypesStandardDS1 VMSizeTypes = "Standard_DS1"
-	// VMSizeTypesStandardDS11 ...
-	VMSizeTypesStandardDS11 VMSizeTypes = "Standard_DS11"
-	// VMSizeTypesStandardDS11V2 ...
-	VMSizeTypesStandardDS11V2 VMSizeTypes = "Standard_DS11_v2"
-	// VMSizeTypesStandardDS11V2Promo ...
-	VMSizeTypesStandardDS11V2Promo VMSizeTypes = "Standard_DS11_v2_Promo"
-	// VMSizeTypesStandardDS12 ...
-	VMSizeTypesStandardDS12 VMSizeTypes = "Standard_DS12"
-	// VMSizeTypesStandardDS12V2 ...
-	VMSizeTypesStandardDS12V2 VMSizeTypes = "Standard_DS12_v2"
-	// VMSizeTypesStandardDS12V2Promo ...
-	VMSizeTypesStandardDS12V2Promo VMSizeTypes = "Standard_DS12_v2_Promo"
-	// VMSizeTypesStandardDS13 ...
-	VMSizeTypesStandardDS13 VMSizeTypes = "Standard_DS13"
-	// VMSizeTypesStandardDS132V2 ...
-	VMSizeTypesStandardDS132V2 VMSizeTypes = "Standard_DS13-2_v2"
-	// VMSizeTypesStandardDS134V2 ...
-	VMSizeTypesStandardDS134V2 VMSizeTypes = "Standard_DS13-4_v2"
-	// VMSizeTypesStandardDS13V2 ...
-	VMSizeTypesStandardDS13V2 VMSizeTypes = "Standard_DS13_v2"
-	// VMSizeTypesStandardDS13V2Promo ...
-	VMSizeTypesStandardDS13V2Promo VMSizeTypes = "Standard_DS13_v2_Promo"
-	// VMSizeTypesStandardDS14 ...
-	VMSizeTypesStandardDS14 VMSizeTypes = "Standard_DS14"
-	// VMSizeTypesStandardDS144V2 ...
-	VMSizeTypesStandardDS144V2 VMSizeTypes = "Standard_DS14-4_v2"
-	// VMSizeTypesStandardDS148V2 ...
-	VMSizeTypesStandardDS148V2 VMSizeTypes = "Standard_DS14-8_v2"
-	// VMSizeTypesStandardDS14V2 ...
-	VMSizeTypesStandardDS14V2 VMSizeTypes = "Standard_DS14_v2"
-	// VMSizeTypesStandardDS14V2Promo ...
-	VMSizeTypesStandardDS14V2Promo VMSizeTypes = "Standard_DS14_v2_Promo"
-	// VMSizeTypesStandardDS15V2 ...
-	VMSizeTypesStandardDS15V2 VMSizeTypes = "Standard_DS15_v2"
-	// VMSizeTypesStandardDS1V2 ...
-	VMSizeTypesStandardDS1V2 VMSizeTypes = "Standard_DS1_v2"
-	// VMSizeTypesStandardDS2 ...
-	VMSizeTypesStandardDS2 VMSizeTypes = "Standard_DS2"
-	// VMSizeTypesStandardDS2V2 ...
-	VMSizeTypesStandardDS2V2 VMSizeTypes = "Standard_DS2_v2"
-	// VMSizeTypesStandardDS2V2Promo ...
-	VMSizeTypesStandardDS2V2Promo VMSizeTypes = "Standard_DS2_v2_Promo"
-	// VMSizeTypesStandardDS3 ...
-	VMSizeTypesStandardDS3 VMSizeTypes = "Standard_DS3"
-	// VMSizeTypesStandardDS3V2 ...
-	VMSizeTypesStandardDS3V2 VMSizeTypes = "Standard_DS3_v2"
-	// VMSizeTypesStandardDS3V2Promo ...
-	VMSizeTypesStandardDS3V2Promo VMSizeTypes = "Standard_DS3_v2_Promo"
-	// VMSizeTypesStandardDS4 ...
-	VMSizeTypesStandardDS4 VMSizeTypes = "Standard_DS4"
-	// VMSizeTypesStandardDS4V2 ...
-	VMSizeTypesStandardDS4V2 VMSizeTypes = "Standard_DS4_v2"
-	// VMSizeTypesStandardDS4V2Promo ...
-	VMSizeTypesStandardDS4V2Promo VMSizeTypes = "Standard_DS4_v2_Promo"
-	// VMSizeTypesStandardDS5V2 ...
-	VMSizeTypesStandardDS5V2 VMSizeTypes = "Standard_DS5_v2"
-	// VMSizeTypesStandardDS5V2Promo ...
-	VMSizeTypesStandardDS5V2Promo VMSizeTypes = "Standard_DS5_v2_Promo"
-	// VMSizeTypesStandardE16sV3 ...
-	VMSizeTypesStandardE16sV3 VMSizeTypes = "Standard_E16s_v3"
-	// VMSizeTypesStandardE16V3 ...
-	VMSizeTypesStandardE16V3 VMSizeTypes = "Standard_E16_v3"
-	// VMSizeTypesStandardE2sV3 ...
-	VMSizeTypesStandardE2sV3 VMSizeTypes = "Standard_E2s_v3"
-	// VMSizeTypesStandardE2V3 ...
-	VMSizeTypesStandardE2V3 VMSizeTypes = "Standard_E2_v3"
-	// VMSizeTypesStandardE3216sV3 ...
-	VMSizeTypesStandardE3216sV3 VMSizeTypes = "Standard_E32-16s_v3"
-	// VMSizeTypesStandardE328sV3 ...
-	VMSizeTypesStandardE328sV3 VMSizeTypes = "Standard_E32-8s_v3"
-	// VMSizeTypesStandardE32sV3 ...
-	VMSizeTypesStandardE32sV3 VMSizeTypes = "Standard_E32s_v3"
-	// VMSizeTypesStandardE32V3 ...
-	VMSizeTypesStandardE32V3 VMSizeTypes = "Standard_E32_v3"
-	// VMSizeTypesStandardE4sV3 ...
-	VMSizeTypesStandardE4sV3 VMSizeTypes = "Standard_E4s_v3"
-	// VMSizeTypesStandardE4V3 ...
-	VMSizeTypesStandardE4V3 VMSizeTypes = "Standard_E4_v3"
-	// VMSizeTypesStandardE6416sV3 ...
-	VMSizeTypesStandardE6416sV3 VMSizeTypes = "Standard_E64-16s_v3"
-	// VMSizeTypesStandardE6432sV3 ...
-	VMSizeTypesStandardE6432sV3 VMSizeTypes = "Standard_E64-32s_v3"
-	// VMSizeTypesStandardE64sV3 ...
-	VMSizeTypesStandardE64sV3 VMSizeTypes = "Standard_E64s_v3"
-	// VMSizeTypesStandardE64V3 ...
-	VMSizeTypesStandardE64V3 VMSizeTypes = "Standard_E64_v3"
-	// VMSizeTypesStandardE8sV3 ...
-	VMSizeTypesStandardE8sV3 VMSizeTypes = "Standard_E8s_v3"
-	// VMSizeTypesStandardE8V3 ...
-	VMSizeTypesStandardE8V3 VMSizeTypes = "Standard_E8_v3"
-	// VMSizeTypesStandardF1 ...
-	VMSizeTypesStandardF1 VMSizeTypes = "Standard_F1"
-	// VMSizeTypesStandardF16 ...
-	VMSizeTypesStandardF16 VMSizeTypes = "Standard_F16"
-	// VMSizeTypesStandardF16s ...
-	VMSizeTypesStandardF16s VMSizeTypes = "Standard_F16s"
-	// VMSizeTypesStandardF16sV2 ...
-	VMSizeTypesStandardF16sV2 VMSizeTypes = "Standard_F16s_v2"
-	// VMSizeTypesStandardF1s ...
-	VMSizeTypesStandardF1s VMSizeTypes = "Standard_F1s"
-	// VMSizeTypesStandardF2 ...
-	VMSizeTypesStandardF2 VMSizeTypes = "Standard_F2"
-	// VMSizeTypesStandardF2s ...
-	VMSizeTypesStandardF2s VMSizeTypes = "Standard_F2s"
-	// VMSizeTypesStandardF2sV2 ...
-	VMSizeTypesStandardF2sV2 VMSizeTypes = "Standard_F2s_v2"
-	// VMSizeTypesStandardF32sV2 ...
-	VMSizeTypesStandardF32sV2 VMSizeTypes = "Standard_F32s_v2"
-	// VMSizeTypesStandardF4 ...
-	VMSizeTypesStandardF4 VMSizeTypes = "Standard_F4"
-	// VMSizeTypesStandardF4s ...
-	VMSizeTypesStandardF4s VMSizeTypes = "Standard_F4s"
-	// VMSizeTypesStandardF4sV2 ...
-	VMSizeTypesStandardF4sV2 VMSizeTypes = "Standard_F4s_v2"
-	// VMSizeTypesStandardF64sV2 ...
-	VMSizeTypesStandardF64sV2 VMSizeTypes = "Standard_F64s_v2"
-	// VMSizeTypesStandardF72sV2 ...
-	VMSizeTypesStandardF72sV2 VMSizeTypes = "Standard_F72s_v2"
-	// VMSizeTypesStandardF8 ...
-	VMSizeTypesStandardF8 VMSizeTypes = "Standard_F8"
-	// VMSizeTypesStandardF8s ...
-	VMSizeTypesStandardF8s VMSizeTypes = "Standard_F8s"
-	// VMSizeTypesStandardF8sV2 ...
-	VMSizeTypesStandardF8sV2 VMSizeTypes = "Standard_F8s_v2"
-	// VMSizeTypesStandardG1 ...
-	VMSizeTypesStandardG1 VMSizeTypes = "Standard_G1"
-	// VMSizeTypesStandardG2 ...
-	VMSizeTypesStandardG2 VMSizeTypes = "Standard_G2"
-	// VMSizeTypesStandardG3 ...
-	VMSizeTypesStandardG3 VMSizeTypes = "Standard_G3"
-	// VMSizeTypesStandardG4 ...
-	VMSizeTypesStandardG4 VMSizeTypes = "Standard_G4"
-	// VMSizeTypesStandardG5 ...
-	VMSizeTypesStandardG5 VMSizeTypes = "Standard_G5"
-	// VMSizeTypesStandardGS1 ...
-	VMSizeTypesStandardGS1 VMSizeTypes = "Standard_GS1"
-	// VMSizeTypesStandardGS2 ...
-	VMSizeTypesStandardGS2 VMSizeTypes = "Standard_GS2"
-	// VMSizeTypesStandardGS3 ...
-	VMSizeTypesStandardGS3 VMSizeTypes = "Standard_GS3"
-	// VMSizeTypesStandardGS4 ...
-	VMSizeTypesStandardGS4 VMSizeTypes = "Standard_GS4"
-	// VMSizeTypesStandardGS44 ...
-	VMSizeTypesStandardGS44 VMSizeTypes = "Standard_GS4-4"
-	// VMSizeTypesStandardGS48 ...
-	VMSizeTypesStandardGS48 VMSizeTypes = "Standard_GS4-8"
-	// VMSizeTypesStandardGS5 ...
-	VMSizeTypesStandardGS5 VMSizeTypes = "Standard_GS5"
-	// VMSizeTypesStandardGS516 ...
-	VMSizeTypesStandardGS516 VMSizeTypes = "Standard_GS5-16"
-	// VMSizeTypesStandardGS58 ...
-	VMSizeTypesStandardGS58 VMSizeTypes = "Standard_GS5-8"
-	// VMSizeTypesStandardH16 ...
-	VMSizeTypesStandardH16 VMSizeTypes = "Standard_H16"
-	// VMSizeTypesStandardH16m ...
-	VMSizeTypesStandardH16m VMSizeTypes = "Standard_H16m"
-	// VMSizeTypesStandardH16mr ...
-	VMSizeTypesStandardH16mr VMSizeTypes = "Standard_H16mr"
-	// VMSizeTypesStandardH16r ...
-	VMSizeTypesStandardH16r VMSizeTypes = "Standard_H16r"
-	// VMSizeTypesStandardH8 ...
-	VMSizeTypesStandardH8 VMSizeTypes = "Standard_H8"
-	// VMSizeTypesStandardH8m ...
-	VMSizeTypesStandardH8m VMSizeTypes = "Standard_H8m"
-	// VMSizeTypesStandardL16s ...
-	VMSizeTypesStandardL16s VMSizeTypes = "Standard_L16s"
-	// VMSizeTypesStandardL32s ...
-	VMSizeTypesStandardL32s VMSizeTypes = "Standard_L32s"
-	// VMSizeTypesStandardL4s ...
-	VMSizeTypesStandardL4s VMSizeTypes = "Standard_L4s"
-	// VMSizeTypesStandardL8s ...
-	VMSizeTypesStandardL8s VMSizeTypes = "Standard_L8s"
-	// VMSizeTypesStandardM12832ms ...
-	VMSizeTypesStandardM12832ms VMSizeTypes = "Standard_M128-32ms"
-	// VMSizeTypesStandardM12864ms ...
-	VMSizeTypesStandardM12864ms VMSizeTypes = "Standard_M128-64ms"
-	// VMSizeTypesStandardM128ms ...
-	VMSizeTypesStandardM128ms VMSizeTypes = "Standard_M128ms"
-	// VMSizeTypesStandardM128s ...
-	VMSizeTypesStandardM128s VMSizeTypes = "Standard_M128s"
-	// VMSizeTypesStandardM6416ms ...
-	VMSizeTypesStandardM6416ms VMSizeTypes = "Standard_M64-16ms"
-	// VMSizeTypesStandardM6432ms ...
-	VMSizeTypesStandardM6432ms VMSizeTypes = "Standard_M64-32ms"
-	// VMSizeTypesStandardM64ms ...
-	VMSizeTypesStandardM64ms VMSizeTypes = "Standard_M64ms"
-	// VMSizeTypesStandardM64s ...
-	VMSizeTypesStandardM64s VMSizeTypes = "Standard_M64s"
-	// VMSizeTypesStandardNC12 ...
-	VMSizeTypesStandardNC12 VMSizeTypes = "Standard_NC12"
-	// VMSizeTypesStandardNC12sV2 ...
-	VMSizeTypesStandardNC12sV2 VMSizeTypes = "Standard_NC12s_v2"
-	// VMSizeTypesStandardNC12sV3 ...
-	VMSizeTypesStandardNC12sV3 VMSizeTypes = "Standard_NC12s_v3"
-	// VMSizeTypesStandardNC24 ...
-	VMSizeTypesStandardNC24 VMSizeTypes = "Standard_NC24"
-	// VMSizeTypesStandardNC24r ...
-	VMSizeTypesStandardNC24r VMSizeTypes = "Standard_NC24r"
-	// VMSizeTypesStandardNC24rsV2 ...
-	VMSizeTypesStandardNC24rsV2 VMSizeTypes = "Standard_NC24rs_v2"
-	// VMSizeTypesStandardNC24rsV3 ...
-	VMSizeTypesStandardNC24rsV3 VMSizeTypes = "Standard_NC24rs_v3"
-	// VMSizeTypesStandardNC24sV2 ...
-	VMSizeTypesStandardNC24sV2 VMSizeTypes = "Standard_NC24s_v2"
-	// VMSizeTypesStandardNC24sV3 ...
-	VMSizeTypesStandardNC24sV3 VMSizeTypes = "Standard_NC24s_v3"
-	// VMSizeTypesStandardNC6 ...
-	VMSizeTypesStandardNC6 VMSizeTypes = "Standard_NC6"
-	// VMSizeTypesStandardNC6sV2 ...
-	VMSizeTypesStandardNC6sV2 VMSizeTypes = "Standard_NC6s_v2"
-	// VMSizeTypesStandardNC6sV3 ...
-	VMSizeTypesStandardNC6sV3 VMSizeTypes = "Standard_NC6s_v3"
-	// VMSizeTypesStandardND12s ...
-	VMSizeTypesStandardND12s VMSizeTypes = "Standard_ND12s"
-	// VMSizeTypesStandardND24rs ...
-	VMSizeTypesStandardND24rs VMSizeTypes = "Standard_ND24rs"
-	// VMSizeTypesStandardND24s ...
-	VMSizeTypesStandardND24s VMSizeTypes = "Standard_ND24s"
-	// VMSizeTypesStandardND6s ...
-	VMSizeTypesStandardND6s VMSizeTypes = "Standard_ND6s"
-	// VMSizeTypesStandardNV12 ...
-	VMSizeTypesStandardNV12 VMSizeTypes = "Standard_NV12"
-	// VMSizeTypesStandardNV24 ...
-	VMSizeTypesStandardNV24 VMSizeTypes = "Standard_NV24"
-	// VMSizeTypesStandardNV6 ...
-	VMSizeTypesStandardNV6 VMSizeTypes = "Standard_NV6"
-)
-
-// PossibleVMSizeTypesValues returns an array of possible values for the VMSizeTypes const type.
-func PossibleVMSizeTypesValues() []VMSizeTypes {
-	return []VMSizeTypes{VMSizeTypesStandardA1, VMSizeTypesStandardA10, VMSizeTypesStandardA11, VMSizeTypesStandardA1V2, VMSizeTypesStandardA2, VMSizeTypesStandardA2mV2, VMSizeTypesStandardA2V2, VMSizeTypesStandardA3, VMSizeTypesStandardA4, VMSizeTypesStandardA4mV2, VMSizeTypesStandardA4V2, VMSizeTypesStandardA5, VMSizeTypesStandardA6, VMSizeTypesStandardA7, VMSizeTypesStandardA8, VMSizeTypesStandardA8mV2, VMSizeTypesStandardA8V2, VMSizeTypesStandardA9, VMSizeTypesStandardB2ms, VMSizeTypesStandardB2s, VMSizeTypesStandardB4ms, VMSizeTypesStandardB8ms, VMSizeTypesStandardD1, VMSizeTypesStandardD11, VMSizeTypesStandardD11V2, VMSizeTypesStandardD11V2Promo, VMSizeTypesStandardD12, VMSizeTypesStandardD12V2, VMSizeTypesStandardD12V2Promo, VMSizeTypesStandardD13, VMSizeTypesStandardD13V2, VMSizeTypesStandardD13V2Promo, VMSizeTypesStandardD14, VMSizeTypesStandardD14V2, VMSizeTypesStandardD14V2Promo, VMSizeTypesStandardD15V2, VMSizeTypesStandardD16sV3, VMSizeTypesStandardD16V3, VMSizeTypesStandardD1V2, VMSizeTypesStandardD2, VMSizeTypesStandardD2sV3, VMSizeTypesStandardD2V2, VMSizeTypesStandardD2V2Promo, VMSizeTypesStandardD2V3, VMSizeTypesStandardD3, VMSizeTypesStandardD32sV3, VMSizeTypesStandardD32V3, VMSizeTypesStandardD3V2, VMSizeTypesStandardD3V2Promo, VMSizeTypesStandardD4, VMSizeTypesStandardD4sV3, VMSizeTypesStandardD4V2, VMSizeTypesStandardD4V2Promo, VMSizeTypesStandardD4V3, VMSizeTypesStandardD5V2, VMSizeTypesStandardD5V2Promo, VMSizeTypesStandardD64sV3, VMSizeTypesStandardD64V3, VMSizeTypesStandardD8sV3, VMSizeTypesStandardD8V3, VMSizeTypesStandardDS1, VMSizeTypesStandardDS11, VMSizeTypesStandardDS11V2, VMSizeTypesStandardDS11V2Promo, VMSizeTypesStandardDS12, VMSizeTypesStandardDS12V2, VMSizeTypesStandardDS12V2Promo, VMSizeTypesStandardDS13, VMSizeTypesStandardDS132V2, VMSizeTypesStandardDS134V2, VMSizeTypesStandardDS13V2, VMSizeTypesStandardDS13V2Promo, VMSizeTypesStandardDS14, VMSizeTypesStandardDS144V2, VMSizeTypesStandardDS148V2, VMSizeTypesStandardDS14V2, VMSizeTypesStandardDS14V2Promo, VMSizeTypesStandardDS15V2, VMSizeTypesStandardDS1V2, VMSizeTypesStandardDS2, VMSizeTypesStandardDS2V2, VMSizeTypesStandardDS2V2Promo, VMSizeTypesStandardDS3, VMSizeTypesStandardDS3V2, VMSizeTypesStandardDS3V2Promo, VMSizeTypesStandardDS4, VMSizeTypesStandardDS4V2, VMSizeTypesStandardDS4V2Promo, VMSizeTypesStandardDS5V2, VMSizeTypesStandardDS5V2Promo, VMSizeTypesStandardE16sV3, VMSizeTypesStandardE16V3, VMSizeTypesStandardE2sV3, VMSizeTypesStandardE2V3, VMSizeTypesStandardE3216sV3, VMSizeTypesStandardE328sV3, VMSizeTypesStandardE32sV3, VMSizeTypesStandardE32V3, VMSizeTypesStandardE4sV3, VMSizeTypesStandardE4V3, VMSizeTypesStandardE6416sV3, VMSizeTypesStandardE6432sV3, VMSizeTypesStandardE64sV3, VMSizeTypesStandardE64V3, VMSizeTypesStandardE8sV3, VMSizeTypesStandardE8V3, VMSizeTypesStandardF1, VMSizeTypesStandardF16, VMSizeTypesStandardF16s, VMSizeTypesStandardF16sV2, VMSizeTypesStandardF1s, VMSizeTypesStandardF2, VMSizeTypesStandardF2s, VMSizeTypesStandardF2sV2, VMSizeTypesStandardF32sV2, VMSizeTypesStandardF4, VMSizeTypesStandardF4s, VMSizeTypesStandardF4sV2, VMSizeTypesStandardF64sV2, VMSizeTypesStandardF72sV2, VMSizeTypesStandardF8, VMSizeTypesStandardF8s, VMSizeTypesStandardF8sV2, VMSizeTypesStandardG1, VMSizeTypesStandardG2, VMSizeTypesStandardG3, VMSizeTypesStandardG4, VMSizeTypesStandardG5, VMSizeTypesStandardGS1, VMSizeTypesStandardGS2, VMSizeTypesStandardGS3, VMSizeTypesStandardGS4, VMSizeTypesStandardGS44, VMSizeTypesStandardGS48, VMSizeTypesStandardGS5, VMSizeTypesStandardGS516, VMSizeTypesStandardGS58, VMSizeTypesStandardH16, VMSizeTypesStandardH16m, VMSizeTypesStandardH16mr, VMSizeTypesStandardH16r, VMSizeTypesStandardH8, VMSizeTypesStandardH8m, VMSizeTypesStandardL16s, VMSizeTypesStandardL32s, VMSizeTypesStandardL4s, VMSizeTypesStandardL8s, VMSizeTypesStandardM12832ms, VMSizeTypesStandardM12864ms, VMSizeTypesStandardM128ms, VMSizeTypesStandardM128s, VMSizeTypesStandardM6416ms, VMSizeTypesStandardM6432ms, VMSizeTypesStandardM64ms, VMSizeTypesStandardM64s, VMSizeTypesStandardNC12, VMSizeTypesStandardNC12sV2, VMSizeTypesStandardNC12sV3, VMSizeTypesStandardNC24, VMSizeTypesStandardNC24r, VMSizeTypesStandardNC24rsV2, VMSizeTypesStandardNC24rsV3, VMSizeTypesStandardNC24sV2, VMSizeTypesStandardNC24sV3, VMSizeTypesStandardNC6, VMSizeTypesStandardNC6sV2, VMSizeTypesStandardNC6sV3, VMSizeTypesStandardND12s, VMSizeTypesStandardND24rs, VMSizeTypesStandardND24s, VMSizeTypesStandardND6s, VMSizeTypesStandardNV12, VMSizeTypesStandardNV24, VMSizeTypesStandardNV6}
-}
-
 // AccessProfile profile for enabling a user to access a managed cluster.
 type AccessProfile struct {
 	// KubeConfig - Base64-encoded Kubernetes configuration file.
@@ -902,6 +207,15 @@ type AgentPoolListResult struct {
 	NextLink *string `json:"nextLink,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for AgentPoolListResult.
+func (aplr AgentPoolListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if aplr.Value != nil {
+		objectMap["value"] = aplr.Value
+	}
+	return json.Marshal(objectMap)
+}
+
 // AgentPoolListResultIterator provides access to a complete listing of AgentPool values.
 type AgentPoolListResultIterator struct {
 	i    int
@@ -970,10 +284,15 @@ func (aplr AgentPoolListResult) IsEmpty() bool {
 	return aplr.Value == nil || len(*aplr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (aplr AgentPoolListResult) hasNextLink() bool {
+	return aplr.NextLink != nil && len(*aplr.NextLink) != 0
+}
+
 // agentPoolListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (aplr AgentPoolListResult) agentPoolListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if aplr.NextLink == nil || len(to.String(aplr.NextLink)) < 1 {
+	if !aplr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -1001,11 +320,16 @@ func (page *AgentPoolListResultPage) NextWithContext(ctx context.Context) (err e
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.aplr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.aplr)
+		if err != nil {
+			return err
+		}
+		page.aplr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.aplr = next
 	return nil
 }
 
@@ -1063,8 +387,41 @@ type AgentPoolProfile struct {
 	OsType OSType `json:"osType,omitempty"`
 }
 
-// AgentPoolsCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a
-// long-running operation.
+// MarshalJSON is the custom marshaler for AgentPoolProfile.
+func (app AgentPoolProfile) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if app.Name != nil {
+		objectMap["name"] = app.Name
+	}
+	if app.Count != nil {
+		objectMap["count"] = app.Count
+	}
+	if app.VMSize != "" {
+		objectMap["vmSize"] = app.VMSize
+	}
+	if app.OsDiskSizeGB != nil {
+		objectMap["osDiskSizeGB"] = app.OsDiskSizeGB
+	}
+	if app.DNSPrefix != nil {
+		objectMap["dnsPrefix"] = app.DNSPrefix
+	}
+	if app.Ports != nil {
+		objectMap["ports"] = app.Ports
+	}
+	if app.StorageProfile != "" {
+		objectMap["storageProfile"] = app.StorageProfile
+	}
+	if app.VnetSubnetID != nil {
+		objectMap["vnetSubnetID"] = app.VnetSubnetID
+	}
+	if app.OsType != "" {
+		objectMap["osType"] = app.OsType
+	}
+	return json.Marshal(objectMap)
+}
+
+// AgentPoolsCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a long-running
+// operation.
 type AgentPoolsCreateOrUpdateFuture struct {
 	azure.Future
 }
@@ -1092,8 +449,7 @@ func (future *AgentPoolsCreateOrUpdateFuture) Result(client AgentPoolsClient) (a
 	return
 }
 
-// AgentPoolsDeleteFuture an abstraction for monitoring and retrieving the results of a long-running
-// operation.
+// AgentPoolsDeleteFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type AgentPoolsDeleteFuture struct {
 	azure.Future
 }
@@ -1362,8 +718,8 @@ func (future *ContainerServicesCreateOrUpdateFutureType) Result(client Container
 	return
 }
 
-// ContainerServicesDeleteFutureType an abstraction for monitoring and retrieving the results of a
-// long-running operation.
+// ContainerServicesDeleteFutureType an abstraction for monitoring and retrieving the results of a long-running
+// operation.
 type ContainerServicesDeleteFutureType struct {
 	azure.Future
 }
@@ -1439,6 +795,15 @@ type ListResult struct {
 	NextLink *string `json:"nextLink,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ListResult.
+func (lr ListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if lr.Value != nil {
+		objectMap["value"] = lr.Value
+	}
+	return json.Marshal(objectMap)
+}
+
 // ListResultIterator provides access to a complete listing of ContainerService values.
 type ListResultIterator struct {
 	i    int
@@ -1507,10 +872,15 @@ func (lr ListResult) IsEmpty() bool {
 	return lr.Value == nil || len(*lr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (lr ListResult) hasNextLink() bool {
+	return lr.NextLink != nil && len(*lr.NextLink) != 0
+}
+
 // listResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (lr ListResult) listResultPreparer(ctx context.Context) (*http.Request, error) {
-	if lr.NextLink == nil || len(to.String(lr.NextLink)) < 1 {
+	if !lr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -1538,11 +908,16 @@ func (page *ListResultPage) NextWithContext(ctx context.Context) (err error) {
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.lr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.lr)
+		if err != nil {
+			return err
+		}
+		page.lr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.lr = next
 	return nil
 }
 
@@ -2121,6 +1496,15 @@ type ManagedClusterIdentity struct {
 	Type ResourceIdentityType `json:"type,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for ManagedClusterIdentity.
+func (mci ManagedClusterIdentity) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if mci.Type != "" {
+		objectMap["type"] = mci.Type
+	}
+	return json.Marshal(objectMap)
+}
+
 // ManagedClusterListResult the response from the List Managed Clusters operation.
 type ManagedClusterListResult struct {
 	autorest.Response `json:"-"`
@@ -2128,6 +1512,15 @@ type ManagedClusterListResult struct {
 	Value *[]ManagedCluster `json:"value,omitempty"`
 	// NextLink - READ-ONLY; The URL to get the next set of managed cluster results.
 	NextLink *string `json:"nextLink,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for ManagedClusterListResult.
+func (mclr ManagedClusterListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if mclr.Value != nil {
+		objectMap["value"] = mclr.Value
+	}
+	return json.Marshal(objectMap)
 }
 
 // ManagedClusterListResultIterator provides access to a complete listing of ManagedCluster values.
@@ -2198,10 +1591,15 @@ func (mclr ManagedClusterListResult) IsEmpty() bool {
 	return mclr.Value == nil || len(*mclr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (mclr ManagedClusterListResult) hasNextLink() bool {
+	return mclr.NextLink != nil && len(*mclr.NextLink) != 0
+}
+
 // managedClusterListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (mclr ManagedClusterListResult) managedClusterListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if mclr.NextLink == nil || len(to.String(mclr.NextLink)) < 1 {
+	if !mclr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -2229,11 +1627,16 @@ func (page *ManagedClusterListResultPage) NextWithContext(ctx context.Context) (
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.mclr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.mclr)
+		if err != nil {
+			return err
+		}
+		page.mclr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.mclr = next
 	return nil
 }
 
@@ -2297,8 +1700,7 @@ type ManagedClusterLoadBalancerProfileOutboundIPPrefixes struct {
 	PublicIPPrefixes *[]ResourceReference `json:"publicIPPrefixes,omitempty"`
 }
 
-// ManagedClusterLoadBalancerProfileOutboundIPs desired outbound IP resources for the cluster load
-// balancer.
+// ManagedClusterLoadBalancerProfileOutboundIPs desired outbound IP resources for the cluster load balancer.
 type ManagedClusterLoadBalancerProfileOutboundIPs struct {
 	// PublicIPs - A list of public IP resources.
 	PublicIPs *[]ResourceReference `json:"publicIPs,omitempty"`
@@ -2422,8 +1824,7 @@ func (mcp ManagedClusterProperties) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
-// ManagedClusterPropertiesAutoScalerProfile parameters to be applied to the cluster-autoscaler when
-// enabled
+// ManagedClusterPropertiesAutoScalerProfile parameters to be applied to the cluster-autoscaler when enabled
 type ManagedClusterPropertiesAutoScalerProfile struct {
 	BalanceSimilarNodeGroups      *string `json:"balance-similar-node-groups,omitempty"`
 	ScanInterval                  *string `json:"scan-interval,omitempty"`
@@ -2498,8 +1899,8 @@ func (future *ManagedClustersDeleteFuture) Result(client ManagedClustersClient) 
 	return
 }
 
-// ManagedClusterServicePrincipalProfile information about a service principal identity for the cluster to
-// use for manipulating Azure APIs.
+// ManagedClusterServicePrincipalProfile information about a service principal identity for the cluster to use
+// for manipulating Azure APIs.
 type ManagedClusterServicePrincipalProfile struct {
 	// ClientID - The ID for the service principal.
 	ClientID *string `json:"clientId,omitempty"`
@@ -2538,8 +1939,8 @@ func (future *ManagedClustersResetAADProfileFuture) Result(client ManagedCluster
 	return
 }
 
-// ManagedClustersResetServicePrincipalProfileFuture an abstraction for monitoring and retrieving the
-// results of a long-running operation.
+// ManagedClustersResetServicePrincipalProfileFuture an abstraction for monitoring and retrieving the results
+// of a long-running operation.
 type ManagedClustersResetServicePrincipalProfileFuture struct {
 	azure.Future
 }
@@ -2561,8 +1962,8 @@ func (future *ManagedClustersResetServicePrincipalProfileFuture) Result(client M
 	return
 }
 
-// ManagedClustersRotateClusterCertificatesFuture an abstraction for monitoring and retrieving the results
-// of a long-running operation.
+// ManagedClustersRotateClusterCertificatesFuture an abstraction for monitoring and retrieving the results of a
+// long-running operation.
 type ManagedClustersRotateClusterCertificatesFuture struct {
 	azure.Future
 }
@@ -2584,8 +1985,8 @@ func (future *ManagedClustersRotateClusterCertificatesFuture) Result(client Mana
 	return
 }
 
-// ManagedClustersUpdateTagsFuture an abstraction for monitoring and retrieving the results of a
-// long-running operation.
+// ManagedClustersUpdateTagsFuture an abstraction for monitoring and retrieving the results of a long-running
+// operation.
 type ManagedClustersUpdateTagsFuture struct {
 	azure.Future
 }
@@ -2720,6 +2121,33 @@ type MasterProfile struct {
 	StorageProfile StorageProfileTypes `json:"storageProfile,omitempty"`
 	// Fqdn - READ-ONLY; FQDN for the master pool.
 	Fqdn *string `json:"fqdn,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for MasterProfile.
+func (mp MasterProfile) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if mp.Count != nil {
+		objectMap["count"] = mp.Count
+	}
+	if mp.DNSPrefix != nil {
+		objectMap["dnsPrefix"] = mp.DNSPrefix
+	}
+	if mp.VMSize != "" {
+		objectMap["vmSize"] = mp.VMSize
+	}
+	if mp.OsDiskSizeGB != nil {
+		objectMap["osDiskSizeGB"] = mp.OsDiskSizeGB
+	}
+	if mp.VnetSubnetID != nil {
+		objectMap["vnetSubnetID"] = mp.VnetSubnetID
+	}
+	if mp.FirstConsecutiveStaticIP != nil {
+		objectMap["firstConsecutiveStaticIP"] = mp.FirstConsecutiveStaticIP
+	}
+	if mp.StorageProfile != "" {
+		objectMap["storageProfile"] = mp.StorageProfile
+	}
+	return json.Marshal(objectMap)
 }
 
 // NetworkProfile represents the OpenShift networking configuration
@@ -2938,8 +2366,7 @@ type OpenShiftManagedClusterAgentPoolProfile struct {
 	Role OpenShiftAgentPoolProfileRole `json:"role,omitempty"`
 }
 
-// OpenShiftManagedClusterAuthProfile defines all possible authentication profiles for the OpenShift
-// cluster.
+// OpenShiftManagedClusterAuthProfile defines all possible authentication profiles for the OpenShift cluster.
 type OpenShiftManagedClusterAuthProfile struct {
 	// IdentityProviders - Type of authentication profile to use.
 	IdentityProviders *[]OpenShiftManagedClusterIdentityProvider `json:"identityProviders,omitempty"`
@@ -3019,8 +2446,8 @@ func (osmcbip OpenShiftManagedClusterBaseIdentityProvider) AsBasicOpenShiftManag
 	return &osmcbip, true
 }
 
-// OpenShiftManagedClusterIdentityProvider defines the configuration of the identity providers to be used
-// in the OpenShift cluster.
+// OpenShiftManagedClusterIdentityProvider defines the configuration of the identity providers to be used in
+// the OpenShift cluster.
 type OpenShiftManagedClusterIdentityProvider struct {
 	// Name - Name of the provider.
 	Name *string `json:"name,omitempty"`
@@ -3069,8 +2496,17 @@ type OpenShiftManagedClusterListResult struct {
 	NextLink *string `json:"nextLink,omitempty"`
 }
 
-// OpenShiftManagedClusterListResultIterator provides access to a complete listing of
-// OpenShiftManagedCluster values.
+// MarshalJSON is the custom marshaler for OpenShiftManagedClusterListResult.
+func (osmclr OpenShiftManagedClusterListResult) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if osmclr.Value != nil {
+		objectMap["value"] = osmclr.Value
+	}
+	return json.Marshal(objectMap)
+}
+
+// OpenShiftManagedClusterListResultIterator provides access to a complete listing of OpenShiftManagedCluster
+// values.
 type OpenShiftManagedClusterListResultIterator struct {
 	i    int
 	page OpenShiftManagedClusterListResultPage
@@ -3138,10 +2574,15 @@ func (osmclr OpenShiftManagedClusterListResult) IsEmpty() bool {
 	return osmclr.Value == nil || len(*osmclr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (osmclr OpenShiftManagedClusterListResult) hasNextLink() bool {
+	return osmclr.NextLink != nil && len(*osmclr.NextLink) != 0
+}
+
 // openShiftManagedClusterListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (osmclr OpenShiftManagedClusterListResult) openShiftManagedClusterListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if osmclr.NextLink == nil || len(to.String(osmclr.NextLink)) < 1 {
+	if !osmclr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -3169,11 +2610,16 @@ func (page *OpenShiftManagedClusterListResultPage) NextWithContext(ctx context.C
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.osmclr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.osmclr)
+		if err != nil {
+			return err
+		}
+		page.osmclr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.osmclr = next
 	return nil
 }
 
@@ -3207,8 +2653,8 @@ func NewOpenShiftManagedClusterListResultPage(getNextPage func(context.Context, 
 	return OpenShiftManagedClusterListResultPage{fn: getNextPage}
 }
 
-// OpenShiftManagedClusterMasterPoolProfile openShiftManagedClusterMaterPoolProfile contains configuration
-// for OpenShift master VMs.
+// OpenShiftManagedClusterMasterPoolProfile openShiftManagedClusterMaterPoolProfile contains configuration for
+// OpenShift master VMs.
 type OpenShiftManagedClusterMasterPoolProfile struct {
 	// Name - Unique name of the master pool profile in the context of the subscription and resource group.
 	Name *string `json:"name,omitempty"`
@@ -3246,8 +2692,32 @@ type OpenShiftManagedClusterProperties struct {
 	AuthProfile *OpenShiftManagedClusterAuthProfile `json:"authProfile,omitempty"`
 }
 
-// OpenShiftManagedClustersCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of
-// a long-running operation.
+// MarshalJSON is the custom marshaler for OpenShiftManagedClusterProperties.
+func (osmcp OpenShiftManagedClusterProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if osmcp.OpenShiftVersion != nil {
+		objectMap["openShiftVersion"] = osmcp.OpenShiftVersion
+	}
+	if osmcp.NetworkProfile != nil {
+		objectMap["networkProfile"] = osmcp.NetworkProfile
+	}
+	if osmcp.RouterProfiles != nil {
+		objectMap["routerProfiles"] = osmcp.RouterProfiles
+	}
+	if osmcp.MasterPoolProfile != nil {
+		objectMap["masterPoolProfile"] = osmcp.MasterPoolProfile
+	}
+	if osmcp.AgentPoolProfiles != nil {
+		objectMap["agentPoolProfiles"] = osmcp.AgentPoolProfiles
+	}
+	if osmcp.AuthProfile != nil {
+		objectMap["authProfile"] = osmcp.AuthProfile
+	}
+	return json.Marshal(objectMap)
+}
+
+// OpenShiftManagedClustersCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a
+// long-running operation.
 type OpenShiftManagedClustersCreateOrUpdateFuture struct {
 	azure.Future
 }
@@ -3335,6 +2805,15 @@ type OpenShiftRouterProfile struct {
 	PublicSubdomain *string `json:"publicSubdomain,omitempty"`
 	// Fqdn - READ-ONLY; Auto-allocated FQDN for the OpenShift router.
 	Fqdn *string `json:"fqdn,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for OpenShiftRouterProfile.
+func (osrp OpenShiftRouterProfile) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if osrp.Name != nil {
+		objectMap["name"] = osrp.Name
+	}
+	return json.Marshal(objectMap)
 }
 
 // OperationListResult the List Compute Operation operation response.
@@ -3550,6 +3029,36 @@ type Properties struct {
 	DiagnosticsProfile *DiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for Properties.
+func (p Properties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if p.OrchestratorProfile != nil {
+		objectMap["orchestratorProfile"] = p.OrchestratorProfile
+	}
+	if p.CustomProfile != nil {
+		objectMap["customProfile"] = p.CustomProfile
+	}
+	if p.ServicePrincipalProfile != nil {
+		objectMap["servicePrincipalProfile"] = p.ServicePrincipalProfile
+	}
+	if p.MasterProfile != nil {
+		objectMap["masterProfile"] = p.MasterProfile
+	}
+	if p.AgentPoolProfiles != nil {
+		objectMap["agentPoolProfiles"] = p.AgentPoolProfiles
+	}
+	if p.WindowsProfile != nil {
+		objectMap["windowsProfile"] = p.WindowsProfile
+	}
+	if p.LinuxProfile != nil {
+		objectMap["linuxProfile"] = p.LinuxProfile
+	}
+	if p.DiagnosticsProfile != nil {
+		objectMap["diagnosticsProfile"] = p.DiagnosticsProfile
+	}
+	return json.Marshal(objectMap)
+}
+
 // PurchasePlan used for establishing the purchase context of any 3rd Party artifact through MarketPlace.
 type PurchasePlan struct {
 	// Name - The plan ID.
@@ -3658,6 +3167,15 @@ type VMDiagnostics struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// StorageURI - READ-ONLY; The URI of the storage account where diagnostics are stored.
 	StorageURI *string `json:"storageUri,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for VMDiagnostics.
+func (vd VMDiagnostics) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if vd.Enabled != nil {
+		objectMap["enabled"] = vd.Enabled
+	}
+	return json.Marshal(objectMap)
 }
 
 // WindowsProfile profile for Windows VMs in the container service cluster.

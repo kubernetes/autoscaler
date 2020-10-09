@@ -120,7 +120,6 @@ func (client VirtualNetworkGatewaysClient) CreateOrUpdateSender(req *http.Reques
 func (client VirtualNetworkGatewaysClient) CreateOrUpdateResponder(resp *http.Response) (result VirtualNetworkGateway, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -196,7 +195,6 @@ func (client VirtualNetworkGatewaysClient) DeleteSender(req *http.Request) (futu
 func (client VirtualNetworkGatewaysClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -275,7 +273,6 @@ func (client VirtualNetworkGatewaysClient) GeneratevpnclientpackageSender(req *h
 func (client VirtualNetworkGatewaysClient) GeneratevpnclientpackageResponder(resp *http.Response) (result String, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -355,7 +352,6 @@ func (client VirtualNetworkGatewaysClient) GenerateVpnProfileSender(req *http.Re
 func (client VirtualNetworkGatewaysClient) GenerateVpnProfileResponder(resp *http.Response) (result String, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -431,7 +427,6 @@ func (client VirtualNetworkGatewaysClient) GetSender(req *http.Request) (*http.R
 func (client VirtualNetworkGatewaysClient) GetResponder(resp *http.Response) (result VirtualNetworkGateway, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -510,7 +505,6 @@ func (client VirtualNetworkGatewaysClient) GetAdvertisedRoutesSender(req *http.R
 func (client VirtualNetworkGatewaysClient) GetAdvertisedRoutesResponder(resp *http.Response) (result GatewayRouteListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -590,7 +584,6 @@ func (client VirtualNetworkGatewaysClient) GetBgpPeerStatusSender(req *http.Requ
 func (client VirtualNetworkGatewaysClient) GetBgpPeerStatusResponder(resp *http.Response) (result BgpPeerStatusListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -667,7 +660,6 @@ func (client VirtualNetworkGatewaysClient) GetLearnedRoutesSender(req *http.Requ
 func (client VirtualNetworkGatewaysClient) GetLearnedRoutesResponder(resp *http.Response) (result GatewayRouteListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -744,7 +736,6 @@ func (client VirtualNetworkGatewaysClient) GetVpnclientConnectionHealthSender(re
 func (client VirtualNetworkGatewaysClient) GetVpnclientConnectionHealthResponder(resp *http.Response) (result VpnClientConnectionHealthDetailListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -822,7 +813,6 @@ func (client VirtualNetworkGatewaysClient) GetVpnclientIpsecParametersSender(req
 func (client VirtualNetworkGatewaysClient) GetVpnclientIpsecParametersResponder(resp *http.Response) (result VpnClientIPsecParameters, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -899,7 +889,6 @@ func (client VirtualNetworkGatewaysClient) GetVpnProfilePackageURLSender(req *ht
 func (client VirtualNetworkGatewaysClient) GetVpnProfilePackageURLResponder(resp *http.Response) (result String, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -939,6 +928,9 @@ func (client VirtualNetworkGatewaysClient) List(ctx context.Context, resourceGro
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewaysClient", "List", resp, "Failure responding to request")
 	}
+	if result.vnglr.hasNextLink() && result.vnglr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -974,7 +966,6 @@ func (client VirtualNetworkGatewaysClient) ListSender(req *http.Request) (*http.
 func (client VirtualNetworkGatewaysClient) ListResponder(resp *http.Response) (result VirtualNetworkGatewayListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1052,6 +1043,9 @@ func (client VirtualNetworkGatewaysClient) ListConnections(ctx context.Context, 
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewaysClient", "ListConnections", resp, "Failure responding to request")
 	}
+	if result.vnglcr.hasNextLink() && result.vnglcr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -1088,7 +1082,6 @@ func (client VirtualNetworkGatewaysClient) ListConnectionsSender(req *http.Reque
 func (client VirtualNetworkGatewaysClient) ListConnectionsResponder(resp *http.Response) (result VirtualNetworkGatewayListConnectionsResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1206,7 +1199,6 @@ func (client VirtualNetworkGatewaysClient) ResetSender(req *http.Request) (futur
 func (client VirtualNetworkGatewaysClient) ResetResponder(resp *http.Response) (result VirtualNetworkGateway, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1283,7 +1275,6 @@ func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKeySender(req *ht
 func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKeyResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByClosing())
 	result.Response = resp
@@ -1370,7 +1361,6 @@ func (client VirtualNetworkGatewaysClient) SetVpnclientIpsecParametersSender(req
 func (client VirtualNetworkGatewaysClient) SetVpnclientIpsecParametersResponder(resp *http.Response) (result VpnClientIPsecParameters, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1446,7 +1436,6 @@ func (client VirtualNetworkGatewaysClient) SupportedVpnDevicesSender(req *http.R
 func (client VirtualNetworkGatewaysClient) SupportedVpnDevicesResponder(resp *http.Response) (result String, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result.Value),
 		autorest.ByClosing())
@@ -1525,7 +1514,6 @@ func (client VirtualNetworkGatewaysClient) UpdateTagsSender(req *http.Request) (
 func (client VirtualNetworkGatewaysClient) UpdateTagsResponder(resp *http.Response) (result VirtualNetworkGateway, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1605,7 +1593,6 @@ func (client VirtualNetworkGatewaysClient) VpnDeviceConfigurationScriptSender(re
 func (client VirtualNetworkGatewaysClient) VpnDeviceConfigurationScriptResponder(resp *http.Response) (result String, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result.Value),
 		autorest.ByClosing())

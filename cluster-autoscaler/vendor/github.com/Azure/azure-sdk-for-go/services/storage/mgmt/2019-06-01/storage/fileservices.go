@@ -127,7 +127,6 @@ func (client FileServicesClient) GetServicePropertiesSender(req *http.Request) (
 func (client FileServicesClient) GetServicePropertiesResponder(resp *http.Response) (result FileServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -218,7 +217,6 @@ func (client FileServicesClient) ListSender(req *http.Request) (*http.Response, 
 func (client FileServicesClient) ListResponder(resp *http.Response) (result FileServiceItems, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -325,7 +323,6 @@ func (client FileServicesClient) SetServicePropertiesSender(req *http.Request) (
 func (client FileServicesClient) SetServicePropertiesResponder(resp *http.Response) (result FileServiceProperties, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
