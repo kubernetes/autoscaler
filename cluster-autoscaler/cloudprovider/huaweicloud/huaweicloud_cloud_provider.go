@@ -185,7 +185,6 @@ func getAutoscaleNodePools(manager *huaweicloudCloudManager, opts config.Autosca
 	}
 
 	clusterUpdateLock := sync.Mutex{}
-	deleteMux := sync.Mutex{}
 
 	// Given our current implementation just support single node pool,
 	// please make sure there is only one node pool with Autoscaling flag turned on in CCE cluster
@@ -200,7 +199,6 @@ func getAutoscaleNodePools(manager *huaweicloudCloudManager, opts config.Autosca
 
 		nodePoolsWithAutoscalingEnabled = append(nodePoolsWithAutoscalingEnabled, NodeGroup{
 			huaweiCloudManager: manager,
-			deleteMutex:        &deleteMux,
 			clusterUpdateMutex: &clusterUpdateLock,
 			nodePoolName:       nodePool.Metadata.Name,
 			nodePoolId:         nodePool.Metadata.Uid,
