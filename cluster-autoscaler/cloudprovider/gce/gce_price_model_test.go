@@ -47,6 +47,30 @@ func TestGetNodePrice(t *testing.T) {
 		OperatingSystemLinux)
 	labels2[preemptibleLabel] = "true"
 
+	labels3, _ := BuildGenericLabels(GceRef{
+		Name:    "kubernetes-minion-group",
+		Project: "mwielgus-proj",
+		Zone:    "us-central1-b"},
+		"n1-custom",
+		"sillyname",
+		OperatingSystemLinux)
+
+	labels4, _ := BuildGenericLabels(GceRef{
+		Name:    "kubernetes-minion-group",
+		Project: "mwielgus-proj",
+		Zone:    "us-central1-b"},
+		"n1-unknown",
+		"sillyname",
+		OperatingSystemLinux)
+
+	labels5, _ := BuildGenericLabels(GceRef{
+		Name:    "kubernetes-minion-group",
+		Project: "mwielgus-proj",
+		Zone:    "us-central1-b"},
+		"e2-custom",
+		"sillyname",
+		OperatingSystemLinux)
+
 	model := &GcePriceModel{}
 	now := time.Now()
 
@@ -66,6 +90,7 @@ func TestGetNodePrice(t *testing.T) {
 
 	// custom node
 	node3 := BuildTestNode("sillyname3", 8000, 30*units.GiB)
+	node3.Labels = labels3
 	price3, err := model.NodePrice(node3, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// custom nodes should be slightly more expensive than regular.
@@ -92,10 +117,27 @@ func TestGetNodePrice(t *testing.T) {
 
 	// small custom node
 	node6 := BuildTestNode("sillyname6", 1000, 3750*units.MiB)
+	node6.Labels = labels3
 	price6, err := model.NodePrice(node6, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// 8 times smaller node should be 8 times less expensive.
 	assert.True(t, math.Abs(price3-8*price6) < 0.1)
+
+	// unknown instance type
+	node7 := BuildTestNode("sillyname7", 8000, 30*units.GiB)
+	node7.Labels = labels4
+	price7, err := model.NodePrice(node7, now, now.Add(time.Hour))
+	assert.NoError(t, err)
+	// Unknown instance type should have similar pricing to its node family
+	assert.True(t, math.Abs(price1-price7) < 0.1)
+
+	// custom node from cheaper family
+	node8 := BuildTestNode("sillyname8", 9000, 32*units.GiB)
+	node8.Labels = labels5
+	price8, err := model.NodePrice(node8, now, now.Add(time.Hour))
+	assert.NoError(t, err)
+	// Bigger custom e2 node should be cheaper than smaller custom n1 node
+	assert.True(t, price8 < price3)
 }
 
 func TestGetPodPrice(t *testing.T) {
