@@ -73,7 +73,7 @@ for i in ${COMPONENTS}; do
   ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd.yaml
+kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
 kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
 
 for i in ${COMPONENTS}; do
