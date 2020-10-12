@@ -21,6 +21,10 @@ import (
 	"time"
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -30,6 +34,13 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+)
+
+var (
+	ctx  = &context.AutoscalingContext{}
+	proc = &processors.AutoscalingProcessors{
+		NodeGroupSetProcessor: nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
+	}
 )
 
 func TestGetNodeInfosForGroups(t *testing.T) {
@@ -69,8 +80,9 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+	tplCache := make(map[string]*schedulerframework.NodeInfo)
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil, tplCache,
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, proc, ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	info, found := res["ng1"]
@@ -87,10 +99,46 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assertEqualNodeCapacities(t, tn, info.Node())
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, registry,
-		[]*appsv1.DaemonSet{}, predicateChecker, nil)
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, nil, provider2, registry,
+		[]*appsv1.DaemonSet{}, predicateChecker, nil, proc, ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
+
+	// Test use of a real-world node from a similar nodegroup rather than cloud provider template
+	emptyNodeGroupInfo := schedulerframework.NewNodeInfo()
+	emptyNodeGroupInfo.SetNode(BuildTestNode("a", 2000, 2000))
+
+	similarNodeGroupInfo := schedulerframework.NewNodeInfo()
+	similarNodeGroupInfo.SetNode(BuildTestNode("b", 2000, 2000))
+	similarNodeGroupRealNode := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(similarNodeGroupRealNode, true, time.Now())
+
+	provider3 := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, nil, nil,
+		map[string]*schedulerframework.NodeInfo{
+			"ng1": similarNodeGroupInfo,
+			"ng2": similarNodeGroupInfo,
+		})
+
+	provider3.AddNodeGroup("ng1", 0, 10, 1)
+	provider3.AddNode("ng1", similarNodeGroupRealNode)
+	provider3.AddNodeGroup("ng2", 0, 10, 0)
+
+	balancedCtx := &context.AutoscalingContext{
+		CloudProvider: provider3,
+		AutoscalingOptions: config.AutoscalingOptions{
+			BalanceSimilarNodeGroups: true,
+		},
+	}
+	tplCache = make(map[string]*schedulerframework.NodeInfo)
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{similarNodeGroupRealNode}, nil, tplCache,
+		provider3, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, proc, balancedCtx)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(res))
+	info, found = res["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, similarNodeGroupRealNode, info.Node())
 }
 
 func TestGetNodeInfosForGroupsCache(t *testing.T) {
@@ -139,10 +187,11 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodeInfoCache := make(map[string]*schedulerframework.NodeInfo)
+	tplCache := make(map[string]*schedulerframework.NodeInfo)
 
 	// Fill cache
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache, tplCache,
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, proc, ctx)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -176,8 +225,9 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+	tplCache = make(map[string]*schedulerframework.NodeInfo)
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache, tplCache,
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, proc, ctx)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -200,9 +250,10 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	err2 := infoNg4Node6.SetNode(ready6.DeepCopy())
 	assert.NoError(t, err2)
 	nodeInfoCache = map[string]*schedulerframework.NodeInfo{"ng4": infoNg4Node6}
+	tplCache = make(map[string]*schedulerframework.NodeInfo)
 	// Check if cache was used
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache, tplCache,
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, proc, ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
 	info, found = res["ng2"]

@@ -26,7 +26,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -39,10 +42,10 @@ import (
 )
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
+func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache, templateInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet, processors *ca_processors.AutoscalingProcessors, context *context.AutoscalingContext) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulerframework.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -94,6 +97,20 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 	}
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
+		if templateInfoCache != nil {
+			if _, found := templateInfoCache[id]; found {
+				continue
+			}
+			nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker, ignoredTaints)
+			if err != nil || nodeInfo == nil {
+				continue
+			}
+			templateInfoCache[id] = nodeInfo
+		}
+
+	}
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
+		id := nodeGroup.Id()
 		seenGroups[id] = true
 		if _, found := result[id]; found {
 			continue
@@ -108,25 +125,58 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 				}
 			}
 		}
-
-		// No good template, trying to generate one. This is called only if there are no
-		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker, ignoredTaints)
-		if err != nil {
-			if err == cloudprovider.ErrNotImplemented {
-				continue
-			} else {
-				klog.Errorf("Unable to build proper template node for %s: %v", id, err)
-				return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
-			}
-		}
-		result[id] = nodeInfo
 	}
 
-	// Remove invalid node groups from cache
+	// No good template, trying to find one from a similar nodegroup, or generate one from ASG template.
+	// By default CA tries to use a real-world node example.
+	generatedResult := make(map[string]*schedulerframework.NodeInfo)
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
+		id := nodeGroup.Id()
+		if _, found := result[id]; found {
+			continue
+		}
+		if templateInfoCache == nil {
+			continue
+		}
+		currentNodeInfo, found := templateInfoCache[id]
+		if !found {
+			continue
+		}
+		if !context.BalanceSimilarNodeGroups {
+			generatedResult[id] = currentNodeInfo
+			continue
+		}
+
+		similars, _ := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, nodeGroup, templateInfoCache)
+		for _, group := range similars {
+			// Only consider similar nodeInfos built from real-world nodes
+			nodeInfo, found := result[group.Id()]
+			if !found {
+				continue
+			}
+			sanitizedNodeInfo, err := sanitizeNodeInfoFromSimilarGroup(currentNodeInfo, nodeInfo.Node(), id, ignoredTaints)
+			if err != nil {
+				continue
+			}
+			currentNodeInfo = sanitizedNodeInfo
+			break
+		}
+		generatedResult[id] = currentNodeInfo
+	}
+
+	for id, info := range generatedResult {
+		result[id] = info
+	}
+
+	// Remove invalid node groups from caches
 	for id := range nodeInfoCache {
 		if _, ok := seenGroups[id]; !ok {
 			delete(nodeInfoCache, id)
+		}
+	}
+	for id := range templateInfoCache {
+		if _, ok := seenGroups[id]; !ok {
+			delete(templateInfoCache, id)
 		}
 	}
 
@@ -256,6 +306,24 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints tain
 	newNode.Name = nodeName
 	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, ignoredTaints)
 	return newNode, nil
+}
+
+func sanitizeNodeInfoFromSimilarGroup(nodeInfo *schedulerframework.NodeInfo, similar *apiv1.Node, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	// use base labels (region, zone, failure domain, ...) from original template
+	newNode := similar.DeepCopy()
+	for label, val := range nodeInfo.Node().GetLabels() {
+		if _, found := nodegroupset.BasicIgnoredLabels[label]; found {
+			newNode.Labels[label] = val
+		}
+	}
+	nodeInfo.SetNode(newNode)
+
+	sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, nodeGroupName, ignoredTaints)
+	if err != nil {
+		return nil, err
+	}
+
+	return sanitizedNodeInfo, nil
 }
 
 func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {

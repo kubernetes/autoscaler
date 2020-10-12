@@ -396,6 +396,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
+		templateInfoCache:     make(map[string]*schedulerframework.NodeInfo),
 	}
 
 	// Scale up.
