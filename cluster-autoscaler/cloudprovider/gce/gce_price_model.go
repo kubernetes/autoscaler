@@ -18,6 +18,7 @@ package gce
 
 import (
 	"math"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -31,15 +32,59 @@ type GcePriceModel struct {
 
 const (
 	//TODO: Move it to a config file.
-	cpuPricePerHour         = 0.033174
-	memoryPricePerHourPerGb = 0.004446
-	preemptibleDiscount     = 0.00698 / 0.033174
+	cpuPricePerHour         = 0.022890
+	memoryPricePerHourPerGb = 0.003067
+	preemptibleDiscount     = 0.006867 / 0.022890
 	gpuPricePerHour         = 0.700
 
 	preemptibleLabel = "cloud.google.com/gke-preemptible"
 )
 
 var (
+	predefinedCpuPricePerHour = map[string]float64{
+		"c2":  0.03398,
+		"e2":  0.021811,
+		"m1":  0.0348,
+		"n1":  0.031611,
+		"n2":  0.031611,
+		"n2d": 0.027502,
+	}
+	predefinedMemoryPricePerHourPerGb = map[string]float64{
+		"c2":  0.00455,
+		"e2":  0.002923,
+		"m1":  0.0051,
+		"n1":  0.004237,
+		"n2":  0.004237,
+		"n2d": 0.003686,
+	}
+	predefinedPreemptibleDiscount = map[string]float64{
+		"c2":  0.00822 / 0.03398,
+		"e2":  0.006543 / 0.021811,
+		"m1":  0.00733 / 0.0348,
+		"n1":  0.006655 / 0.031611,
+		"n2":  0.007650 / 0.031611,
+		"n2d": 0.006655 / 0.027502,
+	}
+
+	customCpuPricePerHour = map[string]float64{
+		"e2":  0.022890,
+		"n1":  0.033174,
+		"n2":  0.033174,
+		"n2d": 0.028877,
+	}
+	customMemoryPricePerHourPerGb = map[string]float64{
+		"e2":  0.003067,
+		"n1":  0.004446,
+		"n2":  0.004446,
+		"n2d": 0.003870,
+	}
+	customPreemptibleDiscount = map[string]float64{
+		"e2":  0.006867 / 0.022890,
+		"n1":  0.00698 / 0.033174,
+		"n2":  0.00802 / 0.033174,
+		"n2d": 0.006980 / 0.028877,
+	}
+
 	// e2-micro and e2-small have allocatable set too high resulting in
 	// overcommit. To make cluster autoscaler prefer e2-medium given the choice
 	// between the three machine types, the prices for e2-micro and e2-small
@@ -278,10 +323,8 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		}
 	}
 	if !basePriceFound {
-		price = getBasePrice(node.Status.Capacity, startTime, endTime)
-		if node.Labels != nil && node.Labels[preemptibleLabel] == "true" {
-			price = price * preemptibleDiscount
-		}
+		price = getBasePrice(node.Status.Capacity, node.Labels[apiv1.LabelInstanceType], startTime, endTime)
+		price = price * getPreemptibleDiscount(node)
 	}
 	// TODO: handle SSDs.
 
@@ -295,27 +338,74 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 	return hours
 }
 
+func getInstanceFamily(instanceType string) string {
+	return strings.Split(instanceType, "-")[0]
+}
+
+func isInstanceCustom(instanceType string) bool {
+	return strings.Contains(instanceType, "custom")
+}
+
+func getPreemptibleDiscount(node *apiv1.Node) float64 {
+	if node.Labels[preemptibleLabel] != "true" {
+		return 1.0
+	}
+	instanceType := node.Labels[apiv1.LabelInstanceType]
+	instanceFamily := getInstanceFamily(instanceType)
+
+	discountMap := predefinedPreemptibleDiscount
+	if isInstanceCustom(instanceType) {
+		discountMap = customPreemptibleDiscount
+	}
+
+	if _, found := discountMap[instanceFamily]; found {
+		return discountMap[instanceFamily]
+	}
+	return preemptibleDiscount
+}
+
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
 func (model *GcePriceModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	for _, container := range pod.Spec.Containers {
-		price += getBasePrice(container.Resources.Requests, startTime, endTime)
+		price += getBasePrice(container.Resources.Requests, "", startTime, endTime)
 		price += getAdditionalPrice(container.Resources.Requests, startTime, endTime)
 	}
 	return price, nil
 }
 
-func getBasePrice(resources apiv1.ResourceList, startTime time.Time, endTime time.Time) float64 {
+func getBasePrice(resources apiv1.ResourceList, instanceType string, startTime time.Time, endTime time.Time) float64 {
 	if len(resources) == 0 {
 		return 0
 	}
 	hours := getHours(startTime, endTime)
+	instanceFamily := getInstanceFamily(instanceType)
+	isCustom := isInstanceCustom(instanceType)
 	price := 0.0
+
 	cpu := resources[apiv1.ResourceCPU]
+	cpuPrice := cpuPricePerHour
+	cpuPriceMap := predefinedCpuPricePerHour
+	if isCustom {
+		cpuPriceMap = customCpuPricePerHour
+	}
+	if _, found := cpuPriceMap[instanceFamily]; found {
+		cpuPrice = cpuPriceMap[instanceFamily]
+	}
+	price += float64(cpu.MilliValue()) / 1000.0 * cpuPrice * hours
+
 	mem := resources[apiv1.ResourceMemory]
-	price += float64(cpu.MilliValue()) / 1000.0 * cpuPricePerHour * hours
-	price += float64(mem.Value()) / float64(units.GiB) * memoryPricePerHourPerGb * hours
+	memPrice := memoryPricePerHourPerGb
+	memPriceMap := predefinedMemoryPricePerHourPerGb
+	if isCustom {
+		memPriceMap = customMemoryPricePerHourPerGb
+	}
+	if _, found := memPriceMap[instanceFamily]; found {
+		memPrice = memPriceMap[instanceFamily]
+	}
+	price += float64(mem.Value()) / float64(units.GiB) * memPrice * hours
+
 	return price
 }
 
