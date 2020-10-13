@@ -177,6 +177,7 @@ var (
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
 	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", false, "Should CA cordon nodes before terminating during downscale process")
 	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
+	scaleUpTemplateFromCloudProvider   = flag.Bool("scale-up-from-cloud-provider-template", false, "Build nodes templates from cloud providers node groups rather than real-world nodes. WARNING: this isn't supported by all cloud providers, and can lead to wrong autoscaling decisions (erroneous capacity evaluations causing infinite upscales, or pods left pending).")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -249,6 +250,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
 		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
+		ScaleUpTemplateFromCloudProvider:   *scaleUpTemplateFromCloudProvider,
 	}
 }
 

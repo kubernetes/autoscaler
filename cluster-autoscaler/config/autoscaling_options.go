@@ -151,4 +151,8 @@ type AutoscalingOptions struct {
 	CordonNodeBeforeTerminate bool
 	// DaemonSetEvictionForEmptyNodes is whether CA will gracefully terminate DaemonSet pods from empty nodes.
 	DaemonSetEvictionForEmptyNodes bool
+	// ScaleUpTemplateFromCloudProvider tells cluster-autoscaler to always use cloud-providers node groups (ASG, MIG, VMSS...)
+	// templates rather than templates built from real-world nodes. Warning: this isn't supported by all providers, gives less
+	// accurate informations than real-world nodes, and can lead to wrong upscale decisions.
+	ScaleUpTemplateFromCloudProvider bool
 }

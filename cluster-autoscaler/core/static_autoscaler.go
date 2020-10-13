@@ -266,7 +266,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	nodeInfosForGroups, autoscalerError := core_utils.GetNodeInfosForGroups(
-		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker, a.ignoredTaints)
+		readyNodes,
+		a.nodeInfoCache,
+		autoscalingContext.CloudProvider,
+		autoscalingContext.ListerRegistry,
+		daemonsets,
+		autoscalingContext.PredicateChecker,
+		a.ignoredTaints,
+		autoscalingContext.ScaleUpTemplateFromCloudProvider,
+	)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")

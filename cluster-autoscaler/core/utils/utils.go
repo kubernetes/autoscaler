@@ -42,9 +42,30 @@ import (
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet, useTemplatesOnly bool) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulerframework.NodeInfo)
 	seenGroups := make(map[string]bool)
+
+	if useTemplatesOnly {
+		for _, nodeGroup := range cloudProvider.NodeGroups() {
+			id := nodeGroup.Id()
+			if _, found := result[id]; found {
+				continue
+			}
+			nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker, ignoredTaints)
+			if err != nil {
+				if err == cloudprovider.ErrNotImplemented {
+					klog.Warningf("Running in template only mode, but cloud provider template isn't implemented for group %s", id)
+					continue
+				} else {
+					klog.Errorf("Unable to build proper template node for %s: %v", id, err)
+					return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
+				}
+			}
+			result[id] = nodeInfo
+		}
+		return result, nil
+	}
 
 	podsForNodes, err := getPodsForNodes(listers)
 	if err != nil {
