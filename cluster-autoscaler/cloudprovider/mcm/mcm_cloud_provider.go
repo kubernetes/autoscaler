@@ -343,10 +343,12 @@ func (machinedeployment *MachineDeployment) DeleteNodes(nodes []*apiv1.Node) err
 		belongs, err := machinedeployment.Belongs(node)
 		if err != nil {
 			return err
+		} else if !belongs {
+			return fmt.Errorf("%s belongs to a different machinedeployment than %s", node.Name, machinedeployment.Id())
 		}
 		ref, err := ReferenceFromProviderID(machinedeployment.mcmManager, node.Spec.ProviderID)
-		if belongs != true {
-			return fmt.Errorf("%s belongs to a different machinedeployment than %s", node.Name, machinedeployment.Id())
+		if err != nil {
+			return fmt.Errorf("Couldn't find the machine-name from provider-id %s", node.Spec.ProviderID)
 		}
 		machines = append(machines, ref)
 	}
