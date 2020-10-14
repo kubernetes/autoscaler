@@ -15,15 +15,13 @@
 # limitations under the License.
 
 ###
-
-set -o errexit
-set -o pipefail
-
-###
 # This script is to be used as a break-glass solution if there is a breaking
 # change in a release of Kubernetes. This allows us to switch to an unreleased
 # commit by submoduling the whole k/k repository.
 ###
+
+set -o errexit
+set -o pipefail
 
 VERSION=${1}
 if [ -z "$VERSION" ]; then
