@@ -54,11 +54,12 @@ import (
 )
 
 const (
-	operationWaitTimeout    = 5 * time.Second
-	operationPollInterval   = 100 * time.Millisecond
-	maxRecordsReturnedByAPI = 100
-	maxRetryDeadline        = 1 * time.Minute
-	conflictRetryInterval   = 5 * time.Second
+	operationWaitTimeout      = 5 * time.Second
+	operationPollInterval     = 100 * time.Millisecond
+	maxRecordsReturnedByAPI   = 100
+	maxRetryDeadline          = 1 * time.Minute
+	conflictRetryInterval     = 5 * time.Second
+	machinePriorityAnnotation = "machinepriority.machine.sapcloud.io"
 )
 
 //McmManager manages the client communication for MachineDeployments.
@@ -263,7 +264,8 @@ func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployme
 func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 	var (
-		mdclone *v1alpha1.MachineDeployment
+		mdclone             *v1alpha1.MachineDeployment
+		terminatingMachines []*v1alpha1.Machine
 	)
 
 	if len(machines) == 0 {
@@ -301,11 +303,18 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 			mclone := mach.DeepCopy()
 
+			if isMachineTerminating(mclone) {
+				terminatingMachines = append(terminatingMachines, mclone)
+			}
 			if mclone.Annotations != nil {
-				mclone.Annotations["machinepriority.machine.sapcloud.io"] = "1" //TODO: avoid hardcoded string
+				if mclone.Annotations[machinePriorityAnnotation] == "1" {
+					klog.Infof("Machine %q priority is already set to 1, hence skipping the update", machine.Name)
+					break
+				}
+				mclone.Annotations[machinePriorityAnnotation] = "1"
 			} else {
 				mclone.Annotations = make(map[string]string)
-				mclone.Annotations["machinepriority.machine.sapcloud.io"] = "1"
+				mclone.Annotations[machinePriorityAnnotation] = "1"
 			}
 
 			_, err = m.machineclient.Machines(machine.Namespace).Update(context.TODO(), mclone, metav1.UpdateOptions{})
@@ -341,7 +350,13 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 		if (int(mdclone.Spec.Replicas) - len(machines)) < 0 {
 			return fmt.Errorf("Unable to delete machine in MachineDeployment object %s , machine replicas are < 0 ", commonMachineDeployment.Name)
 		}
-		mdclone.Spec.Replicas = mdclone.Spec.Replicas - int32(len(machines))
+		expectedReplicas := mdclone.Spec.Replicas - int32(len(machines)) + int32(len(terminatingMachines))
+		if expectedReplicas == mdclone.Spec.Replicas {
+			klog.Infof("MachineDeployment %q is already set to %d, skipping the update", mdclone.Name, expectedReplicas)
+			break
+		}
+
+		mdclone.Spec.Replicas = expectedReplicas
 
 		_, err = m.machineclient.MachineDeployments(mdclone.Namespace).Update(context.TODO(), mdclone, metav1.UpdateOptions{})
 		if err != nil && time.Now().Before(retryDeadline) {
@@ -388,7 +403,7 @@ func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeploym
 			for _, node := range nodelist.Items {
 				if machine.Labels["node"] == node.Name {
 					nodes = append(nodes, node.Spec.ProviderID)
-					found = true;
+					found = true
 					break
 				}
 			}
@@ -518,4 +533,16 @@ func buildGenericLabels(template *nodeTemplate, nodeName string) map[string]stri
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
 	return result
+}
+
+// isMachineTerminating returns true if machine is already being terminated or considered for termination by autoscaler.
+func isMachineTerminating(machine *v1alpha1.Machine) bool {
+	if !machine.GetDeletionTimestamp().IsZero() {
+		klog.Infof("Machine %q is already being terminated, and hence skipping the deletion", machine.Name)
+		return true
+	} else if machine.Annotations != nil && machine.Annotations[machinePriorityAnnotation] == "1" {
+		klog.Infof("Machine %q 's priority is set to 1, we assume it to be triggered for deletion by autoscaler earlier, hence skipping deletion", machine.Name)
+		return true
+	}
+	return false
 }
