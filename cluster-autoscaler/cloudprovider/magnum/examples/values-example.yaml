@@ -1,0 +1,30 @@
+cloudProvider: "magnum"
+
+magnumClusterName: "cluster name or ID"
+
+autoscalingGroups:
+- name: default-worker
+  maxSize: 5
+  minSize: 1
+
+image:
+  repository: docker.io/openstackmagnum/cluster-autoscaler
+  tag: v1.19.0
+
+nodeSelector:
+  node-role.kubernetes.io/master: ""
+
+tolerations:
+- key: CriticalAddonsOnly
+  value: "True"
+  effect: NoSchedule
+- key: dedicated
+  value: "master"
+  effect: NoSchedule
+- key: node-role.kubernetes.io/master
+  effect: NoSchedule
+
+cloudConfigPath: "/etc/kubernetes/cloud-config"
+
+extraArgs:
+  v: 2
