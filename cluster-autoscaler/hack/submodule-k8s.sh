@@ -15,36 +15,39 @@
 # limitations under the License.
 
 ###
-# This script is to be used when updating Kubernetes and its staging
-# repositories to *tagged* releases. This is the ideal case, but another
-# script, submodule-k8s.sh, is available as a break-glass solution if we must
-# switch to an unreleased commit.
-###
 
 set -o errexit
 set -o pipefail
 
-VERSION=${1#"v"}
+###
+# This script is to be used as a break-glass solution if there is a breaking
+# change in a release of Kubernetes. This allows us to switch to an unreleased
+# commit by submoduling the whole k/k repository.
+###
+
+VERSION=${1}
 if [ -z "$VERSION" ]; then
-    echo "Usage: hack/update-vendor.sh <k8s version>"
+    echo "Usage: hack/submodule-k8s.sh <k8s sha>"
     exit 1
 fi
 
 set -x
 
 MODS=($(
-    curl -sS https://raw.githubusercontent.com/kubernetes/kubernetes/v${VERSION}/go.mod |
+    curl -sS https://raw.githubusercontent.com/kubernetes/kubernetes/${VERSION}/go.mod |
     sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
 ))
 
+git submodule add --force https://github.com/kubernetes/kubernetes
+git submodule update --init --recursive --remote
+cd kubernetes
+git checkout $VERSION
+cd ..
+
+go mod edit "-replace=k8s.io/kubernetes=./kubernetes"
+
 for MOD in "${MODS[@]}"; do
-    V=$(
-        go mod download -json "${MOD}@kubernetes-${VERSION}" |
-        sed -n 's|.*"Version": "\(.*\)".*|\1|p'
-    )
-    go mod edit "-replace=${MOD}=${MOD}@${V}"
+    go mod edit "-replace=${MOD}=./kubernetes/staging/src/${MOD}"
 done
-go get "k8s.io/kubernetes@v${VERSION}"
 go mod vendor
 go mod tidy
-git rm -r --force --ignore-unmatch kubernetes
