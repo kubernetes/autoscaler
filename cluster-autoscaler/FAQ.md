@@ -927,7 +927,7 @@ Example execution looks like this:
 ./hack/update-vendor.sh 1.20.0-alpha.1
 ```
 
-If you need to work against an unreleased commit of Kubernetes, you can use a custom replace directive like this:
+If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
 ```
-go mod edit -replace k8s.io/kube-scheduler=$HOME/workspace/kube-scheduler
+./hack/submodule-k8s.sh <k8s commit sha>
 ```
