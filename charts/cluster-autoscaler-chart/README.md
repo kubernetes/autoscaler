@@ -45,10 +45,15 @@ You must provide some minimal configuration, either to specify instance groups o
 
 Either:
 
-- Set `autoDiscovery.clusterName` and tag your autoscaling groups appropriately (`--cloud-provider=aws` only) **or**
-- Set at least one ASG as an element in the `autoscalingGroups` array with its three values: `name`, `minSize` and `maxSize`.
+- Set `autoDiscovery.clusterName` and provide additional autodiscovery options if necessary **or**
+- Set static node group configurations for one or more node groups (using `autoscalingGroups` or `autoscalingGroupsnamePrefix`).
 
-To install the chart with the release name `my-release`:
+To create a valid configuration, follow instructions for your cloud provider:
+
+* [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
+* [GCE](#gce)
+* [Azure AKS](#azure-aks)
+* [OpenStack Magnum](#openstack-magnum)
 
 ### AWS - Using auto-discovery of tagged instance groups
 
@@ -162,6 +167,24 @@ The following parameters are required:
 - `azureResourceGroup: "your-aks-cluster-resource-group-name"`
 - `azureVMType: "AKS"`
 - `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+
+### OpenStack Magnum
+
+`cloudProvider: magnum` must be set, and then one of
+
+- `magnumClusterName=<cluster name or ID>` and `autoscalingGroups` with the names of node groups and min/max node counts
+- or `autoDiscovery.clusterName=<cluster name or ID>` with one or more `autoDiscovery.roles`.
+
+Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location
+of the cloud-config file on the host.
+
+Example values files can be found [here](../../cluster-autoscaler/cloudprovider/magnum/examples).
+
+Install the chart with
+
+```
+$ helm install my-release autoscaler/cluster-autoscaler-chart -f myvalues.yaml
+```
 
 ## Uninstalling the Chart
 
@@ -290,9 +313,10 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Affinity for pod assignment |
-| autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for name in ASG tag (only `cloudProvider=aws`). Must be set for `cloudProvider=gce`, but no MIG tagging required. |
+| autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`. Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required. Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`. |
+| autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
 | autoDiscovery.tags | list | `["k8s.io/cluster-autoscaler/enabled","k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}"]` | ASG tags to match, run through `tpl`. |
-| autoscalingGroups | list | `[]` | For AWS. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> |
+| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> |
 | autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
 | awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |
@@ -307,7 +331,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID and resource group are set. |
 | azureVMType | string | `"AKS"` | Azure VM type. |
 | cloudConfigPath | string | `"/etc/gce.conf"` | Configuration file for cloud provider. |
-| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, and `azure` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. |
+| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure` and `magnum` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum. |
 | containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
 | expanderPriorities | object | `{}` | The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities. If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities. See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md |
@@ -319,6 +343,8 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | image.repository | string | `"us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler"` | Image repository |
 | image.tag | string | `"v1.18.1"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overridding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
+| magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
+| magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
 | nameOverride | string | `""` | String to partially override `cluster-autoscaler.fullname` template (will maintain the release name) |
 | nodeSelector | object | `{}` | Node labels for pod assignment. Ref: https://kubernetes.io/docs/user-guide/node-selection/. |
 | podAnnotations | object | `{}` | Annotations to add to each pod. |
