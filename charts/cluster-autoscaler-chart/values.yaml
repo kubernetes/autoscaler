@@ -3,17 +3,25 @@
 affinity: {}
 
 autoDiscovery:
-  # Only cloudProvider `aws` and `gce` are supported by auto-discovery at this time
+  # cloudProviders `aws`, `gce` and `magnum` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
-  # autoDiscovery.clusterName -- Enable autodiscovery for name in ASG tag (only `cloudProvider=aws`). Must be set for `cloudProvider=gce`, but no MIG tagging required.
+
+  # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
+  # Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required.
+  # Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`.
   clusterName:  # cluster.local
+
   # autoDiscovery.tags -- ASG tags to match, run through `tpl`.
   tags:
   - k8s.io/cluster-autoscaler/enabled
   - k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}
   # - kubernetes.io/cluster/{{ .Values.autoDiscovery.clusterName }}
 
-# autoscalingGroups -- For AWS. At least one element is required if not using `autoDiscovery`. For example:
+  # autoDiscovery.roles -- Magnum node group roles to match.
+  roles:
+  - worker
+
+# autoscalingGroups -- For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example:
 # <pre>
 # - name: asg1<br />
 #   maxSize: 2<br />
@@ -84,12 +92,20 @@ azureNodeResourceGroup: ""
 # azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID and resource group are set.
 azureUseManagedIdentityExtension: false
 
+# magnumClusterName -- Cluster name or ID in Magnum.
+# Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`.
+magnumClusterName: ""
+
+# magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
+magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: /etc/gce.conf
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, and `azure` are supported.
+# Currently only `gce`, `aws`, `azure` and `magnum` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
+# `magnum` for OpenStack Magnum.
 cloudProvider: aws
 
 # containerSecurityContext -- [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
