@@ -21,10 +21,10 @@ package impl
 
 import (
 	"crypto/tls"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/config"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/httphandler"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/request"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/response"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/httphandler"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/response"
 	"net/http"
 	"net/url"
 )

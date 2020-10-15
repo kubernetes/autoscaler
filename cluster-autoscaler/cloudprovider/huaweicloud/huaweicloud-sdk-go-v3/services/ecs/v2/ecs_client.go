@@ -1,8 +1,8 @@
 package v2
 
 import (
-	http_client "github.com/huaweicloud/huaweicloud-sdk-go-v3/core"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
+	http_client "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
 )
 
 type EcsClient struct {

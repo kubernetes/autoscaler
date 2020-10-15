@@ -20,8 +20,8 @@
 package basic
 
 import (
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/signer"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/request"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/signer"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
 	"strings"
 )
 

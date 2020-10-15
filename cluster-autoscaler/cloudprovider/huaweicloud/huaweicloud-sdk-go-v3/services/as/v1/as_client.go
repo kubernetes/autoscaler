@@ -1,8 +1,8 @@
 package v1
 
 import (
-	http_client "github.com/huaweicloud/huaweicloud-sdk-go-v3/core"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
+	http_client "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 )
 
 type AsClient struct {
