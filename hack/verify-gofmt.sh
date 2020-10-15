@@ -36,6 +36,7 @@ find_files() {
         -o -wholename '*/vendor/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/magnum/gophercloud/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/digitalocean/godo/*' \
+        -o -wholename './cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/*' \
       \) -prune \
     \) -name '*.go'
 }
