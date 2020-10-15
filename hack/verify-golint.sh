@@ -28,6 +28,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/magnum/gophercloud'
   'cluster-autoscaler/cloudprovider/digitalocean/godo'
   'cluster-autoscaler/cloudprovider/exoscale/internal'
+  'cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3'
 )
 
 FIND_PACKAGES='go list ./... '
