@@ -9,7 +9,7 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/sdktime"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/sdktime"
 
 	"strings"
 )
