@@ -60,8 +60,6 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 }
 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
-// It prevents race conditions by verifying that the lastUpdateTime of the
-// API object and its model representation are equal.
 func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, newStatus,
 	oldStatus *vpa_types.VerticalPodAutoscalerStatus) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	patches := []patchRecord{{
