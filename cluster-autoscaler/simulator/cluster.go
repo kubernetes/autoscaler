@@ -294,6 +294,10 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
+	isCandidateNode := func(nodeName string) bool {
+		return nodeName != removedNode && nodes[nodeName]
+	}
+
 	pods = tpu.ClearTPURequests(pods)
 
 	// remove pods from clusterSnapshot first
@@ -314,7 +318,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
-		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && hintedNode != removedNode {
+		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && isCandidateNode(hintedNode) {
 			if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
 				if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
@@ -328,7 +332,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 		if !foundPlace {
 			newNodeName, err := predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
-				return nodeInfo.Node().Name != removedNode
+				return isCandidateNode(nodeInfo.Node().Name)
 			})
 			if err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
