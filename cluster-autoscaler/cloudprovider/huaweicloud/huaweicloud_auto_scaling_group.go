@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
@@ -28,14 +29,24 @@ import (
 // AutoScalingGroup represents a HuaweiCloud's 'Auto Scaling Group' which also can be treated as a node group.
 type AutoScalingGroup struct {
 	cloudServiceManager CloudServiceManager
-
-	groupID           string
-	minInstanceNumber int
-	maxInstanceNumber int
+	groupName           string
+	groupID             string
+	minInstanceNumber   int
+	maxInstanceNumber   int
 }
 
 // Check if our AutoScalingGroup implements necessary interface.
 var _ cloudprovider.NodeGroup = &AutoScalingGroup{}
+
+func newAutoScalingGroup(csm CloudServiceManager, sg huaweicloudsdkasmodel.ScalingGroups) AutoScalingGroup {
+	return AutoScalingGroup{
+		cloudServiceManager: csm,
+		groupName:           *sg.ScalingGroupName,
+		groupID:             *sg.ScalingGroupId,
+		minInstanceNumber:   int(*sg.MinInstanceNumber),
+		maxInstanceNumber:   int(*sg.MaxInstanceNumber),
+	}
+}
 
 // MaxSize returns maximum size of the node group.
 func (asg *AutoScalingGroup) MaxSize() int {
@@ -92,7 +103,7 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 	servers := make([]string, 0, len(instances))
 	for _, instance := range instances {
-		servers = append(servers, *instance.InstanceId)
+		servers = append(servers, instance.Id)
 	}
 
 	err = asg.cloudServiceManager.DeleteServers(servers)
@@ -100,6 +111,8 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		klog.Warningf("failed to delete nodes. error: %v", err)
 		return err
 	}
+
+	// TODO(RainbowMango): Wait for node group size updated.
 
 	return nil
 }
@@ -134,21 +147,8 @@ func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
 		klog.Warningf("failed to get nodes from group: %s, error: %v", asg.groupID, err)
 		return nil, err
 	}
-	if len(instances) == 0 {
-		return nil, nil
-	}
 
-	// TODO(RainbowMango) Convert AS instances to cloud provider instances. Especially convert status.
-	providerInstances := make([]cloudprovider.Instance, 0, len(instances))
-	for i := range instances {
-		pInstances := cloudprovider.Instance{
-			Id:     *instances[i].InstanceId,
-			Status: nil,
-		}
-
-		providerInstances = append(providerInstances, pInstances)
-	}
-	return nil, nil
+	return instances, nil
 }
 
 // TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
