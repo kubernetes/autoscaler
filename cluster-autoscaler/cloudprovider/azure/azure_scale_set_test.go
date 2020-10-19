@@ -318,6 +318,16 @@ func TestDeleteNodes(t *testing.T) {
 	targetSize, err = scaleSet.TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, targetSize)
+
+	// Ensure that the status for the instances is Deleting
+	instance0, found := scaleSet.getInstanceByProviderID("azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0))
+	assert.True(t, found, true)
+	assert.Equal(t, instance0.Status.State, cloudprovider.InstanceDeleting)
+
+	instance2, found := scaleSet.getInstanceByProviderID("azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 2))
+	assert.True(t, found, true)
+	assert.Equal(t, instance2.Status.State, cloudprovider.InstanceDeleting)
+
 }
 
 func TestDeleteNoConflictRequest(t *testing.T) {
