@@ -562,18 +562,13 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	}
 
 	klog.V(4).Infof("Nodes: starts to get VMSS VMs")
-
-	lastRefresh := time.Now()
-	if scaleSet.lastInstanceRefresh.IsZero() && scaleSet.instancesRefreshJitter > 0 {
-		// new VMSS: spread future refreshs
-		splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
-		lastRefresh = time.Now().Add(-time.Second * time.Duration(splay))
-	}
+	splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
+	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
 	vms, rerr := scaleSet.GetScaleSetVms()
 	if rerr != nil {
 		if isAzureRequestsThrottled(rerr) {
-			// Log a warning and update the instance refresh time so that it would retry after next scaleSet.instanceRefreshPeriod.
+			// Log a warning and update the instance refresh time so that it would retry after cache expiration
 			klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
 			scaleSet.lastInstanceRefresh = lastRefresh
 			return scaleSet.instanceCache, nil
