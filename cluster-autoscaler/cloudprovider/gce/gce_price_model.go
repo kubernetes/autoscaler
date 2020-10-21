@@ -32,9 +32,9 @@ type GcePriceModel struct {
 
 const (
 	//TODO: Move it to a config file.
-	cpuPricePerHour         = 0.022890
-	memoryPricePerHourPerGb = 0.003067
-	preemptibleDiscount     = 0.006867 / 0.022890
+	cpuPricePerHour         = 0.033174
+	memoryPricePerHourPerGb = 0.004446
+	preemptibleDiscount     = 0.00698 / 0.033174
 	gpuPricePerHour         = 0.700
 
 	preemptibleLabel = "cloud.google.com/gke-preemptible"
