@@ -98,7 +98,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 	for _, node := range instanceIDs {
 		_, err := n.manager.client.Server.Delete(ctx, node)
-		klog.Fatalf("Failed to delete server ID %s error: %v", node.ID, err)
+		klog.Fatalf("Failed to delete server ID %d error: %v", node.ID, err)
 	}
 
 	n.size = n.size - len(instanceIDs)
