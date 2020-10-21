@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -10,7 +10,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
+distributed under the License is distributed on an "AS IS" BASIS,!
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -50,6 +50,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.DigitalOceanProviderName,
 	cloudprovider.ExoscaleProviderName,
 	cloudprovider.HuaweicloudProviderName,
+	cloudprovider.HetznerProviderName,
 	cloudprovider.OVHcloudProviderName,
 	cloudprovider.ClusterAPIProiverName,
 	cloudprovider.IonoscloudProviderName,
@@ -83,6 +84,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return huaweicloud.BuildHuaweiCloud(opts, do, rl)
 	case cloudprovider.OVHcloudProviderName:
 		return ovhcloud.BuildOVHcloud(opts, do, rl)
+	case cloudprovider.HetznerProviderName:
+		return hetzner.BuildHetzner(opts, do, rl)
 	case packet.ProviderName:
 		return packet.BuildPacket(opts, do, rl)
 	case cloudprovider.ClusterAPIProiverName:

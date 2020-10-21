@@ -1,4 +1,4 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DIR=$(dirname $0) 
+DIR=$(dirname $0)
 
 # Install tools we need
 go install ${DIR}/../../../github.com/client9/misspell/cmd/misspell
 
 # Spell checking
-git ls-files --full-name | grep -v -e vendor | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud| grep -v cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3 | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo | xargs misspell -error -o stderr
+git ls-files --full-name | grep -v -e vendor | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud| grep -v cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3 | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo | grep -v cluster-autoscaler/cloudprovider/hetzner/hcloud-go | xargs misspell -error -o stderr
