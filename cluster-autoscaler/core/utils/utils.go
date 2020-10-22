@@ -188,12 +188,21 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	return sanitizedNodeInfo, nil
 }
 
+// isVirtualNode determines if the node is created by virtual kubelet
+func isVirtualNode(node *apiv1.Node) bool {
+	return node.ObjectMeta.Labels["type"] == "virtual-kubelet"
+}
+
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
 // return autoscaled node group.
 func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0)
 
 	for _, node := range nodes {
+		// Exclude the virtual node here since it may have lots of resource and exceed the total resource limit
+		if isVirtualNode(node) {
+			continue
+		}
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			return []*apiv1.Node{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
