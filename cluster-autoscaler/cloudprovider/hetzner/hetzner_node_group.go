@@ -257,7 +257,7 @@ func (n *hetznerNodeGroup) Delete() error {
 // autoprovisioned group was created by CA and can be deleted when scaled to 0.
 func (n *hetznerNodeGroup) Autoprovisioned() bool {
 	// All groups are auto provisioned
-	return true
+	return false
 }
 
 func toInstance(vm *hcloud.Server) cloudprovider.Instance {
@@ -364,6 +364,11 @@ func createServer(n *hetznerNodeGroup) error {
 		_ = n.manager.deleteServer(server)
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
 	}
+
+	go func(server *hcloud.Server) {
+		// Somehow patch the spec external id
+		// server.Name
+	}(server)
 
 	return nil
 }
