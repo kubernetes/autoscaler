@@ -21,7 +21,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	apiv1 "k8s.io/api/core/v1"
 	"os"
 	"strings"

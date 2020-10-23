@@ -4,7 +4,6 @@ go 1.12
 require (
   github.com/digitalocean/godo v1.27.0
   github.com/rancher/go-rancher v0.1.0
-  github.com/hetznercloud/hcloud-go v1.22.0
 )
 
 replace (
