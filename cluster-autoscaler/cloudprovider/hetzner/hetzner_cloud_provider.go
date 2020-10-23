@@ -35,9 +35,9 @@ var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel             = hcloudLabelNamespace + "/gpu-node"
-	providerIDPrefix     = "hetzner-autoscale://"
+	providerIDPrefix     = "hcloud://"
 	nodeGroupLabel       = hcloudLabelNamespace + "/node-group"
-	hcloudLabelNamespace = "k8s.hcloud"
+	hcloudLabelNamespace = "hcloud"
 	drainingNodePoolId   = "draining-node-pool"
 )
 
