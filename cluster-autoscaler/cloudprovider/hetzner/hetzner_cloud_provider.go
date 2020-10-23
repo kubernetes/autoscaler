@@ -71,7 +71,7 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	}
 
 	if server == nil {
-		klog.Infof("failed to find hcloud server for node %s", node.Name)
+		klog.V(3).Infof("failed to find hcloud server for node %s", node.Name)
 		return nil, nil
 	}
 
