@@ -17,25 +17,33 @@ limitations under the License.
 package hetzner
 
 import (
+	"fmt"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "cloud.Hetzner.com/gpu-node"
-	doProviderIDPrefix = "Hetzner://"
+	GPULabel             = hcloudLabelNamespace + "/gpu-node"
+	providerIDPrefix     = "hetzner-autoscale://"
+	nodeGroupLabel       = hcloudLabelNamespace + "/node-group"
+	hcloudLabelNamespace = "k8s.hcloud"
+	drainingNodePoolId   = "draining-node-pool"
 )
 
 // HetznerCloudProvider implements CloudProvider interface.
 type HetznerCloudProvider struct {
-	manager         *Manager
+	manager         *hetznerManager
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
@@ -46,16 +54,45 @@ func (d *HetznerCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	nodeGroups := make([]cloudprovider.NodeGroup, 1)
-	nodeGroups = append(nodeGroups, d.manager.nodeGroup)
-	return nodeGroups
+	groups := make([]cloudprovider.NodeGroup, 0)
+	for i := range d.manager.nodeGroups {
+		groups = append(groups, d.manager.nodeGroups[i])
+	}
+	return groups
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	return d.manager.nodeGroup, nil
+	server, err := d.manager.serverForNode(node)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check if server %s exists error: %v", node.Spec.ProviderID, err)
+	}
+
+	if server == nil {
+		klog.Infof("failed to find hcloud server for node %s", node.Name)
+		return nil, nil
+	}
+
+	groupId, exists := server.Labels[nodeGroupLabel]
+	if !exists {
+		klog.Warningf("server %s does not contain nodegroup label %s, draining node", node.Name, nodeGroupLabel)
+		return addDrainingNodeGroup(d.manager, node)
+	}
+
+	group, exists := d.manager.nodeGroups[groupId]
+	if !exists {
+		klog.Warningf("nodegroup %s not configured for server %s, draining node", groupId, node.Name)
+		return addDrainingNodeGroup(d.manager, node)
+	}
+
+	return group, nil
+}
+
+func addDrainingNodeGroup(manager *hetznerManager, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	klog.Warningf("server %s within not configured node, creating temp group with target size 0", node.Name, nodeGroupLabel)
+	return manager.addNodeToDrainingPool(node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
@@ -67,7 +104,17 @@ func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Aut
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
 func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
-	return []string{}, nil
+	serverTypes, err := d.manager.client.ServerType.All(d.manager.apiCallContext)
+	if err != nil {
+		return nil, err
+	}
+
+	types := make([]string, len(serverTypes))
+	for _, server := range serverTypes {
+		types = append(types, server.Name)
+	}
+
+	return types, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition
@@ -114,24 +161,74 @@ func (d *HetznerCloudProvider) Refresh() error {
 }
 
 // BuildHetzner builds the Hetzner cloud provider.
-func BuildHetzner(_ config.AutoscalingOptions, _ cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager()
 	if err != nil {
 		klog.Fatalf("Failed to create Hetzner manager: %v", err)
 	}
 
-	// The cloud provider automatically uses all Instance Pools.
-	// This means we don't use the cloudprovider.NodeGroupDiscoveryOptions
-	// flags (which can be set via '--node-group-auto-discovery' or '-nodes')
 	provider, err := newHetznerCloudProvider(manager, rl)
 	if err != nil {
 		klog.Fatalf("Failed to create Hetzner cloud provider: %v", err)
 	}
 
+	validNodePoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
+	clusterUpdateLock := sync.Mutex{}
+
+	for _, nodegroupSpec := range do.NodeGroupSpecs {
+		spec, err := createNodePoolSpec(nodegroupSpec)
+		if err != nil {
+			klog.Fatalf("Failed to parse pool spec `%s` provider: %v", nodegroupSpec, err)
+		}
+
+		validNodePoolName.MatchString(spec.name)
+		servers, err := manager.allServers(spec.name)
+		if err != nil {
+			klog.Fatalf("Failed to get servers for for node pool %s error: %v", nodegroupSpec, err)
+		}
+
+		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
+			manager:            manager,
+			id:                 spec.name,
+			minSize:            spec.minSize,
+			maxSize:            spec.maxSize,
+			instanceType:       strings.ToLower(spec.instanceType),
+			region:             strings.ToLower(spec.region),
+			targetSize:         len(servers),
+			clusterUpdateMutex: &clusterUpdateLock,
+		}
+	}
+
 	return provider
 }
 
-func newHetznerCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) (*HetznerCloudProvider, error) {
+func createNodePoolSpec(groupSpec string) (*hetznerNodeGroupSpec, error) {
+	tokens := strings.SplitN(groupSpec, ":", 5)
+	if len(tokens) != 5 {
+		return nil, fmt.Errorf("expected format `<min-servers>:<max-servers>:<machine-type>:<region>:<name>` got %s", groupSpec)
+	}
+
+	definition := hetznerNodeGroupSpec{
+		instanceType: tokens[2],
+		region:       tokens[3],
+		name:         tokens[4],
+	}
+	if size, err := strconv.Atoi(tokens[0]); err == nil {
+		definition.minSize = size
+	} else {
+		return nil, fmt.Errorf("failed to set min size: %s, expected integer", tokens[0])
+	}
+
+	if size, err := strconv.Atoi(tokens[1]); err == nil {
+		definition.maxSize = size
+	} else {
+		return nil, fmt.Errorf("failed to set max size: %s, expected integer", tokens[1])
+	}
+
+	return &definition, nil
+}
+
+func newHetznerCloudProvider(manager *hetznerManager, rl *cloudprovider.ResourceLimiter) (*HetznerCloudProvider, error) {
 	return &HetznerCloudProvider{
 		manager:         manager,
 		resourceLimiter: rl,

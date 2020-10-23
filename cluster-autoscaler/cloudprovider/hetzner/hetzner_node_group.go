@@ -17,48 +17,51 @@ limitations under the License.
 package hetzner
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	"math/rand"
 	"strconv"
-	"strings"
 	"sync"
+	"time"
 )
 
-const (
-	hcloudLabelNamespace = "hetzner.cloud"
-	nodeIDLabel        = hcloudLabelNamespace + "/node-id"
-)
-
-var (
-	// ErrNodePoolNotExist is return if no node pool exists for a given cluster ID
-	ErrNodePoolNotExist = errors.New("node pool does not exist")
-)
-
-// NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains
+// hetznerNodeGroup implements cloudprovider.NodeGroup interface. hetznerNodeGroup contains
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
-type NodeGroup struct {
-	id      string
-	manager *Manager
-	size    int
+type hetznerNodeGroup struct {
+	id           string
+	manager      *hetznerManager
+	minSize      int
+	maxSize      int
+	targetSize   int
+	region       string
+	instanceType string
 
-	sync.Mutex
+	clusterUpdateMutex *sync.Mutex
+}
+
+type hetznerNodeGroupSpec struct {
+	name         string
+	minSize      int
+	maxSize      int
+	region       string
+	instanceType string
 }
 
 // MaxSize returns maximum size of the node group.
-func (n *NodeGroup) MaxSize() int {
-	return 100
+func (n *hetznerNodeGroup) MaxSize() int {
+	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (n *NodeGroup) MinSize() int {
-	return 0
+func (n *hetznerNodeGroup) MinSize() int {
+	return n.minSize
 }
 
 // TargetSize returns the current target size of the node group. It is possible
@@ -66,14 +69,49 @@ func (n *NodeGroup) MinSize() int {
 // be equal to Size() once everything stabilizes (new nodes finish startup and
 // registration or removed nodes are deleted completely). Implementation
 // required.
-func (n *NodeGroup) TargetSize() (int, error) {
-	return n.size, nil
+func (n *hetznerNodeGroup) TargetSize() (int, error) {
+	return n.targetSize, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (n *NodeGroup) IncreaseSize(delta int) error {
+func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
+	if delta <= 0 {
+		return fmt.Errorf("delta must be positive, have: %d", delta)
+	}
+
+	targetSize := n.targetSize + delta
+	if targetSize > n.MaxSize() {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, targetSize, n.MaxSize())
+	}
+
+	klog.V(4).Infof("Scaling Instance Pool %s to %d", n.id, targetSize)
+
+	n.clusterUpdateMutex.Lock()
+	defer n.clusterUpdateMutex.Unlock()
+
+	available, err := serverTypeAvailable(n.manager, n.instanceType, n.region)
+	if err != nil {
+		return fmt.Errorf("failed to check if type %s is available in region %s error: %v", n.instanceType, n.region, err)
+	}
+	if !available {
+		return fmt.Errorf("server type %s not available in region %s", n.instanceType, n.region)
+	}
+
+	waitGroup := sync.WaitGroup{}
+	for i := 0; i < delta; i++ {
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			err := createServer(n)
+			if err != nil {
+				klog.Errorf("failed to create error: %v", err)
+			}
+		}()
+	}
+	waitGroup.Wait()
+
 	return nil
 }
 
@@ -81,27 +119,34 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
-func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	var instanceIDs []*hcloud.Server
+func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	n.clusterUpdateMutex.Lock()
+	defer n.clusterUpdateMutex.Unlock()
+
+	targetSize := n.targetSize - len(nodes)
+	if targetSize < n.MinSize() {
+		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", n.targetSize, targetSize, n.MinSize())
+	}
+
+	waitGroup := sync.WaitGroup{}
+
 	for _, node := range nodes {
-		nodeID := node.Spec.ProviderID
-		instanceIDs = append(instanceIDs, toServer(nodeID))
+		waitGroup.Add(1)
+		go func(node *apiv1.Node) {
+			klog.Infof("Evicting server %s", node.Name)
+
+			err := n.manager.deleteByNode(node)
+			if err != nil {
+				klog.Errorf("failed to delete server ID %d error: %v", node.Name, err)
+			}
+
+			waitGroup.Done()
+		}(node)
 	}
+	waitGroup.Wait()
 
-	ctx := context.Background()
+	n.resetTargetSize(-len(nodes))
 
-	n.Lock()
-	defer n.Unlock()
-
-	klog.V(4).Infof("Evicting servers: %v", instanceIDs)
-
-
-	for _, node := range instanceIDs {
-		_, err := n.manager.client.Server.Delete(ctx, node)
-		klog.Fatalf("Failed to delete server ID %d error: %v", node.ID, err)
-	}
-
-	n.size = n.size - len(instanceIDs)
 	return nil
 }
 
@@ -110,33 +155,33 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (n *NodeGroup) DecreaseTargetSize(delta int) error {
-	n.size = n.size + delta
+func (n *hetznerNodeGroup) DecreaseTargetSize(delta int) error {
+	n.targetSize = n.targetSize + delta
 	return nil
 }
 
 // Id returns an unique identifier of the node group.
-func (n *NodeGroup) Id() string {
+func (n *hetznerNodeGroup) Id() string {
 	return n.id
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (n *NodeGroup) Debug() string {
+func (n *hetznerNodeGroup) Debug() string {
 	return fmt.Sprintf("cluster ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
 // required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (n *hetznerNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	listOptions := hcloud.ListOpts{
-		PerPage: 50,
-		LabelSelector: nodeIDLabel,
+		PerPage:       50,
+		LabelSelector: nodeGroupLabel + "=" + n.id,
 	}
 	requestOptions := hcloud.ServerListOpts{ListOpts: listOptions}
-	servers, err := n.manager.client.Server.AllWithOpts(context.Background(), requestOptions)
+	servers, err := n.manager.client.Server.AllWithOpts(n.manager.apiCallContext, requestOptions)
 	if err != nil {
-		klog.Fatalf("Failed to get servers for Hcloud: %v", err)
+		return nil, fmt.Errorf("failed to get servers for hcloud: %v", err)
 	}
 
 	instances := make([]cloudprovider.Instance, 0, len(servers))
@@ -154,34 +199,62 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // all of the labels, capacity and allocatable information as well as all pods
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
-func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+	resourceList, err := getMachineTypeResourceList(n.manager, n.instanceType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
+	}
+
+	node := apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   newNodeName(n),
+			Labels: map[string]string{},
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:   resourceList,
+			Conditions: cloudprovider.BuildReadyConditions(),
+		},
+	}
+	node.Status.Allocatable = node.Status.Capacity
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildNodeGroupLabels(n))
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
+
+	err = nodeInfo.SetNode(&node)
+	if err != nil {
+		return nil, fmt.Errorf("could not create node info for node group %s error: %v", n.id, err)
+	}
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
 // Allows to tell the theoretical node group from the real one. Implementation
 // required.
-func (n *NodeGroup) Exist() bool {
-	return true
+func (n *hetznerNodeGroup) Exist() bool {
+	_, exists := n.manager.nodeGroups[n.id]
+	return exists
 }
 
 // Create creates the node group on the cloud provider side. Implementation
 // optional.
-func (n *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
-	return nil, cloudprovider.ErrNotImplemented
+func (n *hetznerNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	n.manager.nodeGroups[n.id] = n
+
+	return n, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.  This will be
 // executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (n *NodeGroup) Delete() error {
-	return cloudprovider.ErrNotImplemented
+func (n *hetznerNodeGroup) Delete() error {
+	// We do not use actual node groups but all nodes within the Hcloud project are labeled with a group
+	return nil
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An
 // autoprovisioned group was created by CA and can be deleted when scaled to 0.
-func (n *NodeGroup) Autoprovisioned() bool {
-	return false
+func (n *hetznerNodeGroup) Autoprovisioned() bool {
+	// All groups are auto provisioned
+	return true
 }
 
 func toInstance(vm *hcloud.Server) cloudprovider.Instance {
@@ -192,15 +265,7 @@ func toInstance(vm *hcloud.Server) cloudprovider.Instance {
 }
 
 func toProviderID(nodeID int) string {
-	return fmt.Sprintf("%s%d", doProviderIDPrefix, nodeID)
-}
-
-func toServer(providerID string) *hcloud.Server {
-	i, err := strconv.Atoi(strings.TrimPrefix(providerID, doProviderIDPrefix))
-	if err != nil {
-		klog.Fatalf("Failed to convert server ID %s error: %v", providerID, err)
-	}
-	return &hcloud.Server{ID: i}
+	return fmt.Sprintf("%s%d", providerIDPrefix, nodeID)
 }
 
 func toInstanceStatus(status hcloud.ServerStatus) *cloudprovider.InstanceStatus {
@@ -228,4 +293,110 @@ func toInstanceStatus(status hcloud.ServerStatus) *cloudprovider.InstanceStatus 
 	}
 
 	return st
+}
+
+func newNodeName(n *hetznerNodeGroup) string {
+	return fmt.Sprintf("%s-%d", n.id, rand.Int63())
+}
+
+func buildNodeGroupLabels(n *hetznerNodeGroup) map[string]string {
+	return map[string]string{
+		apiv1.LabelInstanceType:     n.instanceType,
+		apiv1.LabelZoneRegionStable: n.region,
+		nodeGroupLabel:              n.id,
+	}
+}
+
+func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.ResourceList, error) {
+	typeInfo, _, err := m.client.ServerType.Get(m.apiCallContext, instanceType)
+	if err != nil || typeInfo == nil {
+		return nil, fmt.Errorf("failed to get machine type %s info error: %v", instanceType, err)
+	}
+
+	return apiv1.ResourceList{
+		// TODO somehow determine the actual pods that will be running
+		apiv1.ResourcePods:    *resource.NewQuantity(3, resource.DecimalSI),
+		apiv1.ResourceCPU:     *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
+	}, nil
+}
+
+func serverTypeAvailable(manager *hetznerManager, instanceType string, region string) (bool, error) {
+	serverType, _, err := manager.client.ServerType.Get(manager.apiCallContext, instanceType)
+	if err != nil {
+		return false, err
+	}
+
+	for _, price := range serverType.Pricings {
+		if price.Location.Name == region {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func createServer(n *hetznerNodeGroup) error {
+	StartAfterCreate := true
+	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, hcloud.ServerCreateOpts{
+		Name: newNodeName(n),
+		UserData: n.manager.cloudInit,
+		Location: &hcloud.Location{Name: n.region},
+		ServerType: &hcloud.ServerType{Name: n.instanceType},
+		Image: &hcloud.Image{Name: n.manager.image},
+		StartAfterCreate: &StartAfterCreate,
+		Labels: map[string]string{
+			nodeGroupLabel: n.id,
+		},
+	})
+
+	if err != nil {
+		return fmt.Errorf("could not create server type %s in region %s", n.instanceType, n.region)
+	}
+
+	server := serverCreateResult.Server
+	err = waitForServerStatus(n.manager, server, hcloud.ServerStatusRunning)
+	if err != nil {
+		_ = n.manager.deleteServer(server)
+		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
+	}
+
+	return nil
+}
+
+func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud.ServerStatus) error {
+	errorResult := make(chan error)
+
+	go func() {
+		for {
+			serverResponse, _ ,err := m.client.Server.Get(m.apiCallContext, strconv.Itoa(server.ID))
+			if err != nil {
+				errorResult <- fmt.Errorf("failed to get server %s status error: %v", server.Name, err)
+				return
+			}
+
+			if serverResponse.Status == status {
+				errorResult <- nil
+				return
+			}
+		}
+	}()
+
+	select {
+	case res := <- errorResult:
+		return res
+	case <-time.After(60 * time.Second):
+		return fmt.Errorf("waiting for server %s status %s timeout", server.Name, status)
+	}
+}
+
+func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {
+	servers, err := n.manager.allServers(n.id)
+	if err != nil {
+		klog.Errorf("failed to set node pool %s size error: %v", n.id, err)
+		n.targetSize = n.targetSize - expectedDelta
+	} else {
+		n.targetSize = len(servers)
+	}
 }
