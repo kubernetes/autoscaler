@@ -106,11 +106,14 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 			defer waitGroup.Done()
 			err := createServer(n)
 			if err != nil {
+				targetSize--
 				klog.Errorf("failed to create error: %v", err)
 			}
 		}()
 	}
 	waitGroup.Wait()
+
+	n.targetSize = targetSize
 
 	return nil
 }
