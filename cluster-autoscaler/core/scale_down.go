@@ -418,12 +418,13 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
-	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 
 	if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
 		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 		return simulator.NotUnderutilized, &utilInfo
 	}
+
+	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 
 	return simulator.NoReason, &utilInfo
 }
