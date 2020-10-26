@@ -34,6 +34,7 @@ type scaleCacheKey struct {
 	groupResource schema.GroupResource
 	name          string
 }
+
 type scaleCacheEntry struct {
 	refreshAfter time.Time
 	deleteAfter  time.Time
@@ -133,8 +134,10 @@ func (cc *controllerCacheStorage) RemoveExpired() {
 	cc.mux.Lock()
 	defer cc.mux.Unlock()
 	now := now()
+	removed := 0
 	for k, v := range cc.cache {
 		if now.After(v.deleteAfter) {
+			removed += 1
 			delete(cc.cache, k)
 		}
 	}
