@@ -28,17 +28,20 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel             = hcloudLabelNamespace + "/gpu-node"
-	providerIDPrefix     = "hcloud://"
-	nodeGroupLabel       = hcloudLabelNamespace + "/node-group"
-	hcloudLabelNamespace = "hcloud"
-	drainingNodePoolId   = "draining-node-pool"
+	GPULabel              = hcloudLabelNamespace + "/gpu-node"
+	providerIDPrefix      = "hcloud://"
+	nodeGroupLabel        = hcloudLabelNamespace + "/node-group"
+	hcloudLabelNamespace  = "hcloud"
+	drainingNodePoolId    = "draining-node-pool"
+	serverCreateTimeout   = 1 * time.Minute
+	serverRegisterTimeout = 10 * time.Minute
 )
 
 // HetznerCloudProvider implements CloudProvider interface.
@@ -70,15 +73,21 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 		return nil, fmt.Errorf("failed to check if server %s exists error: %v", node.Spec.ProviderID, err)
 	}
 
+	var groupId string
 	if server == nil {
 		klog.V(3).Infof("failed to find hcloud server for node %s", node.Name)
-		return nil, nil
-	}
-
-	groupId, exists := server.Labels[nodeGroupLabel]
-	if !exists {
-		klog.Warningf("server %s does not contain nodegroup label %s, draining node", node.Name, nodeGroupLabel)
-		return addDrainingNodeGroup(d.manager, node)
+		nodeGroupId, exists := node.Labels[nodeGroupLabel]
+		if !exists {
+			return nil, nil
+		}
+		groupId = nodeGroupId
+	} else {
+		serverGroupId, exists := server.Labels[nodeGroupLabel]
+		if !exists {
+			klog.Warningf("server %s does not contain nodegroup label %s, draining node", node.Name, nodeGroupLabel)
+			return addDrainingNodeGroup(d.manager, node)
+		}
+		groupId = serverGroupId
 	}
 
 	group, exists := d.manager.nodeGroups[groupId]
@@ -157,6 +166,9 @@ func (d *HetznerCloudProvider) Cleanup() error {
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
 func (d *HetznerCloudProvider) Refresh() error {
+	for _, group := range d.manager.nodeGroups {
+		group.resetTargetSize(0)
+	}
 	return nil
 }
 

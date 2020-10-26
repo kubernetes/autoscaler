@@ -18,11 +18,11 @@ package hetzner
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"math/rand"
@@ -365,11 +365,6 @@ func createServer(n *hetznerNodeGroup) error {
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
 	}
 
-	go func(server *hcloud.Server) {
-		// Somehow patch the spec external id
-		// server.Name
-	}(server)
-
 	return nil
 }
 
@@ -388,13 +383,15 @@ func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud
 				errorResult <- nil
 				return
 			}
+
+			time.Sleep(1 * time.Second)
 		}
 	}()
 
 	select {
 	case res := <- errorResult:
 		return res
-	case <-time.After(60 * time.Second):
+	case <-time.After(serverCreateTimeout):
 		return fmt.Errorf("waiting for server %s status %s timeout", server.Name, status)
 	}
 }
