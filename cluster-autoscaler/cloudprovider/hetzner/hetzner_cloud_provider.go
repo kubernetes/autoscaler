@@ -83,25 +83,18 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 		groupId = nodeGroupId
 	} else {
 		serverGroupId, exists := server.Labels[nodeGroupLabel]
-		if !exists {
-			klog.Warningf("server %s does not contain nodegroup label %s, draining node", node.Name, nodeGroupLabel)
-			return addDrainingNodeGroup(d.manager, node)
-		}
 		groupId = serverGroupId
+		if !exists {
+			return nil, nil
+		}
 	}
 
 	group, exists := d.manager.nodeGroups[groupId]
 	if !exists {
-		klog.Warningf("nodegroup %s not configured for server %s, draining node", groupId, node.Name)
-		return addDrainingNodeGroup(d.manager, node)
+		return nil, nil
 	}
 
 	return group, nil
-}
-
-func addDrainingNodeGroup(manager *hetznerManager, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	klog.Warningf("server %s within not configured node, creating temp group with target size 0", node.Name, nodeGroupLabel)
-	return manager.addNodeToDrainingPool(node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
