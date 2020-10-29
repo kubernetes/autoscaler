@@ -17,6 +17,7 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/sclevine/spec v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
