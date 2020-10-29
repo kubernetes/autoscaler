@@ -70,6 +70,7 @@ type testSpec struct {
 }
 
 const customCAPIGroup = "custom.x-k8s.io"
+const fifteenSecondDuration = time.Second * 15
 
 func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
 	t.Helper()
@@ -444,7 +445,7 @@ func createResource(client dynamic.Interface, informer informers.GenericInformer
 		return err
 	}
 
-	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
 		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
 		if err != nil {
 			if apierrors.IsNotFound(err) {
@@ -463,7 +464,7 @@ func updateResource(client dynamic.Interface, informer informers.GenericInformer
 		return err
 	}
 
-	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
 		result, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
 		if err != nil {
 			return false, err
@@ -477,7 +478,7 @@ func deleteResource(client dynamic.Interface, informer informers.GenericInformer
 		return err
 	}
 
-	return wait.PollImmediateInfinite(time.Microsecond, func() (bool, error) {
+	return wait.PollImmediate(time.Microsecond, fifteenSecondDuration, func() (bool, error) {
 		_, err := informer.Lister().ByNamespace(resource.GetNamespace()).Get(resource.GetName())
 		if err != nil && apierrors.IsNotFound(err) {
 			return true, nil
