@@ -59,7 +59,7 @@ func TestUtilization(t *testing.T) {
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, daemonSetPod3)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
