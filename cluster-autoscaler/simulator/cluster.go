@@ -258,9 +258,15 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframewo
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
 	}
 	podsRequest := resource.MustParse("0")
+	daemonSetUtilization := resource.MustParse("0")
 	for _, podInfo := range nodeInfo.Pods {
 		// factor daemonset pods out of the utilization calculations
 		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
+			for _, container := range podInfo.Pod.Spec.Containers {
+				if resourceValue, found := container.Resources.Requests[resourceName]; found {
+					daemonSetUtilization.Add(resourceValue)
+				}
+			}
 			continue
 		}
 		// factor mirror pods out of the utilization calculations
@@ -273,7 +279,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframewo
 			}
 		}
 	}
-	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
+	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()-daemonSetUtilization.MilliValue()), nil
 }
 
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
