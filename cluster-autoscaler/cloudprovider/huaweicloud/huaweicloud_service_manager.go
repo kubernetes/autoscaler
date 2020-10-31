@@ -138,9 +138,21 @@ func (csm *cloudServiceManager) DeleteServers(serverIDs []string) error {
 }
 
 func (csm *cloudServiceManager) GetDesireInstanceNumber(groupID string) (int, error) {
-	// TODO(RainbowMango) finish implementation later
+	Instances, err := csm.GetInstances(groupID)
+	if err != nil {
+		klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
+		return 0, fmt.Errorf("failed to get instance list")
+	}
 
-	return 0, nil
+	// Get desire instance number by total instance number minus the one which is in deleting state.
+	desireInstanceNumber := len(Instances)
+	for _, instance := range Instances {
+		if instance.Status.State == cloudprovider.InstanceDeleting {
+			desireInstanceNumber--
+		}
+	}
+
+	return desireInstanceNumber, nil
 }
 
 func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.Instance, error) {
