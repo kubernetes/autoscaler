@@ -773,27 +773,46 @@ func TestIsNodeStillStarting(t *testing.T) {
 		desc           string
 		condition      apiv1.NodeConditionType
 		status         apiv1.ConditionStatus
+		taintKey       string
 		expectedResult bool
 	}{
-		{"unready", apiv1.NodeReady, apiv1.ConditionFalse, true},
-		{"readiness unknown", apiv1.NodeReady, apiv1.ConditionUnknown, true},
-		{"out of disk", apiv1.NodeDiskPressure, apiv1.ConditionTrue, true},
-		{"network unavailable", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, true},
-		{"started", apiv1.NodeReady, apiv1.ConditionTrue, false},
+		{"unready", apiv1.NodeReady, apiv1.ConditionFalse, "", true},
+		{"readiness unknown", apiv1.NodeReady, apiv1.ConditionUnknown, "", true},
+		{"out of disk", apiv1.NodeDiskPressure, apiv1.ConditionTrue, "", true},
+		{"network unavailable", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, "", true},
+		{"started", apiv1.NodeReady, apiv1.ConditionTrue, "", false},
+		{"unready and unready taint", apiv1.NodeReady, apiv1.ConditionFalse, apiv1.TaintNodeNotReady, true},
+		{"readiness unknown and unready taint", apiv1.NodeReady, apiv1.ConditionUnknown, apiv1.TaintNodeNotReady, true},
+		{"disk pressure and disk pressure taint", apiv1.NodeDiskPressure, apiv1.ConditionTrue, apiv1.TaintNodeDiskPressure, true},
+		{"network unavailable and network unavailable taint", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, apiv1.TaintNodeNetworkUnavailable, true},
+		{"ready but unready taint", apiv1.NodeReady, apiv1.ConditionTrue, apiv1.TaintNodeNotReady, true},
+		{"no disk pressure but disk pressure taint", apiv1.NodeDiskPressure, apiv1.ConditionFalse, apiv1.TaintNodeDiskPressure, true},
+		{"network available but network unavailable taint", apiv1.NodeNetworkUnavailable, apiv1.ConditionFalse, apiv1.TaintNodeNetworkUnavailable, true},
 	}
-
-	now := time.Now()
 	for _, tc := range testCases {
-		t.Run("recent "+tc.desc, func(t *testing.T) {
+		createTestNode := func(timeSinceCreation time.Duration) *apiv1.Node {
 			node := BuildTestNode("n1", 1000, 1000)
-			node.CreationTimestamp.Time = now
-			SetNodeCondition(node, tc.condition, tc.status, now.Add(1*time.Minute))
+			node.CreationTimestamp.Time = time.Time{}
+			testedTime := node.CreationTimestamp.Time.Add(timeSinceCreation)
+
+			SetNodeCondition(node, tc.condition, tc.status, testedTime)
+
+			if tc.taintKey != "" {
+				node.Spec.Taints = []apiv1.Taint{{
+					Key:       tc.taintKey,
+					Effect:    apiv1.TaintEffectNoSchedule,
+					TimeAdded: &metav1.Time{Time: testedTime},
+				}}
+			}
+
+			return node
+		}
+		t.Run("recent "+tc.desc, func(t *testing.T) {
+			node := createTestNode(1 * time.Minute)
 			assert.Equal(t, tc.expectedResult, isNodeStillStarting(node))
 		})
 		t.Run("long "+tc.desc, func(t *testing.T) {
-			node := BuildTestNode("n1", 1000, 1000)
-			node.CreationTimestamp.Time = now
-			SetNodeCondition(node, tc.condition, tc.status, now.Add(30*time.Minute))
+			node := createTestNode(30 * time.Minute)
 			// No matter what are the node's conditions, stop considering it not started after long enough.
 			assert.False(t, isNodeStillStarting(node))
 		})
