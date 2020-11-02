@@ -50,11 +50,14 @@ rules:
     resources: ["statefulsets", "replicasets", "daemonsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
+    resources: ["storageclasses", "csinodes"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["batch", "extensions"]
     resources: ["jobs"]
     verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["*"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -128,6 +131,18 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
+      # Node affinity is used to force cluster-autoscaler to stick
+      # to the master node. This allows the cluster to reliably downscale
+      # to zero worker nodes when needed.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: In
+                values:
+                - true
       serviceAccountName: cluster-autoscaler
       containers:
         - name: cluster-autoscaler
@@ -149,13 +164,20 @@ spec:
                 secretKeyRef:
                   name: cluster-autoscaler-packet
                   key: authtoken
+          # You can take advantage of multiple nodepools by adding
+          # extra arguments on the cluster-autoscaler command.
+          # e.g. for pool1, pool2
+          # --nodes=0:10:pool1
+          # --nodes=0:10:pool2
           command:
             - ./cluster-autoscaler
             - --alsologtostderr
             - --cluster-name=cluster1
             - --cloud-config=/config/cloud-config
             - --cloud-provider=packet
-            - --nodes=1:10:pool1
+            - --expander=price
+            - --nodes=0:10:pool1
+            - --nodes=0:10:pool2
             - --scale-down-unneeded-time=1m0s
             - --scale-down-delay-after-add=1m0s
             - --scale-down-unready-time=1m0s
