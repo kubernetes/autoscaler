@@ -67,6 +67,21 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 			}
 		}
 	}
+
+	notReadyTaints := map[string]bool{
+		apiv1.TaintNodeNotReady:           true,
+		apiv1.TaintNodeDiskPressure:       true,
+		apiv1.TaintNodeNetworkUnavailable: true,
+	}
+	for _, taint := range node.Spec.Taints {
+		if notReadyTaints[taint.Key] {
+			canNodeBeReady = false
+			if taint.TimeAdded != nil && lastTransitionTime.Before(taint.TimeAdded.Time) {
+				lastTransitionTime = taint.TimeAdded.Time
+			}
+		}
+	}
+
 	if !readyFound {
 		return false, time.Time{}, fmt.Errorf("readiness information not found")
 	}
