@@ -163,4 +163,4 @@ spec:
       volumes:
         - name: ssl-certs
           hostPath:
-            path: "/etc/ssl/certs/ca-bundle.crt"
+            path: "/etc/ssl/certs/ca-certificates.crt"
