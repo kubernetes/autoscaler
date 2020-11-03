@@ -625,26 +625,38 @@ func (mgr *packetManagerRest) deleteDevice(ctx context.Context, nodegroup, id st
 func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
 	klog.Infof("Deleting nodes %v", nodes)
 
+	ctx := context.TODO()
+
 	errList := make([]error, 0, len(nodes))
 
-	for _, n := range nodes {
-		klog.Infof("Node %s - %s - %s", n.Name, n.MachineID, n.IPs)
+	devices, err := mgr.listPacketDevices(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to list devices: %w", err)
+	}
+	klog.Infof("%d devices total", len(devices.Devices))
 
-		dl, err := mgr.listPacketDevices(context.TODO())
-		if err != nil {
-			return fmt.Errorf("failed to list devices: %w", err)
+	for _, n := range nodes {
+		fakeNode := false
+
+		if n.Name == n.ProviderID {
+			klog.Infof("Fake Node: %s", n.Name)
+			fakeNode = true
+		} else {
+			klog.Infof("Node %s - %s - %s", n.Name, n.MachineID, n.IPs)
 		}
 
-		klog.Infof("%d devices total", len(dl.Devices))
 		// Get the count of devices tagged as nodegroup
-		for _, d := range dl.Devices {
+		for _, d := range devices.Devices {
 			klog.Infof("Checking device %v", d)
 			if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
-				if d.Hostname == n.Name {
+				switch {
+				case d.Hostname == n.Name:
 					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
-
-					errList = append(errList, mgr.deleteDevice(context.TODO(), nodegroup, d.ID))
+					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
+				case fakeNode && strings.TrimPrefix(n.Name, "packet://") == d.ID:
+					klog.V(1).Infof("Fake Node %s", d.ID)
+					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
 				}
 			}
 		}
