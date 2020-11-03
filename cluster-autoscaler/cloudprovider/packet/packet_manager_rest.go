@@ -40,9 +40,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
+
+const userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 type instanceType struct {
 	InstanceName string
@@ -345,6 +348,7 @@ func (mgr *packetManagerRest) request(ctx context.Context, method, url string, j
 
 	req.Header.Set("X-Auth-Token", mgr.authToken)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", userAgent)
 
 	client := &http.Client{}
 
