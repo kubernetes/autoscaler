@@ -266,9 +266,9 @@ func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) 
 		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
 	}
 
-	requiredState := huaweicloudsdkasmodel.GetListScalingGroupsRequestScalingGroupStatusEnum().INSERVICE
+	// requiredState := huaweicloudsdkasmodel.GetListScalingGroupsRequestScalingGroupStatusEnum().INSERVICE
 	opts := &huaweicloudsdkasmodel.ListScalingGroupsRequest{
-		ScalingGroupStatus: &requiredState,
+		// ScalingGroupStatus: &requiredState,
 	}
 	response, err := asClient.ListScalingGroups(opts)
 	if err != nil {
