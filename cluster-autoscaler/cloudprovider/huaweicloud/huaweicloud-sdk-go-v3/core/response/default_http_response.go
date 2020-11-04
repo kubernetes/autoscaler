@@ -27,7 +27,6 @@ import (
 
 type DefaultHttpResponse struct {
 	Response *http.Response
-	BodyJson interface{}
 }
 
 func NewDefaultHttpResponse(response *http.Response) *DefaultHttpResponse {
@@ -58,10 +57,6 @@ func (r *DefaultHttpResponse) GetBody() string {
 		r.Response.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 	}
 	return string(body)
-}
-
-func (r *DefaultHttpResponse) GetBodyJson() interface{} {
-	return r.BodyJson
 }
 
 func (r *DefaultHttpResponse) GetHeader(key string) string {
