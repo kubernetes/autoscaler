@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -31,7 +32,7 @@ type DefaultHttpRequest struct {
 	endpoint             string
 	path                 string
 	method               string
-	queryParams          map[string]string
+	queryParams          map[string]interface{}
 	pathParams           map[string]string
 	autoFilledPathParams map[string]string
 	headerParams         map[string]string
@@ -65,7 +66,7 @@ func (httpRequest *DefaultHttpRequest) GetMethod() string {
 	return httpRequest.method
 }
 
-func (httpRequest *DefaultHttpRequest) GetQueryParams() map[string]string {
+func (httpRequest *DefaultHttpRequest) GetQueryParams() map[string]interface{} {
 	return httpRequest.queryParams
 }
 
@@ -134,18 +135,13 @@ func (httpRequest *DefaultHttpRequest) fillQueryParams(req *http.Request) {
 	}
 	q := req.URL.Query()
 	for key, value := range httpRequest.GetQueryParams() {
-		if strings.HasPrefix(value, "[") {
-			var valueList []interface{}
-			err := json.Unmarshal([]byte(value), &valueList)
-			if err == nil {
-				for item := range valueList {
-					q.Add(key, fmt.Sprintf("%v", valueList[item]))
-				}
-			} else {
-				q.Add(key, value)
+		if reflect.TypeOf(value).Kind() == reflect.Struct && value.(reflect.Value).Kind() == reflect.Slice {
+			s := value.(reflect.Value)
+			for i := 0; i < s.Len(); i++ {
+				q.Add(key, fmt.Sprintf("%v", s.Index(i)))
 			}
 		} else {
-			q.Add(key, value)
+			q.Add(key, fmt.Sprintf("%v", value))
 		}
 	}
 	req.URL.RawQuery = q.Encode()
@@ -163,7 +159,7 @@ type HttpRequestBuilder struct {
 
 func NewHttpRequestBuilder() *HttpRequestBuilder {
 	httpRequest := &DefaultHttpRequest{
-		queryParams:          make(map[string]string),
+		queryParams:          make(map[string]interface{}),
 		headerParams:         make(map[string]string),
 		pathParams:           make(map[string]string),
 		autoFilledPathParams: make(map[string]string),
@@ -189,7 +185,7 @@ func (builder *HttpRequestBuilder) WithMethod(method string) *HttpRequestBuilder
 	return builder
 }
 
-func (builder *HttpRequestBuilder) AddQueryParam(key string, value string) *HttpRequestBuilder {
+func (builder *HttpRequestBuilder) AddQueryParam(key string, value interface{}) *HttpRequestBuilder {
 	builder.httpRequest.queryParams[key] = value
 	return builder
 }

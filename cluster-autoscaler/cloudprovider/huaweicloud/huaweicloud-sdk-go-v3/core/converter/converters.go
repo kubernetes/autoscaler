@@ -1,7 +1,10 @@
 package converter
 
+import "reflect"
+
 type Converter interface {
 	CovertStringToInterface(value string) (interface{}, error)
+	CovertStringToPrimitiveTypeAndSetField(field reflect.Value, value string, isPtr bool) error
 }
 
 func StringConverterFactory(vType string) Converter {

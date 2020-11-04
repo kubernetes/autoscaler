@@ -1,6 +1,7 @@
 package sdktime
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -21,6 +22,11 @@ func (t *SdkTime) UnmarshalJSON(data []byte) error {
 	}
 	*t = SdkTime(now)
 	return nil
+}
+
+func (t SdkTime) MarshalJSON() ([]byte, error) {
+	rs := []byte(fmt.Sprintf(`"%s"`, t.String()))
+	return rs, nil
 }
 
 func (t SdkTime) String() string {
