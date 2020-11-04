@@ -20,11 +20,12 @@
 package def
 
 type HttpRequestDef struct {
-	BodyJson      interface{}
-	RequestFields []*FieldDef
-	Path          string
-	Method        string
-	ContentType   string
+	Method         string
+	Path           string
+	ContentType    string
+	RequestFields  []*FieldDef
+	ResponseFields []*FieldDef
+	Response       interface{}
 }
 
 type HttpRequestDefBuilder struct {
@@ -33,7 +34,8 @@ type HttpRequestDefBuilder struct {
 
 func NewHttpRequestDefBuilder() *HttpRequestDefBuilder {
 	httpRequestDef := &HttpRequestDef{
-		RequestFields: []*FieldDef{},
+		RequestFields:  []*FieldDef{},
+		ResponseFields: []*FieldDef{},
 	}
 	HttpRequestDefBuilder := &HttpRequestDefBuilder{
 		httpRequestDef: httpRequestDef,
@@ -56,13 +58,18 @@ func (builder *HttpRequestDefBuilder) WithContentType(contentType string) *HttpR
 	return builder
 }
 
-func (builder *HttpRequestDefBuilder) WithBodyJson(bodyJson interface{}) *HttpRequestDefBuilder {
-	builder.httpRequestDef.BodyJson = bodyJson
+func (builder *HttpRequestDefBuilder) WithResponse(response interface{}) *HttpRequestDefBuilder {
+	builder.httpRequestDef.Response = response
 	return builder
 }
 
 func (builder *HttpRequestDefBuilder) WithRequestField(field *FieldDef) *HttpRequestDefBuilder {
 	builder.httpRequestDef.RequestFields = append(builder.httpRequestDef.RequestFields, field)
+	return builder
+}
+
+func (builder *HttpRequestDefBuilder) WithResponseField(field *FieldDef) *HttpRequestDefBuilder {
+	builder.httpRequestDef.ResponseFields = append(builder.httpRequestDef.ResponseFields, field)
 	return builder
 }
 
