@@ -6,1435 +6,1067 @@ import (
 	"net/http"
 )
 
-func GenReqDefForAddServerGroupMember(request *model.AddServerGroupMemberRequest) *def.HttpRequestDef {
+func GenReqDefForAddServerGroupMember() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/os-server-groups/{server_group_id}/action").
+		WithResponse(new(model.AddServerGroupMemberResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_group_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerGroupId").
+		WithJsonTag("server_group_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForAddServerGroupMember() (*model.AddServerGroupMemberResponse, *def.HttpResponseDef) {
-	resp := new(model.AddServerGroupMemberResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForAttachServerVolume(request *model.AttachServerVolumeRequest) *def.HttpRequestDef {
+func GenReqDefForAttachServerVolume() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/attachvolume").
+		WithResponse(new(model.AttachServerVolumeResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForAttachServerVolume() (*model.AttachServerVolumeResponse, *def.HttpResponseDef) {
-	resp := new(model.AttachServerVolumeResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchAddServerNics(request *model.BatchAddServerNicsRequest) *def.HttpRequestDef {
+func GenReqDefForBatchAddServerNics() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/nics").
+		WithResponse(new(model.BatchAddServerNicsResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchAddServerNics() (*model.BatchAddServerNicsResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchAddServerNicsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchCreateServerTags(request *model.BatchCreateServerTagsRequest) *def.HttpRequestDef {
+func GenReqDefForBatchCreateServerTags() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/tags/action").
+		WithResponse(new(model.BatchCreateServerTagsResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchCreateServerTags() (*model.BatchCreateServerTagsResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchCreateServerTagsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchDeleteServerNics(request *model.BatchDeleteServerNicsRequest) *def.HttpRequestDef {
+func GenReqDefForBatchDeleteServerNics() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/nics/delete").
+		WithResponse(new(model.BatchDeleteServerNicsResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchDeleteServerNics() (*model.BatchDeleteServerNicsResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchDeleteServerNicsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchDeleteServerTags(request *model.BatchDeleteServerTagsRequest) *def.HttpRequestDef {
+func GenReqDefForBatchDeleteServerTags() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/tags/action").
+		WithResponse(new(model.BatchDeleteServerTagsResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchDeleteServerTags() (*model.BatchDeleteServerTagsResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchDeleteServerTagsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchRebootServers(request *model.BatchRebootServersRequest) *def.HttpRequestDef {
+func GenReqDefForBatchRebootServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/action").
+		WithResponse(new(model.BatchRebootServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchRebootServers() (*model.BatchRebootServersResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchRebootServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchStartServers(request *model.BatchStartServersRequest) *def.HttpRequestDef {
+func GenReqDefForBatchStartServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/action").
+		WithResponse(new(model.BatchStartServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchStartServers() (*model.BatchStartServersResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchStartServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForBatchStopServers(request *model.BatchStopServersRequest) *def.HttpRequestDef {
+func GenReqDefForBatchStopServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/action").
+		WithResponse(new(model.BatchStopServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForBatchStopServers() (*model.BatchStopServersResponse, *def.HttpResponseDef) {
-	resp := new(model.BatchStopServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForChangeServerOsWithCloudInit(request *model.ChangeServerOsWithCloudInitRequest) *def.HttpRequestDef {
+func GenReqDefForChangeServerOsWithCloudInit() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2/{project_id}/cloudservers/{server_id}/changeos").
+		WithResponse(new(model.ChangeServerOsWithCloudInitResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForChangeServerOsWithCloudInit() (*model.ChangeServerOsWithCloudInitResponse, *def.HttpResponseDef) {
-	resp := new(model.ChangeServerOsWithCloudInitResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForCreatePostPaidServers(request *model.CreatePostPaidServersRequest) *def.HttpRequestDef {
+func GenReqDefForCreatePostPaidServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers").
+		WithResponse(new(model.CreatePostPaidServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForCreatePostPaidServers() (*model.CreatePostPaidServersResponse, *def.HttpResponseDef) {
-	resp := new(model.CreatePostPaidServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForCreateServerGroup(request *model.CreateServerGroupRequest) *def.HttpRequestDef {
+func GenReqDefForCreateServerGroup() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/os-server-groups").
+		WithResponse(new(model.CreateServerGroupResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForCreateServerGroup() (*model.CreateServerGroupResponse, *def.HttpResponseDef) {
-	resp := new(model.CreateServerGroupResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForCreateServers(request *model.CreateServersRequest) *def.HttpRequestDef {
+func GenReqDefForCreateServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1.1/{project_id}/cloudservers").
+		WithResponse(new(model.CreateServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForCreateServers() (*model.CreateServersResponse, *def.HttpResponseDef) {
-	resp := new(model.CreateServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForDeleteServerGroup(request *model.DeleteServerGroupRequest) *def.HttpRequestDef {
+func GenReqDefForDeleteServerGroup() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodDelete).
-		WithPath("/v1/{project_id}/cloudservers/os-server-groups/{server_group_id}")
+		WithPath("/v1/{project_id}/cloudservers/os-server-groups/{server_group_id}").
+		WithResponse(new(model.DeleteServerGroupResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_group_id").
+		WithName("ServerGroupId").
+		WithJsonTag("server_group_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForDeleteServerGroup() (*model.DeleteServerGroupResponse, *def.HttpResponseDef) {
-	resp := new(model.DeleteServerGroupResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForDeleteServerGroupMember(request *model.DeleteServerGroupMemberRequest) *def.HttpRequestDef {
+func GenReqDefForDeleteServerGroupMember() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/os-server-groups/{server_group_id}/action").
+		WithResponse(new(model.DeleteServerGroupMemberResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_group_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerGroupId").
+		WithJsonTag("server_group_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForDeleteServerGroupMember() (*model.DeleteServerGroupMemberResponse, *def.HttpResponseDef) {
-	resp := new(model.DeleteServerGroupMemberResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForDeleteServerMetadata(request *model.DeleteServerMetadataRequest) *def.HttpRequestDef {
+func GenReqDefForDeleteServerMetadata() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodDelete).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/metadata/{key}")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/metadata/{key}").
+		WithResponse(new(model.DeleteServerMetadataResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("key").
+		WithName("Key").
+		WithJsonTag("key").
 		WithLocationType(def.Path))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForDeleteServerMetadata() (*model.DeleteServerMetadataResponse, *def.HttpResponseDef) {
-	resp := new(model.DeleteServerMetadataResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForDeleteServers(request *model.DeleteServersRequest) *def.HttpRequestDef {
+func GenReqDefForDeleteServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/delete").
+		WithResponse(new(model.DeleteServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
-	reqDefBuilder.WithBodyJson(request.Body)
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForDeleteServers() (*model.DeleteServersResponse, *def.HttpResponseDef) {
-	resp := new(model.DeleteServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForDetachServerVolume(request *model.DetachServerVolumeRequest) *def.HttpRequestDef {
+func GenReqDefForDetachServerVolume() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodDelete).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/detachvolume/{volume_id}")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/detachvolume/{volume_id}").
+		WithResponse(new(model.DetachServerVolumeResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("volume_id").
+		WithName("VolumeId").
+		WithJsonTag("volume_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("delete_flag").
+		WithName("DeleteFlag").
+		WithJsonTag("delete_flag").
 		WithLocationType(def.Query))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForDetachServerVolume() (*model.DetachServerVolumeResponse, *def.HttpResponseDef) {
-	resp := new(model.DetachServerVolumeResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForListFlavors(request *model.ListFlavorsRequest) *def.HttpRequestDef {
+func GenReqDefForListFlavors() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/flavors")
+		WithPath("/v1/{project_id}/cloudservers/flavors").
+		WithResponse(new(model.ListFlavorsResponse))
+
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("availability_zone").
+		WithName("AvailabilityZone").
+		WithJsonTag("availability_zone").
 		WithLocationType(def.Query))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForListFlavors() (*model.ListFlavorsResponse, *def.HttpResponseDef) {
-	resp := new(model.ListFlavorsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForListResizeFlavors(request *model.ListResizeFlavorsRequest) *def.HttpRequestDef {
+func GenReqDefForListResizeFlavors() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/resize_flavors")
+		WithPath("/v1/{project_id}/cloudservers/resize_flavors").
+		WithResponse(new(model.ListResizeFlavorsResponse))
+
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("instance_uuid").
+		WithName("InstanceUuid").
+		WithJsonTag("instance_uuid").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("limit").
+		WithName("Limit").
+		WithJsonTag("limit").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("marker").
+		WithName("Marker").
+		WithJsonTag("marker").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("sort_dir").
+		WithName("SortDir").
+		WithJsonTag("sort_dir").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("sort_key").
+		WithName("SortKey").
+		WithJsonTag("sort_key").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("source_flavor_id").
+		WithName("SourceFlavorId").
+		WithJsonTag("source_flavor_id").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("source_flavor_name").
+		WithName("SourceFlavorName").
+		WithJsonTag("source_flavor_name").
 		WithLocationType(def.Query))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForListResizeFlavors() (*model.ListResizeFlavorsResponse, *def.HttpResponseDef) {
-	resp := new(model.ListResizeFlavorsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForListServerBlockDevices(request *model.ListServerBlockDevicesRequest) *def.HttpRequestDef {
+func GenReqDefForListServerBlockDevices() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/block_device")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/block_device").
+		WithResponse(new(model.ListServerBlockDevicesResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForListServerBlockDevices() (*model.ListServerBlockDevicesResponse, *def.HttpResponseDef) {
-	resp := new(model.ListServerBlockDevicesResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForListServerInterfaces(request *model.ListServerInterfacesRequest) *def.HttpRequestDef {
+func GenReqDefForListServerInterfaces() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/os-interface")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/os-interface").
+		WithResponse(new(model.ListServerInterfacesResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForListServerInterfaces() (*model.ListServerInterfacesResponse, *def.HttpResponseDef) {
-	resp := new(model.ListServerInterfacesResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForListServersDetails(request *model.ListServersDetailsRequest) *def.HttpRequestDef {
+func GenReqDefForListServersDetails() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/detail")
+		WithPath("/v1/{project_id}/cloudservers/detail").
+		WithResponse(new(model.ListServersDetailsResponse))
+
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("enterprise_project_id").
+		WithName("EnterpriseProjectId").
+		WithJsonTag("enterprise_project_id").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("flavor").
+		WithName("Flavor").
+		WithJsonTag("flavor").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("ip").
+		WithName("Ip").
+		WithJsonTag("ip").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("limit").
+		WithName("Limit").
+		WithJsonTag("limit").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("name").
+		WithName("Name").
+		WithJsonTag("name").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("not-tags").
+		WithName("NotTags").
+		WithJsonTag("not-tags").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("offset").
+		WithName("Offset").
+		WithJsonTag("offset").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("reservation_id").
+		WithName("ReservationId").
+		WithJsonTag("reservation_id").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("status").
+		WithName("Status").
+		WithJsonTag("status").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("tags").
+		WithName("Tags").
+		WithJsonTag("tags").
 		WithLocationType(def.Query))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForListServersDetails() (*model.ListServersDetailsResponse, *def.HttpResponseDef) {
-	resp := new(model.ListServersDetailsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaAssociateSecurityGroup(request *model.NovaAssociateSecurityGroupRequest) *def.HttpRequestDef {
+func GenReqDefForNovaAssociateSecurityGroup() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2.1/{project_id}/servers/{server_id}/action").
+		WithResponse(new(model.NovaAssociateSecurityGroupResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaAssociateSecurityGroup() (*model.NovaAssociateSecurityGroupResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaAssociateSecurityGroupResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaCreateKeypair(request *model.NovaCreateKeypairRequest) *def.HttpRequestDef {
+func GenReqDefForNovaCreateKeypair() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2.1/{project_id}/os-keypairs").
+		WithResponse(new(model.NovaCreateKeypairResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
+
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("OpenStack-API-Version").
+		WithName("OpenStackAPIVersion").
+		WithJsonTag("OpenStack-API-Version").
 		WithLocationType(def.Header))
 
-	reqDefBuilder.WithBodyJson(request.Body)
-
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaCreateKeypair() (*model.NovaCreateKeypairResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaCreateKeypairResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaCreateServers(request *model.NovaCreateServersRequest) *def.HttpRequestDef {
+func GenReqDefForNovaCreateServers() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2.1/{project_id}/servers").
+		WithResponse(new(model.NovaCreateServersResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
+
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("OpenStack-API-Version").
+		WithName("OpenStackAPIVersion").
+		WithJsonTag("OpenStack-API-Version").
 		WithLocationType(def.Header))
 
-	reqDefBuilder.WithBodyJson(request.Body)
-
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaCreateServers() (*model.NovaCreateServersResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaCreateServersResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaDeleteKeypair(request *model.NovaDeleteKeypairRequest) *def.HttpRequestDef {
+func GenReqDefForNovaDeleteKeypair() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodDelete).
-		WithPath("/v2.1/{project_id}/os-keypairs/{keypair_name}")
+		WithPath("/v2.1/{project_id}/os-keypairs/{keypair_name}").
+		WithResponse(new(model.NovaDeleteKeypairResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("keypair_name").
+		WithName("KeypairName").
+		WithJsonTag("keypair_name").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaDeleteKeypair() (*model.NovaDeleteKeypairResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaDeleteKeypairResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaDeleteServer(request *model.NovaDeleteServerRequest) *def.HttpRequestDef {
+func GenReqDefForNovaDeleteServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodDelete).
-		WithPath("/v2.1/{project_id}/servers/{server_id}")
+		WithPath("/v2.1/{project_id}/servers/{server_id}").
+		WithResponse(new(model.NovaDeleteServerResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaDeleteServer() (*model.NovaDeleteServerResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaDeleteServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaDisassociateSecurityGroup(request *model.NovaDisassociateSecurityGroupRequest) *def.HttpRequestDef {
+func GenReqDefForNovaDisassociateSecurityGroup() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2.1/{project_id}/servers/{server_id}/action").
+		WithResponse(new(model.NovaDisassociateSecurityGroupResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaDisassociateSecurityGroup() (*model.NovaDisassociateSecurityGroupResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaDisassociateSecurityGroupResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaListAvailabilityZones(request *model.NovaListAvailabilityZonesRequest) *def.HttpRequestDef {
+func GenReqDefForNovaListAvailabilityZones() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v2.1/{project_id}/os-availability-zone")
+		WithPath("/v2.1/{project_id}/os-availability-zone").
+		WithResponse(new(model.NovaListAvailabilityZonesResponse))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+	// request
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaListAvailabilityZones() (*model.NovaListAvailabilityZonesResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaListAvailabilityZonesResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaListKeypairs(request *model.NovaListKeypairsRequest) *def.HttpRequestDef {
+func GenReqDefForNovaListKeypairs() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v2.1/{project_id}/os-keypairs")
+		WithPath("/v2.1/{project_id}/os-keypairs").
+		WithResponse(new(model.NovaListKeypairsResponse))
+
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("limit").
+		WithName("Limit").
+		WithJsonTag("limit").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("marker").
+		WithName("Marker").
+		WithJsonTag("marker").
 		WithLocationType(def.Query))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("OpenStack-API-Version").
+		WithName("OpenStackAPIVersion").
+		WithJsonTag("OpenStack-API-Version").
 		WithLocationType(def.Header))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaListKeypairs() (*model.NovaListKeypairsResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaListKeypairsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaListServerSecurityGroups(request *model.NovaListServerSecurityGroupsRequest) *def.HttpRequestDef {
+func GenReqDefForNovaListServerSecurityGroups() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v2.1/{project_id}/servers/{server_id}/os-security-groups")
+		WithPath("/v2.1/{project_id}/servers/{server_id}/os-security-groups").
+		WithResponse(new(model.NovaListServerSecurityGroupsResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaListServerSecurityGroups() (*model.NovaListServerSecurityGroupsResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaListServerSecurityGroupsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaListServersDetails(request *model.NovaListServersDetailsRequest) *def.HttpRequestDef {
+func GenReqDefForNovaListServersDetails() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v2.1/{project_id}/servers/detail")
+		WithPath("/v2.1/{project_id}/servers/detail").
+		WithResponse(new(model.NovaListServersDetailsResponse))
+
+	// request
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("changes-since").
+		WithName("ChangesSince").
+		WithJsonTag("changes-since").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("flavor").
+		WithName("Flavor").
+		WithJsonTag("flavor").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("image").
+		WithName("Image").
+		WithJsonTag("image").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("ip").
+		WithName("Ip").
+		WithJsonTag("ip").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("limit").
+		WithName("Limit").
+		WithJsonTag("limit").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("marker").
+		WithName("Marker").
+		WithJsonTag("marker").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("name").
+		WithName("Name").
+		WithJsonTag("name").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("not-tags").
+		WithName("NotTags").
+		WithJsonTag("not-tags").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("reservation_id").
+		WithName("ReservationId").
+		WithJsonTag("reservation_id").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("sort_key").
+		WithName("SortKey").
+		WithJsonTag("sort_key").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("status").
+		WithName("Status").
+		WithJsonTag("status").
 		WithLocationType(def.Query))
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("tags").
+		WithName("Tags").
+		WithJsonTag("tags").
 		WithLocationType(def.Query))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("OpenStack-API-Version").
+		WithName("OpenStackAPIVersion").
+		WithJsonTag("OpenStack-API-Version").
 		WithLocationType(def.Header))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaListServersDetails() (*model.NovaListServersDetailsResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaListServersDetailsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForNovaShowServer(request *model.NovaShowServerRequest) *def.HttpRequestDef {
+func GenReqDefForNovaShowServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v2.1/{project_id}/servers/{server_id}")
+		WithPath("/v2.1/{project_id}/servers/{server_id}").
+		WithResponse(new(model.NovaShowServerResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("OpenStack-API-Version").
+		WithName("OpenStackAPIVersion").
+		WithJsonTag("OpenStack-API-Version").
 		WithLocationType(def.Header))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForNovaShowServer() (*model.NovaShowServerResponse, *def.HttpResponseDef) {
-	resp := new(model.NovaShowServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForReinstallServerWithCloudInit(request *model.ReinstallServerWithCloudInitRequest) *def.HttpRequestDef {
+func GenReqDefForReinstallServerWithCloudInit() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v2/{project_id}/cloudservers/{server_id}/reinstallos").
+		WithResponse(new(model.ReinstallServerWithCloudInitResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForReinstallServerWithCloudInit() (*model.ReinstallServerWithCloudInitResponse, *def.HttpResponseDef) {
-	resp := new(model.ReinstallServerWithCloudInitResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForResetServerPassword(request *model.ResetServerPasswordRequest) *def.HttpRequestDef {
+func GenReqDefForResetServerPassword() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPut).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/os-reset-password").
+		WithResponse(new(model.ResetServerPasswordResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForResetServerPassword() (*model.ResetServerPasswordResponse, *def.HttpResponseDef) {
-	resp := new(model.ResetServerPasswordResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForResizePostPaidServer(request *model.ResizePostPaidServerRequest) *def.HttpRequestDef {
+func GenReqDefForResizePostPaidServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/resize").
+		WithResponse(new(model.ResizePostPaidServerResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForResizePostPaidServer() (*model.ResizePostPaidServerResponse, *def.HttpResponseDef) {
-	resp := new(model.ResizePostPaidServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForResizeServer(request *model.ResizeServerRequest) *def.HttpRequestDef {
+func GenReqDefForResizeServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1.1/{project_id}/cloudservers/{server_id}/resize").
+		WithResponse(new(model.ResizeServerResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForResizeServer() (*model.ResizeServerResponse, *def.HttpResponseDef) {
-	resp := new(model.ResizeServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowResetPasswordFlag(request *model.ShowResetPasswordFlagRequest) *def.HttpRequestDef {
+func GenReqDefForShowResetPasswordFlag() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/os-resetpwd-flag")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/os-resetpwd-flag").
+		WithResponse(new(model.ShowResetPasswordFlagResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForShowResetPasswordFlag() (*model.ShowResetPasswordFlagResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowResetPasswordFlagResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowServer(request *model.ShowServerRequest) *def.HttpRequestDef {
+func GenReqDefForShowServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}").
+		WithResponse(new(model.ShowServerResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForShowServer() (*model.ShowServerResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowServerLimits(request *model.ShowServerLimitsRequest) *def.HttpRequestDef {
+func GenReqDefForShowServerLimits() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/limits")
+		WithPath("/v1/{project_id}/cloudservers/limits").
+		WithResponse(new(model.ShowServerLimitsResponse))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
+	// request
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForShowServerLimits() (*model.ShowServerLimitsResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowServerLimitsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowServerRemoteConsole(request *model.ShowServerRemoteConsoleRequest) *def.HttpRequestDef {
+func GenReqDefForShowServerRemoteConsole() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/remote_console").
+		WithResponse(new(model.ShowServerRemoteConsoleResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForShowServerRemoteConsole() (*model.ShowServerRemoteConsoleResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowServerRemoteConsoleResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowServerTags(request *model.ShowServerTagsRequest) *def.HttpRequestDef {
+func GenReqDefForShowServerTags() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/cloudservers/{server_id}/tags")
+		WithPath("/v1/{project_id}/cloudservers/{server_id}/tags").
+		WithResponse(new(model.ShowServerTagsResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForShowServerTags() (*model.ShowServerTagsResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowServerTagsResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForUpdateServer(request *model.UpdateServerRequest) *def.HttpRequestDef {
+func GenReqDefForUpdateServer() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPut).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}").
+		WithResponse(new(model.UpdateServerResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForUpdateServer() (*model.UpdateServerResponse, *def.HttpResponseDef) {
-	resp := new(model.UpdateServerResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForUpdateServerMetadata(request *model.UpdateServerMetadataRequest) *def.HttpRequestDef {
+func GenReqDefForUpdateServerMetadata() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodPost).
 		WithPath("/v1/{project_id}/cloudservers/{server_id}/metadata").
+		WithResponse(new(model.UpdateServerMetadataResponse)).
 		WithContentType("application/json;charset=UTF-8")
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("server_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithBodyJson(request.Body)
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
+		WithName("ServerId").
+		WithJsonTag("server_id").
 		WithLocationType(def.Path))
 
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+		WithName("Body").
+		WithLocationType(def.Body))
+
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
 }
 
-func GenRespForUpdateServerMetadata() (*model.UpdateServerMetadataResponse, *def.HttpResponseDef) {
-	resp := new(model.UpdateServerMetadataResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
-}
-
-func GenReqDefForShowJob(request *model.ShowJobRequest) *def.HttpRequestDef {
+func GenReqDefForShowJob() *def.HttpRequestDef {
 	reqDefBuilder := def.NewHttpRequestDefBuilder().
 		WithMethod(http.MethodGet).
-		WithPath("/v1/{project_id}/jobs/{job_id}")
+		WithPath("/v1/{project_id}/jobs/{job_id}").
+		WithResponse(new(model.ShowJobResponse))
 
+	// request
 	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("job_id").
+		WithName("JobId").
+		WithJsonTag("job_id").
 		WithLocationType(def.Path))
 
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("project_id").
-		WithLocationType(def.Path))
-
-	reqDefBuilder.WithRequestField(def.NewFieldDef().
-		WithName("domain_id").
-		WithLocationType(def.Path))
+	// response
 
 	requestDef := reqDefBuilder.Build()
 	return requestDef
-}
-
-func GenRespForShowJob() (*model.ShowJobResponse, *def.HttpResponseDef) {
-	resp := new(model.ShowJobResponse)
-	respDefBuilder := def.NewHttpResponseDefBuilder().WithBodyJson(resp)
-	responseDef := respDefBuilder.Build()
-	return resp, responseDef
 }

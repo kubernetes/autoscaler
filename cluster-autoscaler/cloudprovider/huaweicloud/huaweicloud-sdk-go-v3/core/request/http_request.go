@@ -24,11 +24,11 @@ import "bytes"
 type HttpRequest interface {
 	Builder() *HttpRequestBuilder
 	GetEndpoint() string
-	GetPath() string
 	GetMethod() string
-	GetQueryParams() map[string]string
+	GetPath() string
 	GetHeaderParams() map[string]string
 	GetPathPrams() map[string]string
+	GetQueryParams() map[string]interface{}
 	GetBody() interface{}
 	GetBodyToBytes() (*bytes.Buffer, error)
 }

@@ -179,6 +179,11 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 
 	instances := make([]cloudprovider.Instance, 0, len(*response.ScalingGroupInstances))
 	for _, sgi := range *response.ScalingGroupInstances {
+		// When a new instance joining to the scaling group, the instance id maybe empty(nil).
+		if sgi.InstanceId == nil {
+			klog.Infof("ignore instance without instance id, maybe instance is joining.")
+			continue
+		}
 		instance := cloudprovider.Instance{
 			Id:     *sgi.InstanceId,
 			Status: csm.transformInstanceState(*sgi.LifeCycleState, *sgi.HealthStatus),
@@ -266,9 +271,9 @@ func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) 
 		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
 	}
 
-	requiredState := huaweicloudsdkasmodel.GetListScalingGroupsRequestScalingGroupStatusEnum().INSERVICE
+	// requiredState := huaweicloudsdkasmodel.GetListScalingGroupsRequestScalingGroupStatusEnum().INSERVICE
 	opts := &huaweicloudsdkasmodel.ListScalingGroupsRequest{
-		ScalingGroupStatus: &requiredState,
+		// ScalingGroupStatus: &requiredState,
 	}
 	response, err := asClient.ListScalingGroups(opts)
 	if err != nil {

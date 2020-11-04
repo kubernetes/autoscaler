@@ -121,8 +121,8 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 			return nil, err
 		}
 
-		for i := range instances {
-			if instanceID == instances[i].Id {
+		for j := range instances {
+			if instanceID == instances[j].Id {
 				pinnedGroup := hcp.autoScalingGroup[i]
 				return &pinnedGroup, nil
 			}
