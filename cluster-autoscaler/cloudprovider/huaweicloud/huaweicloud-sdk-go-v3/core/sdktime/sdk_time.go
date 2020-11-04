@@ -30,5 +30,7 @@ func (t SdkTime) MarshalJSON() ([]byte, error) {
 }
 
 func (t SdkTime) String() string {
-	return time.Time(t).Format(`2006-01-02T15:04:05Z`)
+	// return time.Time(t).Format(`2006-01-02T15:04:05Z`)
+	// temp solution for: https://github.com/huaweicloud/huaweicloud-sdk-go-v3/issues/8
+	return time.Time(t).Format(`2006-01-02T15:04Z`)
 }
