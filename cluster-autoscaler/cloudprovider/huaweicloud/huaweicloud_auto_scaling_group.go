@@ -158,7 +158,17 @@ func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
 func (asg *AutoScalingGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := asg.cloudServiceManager.getAsgTemplate(asg.groupID)
+	if err != nil {
+		return nil, err
+	}
+	node, err := asg.cloudServiceManager.buildNodeFromTemplate(asg.groupName, template)
+	if err != nil {
+		return nil, err
+	}
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.groupName))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
