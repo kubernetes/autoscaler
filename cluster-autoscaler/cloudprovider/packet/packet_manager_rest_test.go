@@ -77,7 +77,7 @@ func newTestPacketManagerRest(t *testing.T, url string) *packetManagerRest {
 }
 func TestListPacketDevices(t *testing.T) {
 	var m *packetManagerRest
-	server := NewHttpServerMock()
+	server := NewHttpServerMockWithContentType()
 	defer server.Close()
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If auth token set in env, hit the actual Packet API
@@ -87,7 +87,7 @@ func TestListPacketDevices(t *testing.T) {
 		m = newTestPacketManagerRest(t, server.URL)
 		t.Logf("server URL: %v", server.URL)
 		t.Logf("default packetManagerNodePool baseURL: %v", m.packetManagerNodePools["default"].baseURL)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponse).Times(2)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(2)
 	}
 
 	_, err := m.listPacketDevices(context.TODO())
