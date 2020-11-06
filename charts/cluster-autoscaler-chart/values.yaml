@@ -168,7 +168,7 @@ image:
   pullSecrets: []
   # - myRegistrKeySecretName
 
-# kubeTargetVersionOverride -- Allow overridding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
+# kubeTargetVersionOverride -- Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
 kubeTargetVersionOverride: ""
 
 # nameOverride -- String to partially override `cluster-autoscaler.fullname` template (will maintain the release name)
