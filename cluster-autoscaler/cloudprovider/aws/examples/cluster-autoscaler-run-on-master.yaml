@@ -163,7 +163,7 @@ spec:
             - --nodes={{ node_asg_min }}:{{ node_asg_max }}:{{ name }}
           volumeMounts:
             - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt #/etc/ssl/certs/ca-bundle.crt for EKS Amazon Linux Worker Nodes
+              mountPath: /etc/ssl/certs/ca-certificates.crt #/etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes
               readOnly: true
           imagePullPolicy: "Always"
       volumes:
