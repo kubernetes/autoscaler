@@ -442,7 +442,7 @@ func (csm *cloudServiceManager) getScalingGroupConfigByID(groupID, configID stri
 		return nil, err
 	}
 	if response == nil || response.ScalingConfiguration == nil {
-		return nil, fmt.Errorf("no instance in scaling group: %s", groupID)
+		return nil, fmt.Errorf("no scaling configuration found, groupID: %s, configID: %s", groupID, configID)
 	}
 	return response.ScalingConfiguration, nil
 }
@@ -507,7 +507,7 @@ func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *
 	node.Status = apiv1.NodeStatus{
 		Capacity: apiv1.ResourceList{},
 	}
-	// TODO: get a real value.
+
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.vcpu, resource.DecimalSI)
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.gpu, resource.DecimalSI)
