@@ -37,7 +37,7 @@ const deletePacketDeviceResponsePool3 = ``
 
 func TestIncreaseDecreaseSize(t *testing.T) {
 	var m *packetManagerRest
-	server := NewHttpServerMock()
+	server := NewHttpServerMockWithContentType()
 	defer server.Close()
 	assert.Equal(t, true, true)
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
@@ -46,15 +46,15 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	} else {
 		// Set up a mock Packet API
 		m = newTestPacketManagerRest(t, server.URL)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponse).Times(3)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(createPacketDeviceResponsePool3).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponseAfterIncreasePool3).Times(2)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(createPacketDeviceResponsePool2).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponseAfterIncreasePool2).Times(3)
-		server.On("handle", "/devices/0f5609af-1c27-451b-8edd-a1283f2c9440").Return(deletePacketDeviceResponsePool2).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponseAfterIncreasePool3).Times(3)
-		server.On("handle", "/devices/8fa90049-e715-4794-ba31-81c1c78cee84").Return(deletePacketDeviceResponsePool3).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return(listPacketDevicesResponse).Times(3)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool3).Times(1)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(2)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool2).Times(1)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool2).Times(3)
+		server.On("handleWithContentType", "/devices/0f5609af-1c27-451b-8edd-a1283f2c9440").Return("application/json", deletePacketDeviceResponsePool2).Times(1)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(3)
+		server.On("handleWithContentType", "/devices/8fa90049-e715-4794-ba31-81c1c78cee84").Return("application/json", deletePacketDeviceResponsePool3).Times(1)
+		server.On("handleWithContentType", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
 	}
 	clusterUpdateLock := sync.Mutex{}
 	ngPool2 := &packetNodeGroup{
