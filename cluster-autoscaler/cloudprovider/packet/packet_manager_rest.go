@@ -45,7 +45,10 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-const userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
+const (
+	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
+	expectedAPIContentTypePrefix = "application/json"
+)
 
 type instanceType struct {
 	InstanceName string
@@ -366,6 +369,13 @@ func (mgr *packetManagerRest) request(ctx context.Context, method, url string, j
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, expectedAPIContentTypePrefix) {
+		errorResponse := &ErrorResponse{Response: resp}
+		errorResponse.SingleError = fmt.Sprintf("Unexpected Content-Type: %s with status: %s", ct, resp.Status)
+		return nil, errorResponse
 	}
 
 	// If the response is good return early
