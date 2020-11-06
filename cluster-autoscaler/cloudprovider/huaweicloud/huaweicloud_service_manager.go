@@ -442,7 +442,7 @@ func (csm *cloudServiceManager) getScalingGroupConfigByID(groupID, configID stri
 		return nil, err
 	}
 	if response == nil || response.ScalingConfiguration == nil {
-		return nil, fmt.Errorf("no scaling configuration not found, groupID: %s, configID: %s", groupID, configID)
+		return nil, fmt.Errorf("no scaling configuration found, groupID: %s, configID: %s", groupID, configID)
 	}
 	return response.ScalingConfiguration, nil
 }
