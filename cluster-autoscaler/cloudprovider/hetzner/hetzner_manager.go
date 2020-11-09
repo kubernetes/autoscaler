@@ -73,13 +73,13 @@ func newManager() (*hetznerManager, error) {
 	}
 
 	m.nodeGroups[drainingNodePoolId] = &hetznerNodeGroup{
-		manager: m,
+		manager:      m,
 		instanceType: "cx11",
-		region: "fsn1",
-		targetSize: 0,
-		maxSize: 0,
-		minSize: 0,
-		id: drainingNodePoolId,
+		region:       "fsn1",
+		targetSize:   0,
+		maxSize:      0,
+		minSize:      0,
+		id:           drainingNodePoolId,
 	}
 
 	return m, nil
@@ -91,9 +91,9 @@ func (m *hetznerManager) Refresh() error {
 	return nil
 }
 
-func (m *hetznerManager) allServers(nodeGroup string) ([]*hcloud.Server, error)  {
+func (m *hetznerManager) allServers(nodeGroup string) ([]*hcloud.Server, error) {
 	listOptions := hcloud.ListOpts{
-		PerPage: 50,
+		PerPage:       50,
 		LabelSelector: nodeGroupLabel + "=" + nodeGroup,
 	}
 

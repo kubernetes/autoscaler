@@ -345,11 +345,11 @@ func serverTypeAvailable(manager *hetznerManager, instanceType string, region st
 func createServer(n *hetznerNodeGroup) error {
 	StartAfterCreate := true
 	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, hcloud.ServerCreateOpts{
-		Name: newNodeName(n),
-		UserData: n.manager.cloudInit,
-		Location: &hcloud.Location{Name: n.region},
-		ServerType: &hcloud.ServerType{Name: n.instanceType},
-		Image: &hcloud.Image{Name: n.manager.image},
+		Name:             newNodeName(n),
+		UserData:         n.manager.cloudInit,
+		Location:         &hcloud.Location{Name: n.region},
+		ServerType:       &hcloud.ServerType{Name: n.instanceType},
+		Image:            &hcloud.Image{Name: n.manager.image},
 		StartAfterCreate: &StartAfterCreate,
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
@@ -375,7 +375,7 @@ func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud
 
 	go func() {
 		for {
-			serverResponse, _ ,err := m.client.Server.Get(m.apiCallContext, strconv.Itoa(server.ID))
+			serverResponse, _, err := m.client.Server.Get(m.apiCallContext, strconv.Itoa(server.ID))
 			if err != nil {
 				errorResult <- fmt.Errorf("failed to get server %s status error: %v", server.Name, err)
 				return
@@ -391,7 +391,7 @@ func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud
 	}()
 
 	select {
-	case res := <- errorResult:
+	case res := <-errorResult:
 		return res
 	case <-time.After(serverCreateTimeout):
 		return fmt.Errorf("waiting for server %s status %s timeout", server.Name, status)
