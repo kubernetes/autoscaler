@@ -94,25 +94,24 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	instances, err := asg.cloudServiceManager.GetInstances(asg.groupID)
 	if err != nil {
-		klog.Warningf("failed to get nodes from group: %s, error: %v", asg.groupID, err)
+		klog.Warningf("failed to get instances from group: %s, error: %v", asg.groupID, err)
 		return err
 	}
 
-	// TODO(RainbowMango): Check if all node in this group.
-	//  If one of the node is not belong to this group, just return error.
-
-	servers := make([]string, 0, len(instances))
+	instanceIds := make([]string, 0, len(instances))
 	for _, instance := range instances {
-		servers = append(servers, instance.Id)
+		for _, n := range nodes {
+			if n.Spec.ProviderID == instance.Id {
+				instanceIds = append(instanceIds, instance.Id)
+			}
+		}
 	}
 
-	err = asg.cloudServiceManager.DeleteServers(servers)
+	err = asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
 	if err != nil {
-		klog.Warningf("failed to delete nodes. error: %v", err)
+		klog.Warningf("failed to delete scaling instances. error: %v", err)
 		return err
 	}
-
-	// TODO(RainbowMango): Wait for node group size updated.
 
 	return nil
 }
