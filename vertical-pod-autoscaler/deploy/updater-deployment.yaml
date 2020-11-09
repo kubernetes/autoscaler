@@ -36,4 +36,5 @@ spec:
               cpu: 50m
               memory: 500Mi
           ports:
-            - containerPort: 8080
+            - name: prometheus
+              containerPort: 8943
