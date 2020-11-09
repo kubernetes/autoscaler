@@ -34,6 +34,16 @@ const (
 	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
 	// groups in the same NodeGroupSet
 	MaxCapacityMemoryDifferenceRatio = 0.015
+	// LabelWorkerPool is a constant for a label that indicates the worker pool the node belongs to
+	LabelWorkerPool = "worker.gardener.cloud/pool"
+	// LabelWorkerPoolDeprecated is a deprecated constant for a label that indicates the worker pool the node belongs to
+	LabelWorkerPoolDeprecated = "worker.garden.sapcloud.io/group"
+	// LabelTopologyEBSCSIAWS is a CSI-specific label for ebs-driver in AWS.
+	LabelTopologyEBSCSIAWS = "topology.ebs.csi.aws.com/zone"
+	// LabelTopologyGKE is a CSI-specific label for persistent disk driver in GCP.
+	LabelTopologyGKE = "topology.gke.io/zone"
+	// LabelTopologyDiskCSIAzure is a CSI-specific label for disk driver in Azure.
+	LabelTopologyDiskCSIAzure = "topology.disk.csi.azure.com/zone"
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
@@ -47,6 +57,14 @@ var BasicIgnoredLabels = map[string]bool{
 	apiv1.LabelZoneRegionStable:           true,
 	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
 	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify "instance group" names. it's value is variable, defeating check of similar node groups
+
+	// Ignore gardener specific labels.
+	LabelWorkerPool:           true,
+	LabelWorkerPoolDeprecated: true,
+	// Ignore CSI specific labels.
+	LabelTopologyEBSCSIAWS:    true,
+	LabelTopologyGKE:          true,
+	LabelTopologyDiskCSIAzure: true,
 }
 
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
