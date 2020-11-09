@@ -399,9 +399,10 @@ func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud
 func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {
 	servers, err := n.manager.allServers(n.id)
 	if err != nil {
-		klog.Errorf("failed to set node pool %s size error: %v", n.id, err)
+		klog.Errorf("failed to set node pool %s size, using delta %d error: %v", n.id, expectedDelta, err)
 		n.targetSize = n.targetSize - expectedDelta
 	} else {
+		klog.Infof("Set node group %s size from %d to %d, expected delta %d", n.id, n.targetSize, len(servers), expectedDelta)
 		n.targetSize = len(servers)
 	}
 }
