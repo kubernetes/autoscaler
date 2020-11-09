@@ -220,12 +220,14 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	}
 	node.Status.Allocatable = node.Status.Capacity
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildNodeGroupLabels(n))
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
 	err = nodeInfo.SetNode(&node)
 	if err != nil {
 		return nil, fmt.Errorf("could not create node info for node group %s error: %v", n.id, err)
 	}
+
 	return nodeInfo, nil
 }
 
@@ -318,7 +320,7 @@ func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.R
 
 	return apiv1.ResourceList{
 		// TODO somehow determine the actual pods that will be running
-		apiv1.ResourcePods:    *resource.NewQuantity(3, resource.DecimalSI),
+		apiv1.ResourcePods:    *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
 		apiv1.ResourceMemory:  *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),

@@ -35,13 +35,14 @@ var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel              = hcloudLabelNamespace + "/gpu-node"
-	providerIDPrefix      = "hcloud://"
-	nodeGroupLabel        = hcloudLabelNamespace + "/node-group"
-	hcloudLabelNamespace  = "hcloud"
-	drainingNodePoolId    = "draining-node-pool"
-	serverCreateTimeout   = 1 * time.Minute
-	serverRegisterTimeout = 10 * time.Minute
+	GPULabel               = hcloudLabelNamespace + "/gpu-node"
+	providerIDPrefix       = "hcloud://"
+	nodeGroupLabel         = hcloudLabelNamespace + "/node-group"
+	hcloudLabelNamespace   = "hcloud"
+	drainingNodePoolId     = "draining-node-pool"
+	serverCreateTimeout    = 1 * time.Minute
+	serverRegisterTimeout  = 10 * time.Minute
+	defaultPodAmountsLimit = 110
 )
 
 // HetznerCloudProvider implements CloudProvider interface.
