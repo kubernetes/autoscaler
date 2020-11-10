@@ -1533,6 +1533,11 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         96,
 		MemoryMb:     786432,
 		GPU:          8,
+	"p4d.24xlarge": {
+		InstanceType: "p4d.24xlarge",
+		VCPU:         96,
+		MemoryMb:     1179648,
+		GPU:          8,
 	},
 	"r3": {
 		InstanceType: "r3",
