@@ -62,6 +62,9 @@ type AutoScalingService interface {
 	// IncreaseSizeInstance wait until instance number is updated.
 	IncreaseSizeInstance(groupID string, delta int) error
 
+	// DeleteScalingInstances is used to delete instances from auto scaling group by instanceIDs.
+	DeleteScalingInstances(groupID string, instanceIds []string) error
+
 	// Get default auto scaling group template
 	getAsgTemplate(groupID string) (*asgTemplate, error)
 
@@ -216,6 +219,29 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 	}
 
 	return instances, nil
+}
+
+func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
+	asClient := csm.getASClientFunc()
+
+	instanceDelete := "yes"
+	opts := &huaweicloudsdkasmodel.UpdateScalingGroupInstanceRequest{
+		ScalingGroupId: groupID,
+		Body: &huaweicloudsdkasmodel.UpdateScalingGroupInstanceRequestBody{
+			InstancesId:    instanceIds,
+			InstanceDelete: &instanceDelete,
+			Action:         huaweicloudsdkasmodel.GetUpdateScalingGroupInstanceRequestBodyActionEnum().REMOVE,
+		},
+	}
+
+	_, err := asClient.UpdateScalingGroupInstance(opts)
+
+	if err != nil {
+		klog.Errorf("failed to delete scaling instances. group: %s, error: %v", groupID, err)
+		return err
+	}
+
+	return nil
 }
 
 // IncreaseSizeInstance increases a scaling group's instance size.
