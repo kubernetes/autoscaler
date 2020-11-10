@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	"k8s.io/klog/v2"
@@ -98,13 +99,24 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return err
 	}
 
-	instanceIds := make([]string, 0, len(instances))
+	instanceSet := sets.NewString()
 	for _, instance := range instances {
-		for _, n := range nodes {
-			if n.Spec.ProviderID == instance.Id {
-				instanceIds = append(instanceIds, instance.Id)
-			}
+		instanceSet.Insert(instance.Id)
+	}
+
+	instanceIds := make([]string, 0, len(instances))
+	for _, node := range nodes {
+		providerID := node.Spec.ProviderID
+
+		// If one of the nodes not belongs to this auto scaling group, means there is something wrong happened,
+		// so, we should reject the whole deleting request.
+		if !instanceSet.Has(providerID) {
+			klog.Errorf("delete node not belongs this node group is not allowed. group: %s, node: %s", asg.groupID, providerID)
+			return fmt.Errorf("node does not belong to this node group")
 		}
+
+		klog.V(1).Infof("going to remove node from scaling group. group: %s, node: %s", asg.groupID, providerID)
+		instanceIds = append(instanceIds, providerID)
 	}
 
 	err = asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
