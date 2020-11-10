@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	klog "k8s.io/klog/v2"
 )
@@ -54,6 +55,11 @@ type huaweicloudCloudProvider struct {
 }
 
 func newCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) *huaweicloudCloudProvider {
+	if do.AutoDiscoverySpecified() {
+		klog.Errorf("only support static discovery scaling group in huaweicloud for now")
+		return nil
+	}
+
 	cloudConfig, err := readConf(opts.CloudConfig)
 	if err != nil {
 		klog.Errorf("failed to read cloud configuration. error: %v", err)
@@ -65,17 +71,24 @@ func newCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroup
 	}
 
 	csm := newCloudServiceManager(cloudConfig)
-	sgs, err := csm.ListScalingGroups()
+
+	hcp := &huaweicloudCloudProvider{
+		cloudServiceManager: csm,
+		resourceLimiter:     rl,
+		autoScalingGroup:    make([]AutoScalingGroup, 0),
+	}
+
+	if len(do.NodeGroupSpecs) <= 0 {
+		klog.Error("no auto scaling group specified")
+		return nil
+	}
+	err = hcp.buildAsgs(do.NodeGroupSpecs)
 	if err != nil {
-		klog.Errorf("failed to list scaling groups. error: %v", err)
+		klog.Errorf("failed to build auto scaling groups. error: %v", err)
 		return nil
 	}
 
-	return &huaweicloudCloudProvider{
-		cloudServiceManager: csm,
-		resourceLimiter:     rl,
-		autoScalingGroup:    sgs,
-	}
+	return hcp
 }
 
 // Name returns the name of the cloud provider.
@@ -111,25 +124,7 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 		return nil, fmt.Errorf("provider id missing from node: %s", node.Name)
 	}
 
-	hcp.lock.RLock()
-	defer hcp.lock.RUnlock()
-
-	for i := range hcp.autoScalingGroup {
-		instances, err := hcp.autoScalingGroup[i].Nodes()
-		if err != nil {
-			klog.Warningf("failed to list instances from scaling group: %s, error: %v", hcp.autoScalingGroup[i].groupName, err)
-			return nil, err
-		}
-
-		for j := range instances {
-			if instanceID == instances[j].Id {
-				pinnedGroup := hcp.autoScalingGroup[i]
-				return &pinnedGroup, nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("no node group found")
+	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available. Not implemented.
@@ -176,6 +171,38 @@ func (hcp *huaweicloudCloudProvider) Refresh() error {
 	return nil
 }
 
+func (hcp *huaweicloudCloudProvider) buildAsgs(specs []string) error {
+	asgs, err := hcp.cloudServiceManager.ListScalingGroups()
+	if err != nil {
+		klog.Errorf("failed to list scaling groups, because of %s", err.Error())
+		return err
+	}
+
+	for _, spec := range specs {
+		if err := hcp.addNodeGroup(spec, asgs); err != nil {
+			klog.Warningf("failed to add node group to huaweicloud provider with spec: %s", spec)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (hcp *huaweicloudCloudProvider) addNodeGroup(spec string, asgs []AutoScalingGroup) error {
+	asg, err := buildAsgFromSpec(spec, asgs, hcp.cloudServiceManager)
+	if err != nil {
+		klog.Errorf("failed to build ASG from spec, because of %s", err.Error())
+		return err
+	}
+	hcp.addAsg(asg)
+	return nil
+}
+
+func (hcp *huaweicloudCloudProvider) addAsg(asg *AutoScalingGroup) {
+	hcp.autoScalingGroup = append(hcp.autoScalingGroup, *asg)
+	hcp.cloudServiceManager.RegisterAsg(asg)
+}
+
 // BuildHuaweiCloud is called by the autoscaler/cluster-autoscaler/builder to build a huaweicloud cloud provider.
 func BuildHuaweiCloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if len(opts.CloudConfig) == 0 {
@@ -183,4 +210,24 @@ func BuildHuaweiCloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroup
 	}
 
 	return newCloudProvider(opts, do, rl)
+}
+
+func buildAsgFromSpec(specStr string, asgs []AutoScalingGroup, manager CloudServiceManager) (*AutoScalingGroup, error) {
+	spec, err := dynamic.SpecFromString(specStr, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
+	}
+
+	for _, asg := range asgs {
+		if asg.groupName == spec.Name {
+			return &AutoScalingGroup{
+				cloudServiceManager: manager,
+				groupName:           asg.groupName,
+				groupID:             asg.groupID,
+				minInstanceNumber:   asg.minInstanceNumber,
+				maxInstanceNumber:   asg.maxInstanceNumber,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("no auto scaling group found, spec: %s", spec.Name)
 }

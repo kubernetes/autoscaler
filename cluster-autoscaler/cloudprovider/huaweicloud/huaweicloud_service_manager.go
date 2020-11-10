@@ -62,6 +62,12 @@ type AutoScalingService interface {
 	// IncreaseSizeInstance wait until instance number is updated.
 	IncreaseSizeInstance(groupID string, delta int) error
 
+	// GetAsgForInstance returns auto scaling group for the given instance.
+	GetAsgForInstance(instanceID string) (*AutoScalingGroup, error)
+
+	// RegisterAsg registers auto scaling group to manager
+	RegisterAsg(asg *AutoScalingGroup)
+
 	// DeleteScalingInstances is used to delete instances from auto scaling group by instanceIDs.
 	DeleteScalingInstances(groupID string, instanceIds []string) error
 
@@ -86,6 +92,7 @@ type cloudServiceManager struct {
 	cloudConfig      *CloudConfig
 	getECSClientFunc func() *huaweicloudsdkecs.EcsClient
 	getASClientFunc  func() *huaweicloudsdkas.AsClient
+	asgs             *autoScalingGroupCache
 }
 
 type asgTemplate struct {
@@ -99,11 +106,24 @@ type asgTemplate struct {
 }
 
 func newCloudServiceManager(cloudConfig *CloudConfig) *cloudServiceManager {
-	return &cloudServiceManager{
+	csm := &cloudServiceManager{
 		cloudConfig:      cloudConfig,
 		getECSClientFunc: cloudConfig.getECSClient,
 		getASClientFunc:  cloudConfig.getASClient,
+		asgs:             newAutoScalingGroupCache(),
 	}
+
+	csm.asgs.generateCache(csm)
+
+	return csm
+}
+
+func (csm *cloudServiceManager) GetAsgForInstance(instanceID string) (*AutoScalingGroup, error) {
+	return csm.asgs.FindForInstance(instanceID, csm)
+}
+
+func (csm *cloudServiceManager) RegisterAsg(asg *AutoScalingGroup) {
+	csm.asgs.Register(asg)
 }
 
 // DeleteServers deletes a group of server by ID.
