@@ -17,12 +17,16 @@ limitations under the License.
 package huaweicloud
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 )
@@ -105,6 +109,7 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	instanceIds := make([]string, 0, len(instances))
+	nodeNames := make([]string, 0, len(instances))
 	for _, node := range nodes {
 		providerID := node.Spec.ProviderID
 
@@ -117,11 +122,18 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 		klog.V(1).Infof("going to remove node from scaling group. group: %s, node: %s", asg.groupID, providerID)
 		instanceIds = append(instanceIds, providerID)
+		nodeNames = append(nodeNames, node.Name)
 	}
 
 	err = asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
 	if err != nil {
 		klog.Warningf("failed to delete scaling instances. error: %v", err)
+		return err
+	}
+
+	err = asg.deleteNodesFromCluster(nodeNames)
+	if err != nil {
+		klog.Warningf("failed to delete nodes from cluster. error: %v", err)
 		return err
 	}
 
@@ -213,4 +225,35 @@ func (asg *AutoScalingGroup) Autoprovisioned() bool {
 // String dumps current groups meta data.
 func (asg *AutoScalingGroup) String() string {
 	return fmt.Sprintf("group: %s min=%d max=%d", asg.groupID, asg.minInstanceNumber, asg.maxInstanceNumber)
+}
+
+func (asg *AutoScalingGroup) deleteNodesFromCluster(nodeNames []string) error {
+	restConfig, err := clientcmd.BuildConfigFromFlags("", "")
+	if err != nil {
+		klog.Warningf("Failed to delete nodes from cluster due to can not get config. error: %v", err)
+		return err
+	}
+
+	kubeClient, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		klog.Warningf("Failed to delete nodes from cluster due to can not get kube-client. error: %v", err)
+		return err
+	}
+
+	var failedNodes []string
+	for _, nodeName := range nodeNames {
+		err := kubeClient.CoreV1().Nodes().Delete(context.TODO(), nodeName, metav1.DeleteOptions{})
+		if err != nil {
+			klog.Warningf("Failed to delete node from cluster. node: %s, error: %s", nodeName, err)
+			failedNodes = append(failedNodes, nodeName)
+			continue
+		}
+		klog.V(1).Infof("deleted one node from cluster. node name: %s", nodeName)
+	}
+
+	if len(failedNodes) != 0 {
+		return fmt.Errorf("failed to delete %d node(s) from cluster", len(failedNodes))
+	}
+
+	return nil
 }
