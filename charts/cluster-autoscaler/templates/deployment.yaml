@@ -26,6 +26,9 @@ spec:
     {{- end }}
       labels:
 {{ include "cluster-autoscaler.instance-name" . | indent 8 }}
+      {{- if .Values.additionalLabels }}
+{{ toYaml .values.additionalLabels | indent 8 }}
+      {{- end }}
       {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
       {{- end }}
