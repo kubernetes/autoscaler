@@ -162,6 +162,17 @@ envFromConfigMap: ""
 # envFromSecret -- Secret name to use as envFrom.
 envFromSecret: ""
 
+# extraVolumeSecrets -- Additional volumes to mount from Secrets.
+extraVolumeSecrets: {}
+  # autoscaler-vol:
+  #   mountPath: /data/autoscaler/
+  # custom-vol:
+  #   name: custom-secret
+  #   mountPath: /data/custom/
+  #   items:
+  #     - key: subkey
+  #       path: mypath
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
