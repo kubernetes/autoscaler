@@ -17,6 +17,8 @@ limitations under the License.
 package metrics
 
 import (
+	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -227,6 +229,15 @@ var (
 		},
 	)
 
+	unremovableNodesCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "unremovable_nodes_count",
+			Help:      "Number of nodes currently considered unremovable by CA.",
+		},
+		[]string{"reason"},
+	)
+
 	scaleDownInCooldown = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
@@ -279,6 +290,7 @@ func RegisterAll() {
 	legacyregistry.MustRegister(gpuScaleDownCount)
 	legacyregistry.MustRegister(evictionsCount)
 	legacyregistry.MustRegister(unneededNodesCount)
+	legacyregistry.MustRegister(unremovableNodesCount)
 	legacyregistry.MustRegister(scaleDownInCooldown)
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
@@ -377,6 +389,13 @@ func RegisterEvictions(podsCount int) {
 // UpdateUnneededNodesCount records number of currently unneeded nodes
 func UpdateUnneededNodesCount(nodesCount int) {
 	unneededNodesCount.Set(float64(nodesCount))
+}
+
+// UpdateUnremovableNodesCount records number of currently unremovable nodes
+func UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
+	for reason, count := range unremovableReasonCounts {
+		unremovableNodesCount.WithLabelValues(fmt.Sprintf("%v", reason)).Set(float64(count))
+	}
 }
 
 // UpdateNapEnabled records if NodeAutoprovisioning is enabled
