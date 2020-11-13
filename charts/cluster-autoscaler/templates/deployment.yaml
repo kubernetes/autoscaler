@@ -179,14 +179,21 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets }}
           volumeMounts:
+          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
             - name: cloudconfig
               mountPath: {{ .Values.cloudConfigPath }}
               readOnly: true
+          {{- end }}
           {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}
             - name: ca-bundle
               mountPath: {{ .Values.magnumCABundlePath }}
+              readOnly: true
+          {{- end }}
+          {{- range $key, $value := .Values.extraVolumeSecrets }}
+            - name: {{ $key }}
+              mountPath: {{ required "Must specify mountPath!" $value.mountPath }}
               readOnly: true
           {{- end }}
           {{- end }}
@@ -205,15 +212,26 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets }}
       volumes:
+      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
         - name: cloudconfig
           hostPath:
             path: {{ .Values.cloudConfigPath }}
+      {{- end }}
       {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}
         - name: ca-bundle
           hostPath:
             path: {{ .Values.magnumCABundlePath }}
+      {{- end }}
+      {{- range $key, $value := .Values.extraVolumeSecrets }}
+        - name: {{ $key }}
+          secret:
+            secretName: {{ default (include "cluster-autoscaler.fullname" $) $value.name }}
+            {{- if $value.items }}
+            items:
+            {{- toYaml $value.items | nindent 14 }}
+            {{- end }}
       {{- end }}
       {{- end }}
       {{- if .Values.image.pullSecrets }}
