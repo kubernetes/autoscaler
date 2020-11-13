@@ -142,7 +142,7 @@ spec:
             - name: {{ $key }}
               value: "{{ $value }}"
           {{- end }}
-          {{- range $key, $value := .Values.envFromConfigMap }}
+          {{- range $key, $value := .Values.extraEnvConfigMaps }}
             - name: {{ $key }}
               valueFrom:
                 configMapKeyRef:
@@ -156,10 +156,16 @@ spec:
                   name: {{ default (include "cluster-autoscaler.fullname" $) $value.name }}
                   key: {{ required "Must specify key!" $value.key }}
           {{- end }}
-          {{- if .Values.envFromSecret }}
+          {{- if or .Values.envFromSecret .Values.envFromConfigMap }}
           envFrom:
+          {{- if .Values.envFromSecret }}
             - secretRef:
                 name: {{ .Values.envFromSecret }}
+          {{- end }}
+          {{- if .Values.envFromConfigMap }}
+            - configMapRef:
+                name: {{ .Values.envFromConfigMap }}
+          {{- end }}
           {{- end }}
           livenessProbe:
             httpGet:
