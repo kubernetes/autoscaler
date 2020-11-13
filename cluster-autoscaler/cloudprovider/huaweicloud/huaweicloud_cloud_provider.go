@@ -48,10 +48,6 @@ type huaweicloudCloudProvider struct {
 	resourceLimiter     *cloudprovider.ResourceLimiter
 	autoScalingGroup    []AutoScalingGroup
 	lock                sync.RWMutex
-
-	// Following to be refactored
-	huaweiCloudManager *huaweicloudCloudManager
-	nodeGroups         []NodeGroup
 }
 
 func newCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) *huaweicloudCloudProvider {
