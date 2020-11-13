@@ -150,6 +150,18 @@ extraArgs:
 # extraEnv -- Additional container environment variables.
 extraEnv: {}
 
+# extraEnvConfigMaps -- Additional container environment variables from ConfigMaps.
+extraEnvConfigMaps: {}
+
+# extraEnvSecrets -- Additional container environment variables from Secrets.
+extraEnvSecrets: {}
+
+# envFromConfigMap -- ConfigMap name to use as envFrom.
+envFromConfigMap: ""
+
+# envFromSecret -- Secret name to use as envFrom.
+envFromSecret: ""
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 

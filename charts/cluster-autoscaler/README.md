@@ -46,6 +46,10 @@ Releases of the chart from `9.0.0` onwards return the naming of the chart to `cl
 
 To migrate from a 1.X release of the chart to a `9.0.0` or later release, you should first uninstall your `1.X` install of the `cluster-autoscaler-chart` chart, before performing the installation of the new `cluster-autoscaler` chart.
 
+## Migration from 9.0 to 9.1
+
+Starting from `9.1.0` the `envFromConfigMap` value is expected to contain the name of a ConfigMap that is used as ref for `envFrom`, similar to `envFromSecret`. If you want to keep the previous behaviour of `envFromConfigMap` you must rename it to `extraEnvConfigMaps`.
+
 ## Installing the Chart
 
 **By default, no deployment is created and nothing will autoscale**.
@@ -343,9 +347,13 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure` and `magnum` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum. |
 | containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
+| envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
+| envFromSecret | string | `""` | Secret name to use as envFrom. |
 | expanderPriorities | object | `{}` | The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities. If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities. See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md |
 | extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. |
 | extraEnv | object | `{}` | Additional container environment variables. |
+| extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
+| extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
 | fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
