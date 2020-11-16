@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	metrics_restclient "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/restclient"
 	"k8s.io/client-go/rest"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog"
@@ -76,6 +77,7 @@ func main() {
 
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
+	metrics_restclient.Register()
 	metrics_recommender.Register()
 	metrics_quality.Register()
 

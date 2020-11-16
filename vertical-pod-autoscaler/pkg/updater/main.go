@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+
 	"os"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	metrics_restclient "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/restclient"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -74,6 +76,7 @@ func main() {
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
+	metrics_restclient.Register()
 	metrics_updater.Register()
 
 	config, err := kube_restclient.InClusterConfig()
