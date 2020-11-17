@@ -240,8 +240,8 @@ func TestClear(t *testing.T) {
 	// Run with -count=1 to avoid caching.
 	localRand := rand.New(rand.NewSource(time.Now().Unix()))
 
-	nodeCount := localRand.Intn(100)
-	podCount := localRand.Intn(1000)
+	nodeCount := localRand.Intn(99) + 1
+	podCount := localRand.Intn(999) + 1
 	extraNodeCount := localRand.Intn(100)
 	extraPodCount := localRand.Intn(1000)
 
