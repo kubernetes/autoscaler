@@ -53,6 +53,10 @@ func createTestPods(n int) []*apiv1.Pod {
 }
 
 func assignPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) {
+	if len(nodes) == 0 {
+		return
+	}
+
 	j := 0
 	for i := 0; i < len(pods); i++ {
 		if j >= len(nodes) {
