@@ -20,97 +20,244 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	klog "k8s.io/klog/v2"
+
+	"k8s.io/klog/v2"
 )
 
 var (
 	virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
 )
 
-type asgCache struct {
-	registeredAsgs     []cloudprovider.NodeGroup
-	instanceToAsg      map[azureRef]cloudprovider.NodeGroup
-	notInRegisteredAsg map[azureRef]bool
-	mutex              sync.Mutex
-	interrupt          chan struct{}
+// azureCache is used for caching cluster resources state.
+//
+// It is needed to:
+// - keep track of node groups (AKS, VM and VMSS types) in the cluster,
+// - keep track of instances and which node group they belong to,
+// - limit repetitive Azure API calls.
+type azureCache struct {
+	mutex           sync.Mutex
+	interrupt       chan struct{}
+	azClient        *azClient
+	refreshInterval time.Duration
+
+	// Cache content.
+	resourceGroup        string
+	vmType               string
+	scaleSets            map[string]compute.VirtualMachineScaleSet
+	virtualMachines      map[string][]compute.VirtualMachine
+	registeredNodeGroups []cloudprovider.NodeGroup
+	instanceToNodeGroup  map[azureRef]cloudprovider.NodeGroup
+	unownedInstances     map[azureRef]bool
 }
 
-func newAsgCache() (*asgCache, error) {
-	cache := &asgCache{
-		registeredAsgs:     make([]cloudprovider.NodeGroup, 0),
-		instanceToAsg:      make(map[azureRef]cloudprovider.NodeGroup),
-		notInRegisteredAsg: make(map[azureRef]bool),
-		interrupt:          make(chan struct{}),
+func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string) (*azureCache, error) {
+	cache := &azureCache{
+		interrupt:            make(chan struct{}),
+		azClient:             client,
+		refreshInterval:      cacheTTL,
+		resourceGroup:        resourceGroup,
+		vmType:               vmType,
+		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
+		virtualMachines:      make(map[string][]compute.VirtualMachine),
+		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
+		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
+		unownedInstances:     make(map[azureRef]bool),
 	}
 
-	cache.mutex.Lock()
-	defer cache.mutex.Unlock()
 	if err := cache.regenerate(); err != nil {
-		klog.Errorf("Error while regenerating Asg cache: %v", err)
+		klog.Errorf("Error while regenerating Azure cache: %v", err)
 	}
 
 	return cache, nil
 }
 
-// Register registers a node group if it hasn't been registered.
-func (m *asgCache) Register(newAsg cloudprovider.NodeGroup) bool {
+func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	for i := range m.registeredAsgs {
-		if existing := m.registeredAsgs[i]; strings.EqualFold(existing.Id(), newAsg.Id()) {
-			if existing.MinSize() == newAsg.MinSize() && existing.MaxSize() == newAsg.MaxSize() {
+	return m.virtualMachines
+}
+
+func (m *azureCache) getScaleSets() map[string]compute.VirtualMachineScaleSet {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.scaleSets
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *azureCache) Cleanup() {
+	close(m.interrupt)
+}
+
+func (m *azureCache) regenerate() error {
+	err := m.fetchAzureResources()
+	if err != nil {
+		return err
+	}
+
+	// Regenerate instance to node groups mapping.
+	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
+	for _, ng := range m.registeredNodeGroups {
+		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
+		instances, err := ng.Nodes()
+		if err != nil {
+			return err
+		}
+		klog.V(4).Infof("regenerate: found nodes for node group %s: %+v", ng.Id(), instances)
+
+		for _, instance := range instances {
+			ref := azureRef{Name: instance.Id}
+			newInstanceToNodeGroupCache[ref] = ng
+		}
+	}
+
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.instanceToNodeGroup = newInstanceToNodeGroupCache
+
+	// Reset unowned instances cache.
+	m.unownedInstances = make(map[azureRef]bool)
+
+	return nil
+}
+
+func (m *azureCache) fetchAzureResources() error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	switch m.vmType {
+	case vmTypeVMSS:
+		// List all VMSS in the RG.
+		vmssResult, err := m.fetchScaleSets()
+		if err == nil {
+			m.scaleSets = vmssResult
+		} else {
+			return err
+		}
+	case vmTypeStandard, vmTypeAKS:
+		// List all VMs in the RG.
+		vmResult, err := m.fetchVirtualMachines()
+		if err == nil {
+			m.virtualMachines = vmResult
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
+func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, error) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	result, err := m.azClient.virtualMachinesClient.List(ctx, m.resourceGroup)
+	if err != nil {
+		klog.Errorf("VirtualMachinesClient.List in resource group %q failed: %v", m.resourceGroup, err)
+		return nil, err.Error()
+	}
+
+	instances := make(map[string][]compute.VirtualMachine)
+	for _, instance := range result {
+		if instance.Tags == nil {
+			continue
+		}
+
+		tags := instance.Tags
+		vmPoolName := tags["poolName"]
+		if vmPoolName == nil {
+			continue
+		}
+
+		instances[to.String(vmPoolName)] = append(instances[to.String(vmPoolName)], instance)
+	}
+	return instances, nil
+}
+
+// fetchScaleSets returns the updated list of scale sets in the config resource group using the Azure API.
+func (m *azureCache) fetchScaleSets() (map[string]compute.VirtualMachineScaleSet, error) {
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
+	defer cancel()
+
+	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.resourceGroup)
+	if err != nil {
+		klog.Errorf("VirtualMachineScaleSetsClient.List in resource group %q failed: %v", m.resourceGroup, err)
+		return nil, err.Error()
+	}
+
+	sets := make(map[string]compute.VirtualMachineScaleSet)
+	for _, vmss := range result {
+		sets[*vmss.Name] = vmss
+	}
+	return sets, nil
+}
+
+// Register registers a node group if it hasn't been registered.
+func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	for i := range m.registeredNodeGroups {
+		if existing := m.registeredNodeGroups[i]; strings.EqualFold(existing.Id(), nodeGroup.Id()) {
+			if existing.MinSize() == nodeGroup.MinSize() && existing.MaxSize() == nodeGroup.MaxSize() {
+				// Node group is already registered and min/max size haven't changed, no action required.
 				return false
 			}
 
-			m.registeredAsgs[i] = newAsg
-			klog.V(4).Infof("ASG %q updated", newAsg.Id())
+			m.registeredNodeGroups[i] = nodeGroup
+			klog.V(4).Infof("Node group %q updated", nodeGroup.Id())
 			m.invalidateUnownedInstanceCache()
 			return true
 		}
 	}
 
-	klog.V(4).Infof("Registering ASG %q", newAsg.Id())
-	m.registeredAsgs = append(m.registeredAsgs, newAsg)
+	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
+	m.registeredNodeGroups = append(m.registeredNodeGroups, nodeGroup)
 	m.invalidateUnownedInstanceCache()
 	return true
 }
 
-func (m *asgCache) invalidateUnownedInstanceCache() {
+func (m *azureCache) invalidateUnownedInstanceCache() {
 	klog.V(4).Info("Invalidating unowned instance cache")
-	m.notInRegisteredAsg = make(map[azureRef]bool)
+	m.unownedInstances = make(map[azureRef]bool)
 }
 
-// Unregister ASG. Returns true if the ASG was unregistered.
-func (m *asgCache) Unregister(asg cloudprovider.NodeGroup) bool {
+// Unregister node group. Returns true if the node group was unregistered.
+func (m *azureCache) Unregister(nodeGroup cloudprovider.NodeGroup) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	updated := make([]cloudprovider.NodeGroup, 0, len(m.registeredAsgs))
+	updated := make([]cloudprovider.NodeGroup, 0, len(m.registeredNodeGroups))
 	changed := false
-	for _, existing := range m.registeredAsgs {
-		if strings.EqualFold(existing.Id(), asg.Id()) {
-			klog.V(1).Infof("Unregistered ASG %s", asg.Id())
+	for _, existing := range m.registeredNodeGroups {
+		if strings.EqualFold(existing.Id(), nodeGroup.Id()) {
+			klog.V(1).Infof("Unregistered node group %s", nodeGroup.Id())
 			changed = true
 			continue
 		}
 		updated = append(updated, existing)
 	}
-	m.registeredAsgs = updated
+	m.registeredNodeGroups = updated
 	return changed
 }
 
-func (m *asgCache) get() []cloudprovider.NodeGroup {
+func (m *azureCache) getRegisteredNodeGroups() []cloudprovider.NodeGroup {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.registeredAsgs
+	return m.registeredNodeGroups
 }
 
-// FindForInstance returns Asg of the given Instance
-func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
+// FindForInstance returns node group of the given Instance
+func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -121,7 +268,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		return nil, err
 	}
 	inst := azureRef{Name: resourceID}
-	if m.notInRegisteredAsg[inst] {
+	if m.unownedInstances[inst] {
 		// We already know we don't own this instance. Return early and avoid
 		// additional calls.
 		klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
@@ -132,7 +279,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		// Omit virtual machines not managed by vmss.
 		if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
 			klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
-			m.notInRegisteredAsg[inst] = true
+			m.unownedInstances[inst] = true
 			return nil, nil
 		}
 	}
@@ -141,57 +288,27 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		// Omit virtual machines with providerID not in Azure resource ID format.
 		if ok := virtualMachineRE.Match([]byte(inst.Name)); !ok {
 			klog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
-			m.notInRegisteredAsg[inst] = true
+			m.unownedInstances[inst] = true
 			return nil, nil
 		}
 	}
 
 	// Look up caches for the instance.
-	klog.V(6).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToAsg)
-	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
-		klog.V(4).Infof("FindForInstance: found asg %s in cache", asg.Id())
-		return asg, nil
+	klog.V(6).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToNodeGroup)
+	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
+		klog.V(4).Infof("FindForInstance: found node group %q in cache", nodeGroup.Id())
+		return nodeGroup, nil
 	}
-	klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
+	klog.V(4).Infof("FindForInstance: Couldn't find node group of instance %q", inst)
 	return nil, nil
 }
 
-// Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *asgCache) Cleanup() {
-	close(m.interrupt)
-}
-
-func (m *asgCache) regenerate() error {
-	newCache := make(map[azureRef]cloudprovider.NodeGroup)
-
-	for _, nsg := range m.registeredAsgs {
-		klog.V(6).Infof("regenerate: finding nodes for nsg %+v", nsg)
-		instances, err := nsg.Nodes()
-		if err != nil {
-			return err
-		}
-		klog.V(6).Infof("regenerate: found nodes for nsg %v: %+v", nsg, instances)
-
-		for _, instance := range instances {
-			ref := azureRef{Name: instance.Id}
-			newCache[ref] = nsg
-		}
-	}
-
-	m.instanceToAsg = newCache
-
-	// Invalidating unowned instance cache.
-	m.invalidateUnownedInstanceCache()
-
-	return nil
-}
-
-// Get node group from cache. nil would be return if not found.
-// Should be call with lock protected.
-func (m *asgCache) getInstanceFromCache(providerID string) cloudprovider.NodeGroup {
-	for instanceID, asg := range m.instanceToAsg {
+// getInstanceFromCache gets the node group from cache. Returns nil if not found.
+// Should be called with lock.
+func (m *azureCache) getInstanceFromCache(providerID string) cloudprovider.NodeGroup {
+	for instanceID, nodeGroup := range m.instanceToNodeGroup {
 		if strings.EqualFold(instanceID.GetKey(), providerID) {
-			return asg
+			return nodeGroup
 		}
 	}
 
