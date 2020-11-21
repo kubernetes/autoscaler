@@ -80,7 +80,7 @@ func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	asgs := azure.azureManager.getAsgs()
+	asgs := azure.azureManager.getNodeGroups()
 
 	ngs := make([]cloudprovider.NodeGroup, len(asgs))
 	for i, asg := range asgs {
@@ -102,7 +102,7 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	}
 
 	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
-	return azure.azureManager.GetAsgForInstance(ref)
+	return azure.azureManager.GetNodeGroupForInstance(ref)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
