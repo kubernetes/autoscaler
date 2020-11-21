@@ -26,14 +26,14 @@ const (
 	autoDiscovererTypeLabel = "label"
 )
 
-// A labelAutoDiscoveryConfig specifies how to auto-discover Azure scale sets.
+// A labelAutoDiscoveryConfig specifies how to auto-discover Azure node groups.
 type labelAutoDiscoveryConfig struct {
 	// Key-values to match on.
 	Selector map[string]string
 }
 
 // ParseLabelAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
-// parsed into configuration appropriate for ASG autodiscovery.
+// parsed into configuration appropriate for node group autodiscovery.
 func ParseLabelAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]labelAutoDiscoveryConfig, error) {
 	cfgs := make([]labelAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
 	var err error
