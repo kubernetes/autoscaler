@@ -28,9 +28,8 @@ func TestRegister(t *testing.T) {
 	provider := newTestProvider(t)
 	ss := newTestScaleSet(provider.azureManager, "ss")
 
-	ac, err := newAsgCache()
-	assert.NoError(t, err)
-	ac.registeredAsgs = []cloudprovider.NodeGroup{ss}
+	ac := provider.azureManager.azureCache
+	ac.registeredNodeGroups = []cloudprovider.NodeGroup{ss}
 
 	isSuccess := ac.Register(ss)
 	assert.False(t, isSuccess)
@@ -46,29 +45,28 @@ func TestUnRegister(t *testing.T) {
 	ss := newTestScaleSet(provider.azureManager, "ss")
 	ss1 := newTestScaleSet(provider.azureManager, "ss1")
 
-	ac, err := newAsgCache()
-	assert.NoError(t, err)
-	ac.registeredAsgs = []cloudprovider.NodeGroup{ss, ss1}
+	ac := provider.azureManager.azureCache
+	ac.registeredNodeGroups = []cloudprovider.NodeGroup{ss, ss1}
 
 	isSuccess := ac.Unregister(ss)
 	assert.True(t, isSuccess)
-	assert.Equal(t, 1, len(ac.registeredAsgs))
+	assert.Equal(t, 1, len(ac.registeredNodeGroups))
 }
 
 func TestFindForInstance(t *testing.T) {
-	ac, err := newAsgCache()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
+	ac := provider.azureManager.azureCache
 
 	inst := azureRef{Name: "/subscriptions/sub/resourceGroups/rg/providers/foo"}
-	ac.notInRegisteredAsg = make(map[azureRef]bool)
-	ac.notInRegisteredAsg[inst] = true
+	ac.unownedInstances = make(map[azureRef]bool)
+	ac.unownedInstances[inst] = true
 	nodeGroup, err := ac.FindForInstance(&inst, vmTypeVMSS)
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
 
-	ac.notInRegisteredAsg[inst] = false
+	ac.unownedInstances[inst] = false
 	nodeGroup, err = ac.FindForInstance(&inst, vmTypeStandard)
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
-	assert.True(t, ac.notInRegisteredAsg[inst])
+	assert.True(t, ac.unownedInstances[inst])
 }
