@@ -22,6 +22,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingapi "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -79,13 +80,36 @@ type ControllerFetcher interface {
 }
 
 type controllerFetcher struct {
-	scaleNamespacer scale.ScalesGetter
-	mapper          apimeta.RESTMapper
-	informersMap    map[wellKnownController]cache.SharedIndexInformer
+	scaleNamespacer              scale.ScalesGetter
+	mapper                       apimeta.RESTMapper
+	informersMap                 map[wellKnownController]cache.SharedIndexInformer
+	scaleSubresourceCacheStorage controllerCacheStorage
+}
+
+func (f *controllerFetcher) periodicallyRefreshCache(ctx context.Context, period time.Duration) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(period):
+			keysToRefresh := f.scaleSubresourceCacheStorage.GetKeysToRefresh()
+			klog.Info("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
+			for _, item := range keysToRefresh {
+				scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
+				f.scaleSubresourceCacheStorage.Refresh(item.namespace, item.groupResource, item.name, scale, err)
+			}
+			klog.Infof("Finished refreshing %d entries in controllerFetchers scaleSubresourceCacheStorage", len(keysToRefresh))
+			f.scaleSubresourceCacheStorage.RemoveExpired()
+		}
+	}
+}
+
+func (f *controllerFetcher) Start(ctx context.Context, loopPeriod time.Duration) {
+	go f.periodicallyRefreshCache(ctx, loopPeriod)
 }
 
 // NewControllerFetcher returns a new instance of controllerFetcher
-func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) ControllerFetcher {
+func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.Fatalf("Could not create discoveryClient: %v", err)
@@ -121,9 +145,10 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &controllerFetcher{
-		scaleNamespacer: scaleNamespacer,
-		mapper:          mapper,
-		informersMap:    informersMap,
+		scaleNamespacer:              scaleNamespacer,
+		mapper:                       mapper,
+		informersMap:                 informersMap,
+		scaleSubresourceCacheStorage: newControllerCacheStorage(betweenRefreshes, lifeTime, jitterFactor),
 	}
 }
 
@@ -248,6 +273,15 @@ func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
 	return exists
 }
 
+func (f *controllerFetcher) getScaleForResource(namespace string, groupResource schema.GroupResource, name string) (controller *autoscalingapi.Scale, err error) {
+	if ok, scale, err := f.scaleSubresourceCacheStorage.Get(namespace, groupResource, name); ok {
+		return scale, err
+	}
+	scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+	f.scaleSubresourceCacheStorage.Insert(namespace, groupResource, name, scale, err)
+	return scale, err
+}
+
 func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersion) bool {
 	if f.isWellKnown(key) {
 		return true
@@ -271,7 +305,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersi
 
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(key.Namespace).Get(context.TODO(), groupResource, key.Name, metav1.GetOptions{})
+		scale, err := f.getScaleForResource(key.Namespace, groupResource, key.Name)
 		if err == nil && scale != nil {
 			return true
 		}
@@ -293,7 +327,7 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+		scale, err := f.getScaleForResource(namespace, groupResource, name)
 		if err == nil {
 			return getOwnerController(scale.OwnerReferences, namespace), nil
 		}

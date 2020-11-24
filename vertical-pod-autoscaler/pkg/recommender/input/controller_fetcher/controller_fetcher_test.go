@@ -44,6 +44,7 @@ var trueVar = true
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
+	f.scaleSubresourceCacheStorage = newControllerCacheStorage(time.Second, time.Minute, 0.1)
 	versioned := map[string][]metav1.APIResource{
 		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
 	}
