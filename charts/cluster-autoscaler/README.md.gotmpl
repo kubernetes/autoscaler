@@ -46,6 +46,10 @@ Releases of the chart from `9.0.0` onwards return the naming of the chart to `cl
 
 To migrate from a 1.X release of the chart to a `9.0.0` or later release, you should first uninstall your `1.X` install of the `cluster-autoscaler-chart` chart, before performing the installation of the new `cluster-autoscaler` chart.
 
+## Migration from 9.0 to 9.1
+
+Starting from `9.1.0` the `envFromConfigMap` value is expected to contain the name of a ConfigMap that is used as ref for `envFrom`, similar to `envFromSecret`. If you want to keep the previous behaviour of `envFromConfigMap` you must rename it to `extraEnvConfigMaps`.
+
 ## Installing the Chart
 
 **By default, no deployment is created and nothing will autoscale**.
