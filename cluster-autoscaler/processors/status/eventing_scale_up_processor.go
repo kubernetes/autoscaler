@@ -40,7 +40,7 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-				fmt.Sprintf("pod didn't trigger scale-up: %s",
+				fmt.Sprintf("pod didn't trigger scale-up: %s ",
 					ReasonsMessage(noScaleUpInfo, consideredNodeGroupsMap)))
 		}
 	} else {
