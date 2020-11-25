@@ -209,12 +209,15 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os Oper
 	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceType] = machineType
+	result[apiv1.LabelInstanceTypeStable] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
 	if ix == -1 {
 		return nil, fmt.Errorf("unexpected zone: %s", ref.Zone)
 	}
 	result[apiv1.LabelZoneRegion] = ref.Zone[:ix]
+	result[apiv1.LabelZoneRegionStable] = ref.Zone[:ix]
 	result[apiv1.LabelZoneFailureDomain] = ref.Zone
+	result[apiv1.LabelZoneFailureDomainStable] = ref.Zone
 	result[gceCSITopologyKeyZone] = ref.Zone
 	result[apiv1.LabelHostname] = nodeName
 	return result, nil
