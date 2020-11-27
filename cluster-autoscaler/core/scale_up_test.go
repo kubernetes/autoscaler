@@ -38,7 +38,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"

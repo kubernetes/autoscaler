@@ -18,7 +18,7 @@ package nodeinfos
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // NodeInfoProcessor processes nodeInfos after they're created.

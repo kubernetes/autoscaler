@@ -26,9 +26,9 @@ import (
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
 	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"

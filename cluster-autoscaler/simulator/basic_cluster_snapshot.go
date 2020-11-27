@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // BasicClusterSnapshot is simple, reference implementation of ClusterSnapshot.

@@ -26,7 +26,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // asg implements NodeGroup interface.
