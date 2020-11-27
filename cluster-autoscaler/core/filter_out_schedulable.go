@@ -27,8 +27,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	apiv1 "k8s.io/api/core/v1"
+	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	klog "k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/api/v1/pod"
 )
 
 type filterOutSchedulablePodListProcessor struct {
@@ -175,7 +175,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
 	// based on schedulers MoreImportantPod but does not compare Pod.Status.StartTime which does not make sense
 	// for unschedulable pods
-	p1 := pod.GetPodPriority(pod1)
-	p2 := pod.GetPodPriority(pod2)
+	p1 := corev1helpers.PodPriority(pod1)
+	p2 := corev1helpers.PodPriority(pod2)
 	return p1 > p2
 }
