@@ -19,6 +19,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [CloudStack](./cloudprovider/cloudstack/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [Packet](./cloudprovider/packet/README.md#notes) 
+* [IonosCloud](./cloudprovider/ionoscloud/README.md)
 
 # Releases
 

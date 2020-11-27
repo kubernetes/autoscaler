@@ -49,6 +49,8 @@ const (
 	KubemarkProviderName = "kubemark"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
 	HuaweicloudProviderName = "huaweicloud"
+	// IonoscloudProviderName gets the provider name of ionoscloud
+	IonoscloudProviderName = "ionoscloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
