@@ -171,6 +171,10 @@ type NodeGroup interface {
 	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 	// was created by CA and can be deleted when scaled to 0.
 	Autoprovisioned() bool
+
+	// Define all scale up/down properties specific for a NodeGroup. If nothing is defined or
+	// pointer nil, fetch default CA options.
+	AutoscalingOptions() *AutoscalingOptions
 }
 
 // Instance represents a cloud-provider node. The node does not necessarily map to k8s node
@@ -270,4 +274,54 @@ func ContainsGpuResources(resources []string) bool {
 		}
 	}
 	return false
+}
+
+// List all scale options defined in CA main options and default vars.
+type AutoscalingOptions struct {
+	// Should NodeGroup scale down.
+	ScaleDownEnabled bool
+
+	// How long after scale up that scale down evaluation resumes.
+	ScaleDownDelayAfterAdd *time.Duration
+
+	// How long after node deletion that scale down evaluation resumes, defaults to CA scanInterval
+	ScaleDownDelayAfterDelete *time.Duration
+
+	// How long after scale down failure that scale down evaluation resumes
+	ScaleDownDelayAfterFailure *time.Duration
+
+	// How long a node should be unneeded before it is eligible for scale down
+	ScaleDownUnneededTime *time.Duration
+
+	// How long an unready node should be unneeded before it is eligible for scale down
+	ScaleDownUnreadyTime *time.Duration
+
+	// Sum of cpu or memory of all pods running on the node divided by node's corresponding allocatable resource,
+	// below which a node can be considered for scale down
+	ScaleDownUtilizationThreshold *float64
+
+	// Sum of gpu requests of all pods running on the node divided by node's allocatable resource,
+	// below which a node can be considered for scale down.
+	// Utilization calculation only cares about gpu resource for accelerator node.
+	// cpu and memory utilization will be ignored.
+	ScaleDownGpuUtilizationThreshold *float64
+
+	// Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain.
+	// Lower value means better CA responsiveness but possible slower scale down latency.
+	// Higher value can affect CA performance with big clusters (hundreds of nodes).
+	// Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers.
+	ScaleDownNonEmptyCandidatesCount *int
+
+	// A ratio of nodes that are considered as additional non empty candidates for scale down when
+	// some candidates from previous iteration are no longer valid.
+	// Lower value means better CA responsiveness but possible slower scale down latency.
+	// Higher value can affect CA performance with big clusters (hundreds of nodes).
+	// Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.
+	ScaleDownCandidatesPoolRatio *float64
+
+	// Minimum number of nodes that are considered as additional non empty candidates for scale down
+	// when some candidates from previous iteration are no longer valid.
+	// When calculating the pool size for additional candidates we take
+	// max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).
+	ScaleDownCandidatesPoolMinCount *int
 }
