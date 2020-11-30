@@ -94,7 +94,21 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 	}
 
 	kubeclientSet := fakekube.NewSimpleClientset(nodeObjects...)
-	dynamicClientset := fakedynamic.NewSimpleDynamicClient(runtime.NewScheme(), machineObjects...)
+	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
+		runtime.NewScheme(),
+		map[schema.GroupVersionResource]string{
+			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machinedeployments"}: "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machines"}:           "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1alpha3", Resource: "machinesets"}:        "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machinedeployments"}:  "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machines"}:            "kindList",
+			{Group: "cluster.x-k8s.io", Version: "v1beta1", Resource: "machinesets"}:         "kindList",
+			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machinedeployments"}:   "kindList",
+			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machines"}:             "kindList",
+			{Group: "custom.x-k8s.io", Version: "v1beta1", Resource: "machinesets"}:          "kindList",
+		},
+		machineObjects...,
+	)
 	discoveryClient := &fakediscovery.FakeDiscovery{
 		Fake: &clientgotesting.Fake{
 			Resources: []*metav1.APIResourceList{

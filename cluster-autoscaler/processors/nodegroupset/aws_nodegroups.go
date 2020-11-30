@@ -17,7 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // CreateAwsNodeInfoComparator returns a comparator that checks if two nodes should be considered

@@ -20,7 +20,7 @@ import (
 	"math/rand"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type random struct {
