@@ -53,6 +53,7 @@ type NodeToBeRemoved struct {
 	Node *apiv1.Node
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
+	DaemonSetPods    []*apiv1.Pod
 }
 
 // UnremovableNode represents a node that can't be removed by CA.
@@ -147,6 +148,7 @@ candidateloop:
 		klog.V(2).Infof("%s: %s for removal", evaluationType, nodeName)
 
 		var podsToRemove []*apiv1.Pod
+		var daemonSetPods []*apiv1.Pod
 		var blockingPod *drain.BlockingPod
 
 		if _, found := destinationMap[nodeName]; !found {
@@ -156,10 +158,10 @@ candidateloop:
 		}
 
 		if fastCheck {
-			podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
+			podsToRemove, daemonSetPods, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
 				podDisruptionBudgets)
 		} else {
-			podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
+			podsToRemove, daemonSetPods, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
 				podDisruptionBudgets)
 		}
 
@@ -180,6 +182,7 @@ candidateloop:
 			result = append(result, NodeToBeRemoved{
 				Node:             nodeInfo.Node(),
 				PodsToReschedule: podsToRemove,
+				DaemonSetPods:    daemonSetPods,
 			})
 			klog.V(2).Infof("%s: node %s may be removed", evaluationType, nodeName)
 			if len(result) >= maxCount {
@@ -203,7 +206,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 			continue
 		}
 		// Should block on all pods.
-		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+		podsToRemove, _, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}

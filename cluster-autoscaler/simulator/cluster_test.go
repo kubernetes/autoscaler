@@ -308,10 +308,12 @@ func TestFindNodesToRemove(t *testing.T) {
 	emptyNodeToRemove := NodeToBeRemoved{
 		Node:             emptyNode,
 		PodsToReschedule: []*apiv1.Pod{},
+		DaemonSetPods:    []*apiv1.Pod{},
 	}
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
+		DaemonSetPods:    []*apiv1.Pod{},
 	}
 
 	clusterSnapshot := NewBasicClusterSnapshot()
