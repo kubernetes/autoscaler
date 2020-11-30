@@ -21,7 +21,7 @@ import (
 	"os"
 	"regexp"
 
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,7 +85,7 @@ func (plugin *hostPathPlugin) CanSupport(spec *volume.Spec) bool {
 		(spec.Volume != nil && spec.Volume.HostPath != nil)
 }
 
-func (plugin *hostPathPlugin) RequiresRemount() bool {
+func (plugin *hostPathPlugin) RequiresRemount(spec *volume.Spec) bool {
 	return false
 }
 
