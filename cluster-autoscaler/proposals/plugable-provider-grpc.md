@@ -1,5 +1,11 @@
 # Plugable Cloud Provider over gRPC
 
+
+Authors:
+
+* Hector Fernandez <<hfernandez@d2iq.com>> (@hectorj2f)
+
+
 ## Motivation
 
 CA is released as a bundle which includes a hardcoded list of supported cloud providers.
@@ -29,46 +35,13 @@ There are couple of examples of pluggable designs using Go SDKs that would guide
 to support custom providers as plugins.
 This approach is inspired based on [Hashicorp go-plugin](https://github.com/hashicorp/go-plugin) and [Grafana Go SDK for plugins](https://github.com/grafana/grafana-plugin-sdk-go).
 
-There are two alternatives on how to plug custom cloud providers:
+The proposed solution will deploy the external grpc provider along side CA and both communicates via gRPC with TLS/SSL. The external provider would be part of a separate deployment, and so we should deploy it independently, as shown in the ![Figure](./images/external-provider-grpc.jpg).
 
-* **Option1:** Install the plugin as a binary that would be mounted into the CA container
-and invoked by CA server.
-In this option CA server launches each provider plugin as a subprocess and communicates with it over gRPC.
+This approach exposes a common gRPC API server.
 
-* **Option2:** A custom cloud provider server is deployed along side CA and both communicates via gRPC with TLS/SSL.
 
-Regardless of the chosen option, both solutions have to expose a common gRPC API
-with the following operations:
 
-```go
-type clusterAutoscalerCustomProviderServer struct {
-        ...
-}
-
-func (s *clusterAutoscalerCustomProviderServer) NodeGroups(ctx context.Context) ([]pb.NodeGroup, error) {
-        ...
-}
-...
-
-func (s *clusterAutoscalerCustomProviderServer) NodeGroupForNode(ctx context.Context, *apiv1.Node) (*pb.NodeGroup, error) {
-        ...
-}
-...
-
-func (s *clusterAutoscalerCustomProviderServer) Refresh() error {
-        ...
-}
-...
-
-func (s *clusterAutoscalerCustomProviderServer) GetAvailableMachineTypes() ([]string, error) {
-        ...
-}
-
-...
-
-```
-
-Obviously, these API calls implement the `CloudProvider` and `NodeGroup` interfaces of the [CA](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloud_provider.go#L50):
+The API calls would be defined by the operations exposed by the `CloudProvider` and `NodeGroup` interfaces in [CA](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloud_provider.go#L50):
 
 ```go
 type CloudProvider interface {
@@ -214,13 +187,13 @@ to reach the remote gRPC server.
 
 A new flag, named
 `--cloud-provider-url=https://local.svc.io/mycloudprovider/server`, determines the URL to reach the custom provider implementation.
-In addition this approach reuses the existing flag that defines the name of the cloud provider using a pre-defined value `--cloud-provider=external`
-https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider. `external` defines the usage
+In addition this approach reuses the existing flag that defines the name of the cloud provider using a pre-defined value `--cloud-provider=externalgrpc`
+https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider. `externalgrpc` defines the usage
 of an external cloud provider whose interface is handled by a remote gRPC service.
 
 To connect the CA core with this new external cloud provider, this approach needs to implement a new generic cloud provider
 as part of the CA core code.
-This new provider, named `ExternalCloudProvider`, makes gRPC calls to the remote functions exposed by the external cloud provider server. In other words, it forwards the calls and handle the errors analogously how done in other existing providers.
+This new provider, named `ExternalGrpcCloudProvider`, makes gRPC calls to the remote functions exposed by the external cloud provider server. In other words, it forwards the calls and handle the errors analogously how done in other existing providers.
 
 Obviously, this new approach needs to use TLS to ensure a secure communication between CA and this CA provider server.
 Additional flags should be added to specify the path where to find the certificate to establish the communication to
