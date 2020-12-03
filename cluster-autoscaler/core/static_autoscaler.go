@@ -215,7 +215,7 @@ func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, schedu
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
-func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) RunOnce(currentTime time.Time) (typedErr errors.AutoscalerError) {
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
 	a.clusterStateRegistry.PeriodicCleanup()
@@ -293,8 +293,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// Update status information when the loop is done (regardless of reason)
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
-			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
+			_, writeErr := utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+			// If no other errors occurred during the run and the configmap write failed, set the typedErr
+			if typedErr == nil && writeErr != nil {
+				typedErr = errors.NewAutoscalerError(errors.ApiCallError, "%v", writeErr)
+			}
 		}
 
 		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
