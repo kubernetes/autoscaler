@@ -175,6 +175,18 @@ extraVolumeSecrets: {}
   #     - key: subkey
   #       path: mypath
 
+# extraVolumes -- Additional volumes.
+extraVolumes: []
+  # - name: ssl-certs
+  #   hostPath:
+  #     path: /etc/ssl/certs/ca-bundle.crt
+
+# extraVolumeMounts -- Additional volumes to mount.
+extraVolumeMounts: []
+  # - name: ssl-certs
+  #   mountPath: /etc/ssl/certs/ca-certificates.crt
+  #   readonly: true
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
