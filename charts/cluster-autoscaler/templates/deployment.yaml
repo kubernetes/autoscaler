@@ -182,7 +182,7 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets }}
+          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
           volumeMounts:
           {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
             - name: cloudconfig
@@ -198,6 +198,9 @@ spec:
             - name: {{ $key }}
               mountPath: {{ required "Must specify mountPath!" $value.mountPath }}
               readOnly: true
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
           {{- end }}
     {{- if .Values.affinity }}
@@ -215,7 +218,7 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets }}
+      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
       volumes:
       {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
         - name: cloudconfig
@@ -235,6 +238,9 @@ spec:
             items:
             {{- toYaml $value.items | nindent 14 }}
             {{- end }}
+      {{- end }}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 10 }}
       {{- end }}
       {{- end }}
       {{- if .Values.image.pullSecrets }}
