@@ -355,7 +355,9 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraVolumeMounts | list | `[]` | Additional volumes to mount. |
 | extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
+| extraVolumes | list | `[]` | Additional volumes. |
 | fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
