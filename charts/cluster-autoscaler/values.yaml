@@ -211,6 +211,9 @@ podDisruptionBudget:
 # podLabels -- Labels to add to each pod.
 podLabels: {}
 
+# additionalLabels -- Labels to add to each object of the chart.
+additionalLabels: {}
+
 # priorityClassName -- priorityClassName
 priorityClassName: ""
 
