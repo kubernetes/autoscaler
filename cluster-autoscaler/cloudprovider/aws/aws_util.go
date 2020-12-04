@@ -34,7 +34,7 @@ var (
 	ec2MetaDataServiceUrl          = "http://169.254.169.254/latest/dynamic/instance-identity/document"
 	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
-	staticListLastUpdateTime       = "2019-10-14"
+	staticListLastUpdateTime       = "2020-12-07"
 )
 
 type response struct {
