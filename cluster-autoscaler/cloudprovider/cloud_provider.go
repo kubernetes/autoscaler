@@ -101,7 +101,7 @@ type CloudProvider interface {
 // ErrNotImplemented is returned if a method is not implemented.
 var ErrNotImplemented = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
 
-// ErrAlreadyExist is returned if a method is not implemented.
+// ErrAlreadyExist is returned if a method already exists.
 var ErrAlreadyExist = errors.NewAutoscalerError(errors.InternalError, "Already exist")
 
 // ErrIllegalConfiguration is returned when trying to create NewNodeGroup with
