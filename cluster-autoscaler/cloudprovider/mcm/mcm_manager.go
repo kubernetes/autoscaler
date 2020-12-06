@@ -23,6 +23,7 @@ package mcm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -30,6 +31,8 @@ import (
 	"strings"
 	"time"
 
+	awsapis "github.com/gardener/machine-controller-manager-provider-aws/pkg/aws/apis"
+	azureapis "github.com/gardener/machine-controller-manager-provider-azure/pkg/azure/apis"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	machineapi "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/typed/machine/v1alpha1"
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions"
@@ -54,12 +57,25 @@ import (
 )
 
 const (
-	operationWaitTimeout      = 5 * time.Second
-	operationPollInterval     = 100 * time.Millisecond
-	maxRecordsReturnedByAPI   = 100
-	maxRetryDeadline          = 1 * time.Minute
-	conflictRetryInterval     = 5 * time.Second
+	operationWaitTimeout    = 5 * time.Second
+	operationPollInterval   = 100 * time.Millisecond
+	maxRecordsReturnedByAPI = 100
+	maxRetryDeadline        = 1 * time.Minute
+	conflictRetryInterval   = 5 * time.Second
+	// machinePriorityAnnotation is the annotation to set machine priority while deletion
 	machinePriorityAnnotation = "machinepriority.machine.sapcloud.io"
+	// labelForFailureDomain is the label for failure domain used by kubernetes.io
+	labelForFailureDomain = "failure-domain.beta.kubernetes.io/zone"
+	// kindAWSMachineClass is the kind for machine class used by In-tree AWS provider
+	kindAWSMachineClass = "AWSMachineClass"
+	// kindAzureMachineClass is the kind for machine class used by In-tree Azure provider
+	kindAzureMachineClass = "AzureMachineClass"
+	// kindMachineClass is the kind for generic machine class used by the OOT providers
+	kindMachineClass = "MachineClass"
+	// providerAWS is the provider type for AWS machine class objects
+	providerAWS = "AWS"
+	// providerAzure is the provider type for Azure machine class object
+	providerAzure = "Azure"
 )
 
 //McmManager manages the client communication for MachineDeployments.
@@ -430,7 +446,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 	machineClass := md.Spec.Template.Spec.Class
 	nodeTemplateSpec := md.Spec.Template.Spec.NodeTemplateSpec
 	switch machineClass.Kind {
-	case "AWSMachineClass":
+	case kindAWSMachineClass:
 		mc, err := m.machineclient.AWSMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch AWSMachineClass object %s, Error: %v", machinedeployment.Name, err)
@@ -444,9 +460,9 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		}
 		region = mc.Spec.Region
 		if mc.Labels != nil {
-			zone = mc.Labels["failure-domain.beta.kubernetes.io/zone"]
+			zone = mc.Labels[labelForFailureDomain]
 		}
-	case "AzureMachineClass":
+	case kindAzureMachineClass:
 		mc, err := m.machineclient.AzureMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch AzureMachineClass object %s, Error: %v", machinedeployment.Name, err)
@@ -460,8 +476,52 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		}
 		region = mc.Spec.Location
 		if mc.Spec.Properties.Zone != nil {
-			// Do not re-use the zone before re-vendoring mcm.
 			zone = mc.Spec.Location + "-" + strconv.Itoa(*mc.Spec.Properties.Zone)
+		}
+	case kindMachineClass:
+		mc, err := m.machineclient.MachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("Unable to fetch %s for %s, Error: %v", kindMachineClass, machinedeployment.Name, err)
+		}
+		switch mc.Provider {
+		case providerAWS:
+			var providerSpec *awsapis.AWSProviderSpec
+			err = json.Unmarshal(mc.ProviderSpec.Raw, &providerSpec)
+			if err != nil {
+				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAWS, machinedeployment.Name, err)
+			}
+
+			awsInstance := aws.InstanceTypes[providerSpec.MachineType]
+			instance = instanceType{
+				InstanceType: awsInstance.InstanceType,
+				VCPU:         awsInstance.VCPU,
+				MemoryMb:     awsInstance.MemoryMb,
+				GPU:          awsInstance.GPU,
+			}
+			region = providerSpec.Region
+			if mc.Labels != nil {
+				zone = mc.Labels[labelForFailureDomain]
+			}
+		case providerAzure:
+			var providerSpec *azureapis.AzureProviderSpec
+			err = json.Unmarshal(mc.ProviderSpec.Raw, &providerSpec)
+			if err != nil {
+				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAzure, machinedeployment.Name, err)
+			}
+
+			azureInstance := aws.InstanceTypes[providerSpec.Properties.HardwareProfile.VMSize]
+			instance = instanceType{
+				InstanceType: azureInstance.InstanceType,
+				VCPU:         azureInstance.VCPU,
+				MemoryMb:     azureInstance.MemoryMb,
+				GPU:          azureInstance.GPU,
+			}
+			region = providerSpec.Location
+			if mc.Labels != nil {
+				zone = providerSpec.Location + "-" + strconv.Itoa(*providerSpec.Properties.Zone)
+			}
+		default:
+			return nil, cloudprovider.ErrNotImplemented
 		}
 	default:
 		return nil, cloudprovider.ErrNotImplemented
