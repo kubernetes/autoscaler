@@ -1,27 +1,10 @@
-// Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+SPDX-FileCopyrightText: 2020 SAP SE or an SAP affiliate company and Gardener contributors
 
-// WARNING!
-// IF YOU MODIFY ANY OF THE TYPES HERE COPY THEM TO ../types.go
-// AND RUN `make generate`
+SPDX-License-Identifier: Apache-2.0
+*/
 
-package v1alpha1
-
-import (
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+package api
 
 const (
 	// AzureClientID is a constant for a key name that is part of the Azure cloud credentials.
@@ -32,50 +15,31 @@ const (
 	AzureSubscriptionID string = "azureSubscriptionId"
 	// AzureTenantID is a constant for a key name that is part of the Azure cloud credentials.
 	AzureTenantID string = "azureTenantId"
+
+	// AzureAlternativeClientID is a constant for a key name of a secret containing the Azure credentials (client id).
+	AzureAlternativeClientID = "clientID"
+	// AzureAlternativeClientSecret is a constant for a key name of a secret containing the Azure credentials (client
+	// secret).
+	AzureAlternativeClientSecret = "clientSecret"
+	// AzureAlternativeSubscriptionID is a constant for a key name of a secret containing the Azure credentials
+	// (subscription id).
+	AzureAlternativeSubscriptionID = "subscriptionID"
+	// AzureAlternativeTenantID is a constant for a key name of a secret containing the Azure credentials (tenant id).
+	AzureAlternativeTenantID = "tenantID"
+
+	// MachineSetKindAvailabilitySet is the machine set kind for AvailabilitySet
+	MachineSetKindAvailabilitySet string = "availabilityset"
+	// MachineSetKindVMO is the machine set kind for VirtualMachineScaleSet Orchestration Mode VM (VMO)
+	MachineSetKindVMO string = "vmo"
 )
 
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:object:root=true
-// +kubebuilder:printcolumn:name="VM Size",type=string,JSONPath=`.spec.properties.hardwareProfile.vmSize`
-// +kubebuilder:printcolumn:name="Location",type=string,JSONPath=`.spec.location`,priority=1
-// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`,description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.\nPopulated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata"
-
-// AzureMachineClass TODO
-type AzureMachineClass struct {
-	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	// +optional
-	metav1.TypeMeta `json:",inline"`
-
-	// +optional
-	Spec AzureMachineClassSpec `json:"spec,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:object:root=true
-
-// AzureMachineClassList is a collection of AzureMachineClasses.
-type AzureMachineClassList struct {
-	// +optional
-	metav1.TypeMeta `json:",inline"`
-
-	// +optional
-	metav1.ListMeta `json:"metadata,omitempty"`
-
-	// +optional
-	Items []AzureMachineClass `json:"items"`
-}
-
-// AzureMachineClassSpec is the specification of a AzureMachineClass.
-type AzureMachineClassSpec struct {
+// AzureProviderSpec is the spec to be used while parsing the calls.
+type AzureProviderSpec struct {
 	Location      string                        `json:"location,omitempty"`
 	Tags          map[string]string             `json:"tags,omitempty"`
 	Properties    AzureVirtualMachineProperties `json:"properties,omitempty"`
 	ResourceGroup string                        `json:"resourceGroup,omitempty"`
 	SubnetInfo    AzureSubnetInfo               `json:"subnetInfo,omitempty"`
-	SecretRef     *corev1.SecretReference       `json:"secretRef,omitempty"`
 }
 
 // AzureVirtualMachineProperties is describes the properties of a Virtual Machine.
@@ -94,6 +58,12 @@ type AzureVirtualMachineProperties struct {
 // Refer github.com/Azure/azure-sdk-for-go/arm/compute/models.go for VMSizes
 type AzureHardwareProfile struct {
 	VMSize string `json:"vmSize,omitempty"`
+}
+
+// AzureMachineSetConfig contains the information about the machine set
+type AzureMachineSetConfig struct {
+	ID   string `json:"id"`
+	Kind string `json:"kind"`
 }
 
 // AzureStorageProfile is specifies the storage settings for the virtual machine disks.
@@ -123,6 +93,7 @@ type AzureOSDisk struct {
 	CreateOption string                     `json:"createOption,omitempty"`
 }
 
+// AzureDataDisk specifies information about the data disk used by the virtual machine.
 type AzureDataDisk struct {
 	Name               string `json:"name,omitempty"`
 	Lun                *int32 `json:"lun,omitempty"`
@@ -196,16 +167,3 @@ type AzureSubnetInfo struct {
 	VnetResourceGroup *string `json:"vnetResourceGroup,omitempty"`
 	SubnetName        string  `json:"subnetName,omitempty"`
 }
-
-// AzureMachineSetConfig contains the information about the machine set
-type AzureMachineSetConfig struct {
-	ID   string `json:"id"`
-	Kind string `json:"kind"`
-}
-
-const (
-	// MachineSetKindAvailabilitySet is the machine set kind for AvailabilitySet
-	MachineSetKindAvailabilitySet string = "availabilityset"
-	// MachineSetKindVMO is the machine set kind for VirtualMachineScaleSet Orchestration Mode VM (VMO)
-	MachineSetKindVMO string = "vmo"
-)

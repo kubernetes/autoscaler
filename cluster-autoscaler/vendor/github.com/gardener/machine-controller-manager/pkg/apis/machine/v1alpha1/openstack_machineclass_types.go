@@ -102,6 +102,7 @@ type OpenStackMachineClassSpec struct {
 	PodNetworkCidr   string                  `json:"podNetworkCidr"`
 	RootDiskSize     int                     `json:"rootDiskSize,omitempty"` // in GB
 	UseConfigDrive   *bool                   `json:"useConfigDrive,omitempty"`
+	ServerGroupID    *string                 `json:"serverGroupID,omitempty"`
 }
 
 type OpenStackNetwork struct {
