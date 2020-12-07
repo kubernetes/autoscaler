@@ -1,5 +1,6 @@
 cluster-autoscaler
 cluster_autoscaler
+main
 .cover
 
 # Vim-related files
