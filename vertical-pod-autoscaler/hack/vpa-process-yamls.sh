@@ -40,7 +40,7 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-v1-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 case ${ACTION} in
 delete|diff|print) COMPONENTS+=" vpa-beta2-crd" ;;
 esac
