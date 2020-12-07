@@ -517,7 +517,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				GPU:          azureInstance.GPU,
 			}
 			region = providerSpec.Location
-			if mc.Labels != nil {
+			if providerSpec.Properties.Zone != nil {
 				zone = providerSpec.Location + "-" + strconv.Itoa(*providerSpec.Properties.Zone)
 			}
 		default:
