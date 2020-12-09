@@ -52,10 +52,14 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, pods *int64) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
-	// TODO: get a real value.
-	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	if pods == nil {
+		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	} else {
+		capacity[apiv1.ResourcePods] = *resource.NewQuantity(*pods, resource.DecimalSI)
+	}
+
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
 	memTotal := mem - CalculateKernelReserved(mem, os)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
@@ -120,7 +124,7 @@ func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string
 }
 
 // BuildNodeFromTemplate builds node from provided GCE template.
-func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
+func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64, pods *int64) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
 		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
@@ -146,7 +150,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, pods)
 	if err != nil {
 		return nil, err
 	}
