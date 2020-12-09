@@ -81,11 +81,7 @@ func computeScaleUpResourcesLeftLimits(
 				resultScaleUpLimits[resource] = computeBelowMax(totalCores, max)
 
 			case resource == cloudprovider.ResourceNameMemory:
-				if errCoresMem != nil {
-					resultScaleUpLimits[resource] = scaleUpLimitUnknown
-				} else {
-					resultScaleUpLimits[resource] = computeBelowMax(totalMem, max)
-				}
+				resultScaleUpLimits[resource] = computeBelowMax(totalMem, max)
 
 			case cloudprovider.IsGpuResource(resource):
 				if totalGpusErr != nil {
