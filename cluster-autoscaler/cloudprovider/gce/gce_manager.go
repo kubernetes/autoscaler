@@ -485,7 +485,7 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem)
+	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem, nil)
 }
 
 func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
