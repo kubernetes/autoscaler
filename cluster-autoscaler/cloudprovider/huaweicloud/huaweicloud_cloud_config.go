@@ -26,22 +26,16 @@ import (
 	huaweicloudsdkconfig "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
 	huaweicloudsdkas "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1"
 	huaweicloudsdkecs "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
-
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huawei-cloud-sdk-go/auth/aksk"
 )
 
 // CloudConfig is the cloud config file for huaweicloud.
 type CloudConfig struct {
 	Global struct {
-		IdentityEndpoint string `gcfg:"identity-endpoint"` // example: "https://iam.cn-north-4.myhuaweicloud.com/v3.0"
-		ECSEndpoint      string `gcfg:"ecs-endpoint"`
-		ASEndpoint       string `gcfg:"as-endpoint"`
-		ProjectID        string `gcfg:"project-id"`
-		AccessKey        string `gcfg:"access-key"`
-		SecretKey        string `gcfg:"secret-key"`
-		Cloud            string `gcfg:"cloud"`     // example: "huaweicloud"
-		Region           string `gcfg:"region"`    // example: "cn-north-4"
-		DomainID         string `gcfg:"domain-id"` // The ACCOUNT ID. example: "a0e8ff63c0fb4fd49cc2dbdf1dea14e2"
+		ECSEndpoint string `gcfg:"ecs-endpoint"`
+		ASEndpoint  string `gcfg:"as-endpoint"`
+		ProjectID   string `gcfg:"project-id"`
+		AccessKey   string `gcfg:"access-key"`
+		SecretKey   string `gcfg:"secret-key"`
 	}
 }
 
@@ -106,20 +100,6 @@ func (c *CloudConfig) validate() error {
 	}
 
 	return nil
-}
-
-// toAKSKOptions creates and returns a new instance of type aksk.AKSKOptions
-func toAKSKOptions(cfg CloudConfig) aksk.AKSKOptions {
-	opts := aksk.AKSKOptions{
-		IdentityEndpoint: cfg.Global.IdentityEndpoint,
-		ProjectID:        cfg.Global.ProjectID,
-		AccessKey:        cfg.Global.AccessKey,
-		SecretKey:        cfg.Global.SecretKey,
-		Cloud:            cfg.Global.Cloud,
-		Region:           cfg.Global.Region,
-		DomainID:         cfg.Global.DomainID,
-	}
-	return opts
 }
 
 func readConf(confFile string) (*CloudConfig, error) {
