@@ -56,6 +56,10 @@ this document:
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
   * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
+
+* [In the context of Gardener](#in-the-context-of-gardener)
+  * [How do I rebase this fork of autoscaler with upstream?](#how-do-i-rebase-this-fork-of-autoscaler-with-upstream)
+  * [How do I revendor a different version of MCM in autoscaler?](#how-do-i-revendor-a-different-version-of-mcm-in-autoscaler)
 <!--- TOC END -->
 
 # Basics
@@ -953,3 +957,191 @@ Caveats:
  - If one wants to only add new libraries to `go.mod-extra`, but not change the base `go.mod`, `-r` should be used with kubernetes/kubernets revision, which was used last time `update-vendor.sh` was called. One can determine that revision by looking at `git log` in Cluster Autoscaler repository. Following command will do the trick `git log | grep "Updating vendor against"`.
 
 
+# In the context of Gardener:
+
+### How do I rebase this fork of autoscaler with upstream? 
+
+Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the depedencies for better understanding.
+
+Following are the main steps:
+
+#### Step 1:
+
+Setup the local-environment:
+```
+git clone https://github.com/gardener/autoscaler.git
+cd autoscaler/cluster-autoscaler
+git remote add upstream git@github.com:kubernetes/autoscaler.git
+git remote add origin git@github.com:gardener/autoscaler.git
+
+git checkout master
+git pull upstream master
+git log | grep "Updating vendor against"  # Please save commit-hash from the first line of the output, it'll be used later. Eg. 3eb90c19d0cf90b756c3e08e32c6495b91e0aeed
+
+git checkout machine-controller-manager-provider
+git pull origin machine-controller-manager-provider
+``` 
+
+#### Step 2:
+
+This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
+
+Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
+
+```
+#  if [[ "${IMPLICIT_FOUND}" == "true" ]]; then
+#    err_rerun "Implicit dependencies missing from go.mod-extra"
+#  fi
+```
+
+Populate the `K8S_REV` variable in the script with the commit-hash you saved above, as `-r` flag of the original-script in the command-line doesnt work for few environments. Eg.
+
+```
+--K8S_REV="master"
+++K8S_REV="3eb90c19d0cf90b756c3e08e32c6495b91e0aeed"
+```
+
+#### Step 3:
+
+Rebase on master branch:
+```
+git checkout machine-controller-manager-provider
+git rebase master
+```
+
+Resolve the rebase-conflicts by appropriately accepting the incoming changes or the current changes.
+
+Tip: Accept all the incoming changes for the go.mod and modules.txt file. This file will anyways be re-generated in the next step. 
+
+Once all the rebase-conflicts are resolved, execute following script:
+
+```
+VERIFY_COMMAND=true ./hack/update-vendor.sh
+```
+
+The script automatically runs the unit-tests for all the providers and of the core-logic, it can be disabled by 
+setting the `VERIFY_COMMAND=true` while runniing the script.
+
+The script shall create a directory under the `/tmp`, and logs of the execution-progress is also available there. 
+Once script is successfully executed, execute following commands to confirm the correctness.
+```
+# You must see a new commit created by the script containing the commit-hash.
+git status 
+
+# Try following steps to confirm the correctness.
+go test $(go list ../cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
+go test $(go list ../cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
+
+go build main.go
+go run main.go --kubeconfig=kubeconfig.yaml --cloud-provider=mcm --nodes=0:3:ca-test.test-machine-deployment
+```
+
+
+### How do I revendor a different version of MCM in autoscaler?
+
+Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the depedencies for better understanding.
+
+Autoscaler vendors the MCM as an extra-package. And both MCM and Autoscaler vendors the `k8s.io` as a depedency. To avoid the vendor-conflicts, MCM and Autosclaler need to 
+vendor a same(or compatible) versions of `k8s.io`. Few times, you might have to revendor MCM into Autoscaler only due to the change of the `k8s.io` depedency in the autoscaler. 
+Please follow below steps to vendor new version of MCM:
+
+#### Step 1 (Optional)
+
+Vendor compatible `k8s.io` depedency into the MCM. 
+
+
+_Please make sure to vendor same `k8s.io` version into MCM, as the one already vendored in the autoscaler. As vendoring lower version of `k8s.io` into MCM, and later into the autoscaler may force entire autoscaler to use such low version of `k8s.io`. This can cause runtime issues if not build-issues._
+
+Update the `go.mod` file in the MCM to reflect expected versions of `k8s.io`. Then execute following:
+```
+cd <MCM_DIR>
+make revendor
+
+./hack/generate-code # regenerates the clients.
+```
+Autoscaler only vendors the `client` and `apis` related packages of the MCM, hence the `controller` package doesn't need to be adapted immediately in order to vendor MCM in Autoscaler.
+
+#### Step 2:
+
+Setup the local-environment:
+```
+git clone https://github.com/gardener/autoscaler.git
+cd autoscaler/cluster-autoscaler
+git remote add origin git@github.com:gardener/autoscaler.git
+
+git checkout machine-controller-manager-provider
+git pull origin machine-controller-manager-provider
+
+git log | grep "Updating vendor against"  # Please save commit-hash from the first line of the output, it'll be used later, eg: 3eb90c19d0cf90b756c3e08e32c6495b91e0aeed
+
+``` 
+
+
+#### Step 3:
+
+Update the [`go.mod-extra`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/go.mod-extra) file to reflect the following:
+```
+require (
+  ...
+  github.com/gardener/machine-controller-manager vX.Y.Z # the new version
+)
+```
+
+If you are interested in vendoring MCM from the local-system or personal fork for testing, you can also add the `replace` section in `go.mod-extra` as shown below. 
+
+```
+// Replace the <$GOPATH> with the actual go-path. 
+replace (
+  ...
+  github.com/gardener/machine-controller-manager => <$GOPATH>/src/github.com/gardener/machine-controller-manager 
+
+  // OR you could also use the personal github-handle.
+  // github.com/gardener/machine-controller-manager => https://github.com/<USERNAME>/machine-controller-manager/tree/<BRANCH_NAME>
+)
+```
+
+#### Step 4(Optional):
+
+This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
+
+Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
+
+```
+#  if [[ "${IMPLICIT_FOUND}" == "true" ]]; then
+#    err_rerun "Implicit dependencies missing from go.mod-extra"
+#  fi
+```
+
+Populate the `K8S_REV` variable in the script with the commit-hash you saved above, as `-r` flag of the original-script in the command-line doesn't work for few environments. Eg.
+
+```
+--K8S_REV="master"
+++K8S_REV="3eb90c19d0cf90b756c3e08e32c6495b91e0aeed"
+```
+
+#### Step 5:
+
+Execute the script below:
+
+```
+VERIFY_COMMAND=true ./hack/update-vendor.sh
+```
+
+The script automatically runs the unit-tests for all the providers and of the core-logic, it can be disabled by 
+setting the `VERIFY_COMMAND=true` while runniing the script.
+
+The script shall create a directory under the `/tmp`, and logs of the execution-progress is also available there. 
+Once script is successfully executed, execute following commands to confirm the correctness.
+```
+# You must see a new commit created by the script containing the commit-hash.
+git status 
+
+# Try following steps to confirm the correctness.
+go test $(go list ../cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
+go test $(go list ../cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
+
+go build main.go
+go run main.go --kubeconfig=kubeconfig.yaml --cloud-provider=mcm --nodes=0:3:ca-test.test-machine-deployment
+```
+
+At last, you must also cross-check the `go.mod` file, it should reflect the vendored version of the MCM.
