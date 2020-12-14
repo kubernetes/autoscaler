@@ -121,6 +121,9 @@ type AutoscalingOptions struct {
 	StatusConfigMapName string
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
+	// EnableRefineUsingSimilarNodeGroups tells wether cluster-autoscaler should try to refine synthetic nodeinfos (generated
+	// by using cloud providers TemplateInfos()) by using nodeinfos obtained from real-world nodes from similar nodegroups.
+	EnableRefineUsingSimilarNodeGroups bool
 	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
 	ConfigNamespace string
 	// ClusterName if available

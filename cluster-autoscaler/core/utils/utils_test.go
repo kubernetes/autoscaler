@@ -228,7 +228,7 @@ func TestSanitizeNodeInfo(t *testing.T) {
 	nodeInfo := schedulerframework.NewNodeInfo(pod)
 	nodeInfo.SetNode(node)
 
-	res, err := sanitizeNodeInfo(nodeInfo, "test-group", nil)
+	res, err := SanitizeNodeInfo(nodeInfo, "test-group", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res.Pods))
 }

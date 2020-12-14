@@ -43,6 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -170,6 +171,7 @@ var (
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
 
+	enableRefineUsingSimilarNodeGroups = flag.Bool("refine-using-similar-nodegroups", false, "Mitigate unbalance among similar node groups when scale-up-from-zero is enabled")
 	ignoreTaintsFlag                   = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 	balancingIgnoreLabelsFlag          = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	awsUseStaticInstanceList           = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
@@ -237,6 +239,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		WriteStatusConfigMap:               *writeStatusConfigMapFlag,
 		StatusConfigMapName:                *statusConfigMapName,
 		BalanceSimilarNodeGroups:           *balanceSimilarNodeGroupsFlag,
+		EnableRefineUsingSimilarNodeGroups: *enableRefineUsingSimilarNodeGroups,
 		ConfigNamespace:                    *namespace,
 		ClusterName:                        *clusterName,
 		NodeAutoprovisioningEnabled:        *nodeAutoprovisioningEnabled,
@@ -327,6 +330,13 @@ func buildAutoscaler() (core.Autoscaler, error) {
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
 		Comparator: nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels),
+	}
+
+	if autoscalingOptions.EnableRefineUsingSimilarNodeGroups {
+		opts.Processors.NodeInfoProcessor = &nodeinfos.RefineNodeInfosProcessor{
+			NodeGroupSetProcessor:        opts.Processors.NodeGroupSetProcessor,
+			RefineUsingSimilarNodeGroups: autoscalingOptions.EnableRefineUsingSimilarNodeGroups,
+		}
 	}
 
 	// These metrics should be published only once.

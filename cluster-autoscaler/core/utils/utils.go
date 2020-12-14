@@ -38,6 +38,8 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const templatedNodeAnnotation = "synthetic-autoscaler-node-from-template"
+
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
@@ -67,7 +69,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if err != nil {
 				return false, "", err
 			}
-			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id, ignoredTaints)
+			sanitizedNodeInfo, err := SanitizeNodeInfo(nodeInfo, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
 			}
@@ -181,11 +183,29 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	}
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
+	SetNodeInfoBuiltFromTemplate(fullNodeInfo)
+	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
 	if typedErr != nil {
 		return nil, typedErr
 	}
 	return sanitizedNodeInfo, nil
+}
+
+// SetNodeInfoBuiltFromTemplate marks a NodeInfo as generated from a cloud provider's TemplateInfo()
+func SetNodeInfoBuiltFromTemplate(nodeInfo *schedulerframework.NodeInfo) {
+	node := nodeInfo.Node()
+	if node.Annotations == nil {
+		node.Annotations = make(map[string]string)
+	}
+	node.Annotations[templatedNodeAnnotation] = "true"
+	nodeInfo.SetNode(node)
+}
+
+// IsNodeInfoBuiltFromTemplate returns true if a NodeInfo was generated from a cloud
+// provider's TemplateInfo(), false if generated from a real-world node.
+func IsNodeInfoBuiltFromTemplate(nodeInfo *schedulerframework.NodeInfo) bool {
+	_, ok := nodeInfo.Node().Annotations[templatedNodeAnnotation]
+	return ok
 }
 
 // isVirtualNode determines if the node is created by virtual kubelet
@@ -228,7 +248,8 @@ func deepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 	return newNodeInfo, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+// SanitizeNodeInfo updates a provided, generic NodeInfo to match the nodegroup's name
+func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
 	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
 	if err != nil {
