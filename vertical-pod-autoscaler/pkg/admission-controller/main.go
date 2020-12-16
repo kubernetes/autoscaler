@@ -57,7 +57,7 @@ var (
 
 	port               = flag.Int("port", 8000, "The port to listen on.")
 	address            = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	kubeconfig         = flag.String("kubeconfig", "", "Paths to a kubeconfig. Only required if out-of-cluster.")
+	kubeconfig         = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	kubeApiQps         = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst       = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 	namespace          = os.Getenv("NAMESPACE")

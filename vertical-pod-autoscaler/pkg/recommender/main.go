@@ -38,7 +38,7 @@ var (
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 	prometheusJobName      = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
-	kubeconfig             = flag.String("kubeconfig", "", "Paths to a kubeconfig. Only required if out-of-cluster.")
+	kubeconfig             = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
