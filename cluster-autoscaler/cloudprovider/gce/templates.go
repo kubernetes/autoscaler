@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -28,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/ghodss/yaml"
@@ -52,7 +54,7 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, pods *int64) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, pods *int64) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -68,6 +70,11 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 		capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
 	}
 
+	if ephemeralStorage > 0 {
+		storageTotal := ephemeralStorage - CalculateOSReservedEphemeralStorage(ephemeralStorage, osDistribution)
+		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
+	}
+
 	return capacity, nil
 }
 
@@ -79,7 +86,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 // the kubelet for its operation. Allocated resources are capacity minus reserved.
 // If we fail to extract the reserved resources from kubeEnv (e.g it is in a
 // wrong format or does not contain kubelet arguments), we return an error.
-func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string, evictionHard *EvictionHard) (apiv1.ResourceList, error) {
 	kubeReserved, err := extractKubeReservedFromKubeEnv(kubeEnv)
 	if err != nil {
 		return nil, err
@@ -88,12 +95,12 @@ func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.Resource
 	if err != nil {
 		return nil, err
 	}
-	return t.CalculateAllocatable(capacity, reserved), nil
+	return t.CalculateAllocatable(capacity, reserved, evictionHard), nil
 }
 
 // CalculateAllocatable computes allocatable resources subtracting kube reserved values
 // and kubelet eviction memory buffer from corresponding capacity.
-func (t *GceTemplateBuilder) CalculateAllocatable(capacity, kubeReserved apiv1.ResourceList) apiv1.ResourceList {
+func (t *GceTemplateBuilder) CalculateAllocatable(capacity apiv1.ResourceList, kubeReserved apiv1.ResourceList, evictionHard *EvictionHard) apiv1.ResourceList {
 	allocatable := apiv1.ResourceList{}
 	for key, value := range capacity {
 		quantity := value.DeepCopy()
@@ -101,7 +108,10 @@ func (t *GceTemplateBuilder) CalculateAllocatable(capacity, kubeReserved apiv1.R
 			quantity.Sub(reservedQuantity)
 		}
 		if key == apiv1.ResourceMemory {
-			quantity = *resource.NewQuantity(quantity.Value()-KubeletEvictionHardMemory, resource.BinarySI)
+			quantity = *resource.NewQuantity(quantity.Value()-GetKubeletEvictionHardForMemory(evictionHard), resource.BinarySI)
+		}
+		if key == apiv1.ResourceEphemeralStorage {
+			quantity = *resource.NewQuantity(quantity.Value()-int64(GetKubeletEvictionHardForEphemeralStorage(value.Value(), evictionHard)), resource.BinarySI)
 		}
 		allocatable[key] = quantity
 	}
@@ -150,7 +160,18 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, pods)
+	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnvValue)
+	if osDistribution == OperatingSystemDistributionUnknown {
+		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
+	}
+
+	ephemeralStorage, err := getEphemeralStorageFromInstanceTemplateProperties(template.Properties)
+	if err != nil {
+		klog.Errorf("could not fetch ephemeral storage from instance template. %s", err)
+		return nil, err
+	}
+
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, pods)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +195,14 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		}
 		node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
-		if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue); err == nil {
+		// Extract Eviction Hard
+		evictionHardFromKubeEnv, err := extractEvictionHardFromKubeEnv(kubeEnvValue)
+		if err != nil || len(evictionHardFromKubeEnv) == 0 {
+			klog.Warning("unable to get evictionHardFromKubeEnv values, continuing without it.")
+		}
+		evictionHard := ParseEvictionHardOrGetDefault(evictionHardFromKubeEnv)
+
+		if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue, evictionHard); err == nil {
 			nodeAllocatable = allocatable
 		}
 	}
@@ -195,6 +223,22 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func getEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties) (ephemeralStorage int64, err error) {
+	if instanceProperties.Disks == nil {
+		return 0, fmt.Errorf("unable to get ephemeral storage because instance properties disks is nil")
+	}
+
+	for _, disk := range instanceProperties.Disks {
+		if disk != nil && disk.InitializeParams != nil {
+			if disk.Boot {
+				return disk.InitializeParams.DiskSizeGb * units.GiB, nil
+			}
+		}
+	}
+
+	return 0, fmt.Errorf("unable to get ephemeral storage, either no attached disks or no disk with boot=true")
 }
 
 // BuildGenericLabels builds basic labels that should be present on every GCE node,
@@ -344,6 +388,68 @@ func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
 		klog.Errorf("unexpected os=%v passed via AUTOSCALER_ENV_VARS", osValue)
 		return OperatingSystemUnknown
 	}
+}
+
+// OperatingSystemDistribution denotes  distribution of the operating system used by nodes coming from node group
+type OperatingSystemDistribution string
+
+const (
+	// OperatingSystemDistributionUnknown is used if operating distribution system is unknown
+	OperatingSystemDistributionUnknown OperatingSystemDistribution = ""
+	// OperatingSystemDistributionUbuntu is used if operating distribution system is Ubuntu
+	OperatingSystemDistributionUbuntu OperatingSystemDistribution = "ubuntu"
+	// OperatingSystemDistributionWindowsLTSC is used if operating distribution system is Windows LTSC
+	OperatingSystemDistributionWindowsLTSC OperatingSystemDistribution = "windows_ltsc"
+	// OperatingSystemDistributionWindowsSAC is used if operating distribution system is Windows SAC
+	OperatingSystemDistributionWindowsSAC OperatingSystemDistribution = "windows_sac"
+	// OperatingSystemDistributionCOS is used if operating distribution system is COS
+	OperatingSystemDistributionCOS OperatingSystemDistribution = "cos"
+
+	// OperatingSystemDistributionDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
+	OperatingSystemDistributionDefault = OperatingSystemDistributionCOS
+)
+
+func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSystemDistribution {
+	osDistributionValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os_distribution")
+	if err != nil {
+		klog.Errorf("error while obtaining os from AUTOSCALER_ENV_VARS; %v", err)
+		return OperatingSystemDistributionUnknown
+	}
+
+	if !found {
+		klog.Warningf("no os-distribution defined in AUTOSCALER_ENV_VARS; using default %v", OperatingSystemDistributionDefault)
+		return OperatingSystemDistributionDefault
+	}
+
+	switch osDistributionValue {
+
+	case string(OperatingSystemDistributionUbuntu):
+		return OperatingSystemDistributionUbuntu
+	case string(OperatingSystemDistributionWindowsLTSC):
+		return OperatingSystemDistributionWindowsLTSC
+	case string(OperatingSystemDistributionWindowsSAC):
+		return OperatingSystemDistributionWindowsSAC
+	case string(OperatingSystemDistributionCOS):
+		return OperatingSystemDistributionCOS
+	default:
+		klog.Errorf("unexpected os-distribution=%v passed via AUTOSCALER_ENV_VARS", osDistributionValue)
+		return OperatingSystemDistributionUnknown
+	}
+}
+
+func extractEvictionHardFromKubeEnv(kubeEnvValue string) (map[string]string, error) {
+	evictionHardAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "evictionHard")
+	if err != nil {
+		klog.Warning("error while obtaining eviction-hard from AUTOSCALER_ENV_VARS; %v", err)
+		return nil, err
+	}
+
+	if !found {
+		klog.Warning("no evictionHard defined in AUTOSCALER_ENV_VARS;")
+		return make(map[string]string), nil
+	}
+
+	return parseKeyValueListToMap(evictionHardAsString)
 }
 
 func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found bool, err error) {
