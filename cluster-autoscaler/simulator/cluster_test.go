@@ -66,20 +66,25 @@ func TestUtilization(t *testing.T) {
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	mirrorPod4 := BuildTestPod("p4", 100, 200000)
-	mirrorPod4.Annotations = map[string]string{
+	mirrorPod := BuildTestPod("p4", 100, 200000)
+	mirrorPod.Annotations = map[string]string{
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, mirrorPod4)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, mirrorPod)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true, gpuLabel)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+	assert.InEpsilon(t, 2.0/9.0, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, mirrorPod4)
+	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, mirrorPod)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+
+	nodeInfo = schedulerframework.NewNodeInfo(pod, mirrorPod, daemonSetPod3)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, true, true, gpuLabel)
+	assert.NoError(t, err)
+	assert.InEpsilon(t, 1.0/8.0, utilInfo.Utilization, 0.01)
 
 	gpuNode := BuildTestNode("gpu_node", 2000, 2000000)
 	AddGpusToNode(gpuNode, 1)
