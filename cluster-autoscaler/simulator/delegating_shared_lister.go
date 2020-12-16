@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"fmt"
+
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 

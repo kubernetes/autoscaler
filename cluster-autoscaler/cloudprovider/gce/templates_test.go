@@ -115,6 +115,14 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 					GuestAccelerators: tc.accelerators,
 					Metadata:          &gce.Metadata{},
 					MachineType:       "irrelevant-type",
+					Disks: []*gce.AttachedDisk{
+						{
+							Boot: true,
+							InitializeParams: &gce.AttachedDiskInitializeParams{
+								DiskSizeGb: 0,
+							},
+						},
+					},
 				},
 			}
 			if tc.kubeEnv != "" {
@@ -129,15 +137,15 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.NotNil(t, node.Status)
 				assert.NotNil(t, node.Status.Capacity)
 				assert.NotNil(t, node.Status.Allocatable)
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, tc.pods)
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, -1, tc.pods)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
 					assertEqualResourceLists(t, "Allocatable", capacity, node.Status.Allocatable)
 				} else {
-					reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0)
+					reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0, "")
 					assert.NoError(t, err)
-					allocatable := tb.CalculateAllocatable(capacity, reserved)
+					allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(nil))
 					assertEqualResourceLists(t, "Allocatable", allocatable, node.Status.Allocatable)
 				}
 			}
@@ -208,44 +216,53 @@ func TestBuildGenericLabels(t *testing.T) {
 
 func TestCalculateAllocatable(t *testing.T) {
 	type testCase struct {
-		scenario          string
-		capacityCpu       string
-		reservedCpu       string
-		allocatableCpu    string
-		capacityMemory    string
-		reservedMemory    string
-		allocatableMemory string
+		scenario                    string
+		capacityCpu                 string
+		reservedCpu                 string
+		allocatableCpu              string
+		capacityMemory              string
+		reservedMemory              string
+		allocatableMemory           string
+		capacityEphemeralStorage    string
+		reservedEphemeralStorage    string
+		allocatableEphemeralStorage string
 	}
 	testCases := []testCase{
 		{
-			scenario:          "no reservations",
-			capacityCpu:       "8",
-			reservedCpu:       "0",
-			allocatableCpu:    "8",
-			capacityMemory:    fmt.Sprintf("%v", 200*units.MiB),
-			reservedMemory:    "0",
-			allocatableMemory: fmt.Sprintf("%v", 200*units.MiB-KubeletEvictionHardMemory),
+			scenario:                    "no reservations",
+			capacityCpu:                 "8",
+			reservedCpu:                 "0",
+			allocatableCpu:              "8",
+			capacityMemory:              fmt.Sprintf("%v", 200*units.MiB),
+			reservedMemory:              "0",
+			allocatableMemory:           fmt.Sprintf("%v", 200*units.MiB-GetKubeletEvictionHardForMemory(nil)),
+			capacityEphemeralStorage:    fmt.Sprintf("%v", 200*units.GiB),
+			reservedEphemeralStorage:    "0",
+			allocatableEphemeralStorage: fmt.Sprintf("%v", 200*units.GiB-GetKubeletEvictionHardForEphemeralStorage(200*GiB, nil)),
 		},
 		{
-			scenario:          "reserved cpu and memory",
-			capacityCpu:       "8",
-			reservedCpu:       "1000m",
-			allocatableCpu:    "7000m",
-			capacityMemory:    fmt.Sprintf("%v", 200*units.MiB),
-			reservedMemory:    fmt.Sprintf("%v", 50*units.MiB),
-			allocatableMemory: fmt.Sprintf("%v", 150*units.MiB-KubeletEvictionHardMemory),
+			scenario:                    "reserved cpu, memory and ephemeral storage",
+			capacityCpu:                 "8",
+			reservedCpu:                 "1000m",
+			allocatableCpu:              "7000m",
+			capacityMemory:              fmt.Sprintf("%v", 200*units.MiB),
+			reservedMemory:              fmt.Sprintf("%v", 50*units.MiB),
+			allocatableMemory:           fmt.Sprintf("%v", 150*units.MiB-GetKubeletEvictionHardForMemory(nil)),
+			capacityEphemeralStorage:    fmt.Sprintf("%v", 200*units.GiB),
+			reservedEphemeralStorage:    fmt.Sprintf("%v", 40*units.GiB),
+			allocatableEphemeralStorage: fmt.Sprintf("%v", 160*units.GiB-GetKubeletEvictionHardForEphemeralStorage(200*GiB, nil)),
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.scenario, func(t *testing.T) {
 			tb := GceTemplateBuilder{}
-			capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, 0)
+			capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, 0, tc.capacityEphemeralStorage)
 			assert.NoError(t, err)
-			reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0)
+			reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0, tc.reservedEphemeralStorage)
 			assert.NoError(t, err)
-			expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, 0)
+			expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, 0, tc.allocatableEphemeralStorage)
 			assert.NoError(t, err)
-			allocatable := tb.CalculateAllocatable(capacity, reserved)
+			allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(nil))
 			assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
 		})
 	}
@@ -253,26 +270,30 @@ func TestCalculateAllocatable(t *testing.T) {
 
 func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	type testCase struct {
-		kubeEnv        string
-		capacityCpu    string
-		capacityMemory string
-		expectedCpu    string
-		expectedMemory string
-		gpuCount       int64
-		expectedErr    bool
+		kubeEnv                  string
+		capacityCpu              string
+		capacityMemory           string
+		capacityEphemeralStorage string
+		expectedCpu              string
+		expectedMemory           string
+		expectedEphemeralStorage string
+		gpuCount                 int64
+		expectedErr              bool
 	}
 	testCases := []testCase{{
 		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
 			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi,ephemeral-storage=30Gi\n" +
 			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		capacityCpu:    "4000m",
-		capacityMemory: "700000Mi",
-		expectedCpu:    "3000m",
-		expectedMemory: "399900Mi", // capacityMemory-kube_reserved-kubeletEvictionHardMemory
-		gpuCount:       10,
-		expectedErr:    false,
+		capacityCpu:              "4000m",
+		capacityMemory:           "700000Mi",
+		capacityEphemeralStorage: "100Gi",
+		expectedCpu:              "3000m",
+		expectedMemory:           "399900Mi", // capacityMemory-kube_reserved-DefaultKubeletEvictionHardMemory
+		expectedEphemeralStorage: "60Gi",     // capacityEphemeralStorage-kube_reserved-DefaultKubeletEvictionHardMemory
+		gpuCount:                 10,
+		expectedErr:              false,
 	}, {
 		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
@@ -283,15 +304,15 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		expectedErr:    true,
 	}}
 	for _, tc := range testCases {
-		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
+		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount, tc.capacityEphemeralStorage)
 		assert.NoError(t, err)
 		tb := GceTemplateBuilder{}
-		allocatable, err := tb.BuildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
+		allocatable, err := tb.BuildAllocatableFromKubeEnv(capacity, tc.kubeEnv, ParseEvictionHardOrGetDefault(nil))
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
 			assert.NoError(t, err)
-			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, tc.gpuCount)
+			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, tc.gpuCount, tc.expectedEphemeralStorage)
 			assert.NoError(t, err)
 			for res, expectedQty := range expectedResources {
 				qty, found := allocatable[res]
@@ -299,6 +320,50 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 				assert.Equal(t, qty.Value(), expectedQty.Value())
 			}
 		}
+	}
+}
+
+func TestParseEvictionHard(t *testing.T) {
+	type testCase struct {
+		memory                        string
+		ephemeralStorage              string
+		memoryExpected                int64 // bytes
+		ephemeralStorageRatioExpected float64
+	}
+	testCases := []testCase{{
+		memory:                        "200Mi",
+		ephemeralStorage:              "15%",
+		memoryExpected:                200 * 1024 * 1024,
+		ephemeralStorageRatioExpected: 0.15,
+	}, {
+		memory:                        "2Gi",
+		ephemeralStorage:              "11.5%",
+		memoryExpected:                2 * 1024 * 1024 * 1024,
+		ephemeralStorageRatioExpected: 0.115,
+	}, {
+		memory:                        "",
+		ephemeralStorage:              "", // empty string, fallback to default
+		memoryExpected:                100 * 1024 * 1024,
+		ephemeralStorageRatioExpected: 0.1,
+	}, {
+		memory:                        "110292",
+		ephemeralStorage:              "11", // percentage missing, should fallback to default
+		memoryExpected:                110292,
+		ephemeralStorageRatioExpected: 0.1,
+	}, {
+		memory:                        "abcb12", // unparsable, fallback to default
+		ephemeralStorage:              "-11%",   // negative percentage, should fallback to default
+		memoryExpected:                100 * 1024 * 1024,
+		ephemeralStorageRatioExpected: 0.1,
+	}}
+	for _, tc := range testCases {
+		test := map[string]string{
+			MemoryEvictionHardTag:           tc.memory,
+			EphemeralStorageEvictionHardTag: tc.ephemeralStorage,
+		}
+		actualOutput := ParseEvictionHardOrGetDefault(test)
+		assert.EqualValues(t, tc.memoryExpected, actualOutput.MemoryEvictionQuantity, "TestParseEviction Failed Memory. %v expected does not match %v actual.", tc.memoryExpected, actualOutput.MemoryEvictionQuantity)
+		assert.EqualValues(t, tc.ephemeralStorageRatioExpected, actualOutput.EphemeralStorageEvictionRatio, "TestParseEviction Failed Ephemeral Storage. %v expected does not match %v actual.", tc.memoryExpected, actualOutput.EphemeralStorageEvictionRatio)
 	}
 }
 
@@ -371,7 +436,7 @@ func TestBuildCapacityMemory(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
 			noAccelerators := make([]*gce.AcceleratorConfig, 0)
-			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, nil)
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, -1, nil)
 			assert.NoError(t, err)
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
@@ -715,23 +780,129 @@ func TestExtractOperatingSystemFromKubeEnv(t *testing.T) {
 	}
 }
 
+func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
+	type testCase struct {
+		name                                string
+		kubeEnv                             string
+		expectedOperatingSystemDistribution OperatingSystemDistribution
+	}
+
+	testCases := []testCase{
+		{
+			name: "cos",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=cos\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionCOS,
+		},
+		{
+			name: "ubuntu",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=ubuntu\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			name: "windows ltsc",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=windows_ltsc\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionWindowsLTSC,
+		},
+		{
+			name: "windows sac",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=windows_sac\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionWindowsSAC,
+		},
+		{
+			name: "no AUTOSCALER_ENV_VARS",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionDefault,
+		},
+		{
+			name: "no os distribution defined",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionDefault,
+		},
+		{
+			name: "os distribution is empty",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionUnknown,
+		},
+		{
+			name: "unknown (macos)",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=macos\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionUnknown,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualOperatingSystem := extractOperatingSystemDistributionFromKubeEnv(tc.kubeEnv)
+			assert.Equal(t, tc.expectedOperatingSystemDistribution, actualOperatingSystem)
+		})
+	}
+}
+
 func TestParseKubeReserved(t *testing.T) {
 	type testCase struct {
-		reserved       string
-		expectedCpu    string
-		expectedMemory string
-		expectedErr    bool
+		reserved                 string
+		expectedCpu              string
+		expectedMemory           string
+		expectedEphemeralStorage string
+		expectedErr              bool
 	}
 	testCases := []testCase{{
-		reserved:       "cpu=1000m,memory=300000Mi",
-		expectedCpu:    "1000m",
-		expectedMemory: "300000Mi",
-		expectedErr:    false,
+		reserved:                 "cpu=1000m,memory=300000Mi,ephemeral-storage=100Gi",
+		expectedCpu:              "1000m",
+		expectedMemory:           "300000Mi",
+		expectedEphemeralStorage: "100Gi",
+		expectedErr:              false,
 	}, {
-		reserved:       "cpu=1000m,ignored=300Mi,memory=0",
-		expectedCpu:    "1000m",
-		expectedMemory: "0",
-		expectedErr:    false,
+		reserved:                 "cpu=1000m,ignored=300Mi,memory=0,ephemeral-storage=10Gi",
+		expectedCpu:              "1000m",
+		expectedMemory:           "0",
+		expectedEphemeralStorage: "10Gi",
+		expectedErr:              false,
 	}, {
 		reserved:    "This is a wrong reserved",
 		expectedErr: true,
@@ -743,7 +914,7 @@ func TestParseKubeReserved(t *testing.T) {
 			assert.Nil(t, resources)
 		} else {
 			assert.NoError(t, err)
-			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, 0)
+			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, 0, tc.expectedEphemeralStorage)
 			assert.NoError(t, err)
 			assertEqualResourceLists(t, "Resources", expectedResources, resources)
 		}
@@ -758,7 +929,7 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 	return set
 }
 
-func makeResourceList(cpu string, memory string, gpu int64) (apiv1.ResourceList, error) {
+func makeResourceList(cpu string, memory string, gpu int64, ephemeralStorage string) (apiv1.ResourceList, error) {
 	result := apiv1.ResourceList{}
 	resultCpu, err := resource.ParseQuantity(cpu)
 	if err != nil {
@@ -776,6 +947,13 @@ func makeResourceList(cpu string, memory string, gpu int64) (apiv1.ResourceList,
 			return nil, err
 		}
 		result[gpuUtils.ResourceNvidiaGPU] = resultGpu
+	}
+	if len(ephemeralStorage) != 0 {
+		resultEphemeralStorage, err := resource.ParseQuantity(ephemeralStorage)
+		if err != nil {
+			return nil, err
+		}
+		result[apiv1.ResourceEphemeralStorage] = resultEphemeralStorage
 	}
 	return result, nil
 }
