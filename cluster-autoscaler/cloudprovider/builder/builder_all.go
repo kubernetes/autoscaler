@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
@@ -48,6 +49,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.DigitalOceanProviderName,
 	cloudprovider.ExoscaleProviderName,
 	cloudprovider.HuaweicloudProviderName,
+	cloudprovider.OVHcloudProviderName,
 	clusterapi.ProviderName,
 	cloudprovider.IonoscloudProviderName,
 }
@@ -77,6 +79,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return magnum.BuildMagnum(opts, do, rl)
 	case cloudprovider.HuaweicloudProviderName:
 		return huaweicloud.BuildHuaweiCloud(opts, do, rl)
+	case cloudprovider.OVHcloudProviderName:
+		return ovhcloud.BuildOVHcloud(opts, do, rl)
 	case packet.ProviderName:
 		return packet.BuildPacket(opts, do, rl)
 	case clusterapi.ProviderName:
