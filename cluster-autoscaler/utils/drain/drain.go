@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	// PodDeletionTimeout - time after which a pod to be deleted is not included in the list of pods for drain.
-	PodDeletionTimeout = 12 * time.Minute
+	// PodLongTerminatingExtraThreshold - time after which a pod, that is terminating and that has run over its terminationGracePeriod, should be ignored and considered as deleted
+	PodLongTerminatingExtraThreshold = 30 * time.Second
 )
 
 const (
@@ -101,7 +101,7 @@ func GetPodsForDeletionOnNodeDrain(
 		// Possibly skip a pod under deletion but only if it was being deleted for long enough
 		// to avoid a situation when we delete the empty node immediately after the pod was marked for
 		// deletion without respecting any graceful termination.
-		if pod.DeletionTimestamp != nil && pod.DeletionTimestamp.Time.Before(currentTime.Add(-1*PodDeletionTimeout)) {
+		if IsPodLongTerminating(pod, currentTime) {
 			// pod is being deleted for long enough - no need to care about it.
 			continue
 		}
@@ -288,4 +288,19 @@ func hasSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 // This checks if pod has PodSafeToEvictKey annotation set to false
 func hasNotSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "false"
+}
+
+// IsPodLongTerminating checks if a pod has been terminating for a long time (pod's terminationGracePeriod + an additional const buffer)
+func IsPodLongTerminating(pod *apiv1.Pod, currentTime time.Time) bool {
+	// pod has not even been deleted
+	if pod.DeletionTimestamp == nil {
+		return false
+	}
+
+	gracePeriod := pod.Spec.TerminationGracePeriodSeconds
+	if gracePeriod == nil {
+		defaultGracePeriod := int64(apiv1.DefaultTerminationGracePeriodSeconds)
+		gracePeriod = &defaultGracePeriod
+	}
+	return pod.DeletionTimestamp.Time.Add(time.Duration(*gracePeriod) * time.Second).Add(PodLongTerminatingExtraThreshold).Before(currentTime)
 }
