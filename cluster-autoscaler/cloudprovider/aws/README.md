@@ -135,14 +135,14 @@ Example tag:
 
 
 You may currently be adding labels to taints to your nodes via kubelet configuration. If you want to provide this information as additional hints to Cluster Autoscaler that the nodes will
-be labeled or tainted when they join the cluster, you may do so by adding these tags to your ASGs:
+be labeled or tainted when they join the cluster, you may do so by adding these labels/taints as tags to your ASGs, and passing the tag-keys to the `--node-group-auto-discovery` flag.
 
-Example labels/taints tags:
+Example labels/taints ASG tags:
 
 * `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
 * `k8s.io/cluster-autoscaler/node-template/taint/dedicated`: `NoSchedule`
 
-and passing the tag-keys to the `--node-group-auto-discovery` flag, like so:
+which can be passed to `--node-group-auto-discovery` like so:
 
 `--node-group-auto-discovery=asg:k8s.io/cluster-autoscaler/node-template/label/foo,k8s.io/cluster-autoscaler/node-template/taint/dedicated`
 
