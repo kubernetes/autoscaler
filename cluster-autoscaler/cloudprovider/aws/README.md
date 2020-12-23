@@ -100,8 +100,10 @@ Auto-Discovery Setup is the preferred method to configure Cluster Autoscaler.
 To enable this, provide the `--node-group-auto-discovery` flag as an argument
 whose value is a list of tag keys that should be looked for. For example,
 `--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>`
-will find the ASGs where those tag keys _exist_. It does not matter what value
+makes Cluster Autoscaler look for ASGs where _all_ of these tag keys exist. It does not matter what value
 the tags have.
+
+In other words, if you have ASGs with differing (non-common) tags, you will not want to pass these tags to `--node-group-auto-discovery`, because Cluster Autoscaler [looks for ASGS with all these tag-keys](https://github.com/kubernetes/autoscaler/blob/c94ade5266a6c4515aa4a0c7365af0ffb1cf8989/cluster-autoscaler/cloudprovider/aws/aws_manager.go#L471-L472) and will fail to match _some_ or _all_ of your ASGs. Only pass tags that are common across all ASGs in your cluster.
 
 Example deployment:
 
@@ -109,43 +111,40 @@ Example deployment:
 kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
 ```
 
-Cluster Autoscaler will respect the minimum and maximum values of each Auto
-Scaling Group. It will only adjust the desired value.
+Cluster Autoscaler leaves untouched the minimum and maximum values of the discovered Auto
+Scaling Group(s). It only manages the desired value.
 
-Each Auto Scaling Group should be composed of instance types that provide
-approximately equal capacity. For example, ASG "xlarge" could be composed of
-m5a.xlarge, m4.xlarge, m5.xlarge, and m5d.xlarge instance types, because each of
-those provide 4 vCPUs and 16GiB RAM. Separately, ASG "2xlarge" could be
-composed of m5a.2xlarge, m4.2xlarge, m5.2xlarge, and m5d.2xlarge instance
-types, because each of those provide 8 vCPUs and 32GiB RAM.
-
-Cluster Autoscaler will attempt to determine the CPU, memory, and GPU resources
+Cluster Autoscaler determines the CPU, memory, and GPU resources
 provided by an Auto Scaling Group based on the instance type specified in its
-Launch Configuration or Launch Template. It will also examine any overrides
+Launch Configuration or Launch Template. It also examines any overrides
 provided in an ASG's Mixed Instances Policy. If any such overrides are found,
-only the first instance type found will be used.  See [Using Mixed Instances
+only the first instance type found is used.  See [Using Mixed Instances
 Policies and Spot Instances](#Using-Mixed-Instances-Policies-and-Spot-Instances)
 for details.
 
-From version 1.14, Cluster Autoscaler can also determine the resources provided
+From version 1.14, Cluster Autoscaler can _also_ determine the resources provided
 by each Auto Scaling Group via tags. The tag is of the format
 `k8s.io/cluster-autoscaler/node-template/resources/<resource-name>`.
-`<resource-name>` is the name of the resource, such as `ephemeral-storage`. The
-value of each tag specifies the amount of resource provided. The units are
+Where `<resource-name>` is the name of the resource, such as `ephemeral-storage`. The
+value of such a tag specifies the amount of resource provided. The units are
 identical to the units used in the `resources` field of a Pod specification.
 
-Example tags:
+Example tag:
 
 * `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
 
-You may also provide additional hints to Cluster Autoscaler that the nodes will
-be labeled or tainted when they join the cluster, such as:
+
+You may currently be adding labels to taints to your nodes via kubelet configuration. If you want to provide this information as additional hints to Cluster Autoscaler that the nodes will
+be labeled or tainted when they join the cluster, you may do so by adding these tags to your ASGs:
+
+Example labels/taints tags:
 
 * `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
 * `k8s.io/cluster-autoscaler/node-template/taint/dedicated`: `NoSchedule`
 
-**NOTE:** It is your responsibility to ensure such labels and/or taints are
-applied via the node's kubelet configuration at startup.
+and passing the tag-keys to the `--node-group-auto-discovery` flag, like so:
+
+`--node-group-auto-discovery=asg:k8s.io/cluster-autoscaler/node-template/label/foo,k8s.io/cluster-autoscaler/node-template/taint/dedicated`
 
 Recommendations:
 
@@ -160,8 +159,8 @@ Recommendations:
   used by Cluster Autoscaler, depending on whether your ASG utilizes Launch
   Configurations or Launch Templates.
 * If Cluster Autoscaler adds a node to the cluster, and the node has taints applied
-  when it joins the cluster that Cluster Autoscaler was unaware of (because the tag
-  wasn't supplied), this can lead to significant confusion and misbehavior.
+  when it joins the cluster that Cluster Autoscaler was unaware of, because the tag
+  wasn't applied to the ASG and/or supplied to the `--node-group-auto-discovery` flag, it can lead to significant confusion and misbehavior. For example, if Cluster Autoscaler adds a node to help schedule a pending pod, and the node turns up with a taint that prevents the pod from being scheduled onto it, that can cause issues with pod scheduling.
 
 ### Special note on GPU instances
 
@@ -286,6 +285,12 @@ spec:
   types. It is recommended to use the capacity-optimized allocation strategy,
   which will automatically launch Spot Instances into the most available pools
   by looking at real-time capacity data and.
+* Each Auto Scaling Group should be composed of instance types that provide
+  approximately equal capacity. For example, ASG "xlarge" could be composed of
+  m5a.xlarge, m4.xlarge, m5.xlarge, and m5d.xlarge instance types, because each of
+  those provide 4 vCPUs and 16GiB RAM. Separately, ASG "2xlarge" could be
+  composed of m5a.2xlarge, m4.2xlarge, m5.2xlarge, and m5d.2xlarge instance
+  types, because each of those provide 8 vCPUs and 32GiB RAM.
 * For the same workload or for the generic capacity in your cluster, you can
   also create more node groups with a vCPU/Mem ratio that is a good fit for your
   workloads, but from different instance sizes. For example: Node group 1:

@@ -142,7 +142,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	_, ipExist := observedNode.Status.Capacity[apiv1.ResourceName(vpcIPKey)]
 	assert.False(t, ipExist)
 
-	// Nod with labels
+	// Node with labels
 	GPULabelValue := "nvidia-telsa-v100"
 	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
