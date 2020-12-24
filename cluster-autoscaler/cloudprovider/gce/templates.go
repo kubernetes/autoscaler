@@ -165,10 +165,13 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
 	}
 
-	ephemeralStorage, err := getEphemeralStorageFromInstanceTemplateProperties(template.Properties)
-	if err != nil {
-		klog.Errorf("could not fetch ephemeral storage from instance template. %s", err)
-		return nil, err
+	var ephemeralStorage int64 = -1
+	if !isEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+		ephemeralStorage, err = getEphemeralStorageFromInstanceTemplateProperties(template.Properties)
+		if err != nil {
+			klog.Errorf("could not fetch ephemeral storage from instance template. %s", err)
+			return nil, err
+		}
 	}
 
 	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, pods)
@@ -223,6 +226,17 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+// isEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
+// picked up from Instance Template and used as Ephemeral Storage, in case other type of storage are used
+// as ephemeral storage
+func isEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue string) bool {
+	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "BLOCK_EPH_STORAGE_BOOT_DISK")
+	if err == nil && found && v == "true" {
+		return true
+	}
+	return false
 }
 
 func getEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties) (ephemeralStorage int64, err error) {
