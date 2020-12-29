@@ -1012,8 +1012,10 @@ func TestScaleDown(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
 		MaxGracefulTerminationSec:     60,
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
@@ -1069,9 +1071,11 @@ func assertSubset(t *testing.T, a []string, b []string) {
 }
 
 var defaultScaleDownOptions = config.AutoscalingOptions{
+	NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		ScaleDownUnneededTime: time.Minute,
+	},
 	ScaleDownUtilizationThreshold:    0.5,
 	ScaleDownGpuUtilizationThreshold: 0.5,
-	ScaleDownUnneededTime:            time.Minute,
 	MaxGracefulTerminationSec:        60,
 	MaxEmptyBulkDelete:               10,
 	MinCoresTotal:                    0,
@@ -1472,8 +1476,10 @@ func TestNoScaleDownUnready(t *testing.T) {
 	provider.AddNode("ng1", n2)
 
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGracefulTerminationSec:     60,
 	}
@@ -1580,8 +1586,10 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGracefulTerminationSec:     60,
 	}
@@ -1828,8 +1836,10 @@ func TestSoftTaint(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: 10 * time.Minute,
+		},
 		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         10 * time.Minute,
 		MaxGracefulTerminationSec:     60,
 		MaxBulkSoftTaintCount:         1,
 		MaxBulkSoftTaintTime:          3 * time.Second,
@@ -1947,8 +1957,10 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: 10 * time.Minute,
+		},
 		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         10 * time.Minute,
 		MaxGracefulTerminationSec:     60,
 		MaxBulkSoftTaintCount:         10,
 		MaxBulkSoftTaintTime:          maxSoftTaintDuration,

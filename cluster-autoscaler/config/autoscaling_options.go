@@ -30,8 +30,17 @@ type GpuLimits struct {
 	Max int64
 }
 
+// NodeGroupAutoscalingOptions contain various options to customize how autoscaling of
+// a given NodeGroup works. Different options can be used for each NodeGroup.
+type NodeGroupAutoscalingOptions struct {
+	ScaleDownUnneededTime time.Duration
+}
+
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
+	// NodeGroupAutoscalingOptions are default values for per NodeGroup options.
+	// They will be used any time a specific value is not provided for a given NodeGroup.
+	NodeGroupAutoscalingOptions
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
 	MaxEmptyBulkDelete int
 	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down if cpu or memory utilization is over threshold.
@@ -42,7 +51,7 @@ type AutoscalingOptions struct {
 	ScaleDownGpuUtilizationThreshold float64
 	// ScaleDownUnneededTime sets the duration CA expects a node to be unneeded/eligible for removal
 	// before scaling down the node.
-	ScaleDownUnneededTime time.Duration
+	// ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
 	ScaleDownUnreadyTime time.Duration
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster

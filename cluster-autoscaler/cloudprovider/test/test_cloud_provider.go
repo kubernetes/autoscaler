@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -449,6 +450,12 @@ func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 		return nil, fmt.Errorf("no template declared for %s", tng.id)
 	}
 	return template, nil
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (tng *TestNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, nil
 }
 
 // Labels returns labels passed to the test node group when it was created.
