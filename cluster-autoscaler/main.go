@@ -197,6 +197,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	return config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: *scaleDownUnneededTime,
+		},
 		CloudConfig:                        *cloudConfig,
 		CloudProviderName:                  *cloudProviderFlag,
 		NodeGroupAutoDiscovery:             *nodeGroupAutoDiscoveryFlag,
@@ -223,7 +226,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
 		ScaleDownEnabled:                   *scaleDownEnabled,
-		ScaleDownUnneededTime:              *scaleDownUnneededTime,
 		ScaleDownUnreadyTime:               *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold:      *scaleDownUtilizationThreshold,
 		ScaleDownGpuUtilizationThreshold:   *scaleDownGpuUtilizationThreshold,
