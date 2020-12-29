@@ -172,6 +172,9 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		EstimatorName:                 estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:              true,
 		ScaleDownUtilizationThreshold: 0.5,
@@ -179,7 +182,6 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		MaxCoresTotal:                 10,
 		MaxMemoryTotal:                100000,
 		ScaleDownUnreadyTime:          time.Minute,
-		ScaleDownUnneededTime:         time.Minute,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
@@ -358,6 +360,9 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		EstimatorName:                    estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:                 true,
 		ScaleDownUtilizationThreshold:    0.5,
@@ -365,7 +370,6 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		MaxCoresTotal:                    100,
 		MaxMemoryTotal:                   100000,
 		ScaleDownUnreadyTime:             time.Minute,
-		ScaleDownUnneededTime:            time.Minute,
 		NodeAutoprovisioningEnabled:      true,
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
@@ -492,6 +496,9 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		EstimatorName:                 estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:              true,
 		ScaleDownUtilizationThreshold: 0.5,
@@ -499,7 +506,6 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		MaxCoresTotal:                 10,
 		MaxMemoryTotal:                100000,
 		ScaleDownUnreadyTime:          time.Minute,
-		ScaleDownUnneededTime:         time.Minute,
 		MaxNodeProvisionTime:          10 * time.Second,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
@@ -635,6 +641,9 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		EstimatorName:                 estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:              true,
 		ScaleDownUtilizationThreshold: 0.5,
@@ -642,7 +651,6 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		MaxCoresTotal:                 10,
 		MaxMemoryTotal:                100000,
 		ScaleDownUnreadyTime:          time.Minute,
-		ScaleDownUnneededTime:         time.Minute,
 		ExpendablePodsPriorityCutoff:  10,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
@@ -912,6 +920,9 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime: time.Minute,
+		},
 		EstimatorName:                 estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:              true,
 		ScaleDownUtilizationThreshold: 0.5,
@@ -919,7 +930,6 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 		MaxCoresTotal:                 10,
 		MaxMemoryTotal:                100000,
 		ScaleDownUnreadyTime:          time.Minute,
-		ScaleDownUnneededTime:         time.Minute,
 		ExpendablePodsPriorityCutoff:  10,
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
