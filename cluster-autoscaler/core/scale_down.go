@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -359,6 +360,7 @@ func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDow
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
 	context                *context.AutoscalingContext
+	processors             *processors.AutoscalingProcessors
 	clusterStateRegistry   *clusterstate.ClusterStateRegistry
 	unneededNodes          map[string]time.Time
 	unneededNodesList      []*apiv1.Node
@@ -371,9 +373,10 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
 	return &ScaleDown{
 		context:                context,
+		processors:             processors,
 		clusterStateRegistry:   clusterStateRegistry,
 		unneededNodes:          make(map[string]time.Time),
 		unremovableNodes:       make(map[string]time.Time),
@@ -388,6 +391,8 @@ func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clu
 
 // CleanUp cleans up the internal ScaleDown state.
 func (sd *ScaleDown) CleanUp(timestamp time.Time) {
+	// Use default ScaleDownUnneededTime as in this context the value
+	// doesn't apply to any specific NodeGroup.
 	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
 	sd.clearUnremovableNodeReasons()
 }
@@ -423,7 +428,23 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
 
-	if !sd.isNodeBelowUtilizationThreshold(node, utilInfo) {
+	nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
+	if err != nil {
+		return simulator.UnexpectedError, nil
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		// We should never get here as non-autoscaled nodes should not be included in scaleDownCandidates list
+		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
+		klog.V(4).Infof("Skipped %s from delete considered - the node is not autoscaled", node.Name)
+		return simulator.NotAutoscaled, nil
+	}
+
+	underutilized, err := sd.isNodeBelowUtilizationThreshold(node, nodeGroup, utilInfo)
+	if err != nil {
+		klog.Warningf("Failed to check utilization thresholds for %s: %v", node.Name, err)
+		return simulator.UnexpectedError, nil
+	}
+	if !underutilized {
 		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 		return simulator.NotUnderutilized, &utilInfo
 	}
@@ -616,17 +637,24 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 }
 
 // isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
-func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
+func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo simulator.UtilizationInfo) (bool, error) {
+	var threshold float64
+	var err error
 	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
-		if utilInfo.Utilization >= sd.context.ScaleDownGpuUtilizationThreshold {
-			return false
+		threshold, err = sd.processors.NodeGroupConfigProcessor.GetScaleDownGpuUtilizationThreshold(sd.context, nodeGroup)
+		if err != nil {
+			return false, err
 		}
 	} else {
-		if utilInfo.Utilization >= sd.context.ScaleDownUtilizationThreshold {
-			return false
+		threshold, err = sd.processors.NodeGroupConfigProcessor.GetScaleDownUtilizationThreshold(sd.context, nodeGroup)
+		if err != nil {
+			return false, err
 		}
 	}
-	return true
+	if utilInfo.Utilization >= threshold {
+		return false, nil
+	}
+	return true, nil
 }
 
 // updateUnremovableNodes updates unremovableNodes map according to current
@@ -812,18 +840,6 @@ func (sd *ScaleDown) TryToScaleDown(
 		ready, _, _ := kube_util.GetReadinessState(node)
 		readinessMap[node.Name] = ready
 
-		// Check how long a ready node was underutilized.
-		if ready && !unneededSince.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
-			sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
-			continue
-		}
-
-		// Unready nodes may be deleted after a different time than underutilized nodes.
-		if !ready && !unneededSince.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
-			sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
-			continue
-		}
-
 		nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
@@ -834,6 +850,30 @@ func (sd *ScaleDown) TryToScaleDown(
 			klog.V(4).Infof("Skipping %s - no node group config", node.Name)
 			sd.addUnremovableNodeReason(node, simulator.NotAutoscaled)
 			continue
+		}
+
+		if ready {
+			// Check how long a ready node was underutilized.
+			unneededTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnneededTime(sd.context, nodeGroup)
+			if err != nil {
+				klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+				continue
+			}
+			if !unneededSince.Add(unneededTime).Before(currentTime) {
+				sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
+				continue
+			}
+		} else {
+			// Unready nodes may be deleted after a different time than underutilized nodes.
+			unreadyTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnreadyTime(sd.context, nodeGroup)
+			if err != nil {
+				klog.Errorf("Error trying to get ScaleDownUnnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+				continue
+			}
+			if !unneededSince.Add(unreadyTime).Before(currentTime) {
+				sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
+				continue
+			}
 		}
 
 		size, found := nodeGroupSize[nodeGroup.Id()]
