@@ -198,7 +198,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	}
 	return config.AutoscalingOptions{
 		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
-			ScaleDownUnneededTime: *scaleDownUnneededTime,
+			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
+			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
+			ScaleDownUnneededTime:            *scaleDownUnneededTime,
+			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 		},
 		CloudConfig:                        *cloudConfig,
 		CloudProviderName:                  *cloudProviderFlag,
@@ -226,9 +229,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
 		ScaleDownEnabled:                   *scaleDownEnabled,
-		ScaleDownUnreadyTime:               *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold:      *scaleDownUtilizationThreshold,
-		ScaleDownGpuUtilizationThreshold:   *scaleDownGpuUtilizationThreshold,
 		ScaleDownNonEmptyCandidatesCount:   *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:       *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:    *scaleDownCandidatesPoolMinCount,

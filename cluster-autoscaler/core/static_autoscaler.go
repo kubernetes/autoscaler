@@ -147,7 +147,7 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
-	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
+	scaleDown := NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
 
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
