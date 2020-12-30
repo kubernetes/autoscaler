@@ -25,8 +25,14 @@ import (
 
 // NodeGroupConfigProcessor provides config values for a particular NodeGroup.
 type NodeGroupConfigProcessor interface {
-	// Process processes a map of nodeInfos for node groups.
+	// GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
 	GetScaleDownUnneededTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	// GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
+	GetScaleDownUnreadyTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	// GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
+	GetScaleDownUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
+	// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
+	GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -47,6 +53,42 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(context *c
 		return context.ScaleDownUnneededTime, nil
 	}
 	return ngConfig.ScaleDownUnneededTime, nil
+}
+
+// GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return time.Duration(0), err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return context.ScaleDownUnreadyTime, nil
+	}
+	return ngConfig.ScaleDownUnreadyTime, nil
+}
+
+// GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error) {
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return 0.0, err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return context.ScaleDownUtilizationThreshold, nil
+	}
+	return ngConfig.ScaleDownUtilizationThreshold, nil
+}
+
+// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error) {
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return 0.0, err
+	}
+	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+		return context.ScaleDownGpuUtilizationThreshold, nil
+	}
+	return ngConfig.ScaleDownGpuUtilizationThreshold, nil
 }
 
 // CleanUp cleans up processor's internal structures.
