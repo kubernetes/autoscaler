@@ -203,7 +203,7 @@ func (tcp *TestCloudProvider) InsertNodeGroup(nodeGroup cloudprovider.NodeGroup)
 }
 
 // BuildNodeGroup returns a test node group.
-func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, autoprovisioned bool, machineType string) *TestNodeGroup {
+func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, autoprovisioned bool, machineType string, opts *config.NodeGroupAutoscalingOptions) *TestNodeGroup {
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              id,
@@ -213,18 +213,26 @@ func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, auto
 		exist:           true,
 		autoprovisioned: autoprovisioned,
 		machineType:     machineType,
+		opts:            opts,
 	}
 }
 
 // AddNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
-	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "")
+	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "", nil)
+	tcp.InsertNodeGroup(nodeGroup)
+}
+
+// AddNodeGroupWithCustomOptions adds node group with custom options
+// to test cloud provider.
+func (tcp *TestCloudProvider) AddNodeGroupWithCustomOptions(id string, min int, max int, size int, opts *config.NodeGroupAutoscalingOptions) {
+	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "", opts)
 	tcp.InsertNodeGroup(nodeGroup)
 }
 
 // AddAutoprovisionedNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, max int, size int, machineType string) *TestNodeGroup {
-	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, true, machineType)
+	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, true, machineType, nil)
 	tcp.InsertNodeGroup(nodeGroup)
 	return nodeGroup
 }
@@ -279,6 +287,7 @@ type TestNodeGroup struct {
 	machineType     string
 	labels          map[string]string
 	taints          []apiv1.Taint
+	opts            *config.NodeGroupAutoscalingOptions
 }
 
 // NewTestNodeGroup creates a TestNodeGroup without setting up the realted TestCloudProvider.
@@ -455,7 +464,12 @@ func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (tng *TestNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, nil
+	return tng.opts, nil
+}
+
+// SetOptions allows changing options configured for TestNodeGroup.
+func (tng *TestNodeGroup) SetOptions(opts *config.NodeGroupAutoscalingOptions) {
+	tng.opts = opts
 }
 
 // Labels returns labels passed to the test node group when it was created.

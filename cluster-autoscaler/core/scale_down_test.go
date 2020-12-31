@@ -270,6 +270,117 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	assert.Equal(t, 3, len(sd.nodeUtilizationMap))
 }
 
+func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
+	var autoscalererr autoscaler_errors.AutoscalerError
+
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "apps/v1", "")
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+
+	// this test focuses on utilization checks
+	// add a super large node, so every pod always has a place to drain
+	sink := BuildTestNode("sink", 100000, 100000)
+	AddGpusToNode(sink, 20)
+	SetNodeReadyState(sink, true, time.Time{})
+	provider.AddNodeGroup("sink_group", 1, 1, 1)
+	provider.AddNode("sink_group", sink)
+
+	allNodes := []*apiv1.Node{sink}
+	scaleDownCandidates := []*apiv1.Node{}
+	allPods := []*apiv1.Pod{}
+
+	// set up 2 node groups with nodes with different utilizations
+	cpuUtilizations := []int64{30, 40, 50, 60, 90}
+	for i := 1; i < 3; i++ {
+		ngName := fmt.Sprintf("n%d", i)
+		provider.AddNodeGroup(ngName, 0, len(cpuUtilizations), len(cpuUtilizations))
+		for _, u := range cpuUtilizations {
+			nodeName := fmt.Sprintf("%s_%d", ngName, u)
+			node := BuildTestNode(nodeName, 1000, 10)
+			SetNodeReadyState(node, true, time.Time{})
+			provider.AddNode(ngName, node)
+			allNodes = append(allNodes, node)
+			scaleDownCandidates = append(scaleDownCandidates, node)
+			pod := BuildTestPod(fmt.Sprintf("p_%s", nodeName), u*10, 0)
+			pod.Spec.NodeName = nodeName
+			pod.OwnerReferences = ownerRef
+			allPods = append(allPods, pod)
+		}
+	}
+
+	globalOptions := config.AutoscalingOptions{
+		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+			ScaleDownUtilizationThreshold:    0.5,
+			ScaleDownGpuUtilizationThreshold: 0.5,
+		},
+	}
+
+	cases := map[string]struct {
+		n1opts       *config.NodeGroupAutoscalingOptions
+		n2opts       *config.NodeGroupAutoscalingOptions
+		wantUnneeded []string
+	}{
+		"no per NodeGroup config": {
+			wantUnneeded: []string{"n1_30", "n1_40", "n2_30", "n2_40"},
+		},
+		"one group has higher threshold": {
+			n1opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold: 0.75,
+			},
+			wantUnneeded: []string{"n1_30", "n1_40", "n1_50", "n1_60", "n2_30", "n2_40"},
+		},
+		"one group has lower gpu threshold (which should be ignored)": {
+			n1opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.75,
+				ScaleDownGpuUtilizationThreshold: 0.1,
+			},
+			wantUnneeded: []string{"n1_30", "n1_40", "n1_50", "n1_60", "n2_30", "n2_40"},
+		},
+		"both group have different thresholds": {
+			n1opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold: 0.75,
+			},
+			n2opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold: 0.55,
+			},
+			wantUnneeded: []string{"n1_30", "n1_40", "n1_50", "n1_60", "n2_30", "n2_40", "n2_50"},
+		},
+		"both group have the same custom threshold": {
+			n1opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold: 0.35,
+			},
+			n2opts: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold: 0.35,
+			},
+			wantUnneeded: []string{"n1_30", "n2_30"},
+		},
+	}
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, nil, provider, nil)
+			assert.NoError(t, err)
+			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+			sd := NewScaleDown(&context, NewTestProcessors(), clusterStateRegistry)
+			simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, allPods)
+
+			ng1 := provider.GetNodeGroup("n1").(*testprovider.TestNodeGroup)
+			ng1.SetOptions(tc.n1opts)
+			ng2 := provider.GetNodeGroup("n2").(*testprovider.TestNodeGroup)
+			ng2.SetOptions(tc.n2opts)
+
+			autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
+			assert.NoError(t, autoscalererr)
+			klog.Infof("[%s] Unneeded nodes %v", tn, sd.unneededNodes)
+			assert.Equal(t, len(tc.wantUnneeded), len(sd.unneededNodes))
+			for _, node := range tc.wantUnneeded {
+				_, found := sd.unneededNodes[node]
+				assert.True(t, found)
+			}
+		})
+	}
+}
+
 func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	var autoscalererr autoscaler_errors.AutoscalerError
 
