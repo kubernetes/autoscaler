@@ -27,15 +27,15 @@ jobs:
         run: git fetch --prune --unshallow
       - id: lint
         name: Run chart-testing (lint)
-        uses: helm/chart-testing-action@v1.0.0-rc.2
+        uses: helm/chart-testing-action@v2.0.1
         with:
           command: lint
       # Only build a kind cluster if there are chart changes to test.
       - if: steps.lint.outputs.changed == 'true'
         name: Create kind cluster
-        uses: helm/kind-action@v1.0.0-alpha.3
+        uses: helm/kind-action@v1.1.0
       - name: Run chart-testing (install)
-        uses: helm/chart-testing-action@v1.0.0-rc.2
+        uses: helm/chart-testing-action@v2.0.1
         with:
           command: install
   helm-docs-validate:
