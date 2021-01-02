@@ -21,13 +21,14 @@ In particular users need to follow these steps to support a custom private cloud
 
 This is a concern that has been raised in the past [PR953](https://github.com/kubernetes/autoscaler/issues/953) and [PR1060](https://github.com/kubernetes/autoscaler/issues/1060).
 
-Therefore a new implemetation should be added to CA in order to extend it without breaking any backwards compatibility or
+Therefore a new implementation should be added to CA in order to extend it without breaking any backwards compatibility or
 the current cloud provider implementations.
 
 ## Goals
 
 * Support custom cloud provider implementations without changing the current `CloudProvider` interface.
 * Make CA extendable, so users do not need to fork the CA repository.
+* Add a mock gRPC provider to test this new functionality.
 
 ## Proposal
 
@@ -114,12 +115,10 @@ import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/api/resource/generated.proto";
 import "k8s.io/api/core/v1/generated.proto"
 
-option go_package = "clusterautoscaler.cloudprovider";
+option go_package = "v1";
 
 service CloudProvider {
   // CloudProvider specific RPC functions
-  rpc Name(NameRequest)
-    returns (NameResponse) {}
 
   rpc NodeGroups(NodeGroupsRequest)
     returns (GetNameResponse) {}    
@@ -127,17 +126,11 @@ service CloudProvider {
   rpc NodeGroupForNode(NodeGroupForNodeRequest)
     returns (NodeGroupForNodeResponse) {}
 
-  rpc PricingNodePrice(PricingNodePriceRequest)
+  rpc PricingNodePrice(PricingNodePriceRequest) // Optional
     returns (PricingNodePriceResponse) {}
 
-  rpc PricingPodPrice(PricingPodPriceRequest)
+  rpc PricingPodPrice(PricingPodPriceRequest) // Optional
     returns (PricingPodPriceResponse)
-
-  rpc NewNodeGroup(NewNodeGroupRequest)
-    returns (NewNodeGroupResponse) {}
-
-  rpc GetResourceLimiter(GetResourceLimiterRequest)
-    returns (GetResourceLimiterResponse) {}
 
   rpc GPULabel(GPULabelRequest)
     returns (GPULabelResponse) {}  
@@ -165,13 +158,7 @@ service CloudProvider {
     returns (NodeGroupDecreaseTargetSizeResponse) {}         
 
   rpc NodeGroupNodes(NodeGroupNodesRequest)
-    returns (NodeGroupNodesResponse) {}              
-
-  rpc NodeGroupDelete(NodeGroupDeleteRequest)
-    returns (NodeGroupDeleteResponse) {}          
-
-  rpc NodeGroupCreate(NodeGroupCreateRequest)
-    returns (NodeGroupCreateResponse) {}
+    returns (NodeGroupNodesResponse) {}
 
   rpc NodeGroupTemplateNodeInfo(NodeGroupDTemplateNodeInfoRequest)
     returns (NodeGroupTemplateNodeInfoResponse) {}                                                               
@@ -179,6 +166,12 @@ service CloudProvider {
 ```
 
 Note that, the rest of message used in these calls are detailed in the [Appendix](#appendix) section.
+
+Among all the operations, the CA calls in many places the function `NodeGroupForNode`.
+As a consequence this operation might impact the overall performance of the CA when calling it via a remote external cloud provider.
+A solution is to cache the rpc responses of this operation to avoid causing a performance degradation.
+Another proposed alternative could be to move the entire logic of this function to the CA source code.
+Initially this proposal assumes the rpc responses for this operation are cached to avoid any performance degradation.
 
 In order to talk to the custom cloud provider server, this new cloud provider has to be registered
 when bootstrapping the CA.
@@ -231,38 +224,56 @@ message NodeGroupsResponse {
 }
 ```
 
+### ExternalGrpcNode
+
+ExternalGrpcNode is a custom type. This object defines the minimum required properties of a given Kubernetes node for a node group.
+This new type reduces the amount of data transferred in all the operations instead of
+sending the whole `k8s.io.api.core.v1.Node` rpc message.
+
+```protobuf
+message ExternalGrpcNode{
+	// ID of the node assigned by the cloud provider in the format: <ProviderName>://<ProviderSpecificNodeID>
+	// +optional
+	optional string providerID = 1;
+
+	// Name of the node assigned by the cloud provider
+	optional string name = 2;
+
+	// labels is a map of {key,value} pairs with the node's labels.
+	map<string, string> labels = 3;
+
+
+	// If specified, the node's annotations.
+	map<string, string> annotations = 4;
+}
+```
+
+Initially, we defined a list of 4 properties, but this list could increase during the implementation phase.
+
 ### NodeGroupForNode
 
 NodeGroupForNode returns the node group for the given node, nil if the node should not be processed by cluster autoscaler, or non-nil error if such occurred. Must be implemented.
 
+**IMPORTANT:** Please note, this operation is extensively used by CA and can cause some performance degradations on large clusters.
+The initial proposal assumes the rpc responses are cached to offload the performance impact of constantly calling this function.
+
 ```protobuf
 message NodeGroupForNodeRequest {
   // Node group for the given node
-  k8s.io.api.core.v1.Node node = 1;
+  ExternalGrpcNode node = 1;
 }
 
 message NodeGroupForNodeResponse {
   // The node group for the given node.
   repeated NodeGroup nodeGroup = 1;
 }
-```
 
-### GetResourceLimiter
-
-GetResourceLimiter types store struct containing limits (max, min) for resources (cores, memory etc.).
-
-```protobuf
-message GetResourceLimiterRequest {
-  // Intentionally empty.
+message NodeGroupForNodeRequest {
+  // Node group for the given node
+  ExternalGrpcNode node = 1;
 }
 
-message GetResourceLimiterResponse {
-  // All the machine types that the cloud provider service supports. This
-  // field is OPTIONAL.
-  repeated string machineTypes = 1;
-}
 ```
-
 
 ### GetAvailableGPUTypes
 
@@ -275,7 +286,7 @@ message GetAvailableGPUTypesRequest {
 
 message GetAvailableGPUTypesResponse {
  // GPU types passed in as opaque key-value pairs.
-  map<string, string> gpuTypes = 1;
+  map<string, Any> gpuTypes = 1;
 }
 ```
 
@@ -297,10 +308,11 @@ message GPULabelResponse {
 ### PricingNodePrice
 
 NodePrice handles an operation that returns a price of running the given node for a given period of time.
+PricingNodePrice is an optional operation that is not implemented by all the providers.
 
 ```protobuf
 message PricingNodePriceRequest {
-  k8s.io.api.core.v1.Node node = 1;,
+  ExternalGrpcNode node = 1;,
 
   k8s.io.apimachinery.pkg.apis.meta.v1.Time startTime = 2;
 
@@ -316,6 +328,8 @@ message PricingNodePriceResponse {
 ### PricingPodPrice
 
 PodPrice handles an operation that returns a theoretical minimum price of running a pod for a given period of time on a perfectly matching machine.
+PricingPodPrice is an optional operation that is not implemented by all the providers.
+
 
 ```protobuf
 message PricingPodPriceRequest {
@@ -329,52 +343,6 @@ message PricingPodPriceRequest {
 message PricingPodPriceResponse {
  // Price of the theoretical minimum price of running a pod for a given period
  float64 price = 1;
-}
-```
-
-### NewNodeGroup
-
-NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically created on the cloud provider side. This action returns the created node group.
-
-```protobuf
-message NewNodeGroupRequest {
-  // Machine type for the node group.
-  string machineType = 1;
-
-  // Labels of the node group.
-  map<string,string> labels = 2;
-
-  // System Labels of the node group.
-  map<string, string> systemLabels = 3;
-
-  // Taints of the node group
-  repeated k8s.io.api.core.v1.Taint taints = 4;
-
-  // ExtraResources of the node group
-  map<string, k8s.io.apimachinery.pkg.api.resource.Quantity extraResources = 5;
-}
-
-message NewNodeGroupResponse {
-  // NodeGroup created by the cloud provider.
- NodeGroup nodeGroup = 1;
-}
-```
-
-### GetResourceLimiter
-
-GetResourceLimiter holds a struct containing limits (max, min) for resources (cores, memory etc.).
-
-```protobuf
-message GetResourceLimiterRequest {
-  // Intentionally empty.
-}
-
-message GetResourceLimiterResponse {
- // Contains the minimum limits for resources (cores, memory etc.).
- map<string, int64> minLimits = 1;
-
- // Contains the maximum limits for resources (cores, memory etc.).
- map<string, int64> maxLimits = 2;
 }
 ```
 
@@ -407,28 +375,10 @@ message CleanupResponse {
 }
 ```
 
-### Name
-
-Name stores the name of the cloud provider.
-
-```protobuf
-message NameRequest {
-  // Intentionally empty.
-}
-
-message NameResponse {
-  // Name of the node group
- string name = 1;
-}
-```
-
 ### NodeGroup
 
 ```protobuf
 message NodeGroup {
-  // Name of the node group on the cloud provider
-  string name = 1;
-
   // ID of the node group on the cloud provider
   string id = 1;
 
@@ -438,14 +388,8 @@ message NodeGroup {
   // MaxSize of the node group on the cloud provider
   int32 maxSize = 3;
 
-  // Exist reports if the node group really exists on the cloud provider
-  bool exist = 4;
-
-  // Autoprovisioned returns true if the node group is autoprovisioned
-  bool autoProvisioned = 5;
-
   // Debug returns a string containing all information regarding this node group.
-  string debug = 6;
+  string debug = 4;
 }
 ```
 
@@ -488,7 +432,7 @@ NodeGroupDeleteNodes deletes nodes from this node group.
 
 ```protobuf
 message NodeGroupDeleteNodesRequest {
- repeated k8s.io.api.core.v1.Node nodes = 1;
+ repeated ExternalGrpcNode nodes = 1;
 
  // ID of the group node on the cloud provider
  string id = 2;
@@ -539,8 +483,15 @@ message Instance {
 
 // InstanceStatus represents instance status.
 message InstanceStatus {
-	// State tells if instance is running, being created or being deleted
-	int state = 1;
+	// InstanceState tells if instance is running, being created or being deleted
+	enum InstanceState {
+		// InstanceRunning means instance is running
+		InstanceRunning = 1
+		// InstanceCreating means instance is being created
+		InstanceCreating = 2
+		// InstanceDeleting means instance is being deleted
+		InstanceDeleting = 3;
+	}
 	// ErrorInfo is not nil if there is error condition related to instance.
 	InstanceErrorInfo errorInfo = 2;
 }
@@ -556,40 +507,13 @@ message InstanceErrorInfo {
 }
 ```
 
-### NodeGroupDelete
-
-NodeGroupDelete deletes the node group on the cloud provider side.
-
-```protobuf
-message NodeGroupDeleteRequest {
-  // ID of the group node on the cloud provider
-  string id = 1;
-}
-
-message NodeGroupDeleteResponse {
-  // Intentionally empty.
-}
-```
-
-### NodeGroupCreate
-
-NodeGroupCreate creates the node group on the cloud provider side.
-
-```protobuf
-message NodeGroupCreateRequest {
-  // NodeGroup to be created on the cloud provider
-  NodeGroup nodeGroup = 1;
-}
-
-message NodeGroupCreateResponse {
-  // NodeGroup that was created on the cloud provider
-  NodeGroup nodeGroup = 1;
-}
-```
-
 ### NodeGroupTemplateNodeInfo
 
-TemplateNodeInfo returns a NodeInfo structure of an empty (as if just started) node.
+TemplateNodeInfo returns a NodeInfo as a structure of an empty (as if just started) node.
+The definition of a generic `NodeInfo` for each potential provider is a pretty complex approach and does not cover all the scenarios.
+For the sake of simplicity, the `nodeInfo` is defined as a Kubernetes `k8s.io.api.core.v1.Node` type
+where the system could still extract certain info about the node.
+
 
 ```protobuf
 message NodeGroupTemplateNodeInfoRequest {
@@ -598,7 +522,7 @@ message NodeGroupTemplateNodeInfoRequest {
 }
 
 message NodeGroupTemplateNodeInfoResponse {
-  // nodeInfo extracted of the template node on the cloud provider
-  NodeInfo nodeInfo = 1;
+  // nodeInfo extracted data from the cloud provider node using a primitive Kubernetes Node type.
+  k8s.io.api.core.v1.Node nodeInfo = 1;
 }
 ```
