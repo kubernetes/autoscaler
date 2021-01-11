@@ -165,7 +165,7 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
     chkconfig --add /etc/rc.d/init.d/init-k8s.sh
     chkconfig /etc/rc.d/init.d/init-k8s.sh on
     ```
-- Copy `~/.kube/config` from master node to this ECS `~./kube/config` to setup kubectl on this instance.
+- Copy `~/.kube/config` from a control plane node to this ECS `~./kube/config` to setup kubectl on this instance.
 
 - Go to Huawei Cloud `Image Management` Service and click on `Create Image`. Select type `System disk image`, select your ECS instance as `Source`, then give it a name and then create.
 

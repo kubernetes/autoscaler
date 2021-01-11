@@ -133,7 +133,7 @@ Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 kubectl create -f cluster-autoscaler-vmss.yaml
 ```
 
-To run a cluster autoscaler pod on a master node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-master.yaml](examples/cluster-autoscaler-vmss-master.yaml) in this case.
+To run a cluster autoscaler pod on a control plane node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-control-plane.yaml](examples/cluster-autoscaler-vmss-control-plane.yaml) in this case.
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](examples/cluster-autoscaler-vmss-msi.yaml) instead.
 
@@ -172,7 +172,7 @@ Prerequisites:
 - Get Azure credentials from the [**Permissions**](#permissions) step above.
 - Get the name of the initial Azure deployment resource for the cluster. You can find this in the [Azure Portal](https://portal.azure.com) or with the `az deployment list` command. If there are multiple deployments, get the name of the first one.
 
-Make a copy of [cluster-autoscaler-standard-master.yaml](examples/cluster-autoscaler-standard-master.yaml). Fill in the placeholder values for the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
+Make a copy of [cluster-autoscaler-standard-control-plane.yaml](examples/cluster-autoscaler-standard-control-plane.yaml). Fill in the placeholder values for the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -208,7 +208,7 @@ kubectl -n kube-system create secret generic cluster-autoscaler-azure-deploy-par
 Then deploy cluster-autoscaler by running:
 
 ```sh
-kubectl create -f cluster-autoscaler-standard-master.yaml
+kubectl create -f cluster-autoscaler-standard-control-plane.yaml
 ```
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-standard-msi.yaml](examples/cluster-autoscaler-standard-msi.yaml) instead.

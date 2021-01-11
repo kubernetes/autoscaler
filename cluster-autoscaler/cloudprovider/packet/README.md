@@ -86,7 +86,7 @@ If you are deploying the autoscaler into a cluster which already has more than o
 it is best to deploy it onto any node which already has non-default kube-system pods,
 to minimise the number of nodes which cannot be removed when scaling. For this reason in
 the provided example the autoscaler pod has a nodeaffinity which forces it to deploy on
-the master node.
+the control plane node.
 
 ### Changes
 
@@ -98,4 +98,4 @@ the master node.
 
 4. Cloud inits in the examples have pinned versions for Kubernetes in order to minimize potential incompatibilities as a result of nodes provisioned with different Kubernetes versions.
 
-5. In the provided cluster-autoscaler deployment example, the autoscaler pod has a nodeaffinity which forces it to deploy on the master node, so that the cluster-autoscaler can scale down all of the worker nodes. Without this change there was a possibility for the cluster-autoscaler to be deployed on a worker node that could not be downscaled.
+5. In the provided cluster-autoscaler deployment example, the autoscaler pod has a nodeaffinity which forces it to deploy on the control plane node, so that the cluster-autoscaler can scale down all of the worker nodes. Without this change there was a possibility for the cluster-autoscaler to be deployed on a worker node that could not be downscaled.
