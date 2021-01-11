@@ -1,4 +1,4 @@
-// +build exoscale
+// +build hetzner
 
 /*
 Copyright 2020 The Kubernetes Authors.
