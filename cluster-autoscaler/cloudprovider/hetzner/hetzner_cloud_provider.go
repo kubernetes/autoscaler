@@ -59,8 +59,8 @@ func (d *HetznerCloudProvider) Name() string {
 // NodeGroups returns all node groups configured for this cloud provider.
 func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0)
-	for i := range d.manager.nodeGroups {
-		groups = append(groups, d.manager.nodeGroups[i])
+	for groupId := range d.manager.nodeGroups {
+		groups = append(groups, d.manager.nodeGroups[groupId])
 	}
 	return groups
 }
