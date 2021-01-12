@@ -182,14 +182,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
 func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
-	// We are interested in pods which are Running or Unknown (in case the pod is
-	// running but there are some transient errors we don't want to delete it from
-	// our model).
-	// We don't want to watch Pending, Succeeded, or Failed failed pods because we
-	// know they're not generating any usage.
-	// Filter
-	statusFilter := fmt.Sprintf("status.phase!=%s,status.phase!=%s,status.phase!=%s", apiv1.PodPending, apiv1.PodSucceeded, apiv1.PodFailed)
-	selector := fields.ParseSelectorOrDie(statusFilter)
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
 	indexer, controller := cache.NewIndexerInformer(
 		podListWatch,
