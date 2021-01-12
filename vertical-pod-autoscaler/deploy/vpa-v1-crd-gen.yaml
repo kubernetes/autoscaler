@@ -109,7 +109,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: false
+    storage: true
   - name: v1beta2
     schema:
       openAPIV3Schema:
@@ -202,7 +202,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
 status:
   acceptedNames:
     kind: ""
@@ -476,7 +476,7 @@ spec:
         - spec
         type: object
     served: true
-    storage: false
+    storage: true
   - name: v1beta2
     schema:
       openAPIV3Schema:
@@ -707,7 +707,7 @@ spec:
         - spec
         type: object
     served: true
-    storage: true
+    storage: false
 status:
   acceptedNames:
     kind: ""
