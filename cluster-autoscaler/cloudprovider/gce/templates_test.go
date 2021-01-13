@@ -843,6 +843,28 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 			expectedOperatingSystemDistribution: OperatingSystemDistributionCOS,
 		},
 		{
+			name: "cos containerd",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=cos_containerd\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionCOSContainerd,
+		},
+		{
+			name: "ubuntu containerd",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi;" +
+				"os_distribution=ubuntu_containerd\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedOperatingSystemDistribution: OperatingSystemDistributionUbuntuContainerd,
+		},
+		{
 			name: "ubuntu",
 			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
