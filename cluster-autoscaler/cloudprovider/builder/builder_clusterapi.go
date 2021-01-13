@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	clusterapi.ProviderName,
+	cloudprovider.ClusterAPIProiverName,
 }
 
 // DefaultCloudProvider for machineapi-only build.
-const DefaultCloudProvider = clusterapi.ProviderName
+const DefaultCloudProvider = cloudprovider.ClusterAPIProiverName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case clusterapi.ProviderName:
+	case cloudprovider.ClusterAPIProiverName:
 		return clusterapi.BuildClusterAPI(opts, do, rl)
 	}
 
