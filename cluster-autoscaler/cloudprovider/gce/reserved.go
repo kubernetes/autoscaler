@@ -172,11 +172,11 @@ func parsePercentageToRatio(percentString string) (float64, error) {
 // CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold
 func CalculateOSReservedEphemeralStorage(diskSize int64, osDistribution OperatingSystemDistribution) int64 {
 	switch osDistribution {
-	case OperatingSystemDistributionCOS:
+	case OperatingSystemDistributionCOS, OperatingSystemDistributionCOSContainerd:
 		storage := int64(math.Ceil(0.015635*float64(diskSize))) + int64(math.Ceil(4.148*GiB)) // os partition estimation
 		storage += int64(math.Min(100*MiB, math.Ceil(0.001*float64(diskSize))))               // over-provisioning buffer
 		return storage
-	case OperatingSystemDistributionUbuntu:
+	case OperatingSystemDistributionUbuntu, OperatingSystemDistributionUbuntuContainerd:
 		storage := int64(math.Ceil(0.03083*float64(diskSize))) + int64(math.Ceil(0.171*GiB)) // os partition estimation
 		storage += int64(math.Min(100*MiB, math.Ceil(0.001*float64(diskSize))))              // over-provisioning buffer
 		return storage
