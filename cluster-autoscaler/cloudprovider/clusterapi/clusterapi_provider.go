@@ -36,9 +36,6 @@ import (
 )
 
 const (
-	// ProviderName is the name of cluster-api cloud provider.
-	ProviderName = "clusterapi"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cluster-api/accelerator"
 )
@@ -196,5 +193,5 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatal(err)
 	}
 
-	return newProvider(ProviderName, rl, controller)
+	return newProvider(cloudprovider.ClusterAPIProiverName, rl, controller)
 }
