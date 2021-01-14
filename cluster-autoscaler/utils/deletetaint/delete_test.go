@@ -42,7 +42,7 @@ func TestMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	err := MarkToBeDeleted(node, fakeClient)
+	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -65,7 +65,7 @@ func TestSoftMarkNodes(t *testing.T) {
 func TestCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -76,7 +76,7 @@ func TestCheckNodes(t *testing.T) {
 func TestSoftCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -88,7 +88,7 @@ func TestQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	err := MarkToBeDeleted(node, fakeClient)
+	err := MarkToBeDeleted(node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -119,25 +119,67 @@ func TestSoftQueryNodes(t *testing.T) {
 func TestCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
 	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, updatedNode.Spec.Unschedulable)
 
-	cleaned, err := CleanToBeDeleted(node, fakeClient)
+	cleaned, err := CleanToBeDeleted(node, fakeClient, false)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
 
 	updatedNode = getNode(t, fakeClient, "node")
 	assert.NoError(t, err)
 	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, updatedNode.Spec.Unschedulable)
+}
+
+func TestCleanNodesWithCordon(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, true)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, updatedNode.Spec.Unschedulable)
+
+	cleaned, err := CleanToBeDeleted(node, fakeClient, true)
+	assert.True(t, cleaned)
+	assert.NoError(t, err)
+
+	updatedNode = getNode(t, fakeClient, "node")
+	assert.NoError(t, err)
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, updatedNode.Spec.Unschedulable)
+}
+
+func TestCleanNodesWithCordonOnOff(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, true)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, updatedNode.Spec.Unschedulable)
+
+	cleaned, err := CleanToBeDeleted(node, fakeClient, false)
+	assert.True(t, cleaned)
+	assert.NoError(t, err)
+
+	updatedNode = getNode(t, fakeClient, "node")
+	assert.NoError(t, err)
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, updatedNode.Spec.Unschedulable)
 }
 
 func TestSoftCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -162,7 +204,7 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
-	CleanAllToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder)
+	CleanAllToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, false)
 
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))
