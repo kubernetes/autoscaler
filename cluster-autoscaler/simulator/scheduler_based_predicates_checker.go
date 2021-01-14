@@ -19,6 +19,7 @@ package simulator
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
@@ -106,7 +107,12 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot Clu
 		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
 	}
 
-	for _, nodeInfo := range nodeInfosList {
+	for i := range nodeInfosList {
+		// pick random not yet checked node
+		j := rand.Intn(len(nodeInfosList) - i)
+		nodeInfosList[i], nodeInfosList[i + j] = nodeInfosList[i + j], nodeInfosList[i]
+		nodeInfo := nodeInfosList[i]
+
 		if !nodeMatches(nodeInfo) {
 			continue
 		}
