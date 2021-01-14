@@ -50,7 +50,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ExoscaleProviderName,
 	cloudprovider.HuaweicloudProviderName,
 	cloudprovider.OVHcloudProviderName,
-	clusterapi.ProviderName,
+	cloudprovider.ClusterAPIProiverName,
 	cloudprovider.IonoscloudProviderName,
 }
 
@@ -83,7 +83,7 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return ovhcloud.BuildOVHcloud(opts, do, rl)
 	case packet.ProviderName:
 		return packet.BuildPacket(opts, do, rl)
-	case clusterapi.ProviderName:
+	case cloudprovider.ClusterAPIProiverName:
 		return clusterapi.BuildClusterAPI(opts, do, rl)
 	case cloudprovider.IonoscloudProviderName:
 		return ionoscloud.BuildIonosCloud(opts, do, rl)

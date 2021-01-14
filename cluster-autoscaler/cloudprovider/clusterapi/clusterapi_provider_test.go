@@ -32,9 +32,9 @@ func TestProviderConstructorProperties(t *testing.T) {
 	controller, stop := mustCreateTestController(t)
 	defer stop()
 
-	provider := newProvider(ProviderName, &resourceLimits, controller)
-	if actual := provider.Name(); actual != ProviderName {
-		t.Errorf("expected %q, got %q", ProviderName, actual)
+	provider := newProvider(cloudprovider.ClusterAPIProiverName, &resourceLimits, controller)
+	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProiverName {
+		t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProiverName, actual)
 	}
 
 	rl, err := provider.GetResourceLimiter()
