@@ -1,0 +1,2 @@
+resources:
+- cluster-autoscaler-autodiscover.yaml
