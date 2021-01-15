@@ -82,7 +82,7 @@ func TestMachineCache(t *testing.T) {
 			},
 		},
 	}
-	c := NewGceCache(nil)
+	c := NewGceCache(nil, 1)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			for _, m := range tc.machines {

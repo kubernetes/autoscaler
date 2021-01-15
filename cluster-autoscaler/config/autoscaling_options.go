@@ -140,6 +140,8 @@ type AutoscalingOptions struct {
 	BalancingExtraIgnoredLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
+	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	ConcurrentGceRefreshes int
 	// Path to kube configuration if available
 	KubeConfigPath string
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
