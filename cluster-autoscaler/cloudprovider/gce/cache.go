@@ -17,12 +17,14 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/client-go/util/workqueue"
 
 	gce "google.golang.org/api/compute/v1"
 	klog "k8s.io/klog/v2"
@@ -71,13 +73,14 @@ type GceCache struct {
 	migTargetSizeCache       map[GceRef]int64
 	migBaseNameCache         map[GceRef]string
 	instanceTemplatesCache   map[GceRef]*gce.InstanceTemplate
+	concurrentGceRefreshes   int
 
 	// Service used to refresh cache.
 	GceService AutoscalingGceClient
 }
 
 // NewGceCache creates empty GceCache.
-func NewGceCache(gceService AutoscalingGceClient) *GceCache {
+func NewGceCache(gceService AutoscalingGceClient, concurrentGceRefreshes int) *GceCache {
 	return &GceCache{
 		migs:                     map[GceRef]Mig{},
 		instanceRefToMigRef:      map[GceRef]GceRef{},
@@ -87,6 +90,7 @@ func NewGceCache(gceService AutoscalingGceClient) *GceCache {
 		migBaseNameCache:         map[GceRef]string{},
 		instanceTemplatesCache:   map[GceRef]*gce.InstanceTemplate{},
 		GceService:               gceService,
+		concurrentGceRefreshes:   concurrentGceRefreshes,
 	}
 }
 
@@ -222,22 +226,36 @@ func (gc *GceCache) getMigNoLock(migRef GceRef) (mig Mig, found bool) {
 
 // RegenerateInstanceCacheForMig triggers instances cache regeneration for single MIG under lock.
 func (gc *GceCache) RegenerateInstanceCacheForMig(migRef GceRef) error {
-	gc.cacheMutex.Lock()
-	defer gc.cacheMutex.Unlock()
-	return gc.regenerateInstanceCacheForMigNoLock(migRef)
-}
-
-func (gc *GceCache) regenerateInstanceCacheForMigNoLock(migRef GceRef) error {
 	klog.V(4).Infof("Regenerating MIG information for %s", migRef.String())
-
-	// cleanup old entries
-	gc.removeInstancesForMigs(migRef)
 
 	instances, err := gc.GceService.FetchMigInstances(migRef)
 	if err != nil {
 		klog.V(4).Infof("Failed MIG info request for %s: %v", migRef.String(), err)
 		return err
 	}
+
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	return gc.updateInstanceRefToMigRef(migRef, instances)
+}
+
+func (gc *GceCache) regenerateInstanceCacheForMigNoLock(migRef GceRef) error {
+	klog.V(4).Infof("Regenerating MIG information for %s", migRef.String())
+
+	instances, err := gc.GceService.FetchMigInstances(migRef)
+	if err != nil {
+		klog.V(4).Infof("Failed MIG info request for %s: %v", migRef.String(), err)
+		return err
+	}
+
+	return gc.updateInstanceRefToMigRef(migRef, instances)
+}
+
+func (gc *GceCache) updateInstanceRefToMigRef(migRef GceRef, instances []cloudprovider.Instance) error {
+	// cleanup old entries
+	gc.removeInstancesForMigs(migRef)
+
 	for _, instance := range instances {
 		instanceRef, err := GceRefFromProviderId(instance.Id)
 		if err != nil {
@@ -250,17 +268,25 @@ func (gc *GceCache) regenerateInstanceCacheForMigNoLock(migRef GceRef) error {
 
 // RegenerateInstancesCache triggers instances cache regeneration under lock.
 func (gc *GceCache) RegenerateInstancesCache() error {
-	gc.cacheMutex.Lock()
-	defer gc.cacheMutex.Unlock()
-
 	gc.instanceRefToMigRef = make(map[GceRef]GceRef)
 	gc.instancesFromUnknownMigs = make(map[GceRef]struct{})
-	for _, migRef := range gc.getMigRefs() {
-		err := gc.regenerateInstanceCacheForMigNoLock(migRef)
+
+	migs := gc.getMigRefs()
+	errors := make([]error, len(migs))
+	ctx, cancel := context.WithCancel(context.Background())
+	workqueue.ParallelizeUntil(ctx, gc.concurrentGceRefreshes, len(migs), func(piece int) {
+		errors[piece] = gc.RegenerateInstanceCacheForMig(migs[piece])
+		if errors[piece] != nil {
+			cancel()
+		}
+	}, workqueue.WithChunkSize(gc.concurrentGceRefreshes))
+
+	for _, err := range errors {
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
