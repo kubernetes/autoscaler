@@ -133,7 +133,8 @@ Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 kubectl create -f cluster-autoscaler-vmss.yaml
 ```
 
-To run a cluster autoscaler pod on a control plane node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-control-plane.yaml](examples/cluster-autoscaler-vmss-control-plane.yaml) in this case.
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+To run a cluster autoscaler pod on a control plane (previously referred to as master) node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-control-plane.yaml](examples/cluster-autoscaler-vmss-control-plane.yaml) in this case.
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](examples/cluster-autoscaler-vmss-msi.yaml) instead.
 
