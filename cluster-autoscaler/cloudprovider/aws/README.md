@@ -208,7 +208,8 @@ kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 kubectl apply -f examples/cluster-autoscaler-multi-asg.yaml
 ```
 
-## Control Plane Node Setup
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+## Control Plane (previously referred to as master) Node Setup
 
 **NOTE**: This setup is not compatible with Amazon EKS.
 

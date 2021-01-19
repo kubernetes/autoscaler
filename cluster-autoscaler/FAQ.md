@@ -1,3 +1,4 @@
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 # Frequently Asked Questions
 
 # Older versions
@@ -775,7 +776,7 @@ If both the cluster and CA appear healthy:
 
 * If you expect some nodes to be added to make space for pending pods, but they are not added for a long time, check [I have a couple of pending pods, but there was no scale-up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up) section.
 
-* If you have access to the control plane machine, check Cluster Autoscaler logs in `/var/log/cluster-autoscaler.log`. Cluster Autoscaler logs a lot of useful information, including why it considers a pod unremovable or what was its scale-up plan.
+* If you have access to the control plane (previously referred to as master) machine, check Cluster Autoscaler logs in `/var/log/cluster-autoscaler.log`. Cluster Autoscaler logs a lot of useful information, including why it considers a pod unremovable or what was its scale-up plan.
 
 * Check events added by CA to the pod object.
 
@@ -787,7 +788,7 @@ If both the cluster and CA appear healthy:
 
 There are three options:
 
-* Logs on the control plane nodes, in `/var/log/cluster-autoscaler.log`.
+* Logs on the control plane (previously referred to as master) nodes, in `/var/log/cluster-autoscaler.log`.
 * Cluster Autoscaler 0.5 and later publishes kube-system/cluster-autoscaler-status config map.
   To see it, run `kubectl get configmap cluster-autoscaler-status -n kube-system
   -o yaml`.
@@ -862,7 +863,7 @@ Depending on how long scale-ups have been failing, it may wait up to 30 minutes 
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher maximum nodes limit.
 3. Run `go run hack/e2e.go -- --verbose-commands --up` to bring up your cluster.
-4. SSH to the control plane node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
+4. SSH to the control plane (previously referred to as master) node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
     * If you want to test your custom changes set `image` to point at your own CA image.
     * Make sure `--scale-down-enabled` parameter in `command` is set to `true`.
 5. Run CA tests with:
