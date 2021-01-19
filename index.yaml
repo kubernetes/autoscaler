@@ -3,6 +3,52 @@ entries:
   cluster-autoscaler:
   - apiVersion: v2
     appVersion: 1.18.1
+    created: "2021-01-19T09:20:12.879646Z"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 90a04a44cab3ea82939d8f037c9911639046a22b7b3952534f20b107ead96c9e
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.3.2/cluster-autoscaler-9.3.2.tgz
+    version: 9.3.2
+  - apiVersion: v2
+    appVersion: 1.18.1
+    created: "2021-01-19T09:20:12.87801Z"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 850bdc449f217a4af8fac5d81c61e09a4a2c972b33ffc48be8133d4e86b48737
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.3.1/cluster-autoscaler-9.3.1.tgz
+    version: 9.3.1
+  - apiVersion: v2
+    appVersion: 1.18.1
     created: "2020-12-04T17:45:16.487761Z"
     description: Scales Kubernetes worker nodes within autoscaling groups.
     digest: 67c4ac8360dd02e57009bb65c6e2e156143b8105fdcecee5f171c6b7b2d83af7
@@ -278,4 +324,4 @@ entries:
     urls:
     - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.0/cluster-autoscaler-chart-1.0.0.tgz
     version: 1.0.0
-generated: "2020-12-04T17:45:16.482773Z"
+generated: "2021-01-19T09:20:12.876451Z"
