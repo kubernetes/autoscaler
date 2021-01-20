@@ -233,6 +233,7 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 		return nil, err
 	}
 	return &vpa_types.VerticalPodAutoscalerCheckpointStatus{
+		LastUpdateTime:    metav1.NewTime(time.Now()),
 		FirstSampleStart:  metav1.NewTime(a.FirstSampleStart),
 		LastSampleStart:   metav1.NewTime(a.LastSampleStart),
 		TotalSamplesCount: a.TotalSamplesCount,
