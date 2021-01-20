@@ -126,19 +126,21 @@ dnsPolicy: ClusterFirst
 expanderPriorities: {}
 
 # extraArgs -- Additional container arguments.
+# Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
+# parameters and their default values.
 extraArgs:
   logtostderr: true
   stderrthreshold: info
   v: 4
   # write-status-configmap: true
   # leader-elect: true
-  # skip-nodes-with-local-storage: false
-  # expander: least-waste
+  # skip-nodes-with-local-storage: true
+  # expander: random
   # scale-down-enabled: true
   # balance-similar-node-groups: true
-  # min-replica-count: 2
+  # min-replica-count: 0
   # scale-down-utilization-threshold: 0.5
-  # scale-down-non-empty-candidates-count: 5
+  # scale-down-non-empty-candidates-count: 30
   # max-node-provision-time: 15m0s
   # scan-interval: 10s
   # scale-down-delay-after-add: 10m
