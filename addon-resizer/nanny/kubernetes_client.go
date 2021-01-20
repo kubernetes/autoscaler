@@ -96,7 +96,7 @@ func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 			if err == io.EOF {
 				break
 			}
-			continue
+			return 0, fmt.Errorf("decoding error: %v", err)
 		}
 
 		if !hasEqualValues(objectCountMetricName, mf.Name) {
