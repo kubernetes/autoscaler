@@ -23,8 +23,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -62,6 +63,12 @@ func (n *hetznerNodeGroup) MaxSize() int {
 // MinSize returns minimum size of the node group.
 func (n *hetznerNodeGroup) MinSize() int {
 	return n.minSize
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (n *hetznerNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // TargetSize returns the current target size of the node group. It is possible
@@ -344,7 +351,7 @@ func serverTypeAvailable(manager *hetznerManager, instanceType string, region st
 
 func createServer(n *hetznerNodeGroup) error {
 	StartAfterCreate := true
-	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, hcloud.ServerCreateOpts{
+	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         n.manager.cloudInit,
 		Location:         &hcloud.Location{Name: n.region},
@@ -354,10 +361,17 @@ func createServer(n *hetznerNodeGroup) error {
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
 		},
-	})
+	}
+	if n.manager.sshKey != nil {
+		opts.SSHKeys = []*hcloud.SSHKey{n.manager.sshKey}
+	}
+	if n.manager.network != nil {
+		opts.Networks = []*hcloud.Network{n.manager.network}
+	}
+	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
 
 	if err != nil {
-		return fmt.Errorf("could not create server type %s in region %s", n.instanceType, n.region)
+		return fmt.Errorf("could not create server type %s in region %s: %v", n.instanceType, n.region, err)
 	}
 
 	server := serverCreateResult.Server
