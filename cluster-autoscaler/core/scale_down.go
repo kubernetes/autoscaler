@@ -1069,7 +1069,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 			return deletedNodes, errors.ToAutoscalerError(errors.ApiCallError, taintErr)
 		}
 		deletedNodes = append(deletedNodes, node)
-		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, evictDaemonSetPodsBool bool) {
+		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, needToEvictDaemonSetPods bool) {
 			sd.nodeDeletionTracker.StartDeletion(nodeGroupForDeletedNode.Id())
 			defer sd.nodeDeletionTracker.EndDeletion(nodeGroupForDeletedNode.Id())
 			var result status.NodeDeleteResult
@@ -1085,9 +1085,9 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 					sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: empty node %s removed", nodeToDelete.Name)
 				}
 			}()
-			if evictDaemonSetPodsBool {
+			if needToEvictDaemonSetPods {
 				if err := evictDaemonSetPods(sd.context.ClusterSnapshot, nodeToDelete, client, sd.context.MaxGracefulTerminationSec, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries, recorder); err != nil {
-					klog.Warningf(err.Error())
+					klog.Warningf("error while evicting DS pods from an empty node: %v", err)
 				}
 			}
 			deleteErr = waitForDelayDeletion(nodeToDelete, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout)
@@ -1121,7 +1121,7 @@ func evictDaemonSetPods(clusterSnapshot simulator.ClusterSnapshot, nodeToDelete 
 	if err != nil {
 		return fmt.Errorf("failed to get node info for %s", nodeToDelete.Name)
 	}
-	_, daemonSetPods, _, err := simulator.FastGetPodsToMove(nodeInfo, true, true, []*policyv1.PodDisruptionBudget{}, time.Now())
+	_, daemonSetPods, _, err := simulator.FastGetPodsToMove(nodeInfo, true, true, []*policyv1.PodDisruptionBudget{}, timeNow)
 	if err != nil {
 		return fmt.Errorf("failed to get DaemonSet pods for %s (error: %v)", nodeToDelete.Name, err)
 	}
