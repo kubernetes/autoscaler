@@ -197,7 +197,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	return config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
 			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
 			ScaleDownUnneededTime:            *scaleDownUnneededTime,

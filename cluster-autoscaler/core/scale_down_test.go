@@ -130,7 +130,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n9)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
@@ -245,7 +245,7 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownGpuUtilizationThreshold: 0.3,
 		},
@@ -310,7 +310,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 	}
 
 	globalOptions := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.5,
 			ScaleDownGpuUtilizationThreshold: 0.5,
 		},
@@ -429,7 +429,7 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n4)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 	}
@@ -483,7 +483,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	numCandidates := 30
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 		ScaleDownNonEmptyCandidatesCount: numCandidates,
@@ -558,7 +558,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 	numCandidates := 30
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 		ScaleDownNonEmptyCandidatesCount: numCandidates,
@@ -608,7 +608,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 	numCandidates := 30
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 		ScaleDownNonEmptyCandidatesCount: numCandidates,
@@ -1135,7 +1135,7 @@ func TestScaleDown(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 		},
@@ -1194,7 +1194,7 @@ func assertSubset(t *testing.T, a []string, b []string) {
 }
 
 var defaultScaleDownOptions = config.AutoscalingOptions{
-	NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+	NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 		ScaleDownUnneededTime:            time.Minute,
 		ScaleDownUtilizationThreshold:    0.5,
 		ScaleDownGpuUtilizationThreshold: 0.5,
@@ -1259,8 +1259,10 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 	for _, scenario := range testScenarios {
 		t.Run(scenario.name, func(t *testing.T) {
 			options := config.AutoscalingOptions{
-				ScaleDownUtilizationThreshold:  0.5,
-				ScaleDownUnneededTime:          time.Minute,
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold: 0.5,
+					ScaleDownUnneededTime:         time.Minute,
+				},
 				MaxGracefulTerminationSec:      1,
 				DaemonSetEvictionForEmptyNodes: true,
 			}
@@ -1599,7 +1601,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	provider.AddNode("ng1", n2)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnreadyTime:          time.Hour,
@@ -1709,7 +1711,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Hour,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -1959,7 +1961,7 @@ func TestSoftTaint(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         10 * time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 		},
@@ -2080,7 +2082,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         10 * time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 		},

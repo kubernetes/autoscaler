@@ -172,7 +172,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -361,7 +361,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -497,7 +497,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -644,7 +644,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnreadyTime:          time.Minute,
@@ -774,7 +774,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 		},
 		EstimatorName:                estimator.BinpackingEstimatorName,
@@ -870,7 +870,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 		},
 		EstimatorName:                estimator.BinpackingEstimatorName,
@@ -930,7 +930,7 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{
-		NodeGroupAutoscalingOptions: config.NodeGroupAutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
