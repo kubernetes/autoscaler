@@ -43,6 +43,19 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 	var GLOBAL Want = 1
 	var NG Want = 2
 
+	globalOpts := config.NodeGroupAutoscalingOptions{
+		ScaleDownUnneededTime:            3 * time.Minute,
+		ScaleDownUnreadyTime:             4 * time.Minute,
+		ScaleDownGpuUtilizationThreshold: 0.6,
+		ScaleDownUtilizationThreshold:    0.5,
+	}
+	ngOpts := &config.NodeGroupAutoscalingOptions{
+		ScaleDownUnneededTime:            10 * time.Minute,
+		ScaleDownUnreadyTime:             11 * time.Minute,
+		ScaleDownGpuUtilizationThreshold: 0.85,
+		ScaleDownUtilizationThreshold:    0.75,
+	}
+
 	testUnneededTime := func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
 		res, err := p.GetScaleDownUnneededTime(c, ng)
 		assert.Equal(t, err, we)
@@ -84,68 +97,23 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 
-	funcs := map[string]struct {
-		testFn     func(*testing.T, DelegatingNodeGroupConfigProcessor, *context.AutoscalingContext, cloudprovider.NodeGroup, Want, error)
-		globalOpts config.NodeGroupAutoscalingOptions
-		ngOpts     *config.NodeGroupAutoscalingOptions
-	}{
-		"ScaleDownUnneededTime": {
-			testFn: testUnneededTime,
-			globalOpts: config.NodeGroupAutoscalingOptions{
-				ScaleDownUnneededTime: 3 * time.Minute,
-			},
-			ngOpts: &config.NodeGroupAutoscalingOptions{
-				ScaleDownUnneededTime: 10 * time.Minute,
-			},
+	funcs := map[string]func(*testing.T, DelegatingNodeGroupConfigProcessor, *context.AutoscalingContext, cloudprovider.NodeGroup, Want, error){
+		"ScaleDownUnneededTime":            testUnneededTime,
+		"ScaleDownUnreadyTime":             testUnreadyTime,
+		"ScaleDownUtilizationThreshold":    testUtilizationThreshold,
+		"ScaleDownGpuUtilizationThreshold": testGpuThreshold,
+		"MultipleOptions": func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
+			testUnneededTime(t, p, c, ng, w, we)
+			testUnreadyTime(t, p, c, ng, w, we)
+			testUtilizationThreshold(t, p, c, ng, w, we)
+			testGpuThreshold(t, p, c, ng, w, we)
 		},
-		"ScaleDownUnreadyTime": {
-			testFn: testUnreadyTime,
-			globalOpts: config.NodeGroupAutoscalingOptions{
-				ScaleDownUnreadyTime: 4 * time.Minute,
-			},
-			ngOpts: &config.NodeGroupAutoscalingOptions{
-				ScaleDownUnreadyTime: 11 * time.Minute,
-			},
-		},
-		"ScaleDownUtilizationThreshold": {
-			testFn: testUtilizationThreshold,
-			globalOpts: config.NodeGroupAutoscalingOptions{
-				ScaleDownUtilizationThreshold: 0.5,
-			},
-			ngOpts: &config.NodeGroupAutoscalingOptions{
-				ScaleDownUtilizationThreshold: 0.75,
-			},
-		},
-		"ScaleDownGpuUtilizationThreshold": {
-			testFn: testGpuThreshold,
-			globalOpts: config.NodeGroupAutoscalingOptions{
-				ScaleDownGpuUtilizationThreshold: 0.6,
-			},
-			ngOpts: &config.NodeGroupAutoscalingOptions{
-				ScaleDownGpuUtilizationThreshold: 0.85,
-			},
-		},
-		"MultipleOptions": {
-			testFn: func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
-				testUnneededTime(t, p, c, ng, w, we)
-				testUnreadyTime(t, p, c, ng, w, we)
-				testUtilizationThreshold(t, p, c, ng, w, we)
-				testUnneededTime(t, p, c, ng, w, we)
-				testUnneededTime(t, p, c, ng, w, we)
-				testGpuThreshold(t, p, c, ng, w, we)
-			},
-			globalOpts: config.NodeGroupAutoscalingOptions{
-				ScaleDownUnneededTime:            3 * time.Minute,
-				ScaleDownUnreadyTime:             4 * time.Minute,
-				ScaleDownGpuUtilizationThreshold: 0.6,
-				ScaleDownUtilizationThreshold:    0.5,
-			},
-			ngOpts: &config.NodeGroupAutoscalingOptions{
-				ScaleDownUnneededTime:            10 * time.Minute,
-				ScaleDownUnreadyTime:             11 * time.Minute,
-				ScaleDownGpuUtilizationThreshold: 0.85,
-				ScaleDownUtilizationThreshold:    0.75,
-			},
+		"RepeatingTheSameCallGivesConsistentResults": func(t *testing.T, p DelegatingNodeGroupConfigProcessor, c *context.AutoscalingContext, ng cloudprovider.NodeGroup, w Want, we error) {
+			testUnneededTime(t, p, c, ng, w, we)
+			testUnneededTime(t, p, c, ng, w, we)
+			// throw in a different call
+			testGpuThreshold(t, p, c, ng, w, we)
+			testUnneededTime(t, p, c, ng, w, we)
 		},
 	}
 
@@ -158,22 +126,22 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 			wantError     error
 		}{
 			"NodeGroup.GetOptions not implemented": {
-				globalOptions: fn.globalOpts,
+				globalOptions: globalOpts,
 				ngError:       cloudprovider.ErrNotImplemented,
 				want:          GLOBAL,
 			},
 			"NodeGroup returns error leads to error": {
-				globalOptions: fn.globalOpts,
+				globalOptions: globalOpts,
 				ngError:       errors.New("This sentence is false."),
 				wantError:     errors.New("This sentence is false."),
 			},
 			"NodeGroup returns no value fallbacks to default": {
-				globalOptions: fn.globalOpts,
+				globalOptions: globalOpts,
 				want:          GLOBAL,
 			},
 			"NodeGroup option overrides global default": {
-				globalOptions: fn.globalOpts,
-				ngOptions:     fn.ngOpts,
+				globalOptions: globalOpts,
+				ngOptions:     ngOpts,
 				want:          NG,
 			},
 		}
@@ -181,13 +149,13 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 			t.Run(fmt.Sprintf("[%s] %s", fname, tn), func(t *testing.T) {
 				context := &context.AutoscalingContext{
 					AutoscalingOptions: config.AutoscalingOptions{
-						NodeGroupAutoscalingOptions: tc.globalOptions,
+						NodeGroupDefaults: tc.globalOptions,
 					},
 				}
 				ng := &mocks.NodeGroup{}
 				ng.On("GetOptions", tc.globalOptions).Return(tc.ngOptions, tc.ngError)
 				p := DelegatingNodeGroupConfigProcessor{}
-				fn.testFn(t, p, context, ng, tc.want, tc.wantError)
+				fn(t, p, context, ng, tc.want, tc.wantError)
 			})
 		}
 	}

@@ -45,48 +45,48 @@ type DelegatingNodeGroupConfigProcessor struct {
 
 // GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return time.Duration(0), err
 	}
 	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
-		return context.ScaleDownUnneededTime, nil
+		return context.NodeGroupDefaults.ScaleDownUnneededTime, nil
 	}
 	return ngConfig.ScaleDownUnneededTime, nil
 }
 
 // GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return time.Duration(0), err
 	}
 	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
-		return context.ScaleDownUnreadyTime, nil
+		return context.NodeGroupDefaults.ScaleDownUnreadyTime, nil
 	}
 	return ngConfig.ScaleDownUnreadyTime, nil
 }
 
 // GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error) {
-	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return 0.0, err
 	}
 	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
-		return context.ScaleDownUtilizationThreshold, nil
+		return context.NodeGroupDefaults.ScaleDownUtilizationThreshold, nil
 	}
 	return ngConfig.ScaleDownUtilizationThreshold, nil
 }
 
 // GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (float64, error) {
-	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupAutoscalingOptions)
+	ngConfig, err := nodeGroup.GetOptions(context.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return 0.0, err
 	}
 	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
-		return context.ScaleDownGpuUtilizationThreshold, nil
+		return context.NodeGroupDefaults.ScaleDownGpuUtilizationThreshold, nil
 	}
 	return ngConfig.ScaleDownGpuUtilizationThreshold, nil
 }

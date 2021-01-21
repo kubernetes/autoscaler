@@ -393,7 +393,7 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 	// Use default ScaleDownUnneededTime as in this context the value
 	// doesn't apply to any specific NodeGroup.
-	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
+	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.NodeGroupDefaults.ScaleDownUnneededTime))
 	sd.clearUnremovableNodeReasons()
 }
 
@@ -435,7 +435,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 		// We should never get here as non-autoscaled nodes should not be included in scaleDownCandidates list
 		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
-		klog.V(4).Infof("Skipped %s from delete considered - the node is not autoscaled", node.Name)
+		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)
 		return simulator.NotAutoscaled, nil
 	}
 
