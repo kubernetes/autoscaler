@@ -1081,12 +1081,13 @@ var defaultScaleDownOptions = config.AutoscalingOptions{
 }
 
 func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
-	timeNow := time.Now()
+	timeNow := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	testScenarios := []struct {
 		name                  string
 		dsPods                []string
 		nodeInfoSuccess       bool
 		evictionTimeoutExceed bool
+		dsEvictionTimeout     time.Duration
 		evictionSuccess       bool
 		err                   error
 	}{
@@ -1095,6 +1096,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsPods:                []string{"d1", "d2"},
 			nodeInfoSuccess:       true,
 			evictionTimeoutExceed: false,
+			dsEvictionTimeout:     5000 * time.Millisecond,
 			evictionSuccess:       true,
 			err:                   nil,
 		},
@@ -1103,6 +1105,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsPods:                []string{"d1", "d2"},
 			nodeInfoSuccess:       false,
 			evictionTimeoutExceed: false,
+			dsEvictionTimeout:     5000 * time.Millisecond,
 			evictionSuccess:       true,
 			err:                   fmt.Errorf("failed to get node info"),
 		},
@@ -1111,6 +1114,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsPods:                []string{"d1", "d2"},
 			nodeInfoSuccess:       true,
 			evictionTimeoutExceed: false,
+			dsEvictionTimeout:     5000 * time.Millisecond,
 			evictionSuccess:       false,
 			err:                   fmt.Errorf("following DaemonSet pod failed to evict on the"),
 		},
@@ -1119,6 +1123,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsPods:                []string{"d1", "d2", "d3"},
 			nodeInfoSuccess:       true,
 			evictionTimeoutExceed: true,
+			dsEvictionTimeout:     100 * time.Millisecond,
 			evictionSuccess:       true,
 			err:                   fmt.Errorf("failed to create DaemonSet eviction for"),
 		},
@@ -1133,7 +1138,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				DaemonSetEvictionForEmptyNodes: true,
 			}
 			deletedPods := make(chan string, len(scenario.dsPods)+2)
-			dsEvictionTimeout := 100 * time.Millisecond
 			waitBetweenRetries := 10 * time.Millisecond
 
 			fakeClient := &fake.Clientset{}
@@ -1180,8 +1184,9 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{}, []*apiv1.Pod{})
 			}
 
-			err = evictDaemonSetPods(context.ClusterSnapshot, n1, fakeClient, options.MaxGracefulTerminationSec, timeNow, dsEvictionTimeout, waitBetweenRetries, kube_util.CreateEventRecorder(fakeClient))
+			err = evictDaemonSetPods(context.ClusterSnapshot, n1, fakeClient, options.MaxGracefulTerminationSec, timeNow, scenario.dsEvictionTimeout, waitBetweenRetries, kube_util.CreateEventRecorder(fakeClient))
 			if scenario.err != nil {
+				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), scenario.err.Error())
 				return
 			}
