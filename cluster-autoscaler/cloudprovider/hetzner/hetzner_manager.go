@@ -21,10 +21,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	"os"
 	"strings"
+
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 )
 
 var (
@@ -39,6 +40,8 @@ type hetznerManager struct {
 	apiCallContext context.Context
 	cloudInit      string
 	image          string
+	sshKey         *hcloud.SSHKey
+	network        *hcloud.Network
 }
 
 func newManager() (*hetznerManager, error) {
@@ -64,11 +67,33 @@ func newManager() (*hetznerManager, error) {
 		return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
 	}
 
+	var network *hcloud.Network
+	networkName := os.Getenv("HCLOUD_NETWORK")
+
+	var sshKey *hcloud.SSHKey
+	sshKeyName := os.Getenv("HCLOUD_SSH_KEY")
+	if sshKeyName != "" {
+		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get ssh key error: %s", err)
+		}
+	}
+
+	if networkName != "" {
+		network, _, err = client.Network.Get(ctx, networkName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get network error: %s", err)
+		}
+
+	}
+
 	m := &hetznerManager{
 		client:         client,
 		nodeGroups:     make(map[string]*hetznerNodeGroup),
 		cloudInit:      string(cloudInit),
 		image:          image,
+		sshKey:         sshKey,
+		network:        network,
 		apiCallContext: ctx,
 	}
 
