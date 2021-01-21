@@ -1080,6 +1080,121 @@ var defaultScaleDownOptions = config.AutoscalingOptions{
 	MaxMemoryTotal:                   config.DefaultMaxClusterMemory * units.GiB,
 }
 
+func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
+	timeNow := time.Now()
+	testScenarios := []struct {
+		name                  string
+		dsPods                []string
+		nodeInfoSuccess       bool
+		evictionTimeoutExceed bool
+		evictionSuccess       bool
+		err                   error
+	}{
+		{
+			name:                  "Successful attempt to evict DaemonSet pods",
+			dsPods:                []string{"d1", "d2"},
+			nodeInfoSuccess:       true,
+			evictionTimeoutExceed: false,
+			evictionSuccess:       true,
+			err:                   nil,
+		},
+		{
+			name:                  "Failed to get node info",
+			dsPods:                []string{"d1", "d2"},
+			nodeInfoSuccess:       false,
+			evictionTimeoutExceed: false,
+			evictionSuccess:       true,
+			err:                   fmt.Errorf("failed to get node info"),
+		},
+		{
+			name:                  "Failed to create DaemonSet eviction",
+			dsPods:                []string{"d1", "d2"},
+			nodeInfoSuccess:       true,
+			evictionTimeoutExceed: false,
+			evictionSuccess:       false,
+			err:                   fmt.Errorf("following DaemonSet pod failed to evict on the"),
+		},
+		{
+			name:                  "Eviction timeout exceed",
+			dsPods:                []string{"d1", "d2", "d3"},
+			nodeInfoSuccess:       true,
+			evictionTimeoutExceed: true,
+			evictionSuccess:       true,
+			err:                   fmt.Errorf("failed to create DaemonSet eviction for"),
+		},
+	}
+
+	for _, scenario := range testScenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			options := config.AutoscalingOptions{
+				ScaleDownUtilizationThreshold:  0.5,
+				ScaleDownUnneededTime:          time.Minute,
+				MaxGracefulTerminationSec:      1,
+				DaemonSetEvictionForEmptyNodes: true,
+			}
+			deletedPods := make(chan string, len(scenario.dsPods)+2)
+			dsEvictionTimeout := 100 * time.Millisecond
+			waitBetweenRetries := 10 * time.Millisecond
+
+			fakeClient := &fake.Clientset{}
+			n1 := BuildTestNode("n1", 1000, 1000)
+			SetNodeReadyState(n1, true, time.Time{})
+			dsPods := make([]*apiv1.Pod, len(scenario.dsPods))
+			for i, dsName := range scenario.dsPods {
+				ds := BuildTestPod(dsName, 100, 0)
+				ds.Spec.NodeName = "n1"
+				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "", "")
+				dsPods[i] = ds
+			}
+
+			fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+				createAction := action.(core.CreateAction)
+				if createAction == nil {
+					return false, nil, nil
+				}
+				eviction := createAction.GetObject().(*policyv1.Eviction)
+				if eviction == nil {
+					return false, nil, nil
+				}
+				if scenario.evictionTimeoutExceed {
+					for {
+					}
+				}
+				if !scenario.evictionSuccess {
+					return true, nil, fmt.Errorf("fail to evict the pod")
+				}
+				deletedPods <- eviction.Name
+				return true, nil, nil
+			})
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider.AddNodeGroup("ng1", 1, 10, 1)
+			provider.AddNode("ng1", n1)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+			assert.NoError(t, err)
+
+			if scenario.nodeInfoSuccess {
+				simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
+			} else {
+				simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{}, []*apiv1.Pod{})
+			}
+
+			err = evictDaemonSetPods(context.ClusterSnapshot, n1, fakeClient, options.MaxGracefulTerminationSec, timeNow, dsEvictionTimeout, waitBetweenRetries, kube_util.CreateEventRecorder(fakeClient))
+			if scenario.err != nil {
+				assert.Contains(t, err.Error(), scenario.err.Error())
+				return
+			}
+			assert.Nil(t, err)
+			deleted := make([]string, len(scenario.dsPods))
+			for i := 0; i < len(scenario.dsPods); i++ {
+				deleted[i] = utils.GetStringFromChan(deletedPods)
+			}
+			assert.ElementsMatch(t, deleted, scenario.dsPods)
+		})
+	}
+}
+
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
