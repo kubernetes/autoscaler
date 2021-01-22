@@ -47,7 +47,7 @@ To deploy the CA on your Kubernetes cluster, you can use the manifest provided
 as example:
 
 ```
-kubectl apply -f ./examples/cluster-autoscaler-run-on-master.yaml
+kubectl apply -f ./examples/cluster-autoscaler-run-on-control-plane.yaml
 ```
 
 
