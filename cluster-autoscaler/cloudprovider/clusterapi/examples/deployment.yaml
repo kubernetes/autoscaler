@@ -73,6 +73,7 @@ rules:
     - persistentvolumes
     - pods
     - replicationcontrollers
+    - services
     verbs:
     - get
     - list
