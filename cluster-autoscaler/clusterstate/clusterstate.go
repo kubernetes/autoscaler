@@ -982,10 +982,13 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 	for _, node := range allNodes {
 		registered.Insert(node.Spec.ProviderID)
 	}
+	klog.V(4).Info("registered nodes:", registered)
+
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, instances := range cloudProviderNodeInstances {
 		for _, instance := range instances {
 			if !registered.Has(instance.Id) {
+				klog.V(4).Info("Instance not in registered nodes:", instance.Id)
 				notRegistered = append(notRegistered, UnregisteredNode{
 					Node:              fakeNode(instance),
 					UnregisteredSince: time,
