@@ -141,7 +141,7 @@ func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, time.Now().Round(1*time.Second), checkpoint.LastUpdateTime.Time.Round(1*time.Second))
+	assert.True(t, time.Now().Sub(checkpoint.LastUpdateTime.Time) < 10*time.Second)
 	assert.Equal(t, t1, checkpoint.FirstSampleStart.Time)
 	assert.Equal(t, t2, checkpoint.LastSampleStart.Time)
 	assert.Equal(t, 10, checkpoint.TotalSamplesCount)
