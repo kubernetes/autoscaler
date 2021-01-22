@@ -38,6 +38,7 @@ type VerticalPodAutoscalerList struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=vpa
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -288,6 +289,7 @@ type VerticalPodAutoscalerCondition struct {
 // +genclient
 // +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:storageversion
 // +kubebuilder:resource:shortName=vpacheckpoint
 
 // VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
