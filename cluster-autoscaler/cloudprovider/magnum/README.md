@@ -1,3 +1,4 @@
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 # Cluster Autoscaler for OpenStack Magnum
 The cluster autoscaler for Magnum scales worker nodes within any
 specified nodegroup. It will run as a `Deployment` in your cluster.
@@ -31,7 +32,7 @@ An example `ServiceAccount` is given in [examples/cluster-autoscaler-svcaccount.
 
 The credentials for authenticating with OpenStack are stored in a secret and
 mounted as a file inside the container. [examples/cluster-autoscaler-secret](examples/cluster-autoscaler-secret.yaml)
-can be modified with the contents of your cloud-config. This file can be obtained from your master node,
+can be modified with the contents of your cloud-config. This file can be obtained from your control plane (previously referred to as master) node,
 in `/etc/kubernetes` (may be named `kube_openstack_config` instead of `cloud-config`).
 
 ## Autoscaler deployment
@@ -65,7 +66,7 @@ autoscalingGroups:
 cloudConfigPath: "/etc/kubernetes/cloud-config"
 ```
 
-For running on the master node and other suggested settings, see
+For running on the control plane (previously referred to as master) node and other suggested settings, see
 [examples/values-example.yaml](examples/values-example.yaml).
 To deploy with node group autodiscovery (for cluster autoscaler v1.19+), see
 [examples/values-autodiscovery.yaml](examples/values-autodiscovery.yaml).
@@ -119,7 +120,7 @@ If you are deploying the autoscaler into a cluster which already has more than o
 it is best to deploy it onto any node which already has non-default kube-system pods,
 to minimise the number of nodes which cannot be removed when scaling.
 
-Or, if you are using a Magnum version which supports scheduling on the master node, then
+Or, if you are using a Magnum version which supports scheduling on the control plane (previously referred to as master) node, then
 the example deployment file
-[examples/cluster-autoscaler-deployment-master.yaml](examples/cluster-autoscaler-deployment-master.yaml)
+[examples/cluster-autoscaler-deployment-master.yaml](examples/cluster-autoscaler-deployment-control-plane.yaml)
 can be used.
