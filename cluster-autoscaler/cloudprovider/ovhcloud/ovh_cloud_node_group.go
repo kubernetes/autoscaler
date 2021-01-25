@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
 // instanceIdRegex defines the expression used for instance's ID
@@ -309,6 +310,12 @@ func (ng *NodeGroup) Delete() error {
 func (ng *NodeGroup) Autoprovisioned() bool {
 	// This is not handled yet.
 	return false
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // extractNodeIds find in an array of node resource their cloud instances IDs
