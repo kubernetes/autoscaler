@@ -215,6 +215,12 @@ func (ng *AwsNodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (ng *AwsNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // IncreaseSize increases Asg size
 func (ng *AwsNodeGroup) IncreaseSize(delta int) error {
 	if delta <= 0 {
