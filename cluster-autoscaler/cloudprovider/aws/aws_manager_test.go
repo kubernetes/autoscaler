@@ -77,6 +77,7 @@ func TestBuildGenericLabels(t *testing.T) {
 			InstanceType: "c4.large",
 			VCPU:         2,
 			MemoryMb:     3840,
+			Architecture: cloudprovider.DefaultArch,
 		},
 		Region: "us-east-1",
 	}, "sillyname")
@@ -84,6 +85,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "sillyname", labels[apiv1.LabelHostname])
 	assert.Equal(t, "c4.large", labels[apiv1.LabelInstanceType])
 	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
+	assert.Equal(t, cloudprovider.DefaultArch, labels[apiv1.LabelArchStable])
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
