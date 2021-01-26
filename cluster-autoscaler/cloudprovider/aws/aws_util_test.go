@@ -77,6 +77,31 @@ func TestParseCPU(t *testing.T) {
 	}
 }
 
+func TestParseArchitecture(t *testing.T) {
+	tests := []struct {
+		input  string
+		expect string
+	}{
+		{
+			input:  "Intel Xeon Platinum 8259 (Cascade Lake)",
+			expect: "amd64",
+		},
+		{
+			input:  "AWS Graviton2 Processor",
+			expect: "arm64",
+		},
+		{
+			input:  "anything default",
+			expect: "amd64",
+		},
+	}
+
+	for _, test := range tests {
+		got := parseArchitecture(test.input)
+		assert.Equal(t, test.expect, got)
+	}
+}
+
 func TestGetCurrentAwsRegion(t *testing.T) {
 	region := "us-west-2"
 	if oldRegion, found := os.LookupEnv("AWS_REGION"); found {
