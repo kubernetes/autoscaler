@@ -56,6 +56,8 @@ const (
 	IonoscloudProviderName = "ionoscloud"
 	// OVHcloudProviderName gets the provider name of ovhcloud
 	OVHcloudProviderName = "ovhcloud"
+	// LinodeProviderName gets the provider name of linode
+	LinodeProviderName = "linode"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
