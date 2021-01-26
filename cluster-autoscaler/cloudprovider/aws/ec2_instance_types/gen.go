@@ -52,6 +52,7 @@ type InstanceType struct {
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
+	Architecture string
 }
 
 // InstanceTypes is a map of ec2 resources
@@ -62,6 +63,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
+		Architecture: "{{ .Architecture }}",
 	},
 {{- end }}
 }
