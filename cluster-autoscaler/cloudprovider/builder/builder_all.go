@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
@@ -52,6 +53,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.OVHcloudProviderName,
 	cloudprovider.ClusterAPIProiverName,
 	cloudprovider.IonoscloudProviderName,
+	cloudprovider.LinodeProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -87,6 +89,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return clusterapi.BuildClusterAPI(opts, do, rl)
 	case cloudprovider.IonoscloudProviderName:
 		return ionoscloud.BuildIonosCloud(opts, do, rl)
+	case cloudprovider.LinodeProviderName:
+		return linode.BuildLinode(opts, do, rl)
 	}
 	return nil
 }
