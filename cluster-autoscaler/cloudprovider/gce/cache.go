@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/util/workqueue"
@@ -39,6 +40,11 @@ type MachineTypeKey struct {
 type machinesCacheValue struct {
 	machineType *gce.MachineType
 	err         error
+}
+
+type instanceTemplateCacheEntry struct {
+	template    *gce.InstanceTemplate
+	lastRefresh time.Time
 }
 
 // GceCache is used for caching cluster resources state.
@@ -73,7 +79,7 @@ type GceCache struct {
 	machinesCache            map[MachineTypeKey]machinesCacheValue
 	migTargetSizeCache       map[GceRef]int64
 	migBaseNameCache         map[GceRef]string
-	instanceTemplatesCache   map[GceRef]*gce.InstanceTemplate
+	instanceTemplatesCache   map[GceRef]*instanceTemplateCacheEntry
 	concurrentGceRefreshes   int
 
 	// Service used to refresh cache.
@@ -90,7 +96,7 @@ func NewGceCache(gceService AutoscalingGceClient, concurrentGceRefreshes int) *G
 		machinesCache:            map[MachineTypeKey]machinesCacheValue{},
 		migTargetSizeCache:       map[GceRef]int64{},
 		migBaseNameCache:         map[GceRef]string{},
-		instanceTemplatesCache:   map[GceRef]*gce.InstanceTemplate{},
+		instanceTemplatesCache:   map[GceRef]*instanceTemplateCacheEntry{},
 		GceService:               gceService,
 		concurrentGceRefreshes:   concurrentGceRefreshes,
 	}
@@ -362,8 +368,8 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 	gc.migTargetSizeCache = map[GceRef]int64{}
 }
 
-// GetMigInstanceTemplate returns the cached gce.InstanceTemplate for a mig GceRef
-func (gc *GceCache) GetMigInstanceTemplate(ref GceRef) (*gce.InstanceTemplate, bool) {
+// GetMigInstanceTemplate returns the cached instanceTemplateCacheEntry for a mig GceRef
+func (gc *GceCache) GetMigInstanceTemplate(ref GceRef) (*instanceTemplateCacheEntry, bool) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -374,8 +380,8 @@ func (gc *GceCache) GetMigInstanceTemplate(ref GceRef) (*gce.InstanceTemplate, b
 	return instanceTemplate, found
 }
 
-// SetMigInstanceTemplate sets gce.InstanceTemplate for a mig GceRef
-func (gc *GceCache) SetMigInstanceTemplate(ref GceRef, instanceTemplate *gce.InstanceTemplate) {
+// SetMigInstanceTemplate sets instanceTemplateCacheEntry for a mig GceRef
+func (gc *GceCache) SetMigInstanceTemplate(ref GceRef, instanceTemplate *instanceTemplateCacheEntry) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -393,13 +399,17 @@ func (gc *GceCache) InvalidateMigInstanceTemplate(ref GceRef) {
 	}
 }
 
-// InvalidateAllMigInstanceTemplates clears the instance template cache
-func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
+// InvalidateLongObsoleteMigInstanceTemplates clears stale/deleted instance template cache entries
+func (gc *GceCache) InvalidateLongObsoleteMigInstanceTemplates(cutoff time.Duration) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	klog.V(5).Infof("Instance template cache invalidated")
-	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
+	for ref, entry := range gc.instanceTemplatesCache {
+		if entry.lastRefresh.Add(cutoff).Before(time.Now()) {
+			klog.V(5).Infof("Obsolete instance template %s purged from cache", ref)
+			delete(gc.instanceTemplatesCache, ref)
+		}
+	}
 }
 
 // GetMachineFromCache retrieves machine type from cache under lock.

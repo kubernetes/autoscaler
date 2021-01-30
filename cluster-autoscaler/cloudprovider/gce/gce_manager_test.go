@@ -344,7 +344,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 			{"us-central1-f", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
 		},
 		migTargetSizeCache:     map[GceRef]int64{},
-		instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{},
+		instanceTemplatesCache: map[GceRef]*instanceTemplateCacheEntry{},
 		migBaseNameCache:       map[GceRef]string{},
 		concurrentGceRefreshes: 1,
 	}

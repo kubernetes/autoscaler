@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 
@@ -35,10 +36,9 @@ type MigInstanceTemplatesProvider interface {
 
 // CachingMigInstanceTemplatesProvider is caching implementation of MigInstanceTemplatesProvider
 type CachingMigInstanceTemplatesProvider struct {
-	mutex       sync.Mutex
-	cache       *GceCache
-	lastRefresh time.Time
-	gceClient   AutoscalingGceClient
+	mutex     sync.Mutex
+	cache     *GceCache
+	gceClient AutoscalingGceClient
 }
 
 // NewCachingMigInstanceTemplatesProvider creates an instance of caching MigInstanceTemplatesProvider
@@ -51,8 +51,8 @@ func NewCachingMigInstanceTemplatesProvider(cache *GceCache, gceClient Autoscali
 
 // GetMigInstanceTemplate returns instance template for MIG with given ref
 func (p *CachingMigInstanceTemplatesProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
-	instanceTemplate, found := p.getMigInstanceTemplateFromCache(migRef)
-	if found {
+	instanceTemplate, lastRefresh := p.getMigInstanceTemplateFromCache(migRef)
+	if instanceTemplate != nil {
 		return instanceTemplate, nil
 	}
 
@@ -60,25 +60,36 @@ func (p *CachingMigInstanceTemplatesProvider) GetMigInstanceTemplate(migRef GceR
 	if err != nil {
 		return nil, err
 	}
-	p.setMigInstanceTemplateToCache(migRef, instanceTemplate)
+	p.setMigInstanceTemplateToCache(migRef, instanceTemplate, lastRefresh)
 
 	return instanceTemplate, nil
 }
 
-func (p *CachingMigInstanceTemplatesProvider) getMigInstanceTemplateFromCache(migRef GceRef) (*gce.InstanceTemplate, bool) {
+func (p *CachingMigInstanceTemplatesProvider) getMigInstanceTemplateFromCache(migRef GceRef) (*gce.InstanceTemplate, time.Time) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	if !p.lastRefresh.Add(migInstanceCacheRefreshInterval).After(time.Now()) {
-		p.cache.InvalidateAllMigInstanceTemplates()
-		p.lastRefresh = time.Now()
+	instanceTemplateEntry, found := p.cache.GetMigInstanceTemplate(migRef)
+	if !found {
+		// first time seen: spread refreshes by randomizing the first deadline (between now and the max ttl)
+		splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(int(migInstanceCacheRefreshInterval.Seconds() + 1))
+		return nil, time.Now().Add(-time.Second * time.Duration(splay))
 	}
 
-	return p.cache.GetMigInstanceTemplate(migRef)
+	if instanceTemplateEntry.lastRefresh.Add(migInstanceCacheRefreshInterval).Before(time.Now()) {
+		p.cache.InvalidateMigInstanceTemplate(migRef)
+		return nil, time.Now()
+	}
+
+	return instanceTemplateEntry.template, instanceTemplateEntry.lastRefresh
 }
 
-func (p *CachingMigInstanceTemplatesProvider) setMigInstanceTemplateToCache(migRef GceRef, instanceTemplate *gce.InstanceTemplate) {
+func (p *CachingMigInstanceTemplatesProvider) setMigInstanceTemplateToCache(migRef GceRef, instanceTemplate *gce.InstanceTemplate, lastRefresh time.Time) {
+	p.cache.InvalidateLongObsoleteMigInstanceTemplates(migInstanceCacheRefreshInterval * 2)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
-	p.cache.SetMigInstanceTemplate(migRef, instanceTemplate)
+	p.cache.SetMigInstanceTemplate(migRef, &instanceTemplateCacheEntry{
+		template:    instanceTemplate,
+		lastRefresh: lastRefresh,
+	})
 }
