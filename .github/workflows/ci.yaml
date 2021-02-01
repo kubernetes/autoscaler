@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  - push
+  - pull_request
+
+env:
+  GOPATH: ${{ github.workspace }}/go
+
+jobs:
+  test-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+
+      - uses: actions/checkout@v2
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+
+      - name: Apt-get
+        run: sudo apt-get install libseccomp-dev -qq
+
+      - name: Prepare
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+        run: hack/install-verify-tools.sh
+
+      - name: Verify
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+        run: hack/verify-all.sh -v
+
+      - name: Test
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
+        run: hack/for-go-proj.sh test
