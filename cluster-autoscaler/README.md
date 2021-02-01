@@ -1,3 +1,4 @@
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 # Cluster Autoscaler
 
 # Introduction
@@ -21,10 +22,11 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Packet](./cloudprovider/packet/README.md#notes) 
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
 * [OVHcloud](./cloudprovider/ovhcloud/README.md)
+* [Linode](./cloudprovider/linode/README.md)
 
 # Releases
 
-We recommend using Cluster Autoscaler with the Kubernetes master version for which it was meant. The below combinations have been tested on GCP. We don't do cross version testing or compatibility testing in other environments. Some user reports indicate successful use of a newer version of Cluster Autoscaler with older clusters, however, there is always a chance that it won't work as expected.
+We recommend using Cluster Autoscaler with the Kubernetes control plane (previously referred to as master) version for which it was meant. The below combinations have been tested on GCP. We don't do cross version testing or compatibility testing in other environments. Some user reports indicate successful use of a newer version of Cluster Autoscaler with older clusters, however, there is always a chance that it won't work as expected.
 
 Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes minor releases exactly.
 
@@ -52,7 +54,7 @@ For CA 1.1.2 and later, please check [release
 notes.](https://github.com/kubernetes/autoscaler/releases)
 
 CA version 1.1.1:
-* Fixes around metrics in the multi-master configuration.
+* Fixes around metrics in the multiple kube apiserver configuration.
 * Fixes for unready nodes issues when quota is overrun.
 
 CA version 1.1.0:
@@ -131,7 +133,7 @@ CA Version 0.3:
 
 # Deployment
 
-Cluster Autoscaler is designed to run on Kubernetes master node. This is the
+Cluster Autoscaler is designed to run on Kubernetes control plane (previously referred to as master) node. This is the
 default deployment strategy on GCP.
 It is possible to run a customized deployment of Cluster Autoscaler on worker nodes, but extra care needs
 to be taken to ensure that Cluster Autoscaler remains up and running. Users can put it into kube-system
@@ -151,3 +153,4 @@ Supported cloud providers:
 * Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
 * Packet https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/packet/README.md
 * OVHcloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/ovhcloud/README.md
+* Linode https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/linode/README.md

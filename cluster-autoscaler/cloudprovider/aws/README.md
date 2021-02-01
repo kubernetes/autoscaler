@@ -208,16 +208,17 @@ kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 kubectl apply -f examples/cluster-autoscaler-multi-asg.yaml
 ```
 
-## Master Node Setup
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+## Control Plane (previously referred to as master) Node Setup
 
 **NOTE**: This setup is not compatible with Amazon EKS.
 
-To run a CA pod in master node - CA deployment should tolerate the master
-`taint` and `nodeSelector` should be used to schedule the pods in master node.
+To run a CA pod on a control plane node the CA deployment should tolerate the `master`
+taint and `nodeSelector` should be used to schedule the pods on a control plane node.
 Please replace `{{ node_asg_min }}`, `{{ node_asg_max }}` and `{{ name }}` with
 your ASG setting in the yaml file.
 ```
-kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
+kubectl apply -f examples/cluster-autoscaler-run-on-control-plane.yaml
 ```
 
 ## Using Mixed Instances Policies and Spot Instances

@@ -12,14 +12,24 @@ rules:
       - configmaps
     verbs:
       - create
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - list
+      - watch
+{{- end }}
   - apiGroups:
       - ""
     resources:
       - configmaps
     resourceNames:
       - cluster-autoscaler-status
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - cluster-autoscaler-priority-expander
+{{- end }}
     verbs:
       - delete
       - get
       - update
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - watch
+{{- end }}
 {{- end -}}
