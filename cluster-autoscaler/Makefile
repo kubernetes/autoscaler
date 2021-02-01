@@ -35,12 +35,6 @@ export DOCKER_CLI_EXPERIMENTAL := enabled
 build: build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
-	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build ${LDFLAGS_FLAG} ${TAGS_FLAG} ./...
-	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
-
-build-binary: build-binary-arch-$(GOARCH)
-
-build-binary-arch-%: clean-arch-%
 	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
 
 test-unit: clean build
@@ -48,7 +42,7 @@ test-unit: clean build
 
 dev-release: dev-release-arch-$(GOARCH)
 
-dev-release-arch-%: build-binary-arch-% make-image-arch-% push-image-arch-%
+dev-release-arch-%: build-arch-% make-image-arch-% push-image-arch-%
 	@echo "Release ${TAG}${FOR_PROVIDER}-$* completed"
 
 make-image: make-image-arch-$(GOARCH)
@@ -97,7 +91,7 @@ build-in-docker: build-in-docker-arch-$(GOARCH)
 
 build-in-docker-arch-%: clean-arch-% docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
-		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-binary-arch-$*'
+		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-arch-$*'
 
 release: $(addprefix build-in-docker-arch-,$(ALL_ARCH)) execute-release
 	@echo "Full in-docker release ${TAG}${FOR_PROVIDER} completed"
