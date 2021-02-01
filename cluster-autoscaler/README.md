@@ -23,6 +23,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
 * [OVHcloud](./cloudprovider/ovhcloud/README.md)
 * [Linode](./cloudprovider/linode/README.md)
+* [ClusterAPI](./cloudprovider/clusterapi/README.md)
 
 # Releases
 
