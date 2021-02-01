@@ -135,6 +135,8 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
 	IgnoredTaints []string
+	// BalancingLabels is a list of labels to use when comparing if two node groups are similar.
+	BalancingLabels []string
 	// BalancingExtraIgnoredLabels is a list of labels to additionally ignore when comparing if two node groups are similar.
 	// Labels in BasicIgnoredLabels and the cloud provider-specific ignored labels are always ignored.
 	BalancingExtraIgnoredLabels []string

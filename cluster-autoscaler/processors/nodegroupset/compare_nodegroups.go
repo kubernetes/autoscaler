@@ -72,12 +72,13 @@ func resourceListWithinTolerance(qtyList []resource.Quantity, maxDifferenceRatio
 	return larger-smaller <= larger*maxDifferenceRatio
 }
 
-func compareLabels(nodes []*schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
+func compareLabels(nodes []*schedulerframework.NodeInfo, explicitLabels, ignoredLabels map[string]bool) bool {
 	labels := make(map[string][]string)
 	for _, node := range nodes {
 		for label, value := range node.Node().ObjectMeta.Labels {
 			ignore, _ := ignoredLabels[label]
-			if !ignore {
+			include, _ := explicitLabels[label]
+			if ( include || !ignore ) {
 				labels[label] = append(labels[label], value)
 			}
 		}
@@ -102,6 +103,19 @@ func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoCompar
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
 		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
+	}
+}
+
+func CreateGenericNodeInfoLabelComparator(labels []string) NodeInfoComparator {
+	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+		includedLabels := make(map[string]bool)
+		for _, l := range labels {
+			includedLabels[l] = true
+		}
+		if !compareLabels([]*schedulerframework.NodeInfo{n1, n2}, includedLabels, make(map[string]bool)) {
+			return false
+		}
+		return IsCloudProviderNodeInfoSimilar(n1, n2, make(map[string]bool))
 	}
 }
 
@@ -156,7 +170,7 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignored
 		return false
 	}
 
-	if !compareLabels(nodes, ignoredLabels) {
+	if !compareLabels(nodes, make(map[string]bool), ignoredLabels) {
 		return false
 	}
 
