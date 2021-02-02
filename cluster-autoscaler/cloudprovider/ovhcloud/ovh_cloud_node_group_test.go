@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -29,9 +30,10 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
-func newTestNodeGroup(t *testing.T) cloudprovider.NodeGroup {
+func newTestNodeGroup(t *testing.T, isGpu bool) cloudprovider.NodeGroup {
 	cfg := `{
 		"project_id": "projectID",
 		"cluster_id": "clusterID",
@@ -98,13 +100,18 @@ func newTestNodeGroup(t *testing.T) cloudprovider.NodeGroup {
 
 	client.On("DeleteNodePool", ctx, "projectID", "clusterID", "id").Return(&sdk.NodePool{}, nil)
 
+	flavor := "b2-7"
+	if isGpu {
+		flavor = "t1-45"
+	}
+
 	manager.Client = client
-	return &NodeGroup{
+	ng := &NodeGroup{
 		Manager: manager,
 		NodePool: sdk.NodePool{
 			ID:           "id",
-			Name:         "pool-b2-7",
-			Flavor:       "b2-7",
+			Name:         fmt.Sprintf("pool-%s", flavor),
+			Flavor:       flavor,
 			Autoscale:    true,
 			DesiredNodes: 3,
 			MinNodes:     1,
@@ -113,10 +120,16 @@ func newTestNodeGroup(t *testing.T) cloudprovider.NodeGroup {
 
 		CurrentSize: 3,
 	}
+
+	ng.NodePool.Autoscaling.ScaleDownUtilizationThreshold = 3.2
+	ng.NodePool.Autoscaling.ScaleDownUnneededTimeSeconds = 10
+	ng.NodePool.Autoscaling.ScaleDownUnreadyTimeSeconds = 20
+
+	return ng
 }
 
 func TestOVHCloudNodeGroup_MaxSize(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check default node group max size", func(t *testing.T) {
 		max := group.MaxSize()
@@ -126,7 +139,7 @@ func TestOVHCloudNodeGroup_MaxSize(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_MinSize(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check default node group min size", func(t *testing.T) {
 		min := group.MinSize()
@@ -136,7 +149,7 @@ func TestOVHCloudNodeGroup_MinSize(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_TargetSize(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check default node group target size", func(t *testing.T) {
 		size, err := group.TargetSize()
@@ -147,7 +160,7 @@ func TestOVHCloudNodeGroup_TargetSize(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_IncreaseSize(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check increase size below max size", func(t *testing.T) {
 		err := group.IncreaseSize(1)
@@ -171,7 +184,7 @@ func TestOVHCloudNodeGroup_IncreaseSize(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check delete nodes above min size", func(t *testing.T) {
 		err := group.DeleteNodes([]*v1.Node{
@@ -248,7 +261,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_DecreaseTargetSize(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check decrease size above min size", func(t *testing.T) {
 		err := group.DecreaseTargetSize(-1)
@@ -272,7 +285,7 @@ func TestOVHCloudNodeGroup_DecreaseTargetSize(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Id(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check node group id fetch", func(t *testing.T) {
 		name := group.Id()
@@ -282,7 +295,7 @@ func TestOVHCloudNodeGroup_Id(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Debug(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check node group debug print", func(t *testing.T) {
 		debug := group.Debug()
@@ -292,7 +305,7 @@ func TestOVHCloudNodeGroup_Debug(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Nodes(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check nodes list in node group", func(t *testing.T) {
 		nodes, err := group.Nodes()
@@ -313,7 +326,7 @@ func TestOVHCloudNodeGroup_Nodes(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check node template filled with group id", func(t *testing.T) {
 		template, err := group.TemplateNodeInfo()
@@ -328,7 +341,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Exist(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check exist is true", func(t *testing.T) {
 		exist := group.Exist()
@@ -338,7 +351,7 @@ func TestOVHCloudNodeGroup_Exist(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Create(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check create node group", func(t *testing.T) {
 		newGroup, err := group.Create()
@@ -355,7 +368,7 @@ func TestOVHCloudNodeGroup_Create(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Delete(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check delete node group", func(t *testing.T) {
 		err := group.Delete()
@@ -365,11 +378,35 @@ func TestOVHCloudNodeGroup_Delete(t *testing.T) {
 }
 
 func TestOVHCloudNodeGroup_Autoprovisioned(t *testing.T) {
-	group := newTestNodeGroup(t)
+	group := newTestNodeGroup(t, false)
 
 	t.Run("check auto-provisioned is false", func(t *testing.T) {
 		provisioned := group.Autoprovisioned()
 
 		assert.False(t, provisioned)
+	})
+}
+
+func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
+	t.Run("check get autoscaling options", func(t *testing.T) {
+		group := newTestNodeGroup(t, false)
+		opts, err := group.GetOptions(config.NodeGroupAutoscalingOptions{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, fmt.Sprintf("%.1f", 3.2), fmt.Sprintf("%.1f", opts.ScaleDownUtilizationThreshold))
+		assert.Equal(t, float64(0), opts.ScaleDownGpuUtilizationThreshold)
+		assert.Equal(t, 10 * time.Second, opts.ScaleDownUnneededTime)
+		assert.Equal(t,  20 * time.Second, opts.ScaleDownUnreadyTime)
+	})
+
+	t.Run("check get autoscaling options on gpu machine", func(t *testing.T) {
+		group := newTestNodeGroup(t, true)
+		opts, err := group.GetOptions(config.NodeGroupAutoscalingOptions{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, float64(0), opts.ScaleDownUtilizationThreshold)
+		assert.Equal(t, fmt.Sprintf("%.1f", 3.2), fmt.Sprintf("%.1f", opts.ScaleDownGpuUtilizationThreshold))
+		assert.Equal(t, 10 * time.Second, opts.ScaleDownUnneededTime)
+		assert.Equal(t,  20 * time.Second, opts.ScaleDownUnreadyTime)
 	})
 }

@@ -43,6 +43,19 @@ type NodePool struct {
 	AvailableNodes uint32 `json:"availableNodes"`
 	UpToDateNodes  uint32 `json:"upToDateNodes"`
 
+	Autoscaling struct {
+		CpuMin float32 `json:"cpuMin"`
+		CpuMax float32 `json:"cpuMax"`
+
+		MemoryMin float32 `json:"memoryMin"`
+		MemoryMax float32 `json:"memoryMax"`
+
+		ScaleDownUtilizationThreshold float32 `json:"scaleDownUtilizationThreshold"`
+
+		ScaleDownUnneededTimeSeconds int32 `json:"scaleDownUnneededTimeSeconds"`
+		ScaleDownUnreadyTimeSeconds  int32 `json:"scaleDownUnreadyTimeSeconds"`
+	} `json:"autoscaling"`
+
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
