@@ -42,6 +42,7 @@ var (
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
+		"nvidia-tesla-t4":   {},
 	}
 )
 
