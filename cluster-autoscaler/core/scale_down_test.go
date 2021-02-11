@@ -1290,8 +1290,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 					return false, nil, nil
 				}
 				if scenario.evictionTimeoutExceed {
-					for {
-					}
+					time.Sleep(10 * scenario.dsEvictionTimeout)
 				}
 				if !scenario.evictionSuccess {
 					return true, nil, fmt.Errorf("fail to evict the pod")
