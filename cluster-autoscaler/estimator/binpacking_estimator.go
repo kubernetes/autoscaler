@@ -17,13 +17,12 @@ limitations under the License.
 package estimator
 
 import (
-	"fmt"
 	"sort"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -75,7 +74,6 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 		}
 	}()
 
-	newNodeNameTimestamp := time.Now()
 	newNodeNameIndex := 0
 
 	for _, podInfo := range podInfos {
@@ -94,7 +92,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 
 		if !found {
 			// Add new node
-			newNodeName, err := estimator.addNewNodeToSnapshot(nodeTemplate, newNodeNameTimestamp, newNodeNameIndex)
+			newNodeName, err := estimator.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
 			if err != nil {
 				klog.Errorf("Error while adding new node for template to ClusterSnapshot; %v", err)
 				return 0
@@ -113,23 +111,17 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 
 func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	template *schedulerframework.NodeInfo,
-	nameTimestamp time.Time,
 	nameIndex int) (string, error) {
 
-	newNode := template.Node().DeepCopy()
-	newNode.Name = fmt.Sprintf("%s-%d-%d", newNode.Name, nameTimestamp.Unix(), nameIndex)
-	if newNode.Labels == nil {
-		newNode.Labels = make(map[string]string)
-	}
-	newNode.Labels["kubernetes.io/hostname"] = newNode.Name
+	newNodeInfo := scheduler.DeepCopyTemplateNode(template, nameIndex)
 	var pods []*apiv1.Pod
-	for _, podInfo := range template.Pods {
+	for _, podInfo := range newNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	if err := estimator.clusterSnapshot.AddNodeWithPods(newNode, pods); err != nil {
+	if err := estimator.clusterSnapshot.AddNodeWithPods(newNodeInfo.Node(), pods); err != nil {
 		return "", err
 	}
-	return newNode.Name, nil
+	return newNodeInfo.Node().Name, nil
 }
 
 // Calculates score for all pods and returns podInfo structure.
