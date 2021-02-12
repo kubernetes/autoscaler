@@ -17,7 +17,10 @@ limitations under the License.
 package scheduler
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -56,4 +59,26 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	}
 
 	return nodeNameToNodeInfo
+}
+
+// DeepCopyTemplateNode copies NodeInfo object used as a template. It changes
+// names of UIDs of both node and pods running on it, so that copies can be used
+// to represent multiple nodes.
+func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, index int) *schedulerframework.NodeInfo {
+	node := nodeTemplate.Node().DeepCopy()
+	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
+	node.UID = uuid.NewUUID()
+	if node.Labels == nil {
+		node.Labels = make(map[string]string)
+	}
+	node.Labels["kubernetes.io/hostname"] = node.Name
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(node)
+	for _, podInfo := range nodeTemplate.Pods {
+		pod := podInfo.Pod.DeepCopy()
+		pod.Name = fmt.Sprintf("%s-%d", podInfo.Pod.Name, index)
+		pod.UID = uuid.NewUUID()
+		nodeInfo.AddPod(pod)
+	}
+	return nodeInfo
 }
