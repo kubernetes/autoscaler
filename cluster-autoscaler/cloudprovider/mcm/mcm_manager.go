@@ -64,8 +64,6 @@ const (
 	conflictRetryInterval   = 5 * time.Second
 	// machinePriorityAnnotation is the annotation to set machine priority while deletion
 	machinePriorityAnnotation = "machinepriority.machine.sapcloud.io"
-	// labelForFailureDomain is the label for failure domain used by kubernetes.io
-	labelForFailureDomain = "failure-domain.beta.kubernetes.io/zone"
 	// kindAWSMachineClass is the kind for machine class used by In-tree AWS provider
 	kindAWSMachineClass = "AWSMachineClass"
 	// kindAzureMachineClass is the kind for machine class used by In-tree Azure provider
@@ -441,10 +439,15 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		return nil, fmt.Errorf("Unable to fetch MachineDeployment object %s, Error: %v", machinedeployment.Name, err)
 	}
 
-	var region, zone string
-	var instance instanceType
-	machineClass := md.Spec.Template.Spec.Class
-	nodeTemplateSpec := md.Spec.Template.Spec.NodeTemplateSpec
+	var (
+		region   string
+		zone     string
+		instance instanceType
+
+		machineClass     = md.Spec.Template.Spec.Class
+		nodeTemplateSpec = md.Spec.Template.Spec.NodeTemplateSpec
+	)
+
 	switch machineClass.Kind {
 	case kindAWSMachineClass:
 		mc, err := m.machineclient.AWSMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
@@ -459,9 +462,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			GPU:          awsInstance.GPU,
 		}
 		region = mc.Spec.Region
-		if mc.Labels != nil {
-			zone = mc.Labels[labelForFailureDomain]
-		}
+		zone = getZoneValueFromMCLabels(mc.Labels)
 	case kindAzureMachineClass:
 		mc, err := m.machineclient.AzureMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
 		if err != nil {
@@ -499,9 +500,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				GPU:          awsInstance.GPU,
 			}
 			region = providerSpec.Region
-			if mc.Labels != nil {
-				zone = mc.Labels[labelForFailureDomain]
-			}
+			zone = getZoneValueFromMCLabels(mc.Labels)
 		case providerAzure:
 			var providerSpec *azureapis.AzureProviderSpec
 			err = json.Unmarshal(mc.ProviderSpec.Raw, &providerSpec)
@@ -548,6 +547,22 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 	return nodeTmpl, nil
 }
 
+func getZoneValueFromMCLabels(labels map[string]string) string {
+	var zone string
+
+	if labels != nil {
+		if value, exists := labels[apiv1.LabelZoneFailureDomainStable]; exists {
+			// Prefer zone value from the new label
+			zone = value
+		} else if value, exists := labels[apiv1.LabelZoneFailureDomain]; exists {
+			// Fallback to zone value from deprecated label if new lable value doesn't exist
+			zone = value
+		}
+	}
+
+	return zone
+}
+
 func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-%d", name, rand.Int63())
@@ -585,12 +600,20 @@ func buildGenericLabels(template *nodeTemplate, nodeName string) map[string]stri
 	result := make(map[string]string)
 	// TODO: extract from MCM
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
 	result[apiv1.LabelInstanceType] = template.InstanceType.InstanceType
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.InstanceType
 
 	result[apiv1.LabelZoneRegion] = template.Region
+	result[apiv1.LabelZoneRegionStable] = template.Region
+
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
+	result[apiv1.LabelZoneFailureDomainStable] = template.Zone
+
 	result[apiv1.LabelHostname] = nodeName
 	return result
 }
