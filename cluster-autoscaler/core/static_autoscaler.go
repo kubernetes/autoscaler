@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/util/uuid"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -42,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
@@ -762,21 +762,6 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func deepCopyNodeInfo(nodeTemplate *schedulernodeinfo.NodeInfo, index int) *schedulernodeinfo.NodeInfo {
-	node := nodeTemplate.Node().DeepCopy()
-	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
-	node.UID = uuid.NewUUID()
-	nodeInfo := schedulernodeinfo.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	for _, podTemplate := range nodeTemplate.Pods() {
-		pod := podTemplate.DeepCopy()
-		pod.Name = fmt.Sprintf("%s-%d", podTemplate.Name, index)
-		pod.UID = uuid.NewUUID()
-		nodeInfo.AddPod(pod)
-	}
-	return nodeInfo
-}
-
 func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulernodeinfo.NodeInfo) []*schedulernodeinfo.NodeInfo {
 	upcomingNodes := make([]*schedulernodeinfo.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range registry.GetUpcomingNodes() {
@@ -789,7 +774,7 @@ func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			upcomingNodes = append(upcomingNodes, deepCopyNodeInfo(nodeTemplate, i))
+			upcomingNodes = append(upcomingNodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, i))
 		}
 	}
 	return upcomingNodes
