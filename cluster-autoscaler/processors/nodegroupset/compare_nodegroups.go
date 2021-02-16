@@ -78,7 +78,7 @@ func compareLabels(nodes []*schedulerframework.NodeInfo, explicitLabels, ignored
 		for label, value := range node.Node().ObjectMeta.Labels {
 			ignore, _ := ignoredLabels[label]
 			include, _ := explicitLabels[label]
-			if ( include || ( len(explicitLabels) == 0 && !ignore ) ) {
+			if include || (len(explicitLabels) == 0 && !ignore) {
 				labels[label] = append(labels[label], value)
 			}
 		}
