@@ -78,7 +78,7 @@ func compareLabels(nodes []*schedulerframework.NodeInfo, explicitLabels, ignored
 		for label, value := range node.Node().ObjectMeta.Labels {
 			ignore, _ := ignoredLabels[label]
 			include, _ := explicitLabels[label]
-			if ( include || !ignore ) {
+			if ( include || ( len(explicitLabels) == 0 && !ignore ) ) {
 				labels[label] = append(labels[label], value)
 			}
 		}
@@ -91,44 +91,10 @@ func compareLabels(nodes []*schedulerframework.NodeInfo, explicitLabels, ignored
 	return true
 }
 
-// CreateGenericNodeInfoComparator returns a generic comparator that checks for node group similarity
-func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
-	genericIgnoredLabels := make(map[string]bool)
-	for k, v := range BasicIgnoredLabels {
-		genericIgnoredLabels[k] = v
-	}
-	for _, k := range extraIgnoredLabels {
-		genericIgnoredLabels[k] = true
-	}
-
-	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
-	}
-}
-
-func CreateGenericNodeInfoLabelComparator(labels []string) NodeInfoComparator {
-	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		includedLabels := make(map[string]bool)
-		for _, l := range labels {
-			includedLabels[l] = true
-		}
-		if !compareLabels([]*schedulerframework.NodeInfo{n1, n2}, includedLabels, make(map[string]bool)) {
-			return false
-		}
-		return IsCloudProviderNodeInfoSimilar(n1, n2, make(map[string]bool))
-	}
-}
-
-// IsCloudProviderNodeInfoSimilar returns true if two NodeInfos are similar enough to consider
-// that the NodeGroups they come from are part of the same NodeGroupSet. The criteria are
-// somewhat arbitrary, but generally we check if resources provided by both nodes
-// are similar enough to likely be the same type of machine and if the set of labels
-// is the same (except for a set of labels passed in to be ignored like hostname or zone).
-func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
+func isCloudProviderNodeTypeSimilar(nodes []*schedulerframework.NodeInfo) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
-	nodes := []*schedulerframework.NodeInfo{n1, n2}
 	for _, node := range nodes {
 		for res, quantity := range node.Node().Status.Capacity {
 			capacity[res] = append(capacity[res], quantity)
@@ -170,6 +136,54 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignored
 		return false
 	}
 
+	return true
+}
+
+// CreateGenericNodeInfoComparator returns a generic comparator that checks for node group similarity
+func CreateGenericNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
+	genericIgnoredLabels := make(map[string]bool)
+	for k, v := range BasicIgnoredLabels {
+		genericIgnoredLabels[k] = v
+	}
+	for _, k := range extraIgnoredLabels {
+		genericIgnoredLabels[k] = true
+	}
+
+	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+		return IsCloudProviderNodeInfoSimilar(n1, n2, genericIgnoredLabels)
+	}
+}
+
+// CreateGenericNodeInfoLabelComparator returns a generic comparator that checks for node with matching labels alongside node group similarity
+func CreateGenericNodeInfoLabelComparator(labels []string) NodeInfoComparator {
+	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+		includedLabels := make(map[string]bool)
+		for _, l := range labels {
+			includedLabels[l] = true
+		}
+
+		if !compareLabels([]*schedulerframework.NodeInfo{n1, n2}, includedLabels, make(map[string]bool)) {
+			return false
+		}
+
+		if !isCloudProviderNodeTypeSimilar([]*schedulerframework.NodeInfo{n1, n2}) {
+			return false
+		}
+		return true
+	}
+}
+
+// IsCloudProviderNodeInfoSimilar returns true if two NodeInfos are similar enough to consider
+// that the NodeGroups they come from are part of the same NodeGroupSet. The criteria are
+// somewhat arbitrary, but generally we check if resources provided by both nodes
+// are similar enough to likely be the same type of machine and if the set of labels
+// is the same (except for a set of labels passed in to be ignored like hostname or zone).
+func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignoredLabels map[string]bool) bool {
+	nodes := []*schedulerframework.NodeInfo{n1, n2}
+
+	if !isCloudProviderNodeTypeSimilar(nodes) {
+		return false
+	}
 	if !compareLabels(nodes, make(map[string]bool), ignoredLabels) {
 		return false
 	}

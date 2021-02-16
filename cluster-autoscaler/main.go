@@ -196,6 +196,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
+
+	err = validateBalancingLabelFlags(*balancingLabelsFlag, *balancingIgnoreLabelsFlag)
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
+	}
 	return config.AutoscalingOptions{
 		CloudConfig:                        *cloudConfig,
 		CloudProviderName:                  *cloudProviderFlag,
@@ -547,4 +552,11 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+func validateBalancingLabelFlags(balancingLabelsFlag, balancingIgnoreLabelsFlag []string) error {
+	if len(balancingLabelsFlag) > 0 && len(balancingIgnoreLabelsFlag) > 0 {
+		return fmt.Errorf("cannot set --balancing-labels and --balancing-ignored-labels at the same time")
+	}
+	return nil
 }
