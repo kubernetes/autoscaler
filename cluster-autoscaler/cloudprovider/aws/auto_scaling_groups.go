@@ -399,15 +399,15 @@ func (m *asgCache) regenerate() error {
 func (m *asgCache) createPlaceholdersForDesiredNonStartedInstances(groups []*autoscaling.Group) []*autoscaling.Group {
 	for _, g := range groups {
 		desired := *g.DesiredCapacity
-		real := int64(len(g.Instances))
-		if desired <= real {
+		realInstances := int64(len(g.Instances))
+		if desired <= realInstances {
 			continue
 		}
 
-		for i := real; i < desired; i++ {
+		klog.V(4).Infof("Instance group %s has only %d instances created while requested count is %d. "+
+			"Creating placeholder instances.", *g.AutoScalingGroupName, realInstances, desired)
+		for i := realInstances; i < desired; i++ {
 			id := fmt.Sprintf("%s-%s-%d", placeholderInstanceNamePrefix, *g.AutoScalingGroupName, i)
-			klog.V(4).Infof("Instance group %s has only %d instances created while requested count is %d. "+
-				"Creating placeholder instance with ID %s.", *g.AutoScalingGroupName, real, desired, id)
 			g.Instances = append(g.Instances, &autoscaling.Instance{
 				InstanceId:       &id,
 				AvailabilityZone: g.AvailabilityZones[0],
