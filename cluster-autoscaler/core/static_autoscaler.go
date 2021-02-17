@@ -526,6 +526,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(currentTime, pdbs)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
+			metrics.UpdateUnremovableNodesCount(scaleDown.getUnremovableNodesCount())
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 
