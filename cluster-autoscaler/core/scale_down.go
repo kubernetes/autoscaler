@@ -691,6 +691,16 @@ func (sd *ScaleDown) addUnremovableNode(unremovableNode *simulator.UnremovableNo
 	sd.unremovableNodeReasons[unremovableNode.Node.Name] = unremovableNode
 }
 
+func (sd *ScaleDown) getUnremovableNodesCount() map[simulator.UnremovableReason]int {
+	reasons := make(map[simulator.UnremovableReason]int)
+
+	for _, node := range sd.unremovableNodeReasons {
+		reasons[node.Reason]++
+	}
+
+	return reasons
+}
+
 // markSimulationError indicates a simulation error by clearing  relevant scale
 // down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
