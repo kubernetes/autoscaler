@@ -395,8 +395,8 @@ func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%.1f", 3.2), fmt.Sprintf("%.1f", opts.ScaleDownUtilizationThreshold))
 		assert.Equal(t, float64(0), opts.ScaleDownGpuUtilizationThreshold)
-		assert.Equal(t, 10 * time.Second, opts.ScaleDownUnneededTime)
-		assert.Equal(t,  20 * time.Second, opts.ScaleDownUnreadyTime)
+		assert.Equal(t, 10*time.Second, opts.ScaleDownUnneededTime)
+		assert.Equal(t, 20*time.Second, opts.ScaleDownUnreadyTime)
 	})
 
 	t.Run("check get autoscaling options on gpu machine", func(t *testing.T) {
@@ -406,7 +406,7 @@ func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, float64(0), opts.ScaleDownUtilizationThreshold)
 		assert.Equal(t, fmt.Sprintf("%.1f", 3.2), fmt.Sprintf("%.1f", opts.ScaleDownGpuUtilizationThreshold))
-		assert.Equal(t, 10 * time.Second, opts.ScaleDownUnneededTime)
-		assert.Equal(t,  20 * time.Second, opts.ScaleDownUnreadyTime)
+		assert.Equal(t, 10*time.Second, opts.ScaleDownUnneededTime)
+		assert.Equal(t, 20*time.Second, opts.ScaleDownUnreadyTime)
 	})
 }
