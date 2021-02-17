@@ -320,7 +320,7 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 	// Forge autoscaling configuration from node pool
 	cfg := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUnneededTime: time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second,
-		ScaleDownUnreadyTime: time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second,
+		ScaleDownUnreadyTime:  time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second,
 	}
 
 	// Switch utilization threshold from defaults given flavor type
