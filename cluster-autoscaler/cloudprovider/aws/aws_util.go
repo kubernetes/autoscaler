@@ -76,7 +76,7 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 			klog.V(1).Infof("fetching %s\n", url)
 			res, err := http.Get(url)
 			if err != nil {
-				klog.Warningf("Error fetching %s skipping...\n", url)
+				klog.Warningf("Error fetching %s skipping...\n%s\n", url, err)
 				continue
 			}
 
