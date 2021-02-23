@@ -372,6 +372,11 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
 | podLabels | object | `{}` | Labels to add to each pod. |
 | priorityClassName | string | `""` | priorityClassName |
+| prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
+| prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
+| prometheusRule.interval | string | `nil` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). |
+| prometheusRule.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
+| prometheusRule.rules | list | `[]` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). |
 | rbac.create | bool | `true` | If `true`, create and use RBAC resources. |
 | rbac.pspEnabled | bool | `false` | If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. Must be used with `rbac.create` set to `true`. |
 | rbac.serviceAccount.annotations | object | `{}` | Additional Service Account annotations. |
