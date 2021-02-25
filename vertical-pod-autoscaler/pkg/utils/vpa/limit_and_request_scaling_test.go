@@ -68,6 +68,13 @@ func TestGetProportionalResourceLimit(t *testing.T) {
 			expectLimit:        mustParseToPointer("10"),
 		},
 		{
+			name:               "no recommendation",
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("0"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        nil,
+		},
+		{
 			name:               "limit equal to request",
 			originalLimit:      mustParseToPointer("1"),
 			originalRequest:    mustParseToPointer("1"),
