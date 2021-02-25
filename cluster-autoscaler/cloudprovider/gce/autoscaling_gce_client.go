@@ -168,6 +168,9 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok && err.Code == http.StatusNotFound {
+			return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+		}
 		return "", err
 	}
 	return igm.BaseInstanceName, nil
