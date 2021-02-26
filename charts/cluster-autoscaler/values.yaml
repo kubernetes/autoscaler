@@ -244,6 +244,8 @@ rbac:
     create: true
     # rbac.serviceAccount.name -- The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template.
     name: ""
+    # rbac.serviceAccount.automountServiceAccountToken -- Automount API credentials for a Service Account.
+    automountServiceAccountToken: true
 
 # replicaCount -- Desired number of pods
 replicaCount: 1
