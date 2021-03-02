@@ -19,6 +19,8 @@ package framework
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -27,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/klog/v2"
@@ -89,6 +92,45 @@ type WeightedAffinityTerm struct {
 	Weight int32
 }
 
+// Diagnosis records the details to diagnose a scheduling failure.
+type Diagnosis struct {
+	NodeToStatusMap      NodeToStatusMap
+	UnschedulablePlugins sets.String
+}
+
+// FitError describes a fit error of a pod.
+type FitError struct {
+	Pod         *v1.Pod
+	NumAllNodes int
+	Diagnosis   Diagnosis
+}
+
+const (
+	// NoNodeAvailableMsg is used to format message when no nodes available.
+	NoNodeAvailableMsg = "0/%v nodes are available"
+)
+
+// Error returns detailed information of why the pod failed to fit on each node
+func (f *FitError) Error() string {
+	reasons := make(map[string]int)
+	for _, status := range f.Diagnosis.NodeToStatusMap {
+		for _, reason := range status.Reasons() {
+			reasons[reason]++
+		}
+	}
+
+	sortReasonsHistogram := func() []string {
+		var reasonStrings []string
+		for k, v := range reasons {
+			reasonStrings = append(reasonStrings, fmt.Sprintf("%v %v", v, k))
+		}
+		sort.Strings(reasonStrings)
+		return reasonStrings
+	}
+	reasonMsg := fmt.Sprintf(NoNodeAvailableMsg+": %v.", f.NumAllNodes, strings.Join(sortReasonsHistogram(), ", "))
+	return reasonMsg
+}
+
 func newAffinityTerm(pod *v1.Pod, term *v1.PodAffinityTerm) (*AffinityTerm, error) {
 	namespaces := schedutil.GetNamespacesFromPodAffinityTerm(pod, term)
 	selector, err := metav1.LabelSelectorAsSelector(term.LabelSelector)
@@ -149,22 +191,22 @@ func NewPodInfo(pod *v1.Pod) *PodInfo {
 	}
 
 	// Attempt to parse the affinity terms
-	var parseErr error
+	var parseErrs []error
 	requiredAffinityTerms, err := getAffinityTerms(pod, schedutil.GetPodAffinityTerms(pod.Spec.Affinity))
 	if err != nil {
-		parseErr = fmt.Errorf("requiredAffinityTerms: %w", err)
+		parseErrs = append(parseErrs, fmt.Errorf("requiredAffinityTerms: %w", err))
 	}
 	requiredAntiAffinityTerms, err := getAffinityTerms(pod, schedutil.GetPodAntiAffinityTerms(pod.Spec.Affinity))
 	if err != nil {
-		parseErr = fmt.Errorf("requiredAntiAffinityTerms: %w", err)
+		parseErrs = append(parseErrs, fmt.Errorf("requiredAntiAffinityTerms: %w", err))
 	}
 	weightedAffinityTerms, err := getWeightedAffinityTerms(pod, preferredAffinityTerms)
 	if err != nil {
-		parseErr = fmt.Errorf("preferredAffinityTerms: %w", err)
+		parseErrs = append(parseErrs, fmt.Errorf("preferredAffinityTerms: %w", err))
 	}
 	weightedAntiAffinityTerms, err := getWeightedAffinityTerms(pod, preferredAntiAffinityTerms)
 	if err != nil {
-		parseErr = fmt.Errorf("preferredAntiAffinityTerms: %w", err)
+		parseErrs = append(parseErrs, fmt.Errorf("preferredAntiAffinityTerms: %w", err))
 	}
 
 	return &PodInfo{
@@ -173,7 +215,7 @@ func NewPodInfo(pod *v1.Pod) *PodInfo {
 		RequiredAntiAffinityTerms:  requiredAntiAffinityTerms,
 		PreferredAffinityTerms:     weightedAffinityTerms,
 		PreferredAntiAffinityTerms: weightedAntiAffinityTerms,
-		ParseError:                 parseErr,
+		ParseError:                 utilerrors.NewAggregate(parseErrs),
 	}
 }
 
@@ -478,10 +520,10 @@ func (n *NodeInfo) String() string {
 		podKeys, n.Requested, n.NonZeroRequested, n.UsedPorts, n.Allocatable)
 }
 
-// AddPod adds pod information to this NodeInfo.
-func (n *NodeInfo) AddPod(pod *v1.Pod) {
-	podInfo := NewPodInfo(pod)
-	res, non0CPU, non0Mem := calculateResource(pod)
+// AddPodInfo adds pod information to this NodeInfo.
+// Consider using this instead of AddPod if a PodInfo is already computed.
+func (n *NodeInfo) AddPodInfo(podInfo *PodInfo) {
+	res, non0CPU, non0Mem := calculateResource(podInfo.Pod)
 	n.Requested.MilliCPU += res.MilliCPU
 	n.Requested.Memory += res.Memory
 	n.Requested.EphemeralStorage += res.EphemeralStorage
@@ -494,10 +536,10 @@ func (n *NodeInfo) AddPod(pod *v1.Pod) {
 	n.NonZeroRequested.MilliCPU += non0CPU
 	n.NonZeroRequested.Memory += non0Mem
 	n.Pods = append(n.Pods, podInfo)
-	if podWithAffinity(pod) {
+	if podWithAffinity(podInfo.Pod) {
 		n.PodsWithAffinity = append(n.PodsWithAffinity, podInfo)
 	}
-	if podWithRequiredAntiAffinity(pod) {
+	if podWithRequiredAntiAffinity(podInfo.Pod) {
 		n.PodsWithRequiredAntiAffinity = append(n.PodsWithRequiredAntiAffinity, podInfo)
 	}
 
@@ -505,6 +547,11 @@ func (n *NodeInfo) AddPod(pod *v1.Pod) {
 	n.updateUsedPorts(podInfo.Pod, true)
 
 	n.Generation = nextGeneration()
+}
+
+// AddPod is a wrapper around AddPodInfo.
+func (n *NodeInfo) AddPod(pod *v1.Pod) {
+	n.AddPodInfo(NewPodInfo(pod))
 }
 
 func podWithAffinity(p *v1.Pod) bool {
@@ -522,7 +569,7 @@ func removeFromSlice(s []*PodInfo, k string) []*PodInfo {
 	for i := range s {
 		k2, err := GetPodKey(s[i].Pod)
 		if err != nil {
-			klog.Errorf("Cannot get pod key, err: %v", err)
+			klog.ErrorS(err, "Cannot get pod key", "pod", klog.KObj(s[i].Pod))
 			continue
 		}
 		if k == k2 {
@@ -551,7 +598,7 @@ func (n *NodeInfo) RemovePod(pod *v1.Pod) error {
 	for i := range n.Pods {
 		k2, err := GetPodKey(n.Pods[i].Pod)
 		if err != nil {
-			klog.Errorf("Cannot get pod key, err: %v", err)
+			klog.ErrorS(err, "Cannot get pod key", "pod", klog.KObj(n.Pods[i].Pod))
 			continue
 		}
 		if k == k2 {

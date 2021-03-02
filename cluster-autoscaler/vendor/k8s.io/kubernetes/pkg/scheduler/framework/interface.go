@@ -25,6 +25,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
@@ -63,7 +65,7 @@ const (
 	// scheduler skip preemption.
 	// The accompanying status message should explain why the pod is unschedulable.
 	Unschedulable
-	// UnschedulableAndUnresolvable is used when a PreFilter plugin finds a pod unschedulable and
+	// UnschedulableAndUnresolvable is used when a plugin finds a pod unschedulable and
 	// preemption would not change anything. Plugins should return Unschedulable if it is possible
 	// that the pod can get scheduled with preemption.
 	// The accompanying status message should explain why the pod is unschedulable.
@@ -76,6 +78,15 @@ const (
 
 // This list should be exactly the same as the codes iota defined above in the same order.
 var codes = []string{"Success", "Error", "Unschedulable", "UnschedulableAndUnresolvable", "Wait", "Skip"}
+
+// statusPrecedence defines a map from status to its precedence, larger value means higher precedent.
+var statusPrecedence = map[Code]int{
+	Error:                        3,
+	UnschedulableAndUnresolvable: 2,
+	Unschedulable:                1,
+	// Any other statuses we know today, `Skip` or `Wait`, will take precedence over `Success`.
+	Success: -1,
+}
 
 func (c Code) String() string {
 	return codes[c]
@@ -93,13 +104,16 @@ const (
 )
 
 // Status indicates the result of running a plugin. It consists of a code, a
-// message and (optionally) an error. When the status code is not `Success`,
-// the reasons should explain why.
+// message, (optionally) an error and an plugin name it fails by. When the status
+// code is not `Success`, the reasons should explain why.
 // NOTE: A nil Status is also considered as Success.
 type Status struct {
 	code    Code
 	reasons []string
 	err     error
+	// failedPlugin is an optional field that records the plugin name a Pod failed by.
+	// It's set by the framework when code is Error, Unschedulable or UnschedulableAndUnresolvable.
+	failedPlugin string
 }
 
 // Code returns code of the Status.
@@ -116,6 +130,23 @@ func (s *Status) Message() string {
 		return ""
 	}
 	return strings.Join(s.reasons, ", ")
+}
+
+// SetFailedPlugin sets the given plugin name to s.failedPlugin.
+func (s *Status) SetFailedPlugin(plugin string) {
+	s.failedPlugin = plugin
+}
+
+// WithFailedPlugin sets the given plugin name to s.failedPlugin,
+// and returns the given status object.
+func (s *Status) WithFailedPlugin(plugin string) *Status {
+	s.SetFailedPlugin(plugin)
+	return s
+}
+
+// FailedPlugin returns the failed plugin name.
+func (s *Status) FailedPlugin() string {
+	return s.failedPlugin
 }
 
 // Reasons returns reasons of the Status.
@@ -151,6 +182,21 @@ func (s *Status) AsError() error {
 	return errors.New(s.Message())
 }
 
+// Equal checks equality of two statuses. This is useful for testing with
+// cmp.Equal.
+func (s *Status) Equal(x *Status) bool {
+	if s == nil || x == nil {
+		return s.IsSuccess() && x.IsSuccess()
+	}
+	if s.code != x.code {
+		return false
+	}
+	if s.code == Error {
+		return cmp.Equal(s.err, x.err, cmpopts.EquateErrors())
+	}
+	return cmp.Equal(s.reasons, x.reasons)
+}
+
 // NewStatus makes a Status out of the given arguments and returns its pointer.
 func NewStatus(code Code, reasons ...string) *Status {
 	s := &Status{
@@ -184,28 +230,21 @@ func (p PluginToStatus) Merge() *Status {
 	}
 
 	finalStatus := NewStatus(Success)
-	var hasUnschedulableAndUnresolvable, hasUnschedulable bool
 	for _, s := range p {
 		if s.Code() == Error {
 			finalStatus.err = s.AsError()
-		} else if s.Code() == UnschedulableAndUnresolvable {
-			hasUnschedulableAndUnresolvable = true
-		} else if s.Code() == Unschedulable {
-			hasUnschedulable = true
 		}
-		finalStatus.code = s.Code()
+		if statusPrecedence[s.Code()] > statusPrecedence[finalStatus.code] {
+			finalStatus.code = s.Code()
+			// Same as code, we keep the most relevant failedPlugin in the returned Status.
+			finalStatus.failedPlugin = s.FailedPlugin()
+		}
+
 		for _, r := range s.reasons {
 			finalStatus.AppendReason(r)
 		}
 	}
 
-	if finalStatus.err != nil {
-		finalStatus.code = Error
-	} else if hasUnschedulableAndUnresolvable {
-		finalStatus.code = UnschedulableAndUnresolvable
-	} else if hasUnschedulable {
-		finalStatus.code = Unschedulable
-	}
 	return finalStatus
 }
 
@@ -220,7 +259,7 @@ type WaitingPod interface {
 	// to unblock the pod.
 	Allow(pluginName string)
 	// Reject declares the waiting pod unschedulable.
-	Reject(msg string)
+	Reject(pluginName, msg string)
 }
 
 // Plugin is the parent type for all the scheduling framework plugins.
@@ -246,10 +285,10 @@ type QueueSortPlugin interface {
 type PreFilterExtensions interface {
 	// AddPod is called by the framework while trying to evaluate the impact
 	// of adding podToAdd to the node while scheduling podToSchedule.
-	AddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
+	AddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToAdd *PodInfo, nodeInfo *NodeInfo) *Status
 	// RemovePod is called by the framework while trying to evaluate the impact
 	// of removing podToRemove from the node while scheduling podToSchedule.
-	RemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToRemove *v1.Pod, nodeInfo *NodeInfo) *Status
+	RemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToRemove *PodInfo, nodeInfo *NodeInfo) *Status
 }
 
 // PreFilterPlugin is an interface that must be implemented by "PreFilter" plugins.
@@ -438,12 +477,12 @@ type Framework interface {
 	// RunPreFilterExtensionAddPod calls the AddPod interface for the set of configured
 	// PreFilter plugins. It returns directly if any of the plugins return any
 	// status other than Success.
-	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
+	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToAdd *PodInfo, nodeInfo *NodeInfo) *Status
 
 	// RunPreFilterExtensionRemovePod calls the RemovePod interface for the set of configured
 	// PreFilter plugins. It returns directly if any of the plugins return any
 	// status other than Success.
-	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
+	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToRemove *PodInfo, nodeInfo *NodeInfo) *Status
 
 	// RunPreScorePlugins runs the set of configured PreScore plugins. If any
 	// of these plugins returns any status other than "Success", the given pod is rejected.
@@ -539,6 +578,9 @@ type Handle interface {
 
 	SharedInformerFactory() informers.SharedInformerFactory
 
+	// RunFilterPluginsWithNominatedPods runs the set of configured filter plugins for nominated pod on the given node.
+	RunFilterPluginsWithNominatedPods(ctx context.Context, state *CycleState, pod *v1.Pod, info *NodeInfo) *Status
+
 	// TODO: unroll the wrapped interfaces to Handle.
 	PreemptHandle() PreemptHandle
 }
@@ -582,7 +624,7 @@ type PluginsRunner interface {
 	// RunFilterPlugins runs the set of configured filter plugins for pod on the given node.
 	RunFilterPlugins(context.Context, *CycleState, *v1.Pod, *NodeInfo) PluginToStatus
 	// RunPreFilterExtensionAddPod calls the AddPod interface for the set of configured PreFilter plugins.
-	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToAdd *v1.Pod, nodeInfo *NodeInfo) *Status
+	RunPreFilterExtensionAddPod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToAdd *PodInfo, nodeInfo *NodeInfo) *Status
 	// RunPreFilterExtensionRemovePod calls the RemovePod interface for the set of configured PreFilter plugins.
-	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podToRemove *v1.Pod, nodeInfo *NodeInfo) *Status
+	RunPreFilterExtensionRemovePod(ctx context.Context, state *CycleState, podToSchedule *v1.Pod, podInfoToRemove *PodInfo, nodeInfo *NodeInfo) *Status
 }
