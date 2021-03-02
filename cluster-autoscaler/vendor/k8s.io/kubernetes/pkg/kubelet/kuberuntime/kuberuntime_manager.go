@@ -137,6 +137,9 @@ type kubeGenericRuntimeManager struct {
 
 	// Cache last per-container error message to reduce log spam
 	logReduction *logreduction.LogReduction
+
+	// PodState provider instance
+	podStateProvider podStateProvider
 }
 
 // KubeGenericRuntime is a interface contains interfaces for container runtime and command.
@@ -248,6 +251,7 @@ func NewKubeGenericRuntimeManager(
 		imagePullBurst)
 	kubeRuntimeManager.runner = lifecycle.NewHandlerRunner(httpClient, kubeRuntimeManager, kubeRuntimeManager)
 	kubeRuntimeManager.containerGC = newContainerGC(runtimeService, podStateProvider, kubeRuntimeManager)
+	kubeRuntimeManager.podStateProvider = podStateProvider
 
 	kubeRuntimeManager.versionCache = cache.NewObjectCache(
 		func() (interface{}, error) {
@@ -751,6 +755,14 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, podStatus *kubecontaine
 		result.AddSyncResult(createSandboxResult)
 		podSandboxID, msg, err = m.createPodSandbox(pod, podContainerChanges.Attempt)
 		if err != nil {
+			// createPodSandbox can return an error from CNI, CSI,
+			// or CRI if the Pod has been deleted while the POD is
+			// being created. If the pod has been deleted then it's
+			// not a real error.
+			if m.podStateProvider.IsPodDeleted(pod.UID) {
+				klog.V(4).Infof("Pod %q was deleted and sandbox failed to be created: %v", format.Pod(pod), pod.UID)
+				return
+			}
 			createSandboxResult.Fail(kubecontainer.ErrCreatePodSandbox, msg)
 			klog.Errorf("createPodSandbox for pod %q failed: %v", format.Pod(pod), err)
 			ref, referr := ref.GetReference(legacyscheme.Scheme, pod)
@@ -884,8 +896,8 @@ func (m *kubeGenericRuntimeManager) doBackOff(pod *v1.Pod, container *v1.Contain
 	// backOff requires a unique key to identify the container.
 	key := getStableKey(pod, container)
 	if backOff.IsInBackOffSince(key, ts) {
-		if ref, err := kubecontainer.GenerateContainerRef(pod, container); err == nil {
-			m.recorder.Eventf(ref, v1.EventTypeWarning, events.BackOffStartContainer, "Back-off restarting failed container")
+		if containerRef, err := kubecontainer.GenerateContainerRef(pod, container); err == nil {
+			m.recorder.Eventf(containerRef, v1.EventTypeWarning, events.BackOffStartContainer, "Back-off restarting failed container")
 		}
 		err := fmt.Errorf("back-off %s restarting failed container=%s pod=%s", backOff.Get(key), container.Name, format.Pod(pod))
 		klog.V(3).Infof("%s", err.Error())

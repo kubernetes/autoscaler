@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	defaultSandboxImage = "k8s.gcr.io/pause:3.2"
+	defaultSandboxImage = "k8s.gcr.io/pause:3.4.1"
 
 	// Various default sandbox resources requests/limits.
 	defaultSandboxCPUshares int64 = 2
@@ -662,7 +662,6 @@ func (ds *dockerService) makeSandboxDockerConfig(c *runtimeapi.PodSandboxConfig,
 	securityOpts := ds.getSandBoxSecurityOpts(securityOptSeparator)
 	hc.SecurityOpt = append(hc.SecurityOpt, securityOpts...)
 
-	applyExperimentalCreateConfig(createConfig, c.Annotations)
 	return createConfig, nil
 }
 
