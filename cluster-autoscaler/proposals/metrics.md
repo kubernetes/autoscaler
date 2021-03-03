@@ -79,6 +79,7 @@ This metrics describe internal state and actions taken by Cluster Autoscaler.
 | failed_scale_ups_total | Counter | `reason`=&lt;failure-reason&gt; | Number of times scale-up operation has failed. |
 | evicted_pods_total | Counter | | Number of pods evicted by CA. |
 | unneeded_nodes_count | Gauge | | Number of nodes currently considered unneeded by CA. |
+| old_unregistered_nodes_removed_count | Counter | | Number of unregistered nodes removed by CA. |
 
 * `errors_total` counter increases every time main CA loop encounters an error.
   * Growing `errors_total` count signifies an internal error in CA or a problem
