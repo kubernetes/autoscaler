@@ -619,6 +619,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 			}
 			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
 				"Removed unregistered node %v", unregisteredNode.Node.Name)
+			metrics.RegisterOldUnregisteredNodesRemoved(1)
 			removedAny = true
 		}
 	}
