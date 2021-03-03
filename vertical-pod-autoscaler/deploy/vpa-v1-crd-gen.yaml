@@ -229,7 +229,23 @@ spec:
     singular: verticalpodautoscaler
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.updatePolicy.updateMode
+      name: Mode
+      type: string
+    - jsonPath: .status.recommendation.containerRecommendations[0].target.cpu
+      name: CPU
+      type: string
+    - jsonPath: .status.recommendation.containerRecommendations[0].target.memory
+      name: Mem
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='RecommendationProvided')].status
+      name: Provided
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: VerticalPodAutoscaler is the configuration for a vertical pod
