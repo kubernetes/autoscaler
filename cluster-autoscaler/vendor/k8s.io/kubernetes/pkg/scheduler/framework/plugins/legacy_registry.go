@@ -360,6 +360,7 @@ func NewLegacyRegistry() *LegacyRegistry {
 		})
 	registry.registerPriorityConfigProducer(NodeAffinityPriority,
 		func(args ConfigProducerArgs, plugins *config.Plugins, _ *[]config.PluginConfig) {
+			plugins.PreScore = appendToPluginSet(plugins.PreScore, nodeaffinity.Name, nil)
 			plugins.Score = appendToPluginSet(plugins.Score, nodeaffinity.Name, &args.Weight)
 		})
 	registry.registerPriorityConfigProducer(ImageLocalityPriority,
@@ -523,10 +524,7 @@ func (lr *LegacyRegistry) registerPriorityConfigProducer(name string, producer c
 	lr.priorityToConfigProducer[name] = producer
 }
 
-func appendToPluginSet(set *config.PluginSet, name string, weight *int32) *config.PluginSet {
-	if set == nil {
-		set = &config.PluginSet{}
-	}
+func appendToPluginSet(set config.PluginSet, name string, weight *int32) config.PluginSet {
 	for _, e := range set.Enabled {
 		if e.Name == name {
 			// Keep the max weight.
