@@ -46,9 +46,9 @@ const (
 )
 
 type csiAttacher struct {
-	plugin        *csiPlugin
-	k8s           kubernetes.Interface
-	waitSleepTime time.Duration
+	plugin       *csiPlugin
+	k8s          kubernetes.Interface
+	watchTimeout time.Duration
 
 	csiClient csiClient
 }
@@ -121,7 +121,7 @@ func (c *csiAttacher) Attach(spec *volume.Spec, nodeName types.NodeName) (string
 		klog.V(4).Info(log("attachment [%v] for volume [%v] created successfully", attachID, pvSrc.VolumeHandle))
 	}
 
-	if _, err := c.waitForVolumeAttachment(pvSrc.VolumeHandle, attachID, csiTimeout); err != nil {
+	if _, err := c.waitForVolumeAttachment(pvSrc.VolumeHandle, attachID, c.watchTimeout); err != nil {
 		return "", err
 	}
 
@@ -257,7 +257,7 @@ func (c *csiAttacher) MountDevice(spec *volume.Spec, devicePath string, deviceMo
 	}
 	csi := c.csiClient
 
-	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
+	ctx, cancel := createCSIOperationContext(spec, c.watchTimeout)
 	defer cancel()
 	// Check whether "STAGE_UNSTAGE_VOLUME" is set
 	stageUnstageSet, err := csi.NodeSupportsStageUnstage(ctx)
@@ -296,13 +296,8 @@ func (c *csiAttacher) MountDevice(spec *volume.Spec, devicePath string, deviceMo
 		volDataKey.volHandle:  csiSource.VolumeHandle,
 		volDataKey.driverName: csiSource.Driver,
 	}
-	if err = saveVolumeData(dataDir, volDataFileName, data); err != nil {
-		klog.Error(log("failed to save volume info data: %v", err))
-		if cleanErr := os.RemoveAll(dataDir); cleanErr != nil {
-			klog.Error(log("failed to remove dir after error [%s]: %v", dataDir, cleanErr))
-		}
-		return err
-	}
+
+	err = saveVolumeData(dataDir, volDataFileName, data)
 	defer func() {
 		// Only if there was an error and volume operation was considered
 		// finished, we should remove the directory.
@@ -314,6 +309,12 @@ func (c *csiAttacher) MountDevice(spec *volume.Spec, devicePath string, deviceMo
 			}
 		}
 	}()
+
+	if err != nil {
+		errMsg := log("failed to save volume info data: %v", err)
+		klog.Error(errMsg)
+		return errors.New(errMsg)
+	}
 
 	if !stageUnstageSet {
 		klog.Infof(log("attacher.MountDevice STAGE_UNSTAGE_VOLUME capability not set. Skipping MountDevice..."))
@@ -398,7 +399,7 @@ func (c *csiAttacher) Detach(volumeName string, nodeName types.NodeName) error {
 	}
 
 	klog.V(4).Info(log("detacher deleted ok VolumeAttachment.ID=%s", attachID))
-	err := c.waitForVolumeDetachment(volID, attachID, csiTimeout)
+	err := c.waitForVolumeDetachment(volID, attachID, c.watchTimeout)
 	return err
 }
 
@@ -515,7 +516,8 @@ func (c *csiAttacher) UnmountDevice(deviceMountPath string) error {
 	}
 	csi := c.csiClient
 
-	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
+	// could not get whether this is migrated because there is no spec
+	ctx, cancel := createCSIOperationContext(nil, csiTimeout)
 	defer cancel()
 	// Check whether "STAGE_UNSTAGE_VOLUME" is set
 	stageUnstageSet, err := csi.NodeSupportsStageUnstage(ctx)
