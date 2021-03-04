@@ -68,6 +68,30 @@ type podConfig struct {
 	gpu          int64
 	node         string
 	toleratesGpu bool
+	pvcs         []string
+}
+
+type pvcConfig struct {
+	name         string
+	size         string // must parse as a resource.Quantity
+	storageclass string
+}
+
+type scConfig struct {
+	name        string
+	provisioner string
+}
+
+type csiDriverConfig struct {
+	name            string
+	storageCapacity bool
+}
+
+type csiStorageCapacityConfig struct {
+	name         string
+	storageClass string
+	nodeLabels   map[string]string
+	capacity     string
 }
 
 type groupSizeChange struct {
@@ -79,6 +103,10 @@ type scaleTestConfig struct {
 	nodes                   []nodeConfig
 	pods                    []podConfig
 	extraPods               []podConfig
+	pvcs                    []pvcConfig
+	scs                     []scConfig
+	csi                     []csiDriverConfig
+	cap                     []csiStorageCapacityConfig
 	options                 config.AutoscalingOptions
 	nodeDeletionTracker     *NodeDeletionTracker
 	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
@@ -160,7 +188,7 @@ func NewScaleTestAutoscalingContext(
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
-	predicateChecker, err := simulator.NewTestPredicateChecker()
+	predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(fakeClient, make(chan struct{}))
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}

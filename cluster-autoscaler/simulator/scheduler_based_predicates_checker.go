@@ -72,6 +72,17 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	// informerFactory....Lister()/informerFactory....Informer() methods
 	informerFactory.Start(stop)
 
+	// Also wait for all informers to be up-to-date. This is necessary for
+	// objects that were added when creating the fake client. Without
+	// this wait, those objects won't be visible via the informers when
+	// the test runs.
+	synced := informerFactory.WaitForCacheSync(stop)
+	for k, v := range synced {
+		if !v {
+			return nil, fmt.Errorf("failed to sync informer %v", k)
+		}
+	}
+
 	return checker, nil
 }
 
