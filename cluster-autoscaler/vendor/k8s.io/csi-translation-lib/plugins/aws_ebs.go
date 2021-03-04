@@ -98,7 +98,7 @@ func (t *awsElasticBlockStoreCSITranslator) TranslateInTreeInlineVolumeToCSI(vol
 		ObjectMeta: metav1.ObjectMeta{
 			// Must be unique per disk as it is used as the unique part of the
 			// staging path
-			Name: fmt.Sprintf("%s-%s", AWSEBSDriverName, ebsSource.VolumeID),
+			Name: fmt.Sprintf("%s-%s", AWSEBSDriverName, volumeHandle),
 		},
 		Spec: v1.PersistentVolumeSpec{
 			PersistentVolumeSource: v1.PersistentVolumeSource{
@@ -142,7 +142,7 @@ func (t *awsElasticBlockStoreCSITranslator) TranslateInTreePVToCSI(pv *v1.Persis
 		},
 	}
 
-	if err := translateTopology(pv, AWSEBSTopologyKey); err != nil {
+	if err := translateTopologyFromInTreeToCSI(pv, AWSEBSTopologyKey); err != nil {
 		return nil, fmt.Errorf("failed to translate topology: %v", err)
 	}
 
@@ -211,7 +211,7 @@ func (t *awsElasticBlockStoreCSITranslator) RepairVolumeHandle(volumeHandle, nod
 var awsVolumeRegMatch = regexp.MustCompile("^vol-[^/]*$")
 
 // KubernetesVolumeIDToEBSVolumeID translates Kubernetes volume ID to EBS volume ID
-// KubernetsVolumeID forms:
+// KubernetesVolumeID forms:
 //  * aws://<zone>/<awsVolumeId>
 //  * aws:///<awsVolumeId>
 //  * <awsVolumeId>
