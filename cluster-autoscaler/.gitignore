@@ -1,4 +1,6 @@
 cluster-autoscaler
+cluster-autoscaler-amd64
+cluster-autoscaler-arm64
 cluster_autoscaler
 .cover
 
