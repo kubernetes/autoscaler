@@ -380,6 +380,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | rbac.create | bool | `true` | If `true`, create and use RBAC resources. |
 | rbac.pspEnabled | bool | `false` | If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. Must be used with `rbac.create` set to `true`. |
 | rbac.serviceAccount.annotations | object | `{}` | Additional Service Account annotations. |
+| rbac.serviceAccount.automountServiceAccountToken | bool | `true` | Automount API credentials for a Service Account. |
 | rbac.serviceAccount.create | bool | `true` | If `true` and `rbac.create` is also true, a Service Account will be created. |
 | rbac.serviceAccount.name | string | `""` | The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template. |
 | replicaCount | int | `1` | Desired number of pods |
