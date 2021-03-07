@@ -376,10 +376,10 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
-	// NodeLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	// NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
 	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
 
