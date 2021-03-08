@@ -35,16 +35,21 @@ This chart bootstraps a cluster-autoscaler deployment on a [Kubernetes](http://k
 The previous `cluster-autoscaler` Helm chart hosted at [helm/charts](https://github.com/helm/charts) has been moved to this repository in accordance with the [Deprecation timeline](https://github.com/helm/charts#deprecation-timeline). Note that a few things have changed between this version and the old version:
 
 - This repository **only** supports Helm chart installations using Helm 3+ since the `apiVersion` on the charts has been marked as `v2`.
-- Previous versions of the Helm chart have not been migrated, and the version was reset to `1.0.0` initially. If you are looking for old versions of the chart, it's best to run `helm pull stable/cluster-autoscaler --version <your-version>` until you are ready to move to this repository's version.
-- The previous versioning scheme has been returned to as of version `9.0.0` for ease of migration from the previous chart location.
+- Previous versions of the Helm chart have not been migrated
 
 ## Migration from 1.X to 9.X+ versions of this Chart
 
-On initial adoption of this chart this chart was renamed from `cluster-autoscaler` to `cluster-autoscaler-chart` due to technical limitations. This affects all `1.X` releases of the chart.
+**TL;DR:**
+You should choose to use versions >=9.0.0 of the `cluster-autoscaler` chart published from this repository; previous versions, and the `cluster-autoscaler-chart` with versioning 1.X.X published from this repository are deprecated.
 
-Releases of the chart from `9.0.0` onwards return the naming of the chart to `cluster-autoscaler` and return to following the versioning established by the chart's previous location.
+<details>
+  <summary>Previous versions of this chart - further details</summary>
+On initial migration of this chart from the `helm/charts` repository this chart was renamed from `cluster-autoscaler` to `cluster-autoscaler-chart` due to technical limitations. This affected all `1.X` releases of the chart, version 2.0.0 of this chart exists only to mark the [`cluster-autoscaler-chart` chart](https://artifacthub.io/packages/helm/cluster-autoscaler/cluster-autoscaler-chart) as deprecated.
+
+Releases of the chart from `9.0.0` onwards return the naming of the chart to `cluster-autoscaler` and return to following the versioning established by the chart's previous location at .
 
 To migrate from a 1.X release of the chart to a `9.0.0` or later release, you should first uninstall your `1.X` install of the `cluster-autoscaler-chart` chart, before performing the installation of the new `cluster-autoscaler` chart.
+</details>
 
 ## Migration from 9.0 to 9.1
 
@@ -361,7 +366,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
-| image.repository | string | `"us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler"` | Image repository |
+| image.repository | string | `"k8s.gcr.io/autoscaling/cluster-autoscaler"` | Image repository |
 | image.tag | string | `"v1.20.0"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |

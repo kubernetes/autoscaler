@@ -192,7 +192,7 @@ fullnameOverride: ""
 
 image:
   # image.repository -- Image repository
-  repository: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
+  repository: k8s.gcr.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
   tag: v1.20.0
   # image.pullPolicy -- Image pull policy
