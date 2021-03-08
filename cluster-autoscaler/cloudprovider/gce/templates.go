@@ -63,7 +63,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - CalculateKernelReserved(mem, os)
+	memTotal := mem - CalculateKernelReserved(mem, os, osDistribution)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
