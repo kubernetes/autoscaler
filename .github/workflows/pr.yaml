@@ -25,19 +25,24 @@ jobs:
         uses: actions/checkout@v2
       - name: Fetch history
         run: git fetch --prune --unshallow
-      - id: lint
-        name: Run chart-testing (lint)
+      - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.0.1
-        with:
-          command: lint
+      - name: Run chart-testing (lint)
+        run: ct lint
       # Only build a kind cluster if there are chart changes to test.
-      - if: steps.lint.outputs.changed == 'true'
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed)
+          if [[ -n "$changed" ]]; then
+            echo "::set-output name=changed::true"
+          fi
+      - if: steps.list-changed.outputs.changed == 'true'
         name: Create kind cluster
         uses: helm/kind-action@v1.1.0
-      - name: Run chart-testing (install)
-        uses: helm/chart-testing-action@v2.0.1
-        with:
-          command: install
+      - if: steps.list-changed.outputs.changed == 'true'
+        name: Run chart-testing (install)
+        run: ct install
   helm-docs-validate:
     if: ${{ needs.changes.outputs.charts == 'true' }}
     name: Helm Docs
