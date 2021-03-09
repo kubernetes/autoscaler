@@ -50,11 +50,14 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	providerRegistry := algorithmprovider.NewRegistry()
 	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
 	sharedLister := NewDelegatingSchedulerSharedLister()
+	kubeSchedulerProfile := &scheduler_apis_config.KubeSchedulerProfile{
+		Plugins:      plugins,
+		PluginConfig: nil, // This is fine
+	}
 
 	framework, err := schedulerframeworkruntime.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
-		plugins,
-		nil, // This is fine.
+		kubeSchedulerProfile,
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)
