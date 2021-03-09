@@ -5479,6 +5479,7 @@ func autoConvert_v1_PodAffinityTerm_To_core_PodAffinityTerm(in *v1.PodAffinityTe
 	out.LabelSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
+	out.NamespaceSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.NamespaceSelector))
 	return nil
 }
 
@@ -5491,6 +5492,7 @@ func autoConvert_core_PodAffinityTerm_To_v1_PodAffinityTerm(in *core.PodAffinity
 	out.LabelSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
+	out.NamespaceSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.NamespaceSelector))
 	return nil
 }
 
@@ -7633,6 +7635,8 @@ func autoConvert_v1_ServiceSpec_To_core_ServiceSpec(in *v1.ServiceSpec, out *cor
 	out.IPFamilies = *(*[]core.IPFamily)(unsafe.Pointer(&in.IPFamilies))
 	out.IPFamilyPolicy = (*core.IPFamilyPolicyType)(unsafe.Pointer(in.IPFamilyPolicy))
 	out.AllocateLoadBalancerNodePorts = (*bool)(unsafe.Pointer(in.AllocateLoadBalancerNodePorts))
+	out.LoadBalancerClass = (*string)(unsafe.Pointer(in.LoadBalancerClass))
+	out.InternalTrafficPolicy = (*core.ServiceInternalTrafficPolicyType)(unsafe.Pointer(in.InternalTrafficPolicy))
 	return nil
 }
 
@@ -7660,6 +7664,8 @@ func autoConvert_core_ServiceSpec_To_v1_ServiceSpec(in *core.ServiceSpec, out *v
 	out.PublishNotReadyAddresses = in.PublishNotReadyAddresses
 	out.TopologyKeys = *(*[]string)(unsafe.Pointer(&in.TopologyKeys))
 	out.AllocateLoadBalancerNodePorts = (*bool)(unsafe.Pointer(in.AllocateLoadBalancerNodePorts))
+	out.LoadBalancerClass = (*string)(unsafe.Pointer(in.LoadBalancerClass))
+	out.InternalTrafficPolicy = (*v1.ServiceInternalTrafficPolicyType)(unsafe.Pointer(in.InternalTrafficPolicy))
 	return nil
 }
 
