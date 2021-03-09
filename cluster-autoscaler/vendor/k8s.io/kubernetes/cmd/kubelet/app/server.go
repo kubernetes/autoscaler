@@ -263,8 +263,15 @@ HTTP server: The kubelet can also listen for HTTP and respond to a simple API
 			// set up signal context here in order to be reused by kubelet and docker shim
 			ctx := genericapiserver.SetupSignalContext()
 
+			// make the kubelet's config safe for logging
+			config := kubeletServer.KubeletConfiguration.DeepCopy()
+			for k := range config.StaticPodURLHeader {
+				config.StaticPodURLHeader[k] = []string{"<masked>"}
+			}
+			// log the kubelet's config for inspection
+			klog.V(5).Infof("KubeletConfiguration: %#v", config)
+
 			// run the kubelet
-			klog.V(5).Infof("KubeletConfiguration: %#v", kubeletServer.KubeletConfiguration)
 			if err := Run(ctx, kubeletServer, kubeletDeps, utilfeature.DefaultFeatureGate); err != nil {
 				klog.Fatal(err)
 			}
@@ -1175,22 +1182,22 @@ func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencie
 		}
 		klog.Info("Started kubelet as runonce")
 	} else {
-		startKubelet(k, podCfg, &kubeServer.KubeletConfiguration, kubeDeps, kubeServer.EnableCAdvisorJSONEndpoints, kubeServer.EnableServer)
+		startKubelet(k, podCfg, &kubeServer.KubeletConfiguration, kubeDeps, kubeServer.EnableServer)
 		klog.Info("Started kubelet")
 	}
 	return nil
 }
 
-func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies, enableCAdvisorJSONEndpoints, enableServer bool) {
+func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies, enableServer bool) {
 	// start the kubelet
 	go k.Run(podCfg.Updates())
 
 	// start the kubelet server
 	if enableServer {
-		go k.ListenAndServe(kubeCfg, kubeDeps.TLSOptions, kubeDeps.Auth, enableCAdvisorJSONEndpoints)
+		go k.ListenAndServe(kubeCfg, kubeDeps.TLSOptions, kubeDeps.Auth)
 	}
 	if kubeCfg.ReadOnlyPort > 0 {
-		go k.ListenAndServeReadOnly(net.ParseIP(kubeCfg.Address), uint(kubeCfg.ReadOnlyPort), enableCAdvisorJSONEndpoints)
+		go k.ListenAndServeReadOnly(net.ParseIP(kubeCfg.Address), uint(kubeCfg.ReadOnlyPort))
 	}
 	if utilfeature.DefaultFeatureGate.Enabled(features.KubeletPodResources) {
 		go k.ListenAndServePodResources()

@@ -66,6 +66,7 @@ import (
 	"k8s.io/kubernetes/pkg/volume/util/volumepathhandler"
 	volumevalidation "k8s.io/kubernetes/pkg/volume/validation"
 	"k8s.io/kubernetes/third_party/forked/golang/expansion"
+	utilnet "k8s.io/utils/net"
 )
 
 const (
@@ -140,14 +141,15 @@ func (kl *Kubelet) makeBlockVolumes(pod *v1.Pod, container *v1.Container, podVol
 }
 
 // makeMounts determines the mount points for the given container.
-func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, hostDomain string, podIPs []string, podVolumes kubecontainer.VolumeMap, hu hostutil.HostUtils, subpather subpath.Interface, expandEnvs []kubecontainer.EnvVar) ([]kubecontainer.Mount, func(), error) {
+func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, hostDomain string, podIPs []string, podVolumes kubecontainer.VolumeMap, hu hostutil.HostUtils, subpather subpath.Interface, expandEnvs []kubecontainer.EnvVar, supportsSingleFileMapping bool) ([]kubecontainer.Mount, func(), error) {
 	// Kubernetes only mounts on /etc/hosts if:
 	// - container is not an infrastructure (pause) container
 	// - container is not already mounting on /etc/hosts
 	// - OS is not Windows
+	// - if it is Windows, ContainerD is used.
 	// Kubernetes will not mount /etc/hosts if:
 	// - when the Pod sandbox is being created, its IP is still unknown. Hence, PodIP will not have been set.
-	mountEtcHostsFile := len(podIPs) > 0 && runtime.GOOS != "windows"
+	mountEtcHostsFile := len(podIPs) > 0 && supportsSingleFileMapping
 	klog.V(3).Infof("container: %v/%v/%v podIPs: %q creating hosts mount: %v", pod.Namespace, pod.Name, container.Name, podIPs, mountEtcHostsFile)
 	mounts := []kubecontainer.Mount{}
 	var cleanupAction func()
@@ -301,7 +303,9 @@ func translateMountPropagation(mountMode *v1.MountPropagationMode) (runtimeapi.M
 
 // getEtcHostsPath returns the full host-side path to a pod's generated /etc/hosts file
 func getEtcHostsPath(podDir string) string {
-	return path.Join(podDir, "etc-hosts")
+	hostsFilePath := path.Join(podDir, "etc-hosts")
+	// Volume Mounts fail on Windows if it is not of the form C:/
+	return volumeutil.MakeAbsolutePath(runtime.GOOS, hostsFilePath)
 }
 
 // makeHostsMount makes the mountpoint for the hosts file that the containers
@@ -487,8 +491,10 @@ func (kl *Kubelet) GenerateRunContainerOptions(pod *v1.Pod, container *v1.Contai
 	}
 	opts.Envs = append(opts.Envs, envs...)
 
+	// we can only mount individual files (e.g.: /etc/hosts, termination-log files) on Windows only if we're using Containerd.
+	supportsSingleFileMapping := kl.containerRuntime.SupportsSingleFileMapping()
 	// only podIPs is sent to makeMounts, as podIPs is populated even if dual-stack feature flag is not enabled.
-	mounts, cleanupAction, err := makeMounts(pod, kl.getPodDir(pod.UID), container, hostname, hostDomainName, podIPs, volumes, kl.hostutil, kl.subpather, opts.Envs)
+	mounts, cleanupAction, err := makeMounts(pod, kl.getPodDir(pod.UID), container, hostname, hostDomainName, podIPs, volumes, kl.hostutil, kl.subpather, opts.Envs, supportsSingleFileMapping)
 	if err != nil {
 		return nil, cleanupAction, err
 	}
@@ -496,7 +502,6 @@ func (kl *Kubelet) GenerateRunContainerOptions(pod *v1.Pod, container *v1.Contai
 
 	// adding TerminationMessagePath on Windows is only allowed if ContainerD is used. Individual files cannot
 	// be mounted as volumes using Docker for Windows.
-	supportsSingleFileMapping := kl.containerRuntime.SupportsSingleFileMapping()
 	if len(container.TerminationMessagePath) != 0 && supportsSingleFileMapping {
 		p := kl.getPodContainerDir(pod.UID, container.Name)
 		if err := os.MkdirAll(p, 0750); err != nil {
@@ -881,6 +886,11 @@ func (kl *Kubelet) getPullSecretsForPod(pod *v1.Pod) []v1.Secret {
 	pullSecrets := []v1.Secret{}
 
 	for _, secretRef := range pod.Spec.ImagePullSecrets {
+		if len(secretRef.Name) == 0 {
+			// API validation permitted entries with empty names (http://issue.k8s.io/99454#issuecomment-787838112).
+			// Ignore to avoid unnecessary warnings.
+			continue
+		}
 		secret, err := kl.secretManager.GetSecret(pod.Namespace, secretRef.Name)
 		if err != nil {
 			klog.Warningf("Unable to retrieve pull secret %s/%s for %s/%s due to %v.  The image pull may not succeed.", pod.Namespace, secretRef.Name, pod.Namespace, pod.Name, err)
@@ -1571,16 +1581,36 @@ func (kl *Kubelet) generateAPIPodStatus(pod *v1.Pod, podStatus *kubecontainer.Po
 // alter the kubelet state at all.
 func (kl *Kubelet) convertStatusToAPIStatus(pod *v1.Pod, podStatus *kubecontainer.PodStatus) *v1.PodStatus {
 	var apiPodStatus v1.PodStatus
-	apiPodStatus.PodIPs = make([]v1.PodIP, 0, len(podStatus.IPs))
+
+	// The runtime pod status may have an arbitrary number of IPs, in an arbitrary
+	// order. Pick out the first returned IP of the same IP family as the node IP
+	// first, followed by the first IP of the opposite IP family (if any).
+	podIPs := make([]v1.PodIP, 0, len(podStatus.IPs))
+	var validPrimaryIP, validSecondaryIP func(ip string) bool
+	if len(kl.nodeIPs) == 0 || utilnet.IsIPv4(kl.nodeIPs[0]) {
+		validPrimaryIP = utilnet.IsIPv4String
+		validSecondaryIP = utilnet.IsIPv6String
+	} else {
+		validPrimaryIP = utilnet.IsIPv6String
+		validSecondaryIP = utilnet.IsIPv4String
+	}
 	for _, ip := range podStatus.IPs {
-		apiPodStatus.PodIPs = append(apiPodStatus.PodIPs, v1.PodIP{
-			IP: ip,
-		})
+		if validPrimaryIP(ip) {
+			podIPs = append(podIPs, v1.PodIP{IP: ip})
+			break
+		}
+	}
+	for _, ip := range podStatus.IPs {
+		if validSecondaryIP(ip) {
+			podIPs = append(podIPs, v1.PodIP{IP: ip})
+			break
+		}
+	}
+	apiPodStatus.PodIPs = podIPs
+	if len(podIPs) > 0 {
+		apiPodStatus.PodIP = podIPs[0].IP
 	}
 
-	if len(apiPodStatus.PodIPs) > 0 {
-		apiPodStatus.PodIP = apiPodStatus.PodIPs[0].IP
-	}
 	// set status for Pods created on versions of kube older than 1.6
 	apiPodStatus.QOSClass = v1qos.GetPodQOS(pod)
 
