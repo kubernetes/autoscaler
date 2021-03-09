@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,37 +28,78 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 	type testCase struct {
 		physicalMemory int64
 		reservedMemory int64
+		osDistribution OperatingSystemDistribution
 	}
 	testCases := []testCase{
 		{
 			physicalMemory: 256 * MiB,
 			reservedMemory: 4*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 2 * GiB,
 			reservedMemory: 32*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3 * GiB,
 			reservedMemory: 48*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3.25 * GiB,
 			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 4 * GiB,
 			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 128 * GiB,
 			reservedMemory: 2*GiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 256 * MiB,
+			reservedMemory: 4*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 2 * GiB,
+			reservedMemory: 32*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 3 * GiB,
+			reservedMemory: 48*MiB + kernelReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 3.25 * GiB,
+			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 4 * GiB,
+			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 128 * GiB,
+			reservedMemory: 2*GiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 	}
 	for idx, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
-			reserved := CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux)
-			assert.Equal(t, tc.reservedMemory, reserved)
+			reserved := CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux, tc.osDistribution)
+			if tc.osDistribution == OperatingSystemDistributionUbuntu {
+				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)+ubuntuSpecificOffset), reserved)
+			} else if tc.osDistribution == OperatingSystemDistributionCOS {
+				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)), reserved)
+			}
 		})
 	}
 }
