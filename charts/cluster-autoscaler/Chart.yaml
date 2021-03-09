@@ -3,7 +3,7 @@ appVersion: 1.20.0
 description: Scales Kubernetes worker nodes within autoscaling groups.
 engine: gotpl
 home: https://github.com/kubernetes/autoscaler
-icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
 maintainers:
   - email: e.bailey@sportradar.com
     name: yurrriq
@@ -17,4 +17,4 @@ name: cluster-autoscaler
 sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
-version: 9.7.0
+version: 9.8.0
