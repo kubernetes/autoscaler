@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"regexp"
 	"strings"
 	"time"
 
@@ -477,6 +478,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
 			if err != nil {
+				if deletedSA, _ := regexp.MatchString(`Service account.*does not exist`, err.Error()); deletedSA {
+					clusterStateRegistry.RegisterFailedScaleUp(bestOption.NodeGroup, metrics.DeletedServiceAccountError, now)
+				}
 				return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
 			}
 			createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)

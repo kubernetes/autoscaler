@@ -65,6 +65,8 @@ const (
 	APIError FailedScaleUpReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up
 	Timeout FailedScaleUpReason = "timeout"
+	// DeletedServiceAccountError caused scale-up to fail
+	DeletedServiceAccountError FailedScaleUpReason = "deletedServiceAccountError"
 
 	// autoscaledGroup is managed by CA
 	autoscaledGroup NodeGroupType = "autoscaled"
