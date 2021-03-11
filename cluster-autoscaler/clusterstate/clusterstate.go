@@ -43,10 +43,6 @@ const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
 	MaxNodeStartupTime = 15 * time.Minute
 
-	// MaxStatusSettingDelayAfterCreation is the maximum time for node to set its initial status after the
-	// node is registered.
-	MaxStatusSettingDelayAfterCreation = 2 * time.Minute
-
 	// MaxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.
 	MaxNodeGroupBackoffDuration = 30 * time.Minute
 
@@ -399,7 +395,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
 		float64(unjustifiedUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*
-			float64(readiness.Ready+readiness.Unready+readiness.NotStarted+readiness.LongNotStarted) {
+			float64(readiness.Ready+readiness.Unready+readiness.NotStarted) {
 		return false
 	}
 
@@ -452,7 +448,7 @@ func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGr
 		}
 		return 0, target, true
 	}
-	provisioned = readiness.Registered - readiness.NotStarted - readiness.LongNotStarted
+	provisioned = readiness.Registered - readiness.NotStarted
 
 	return provisioned, target, true
 }
@@ -531,8 +527,6 @@ type Readiness struct {
 	// Number of nodes that are being currently deleted. They exist in K8S but
 	// are not included in NodeGroup.TargetSize().
 	Deleted int
-	// Number of nodes that failed to start within a reasonable limit.
-	LongNotStarted int
 	// Number of nodes that are not yet fully started.
 	NotStarted int
 	// Number of all registered nodes in the group (ready/unready/deleted/etc).
@@ -554,12 +548,10 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		current.Registered++
 		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
-		} else if stillStarting := isNodeStillStarting(node); stillStarting && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
-			current.LongNotStarted++
-		} else if stillStarting {
-			current.NotStarted++
 		} else if ready {
 			current.Ready++
+		} else if node.CreationTimestamp.Time.Add(MaxNodeStartupTime).After(currentTime) {
+			current.NotStarted++
 		} else {
 			current.Unready++
 		}
@@ -743,11 +735,10 @@ func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {
 func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
 			readiness.Ready,
 			readiness.Unready,
 			readiness.NotStarted,
-			readiness.LongNotStarted,
 			readiness.Registered,
 			readiness.LongUnregistered,
 			acceptable.CurrentTarget,
@@ -798,11 +789,10 @@ func buildScaleDownStatusNodeGroup(candidates []string, lastProbed time.Time) ap
 func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d longUnregistered=%d",
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d",
 			readiness.Ready,
 			readiness.Unready,
 			readiness.NotStarted,
-			readiness.LongNotStarted,
 			readiness.Registered,
 			readiness.LongUnregistered,
 		),
@@ -858,39 +848,6 @@ func buildScaleDownStatusClusterwide(candidates map[string][]string, lastProbed 
 		condition.Status = api.ClusterAutoscalerNoCandidates
 	}
 	return condition
-}
-
-func hasTaint(node *apiv1.Node, taintKey string) bool {
-	for _, taint := range node.Spec.Taints {
-		if taint.Key == taintKey {
-			return true
-		}
-	}
-	return false
-}
-
-func isNodeStillStarting(node *apiv1.Node) bool {
-	for _, condition := range node.Status.Conditions {
-		if condition.Type == apiv1.NodeReady {
-			notReady := condition.Status != apiv1.ConditionTrue || hasTaint(node, apiv1.TaintNodeNotReady)
-			if notReady && condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
-				return true
-			}
-		}
-		if condition.Type == apiv1.NodeDiskPressure {
-			notReady := condition.Status == apiv1.ConditionTrue || hasTaint(node, apiv1.TaintNodeDiskPressure)
-			if notReady && condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
-				return true
-			}
-		}
-		if condition.Type == apiv1.NodeNetworkUnavailable {
-			notReady := condition.Status == apiv1.ConditionTrue || hasTaint(node, apiv1.TaintNodeNetworkUnavailable)
-			if notReady && condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func updateLastTransition(oldStatus, newStatus *api.ClusterAutoscalerStatus) {
@@ -955,7 +912,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that
-		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted + readiness.LongUnregistered)
+		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongUnregistered)
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue
@@ -1006,7 +963,7 @@ func (csr *ClusterStateRegistry) GetAutoscaledNodesCount() (currentSize, targetS
 		targetSize += accRange.CurrentTarget
 	}
 	for _, readiness := range csr.perNodeGroupReadiness {
-		currentSize += readiness.Registered - readiness.NotStarted - readiness.LongNotStarted
+		currentSize += readiness.Registered - readiness.NotStarted
 	}
 	return currentSize, targetSize
 }
