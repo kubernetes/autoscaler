@@ -319,6 +319,79 @@ func TestTooManyUnready(t *testing.T) {
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 }
 
+func TestUnreadyLongAfterCreation(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
+	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-30 * time.Minute)}
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng2", ng2_1)
+
+	assert.NotNil(t, provider)
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "some-map")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff())
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Unready)
+	assert.Equal(t, 0, clusterstate.GetClusterReadiness().NotStarted)
+	upcoming := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 0, upcoming["ng1"])
+}
+
+func TestNotStarted(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	SetNodeReadyState(ng2_1, false, now.Add(-4*time.Minute))
+	SetNodeNotReadyTaint(ng2_1)
+	ng2_1.CreationTimestamp = metav1.Time{Time: now.Add(-10 * time.Minute)}
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng2", ng2_1)
+
+	assert.NotNil(t, provider)
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "some-map")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff())
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, clusterstate.GetClusterReadiness().NotStarted)
+	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Ready)
+
+	// node ng2_1 moves condition to ready
+	SetNodeReadyState(ng2_1, true, now.Add(-4*time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, clusterstate.GetClusterReadiness().NotStarted)
+	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Ready)
+
+	// node ng2_1 no longer has the taint
+	RemoveNodeNotReadyTaint(ng2_1)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, nil, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, clusterstate.GetClusterReadiness().NotStarted)
+	assert.Equal(t, 2, clusterstate.GetClusterReadiness().Ready)
+}
+
 func TestExpiredScaleUp(t *testing.T) {
 	now := time.Now()
 
@@ -766,57 +839,6 @@ func TestUpdateScaleUp(t *testing.T) {
 	// If new scalup is registered with negative delta nothing should happen
 	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), -200, now)
 	assert.Nil(t, clusterstate.scaleUpRequests["ng1"])
-}
-
-func TestIsNodeStillStarting(t *testing.T) {
-	testCases := []struct {
-		desc           string
-		condition      apiv1.NodeConditionType
-		status         apiv1.ConditionStatus
-		taintKey       string
-		expectedResult bool
-	}{
-		{"unready", apiv1.NodeReady, apiv1.ConditionFalse, "", true},
-		{"readiness unknown", apiv1.NodeReady, apiv1.ConditionUnknown, "", true},
-		{"out of disk", apiv1.NodeDiskPressure, apiv1.ConditionTrue, "", true},
-		{"network unavailable", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, "", true},
-		{"started", apiv1.NodeReady, apiv1.ConditionTrue, "", false},
-		{"unready and unready taint", apiv1.NodeReady, apiv1.ConditionFalse, apiv1.TaintNodeNotReady, true},
-		{"readiness unknown and unready taint", apiv1.NodeReady, apiv1.ConditionUnknown, apiv1.TaintNodeNotReady, true},
-		{"disk pressure and disk pressure taint", apiv1.NodeDiskPressure, apiv1.ConditionTrue, apiv1.TaintNodeDiskPressure, true},
-		{"network unavailable and network unavailable taint", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, apiv1.TaintNodeNetworkUnavailable, true},
-		{"ready but unready taint", apiv1.NodeReady, apiv1.ConditionTrue, apiv1.TaintNodeNotReady, true},
-		{"no disk pressure but disk pressure taint", apiv1.NodeDiskPressure, apiv1.ConditionFalse, apiv1.TaintNodeDiskPressure, true},
-		{"network available but network unavailable taint", apiv1.NodeNetworkUnavailable, apiv1.ConditionFalse, apiv1.TaintNodeNetworkUnavailable, true},
-	}
-	for _, tc := range testCases {
-		createTestNode := func(timeSinceCreation time.Duration) *apiv1.Node {
-			node := BuildTestNode("n1", 1000, 1000)
-			node.CreationTimestamp.Time = time.Time{}
-			testedTime := node.CreationTimestamp.Time.Add(timeSinceCreation)
-
-			SetNodeCondition(node, tc.condition, tc.status, testedTime)
-
-			if tc.taintKey != "" {
-				node.Spec.Taints = []apiv1.Taint{{
-					Key:       tc.taintKey,
-					Effect:    apiv1.TaintEffectNoSchedule,
-					TimeAdded: &metav1.Time{Time: testedTime},
-				}}
-			}
-
-			return node
-		}
-		t.Run("recent "+tc.desc, func(t *testing.T) {
-			node := createTestNode(1 * time.Minute)
-			assert.Equal(t, tc.expectedResult, isNodeStillStarting(node))
-		})
-		t.Run("long "+tc.desc, func(t *testing.T) {
-			node := createTestNode(30 * time.Minute)
-			// No matter what are the node's conditions, stop considering it not started after long enough.
-			assert.False(t, isNodeStillStarting(node))
-		})
-	}
 }
 
 func TestScaleUpFailures(t *testing.T) {
