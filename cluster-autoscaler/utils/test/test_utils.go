@@ -162,6 +162,23 @@ func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 	}
 }
 
+// SetNodeNotReadyTaint sets the not ready taint on node.
+func SetNodeNotReadyTaint(node *apiv1.Node) {
+	node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{Key: apiv1.TaintNodeNotReady, Effect: apiv1.TaintEffectNoSchedule})
+}
+
+// RemoveNodeNotReadyTaint removes the not ready taint.
+func RemoveNodeNotReadyTaint(node *apiv1.Node) {
+	var final []apiv1.Taint
+	for i := range node.Spec.Taints {
+		if node.Spec.Taints[i].Key == apiv1.TaintNodeNotReady {
+			continue
+		}
+		final = append(final, node.Spec.Taints[i])
+	}
+	node.Spec.Taints = final
+}
+
 // SetNodeCondition sets node condition.
 func SetNodeCondition(node *apiv1.Node, conditionType apiv1.NodeConditionType, status apiv1.ConditionStatus, lastTransition time.Time) {
 	for i := range node.Status.Conditions {
