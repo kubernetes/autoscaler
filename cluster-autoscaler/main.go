@@ -158,6 +158,7 @@ var (
 		"Should CA ignore Mirror pods when calculating resource utilization for scaling down")
 
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
+	statusConfigMapName              = flag.String("status-config-map-name", "cluster-autoscaler-status", "Status configmap name")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
@@ -233,6 +234,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownCandidatesPoolRatio:       *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:    *scaleDownCandidatesPoolMinCount,
 		WriteStatusConfigMap:               *writeStatusConfigMapFlag,
+		StatusConfigMapName:                *statusConfigMapName,
 		BalanceSimilarNodeGroups:           *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:                    *namespace,
 		ClusterName:                        *clusterName,
