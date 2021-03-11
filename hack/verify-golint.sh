@@ -30,6 +30,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/exoscale/internal'
   'cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3'
   'cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go'
+  'cluster-autoscaler/cloudprovider/hetzner/hcloud-go'
 )
 
 FIND_PACKAGES='go list ./... '

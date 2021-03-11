@@ -46,6 +46,8 @@ const (
 	ExoscaleProviderName = "exoscale"
 	// GceProviderName gets the provider name of gce
 	GceProviderName = "gce"
+	// HetznerProviderName gets the provider name of hetzner
+	HetznerProviderName = "hetzner"
 	// MagnumProviderName gets the provider name of magnum
 	MagnumProviderName = "magnum"
 	// KubemarkProviderName gets the provider name of kubemark
