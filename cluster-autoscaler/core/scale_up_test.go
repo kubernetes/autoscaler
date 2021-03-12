@@ -23,13 +23,15 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -969,4 +971,20 @@ func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
 			assert.Equal(t, scaleUpLimitsCheckResult{true, test.exceededResources}, checkResult)
 		}
 	}
+}
+
+func TestAuthError(t *testing.T) {
+	context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, nil, nil)
+	assert.NoError(t, err)
+
+	nodeGroup := &mockprovider.NodeGroup{}
+	info := nodegroupset.ScaleUpInfo{Group: nodeGroup}
+	nodeGroup.On("Id").Return("A")
+	nodeGroup.On("IncreaseSize", 0).Return(errors.NewAutoscalerError(errors.AuthorizationError, ""))
+
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+
+	aerr := executeScaleUp(&context, clusterStateRegistry, info, "", time.Now())
+	assert.Error(t, aerr)
+	assert.Equal(t, errors.AuthorizationError, aerr.Type())
 }
