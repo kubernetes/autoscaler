@@ -61,6 +61,8 @@ const (
 	// NodeGroupDoesNotExistError signifies that a NodeGroup
 	// does not exist.
 	NodeGroupDoesNotExistError AutoscalerErrorType = "nodeGroupDoesNotExistError"
+	// AuthorizationError signifies that an authorization error occurred.
+	AuthorizationError AutoscalerErrorType = "authorizationError"
 )
 
 // NewAutoscalerError returns new autoscaler error with a message constructed from format string

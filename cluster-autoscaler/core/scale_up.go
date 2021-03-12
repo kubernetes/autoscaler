@@ -666,9 +666,13 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
-		clusterStateRegistry.RegisterFailedScaleUp(info.Group, metrics.CloudProviderError, now)
-		return errors.NewAutoscalerError(errors.CloudProviderError,
-			"failed to increase node group size: %v", err)
+		reason := metrics.CloudProviderError
+		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: %v", err)
+		if aerr.Type() == errors.AuthorizationError {
+			reason = metrics.AuthorizationError
+		}
+		clusterStateRegistry.RegisterFailedScaleUp(info.Group, reason, now)
+		return aerr
 	}
 	clusterStateRegistry.RegisterOrUpdateScaleUp(
 		info.Group,
