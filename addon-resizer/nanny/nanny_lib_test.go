@@ -17,12 +17,14 @@ limitations under the License.
 package nanny
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
 
 	api "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -250,6 +252,8 @@ func TestUpdateResources(t *testing.T) {
 	tenSecondsAgo := now.Add(-10 * time.Second)
 	oneMinuteAgo := now.Add(-time.Minute)
 	oneHourAgo := now.Add(-time.Hour)
+	ctx := context.Background()
+	opt := v1.UpdateOptions{}
 	testCases := []struct {
 		res     api.ResourceList
 		e       *EstimatorResult
@@ -280,7 +284,7 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, tc.res, tc.res)
 		est := newFakeResourceEstimator(tc.e)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, noChange)
+		got := updateResources(ctx, k8s, est, now, tc.lc, tc.sdd, tc.sud, noChange, opt)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}
@@ -314,7 +318,7 @@ func (f *fakeKubernetesClient) ContainerResources() (*api.ResourceRequirements, 
 	return f.resources, nil
 }
 
-func (f *fakeKubernetesClient) UpdateDeployment(resources *api.ResourceRequirements) error {
+func (f *fakeKubernetesClient) UpdateDeployment(ctx context.Context, resources *api.ResourceRequirements, opt v1.UpdateOptions) error {
 	f.newResources = resources
 	return nil
 }

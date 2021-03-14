@@ -39,17 +39,42 @@ const (
 
 	// SeccompPodAnnotationKey represents the key of a seccomp profile applied
 	// to all containers of a pod.
+	// Deprecated: set a pod security context `seccompProfile` field.
 	SeccompPodAnnotationKey string = "seccomp.security.alpha.kubernetes.io/pod"
 
 	// SeccompContainerAnnotationKeyPrefix represents the key of a seccomp profile applied
 	// to one container of a pod.
+	// Deprecated: set a container security context `seccompProfile` field.
 	SeccompContainerAnnotationKeyPrefix string = "container.seccomp.security.alpha.kubernetes.io/"
 
 	// SeccompProfileRuntimeDefault represents the default seccomp profile used by container runtime.
+	// Deprecated: set a pod or container security context `seccompProfile` of type "RuntimeDefault" instead.
 	SeccompProfileRuntimeDefault string = "runtime/default"
 
+	// SeccompProfileNameUnconfined is the unconfined seccomp profile.
+	SeccompProfileNameUnconfined string = "unconfined"
+
+	// SeccompLocalhostProfileNamePrefix is the prefix for specifying profiles loaded from the node's disk.
+	SeccompLocalhostProfileNamePrefix = "localhost/"
+
+	// AppArmorBetaContainerAnnotationKeyPrefix is the prefix to an annotation key specifying a container's apparmor profile.
+	AppArmorBetaContainerAnnotationKeyPrefix = "container.apparmor.security.beta.kubernetes.io/"
+	// AppArmorBetaDefaultProfileAnnotatoinKey is the annotation key specifying the default AppArmor profile.
+	AppArmorBetaDefaultProfileAnnotationKey = "apparmor.security.beta.kubernetes.io/defaultProfileName"
+	// AppArmorBetaAllowedProfileAnnotationKey is the annotation key specifying the allowed AppArmor profiles.
+	AppArmorBetaAllowedProfilesAnnotationKey = "apparmor.security.beta.kubernetes.io/allowedProfileNames"
+
+	// AppArmorBetaProfileRuntimeDefault is the profile specifying the runtime default.
+	AppArmorBetaProfileRuntimeDefault = "runtime/default"
+
+	// AppArmorBetaProfileNamePrefix is the prefix for specifying profiles loaded on the node.
+	AppArmorBetaProfileNamePrefix = "localhost/"
+
+	// AppArmorBetaProfileNameUnconfined is the Unconfined AppArmor profile
+	AppArmorBetaProfileNameUnconfined = "unconfined"
+
 	// DeprecatedSeccompProfileDockerDefault represents the default seccomp profile used by docker.
-	// This is now deprecated and should be replaced by SeccompProfileRuntimeDefault.
+	// Deprecated: set a pod or container security context `seccompProfile` of type "RuntimeDefault" instead.
 	DeprecatedSeccompProfileDockerDefault string = "docker/default"
 
 	// PreferAvoidPodsAnnotationKey represents the key of preferAvoidPods data (json serialized)
@@ -78,4 +103,29 @@ const (
 	//
 	// Not all cloud providers support this annotation, though AWS & GCE do.
 	AnnotationLoadBalancerSourceRangesKey = "service.beta.kubernetes.io/load-balancer-source-ranges"
+
+	// EndpointsLastChangeTriggerTime is the annotation key, set for endpoints objects, that
+	// represents the timestamp (stored as RFC 3339 date-time string, e.g. '2018-10-22T19:32:52.1Z')
+	// of the last change, of some Pod or Service object, that triggered the endpoints object change.
+	// In other words, if a Pod / Service changed at time T0, that change was observed by endpoints
+	// controller at T1, and the Endpoints object was changed at T2, the
+	// EndpointsLastChangeTriggerTime would be set to T0.
+	//
+	// The "endpoints change trigger" here means any Pod or Service change that resulted in the
+	// Endpoints object change.
+	//
+	// Given the definition of the "endpoints change trigger", please note that this annotation will
+	// be set ONLY for endpoints object changes triggered by either Pod or Service change. If the
+	// Endpoints object changes due to other reasons, this annotation won't be set (or updated if it's
+	// already set).
+	//
+	// This annotation will be used to compute the in-cluster network programming latency SLI, see
+	// https://github.com/kubernetes/community/blob/master/sig-scalability/slos/network_programming_latency.md
+	EndpointsLastChangeTriggerTime = "endpoints.kubernetes.io/last-change-trigger-time"
+
+	// MigratedPluginsAnnotationKey is the annotation key, set for CSINode objects, that is a comma-separated
+	// list of in-tree plugins that will be serviced by the CSI backend on the Node represented by CSINode.
+	// This annotation is used by the Attach Detach Controller to determine whether to use the in-tree or
+	// CSI Backend for a volume plugin on a specific node.
+	MigratedPluginsAnnotationKey = "storage.alpha.kubernetes.io/migrated-plugins"
 )

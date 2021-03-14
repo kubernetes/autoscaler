@@ -21,11 +21,13 @@ and update a deployment based on that status.
 package nanny
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	log "github.com/golang/glog"
 	api "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type operation int
@@ -87,7 +89,7 @@ func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api
 type KubernetesClient interface {
 	CountNodes() (uint64, error)
 	ContainerResources() (*api.ResourceRequirements, error)
-	UpdateDeployment(resources *api.ResourceRequirements) error
+	UpdateDeployment(ctx context.Context, resources *api.ResourceRequirements, opt v1.UpdateOptions) error
 	Stop()
 }
 
@@ -100,7 +102,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration) {
+func PollAPIServer(ctx context.Context, k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -110,7 +112,8 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 			time.Sleep(pollPeriod)
 		}
 
-		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, lastResult); lastResult == overwrite {
+		updateOpt := v1.UpdateOptions{}
+		if lastResult = updateResources(ctx, k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, lastResult, updateOpt); lastResult == overwrite {
 			lastChange = time.Now()
 		}
 	}
@@ -122,7 +125,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 // It returns overwrite if deployment has been updated, postpone if the change
 // could not be applied due to scale up/down delay and noChange if the estimated
 // expected ResourceRequirements are in line with the actual ResourceRequirements.
-func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, prevResult updateResult) updateResult {
+func updateResources(ctx context.Context, k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, prevResult updateResult, opt v1.UpdateOptions) updateResult {
 
 	// Query the apiserver for the number of nodes.
 	num, err := k8s.CountNodes()
@@ -160,7 +163,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	}
 
 	log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v New: %+v", *resources, jsonOrValue(*overwriteResReq))
-	if err := k8s.UpdateDeployment(overwriteResReq); err != nil {
+	if err := k8s.UpdateDeployment(ctx, overwriteResReq, opt); err != nil {
 		log.Error(err)
 		return noChange
 	}

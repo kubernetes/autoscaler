@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"os/signal"
@@ -178,8 +179,10 @@ func main() {
 		os.Exit(0)
 	}()
 
+	ctx := context.Background()
 	// Begin nannying.
 	nanny.PollAPIServer(
+		ctx,
 		k8s,
 		nanny.Estimator{
 			AcceptanceOffset:     int64(*acceptanceOffset),

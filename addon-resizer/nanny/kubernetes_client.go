@@ -17,11 +17,13 @@ limitations under the License.
 package nanny
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -95,7 +97,7 @@ func (k *kubernetesClient) ContainerResources() (*core.ResourceRequirements, err
 	return nil, fmt.Errorf("container %s was not found in deployment %s in namespace %s", k.container, k.deployment, k.namespace)
 }
 
-func (k *kubernetesClient) UpdateDeployment(resources *core.ResourceRequirements) error {
+func (k *kubernetesClient) UpdateDeployment(ctx context.Context, resources *core.ResourceRequirements, opt v1.UpdateOptions) error {
 	// First, get the Deployment.
 	dep, err := k.deploymentLister.Get(k.deployment)
 	if err != nil {
@@ -108,7 +110,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *core.ResourceRequirements
 		if container.Name == k.container {
 			// Update the deployment.
 			dep.Spec.Template.Spec.Containers[i].Resources = *resources
-			_, err := k.deploymentClient.Update(dep)
+			_, err := k.deploymentClient.Update(ctx, dep, opt)
 			return err
 		}
 	}
