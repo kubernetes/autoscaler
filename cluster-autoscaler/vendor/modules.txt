@@ -144,8 +144,6 @@ github.com/cilium/ebpf/internal/btf
 github.com/cilium/ebpf/internal/unix
 # github.com/clusterhq/flocker-go v0.0.0-20160920122132-2b8b7259d313
 github.com/clusterhq/flocker-go
-# github.com/codegangsta/negroni v1.0.0
-## explicit
 # github.com/container-storage-interface/spec v1.3.0
 github.com/container-storage-interface/spec/lib/go/csi
 # github.com/containerd/cgroups v0.0.0-20200531161412-0dbf7f05ba59
@@ -367,8 +365,6 @@ github.com/gophercloud/gophercloud/openstack/networking/v2/networks
 github.com/gophercloud/gophercloud/openstack/networking/v2/ports
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
-# github.com/gorilla/context v1.1.1
-## explicit
 # github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 github.com/grpc-ecosystem/go-grpc-prometheus
 # github.com/hashicorp/golang-lru v0.5.1
