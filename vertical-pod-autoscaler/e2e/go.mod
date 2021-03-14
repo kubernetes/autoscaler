@@ -3,25 +3,22 @@
 
 module k8s.io/autoscaler/vertical-pod-autoscaler/e2e
 
-go 1.14
+go 1.16
 
 require (
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.7.0
-	github.com/prometheus/procfs v0.0.6 // indirect
-	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
-	golang.org/x/sys v0.0.0-20191112214154-59a1497f0cea // indirect
 	google.golang.org/appengine v1.6.5 // indirect
-	k8s.io/api v0.18.3
-	k8s.io/apimachinery v0.18.3
+	k8s.io/api v0.20.4
+	k8s.io/apimachinery v0.20.4
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200605154545-936eea18fb1d
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/component-base v0.18.3
+	k8s.io/component-base v0.20.4
 	k8s.io/klog v1.0.0
 	k8s.io/kubernetes v1.18.3
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
+	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
 )
 
 replace (
