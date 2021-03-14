@@ -21,7 +21,7 @@ ALL_ARCH = amd64 arm arm64 ppc64le s390x
 ARCH ?= amd64
 
 GOARM=7
-GOLANG_VERSION = 1.12.1
+GOLANG_VERSION = 1.16.2
 REGISTRY = staging-k8s.gcr.io
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
@@ -66,9 +66,9 @@ test:
 	docker run --rm -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
         /bin/bash -c "\
-            go get github.com/tools/godep && \
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            godep go test ./nanny -v"
+            go mod download && \
+            go test ./nanny -v"
 
 push: .push-$(ARCH)
 .push-$(ARCH): .container-$(ARCH)

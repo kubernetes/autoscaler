@@ -104,7 +104,7 @@ google.golang.org/protobuf/types/known/timestamppb
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-# k8s.io/api v0.20.4
+# k8s.io/api v0.20.4 => k8s.io/api v0.20.4
 ## explicit
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
@@ -149,7 +149,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.20.4
+# k8s.io/apimachinery v0.20.4 => k8s.io/apimachinery v0.20.4
 ## explicit
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
@@ -190,7 +190,7 @@ k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v0.20.4
+# k8s.io/client-go v0.20.4 => k8s.io/client-go v0.20.4
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/kubernetes
@@ -273,3 +273,6 @@ k8s.io/utils/trace
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
+# k8s.io/api => k8s.io/api v0.20.4
+# k8s.io/apimachinery => k8s.io/apimachinery v0.20.4
+# k8s.io/client-go => k8s.io/client-go v0.20.4
