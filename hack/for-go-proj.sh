@@ -43,20 +43,13 @@ esac
 
 for project_name in ${PROJECT_NAMES[*]}; do
   (
-    if [[ $project_name == cluster-autoscaler ]];then
-      export GO111MODULE=off
-    fi
-
     project=${CONTRIB_ROOT}/${project_name}
     echo "${CMD}ing ${project}"
     cd "${project}"
     case "${CMD}" in
       "test")
-        if [[ -n $(find . -name "Godeps.json") ]]; then
-          godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
-        else
-          go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
-        fi
+        go mod download
+        go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         ;;
       *)
         godep go "${CMD}" ./...
