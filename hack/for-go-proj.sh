@@ -48,7 +48,7 @@ for project_name in ${PROJECT_NAMES[*]}; do
     cd "${project}"
     case "${CMD}" in
       "test")
-        go mod download
+        go mod vendor
         go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         ;;
       *)
