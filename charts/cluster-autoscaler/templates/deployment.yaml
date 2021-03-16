@@ -70,7 +70,7 @@ spec:
             - --cluster-name={{ .Values.magnumClusterName }}
             {{- end }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+          {{- if eq .Values.cloudProvider "magnum" }}
             - --cloud-config={{ .Values.cloudConfigPath }}
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
@@ -182,9 +182,9 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
+          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
           volumeMounts:
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+          {{- if eq .Values.cloudProvider "magnum" }}
             - name: cloudconfig
               mountPath: {{ .Values.cloudConfigPath }}
               readOnly: true
@@ -218,9 +218,9 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
+      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
       volumes:
-      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+      {{- if eq .Values.cloudProvider "magnum" }}
         - name: cloudconfig
           hostPath:
             path: {{ .Values.cloudConfigPath }}
