@@ -17,10 +17,12 @@ limitations under the License.
 package gce
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -96,4 +98,67 @@ func TestWaitForOpTimeout(t *testing.T) {
 
 	err := g.waitForOp(operation, projectId, zoneB, false)
 	assert.Error(t, err)
+}
+
+func TestErrors(t *testing.T) {
+	const instanceUrl = "https://content.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst"
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL)
+
+	testCases := []struct {
+		errorCodes         []string
+		expectedErrorCode  string
+		expectedErrorClass cloudprovider.InstanceErrorClass
+	}{
+		{
+			errorCodes:         []string{"IP_SPACE_EXHAUSTED"},
+			expectedErrorCode:  "IP_SPACE_EXHAUSTED",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
+			expectedErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:         []string{"QUOTA"},
+			expectedErrorCode:  "QUOTA_EXCEEDED",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:         []string{"xyz", "abc"},
+			expectedErrorCode:  "OTHER",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+	}
+	for _, tc := range testCases {
+		for _, errorCode := range tc.errorCodes {
+			lmiResponse := gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      instanceUrl,
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{
+								Errors: []*gce_api.ManagedInstanceLastAttemptErrorsErrors{
+									{
+										Code: errorCode,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			b, err := json.Marshal(lmiResponse)
+			assert.NoError(t, err)
+			server.On("handle", "/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
+			instances, err := g.FetchMigInstances(GceRef{})
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedErrorCode, instances[0].Status.ErrorInfo.ErrorCode)
+			assert.Equal(t, tc.expectedErrorClass, instances[0].Status.ErrorInfo.ErrorClass)
+		}
+	}
+	mock.AssertExpectationsForObjects(t, server)
 }
