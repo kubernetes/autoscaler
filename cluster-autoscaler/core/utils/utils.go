@@ -179,6 +179,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	for _, podInfo := range baseNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
+
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
 	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)

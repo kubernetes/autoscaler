@@ -120,7 +120,6 @@ func NewStaticAutoscaler(
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff) *StaticAutoscaler {
-
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
@@ -257,6 +256,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if err != nil {
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+
+	extraDaemonsets, err := a.processors.PodTemplateListProcessor.ExtraDaemonsets(autoscalingContext)
+	if err != nil {
+		klog.Errorf("Failed to get extra daemonset list: %v", err)
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	} else if len(extraDaemonsets) > 0 {
+		daemonsets = append(daemonsets, extraDaemonsets...)
 	}
 
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
@@ -701,7 +708,6 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		} else {
 			klog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
-
 		}
 	}
 	return oldUnschedulablePods
