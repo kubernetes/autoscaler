@@ -133,6 +133,7 @@ extraArgs:
   stderrthreshold: info
   v: 4
   # write-status-configmap: true
+  # status-config-map-name: cluster-autoscaler-status
   # leader-elect: true
   # skip-nodes-with-local-storage: true
   # expander: random
