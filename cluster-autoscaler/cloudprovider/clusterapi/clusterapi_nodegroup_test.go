@@ -27,10 +27,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/utils/pointer"
 )
 
 const (
@@ -46,6 +46,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		minSize     int
 		maxSize     int
 		nodeCount   int
+		expectNil   bool
 	}
 
 	var testCases = []testCase{{
@@ -82,15 +83,17 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		maxSize:     0,
 		replicas:    0,
 		errors:      false,
+		expectNil:   true,
 	}, {
 		description: "no error: min=0, max=1",
 		annotations: map[string]string{
 			nodeGroupMaxSizeAnnotationKey: "1",
 		},
-		minSize:  0,
-		maxSize:  1,
-		replicas: 0,
-		errors:   false,
+		minSize:   0,
+		maxSize:   1,
+		replicas:  0,
+		errors:    false,
+		expectNil: true,
 	}, {
 		description: "no error: min=1, max=10, replicas=5",
 		annotations: map[string]string{
@@ -102,26 +105,23 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		replicas:  5,
 		nodeCount: 5,
 		errors:    false,
+		expectNil: true,
 	}}
 
-	newNodeGroup := func(t *testing.T, controller *machineController, testConfig *testConfig) (*nodegroup, error) {
+	newNodeGroup := func(controller *machineController, testConfig *testConfig) (*nodegroup, error) {
 		if testConfig.machineDeployment != nil {
-			return newNodegroupFromMachineDeployment(controller, testConfig.machineDeployment)
+			return newNodeGroupFromScalableResource(controller, testConfig.machineDeployment)
 		}
-		return newNodegroupFromMachineSet(controller, testConfig.machineSet)
+		return newNodeGroupFromScalableResource(controller, testConfig.machineSet)
 	}
 
 	test := func(t *testing.T, tc testCase, testConfig *testConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)
 		defer stop()
 
-		ng, err := newNodeGroup(t, controller, testConfig)
+		ng, err := newNodeGroup(controller, testConfig)
 		if tc.errors && err == nil {
 			t.Fatal("expected an error")
-		}
-
-		if !tc.errors && ng == nil {
-			t.Fatalf("test case logic error: %v", err)
 		}
 
 		if tc.errors {
@@ -130,30 +130,35 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 			return
 		}
 
+		if tc.expectNil && ng == nil {
+			// if the test case is expected to return nil then
+			// don't assert the remainder
+			return
+		}
+
 		if ng == nil {
 			t.Fatal("expected nodegroup to be non-nil")
 		}
 
-		var expectedName string
+		var expectedName, expectedKind string
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			expectedName = testConfig.spec.machineSetName
-		case *machineDeploymentScalableResource:
+		if testConfig.machineDeployment != nil {
+			expectedKind = machineDeploymentKind
 			expectedName = testConfig.spec.machineDeploymentName
-		default:
-			t.Fatalf("unexpected type: %T", v)
+		} else {
+			expectedKind = machineSetKind
+			expectedName = testConfig.spec.machineSetName
 		}
 
-		expectedID := path.Join(testConfig.spec.namespace, expectedName)
+		expectedID := path.Join(expectedKind, testConfig.spec.namespace, expectedName)
 		expectedDebug := fmt.Sprintf(debugFormat, expectedID, tc.minSize, tc.maxSize, tc.replicas)
 
-		if ng.Name() != expectedName {
-			t.Errorf("expected %q, got %q", expectedName, ng.Name())
+		if ng.scalableResource.Name() != expectedName {
+			t.Errorf("expected %q, got %q", expectedName, ng.scalableResource.Name())
 		}
 
-		if ng.Namespace() != testConfig.spec.namespace {
-			t.Errorf("expected %q, got %q", testConfig.spec.namespace, ng.Namespace())
+		if ng.scalableResource.Namespace() != testConfig.spec.namespace {
+			t.Errorf("expected %q, got %q", testConfig.spec.namespace, ng.scalableResource.Namespace())
 		}
 
 		if ng.MinSize() != tc.minSize {
@@ -198,7 +203,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineSet", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineSetTestConfig(testNamespace, tc.nodeCount, tc.annotations))
+				test(t, tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations))
 			})
 		}
 	})
@@ -206,7 +211,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineDeployment", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineDeploymentTestConfig(testNamespace, tc.nodeCount, tc.annotations))
+				test(t, tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations))
 			})
 		}
 	})
@@ -270,27 +275,16 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 			t.Errorf("expected error message to contain %q, got %q", tc.errorMsg, err.Error())
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			ms, err := ng.machineController.getMachineSet(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(ms.Spec.Replicas, 0); actual != tc.initial {
-				t.Errorf("expected %v, got %v", tc.initial, actual)
-			}
-		case *machineDeploymentScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			md, err := ng.machineController.getMachineDeployment(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(md.Spec.Replicas, 0); actual != tc.initial {
-				t.Errorf("expected %v, got %v", tc.initial, actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+
+		if scalableResource.Spec.Replicas != tc.initial {
+			t.Errorf("expected %v, got %v", tc.initial, scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -301,7 +295,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 			})
 		}
 	})
@@ -313,7 +307,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(testNamespace, int(tc.initial), annotations))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 			})
 		}
 	})
@@ -354,27 +348,16 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			ms, err := ng.machineController.getMachineSet(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(ms.Spec.Replicas, 0); actual != tc.expected {
-				t.Errorf("expected %v, got %v", tc.expected, actual)
-			}
-		case *machineDeploymentScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			md, err := ng.machineController.getMachineDeployment(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(md.Spec.Replicas, 0); actual != tc.expected {
-				t.Errorf("expected %v, got %v", tc.expected, actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(ng.scalableResource.Namespace()).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+
+		if scalableResource.Spec.Replicas != tc.expected {
+			t.Errorf("expected %v, got %v", tc.expected, scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -390,7 +373,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
@@ -400,7 +383,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineDeploymentTestConfig(testNamespace, int(tc.initial), annotations))
+		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 	})
 }
 
@@ -428,31 +411,28 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 		}
 
 		ng := nodegroups[0]
+
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
 		// DecreaseTargetSize should only decrease the size when the current target size of the nodeGroup
 		// is bigger than the number existing instances for that group. We force such a scenario with targetSizeIncrement.
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			testConfig.machineSet.Spec.Replicas = int32ptr(*testConfig.machineSet.Spec.Replicas + tc.targetSizeIncrement)
-			u := newUnstructuredFromMachineSet(testConfig.machineSet)
-			if err := controller.machineSetInformer.Informer().GetStore().Add(u); err != nil {
-				t.Fatalf("failed to add new machine: %v", err)
-			}
-			_, err := controller.dynamicclient.Resource(*controller.machineSetResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
-			if err != nil {
-				t.Fatalf("failed to updating machine: %v", err)
-			}
-		case *machineDeploymentScalableResource:
-			testConfig.machineDeployment.Spec.Replicas = int32ptr(*testConfig.machineDeployment.Spec.Replicas + tc.targetSizeIncrement)
-			u := newUnstructuredFromMachineDeployment(testConfig.machineDeployment)
-			if err := controller.machineDeploymentInformer.Informer().GetStore().Add(u); err != nil {
-			}
-			_, err := controller.dynamicclient.Resource(*controller.machineDeploymentResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
-			if err != nil {
-				t.Fatalf("failed to updating machine: %v", err)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		scalableResource, err := controller.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
 		}
+
+		scalableResource.Spec.Replicas += tc.targetSizeIncrement
+
+		_, err = ng.machineController.managementScaleClient.Scales(ng.scalableResource.Namespace()).
+			Update(context.TODO(), gvr.GroupResource(), scalableResource, metav1.UpdateOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
 		// A nodegroup is immutable; get a fresh copy after adding targetSizeIncrement.
 		nodegroups, err = controller.nodeGroups()
 		if err != nil {
@@ -473,27 +453,14 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			t.Fatalf("expected error: %v, got: %v", tc.expectedError, err)
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			ms, err := ng.machineController.getMachineSet(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(ms.Spec.Replicas, 0); actual != tc.expected {
-				t.Errorf("expected %v, got %v", tc.expected, actual)
-			}
-		case *machineDeploymentScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			md, err := ng.machineController.getMachineDeployment(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(md.Spec.Replicas, 0); actual != tc.expected {
-				t.Errorf("expected %v, got %v", tc.expected, actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		scalableResource, err = controller.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if scalableResource.Spec.Replicas != tc.expected {
+			t.Errorf("expected %v, got %v", tc.expected, scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -511,18 +478,18 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			delta:               -1,
 			expectedError:       true,
 		}
-		test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 	})
 
 	t.Run("MachineSet", func(t *testing.T) {
 		tc := testCase{
-			description:         "A node group with targe size 4 but only 3 existing instances should decrease by 1",
+			description:         "A node group with target size 4 but only 3 existing instances should decrease by 1",
 			initial:             3,
 			targetSizeIncrement: 1,
 			expected:            3,
 			delta:               -1,
 		}
-		test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
@@ -534,7 +501,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			delta:               -1,
 			expectedError:       true,
 		}
-		test(t, &tc, createMachineDeploymentTestConfig(testNamespace, int(tc.initial), annotations))
+		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 	})
 }
 
@@ -596,27 +563,16 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 			t.Errorf("expected error message to contain %q, got %q", tc.errorMsg, err.Error())
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			ms, err := ng.machineController.getMachineSet(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(ms.Spec.Replicas, 0); actual != tc.initial {
-				t.Errorf("expected %v, got %v", tc.initial, actual)
-			}
-		case *machineDeploymentScalableResource:
-			// A nodegroup is immutable; get a fresh copy.
-			md, err := ng.machineController.getMachineDeployment(ng.Namespace(), ng.Name(), v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(md.Spec.Replicas, 0); actual != tc.initial {
-				t.Errorf("expected %v, got %v", tc.initial, actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+
+		if scalableResource.Spec.Replicas != tc.initial {
+			t.Errorf("expected %v, got %v", tc.initial, scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -627,7 +583,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(testNamespace, int(tc.initial), annotations))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 			})
 		}
 	})
@@ -639,7 +595,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(testNamespace, int(tc.initial), annotations))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
 			})
 		}
 	})
@@ -684,34 +640,33 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 		}
 
 		for i := 5; i < len(testConfig.machines); i++ {
-			machine, err := controller.getMachine(testConfig.machines[i].Namespace, testConfig.machines[i].Name, v1.GetOptions{})
+			machine, err := controller.managementClient.Resource(controller.machineResource).
+				Namespace(testConfig.spec.namespace).
+				Get(context.TODO(), testConfig.machines[i].GetName(), metav1.GetOptions{})
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if _, found := machine.Annotations[machineDeleteAnnotationKey]; !found {
-				t.Errorf("expected annotation %q on machine %s", machineDeleteAnnotationKey, machine.Name)
+			if _, found := machine.GetAnnotations()[machineDeleteAnnotationKey]; !found {
+				t.Errorf("expected annotation %q on machine %s", machineDeleteAnnotationKey, machine.GetName())
+			}
+			if _, found := machine.GetAnnotations()[deprecatedMachineDeleteAnnotationKey]; !found {
+				t.Errorf("expected annotation %q on machine %s", deprecatedMachineDeleteAnnotationKey, machine.GetName())
 			}
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			updatedMachineSet, err := controller.getMachineSet(testConfig.machineSet.Namespace, testConfig.machineSet.Name, v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(updatedMachineSet.Spec.Replicas, 0); actual != 5 {
-				t.Fatalf("expected 5 nodes, got %v", actual)
-			}
-		case *machineDeploymentScalableResource:
-			updatedMachineDeployment, err := controller.getMachineDeployment(testConfig.machineDeployment.Namespace, testConfig.machineDeployment.Name, v1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(updatedMachineDeployment.Spec.Replicas, 0); actual != 5 {
-				t.Fatalf("expected 5 nodes, got %v", actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if scalableResource.Spec.Replicas != 5 {
+			t.Errorf("expected 5, got %v", scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -721,14 +676,14 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))
@@ -765,13 +720,10 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 			t.Error("expected an error")
 		}
 
-		expectedErr0 := `node "test-namespace1-machineset-0-nodeid-0" doesn't belong to node group "test-namespace0/machineset-0"`
-		if testConfig0.machineDeployment != nil {
-			expectedErr0 = `node "test-namespace1-machineset-0-nodeid-0" doesn't belong to node group "test-namespace0/machinedeployment-0"`
-		}
+		expectedErrSubstring := "doesn't belong to node group"
 
-		if !strings.Contains(err0.Error(), string(normalizedProviderString(expectedErr0))) {
-			t.Errorf("expected: %q, got: %q", expectedErr0, err0.Error())
+		if !strings.Contains(err0.Error(), expectedErrSubstring) {
+			t.Errorf("expected error: %q to contain: %q", err0.Error(), expectedErrSubstring)
 		}
 
 		// Deleting nodes that are not in ng1 should fail.
@@ -780,13 +732,8 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 			t.Error("expected an error")
 		}
 
-		expectedErr1 := `node "test-namespace0-machineset-0-nodeid-0" doesn't belong to node group "test-namespace1/machineset-0"`
-		if testConfig1.machineDeployment != nil {
-			expectedErr1 = `node "test-namespace0-machineset-0-nodeid-0" doesn't belong to node group "test-namespace1/machinedeployment-0"`
-		}
-
-		if !strings.Contains(err1.Error(), string(normalizedProviderString(expectedErr1))) {
-			t.Errorf("expected: %q, got: %q", expectedErr1, err1.Error())
+		if !strings.Contains(err1.Error(), expectedErrSubstring) {
+			t.Errorf("expected error: %q to contain: %q", err0.Error(), expectedErrSubstring)
 		}
 
 		// Deleting from correct node group should fail because
@@ -808,20 +755,24 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
-		testConfig0 := createMachineSetTestConfigs(testNamespace+"0", 1, 2, annotations)
-		testConfig1 := createMachineSetTestConfigs(testNamespace+"1", 1, 2, annotations)
+		namespace := RandomString(6)
+		clusterName := RandomString(6)
+		testConfig0 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
+		testConfig1 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		testConfig0 := createMachineDeploymentTestConfigs(testNamespace+"0", 1, 2, annotations)
-		testConfig1 := createMachineDeploymentTestConfigs(testNamespace+"1", 1, 2, annotations)
+		namespace := RandomString(6)
+		clusterName := RandomString(6)
+		testConfig0 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
+		testConfig1 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 }
 
 func TestNodeGroupDeleteNodesTwice(t *testing.T) {
-	addDeletionTimestampToMachine := func(t *testing.T, controller *machineController, node *corev1.Node) error {
+	addDeletionTimestampToMachine := func(controller *machineController, node *corev1.Node) error {
 		m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 		if err != nil {
 			return err
@@ -831,9 +782,12 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		// Machine API controllers were running Don't actually
 		// delete since the fake client does not support
 		// finalizers.
-		now := v1.Now()
-		m.DeletionTimestamp = &now
-		if _, err := controller.dynamicclient.Resource(*controller.machineResource).Namespace(m.GetNamespace()).Update(context.Background(), newUnstructuredFromMachine(m), v1.UpdateOptions{}); err != nil {
+		now := metav1.Now()
+
+		m.SetDeletionTimestamp(&now)
+
+		if _, err := controller.managementClient.Resource(controller.machineResource).
+			Namespace(m.GetNamespace()).Update(context.TODO(), m, metav1.UpdateOptions{}); err != nil {
 			return err
 		}
 
@@ -893,7 +847,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 
 		// Assert that we have no DeletionTimestamp
 		for i := expectedSize; i < len(testConfig.machines); i++ {
-			if !testConfig.machines[i].ObjectMeta.DeletionTimestamp.IsZero() {
+			if !testConfig.machines[i].GetDeletionTimestamp().IsZero() {
 				t.Fatalf("unexpected DeletionTimestamp")
 			}
 		}
@@ -904,7 +858,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		}
 
 		for _, node := range nodesToBeDeleted {
-			if err := addDeletionTimestampToMachine(t, controller, node); err != nil {
+			if err := addDeletionTimestampToMachine(controller, node); err != nil {
 				t.Fatalf("unexpected err: %v", err)
 			}
 		}
@@ -945,7 +899,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		// when fetched from the API
 		for _, node := range nodesToBeDeleted {
 			// Ensure the update has propogated
-			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) {
+			if err := wait.PollImmediate(100*time.Millisecond, 5*time.Minute, func() (bool, error) {
 				m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 				if err != nil {
 					return false, err
@@ -963,25 +917,16 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		switch v := (ng.scalableResource).(type) {
-		case *machineSetScalableResource:
-			updatedMachineSet, err := controller.getMachineSet(testConfig.machineSet.Namespace, testConfig.machineSet.Name, metav1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(updatedMachineSet.Spec.Replicas, 0); int(actual) != expectedSize {
-				t.Fatalf("expected %v nodes, got %v", expectedSize, actual)
-			}
-		case *machineDeploymentScalableResource:
-			updatedMachineDeployment, err := controller.getMachineDeployment(testConfig.machineDeployment.Namespace, testConfig.machineDeployment.Name, metav1.GetOptions{})
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if actual := pointer.Int32PtrDerefOr(updatedMachineDeployment.Spec.Replicas, 0); int(actual) != expectedSize {
-				t.Fatalf("expected %v nodes, got %v", expectedSize, actual)
-			}
-		default:
-			t.Errorf("unexpected type: %T", v)
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+
+		if scalableResource.Spec.Replicas != int32(expectedSize) {
+			t.Errorf("expected %v, got %v", expectedSize, scalableResource.Spec.Replicas)
 		}
 	}
 
@@ -991,14 +936,14 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))
@@ -1012,10 +957,11 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 
 		// Simulate a failed machine
 		machine := testConfig.machines[3].DeepCopy()
-		machine.Spec.ProviderID = nil
-		failureMessage := "FailureMessage"
-		machine.Status.FailureMessage = &failureMessage
-		if err := controller.machineInformer.Informer().GetStore().Update(newUnstructuredFromMachine(machine)); err != nil {
+
+		unstructured.RemoveNestedField(machine.Object, "spec", "providerID")
+		unstructured.SetNestedField(machine.Object, "FailureMessage", "status", "failureMessage")
+
+		if err := updateResource(controller.managementClient, controller.machineInformer, controller.machineResource, machine); err != nil {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 
@@ -1043,7 +989,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 		})
 
 		// The failed machine key is sorted to the first index
-		failedMachineID := fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.Namespace, machine.Name)
+		failedMachineID := fmt.Sprintf("%s%s_%s", failedMachinePrefix, machine.GetNamespace(), machine.GetName())
 		if nodeNames[0].Id != failedMachineID {
 			t.Fatalf("expected %q, got %q", failedMachineID, nodeNames[0].Id)
 		}
@@ -1071,14 +1017,14 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(testNamespace, 10, map[string]string{
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
 			nodeGroupMinSizeAnnotationKey: "1",
 			nodeGroupMaxSizeAnnotationKey: "10",
 		}))

@@ -45,6 +45,15 @@ To add the taint of `foo=bar:NoSchedule` to a node from a VMSS pool, you would a
 
 You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`
 
+#### Resources
+
+When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided presources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
+This can be overridden (for instance, to account for system reserved resources) by specifying capacities with VMSS tags, formated as: `k8s.io_cluster-autoscaler_node-template_resources_<resource name>: <resource value>`. For instance:
+```
+k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
+k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
+```
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
@@ -145,6 +154,14 @@ In addition, cluster-autoscaler exposes a `AZURE_VMSS_CACHE_TTL` environment var
 | Config Name | Default | Environment Variable | Cloud Config File |
 | ----------- | ------- | -------------------- | ----------------- |
 | VmssCacheTTL | 15 | AZURE_VMSS_CACHE_TTL | vmssCacheTTL |
+
+The `AZURE_VMSS_VMS_CACHE_TTL` environment variable affects the `GetScaleSetVms` (VMSS VM List) calls rate. The default value is 300 seconds.
+A configurable jitter (`AZURE_VMSS_VMS_CACHE_JITTER` environment variable, default 0) expresses the maximum number of second that will be subtracted from that initial VMSS cache TTL after a new VMSS is discovered by the cluster-autoscaler: this can prevent a dogpile effect on clusters having many VMSS.
+
+| Config Name | Default | Environment Variable | Cloud Config File |
+| ----------- | ------- | -------------------- | ----------------- |
+| vmssVmsCacheTTL | 300 | AZURE_VMSS_VMS_CACHE_TTL | vmssVmsCacheTTL |
+| vmssVmsCacheJitter | 0 | AZURE_VMSS_VMS_CACHE_JITTER | vmssVmsCacheJitter |
 
 When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
 
@@ -270,7 +287,7 @@ Please see the [AKS autoscaler documentation][] for details.
 
 ## Rate limit and back-off retries
 
-The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by environment variables or cloud config file.
+The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by either environment variables, or cloud config file. With config file, defaults values are false or 0.
 
 | Config Name | Default | Environment Variable | Cloud Config File |
 | ----------- | ------- | -------------------- | ----------------- |
