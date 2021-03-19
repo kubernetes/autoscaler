@@ -186,7 +186,7 @@ extraVolumes: []
 extraVolumeMounts: []
   # - name: ssl-certs
   #   mountPath: /etc/ssl/certs/ca-certificates.crt
-  #   readonly: true
+  #   readOnly: true
 
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
