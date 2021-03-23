@@ -17,6 +17,7 @@ limitations under the License.
 package processors
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
@@ -49,6 +50,8 @@ type AutoscalingProcessors struct {
 	NodeInfoProcessor nodeinfos.NodeInfoProcessor
 	// NodeGroupConfigProcessor provides config option for each NodeGroup.
 	NodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
+	// CustomResourcesProcessor is interface defining handling custom resources
+	CustomResourcesProcessor customresources.CustomResourcesProcessor
 }
 
 // DefaultProcessors returns default set of processors.
@@ -64,6 +67,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
 	}
 }
 
@@ -79,4 +83,5 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.ScaleDownNodeProcessor.CleanUp()
 	ap.NodeInfoProcessor.CleanUp()
 	ap.NodeGroupConfigProcessor.CleanUp()
+	ap.CustomResourcesProcessor.CleanUp()
 }
