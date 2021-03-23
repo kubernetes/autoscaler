@@ -65,8 +65,6 @@ const (
 	APIError FailedScaleUpReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up
 	Timeout FailedScaleUpReason = "timeout"
-	// AuthorizationError is an authorization error.
-	AuthorizationError FailedScaleUpReason = "authorizationError"
 
 	// autoscaledGroup is managed by CA
 	autoscaledGroup NodeGroupType = "autoscaled"
