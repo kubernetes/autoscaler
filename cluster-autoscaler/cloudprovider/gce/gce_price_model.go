@@ -44,6 +44,7 @@ const (
 
 var (
 	predefinedCpuPricePerHour = map[string]float64{
+		"a2":  0.031611,
 		"c2":  0.03398,
 		"e2":  0.021811,
 		"m1":  0.0348,
@@ -52,6 +53,7 @@ var (
 		"n2d": 0.027502,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
+		"a2":  0.004237,
 		"c2":  0.00455,
 		"e2":  0.002923,
 		"m1":  0.0051,
@@ -60,6 +62,7 @@ var (
 		"n2d": 0.003686,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
+		"a2":  0.009483 / 0.031611,
 		"c2":  0.00822 / 0.03398,
 		"e2":  0.006543 / 0.021811,
 		"m1":  0.00733 / 0.0348,
@@ -92,6 +95,11 @@ var (
 	// between the three machine types, the prices for e2-micro and e2-small
 	// are artificially set to be higher than the price of e2-medium.
 	instancePrices = map[string]float64{
+		"a2-highgpu-1g":    3.673385,
+		"a2-highgpu-2g":    7.34677,
+		"a2-highgpu-4g":    14.69354,
+		"a2-highgpu-8g":    29.38708,
+		"a2-megagpu-16g":   55.739504,
 		"c2-standard-4":    0.2088,
 		"c2-standard-8":    0.4176,
 		"c2-standard-16":   0.8352,
@@ -201,6 +209,11 @@ var (
 		"n2d-standard-224": 9.4632,
 	}
 	preemptiblePrices = map[string]float64{
+		"a2-highgpu-1g":    1.102016,
+		"a2-highgpu-2g":    2.204031,
+		"a2-highgpu-4g":    4.408062,
+		"a2-highgpu-8g":    8.816124,
+		"a2-megagpu-16g":   16.721851,
 		"c2-standard-4":    0.0505,
 		"c2-standard-8":    0.1011,
 		"c2-standard-16":   0.2021,
@@ -313,6 +326,7 @@ var (
 		"nvidia-tesla-v100": 2.48,
 		"nvidia-tesla-p100": 1.46,
 		"nvidia-tesla-k80":  0.45,
+		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 	}
 	preemptibleGpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.11,
@@ -320,6 +334,7 @@ var (
 		"nvidia-tesla-v100": 0.74,
 		"nvidia-tesla-p100": 0.43,
 		"nvidia-tesla-k80":  0.135,
+		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 	}
 )
 
