@@ -169,6 +169,9 @@ func (m *AzureManager) Refresh() error {
 }
 
 func (m *AzureManager) forceRefresh() error {
+	if err := m.fetchAutoNodeGroups(); err != nil {
+		klog.Errorf("Failed to fetch autodiscovered nodegroups: %v", err)
+	}
 	if err := m.azureCache.regenerate(); err != nil {
 		klog.Errorf("Failed to regenerate Azure cache: %v", err)
 		return err
