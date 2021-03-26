@@ -18,6 +18,10 @@ package azure
 
 import (
 	"fmt"
+	"math/rand"
+	"regexp"
+	"strings"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -51,6 +55,8 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 	result[apiv1.LabelOSStable] = buildInstanceOS(template)
 
 	result[apiv1.LabelInstanceType] = *template.Sku.Name
+	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
+
 	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
