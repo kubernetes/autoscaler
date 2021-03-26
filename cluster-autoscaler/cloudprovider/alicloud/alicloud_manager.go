@@ -31,8 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	klog "k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
-	"math/rand"
-	"time"
 )
 
 const (

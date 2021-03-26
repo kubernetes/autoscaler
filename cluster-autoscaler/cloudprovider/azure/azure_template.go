@@ -31,9 +31,6 @@ import (
 	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
-	"math/rand"
-	"regexp"
-	"strings"
 )
 
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
