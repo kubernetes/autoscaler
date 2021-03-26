@@ -83,6 +83,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "us-east-1", labels[apiv1.LabelZoneRegion])
 	assert.Equal(t, "sillyname", labels[apiv1.LabelHostname])
 	assert.Equal(t, "c4.large", labels[apiv1.LabelInstanceType])
+	assert.Equal(t, "c4.large", labels[apiv1.LabelInstanceTypeStable])
 	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }

@@ -394,6 +394,7 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
 	result[apiv1.LabelInstanceType] = template.InstanceType.InstanceType
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.InstanceType
 
 	result[apiv1.LabelZoneRegion] = template.Region
 	result[apiv1.LabelZoneFailureDomain] = template.Zone

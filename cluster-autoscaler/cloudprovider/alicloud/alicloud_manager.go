@@ -19,8 +19,11 @@ package alicloud
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"io"
+	"math/rand"
+	"time"
+
+	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,8 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	klog "k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -241,6 +242,7 @@ func buildGenericLabels(template *sgTemplate, nodeName string) map[string]string
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
 	result[apiv1.LabelInstanceType] = template.InstanceType.instanceTypeID
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.instanceTypeID
 
 	result[apiv1.LabelZoneRegion] = template.Region
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
