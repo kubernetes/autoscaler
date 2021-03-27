@@ -258,14 +258,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	extraDaemonsets, err := a.processors.PodTemplateListProcessor.ExtraDaemonsets(autoscalingContext)
-	if err != nil {
-		klog.Errorf("Failed to get extra daemonset list: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
-	} else if len(extraDaemonsets) > 0 {
-		daemonsets = append(daemonsets, extraDaemonsets...)
-	}
-
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
 	refreshStart := time.Now()
 	err = a.AutoscalingContext.CloudProvider.Refresh()

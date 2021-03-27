@@ -24,7 +24,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/podtemplates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
@@ -53,8 +52,6 @@ type AutoscalingProcessors struct {
 	NodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
 	// CustomResourcesProcessor is interface defining handling custom resources
 	CustomResourcesProcessor customresources.CustomResourcesProcessor
-	// PodTemplateListProcessor is used to provide a list of Pods considered as Daemonset pods.
-	PodTemplateListProcessor podtemplates.PodTemplateListProcessor
 }
 
 // DefaultProcessors returns default set of processors.
@@ -71,7 +68,6 @@ func DefaultProcessors() *AutoscalingProcessors {
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
 		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
-		PodTemplateListProcessor:   podtemplates.NewDefaultPodTemplateListProcessor(),
 	}
 }
 
@@ -88,5 +84,4 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.NodeInfoProcessor.CleanUp()
 	ap.NodeGroupConfigProcessor.CleanUp()
 	ap.CustomResourcesProcessor.CleanUp()
-	ap.PodTemplateListProcessor.CleanUp()
 }

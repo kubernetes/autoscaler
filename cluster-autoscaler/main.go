@@ -43,7 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/podtemplates"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos/podtemplates"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -336,7 +336,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 
 	// Enable PodTemplateListProcessor if needed
 	if autoscalingOptions.ExtraDaemonsetsFromPodTemplates {
-		opts.Processors.PodTemplateListProcessor = podtemplates.NewActivePodTemplateListProcessor(kubeClient)
+		opts.Processors.NodeInfoProcessor = podtemplates.NewNodeInfoWithPodTemplateProcessor(kubeClient)
 	}
 
 	// These metrics should be published only once.
