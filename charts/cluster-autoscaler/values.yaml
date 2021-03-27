@@ -149,7 +149,6 @@ extraArgs:
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
   # skip-nodes-with-system-pods: true
-  # extra-daemonsets-from-pod-templates: true
 
 # extraEnv -- Additional container environment variables.
 extraEnv: {}

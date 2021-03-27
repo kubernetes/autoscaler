@@ -38,12 +38,13 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
 func TestNewNodeInfoWithPodTemplateProcessor(t *testing.T) {
-	client := fake.NewSimpleClientset()
-	processor := NewNodeInfoWithPodTemplateProcessor(client)
+	opts := newtTestAutoscalerOptions()
+	processor := NewNodeInfoWithPodTemplateProcessor(opts)
 	defer processor.CleanUp()
 }
 
@@ -201,6 +202,12 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 			}
 			assert.EqualValues(t, tt.want, got, "nodeInfoWithPodTemplateProcessor.Process() wrong expected value")
 		})
+	}
+}
+
+func newtTestAutoscalerOptions() *core.AutoscalerOptions {
+	return &core.AutoscalerOptions{
+		KubeClient: fake.NewSimpleClientset(),
 	}
 }
 
