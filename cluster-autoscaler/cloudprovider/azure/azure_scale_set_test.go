@@ -194,6 +194,7 @@ func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "vmss-updating", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+	manager.explicitlyConfigured["vmss-updating"] = true
 	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 	assert.True(t, registered)
 	manager.Refresh()
@@ -229,6 +230,7 @@ func TestBelongs(t *testing.T) {
 
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
 	provider.azureManager.Refresh()
 
 	invalidNode := &apiv1.Node{
@@ -286,6 +288,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	registered := manager.RegisterNodeGroup(
 		newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
 	assert.True(t, registered)
 	err = manager.forceRefresh()
 	assert.NoError(t, err)
@@ -385,6 +388,7 @@ func TestDeleteNoConflictRequest(t *testing.T) {
 	assert.NoError(t, err)
 
 	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
 	assert.True(t, registered)
 	manager.Refresh()
 
@@ -436,6 +440,7 @@ func TestScaleSetNodes(t *testing.T) {
 
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
 	provider.azureManager.Refresh()
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
