@@ -20,9 +20,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	sdkaws "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
 func TestBuildAsg(t *testing.T) {
@@ -48,65 +45,4 @@ func validateAsg(t *testing.T, asg *asg, name string, minSize int, maxSize int) 
 	assert.Equal(t, name, asg.Name)
 	assert.Equal(t, minSize, asg.minSize)
 	assert.Equal(t, maxSize, asg.maxSize)
-}
-
-func TestBuildLaunchTemplateFromSpec(t *testing.T) {
-	assert := assert.New(t)
-
-	units := []struct {
-		name string
-		in   *autoscaling.LaunchTemplateSpecification
-		exp  *launchTemplate
-	}{
-		{
-			name: "non-default, specified version",
-			in: &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: sdkaws.String("foo"),
-				Version:            sdkaws.String("1"),
-			},
-			exp: &launchTemplate{
-				name:    "foo",
-				version: "1",
-			},
-		},
-		{
-			name: "non-default, specified $Latest",
-			in: &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: sdkaws.String("foo"),
-				Version:            sdkaws.String("$Latest"),
-			},
-			exp: &launchTemplate{
-				name:    "foo",
-				version: "$Latest",
-			},
-		},
-		{
-			name: "specified $Default",
-			in: &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: sdkaws.String("foo"),
-				Version:            sdkaws.String("$Default"),
-			},
-			exp: &launchTemplate{
-				name:    "foo",
-				version: "$Default",
-			},
-		},
-		{
-			name: "no version specified",
-			in: &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: sdkaws.String("foo"),
-				Version:            nil,
-			},
-			exp: &launchTemplate{
-				name:    "foo",
-				version: "$Default",
-			},
-		},
-	}
-
-	cache := &asgCache{}
-	for _, unit := range units {
-		got := cache.buildLaunchTemplateFromSpec(unit.in)
-		assert.Equal(unit.exp, got)
-	}
 }
