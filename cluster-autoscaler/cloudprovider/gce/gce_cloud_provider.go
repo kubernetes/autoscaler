@@ -356,7 +356,7 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := CreateGceManager(config, do, opts.Regional, opts.ConcurrentGceRefreshes)
+	manager, err := CreateGceManager(config, do, opts.Regional, opts.ConcurrentGceRefreshes, opts.UserAgent)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE Manager: %v", err)
 	}

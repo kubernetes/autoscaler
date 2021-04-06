@@ -325,7 +325,7 @@ func buildListInstanceGroupManagersResponse(listInstanceGroupManagerResponsePart
 }
 
 func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceManagerImpl {
-	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
+	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL, "")
 
 	// Override wait for op timeouts.
 	gceService.operationWaitTimeout = 50 * time.Millisecond

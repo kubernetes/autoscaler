@@ -85,11 +85,12 @@ type autoscalingGceClientV1 struct {
 }
 
 // NewAutoscalingGceClientV1 creates a new client for communicating with GCE v1 API.
-func NewAutoscalingGceClientV1(client *http.Client, projectId string) (*autoscalingGceClientV1, error) {
+func NewAutoscalingGceClientV1(client *http.Client, projectId string, userAgent string) (*autoscalingGceClientV1, error) {
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
 	}
+	gceService.UserAgent = userAgent
 
 	return &autoscalingGceClientV1{
 		projectId:                     projectId,
