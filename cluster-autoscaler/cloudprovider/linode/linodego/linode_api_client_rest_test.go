@@ -53,7 +53,7 @@ const listLKEClusterPoolsResponse4 = `
 `
 
 func TestApiClientRest_CreateLKEClusterPool(t *testing.T) {
-	server := NewHttpServerMockWithContentType()
+	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 
 	client := NewClient(&http.Client{})
@@ -67,7 +67,7 @@ func TestApiClientRest_CreateLKEClusterPool(t *testing.T) {
 		Disks: []LKEClusterPoolDisk{},
 	}
 	requestPath := "/lke/clusters/" + strconv.Itoa(clusterID) + "/pools"
-	server.On("handleWithContentType", requestPath).Return("application/json", createLKEClusterPoolResponse1).Once()
+	server.On("handle", requestPath).Return("application/json", createLKEClusterPoolResponse1).Once()
 	pool, err := client.CreateLKEClusterPool(ctx, clusterID, createOpts)
 
 	assert.NoError(t, err)
@@ -79,7 +79,7 @@ func TestApiClientRest_CreateLKEClusterPool(t *testing.T) {
 }
 
 func TestApiClientRest_DeleteLKEClusterPool(t *testing.T) {
-	server := NewHttpServerMockWithContentType()
+	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 
 	client := NewClient(&http.Client{})
@@ -89,7 +89,7 @@ func TestApiClientRest_DeleteLKEClusterPool(t *testing.T) {
 	poolID := 222
 	ctx := context.Background()
 	requestPath := "/lke/clusters/" + strconv.Itoa(clusterID) + "/pools/" + strconv.Itoa(poolID)
-	server.On("handleWithContentType", requestPath).Return("application/json", deleteLKEClusterPoolResponse1).Once()
+	server.On("handle", requestPath).Return("application/json", deleteLKEClusterPoolResponse1).Once()
 	err := client.DeleteLKEClusterPool(ctx, clusterID, poolID)
 	assert.NoError(t, err)
 
@@ -97,7 +97,7 @@ func TestApiClientRest_DeleteLKEClusterPool(t *testing.T) {
 }
 
 func TestApiClientRest_ListLKEClusterPools(t *testing.T) {
-	server := NewHttpServerMockWithContentType()
+	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 
 	client := NewClient(&http.Client{})
@@ -106,7 +106,7 @@ func TestApiClientRest_ListLKEClusterPools(t *testing.T) {
 	clusterID := 16293
 	ctx := context.Background()
 	requestPath := "/lke/clusters/" + strconv.Itoa(clusterID) + "/pools"
-	server.On("handleWithContentType", requestPath).Return("application/json", listLKEClusterPoolsResponse1).Once().On("handleWithContentType", requestPath).Return("application/json", listLKEClusterPoolsResponse2).Once().On("handleWithContentType", requestPath).Return("application/json", listLKEClusterPoolsResponse3).Once().On("handleWithContentType", requestPath).Return("application/json", listLKEClusterPoolsResponse4).Once()
+	server.On("handle", requestPath).Return("application/json", listLKEClusterPoolsResponse1).Once().On("handle", requestPath).Return("application/json", listLKEClusterPoolsResponse2).Once().On("handle", requestPath).Return("application/json", listLKEClusterPoolsResponse3).Once().On("handle", requestPath).Return("application/json", listLKEClusterPoolsResponse4).Once()
 
 	pools, err := client.ListLKEClusterPools(ctx, clusterID, nil)
 	assert.NoError(t, err)
