@@ -31,6 +31,7 @@ import (
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -171,13 +172,13 @@ type scaleDownResourcesDelta map[string]int64
 // used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
 const scaleDownLimitUnknown = math.MinInt64
 
-func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
+func (sd *ScaleDown) computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
 	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
 
-	var totalGpus map[string]int64
-	var totalGpusErr error
-	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
-		totalGpus, totalGpusErr = calculateScaleDownGpusTotal(nodes, cp, timestamp)
+	var totalResources map[string]int64
+	var totalResourcesErr error
+	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
+		totalResources, totalResourcesErr = sd.calculateScaleDownCustomResourcesTotal(nodes, cp, timestamp)
 	}
 
 	resultScaleDownLimits := make(scaleDownResourcesLimits)
@@ -191,11 +192,11 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 				resultScaleDownLimits[resource] = computeAboveMin(totalCores, min)
 			case resource == cloudprovider.ResourceNameMemory:
 				resultScaleDownLimits[resource] = computeAboveMin(totalMem, min)
-			case cloudprovider.IsGpuResource(resource):
-				if totalGpusErr != nil {
+			case cloudprovider.IsCustomResource(resource):
+				if totalResourcesErr != nil {
 					resultScaleDownLimits[resource] = scaleDownLimitUnknown
 				} else {
-					resultScaleDownLimits[resource] = computeAboveMin(totalGpus[resource], min)
+					resultScaleDownLimits[resource] = computeAboveMin(totalResources[resource], min)
 				}
 			default:
 				klog.Errorf("Scale down limits defined for unsupported resource '%s'", resource)
@@ -229,14 +230,9 @@ func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time
 	return coresTotal, memoryTotal
 }
 
-func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
-	type gpuInfo struct {
-		name  string
-		count int64
-	}
-
+func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
 	result := make(map[string]int64)
-	ngCache := make(map[string]gpuInfo)
+	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
 		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
@@ -253,31 +249,28 @@ func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProv
 			nodeGroup = nil
 		}
 
-		var gpuType string
-		var gpuCount int64
-
-		var cached gpuInfo
+		var resourceTargets []customresources.CustomResourceTarget
 		var cacheHit bool
+
 		if nodeGroup != nil {
-			cached, cacheHit = ngCache[nodeGroup.Id()]
-			if cacheHit {
-				gpuType = cached.name
-				gpuCount = cached.count
-			}
+			resourceTargets, cacheHit = ngCache[nodeGroup.Id()]
 		}
 		if !cacheHit {
-			gpuType, gpuCount, err = gpu.GetNodeTargetGpus(cp.GPULabel(), node, nodeGroup)
+			resourceTargets, err = sd.processors.CustomResourcesProcessor.GetNodeResourceTargets(sd.context, node, nodeGroup)
 			if err != nil {
 				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get gpu count for node %v when calculating cluster gpu usage")
 			}
 			if nodeGroup != nil {
-				ngCache[nodeGroup.Id()] = gpuInfo{name: gpuType, count: gpuCount}
+				ngCache[nodeGroup.Id()] = resourceTargets
 			}
 		}
-		if gpuType == "" || gpuCount == 0 {
-			continue
+
+		for _, resourceTarget := range resourceTargets {
+			if resourceTarget.ResourceType == "" || resourceTarget.ResourceCount == 0 {
+				continue
+			}
+			result[resourceTarget.ResourceType] += resourceTarget.ResourceCount
 		}
-		result[gpuType] += gpuCount
 	}
 
 	return result, nil
@@ -300,19 +293,21 @@ func copyScaleDownResourcesLimits(source scaleDownResourcesLimits) scaleDownReso
 	return copy
 }
 
-func computeScaleDownResourcesDelta(cp cloudprovider.CloudProvider, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (scaleDownResourcesDelta, errors.AutoscalerError) {
+func (sd *ScaleDown) computeScaleDownResourcesDelta(cp cloudprovider.CloudProvider, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (scaleDownResourcesDelta, errors.AutoscalerError) {
 	resultScaleDownDelta := make(scaleDownResourcesDelta)
 
 	nodeCPU, nodeMemory := core_utils.GetNodeCoresAndMemory(node)
 	resultScaleDownDelta[cloudprovider.ResourceNameCores] = nodeCPU
 	resultScaleDownDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
-	if cloudprovider.ContainsGpuResources(resourcesWithLimits) {
-		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(cp.GPULabel(), node, nodeGroup)
+	if cloudprovider.ContainsCustomResources(resourcesWithLimits) {
+		resourceTargets, err := sd.processors.CustomResourcesProcessor.GetNodeResourceTargets(sd.context, node, nodeGroup)
 		if err != nil {
-			return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node %v gpu: %v", node.Name)
+			return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node %v custom resources: %v", node.Name)
 		}
-		resultScaleDownDelta[gpuType] = gpuCount
+		for _, resourceTarget := range resourceTargets {
+			resultScaleDownDelta[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		}
 	}
 	return resultScaleDownDelta, nil
 }
@@ -825,7 +820,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
-	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
+	scaleDownResourcesLeft := sd.computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
@@ -900,7 +895,7 @@ func (sd *ScaleDown) TryToScaleDown(
 			continue
 		}
 
-		scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
+		scaleDownResourcesDelta, err := sd.computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
 		if err != nil {
 			klog.Errorf("Error getting node resources: %v", err)
 			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
@@ -1079,7 +1074,7 @@ func (sd *ScaleDown) getEmptyNodes(candidates []string, maxEmptyBulkDelete int,
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			resourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesNames)
+			resourcesDelta, err := sd.computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesNames)
 			if err != nil {
 				klog.Errorf("Error: %v", err)
 				continue
