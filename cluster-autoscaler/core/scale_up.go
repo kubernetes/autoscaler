@@ -53,17 +53,18 @@ type scaleUpResourcesDelta map[string]int64
 const scaleUpLimitUnknown = math.MaxInt64
 
 func computeScaleUpResourcesLeftLimits(
-	cp cloudprovider.CloudProvider,
+	context *context.AutoscalingContext,
+	processors *ca_processors.AutoscalingProcessors,
 	nodeGroups []cloudprovider.NodeGroup,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	nodesFromNotAutoscaledGroups []*apiv1.Node,
 	resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesLimits, errors.AutoscalerError) {
 	totalCores, totalMem, errCoresMem := calculateScaleUpCoresMemoryTotal(nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
 
-	var totalGpus map[string]int64
-	var totalGpusErr error
-	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
-		totalGpus, totalGpusErr = calculateScaleUpGpusTotal(cp.GPULabel(), nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
+	var totalResources map[string]int64
+	var totalResourcesErr error
+	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
+		totalResources, totalResourcesErr = calculateScaleUpCustomResourcesTotal(context, processors, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
 	}
 
 	resultScaleUpLimits := make(scaleUpResourcesLimits)
@@ -91,11 +92,11 @@ func computeScaleUpResourcesLeftLimits(
 					resultScaleUpLimits[resource] = computeBelowMax(totalMem, max)
 				}
 
-			case cloudprovider.IsGpuResource(resource):
-				if totalGpusErr != nil {
+			case cloudprovider.IsCustomResource(resource):
+				if totalResourcesErr != nil {
 					resultScaleUpLimits[resource] = scaleUpLimitUnknown
 				} else {
-					resultScaleUpLimits[resource] = computeBelowMax(totalGpus[resource], max)
+					resultScaleUpLimits[resource] = computeBelowMax(totalResources[resource], max)
 				}
 
 			default:
@@ -139,8 +140,9 @@ func calculateScaleUpCoresMemoryTotal(
 	return coresTotal, memoryTotal, nil
 }
 
-func calculateScaleUpGpusTotal(
-	GPULabel string,
+func calculateScaleUpCustomResourcesTotal(
+	context *context.AutoscalingContext,
+	processors *ca_processors.AutoscalingProcessors,
 	nodeGroups []cloudprovider.NodeGroup,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	nodesFromNotAutoscaledGroups []*apiv1.Node) (map[string]int64, errors.AutoscalerError) {
@@ -156,23 +158,30 @@ func calculateScaleUpGpusTotal(
 			return nil, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
 		}
 		if currentSize > 0 {
-			gpuType, gpuCount, err := gpu.GetNodeTargetGpus(GPULabel, nodeInfo.Node(), nodeGroup)
+			resourceTargets, err := processors.CustomResourcesProcessor.GetNodeResourceTargets(context, nodeInfo.Node(), nodeGroup)
 			if err != nil {
 				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node group %v:", nodeGroup.Id())
 			}
-			if gpuType == "" {
-				continue
+			for _, resourceTarget := range resourceTargets {
+				if resourceTarget.ResourceType == "" || resourceTarget.ResourceCount == 0 {
+					continue
+				}
+				result[resourceTarget.ResourceType] += resourceTarget.ResourceCount * int64(currentSize)
 			}
-			result[gpuType] += gpuCount * int64(currentSize)
 		}
 	}
 
 	for _, node := range nodesFromNotAutoscaledGroups {
-		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(GPULabel, node, nil)
+		resourceTargets, err := processors.CustomResourcesProcessor.GetNodeResourceTargets(context, node, nil)
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node gpus count for node %v:", node.Name)
 		}
-		result[gpuType] += gpuCount
+		for _, resourceTarget := range resourceTargets {
+			if resourceTarget.ResourceType == "" || resourceTarget.ResourceCount == 0 {
+				continue
+			}
+			result[resourceTarget.ResourceType] += resourceTarget.ResourceCount
+		}
 	}
 
 	return result, nil
@@ -185,19 +194,22 @@ func computeBelowMax(total int64, max int64) int64 {
 	return 0
 }
 
-func computeScaleUpResourcesDelta(cp cloudprovider.CloudProvider, nodeInfo *schedulerframework.NodeInfo, nodeGroup cloudprovider.NodeGroup, resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesDelta, errors.AutoscalerError) {
+func computeScaleUpResourcesDelta(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors,
+	nodeInfo *schedulerframework.NodeInfo, nodeGroup cloudprovider.NodeGroup, resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesDelta, errors.AutoscalerError) {
 	resultScaleUpDelta := make(scaleUpResourcesDelta)
 
 	nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
 	resultScaleUpDelta[cloudprovider.ResourceNameCores] = nodeCPU
 	resultScaleUpDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
-	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
-		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(cp.GPULabel(), nodeInfo.Node(), nodeGroup)
+	if cloudprovider.ContainsCustomResources(resourceLimiter.GetResources()) {
+		resourceTargets, err := processors.CustomResourcesProcessor.GetNodeResourceTargets(context, nodeInfo.Node(), nodeGroup)
 		if err != nil {
-			return scaleUpResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node group %v:", nodeGroup.Id())
+			return scaleUpResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target custom resources for node group %v:", nodeGroup.Id())
 		}
-		resultScaleUpDelta[gpuType] = gpuCount
+		for _, resourceTarget := range resourceTargets {
+			resultScaleUpDelta[resourceTarget.ResourceType] = resourceTarget.ResourceCount
+		}
 	}
 
 	return resultScaleUpDelta, nil
@@ -343,7 +355,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			errCP)
 	}
 
-	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(context.CloudProvider, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
+	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(context, processors, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
 	if errLimits != nil {
 		return &status.ScaleUpStatus{Result: status.ScaleUpError}, errLimits.AddPrefix("Could not compute total resources: ")
 	}
@@ -409,7 +421,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
-		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(context.CloudProvider, nodeInfo, nodeGroup, resourceLimiter)
+		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(context, processors, nodeInfo, nodeGroup, resourceLimiter)
 		if err != nil {
 			klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
 			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
@@ -533,7 +545,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = applyScaleUpResourcesLimits(context.CloudProvider, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
+		newNodes, err = applyScaleUpResourcesLimits(context, processors, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
 		if err != nil {
 			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, err
 		}
@@ -681,14 +693,15 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 }
 
 func applyScaleUpResourcesLimits(
-	cp cloudprovider.CloudProvider,
+	context *context.AutoscalingContext,
+	processors *ca_processors.AutoscalingProcessors,
 	newNodes int,
 	scaleUpResourcesLeft scaleUpResourcesLimits,
 	nodeInfo *schedulerframework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 	resourceLimiter *cloudprovider.ResourceLimiter) (int, errors.AutoscalerError) {
 
-	delta, err := computeScaleUpResourcesDelta(cp, nodeInfo, nodeGroup, resourceLimiter)
+	delta, err := computeScaleUpResourcesDelta(context, processors, nodeInfo, nodeGroup, resourceLimiter)
 	if err != nil {
 		return 0, err
 	}

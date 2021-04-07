@@ -36,6 +36,8 @@ const (
 	AwsProviderName = "aws"
 	// BaiducloudProviderName gets the provider name of baiducloud
 	BaiducloudProviderName = "baiducloud"
+	// BizflyCloudProviderName gets the provider name of bizflycloud
+	BizflyCloudProviderName = "bizflycloud"
 	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
 	// ClusterAPIProiverName gets the provider name of clusterapi
@@ -273,17 +275,17 @@ const (
 	ResourceNameMemory = "memory"
 )
 
-// IsGpuResource checks if given resource name point denotes a gpu type
-func IsGpuResource(resourceName string) bool {
+// IsCustomResource checks if given resource name point denotes a gpu type
+func IsCustomResource(resourceName string) bool {
 	// hack: we assume anything which is not cpu/memory to be a gpu.
 	// we are not getting anything more that a map string->limits from the user
 	return resourceName != ResourceNameCores && resourceName != ResourceNameMemory
 }
 
-// ContainsGpuResources returns true iff given list contains any resource name denoting a gpu type
-func ContainsGpuResources(resources []string) bool {
+// ContainsCustomResources returns true iff given list contains any custom resource name
+func ContainsCustomResources(resources []string) bool {
 	for _, resource := range resources {
-		if IsGpuResource(resource) {
+		if IsCustomResource(resource) {
 			return true
 		}
 	}

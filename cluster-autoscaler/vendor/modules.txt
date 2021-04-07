@@ -129,6 +129,9 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
+# github.com/bizflycloud/gobizfly v0.0.0-20210326021243-3ad34af44c6d
+## explicit
+github.com/bizflycloud/gobizfly
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
