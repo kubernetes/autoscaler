@@ -31,7 +31,7 @@ const (
 )
 
 type nodeGroupClient interface {
-	// Get lists all the cluster infomation in a Kubernetes cluster to lists all the worker pools .
+	// Get lists all the cluster information in a Kubernetes cluster to lists all the worker pools .
 	Get(ctx context.Context, id string) (*gobizfly.FullCluster, error)
 
 	// GetClusterWorkerPool get the details of an existing worker pool.
