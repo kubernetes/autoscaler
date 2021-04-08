@@ -60,6 +60,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// BizflyCloudProviderName gets the provider name of bizflycloud
+	BizflyCloudProviderName = "bizflycloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
