@@ -26,8 +26,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/bizflycloud/gobizfly"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/bizflycloud/gobizfly"
 )
 
 // Due to newManager require authenticate with our server, we will use newManagerTest for simple test case

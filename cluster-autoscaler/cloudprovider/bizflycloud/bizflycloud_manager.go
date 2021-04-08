@@ -23,7 +23,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/bizflycloud/gobizfly"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/bizflycloud/gobizfly"
 	klog "k8s.io/klog/v2"
 )
 
