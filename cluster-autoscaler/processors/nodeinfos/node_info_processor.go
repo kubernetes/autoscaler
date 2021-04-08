@@ -17,14 +17,16 @@ limitations under the License.
 package nodeinfos
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // NodeInfoProcessor processes nodeInfos after they're created.
 type NodeInfoProcessor interface {
 	// Process processes a map of nodeInfos for node groups.
-	Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error)
+	Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -34,7 +36,7 @@ type NoOpNodeInfoProcessor struct {
 }
 
 // Process returns unchanged nodeInfos.
-func (p *NoOpNodeInfoProcessor) Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error) {
+func (p *NoOpNodeInfoProcessor) Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, error) {
 	return nodeInfosForNodeGroups, nil
 }
 

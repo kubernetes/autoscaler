@@ -271,7 +271,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
 	}
 
-	nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups)
+	nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups, daemonsets, a.ignoredTaints)
 	if err != nil {
 		klog.Errorf("Failed to process nodeInfos: %v", err)
 		return errors.ToAutoscalerError(errors.InternalError, err)

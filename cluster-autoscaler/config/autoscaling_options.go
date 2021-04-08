@@ -159,6 +159,10 @@ type AutoscalingOptions struct {
 	ClusterAPICloudConfigAuthoritative bool
 	// Enable or disable cordon nodes functionality before terminating the node during downscale process
 	CordonNodeBeforeTerminate bool
+	// ScaleUpTemplateFromCloudProvider tells cluster-autoscaler to always use cloud-providers node groups (ASG, MIG, VMSS...)
+	// templates rather than templates built from real-world nodes. Warning: this isn't supported by all providers, gives less
+	// accurate informations than real-world nodes, and can lead to wrong upscale decisions.
+	ScaleUpTemplateFromCloudProvider bool
 	// DaemonSetEvictionForEmptyNodes is whether CA will gracefully terminate DaemonSet pods from empty nodes.
 	DaemonSetEvictionForEmptyNodes bool
 	// User agent to use for HTTP calls.
