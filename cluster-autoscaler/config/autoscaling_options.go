@@ -161,4 +161,6 @@ type AutoscalingOptions struct {
 	CordonNodeBeforeTerminate bool
 	// DaemonSetEvictionForEmptyNodes is whether CA will gracefully terminate DaemonSet pods from empty nodes.
 	DaemonSetEvictionForEmptyNodes bool
+	// User agent to use for HTTP calls.
+	UserAgent string
 }
