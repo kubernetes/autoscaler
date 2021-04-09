@@ -17,6 +17,7 @@ limitations under the License.
 package nanny
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -25,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
 )
@@ -151,14 +153,52 @@ func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequiremen
 	// Modify the Deployment object with our ResourceRequirements.
 	for i, container := range dep.Spec.Template.Spec.Containers {
 		if container.Name == k.container {
-			// Update the deployment.
-			dep.Spec.Template.Spec.Containers[i].Resources = *resources
-			_, err = k.clientset.AppsV1().Deployments(k.namespace).Update(dep)
-			return err
+			return k.patchDeployment(getContainerResourcesPatch(i, mergeResources(&container.Resources, resources)))
 		}
 	}
 
 	return fmt.Errorf("Container %s was not found in the deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
+}
+
+func (k *kubernetesClient) patchDeployment(patch patchRecord) error {
+	bytes, err := json.Marshal([]patchRecord{patch})
+	if err != nil {
+		return fmt.Errorf("Cannot marshal deployment patch %+v. Reason: %+v", patch, err)
+	}
+
+	_, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(k.deployment, types.JSONPatchType, bytes)
+	return err
+}
+
+type patchRecord struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
+
+func getContainerResourcesPatch(index int, resources *corev1.ResourceRequirements) patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/template/spec/containers/%d/resources", index),
+		Value: *resources,
+	}
+}
+
+func mergeResources(current, new *corev1.ResourceRequirements) *corev1.ResourceRequirements {
+	res := current.DeepCopy()
+	if res.Limits == nil {
+		res.Limits = corev1.ResourceList{}
+	}
+	if res.Requests == nil {
+		res.Requests = corev1.ResourceList{}
+	}
+	for resource, value := range new.Limits {
+		res.Limits[resource] = value
+	}
+	for resource, value := range new.Requests {
+		res.Requests[resource] = value
+	}
+	return res
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
