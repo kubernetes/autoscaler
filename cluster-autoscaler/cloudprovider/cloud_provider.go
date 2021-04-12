@@ -37,6 +37,8 @@ const (
 	// BaiducloudProviderName gets the provider name of baiducloud
 	BaiducloudProviderName = "baiducloud"
 	// CloudStackProviderName gets the provider name of cloudstack
+	BizflyCloudProviderName = "bizflycloud"
+	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
 	// ClusterAPIProiverName gets the provider name of clusterapi
 	ClusterAPIProiverName = "clusterapi"
