@@ -42,20 +42,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
-func TestNewNodeInfoWithPodTemplateProcessor(t *testing.T) {
-	opts := newtTestAutoscalerOptions()
-	processor := NewNodeInfoWithPodTemplateProcessor(opts)
-	defer processor.CleanUp()
-}
-
-func Test_newPodTemplateLister(t *testing.T) {
-	client := fake.NewSimpleClientset()
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	_ = newPodTemplateLister(client, ctx.Done())
-	defer cancelFunc()
-}
 func Test_getNodeInfoWithPodTemplates(t *testing.T) {
-	nodeName1 := "node-1"
+	nodeName1 := "template-node-for-node-1"
 	nodePod1 := newTestPod("bar", "foo", &apiv1.PodSpec{}, nodeName1)
 	nodeInfo := newNodeInfo(nodeName1, 42, nodePod1)
 	nodeInfoUnschedulable := newNodeInfo(nodeName1, 0, nodePod1)
@@ -110,13 +98,15 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			clusterSnapshot := simulator.NewBasicClusterSnapshot()
-			predicateChecker, err := simulator.NewTestPredicateChecker()
+			predicateChecker, _ := simulator.NewTestPredicateChecker()
+
 			got, err := getNodeInfoWithPodTemplates(tt.args.baseNodeInfo, tt.args.podTemplates, clusterSnapshot, predicateChecker)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getNodeInfoWithPodTemplates() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			want := tt.wantFunc()
+
 			got.Generation = want.Generation
 			assert.EqualValues(t, want, got, "getNodeInfoWithPodTemplates wrong expected value")
 		})
@@ -126,7 +116,8 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 	namespace := "bar"
 	podName := "foo-dfsdfds"
-	nodeName1 := "node-1"
+	nodeName1 := "template-node-for-node-1"
+	nodeNameRealNode := "node-real-1"
 
 	tests := []struct {
 		name                   string
@@ -160,6 +151,19 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:              "0 pod added: real node",
+			podTemplates:      []*apiv1.PodTemplate{newPodTemplate(namespace, podName, nil)},
+			podListerCreation: newTestDaemonSetLister,
+			nodeInfosForNodeGroups: map[string]*schedulerframework.NodeInfo{
+				nodeNameRealNode: newNodeInfo(nodeNameRealNode, 0),
+			},
+			want: map[string]*schedulerframework.NodeInfo{
+				nodeNameRealNode: newNodeInfo(nodeNameRealNode, 0),
+			},
+			wantErr: false,
+		},
+
 		{
 			name:         "pod lister error",
 			podTemplates: []*apiv1.PodTemplate{newPodTemplate(namespace, podName, nil)},
@@ -241,7 +245,7 @@ func newNode(name string, maxPods int64) *apiv1.Node {
 	}
 	return &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "node-1",
+			Name: name,
 		},
 		Status: apiv1.NodeStatus{
 			Allocatable: newResourceList,
@@ -252,7 +256,7 @@ func newNode(name string, maxPods int64) *apiv1.Node {
 func newNodeInfo(nodeName string, maxPod int64, pods ...*v1.Pod) *schedulerframework.NodeInfo {
 	node1 := newNode(nodeName, maxPod)
 	nodeInfo := schedulerframework.NewNodeInfo(pods...)
-	nodeInfo.SetNode(node1)
+	_ = nodeInfo.SetNode(node1)
 
 	return nodeInfo
 }

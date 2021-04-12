@@ -19,6 +19,7 @@ package podtemplates
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -75,7 +76,8 @@ type nodeInfoWithPodTemplateProcessor struct {
 
 // Process returns unchanged nodeInfos.
 func (p *nodeInfoWithPodTemplateProcessor) Process(ctx *ca_context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error) {
-	// here we can use empty snapshot
+	// here we can use empty snapshot, since the NodeInfos that will be updated
+	// are from CloudProvider NodeTemplates.
 	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 
 	// retrieve only once the podTemplates list.
@@ -88,10 +90,21 @@ func (p *nodeInfoWithPodTemplateProcessor) Process(ctx *ca_context.AutoscalingCo
 	result := make(map[string]*schedulerframework.NodeInfo, len(nodeInfosForNodeGroups))
 	var errs []error
 	for id, nodeInfo := range nodeInfosForNodeGroups {
-		newNodeInfo, err := getNodeInfoWithPodTemplates(nodeInfo, podTemplates, clusterSnapshot, ctx.PredicateChecker)
-		if err != nil {
-			errs = append(errs, err)
+		var newNodeInfo *schedulerframework.NodeInfo
+
+		// only runs getNodeInfoWithPodTemplates() for NodeInfo generated from NodeTemplate
+		// If not a NodeTemplate, Pods from PodTemplates should alreadt be already present
+		// in the PodList attached to the Node.
+		if strings.HasPrefix(nodeInfo.Node().Name, "template-node-for-") {
+			var err error
+			newNodeInfo, err = getNodeInfoWithPodTemplates(nodeInfo, podTemplates, clusterSnapshot, ctx.PredicateChecker)
+			if err != nil {
+				errs = append(errs, err)
+			}
+		} else {
+			newNodeInfo = nodeInfosForNodeGroups[id]
 		}
+
 		result[id] = newNodeInfo
 	}
 
