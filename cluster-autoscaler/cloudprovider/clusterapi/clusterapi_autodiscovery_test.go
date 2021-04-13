@@ -322,3 +322,42 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		})
 	}
 }
+
+func Test_namespaceToWatch(t *testing.T) {
+	for _, tc := range []struct {
+		name                 string
+		autoDiscoveryConfigs []*clusterAPIAutoDiscoveryConfig
+		matchingNamespace    string
+	}{{
+		name: "returns the namespace configured in auto discovery specs",
+		autoDiscoveryConfigs: []*clusterAPIAutoDiscoveryConfig{
+			{
+				clusterName: "my-cluster",
+			},
+			{
+				namespace: "ns1",
+			},
+		},
+		matchingNamespace: "ns1",
+	},
+		{
+			name: "returns empty namespace if not configure in autodiscovery spec",
+			autoDiscoveryConfigs: []*clusterAPIAutoDiscoveryConfig{
+				{
+					clusterName: "my-cluster",
+				},
+				{
+					labelSelector: labels.SelectorFromSet(labels.Set{"color": "green"}),
+				},
+			},
+			matchingNamespace: "",
+		}} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := namespaceToWatch(tc.autoDiscoveryConfigs)
+
+			if got != tc.matchingNamespace {
+				t.Errorf("namespaceToWatch got = %v, want %v", got, tc.matchingNamespace)
+			}
+		})
+	}
+}
