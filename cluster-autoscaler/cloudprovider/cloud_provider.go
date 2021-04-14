@@ -38,8 +38,8 @@ const (
 	BaiducloudProviderName = "baiducloud"
 	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
-	// ClusterAPIProiverName gets the provider name of clusterapi
-	ClusterAPIProiverName = "clusterapi"
+	// ClusterAPIProviderName gets the provider name of clusterapi
+	ClusterAPIProviderName = "clusterapi"
 	// DigitalOceanProviderName gets the provider name of digitalocean
 	DigitalOceanProviderName = "digitalocean"
 	// ExoscaleProviderName gets the provider name of exoscale
