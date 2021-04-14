@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
@@ -96,4 +97,13 @@ func allowedByAutoDiscoverySpec(spec *clusterAPIAutoDiscoveryConfig, r *unstruct
 	default:
 		return true
 	}
+}
+
+func namespaceToWatch(specs []*clusterAPIAutoDiscoveryConfig) string {
+	for _, spec := range specs {
+		if spec.namespace != "" {
+			return spec.namespace
+		}
+	}
+	return metav1.NamespaceAll
 }
