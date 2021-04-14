@@ -25,6 +25,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [OVHcloud](./cloudprovider/ovhcloud/README.md)
 * [Linode](./cloudprovider/linode/README.md)
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
+* [BizflyCloud](./cloudprovider/bizflycloud/README.md)
 
 # Releases
 
