@@ -1,3 +1,5 @@
+// This file is part of gobizfly
+
 package gobizfly
 
 import (
