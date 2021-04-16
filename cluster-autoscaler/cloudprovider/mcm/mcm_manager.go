@@ -24,8 +24,10 @@ package mcm
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -37,22 +39,26 @@ import (
 	machineapi "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/typed/machine/v1alpha1"
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions"
 	machinelisters "github.com/gardener/machine-controller-manager/pkg/client/listers/machine/v1alpha1"
-
-	//corecontroller "github.com/gardener/machine-controller-manager/pkg/controller"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	aws "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	azure "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/discovery"
+	coreinformers "k8s.io/client-go/informers"
+	corelisters "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
-
-	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -62,6 +68,7 @@ const (
 	maxRecordsReturnedByAPI = 100
 	maxRetryDeadline        = 1 * time.Minute
 	conflictRetryInterval   = 5 * time.Second
+	minResyncPeriodDefault  = 1 * time.Hour
 	// machinePriorityAnnotation is the annotation to set machine priority while deletion
 	machinePriorityAnnotation = "machinepriority.machine.sapcloud.io"
 	// kindAWSMachineClass is the kind for machine class used by In-tree AWS provider
@@ -74,6 +81,25 @@ const (
 	providerAWS = "AWS"
 	// providerAzure is the provider type for Azure machine class object
 	providerAzure = "Azure"
+	// machineGroup is the group version used to identify machine API group objects
+	machineGroup = "machine.sapcloud.io"
+	// machineGroup is the API version used to identify machine API group objects
+	machineVersion = "v1alpha1"
+)
+
+var (
+	controlBurst    *int
+	controlQPS      *float64
+	targetBurst     *int
+	targetQPS       *float64
+	minResyncPeriod *time.Duration
+
+	awsMachineClassGVR   = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "awsmachineclasses"}
+	azureMachineClassGVR = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "azuremachineclasses"}
+	machineClassGVR      = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machineclasses"}
+	machineGVR           = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machines"}
+	machineSetGVR        = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinesets"}
+	machineDeploymentGVR = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinedeployments"}
 )
 
 //McmManager manages the client communication for MachineDeployments.
@@ -81,10 +107,14 @@ type McmManager struct {
 	namespace               string
 	interrupt               chan struct{}
 	discoveryOpts           cloudprovider.NodeGroupDiscoveryOptions
-	machineclient           machineapi.MachineV1alpha1Interface
-	coreclient              kubernetes.Interface
+	machineClient           machineapi.MachineV1alpha1Interface
 	machineDeploymentLister machinelisters.MachineDeploymentLister
-	machinelisters          machinelisters.MachineLister
+	machineSetLister        machinelisters.MachineSetLister
+	machineLister           machinelisters.MachineLister
+	machineClassLister      machinelisters.MachineClassLister
+	azureMachineClassLister machinelisters.AzureMachineClassLister
+	awsMachineClassLister   machinelisters.AWSMachineClassLister
+	nodeLister              corelisters.NodeLister
 }
 
 type instanceType struct {
@@ -102,9 +132,18 @@ type nodeTemplate struct {
 	Taints       []apiv1.Taint
 }
 
-func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*McmManager, error) {
+func init() {
+	controlBurst = flag.Int("control-apiserver-burst", rest.DefaultBurst, "Throttling burst configuration for the client to control cluster's apiserver.")
+	controlQPS = flag.Float64("control-apiserver-qps", float64(rest.DefaultQPS), "Throttling QPS configuration for the client to control cluster's apiserver.")
+	targetBurst = flag.Int("target-apiserver-burst", rest.DefaultBurst, "Throttling burst configuration for the client to target cluster's apiserver.")
+	targetQPS = flag.Float64("target-apiserver-qps", float64(rest.DefaultQPS), "Throttling QPS configuration for the client to target cluster's apiserver.")
+	minResyncPeriod = flag.Duration("min-resync-period", minResyncPeriodDefault, "The minimum resync period configured for the shared informers used by the MCM provider cached listers")
+}
 
-	// controlKubeconfig for the cluster for which machine-controller-manager will create machines.
+func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*McmManager, error) {
+	var namespace = os.Getenv("CONTROL_NAMESPACE")
+
+	// controlKubeconfig is the cluster where the machine objects are deployed
 	controlKubeconfig, err := clientcmd.BuildConfigFromFlags("", "")
 	if err != nil {
 		controlKubeconfigPath := os.Getenv("CONTROL_KUBECONFIG")
@@ -114,56 +153,185 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		}
 	}
 
-	controlClientBuilder := SimpleClientBuilder{
+	// Check if control APIServer has all requested resources
+	controlCoreClientBuilder := CoreControllerClientBuilder{
 		ClientConfig: controlKubeconfig,
 	}
-
-	machineClient := controlClientBuilder.ClientOrDie("machine-controller-manager-client").MachineV1alpha1()
-	namespace := os.Getenv("CONTROL_NAMESPACE")
-	machineInformerFactory := machineinformers.NewFilteredSharedInformerFactory(
-		controlClientBuilder.ClientOrDie("machine-shared-informers"),
-		12*time.Hour,
-		namespace,
-		nil,
-	)
-	machineSharedInformers := machineInformerFactory.Machine().V1alpha1()
-
-	targetCoreKubeconfigPath := os.Getenv("TARGET_KUBECONFIG")
-	targetCoreKubeconfig, err := clientcmd.BuildConfigFromFlags("", targetCoreKubeconfigPath)
+	availableResources, err := getAvailableResources(controlCoreClientBuilder)
 	if err != nil {
 		return nil, err
 	}
 
-	targetCoreClient, err := kubernetes.NewForConfig(targetCoreKubeconfig)
-	if err != nil {
-		return nil, err
+	if availableResources[machineGVR] && availableResources[machineSetGVR] && availableResources[machineDeploymentGVR] {
+		var (
+			awsMachineClassLister   machinelisters.AWSMachineClassLister
+			azureMachineClassLister machinelisters.AzureMachineClassLister
+			machineClassLister      machinelisters.MachineClassLister
+			syncFuncs               []cache.InformerSynced
+		)
+
+		// Initialize control kubeconfig informer factory
+		controlKubeconfig.Burst = *controlBurst
+		controlKubeconfig.QPS = float32(*controlQPS)
+		controlMachineClientBuilder := MachineControllerClientBuilder{
+			ClientConfig: controlKubeconfig,
+		}
+		controlMachineInformerFactory := machineinformers.NewFilteredSharedInformerFactory(
+			controlMachineClientBuilder.ClientOrDie("control-machine-shared-informers"),
+			*minResyncPeriod,
+			namespace,
+			nil,
+		)
+
+		controlMachineClient := controlMachineClientBuilder.ClientOrDie("control-machine-client").MachineV1alpha1()
+		machineSharedInformers := controlMachineInformerFactory.Machine().V1alpha1()
+
+		// Initialize mandatory control cluster informers
+		machineInformer := machineSharedInformers.Machines().Informer()
+		machineSetInformer := machineSharedInformers.MachineSets().Informer()
+		machineDeploymentInformer := machineSharedInformers.MachineDeployments().Informer()
+
+		// Initialize optional control cluster informers
+		if availableResources[awsMachineClassGVR] {
+			awsMachineClassInformer := machineSharedInformers.AWSMachineClasses().Informer()
+			awsMachineClassLister = machineSharedInformers.AWSMachineClasses().Lister()
+			syncFuncs = append(syncFuncs, awsMachineClassInformer.HasSynced)
+		}
+		if availableResources[azureMachineClassGVR] {
+			azureMachineClassInformer := machineSharedInformers.AzureMachineClasses().Informer()
+			azureMachineClassLister = machineSharedInformers.AzureMachineClasses().Lister()
+			syncFuncs = append(syncFuncs, azureMachineClassInformer.HasSynced)
+		}
+		if availableResources[machineClassGVR] {
+			machineClassInformer := machineSharedInformers.MachineClasses().Informer()
+			machineClassLister = machineSharedInformers.MachineClasses().Lister()
+			syncFuncs = append(syncFuncs, machineClassInformer.HasSynced)
+		}
+
+		// targetKubeconfig for the cluster for which nodes will be managed
+		targetKubeconfigPath := os.Getenv("TARGET_KUBECONFIG")
+		targetKubeconfig, err := clientcmd.BuildConfigFromFlags("", targetKubeconfigPath)
+		if err != nil {
+			return nil, err
+		}
+
+		// Initialize target kubeconfig informer factory
+		targetKubeconfig.Burst = *targetBurst
+		targetKubeconfig.QPS = float32(*targetQPS)
+		targetCoreClientBuilder := CoreControllerClientBuilder{
+			ClientConfig: targetKubeconfig,
+		}
+		targetCoreInformerFactory := coreinformers.NewSharedInformerFactory(
+			targetCoreClientBuilder.ClientOrDie("target-core-shared-informers"),
+			*minResyncPeriod,
+		)
+
+		// Initialize mandatory target cluster node informer
+		coreSharedInformers := targetCoreInformerFactory.Core().V1()
+		nodeInformer := coreSharedInformers.Nodes().Informer()
+
+		m := &McmManager{
+			namespace:               namespace,
+			interrupt:               make(chan struct{}),
+			machineClient:           controlMachineClient,
+			awsMachineClassLister:   awsMachineClassLister,
+			azureMachineClassLister: azureMachineClassLister,
+			machineClassLister:      machineClassLister,
+			machineLister:           machineSharedInformers.Machines().Lister(),
+			machineSetLister:        machineSharedInformers.MachineSets().Lister(),
+			machineDeploymentLister: machineSharedInformers.MachineDeployments().Lister(),
+			nodeLister:              coreSharedInformers.Nodes().Lister(),
+			discoveryOpts:           discoveryOpts,
+		}
+
+		targetCoreInformerFactory.Start(m.interrupt)
+		controlMachineInformerFactory.Start(m.interrupt)
+
+		syncFuncs = append(
+			syncFuncs,
+			machineInformer.HasSynced,
+			machineSetInformer.HasSynced,
+			machineDeploymentInformer.HasSynced,
+			nodeInformer.HasSynced,
+		)
+
+		if !cache.WaitForCacheSync(m.interrupt, syncFuncs...) {
+			return nil, fmt.Errorf("Timed out waiting for caches to sync")
+		}
+
+		return m, nil
 	}
 
-	manager := &McmManager{
-		namespace:               namespace,
-		interrupt:               make(chan struct{}),
-		machineclient:           machineClient,
-		coreclient:              targetCoreClient,
-		machineDeploymentLister: machineSharedInformers.MachineDeployments().Lister(),
-		machinelisters:          machineSharedInformers.Machines().Lister(),
-		discoveryOpts:           discoveryOpts,
-	}
-
-	return manager, nil
+	return nil, fmt.Errorf("Unable to start cloud provider MCM for cluster autoscaler: API GroupVersion %q or %q or %q is not available; \nFound: %#v", machineGVR, machineSetGVR, machineDeploymentGVR, availableResources)
 }
 
-//CreateMcmManager creates the McmManager
+// TODO: In general, any controller checking this needs to be dynamic so
+//  users don't have to restart their controller manager if they change the apiserver.
+// Until we get there, the structure here needs to be exposed for the construction of a proper ControllerContext.
+func getAvailableResources(clientBuilder CoreClientBuilder) (map[schema.GroupVersionResource]bool, error) {
+	var discoveryClient discovery.DiscoveryInterface
+
+	var healthzContent string
+	// If apiserver is not running we should wait for some time and fail only then. This is particularly
+	// important when we start apiserver and controller manager at the same time.
+	err := wait.PollImmediate(time.Second, 10*time.Second, func() (bool, error) {
+		client, err := clientBuilder.Client("controller-discovery")
+		if err != nil {
+			klog.Errorf("Failed to get api versions from server: %v", err)
+			return false, nil
+		}
+
+		healthStatus := 0
+		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do(context.TODO()).StatusCode(&healthStatus)
+		if healthStatus != http.StatusOK {
+			klog.Errorf("Server isn't healthy yet.  Waiting a little while.")
+			return false, nil
+		}
+		content, _ := resp.Raw()
+		healthzContent = string(content)
+
+		discoveryClient = client.Discovery()
+		return true, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get api versions from server: %v: %v", healthzContent, err)
+	}
+
+	resourceMap, err := discoveryClient.ServerResources()
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("unable to get all supported resources from server: %v", err))
+	}
+	if len(resourceMap) == 0 {
+		return nil, fmt.Errorf("unable to get any supported resources from server")
+	}
+
+	allResources := map[schema.GroupVersionResource]bool{}
+	for _, apiResourceList := range resourceMap {
+		version, err := schema.ParseGroupVersion(apiResourceList.GroupVersion)
+		if err != nil {
+			return nil, err
+		}
+		for _, apiResource := range apiResourceList.APIResources {
+			allResources[version.WithResource(apiResource.Name)] = true
+		}
+	}
+
+	return allResources, nil
+}
+
+// CreateMcmManager creates the McmManager
 func CreateMcmManager(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*McmManager, error) {
 	return createMCMManagerInternal(discoveryOpts)
 }
 
-//GetMachineDeploymentForMachine returns the MachineDeployment for the Machine object.
+// GetMachineDeploymentForMachine returns the MachineDeployment for the Machine object.
 func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeployment, error) {
 	if machine.Name == "" {
 		//Considering the possibility when Machine has been deleted but due to cached Node object it appears here.
 		return nil, fmt.Errorf("Node does not Exists")
 	}
-	machineObject, err := m.machineclient.Machines(m.namespace).Get(context.TODO(), machine.Name, metav1.GetOptions{})
+
+	machineObject, err := m.machineLister.Machines(m.namespace).Get(machine.Name)
 	if err != nil {
 		if kube_errors.IsNotFound(err) {
 			// Machine has been removed.
@@ -180,7 +348,7 @@ func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeplo
 		return nil, fmt.Errorf("Unable to find parent MachineSet of given Machine object %s %+v", machine.Name, err)
 	}
 
-	machineSetObject, err := m.machineclient.MachineSets(m.namespace).Get(context.TODO(), machineSetName, metav1.GetOptions{})
+	machineSetObject, err := m.machineSetLister.MachineSets(m.namespace).Get(machineSetName)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch MachineSet object %s %+v", machineSetName, err)
 	}
@@ -223,27 +391,33 @@ func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeplo
 	}, nil
 }
 
-//Cleanup does nothing at the moment.
-//TODO: Enable cleanup method for graceful shutdown.
+// Refresh does nothing at the moment.
+//
+func (m *McmManager) Refresh() error {
+	return nil
+}
+
+// Cleanup does nothing at the moment.
+// TODO: Enable cleanup method for graceful shutdown.
 func (m *McmManager) Cleanup() {
 	return
 }
 
-//GetMachineDeploymentSize returns the replicas field of the MachineDeployment
+// GetMachineDeploymentSize returns the replicas field of the MachineDeployment
 func (m *McmManager) GetMachineDeploymentSize(machinedeployment *MachineDeployment) (int64, error) {
-	md, err := m.machineclient.MachineDeployments(machinedeployment.Namespace).Get(context.TODO(), machinedeployment.Name, metav1.GetOptions{})
+	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
 	if err != nil {
 		return 0, fmt.Errorf("Unable to fetch MachineDeployment object %s %+v", machinedeployment.Name, err)
 	}
 	return int64(md.Spec.Replicas), nil
 }
 
-//SetMachineDeploymentSize sets the desired size for the Machinedeployment.
+// SetMachineDeploymentSize sets the desired size for the Machinedeployment.
 func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployment, size int64) error {
 
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	for {
-		md, err := m.machineclient.MachineDeployments(machinedeployment.Namespace).Get(context.TODO(), machinedeployment.Name, metav1.GetOptions{})
+		md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
 		if err != nil && time.Now().Before(retryDeadline) {
 			klog.Warningf("Unable to fetch MachineDeployment object %s, Error: %+v", machinedeployment.Name, err)
 			time.Sleep(conflictRetryInterval)
@@ -257,7 +431,7 @@ func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployme
 		clone := md.DeepCopy()
 		clone.Spec.Replicas = int32(size)
 
-		_, err = m.machineclient.MachineDeployments(machinedeployment.Namespace).Update(context.TODO(), clone, metav1.UpdateOptions{})
+		_, err = m.machineClient.MachineDeployments(machinedeployment.Namespace).Update(context.TODO(), clone, metav1.UpdateOptions{})
 		if err != nil && time.Now().Before(retryDeadline) {
 			klog.Warningf("Unable to update MachineDeployment object %s, Error: %+v", machinedeployment.Name, err)
 			time.Sleep(conflictRetryInterval)
@@ -274,7 +448,7 @@ func (m *McmManager) SetMachineDeploymentSize(machinedeployment *MachineDeployme
 	return nil
 }
 
-//DeleteMachines deletes the Machines and also reduces the desired replicas of the Machinedeplyoment in parallel.
+// DeleteMachines deletes the Machines and also reduces the desired replicas of the Machinedeplyoment in parallel.
 func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 	var (
@@ -304,7 +478,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 		retryDeadline := time.Now().Add(maxRetryDeadline)
 		for {
-			mach, err := m.machineclient.Machines(machine.Namespace).Get(context.TODO(), machine.Name, metav1.GetOptions{})
+			machine, err := m.machineLister.Machines(m.namespace).Get(machine.Name)
 			if err != nil && time.Now().Before(retryDeadline) {
 				klog.Warningf("Unable to fetch Machine object %s, Error: %s", machine.Name, err)
 				time.Sleep(conflictRetryInterval)
@@ -315,7 +489,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 				return err
 			}
 
-			mclone := mach.DeepCopy()
+			mclone := machine.DeepCopy()
 
 			if isMachineTerminating(mclone) {
 				terminatingMachines = append(terminatingMachines, mclone)
@@ -331,7 +505,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 				mclone.Annotations[machinePriorityAnnotation] = "1"
 			}
 
-			_, err = m.machineclient.Machines(machine.Namespace).Update(context.TODO(), mclone, metav1.UpdateOptions{})
+			_, err = m.machineClient.Machines(machine.Namespace).Update(context.TODO(), mclone, metav1.UpdateOptions{})
 			if err != nil && time.Now().Before(retryDeadline) {
 				klog.Warningf("Unable to update Machine object %s, Error: %s", machine.Name, err)
 				time.Sleep(conflictRetryInterval)
@@ -349,7 +523,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	for {
-		md, err := m.machineclient.MachineDeployments(commonMachineDeployment.Namespace).Get(context.TODO(), commonMachineDeployment.Name, metav1.GetOptions{})
+		md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(commonMachineDeployment.Name)
 		if err != nil && time.Now().Before(retryDeadline) {
 			klog.Warningf("Unable to fetch MachineDeployment object %s, Error: %s", commonMachineDeployment.Name, err)
 			time.Sleep(conflictRetryInterval)
@@ -372,7 +546,7 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 
 		mdclone.Spec.Replicas = expectedReplicas
 
-		_, err = m.machineclient.MachineDeployments(mdclone.Namespace).Update(context.TODO(), mdclone, metav1.UpdateOptions{})
+		_, err = m.machineClient.MachineDeployments(mdclone.Namespace).Update(context.TODO(), mdclone, metav1.UpdateOptions{})
 		if err != nil && time.Now().Before(retryDeadline) {
 			klog.Warningf("Unable to update MachineDeployment object %s, Error: %s", commonMachineDeployment.Name, err)
 			time.Sleep(conflictRetryInterval)
@@ -392,29 +566,29 @@ func (m *McmManager) DeleteMachines(machines []*Ref) error {
 	return nil
 }
 
-//GetMachineDeploymentNodes returns the set of Nodes which belongs to the MachineDeployment.
+// GetMachineDeploymentNodes returns the set of Nodes which belongs to the MachineDeployment.
 func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeployment) ([]string, error) {
-	md, err := m.machineclient.MachineDeployments(m.namespace).Get(context.TODO(), machinedeployment.Name, metav1.GetOptions{})
+	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch MachineDeployment object %s, Error: %v", machinedeployment.Name, err)
 	}
-	//machinelist, err := m.machinelisters.Machines(m.namespace).List(labels.Everything())
-	machinelist, err := m.machineclient.Machines(m.namespace).List(context.TODO(), metav1.ListOptions{})
+
+	machineList, err := m.machineLister.Machines(m.namespace).List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch list of Machine objects %v", err)
 	}
 
-	nodelist, err := m.coreclient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	nodeList, err := m.nodeLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch list of Nodes %v", err)
 	}
 
 	var nodes []string
 	// Bearing O(n2) complexity, assuming we will not have lot of nodes/machines, open for optimisations.
-	for _, machine := range machinelist.Items {
+	for _, machine := range machineList {
 		if strings.Contains(machine.Name, md.Name) {
 			var found bool
-			for _, node := range nodelist.Items {
+			for _, node := range nodeList {
 				if machine.Labels["node"] == node.Name {
 					nodes = append(nodes, node.Spec.ProviderID)
 					found = true
@@ -431,10 +605,10 @@ func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeploym
 	return nodes, nil
 }
 
-//GetMachineDeploymentNodeTemplate returns the NodeTemplate which belongs to the MachineDeployment.
+// GetMachineDeploymentNodeTemplate returns the NodeTemplate which belongs to the MachineDeployment.
 func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *MachineDeployment) (*nodeTemplate, error) {
 
-	md, err := m.machineclient.MachineDeployments(m.namespace).Get(context.TODO(), machinedeployment.Name, metav1.GetOptions{})
+	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch MachineDeployment object %s, Error: %v", machinedeployment.Name, err)
 	}
@@ -450,9 +624,9 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 
 	switch machineClass.Kind {
 	case kindAWSMachineClass:
-		mc, err := m.machineclient.AWSMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
+		mc, err := m.awsMachineClassLister.AWSMachineClasses(m.namespace).Get(machineClass.Name)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch AWSMachineClass object %s, Error: %v", machinedeployment.Name, err)
+			return nil, fmt.Errorf("Unable to fetch AWSMachineClass object %s, Error: %v", machineClass.Name, err)
 		}
 		awsInstance := aws.InstanceTypes[mc.Spec.MachineType]
 		instance = instanceType{
@@ -464,9 +638,9 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		region = mc.Spec.Region
 		zone = getZoneValueFromMCLabels(mc.Labels)
 	case kindAzureMachineClass:
-		mc, err := m.machineclient.AzureMachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
+		mc, err := m.azureMachineClassLister.AzureMachineClasses(m.namespace).Get(machineClass.Name)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch AzureMachineClass object %s, Error: %v", machinedeployment.Name, err)
+			return nil, fmt.Errorf("Unable to fetch AzureMachineClass object %s, Error: %v", machineClass.Name, err)
 		}
 		azureInstance := azure.InstanceTypes[mc.Spec.Properties.HardwareProfile.VMSize]
 		instance = instanceType{
@@ -480,9 +654,9 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			zone = mc.Spec.Location + "-" + strconv.Itoa(*mc.Spec.Properties.Zone)
 		}
 	case kindMachineClass:
-		mc, err := m.machineclient.MachineClasses(m.namespace).Get(context.TODO(), machineClass.Name, metav1.GetOptions{})
+		mc, err := m.machineClassLister.MachineClasses(m.namespace).Get(machineClass.Name)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch %s for %s, Error: %v", kindMachineClass, machinedeployment.Name, err)
+			return nil, fmt.Errorf("Unable to fetch %s for %s, Error: %v", kindMachineClass, machineClass.Name, err)
 		}
 		switch mc.Provider {
 		case providerAWS:

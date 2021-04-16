@@ -24,8 +24,8 @@ import (
 	"k8s.io/klog"
 )
 
-// ClientBuilder allows you to get clients and configs for controllers
-type ClientBuilder interface {
+// MachineClientBuilder allows you to get clients and configs for machine controllers
+type MachineClientBuilder interface {
 	// Config returns a new restclient.Config with the given user agent name.
 	Config(name string) (*restclient.Config, error)
 	// ConfigOrDie return a new restclient.Config with the given user agent
@@ -40,21 +40,21 @@ type ClientBuilder interface {
 	ClientOrDie(name string) clientset.Interface
 }
 
-// SimpleClientBuilder returns a fixed client with different user agents
-type SimpleClientBuilder struct {
+// MachineControllerClientBuilder returns a fixed client with different user agents
+type MachineControllerClientBuilder struct {
 	// ClientConfig is a skeleton config to clone and use as the basis for each controller client
 	ClientConfig *restclient.Config
 }
 
 // Config returns a new restclient.Config with the given user agent name.
-func (b SimpleClientBuilder) Config(name string) (*restclient.Config, error) {
+func (b MachineControllerClientBuilder) Config(name string) (*restclient.Config, error) {
 	clientConfig := *b.ClientConfig
 	return restclient.AddUserAgent(&clientConfig, name), nil
 }
 
 // ConfigOrDie return a new restclient.Config with the given user agent
 // name, or logs a fatal error.
-func (b SimpleClientBuilder) ConfigOrDie(name string) *restclient.Config {
+func (b MachineControllerClientBuilder) ConfigOrDie(name string) *restclient.Config {
 	clientConfig, err := b.Config(name)
 	if err != nil {
 		klog.Fatal(err)
@@ -64,7 +64,7 @@ func (b SimpleClientBuilder) ConfigOrDie(name string) *restclient.Config {
 
 // Client returns a new clientset.Interface with the given user agent
 // name.
-func (b SimpleClientBuilder) Client(name string) (clientset.Interface, error) {
+func (b MachineControllerClientBuilder) Client(name string) (clientset.Interface, error) {
 	clientConfig, err := b.Config(name)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (b SimpleClientBuilder) Client(name string) (clientset.Interface, error) {
 // ClientOrDie returns a new clientset.Interface with the given user agent
 // name or logs a fatal error, destroying the computer and killing the
 // operator and programmer.
-func (b SimpleClientBuilder) ClientOrDie(name string) clientset.Interface {
+func (b MachineControllerClientBuilder) ClientOrDie(name string) clientset.Interface {
 	client, err := b.Client(name)
 	if err != nil {
 		klog.Fatal(err)
