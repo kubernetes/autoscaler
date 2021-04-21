@@ -25,17 +25,28 @@ set -o errexit
 set -o pipefail
 
 VERSION=${1#"v"}
+FORK=${2:-git@github.com:kubernetes/kubernetes.git}
 if [ -z "$VERSION" ]; then
-    echo "Usage: hack/update-vendor.sh <k8s version>"
+    echo "Usage: hack/update-vendor.sh <k8s version> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
     exit 1
 fi
 
 set -x
 
+WORKDIR=$(mktemp -d)
+REPO="${WORKDIR}/kubernetes"
+git clone --depth 1 ${FORK} ${REPO}
+
+pushd ${REPO}
+git fetch --depth 1 origin v${VERSION}
+git checkout FETCH_HEAD
+
 MODS=($(
-    curl -sS https://raw.githubusercontent.com/kubernetes/kubernetes/v${VERSION}/go.mod |
-    sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
+    cat go.mod | sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
 ))
+
+popd
+rm -rf ${WORKDIR}
 
 for MOD in "${MODS[@]}"; do
     V=$(
