@@ -455,13 +455,13 @@ func TestBuildCapacityMemory(t *testing.T) {
 			physicalCpu:            1,
 			physicalMemory:         2 * units.GiB,
 			os:                     OperatingSystemLinux,
-			expectedCapacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory - int64(math.Min(correctionConstant*float64(2*units.GiB), maximumCorrectionValue)),
+			expectedCapacityMemory: 2*units.GiB - 32*units.MiB - kernelReservedMemory - int64(math.Min(correctionConstant*float64(2*units.GiB), maximumCorrectionValue)) - lowMemoryOffset,
 		},
 		{
 			physicalCpu:            2,
 			physicalMemory:         4 * units.GiB,
 			os:                     OperatingSystemLinux,
-			expectedCapacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory - int64(math.Min(correctionConstant*float64(4*units.GiB), maximumCorrectionValue)),
+			expectedCapacityMemory: 4*units.GiB - 64*units.MiB - kernelReservedMemory - swiotlbReservedMemory - int64(math.Min(correctionConstant*float64(4*units.GiB), maximumCorrectionValue)) - lowMemoryOffset,
 		},
 		{
 			physicalCpu:            32,
