@@ -66,6 +66,10 @@ const (
 	// ubuntuSpecificOffset is a constant value that is additionally added to Ubuntu
 	// based distributions as reserved memory
 	ubuntuSpecificOffset = 4 * MiB
+	// lowMemoryOffset is an additional offset added for lower memory sized machines
+	lowMemoryOffset = 8 * MiB
+	// lowMemoryThreshold is the threshold to apply lowMemoryOffset
+	lowMemoryThreshold = 8 * GiB
 )
 
 // EvictionHard is the struct used to keep parsed values for eviction
@@ -96,6 +100,9 @@ func CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistrib
 		} else if osDistribution == OperatingSystemDistributionUbuntu || osDistribution == OperatingSystemDistributionUbuntuContainerd {
 			reserved += int64(math.Min(correctionConstant*float64(physicalMemory), maximumCorrectionValue))
 			reserved += ubuntuSpecificOffset
+		}
+		if physicalMemory <= lowMemoryThreshold {
+			reserved += lowMemoryOffset
 		}
 
 		return reserved
