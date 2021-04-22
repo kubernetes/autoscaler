@@ -33,27 +33,27 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 	testCases := []testCase{
 		{
 			physicalMemory: 256 * MiB,
-			reservedMemory: 4*MiB + kernelReservedMemory,
+			reservedMemory: 4*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 2 * GiB,
-			reservedMemory: 32*MiB + kernelReservedMemory,
+			reservedMemory: 32*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3 * GiB,
-			reservedMemory: 48*MiB + kernelReservedMemory,
+			reservedMemory: 48*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3.25 * GiB,
-			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 4 * GiB,
-			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
@@ -63,27 +63,27 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 		},
 		{
 			physicalMemory: 256 * MiB,
-			reservedMemory: 4*MiB + kernelReservedMemory,
+			reservedMemory: 4*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
 			physicalMemory: 2 * GiB,
-			reservedMemory: 32*MiB + kernelReservedMemory,
+			reservedMemory: 32*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
 			physicalMemory: 3 * GiB,
-			reservedMemory: 48*MiB + kernelReservedMemory,
+			reservedMemory: 48*MiB + kernelReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
 			physicalMemory: 3.25 * GiB,
-			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
 			physicalMemory: 4 * GiB,
-			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
 			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
