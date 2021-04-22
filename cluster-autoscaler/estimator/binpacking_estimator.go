@@ -81,7 +81,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(
 	for _, podInfo := range podInfos {
 		found := false
 
-		nodeName, err := estimator.predicateChecker.FitsAnyNodeMatching(estimator.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+		nodeName, err := estimator.predicateChecker.FitsAnyNodeMatching(estimator.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulernodeinfo.NodeInfo) bool {
 			return newNodeNames[nodeInfo.Node().Name]
 		})
 		if err == nil {
