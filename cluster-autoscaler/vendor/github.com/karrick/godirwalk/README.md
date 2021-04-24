@@ -148,7 +148,7 @@ until it is fixed in the standard library, it presents a compatibility
 problem.
 
 This library fixes the above problem such that it will never follow
-logical file sytem loops on either unix or Windows. Furthermore, it
+logical file system loops on either unix or Windows. Furthermore, it
 will only follow symbolic links when `FollowSymbolicLinks` is set to
 true. Behavior on Windows and other operating systems is identical.
 
@@ -196,7 +196,7 @@ Windows.
 
 This library invokes the callback function with `some\path\to\foo.txt`
 for the same file when running on Windows, eliminating the need to
-normalize the pathname by the client, and lessen the likelyhood that a
+normalize the pathname by the client, and lessen the likelihood that a
 client will work on unix but not on Windows.
 
 This enhancement eliminates necessity for some more boilerplate code
