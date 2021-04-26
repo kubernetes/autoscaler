@@ -60,6 +60,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// RancherProviderName gets the provider name of rancher
+	RancherProviderName = "rancher"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
