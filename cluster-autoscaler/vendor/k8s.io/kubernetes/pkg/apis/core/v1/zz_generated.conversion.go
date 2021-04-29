@@ -3546,7 +3546,6 @@ func Convert_core_EphemeralContainers_To_v1_EphemeralContainers(in *core.Ephemer
 
 func autoConvert_v1_EphemeralVolumeSource_To_core_EphemeralVolumeSource(in *v1.EphemeralVolumeSource, out *core.EphemeralVolumeSource, s conversion.Scope) error {
 	out.VolumeClaimTemplate = (*core.PersistentVolumeClaimTemplate)(unsafe.Pointer(in.VolumeClaimTemplate))
-	out.ReadOnly = in.ReadOnly
 	return nil
 }
 
@@ -3557,7 +3556,6 @@ func Convert_v1_EphemeralVolumeSource_To_core_EphemeralVolumeSource(in *v1.Ephem
 
 func autoConvert_core_EphemeralVolumeSource_To_v1_EphemeralVolumeSource(in *core.EphemeralVolumeSource, out *v1.EphemeralVolumeSource, s conversion.Scope) error {
 	out.VolumeClaimTemplate = (*v1.PersistentVolumeClaimTemplate)(unsafe.Pointer(in.VolumeClaimTemplate))
-	out.ReadOnly = in.ReadOnly
 	return nil
 }
 
@@ -6469,6 +6467,7 @@ func autoConvert_v1_Probe_To_core_Probe(in *v1.Probe, out *core.Probe, s convers
 	out.PeriodSeconds = in.PeriodSeconds
 	out.SuccessThreshold = in.SuccessThreshold
 	out.FailureThreshold = in.FailureThreshold
+	out.TerminationGracePeriodSeconds = (*int64)(unsafe.Pointer(in.TerminationGracePeriodSeconds))
 	return nil
 }
 
@@ -6486,6 +6485,7 @@ func autoConvert_core_Probe_To_v1_Probe(in *core.Probe, out *v1.Probe, s convers
 	out.PeriodSeconds = in.PeriodSeconds
 	out.SuccessThreshold = in.SuccessThreshold
 	out.FailureThreshold = in.FailureThreshold
+	out.TerminationGracePeriodSeconds = (*int64)(unsafe.Pointer(in.TerminationGracePeriodSeconds))
 	return nil
 }
 
