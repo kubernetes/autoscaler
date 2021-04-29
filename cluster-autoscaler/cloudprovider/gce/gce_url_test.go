@@ -29,6 +29,8 @@ func TestParseUrl(t *testing.T) {
 	assert.Equal(t, "us-central1-b", zone)
 	assert.Equal(t, "kubernetes-minion-group", name)
 
+	// Cluster Autoscaler previously used this format for MIG id (with "content" instead of "www"). Make sure it's still accepted
+	// just to be safe.
 	proj, zone, name, err = parseGceUrl("https://content.googleapis.com/compute/v1/projects/mwielgus-proj/zones/us-central1-b/instanceGroups/kubernetes-minion-group", "instanceGroups")
 	assert.Nil(t, err)
 	assert.Equal(t, "mwielgus-proj", proj)
@@ -38,6 +40,6 @@ func TestParseUrl(t *testing.T) {
 	_, _, _, err = parseGceUrl("www.onet.pl", "instanceGroups")
 	assert.NotNil(t, err)
 
-	_, _, _, err = parseGceUrl("https://content.googleapis.com/compute/vabc/projects/mwielgus-proj/zones/us-central1-b/instanceGroups/kubernetes-minion-group", "instanceGroups")
+	_, _, _, err = parseGceUrl("https://www.googleapis.com/compute/vabc/projects/mwielgus-proj/zones/us-central1-b/instanceGroups/kubernetes-minion-group", "instanceGroups")
 	assert.NotNil(t, err)
 }
