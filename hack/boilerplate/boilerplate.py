@@ -149,6 +149,7 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
                 "vendor", "test/e2e/generated/bindata.go", "hack/boilerplate/test",
                 "pkg/generated/bindata.go",
                 "cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3",
+                "cluster-autoscaler/cloudprovider/bizflycloud/gobizfly",
                 "cluster-autoscaler/cloudprovider/digitalocean/godo",
                 "cluster-autoscaler/cloudprovider/magnum/gophercloud",
                 "cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go",
