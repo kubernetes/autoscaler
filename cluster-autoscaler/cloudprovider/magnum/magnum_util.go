@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	scaleToZeroSupported = false
+	scaleToZeroSupported = true
 )
 
 // NodeRef stores the name, systemUUID and providerID of a node.
