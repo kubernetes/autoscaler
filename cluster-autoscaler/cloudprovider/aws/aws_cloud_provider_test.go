@@ -469,7 +469,7 @@ func TestDeleteNodes(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
-	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
@@ -516,7 +516,7 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
