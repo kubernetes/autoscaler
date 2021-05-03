@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/bizflycloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cloudstack"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
@@ -56,6 +57,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ClusterAPIProviderName,
 	cloudprovider.IonoscloudProviderName,
 	cloudprovider.LinodeProviderName,
+	cloudprovider.BizflyCloudProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -63,6 +65,8 @@ const DefaultCloudProvider = cloudprovider.GceProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
+	case cloudprovider.BizflyCloudProviderName:
+		return bizflycloud.BuildBizflyCloud(opts, do, rl)
 	case cloudprovider.GceProviderName:
 		return gce.BuildGCE(opts, do, rl)
 	case cloudprovider.AwsProviderName:
