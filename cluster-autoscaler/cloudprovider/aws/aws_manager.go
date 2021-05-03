@@ -41,7 +41,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
@@ -390,15 +389,15 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
+
 	// TODO: extract it somehow
-	result[kubeletapis.LabelArch] = template.InstanceType.Architecture
 	result[apiv1.LabelArchStable] = template.InstanceType.Architecture
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelInstanceType] = template.InstanceType.InstanceType
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.InstanceType
 
-	result[apiv1.LabelZoneRegion] = template.Region
-	result[apiv1.LabelZoneFailureDomain] = template.Zone
+	result[apiv1.LabelTopologyRegion] = template.Region
+	result[apiv1.LabelTopologyZone] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
 	return result
 }
