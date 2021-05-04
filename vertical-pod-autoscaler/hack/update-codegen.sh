@@ -25,6 +25,7 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-ge
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
+chmod +x ${CODEGEN_PKG}/generate-groups.sh
 ${CODEGEN_PKG}/generate-groups.sh all \
   k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis \
   "autoscaling.k8s.io:v1 autoscaling.k8s.io:v1beta2 autoscaling.k8s.io:v1beta1 poc.autoscaling.k8s.io:v1alpha1" \
