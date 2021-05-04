@@ -797,9 +797,6 @@ func isMachineTerminating(machine *v1alpha1.Machine) bool {
 	if !machine.GetDeletionTimestamp().IsZero() {
 		klog.Infof("Machine %q is already being terminated, and hence skipping the deletion", machine.Name)
 		return true
-	} else if machine.Annotations != nil && machine.Annotations[machinePriorityAnnotation] == "1" {
-		klog.Infof("Machine %q 's priority is set to 1, we assume it to be triggered for deletion by autoscaler earlier, hence skipping deletion", machine.Name)
-		return true
 	}
 	return false
 }
