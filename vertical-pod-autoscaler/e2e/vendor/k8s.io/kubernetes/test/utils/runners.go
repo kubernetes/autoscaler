@@ -28,7 +28,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
-	storage "k8s.io/api/storage/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	storagev1beta1 "k8s.io/api/storage/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -50,7 +50,7 @@ import (
 	api "k8s.io/kubernetes/pkg/apis/core"
 	extensionsinternal "k8s.io/kubernetes/pkg/apis/extensions"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -635,37 +635,27 @@ func (config *RCConfig) create() error {
 }
 
 func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
-	if config.Env != nil {
-		for k, v := range config.Env {
-			c := &template.Spec.Containers[0]
-			c.Env = append(c.Env, v1.EnvVar{Name: k, Value: v})
-		}
+	for k, v := range config.Env {
+		c := &template.Spec.Containers[0]
+		c.Env = append(c.Env, v1.EnvVar{Name: k, Value: v})
 	}
-	if config.Labels != nil {
-		for k, v := range config.Labels {
-			template.ObjectMeta.Labels[k] = v
-		}
+	for k, v := range config.Labels {
+		template.ObjectMeta.Labels[k] = v
 	}
-	if config.NodeSelector != nil {
-		template.Spec.NodeSelector = make(map[string]string)
-		for k, v := range config.NodeSelector {
-			template.Spec.NodeSelector[k] = v
-		}
+	template.Spec.NodeSelector = make(map[string]string)
+	for k, v := range config.NodeSelector {
+		template.Spec.NodeSelector[k] = v
 	}
 	if config.Tolerations != nil {
 		template.Spec.Tolerations = append([]v1.Toleration{}, config.Tolerations...)
 	}
-	if config.Ports != nil {
-		for k, v := range config.Ports {
-			c := &template.Spec.Containers[0]
-			c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v)})
-		}
+	for k, v := range config.Ports {
+		c := &template.Spec.Containers[0]
+		c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v)})
 	}
-	if config.HostPorts != nil {
-		for k, v := range config.HostPorts {
-			c := &template.Spec.Containers[0]
-			c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v), HostPort: int32(v)})
-		}
+	for k, v := range config.HostPorts {
+		c := &template.Spec.Containers[0]
+		c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v), HostPort: int32(v)})
 	}
 	if config.CpuLimit > 0 || config.MemLimit > 0 || config.GpuLimit > 0 {
 		template.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
@@ -941,7 +931,7 @@ type CountToStrategy struct {
 }
 
 type TestNodePreparer interface {
-	PrepareNodes() error
+	PrepareNodes(nextNodeIndex int) error
 	CleanupNodes() error
 }
 
@@ -980,22 +970,27 @@ func (*TrivialNodePrepareStrategy) CleanupDependentObjects(nodeName string, clie
 }
 
 type LabelNodePrepareStrategy struct {
-	LabelKey   string
-	LabelValue string
+	LabelKey      string
+	LabelValues   []string
+	roundRobinIdx int
 }
 
 var _ PrepareNodeStrategy = &LabelNodePrepareStrategy{}
 
-func NewLabelNodePrepareStrategy(labelKey string, labelValue string) *LabelNodePrepareStrategy {
+func NewLabelNodePrepareStrategy(labelKey string, labelValues ...string) *LabelNodePrepareStrategy {
 	return &LabelNodePrepareStrategy{
-		LabelKey:   labelKey,
-		LabelValue: labelValue,
+		LabelKey:    labelKey,
+		LabelValues: labelValues,
 	}
 }
 
 func (s *LabelNodePrepareStrategy) PreparePatch(*v1.Node) []byte {
-	labelString := fmt.Sprintf("{\"%v\":\"%v\"}", s.LabelKey, s.LabelValue)
+	labelString := fmt.Sprintf("{\"%v\":\"%v\"}", s.LabelKey, s.LabelValues[s.roundRobinIdx])
 	patch := fmt.Sprintf(`{"metadata":{"labels":%v}}`, labelString)
+	s.roundRobinIdx++
+	if s.roundRobinIdx == len(s.LabelValues) {
+		s.roundRobinIdx = 0
+	}
 	return []byte(patch)
 }
 
@@ -1022,14 +1017,14 @@ type NodeAllocatableStrategy struct {
 	// Node.status.allocatable to fill to all nodes.
 	NodeAllocatable map[v1.ResourceName]string
 	// Map <driver_name> -> VolumeNodeResources to fill into csiNode.spec.drivers[<driver_name>].
-	CsiNodeAllocatable map[string]*storagev1beta1.VolumeNodeResources
+	CsiNodeAllocatable map[string]*storagev1.VolumeNodeResources
 	// List of in-tree volume plugins migrated to CSI.
 	MigratedPlugins []string
 }
 
 var _ PrepareNodeStrategy = &NodeAllocatableStrategy{}
 
-func NewNodeAllocatableStrategy(nodeAllocatable map[v1.ResourceName]string, csiNodeAllocatable map[string]*storagev1beta1.VolumeNodeResources, migratedPlugins []string) *NodeAllocatableStrategy {
+func NewNodeAllocatableStrategy(nodeAllocatable map[v1.ResourceName]string, csiNodeAllocatable map[string]*storagev1.VolumeNodeResources, migratedPlugins []string) *NodeAllocatableStrategy {
 	return &NodeAllocatableStrategy{
 		NodeAllocatable:    nodeAllocatable,
 		CsiNodeAllocatable: csiNodeAllocatable,
@@ -1068,20 +1063,20 @@ func (s *NodeAllocatableStrategy) CleanupNode(node *v1.Node) *v1.Node {
 }
 
 func (s *NodeAllocatableStrategy) createCSINode(nodeName string, client clientset.Interface) error {
-	csiNode := &storagev1beta1.CSINode{
+	csiNode := &storagev1.CSINode{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: nodeName,
 			Annotations: map[string]string{
 				v1.MigratedPluginsAnnotationKey: strings.Join(s.MigratedPlugins, ","),
 			},
 		},
-		Spec: storagev1beta1.CSINodeSpec{
-			Drivers: []storagev1beta1.CSINodeDriver{},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{},
 		},
 	}
 
 	for driver, allocatable := range s.CsiNodeAllocatable {
-		d := storagev1beta1.CSINodeDriver{
+		d := storagev1.CSINodeDriver{
 			Name:        driver,
 			Allocatable: allocatable,
 			NodeID:      nodeName,
@@ -1089,7 +1084,7 @@ func (s *NodeAllocatableStrategy) createCSINode(nodeName string, client clientse
 		csiNode.Spec.Drivers = append(csiNode.Spec.Drivers, d)
 	}
 
-	_, err := client.StorageV1beta1().CSINodes().Create(context.TODO(), csiNode, metav1.CreateOptions{})
+	_, err := client.StorageV1().CSINodes().Create(context.TODO(), csiNode, metav1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		// Something created CSINode instance after we checked it did not exist.
 		// Make the caller to re-try PrepareDependentObjects by returning Conflict error
@@ -1098,7 +1093,7 @@ func (s *NodeAllocatableStrategy) createCSINode(nodeName string, client clientse
 	return err
 }
 
-func (s *NodeAllocatableStrategy) updateCSINode(csiNode *storagev1beta1.CSINode, client clientset.Interface) error {
+func (s *NodeAllocatableStrategy) updateCSINode(csiNode *storagev1.CSINode, client clientset.Interface) error {
 	for driverName, allocatable := range s.CsiNodeAllocatable {
 		found := false
 		for i, driver := range csiNode.Spec.Drivers {
@@ -1109,7 +1104,7 @@ func (s *NodeAllocatableStrategy) updateCSINode(csiNode *storagev1beta1.CSINode,
 			}
 		}
 		if !found {
-			d := storagev1beta1.CSINodeDriver{
+			d := storagev1.CSINodeDriver{
 				Name:        driverName,
 				Allocatable: allocatable,
 			}
@@ -1119,12 +1114,12 @@ func (s *NodeAllocatableStrategy) updateCSINode(csiNode *storagev1beta1.CSINode,
 	}
 	csiNode.Annotations[v1.MigratedPluginsAnnotationKey] = strings.Join(s.MigratedPlugins, ",")
 
-	_, err := client.StorageV1beta1().CSINodes().Update(context.TODO(), csiNode, metav1.UpdateOptions{})
+	_, err := client.StorageV1().CSINodes().Update(context.TODO(), csiNode, metav1.UpdateOptions{})
 	return err
 }
 
 func (s *NodeAllocatableStrategy) PrepareDependentObjects(node *v1.Node, client clientset.Interface) error {
-	csiNode, err := client.StorageV1beta1().CSINodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
+	csiNode, err := client.StorageV1().CSINodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return s.createCSINode(node.Name, client)
@@ -1135,7 +1130,7 @@ func (s *NodeAllocatableStrategy) PrepareDependentObjects(node *v1.Node, client 
 }
 
 func (s *NodeAllocatableStrategy) CleanupDependentObjects(nodeName string, client clientset.Interface) error {
-	csiNode, err := client.StorageV1beta1().CSINodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+	csiNode, err := client.StorageV1().CSINodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -1308,7 +1303,7 @@ func MakePodSpec() v1.PodSpec {
 	return v1.PodSpec{
 		Containers: []v1.Container{{
 			Name:  "pause",
-			Image: "k8s.gcr.io/pause:3.2",
+			Image: "k8s.gcr.io/pause:3.4.1",
 			Ports: []v1.ContainerPort{{ContainerPort: 80}},
 			Resources: v1.ResourceRequirements{
 				Limits: v1.ResourceList{
@@ -1374,11 +1369,28 @@ func CreatePodWithPersistentVolume(client clientset.Interface, namespace string,
 			pv.Status.Phase = v1.VolumeBound
 
 			// bind pvc to "pv-$i"
-			// pvc.Spec.VolumeName = pv.Name
+			pvc.Spec.VolumeName = pv.Name
 			pvc.Status.Phase = v1.ClaimBound
 		} else {
 			pv.Status.Phase = v1.VolumeAvailable
 		}
+
+		// Create PVC first as it's referenced by the PV when the `bindVolume` is true.
+		if err := CreatePersistentVolumeClaimWithRetries(client, namespace, pvc); err != nil {
+			lock.Lock()
+			defer lock.Unlock()
+			createError = fmt.Errorf("error creating PVC: %s", err)
+			return
+		}
+
+		// We need to update statuses separately, as creating pv/pvc resets status to the default one.
+		if _, err := client.CoreV1().PersistentVolumeClaims(namespace).UpdateStatus(context.TODO(), pvc, metav1.UpdateOptions{}); err != nil {
+			lock.Lock()
+			defer lock.Unlock()
+			createError = fmt.Errorf("error updating PVC status: %s", err)
+			return
+		}
+
 		if err := CreatePersistentVolumeWithRetries(client, pv); err != nil {
 			lock.Lock()
 			defer lock.Unlock()
@@ -1390,19 +1402,6 @@ func CreatePodWithPersistentVolume(client clientset.Interface, namespace string,
 			lock.Lock()
 			defer lock.Unlock()
 			createError = fmt.Errorf("error updating PV status: %s", err)
-			return
-		}
-
-		if err := CreatePersistentVolumeClaimWithRetries(client, namespace, pvc); err != nil {
-			lock.Lock()
-			defer lock.Unlock()
-			createError = fmt.Errorf("error creating PVC: %s", err)
-			return
-		}
-		if _, err := client.CoreV1().PersistentVolumeClaims(namespace).UpdateStatus(context.TODO(), pvc, metav1.UpdateOptions{}); err != nil {
-			lock.Lock()
-			defer lock.Unlock()
-			createError = fmt.Errorf("error updating PVC status: %s", err)
 			return
 		}
 
@@ -1487,10 +1486,10 @@ func makeUnboundPersistentVolumeClaim(storageClass string) *v1.PersistentVolumeC
 
 func NewCreatePodWithPersistentVolumeWithFirstConsumerStrategy(factory volumeFactory, podTemplate *v1.Pod) TestPodCreateStrategy {
 	return func(client clientset.Interface, namespace string, podCount int) error {
-		volumeBindingMode := storage.VolumeBindingWaitForFirstConsumer
-		storageClass := &storage.StorageClass{
+		volumeBindingMode := storagev1.VolumeBindingWaitForFirstConsumer
+		storageClass := &storagev1.StorageClass{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "storage-class-1",
+				Name: "storagev1-class-1",
 			},
 			Provisioner:       "kubernetes.io/gce-pd",
 			VolumeBindingMode: &volumeBindingMode,
@@ -1498,7 +1497,7 @@ func NewCreatePodWithPersistentVolumeWithFirstConsumerStrategy(factory volumeFac
 		claimTemplate := makeUnboundPersistentVolumeClaim(storageClass.Name)
 
 		if err := CreateStorageClassWithRetries(client, storageClass); err != nil {
-			return fmt.Errorf("failed to create storage class: %v", err)
+			return fmt.Errorf("failed to create storagev1 class: %v", err)
 		}
 
 		factoryWithStorageClass := func(i int) *v1.PersistentVolume {
@@ -1726,7 +1725,7 @@ type DaemonConfig struct {
 
 func (config *DaemonConfig) Run() error {
 	if config.Image == "" {
-		config.Image = "k8s.gcr.io/pause:3.2"
+		config.Image = "k8s.gcr.io/pause:3.4.1"
 	}
 	nameLabel := map[string]string{
 		"name": config.Name + "-daemon",
