@@ -196,11 +196,12 @@ func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string
 			continue
 		}
 
+		normalizedResourceName := strings.Replace(resourceName[1], "_", "/", -1)
 		quantity, err := resource.ParseQuantity(*tagValue)
 		if err != nil {
 			continue
 		}
-		resources[resourceName[1]] = &quantity
+		resources[normalizedResourceName] = &quantity
 	}
 
 	return resources
