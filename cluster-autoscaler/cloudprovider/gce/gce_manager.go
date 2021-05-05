@@ -474,11 +474,20 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	if err != nil {
 		return nil, err
 	}
-	for _, z := range zones {
-		zl, err := m.GceService.FetchMigsWithName(z, name)
+
+	zoneLinks := make([][]string, len(zones))
+	errors := make([]error, len(zones))
+	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
+		zoneLinks[piece], errors[piece] = m.GceService.FetchMigsWithName(zones[piece], name)
+	})
+
+	for _, err := range errors {
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%v", errors)
 		}
+	}
+
+	for _, zl := range zoneLinks {
 		for _, link := range zl {
 			links = append(links, link)
 		}
