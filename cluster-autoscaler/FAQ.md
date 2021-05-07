@@ -466,8 +466,9 @@ If there are multiple node groups that, if increased, would help with getting so
 different strategies can be selected for choosing which node group is increased. Check [What are Expanders?](#what-are-expanders) section to learn more about strategies.
 
 It may take some time before the created nodes appear in Kubernetes. It almost entirely
-depends on the cloud provider and the speed of node provisioning. Cluster
-Autoscaler expects requested nodes to appear within 15 minutes
+depends on the cloud provider and the speed of node provisioning, including the
+[TLS bootstrapping process](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/).
+Cluster Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
 different group if the pods are still pending. It will also attempt to remove
