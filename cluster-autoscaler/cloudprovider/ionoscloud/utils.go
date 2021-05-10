@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
 )
@@ -76,4 +77,9 @@ func convertToInstanceStatus(nodeState string) *cloudprovider.InstanceStatus {
 		}
 	}
 	return st
+}
+
+// NewUUID returns a new UUID as string.
+func NewUUID() string {
+	return uuid.New().String()
 }
