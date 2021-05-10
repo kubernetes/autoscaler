@@ -78,7 +78,8 @@ func (p *filterOutSchedulablePodListProcessor) Process(
 
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
-	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
+	if len(filterByAge(unschedulablePodsToHelp, youngerThan, longPendingCutoff)) !=
+		len(filterByAge(unschedulablePods, youngerThan, longPendingCutoff)) {
 		klog.V(2).Info("Schedulable pods present")
 
 		if context.DebuggingSnapshotter.IsDataCollectionAllowed() {
