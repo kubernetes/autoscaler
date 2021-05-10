@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
@@ -176,7 +176,7 @@ func (manager *ionosCloudManagerImpl) initExplicitNodeGroups(nodeGroupsConfig []
 		if err != nil || max == 0 {
 			return fmt.Errorf("invalid value for max: %s", parts[1])
 		}
-		if _, err := uuid.FromString(parts[2]); err != nil {
+		if _, err := uuid.Parse(parts[2]); err != nil {
 			return fmt.Errorf("invalid value for id: %s", parts[2])
 		}
 
