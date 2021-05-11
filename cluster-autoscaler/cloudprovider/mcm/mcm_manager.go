@@ -628,7 +628,10 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch AWSMachineClass object %s, Error: %v", machineClass.Name, err)
 		}
-		awsInstance := aws.InstanceTypes[mc.Spec.MachineType]
+		awsInstance, exists := aws.InstanceTypes[mc.Spec.MachineType]
+		if !exists {
+			return nil, fmt.Errorf("Unable to fetch details for VM type %s", mc.Spec.MachineType)
+		}
 		instance = instanceType{
 			InstanceType: awsInstance.InstanceType,
 			VCPU:         awsInstance.VCPU,
@@ -642,7 +645,10 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch AzureMachineClass object %s, Error: %v", machineClass.Name, err)
 		}
-		azureInstance := azure.InstanceTypes[mc.Spec.Properties.HardwareProfile.VMSize]
+		azureInstance, exists := azure.InstanceTypes[mc.Spec.Properties.HardwareProfile.VMSize]
+		if !exists {
+			return nil, fmt.Errorf("Unable to fetch details for VM type %s", mc.Spec.Properties.HardwareProfile.VMSize)
+		}
 		instance = instanceType{
 			InstanceType: azureInstance.InstanceType,
 			VCPU:         azureInstance.VCPU,
@@ -666,7 +672,10 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAWS, machinedeployment.Name, err)
 			}
 
-			awsInstance := aws.InstanceTypes[providerSpec.MachineType]
+			awsInstance, exists := aws.InstanceTypes[providerSpec.MachineType]
+			if !exists {
+				return nil, fmt.Errorf("Unable to fetch details for VM type %s", providerSpec.MachineType)
+			}
 			instance = instanceType{
 				InstanceType: awsInstance.InstanceType,
 				VCPU:         awsInstance.VCPU,
@@ -681,8 +690,10 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			if err != nil {
 				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAzure, machinedeployment.Name, err)
 			}
-
-			azureInstance := aws.InstanceTypes[providerSpec.Properties.HardwareProfile.VMSize]
+			azureInstance, exists := azure.InstanceTypes[providerSpec.Properties.HardwareProfile.VMSize]
+			if !exists {
+				return nil, fmt.Errorf("Unable to fetch details for VM type %s", providerSpec.Properties.HardwareProfile.VMSize)
+			}
 			instance = instanceType{
 				InstanceType: azureInstance.InstanceType,
 				VCPU:         azureInstance.VCPU,
