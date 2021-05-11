@@ -922,14 +922,15 @@ unexpected problems coming from version incompatibilities.
 
 To sync the repositories' vendored k8s libraries, we have a script that takes a
 released version of k8s and updates the `replace` directives of each k8s
-sub-library.
+sub-library. It can be used with custom kubernetes fork, by default it uses
+`git@github.com:kubernetes/kubernetes.git`.
 
 Example execution looks like this:
 ```
-./hack/update-vendor.sh 1.20.0-alpha.1
+./hack/update-vendor.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
 ```
 
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
 ```
-./hack/submodule-k8s.sh <k8s commit sha>
+./hack/submodule-k8s.sh <k8s commit sha> git@github.com:kubernetes/kubernetes.git
 ```
