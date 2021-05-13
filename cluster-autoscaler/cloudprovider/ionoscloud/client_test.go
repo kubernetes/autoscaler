@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,7 +77,7 @@ func TestLoadTokensFromFilesystem_OK(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
-	uuid1, uuid2, uuid3 := uuid.NewV4().String(), uuid.NewV4().String(), uuid.NewV4().String()
+	uuid1, uuid2, uuid3 := NewUUID(), NewUUID(), NewUUID()
 
 	input := map[string]string{
 		uuid1: "token1",
@@ -106,7 +105,7 @@ func TestLoadTokensFromFilesystem_ReadError(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
-	require.NoError(t, os.Mkdir(filepath.Join(tempDir, uuid.NewV4().String()), 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(tempDir, NewUUID()), 0755))
 	client, err := NewAutoscalingClient(&Config{TokensPath: tempDir})
 	require.Error(t, err)
 	require.Nil(t, client)
