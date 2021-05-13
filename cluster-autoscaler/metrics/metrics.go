@@ -138,6 +138,38 @@ var (
 		},
 	)
 
+	cpuCurrentCores = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cluster_cpu_current_cores",
+			Help:      "Current number of cores in the cluster, minus deleting nodes.",
+		},
+	)
+
+	cpuLimitsCores = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cpu_limits_cores",
+			Help:      "Minimum and maximum number of cores in the cluster.",
+		}, []string{"direction"},
+	)
+
+	memoryCurrentBytes = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cluster_memory_current_bytes",
+			Help:      "Current number of bytes of memory in the cluster, minus deleting nodes.",
+		},
+	)
+
+	memoryLimitsBytes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "memory_limits_bytes",
+			Help:      "Minimum and maximum number of bytes of memory in cluster.",
+		}, []string{"direction"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -288,6 +320,10 @@ func RegisterAll() {
 	legacyregistry.MustRegister(nodeGroupsCount)
 	legacyregistry.MustRegister(unschedulablePodsCount)
 	legacyregistry.MustRegister(maxNodesCount)
+	legacyregistry.MustRegister(cpuCurrentCores)
+	legacyregistry.MustRegister(cpuLimitsCores)
+	legacyregistry.MustRegister(memoryCurrentBytes)
+	legacyregistry.MustRegister(memoryLimitsBytes)
 	legacyregistry.MustRegister(lastActivity)
 	legacyregistry.MustRegister(functionDuration)
 	legacyregistry.MustRegister(functionDurationSummary)
@@ -362,6 +398,28 @@ func UpdateUnschedulablePodsCount(podsCount int) {
 // UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
 func UpdateMaxNodesCount(nodesCount int) {
 	maxNodesCount.Set(float64(nodesCount))
+}
+
+// UpdateClusterCPUCurrentCores records the number of cores in the cluster, minus deleting nodes
+func UpdateClusterCPUCurrentCores(coresCount int64) {
+	cpuCurrentCores.Set(float64(coresCount))
+}
+
+// UpdateCPULimitsCores records the minimum and maximum number of cores in the cluster
+func UpdateCPULimitsCores(minCoresCount int64, maxCoresCount int64) {
+	cpuLimitsCores.WithLabelValues("minimum").Set(float64(minCoresCount))
+	cpuLimitsCores.WithLabelValues("maximum").Set(float64(maxCoresCount))
+}
+
+// UpdateClusterMemoryCurrentBytes records the number of bytes of memory in the cluster, minus deleting nodes
+func UpdateClusterMemoryCurrentBytes(memoryCount int64) {
+	memoryCurrentBytes.Set(float64(memoryCount))
+}
+
+// UpdateMemoryLimitsBytes records the minimum and maximum bytes of memory in the cluster
+func UpdateMemoryLimitsBytes(minMemoryCount int64, maxMemoryCount int64) {
+	memoryLimitsBytes.WithLabelValues("minimum").Set(float64(minMemoryCount))
+	memoryLimitsBytes.WithLabelValues("maximum").Set(float64(maxMemoryCount))
 }
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.
