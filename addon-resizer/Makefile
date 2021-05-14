@@ -26,7 +26,7 @@ REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
-TAG = 1.8.12
+TAG = 1.8.13
 
 BASEIMAGE?=gcr.io/distroless/static:latest
 
