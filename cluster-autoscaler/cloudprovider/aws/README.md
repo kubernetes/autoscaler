@@ -355,3 +355,17 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
   `aws:///us-east-1a/i-01234abcdef`.
 * If you want to use regional STS endpoints (e.g. when using VPC endpoint for
   STS) the env `AWS_STS_REGIONAL_ENDPOINTS=regional` should be set.
+  * If you are using helm, you should setup the autoDiscovery correctly in the values.yaml.
+  Beyond tagging the autoscaling groups, it is important to set the `clusterName` and
+  `tag` values correctly.
+  ```
+  autoDiscovery:
+  # Only cloudProvider `aws` and `gce` are supported by auto-discovery at this time
+    clusterName: YOUR_CLUSTER_NAME
+    tags:
+      k8s.io/cluster-autoscaler/enabled
+      k8s.io/cluster-autoscaler/<YOUR_CLUSTER_NAME>
+      # note that the < brackets > are required in the above line
+    ```
+* When the above is done, make sure that you don't also set the `node-group-auto-discovery`
+  in the `extraArgs`.
