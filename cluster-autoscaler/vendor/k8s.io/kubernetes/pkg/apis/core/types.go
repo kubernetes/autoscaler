@@ -157,7 +157,7 @@ type VolumeSource struct {
 	// CSI (Container Storage Interface) represents ephemeral storage that is handled by certain external CSI drivers (Beta feature).
 	// +optional
 	CSI *CSIVolumeSource
-	// Ephemeral represents a volume that is handled by a cluster storage driver (Alpha feature).
+	// Ephemeral represents a volume that is handled by a cluster storage driver.
 	// The volume's lifecycle is tied to the pod that defines it - it will be created before the pod starts,
 	// and deleted when the pod is removed.
 	//
@@ -181,6 +181,9 @@ type VolumeSource struct {
 	//
 	// A pod can use both types of ephemeral volumes and
 	// persistent volumes at the same time.
+	//
+	// This is a beta feature and only available when the GenericEphemeralVolume
+	// feature gate is enabled.
 	//
 	// +optional
 	Ephemeral *EphemeralVolumeSource
@@ -1717,11 +1720,6 @@ type EphemeralVolumeSource struct {
 	//
 	// Required, must not be nil.
 	VolumeClaimTemplate *PersistentVolumeClaimTemplate
-
-	// ReadOnly specifies a read-only configuration for the volume.
-	// Defaults to false (read/write).
-	// +optional
-	ReadOnly bool
 }
 
 // PersistentVolumeClaimTemplate is used to produce
@@ -2022,6 +2020,17 @@ type Probe struct {
 	// Minimum consecutive failures for the probe to be considered failed after having succeeded.
 	// +optional
 	FailureThreshold int32
+	// Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+	// The grace period is the duration in seconds after the processes running in the pod are sent
+	// a termination signal and the time when the processes are forcibly halted with a kill signal.
+	// Set this value longer than the expected cleanup time for your process.
+	// If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+	// value overrides the value provided by the pod spec.
+	// Value must be non-negative integer. The value zero indicates stop immediately via
+	// the kill signal (no opportunity to shut down).
+	// This is an alpha field and requires enabling ProbeTerminationGracePeriod feature gate.
+	// +optional
+	TerminationGracePeriodSeconds *int64
 }
 
 // PullPolicy describes a policy for if/when to pull a container image
@@ -2721,7 +2730,8 @@ type PodSpec struct {
 	// +optional
 	RestartPolicy RestartPolicy
 	// Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.
-	// Value must be non-negative integer. The value zero indicates delete immediately.
+	// Value must be non-negative integer. The value zero indicates stop immediately via the kill
+	// signal (no opportunity to shut down).
 	// If this value is nil, the default grace period will be used instead.
 	// The grace period is the duration in seconds after the processes running in the pod are sent
 	// a termination signal and the time when the processes are forcibly halted with a kill signal.
