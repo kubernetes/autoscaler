@@ -35,7 +35,7 @@ import (
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) ([]*apiv1.Pod, *drain.BlockingPod, error) {
 	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
@@ -44,7 +44,7 @@ func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystem
 		false,
 		nil,
 		0,
-		time.Now())
+		timestamp)
 
 	if err != nil {
 		return pods, blockingPod, err
@@ -62,7 +62,7 @@ func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystem
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) ([]*apiv1.Pod, *drain.BlockingPod, error) {
 	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
@@ -71,7 +71,7 @@ func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithS
 		true,
 		listers,
 		minReplicaCount,
-		time.Now())
+		timestamp)
 	if err != nil {
 		return pods, blockingPod, err
 	}

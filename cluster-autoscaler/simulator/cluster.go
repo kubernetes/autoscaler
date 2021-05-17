@@ -158,10 +158,10 @@ candidateloop:
 
 		if fastCheck {
 			podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
-				podDisruptionBudgets)
+				podDisruptionBudgets, timestamp)
 		} else {
 			podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
-				podDisruptionBudgets)
+				podDisruptionBudgets, timestamp)
 		}
 
 		if err != nil {
@@ -195,7 +195,7 @@ candidateloop:
 }
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
-func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []string {
+func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string, timestamp time.Time) []string {
 	result := make([]string, 0)
 	for _, node := range candidates {
 		nodeInfo, err := snapshot.NodeInfos().Get(node)
@@ -204,7 +204,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 			continue
 		}
 		// Should block on all pods.
-		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil, timestamp)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}
@@ -215,9 +215,9 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 // CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) or gpu utilization
 // based on if the node has GPU or not. Per resource utilization is the sum of requests for it divided by allocatable.
 // It also returns the individual cpu, memory and gpu utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string) (utilInfo UtilizationInfo, err error) {
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string, currentTime time.Time) (utilInfo UtilizationInfo, err error) {
 	if gpu.NodeHasGpu(gpuLabel, node) {
-		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods)
+		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {
 			klog.V(3).Infof("node %s has unready GPU", node.Name)
 			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
@@ -228,11 +228,11 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo
 		return UtilizationInfo{GpuUtil: gpuUtil, ResourceName: gpu.ResourceNvidiaGPU, Utilization: gpuUtil}, nil
 	}
 
-	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods)
+	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
 	if err != nil {
 		return UtilizationInfo{}, err
 	}
-	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods)
+	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods, currentTime)
 	if err != nil {
 		return UtilizationInfo{}, err
 	}
@@ -250,7 +250,7 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo
 	return utilization, nil
 }
 
-func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool) (float64, error) {
+func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (float64, error) {
 	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("failed to get %v from %s", resourceName, node.Name)
@@ -266,6 +266,10 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinf
 		}
 		// factor mirror pods out of the utilization calculations
 		if skipMirrorPods && pod_util.IsMirrorPod(pod) {
+			continue
+		}
+		// ignore Pods that should be terminated
+		if drain.IsPodLongTerminating(pod, currentTime) {
 			continue
 		}
 		for _, container := range pod.Spec.Containers {
