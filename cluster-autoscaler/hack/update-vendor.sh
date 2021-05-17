@@ -50,8 +50,14 @@ rm -rf ${WORKDIR}
 
 for MOD in "${MODS[@]}"; do
     V=$(
-        go mod download -json "${MOD}@kubernetes-${VERSION}" |
-        sed -n 's|.*"Version": "\(.*\)".*|\1|p'
+        GOMOD="${MOD}@kubernetes-${VERSION}"
+        JSON=$(go mod download -json "${GOMOD}")
+        retval=$?
+        if [ $retval -ne 0 ]; then
+            echo "Error downloading module ${GOMOD}."
+            exit 1
+        fi
+        echo "${JSON}" | sed -n 's|.*"Version": "\(.*\)".*|\1|p'
     )
     go mod edit "-replace=${MOD}=${MOD}@${V}"
 done
