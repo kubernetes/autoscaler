@@ -64,9 +64,9 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 // DeepCopyTemplateNode copies NodeInfo object used as a template. It changes
 // names of UIDs of both node and pods running on it, so that copies can be used
 // to represent multiple nodes.
-func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, index int) *schedulerframework.NodeInfo {
+func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, suffix string) *schedulerframework.NodeInfo {
 	node := nodeTemplate.Node().DeepCopy()
-	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
+	node.Name = fmt.Sprintf("%s-%s", node.Name, suffix)
 	node.UID = uuid.NewUUID()
 	if node.Labels == nil {
 		node.Labels = make(map[string]string)
@@ -76,7 +76,7 @@ func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, index int) 
 	nodeInfo.SetNode(node)
 	for _, podInfo := range nodeTemplate.Pods {
 		pod := podInfo.Pod.DeepCopy()
-		pod.Name = fmt.Sprintf("%s-%d", podInfo.Pod.Name, index)
+		pod.Name = fmt.Sprintf("%s-%s", podInfo.Pod.Name, suffix)
 		pod.UID = uuid.NewUUID()
 		nodeInfo.AddPod(pod)
 	}
