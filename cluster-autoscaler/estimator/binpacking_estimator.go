@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"fmt"
 	"sort"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -113,7 +114,7 @@ func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	template *schedulerframework.NodeInfo,
 	nameIndex int) (string, error) {
 
-	newNodeInfo := scheduler.DeepCopyTemplateNode(template, nameIndex)
+	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("estimator-%d", nameIndex))
 	var pods []*apiv1.Pod
 	for _, podInfo := range newNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
