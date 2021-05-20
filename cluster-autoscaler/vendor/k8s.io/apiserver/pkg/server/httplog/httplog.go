@@ -25,6 +25,7 @@ import (
 	"runtime"
 	"time"
 
+	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/klog/v2"
 )
 
@@ -82,7 +83,13 @@ func WithLogging(handler http.Handler, pred StacktracePred) http.Handler {
 		if old := respLoggerFromContext(req); old != nil {
 			panic("multiple WithLogging calls!")
 		}
-		rl := newLogged(req, w).StacktraceWhen(pred)
+
+		startTime := time.Now()
+		if receivedTimestamp, ok := request.ReceivedTimestampFrom(ctx); ok {
+			startTime = receivedTimestamp
+		}
+
+		rl := newLoggedWithStartTime(req, w, startTime).StacktraceWhen(pred)
 		req = req.WithContext(context.WithValue(ctx, respLoggerContextKey, rl))
 
 		if klog.V(3).Enabled() {
@@ -102,14 +109,18 @@ func respLoggerFromContext(req *http.Request) *respLogger {
 	return nil
 }
 
-// newLogged turns a normal response writer into a logged response writer.
-func newLogged(req *http.Request, w http.ResponseWriter) *respLogger {
+func newLoggedWithStartTime(req *http.Request, w http.ResponseWriter, startTime time.Time) *respLogger {
 	return &respLogger{
-		startTime:         time.Now(),
+		startTime:         startTime,
 		req:               req,
 		w:                 w,
 		logStacktracePred: DefaultStacktracePred,
 	}
+}
+
+// newLogged turns a normal response writer into a logged response writer.
+func newLogged(req *http.Request, w http.ResponseWriter) *respLogger {
+	return newLoggedWithStartTime(req, w, time.Now())
 }
 
 // LogOf returns the logger hiding in w. If there is not an existing logger
@@ -157,12 +168,14 @@ func (rl *respLogger) Addf(format string, data ...interface{}) {
 
 func (rl *respLogger) LogArgs() []interface{} {
 	latency := time.Since(rl.startTime)
+	auditID := request.GetAuditIDTruncated(rl.req)
 	if rl.hijacked {
 		return []interface{}{
 			"verb", rl.req.Method,
 			"URI", rl.req.RequestURI,
 			"latency", latency,
 			"userAgent", rl.req.UserAgent(),
+			"audit-ID", auditID,
 			"srcIP", rl.req.RemoteAddr,
 			"hijacked", true,
 		}
@@ -172,6 +185,7 @@ func (rl *respLogger) LogArgs() []interface{} {
 		"URI", rl.req.RequestURI,
 		"latency", latency,
 		"userAgent", rl.req.UserAgent(),
+		"audit-ID", auditID,
 		"srcIP", rl.req.RemoteAddr,
 		"resp", rl.status,
 	}

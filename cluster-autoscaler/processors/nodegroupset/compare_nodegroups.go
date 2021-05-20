@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -122,7 +123,7 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulerframework.NodeInfo, ignored
 		for res, quantity := range node.Node().Status.Allocatable {
 			allocatable[res] = append(allocatable[res], quantity)
 		}
-		for res, quantity := range node.Requested.ResourceList() {
+		for res, quantity := range scheduler.ResourceToResourceList(node.Requested) {
 			freeRes := node.Node().Status.Allocatable[res].DeepCopy()
 			freeRes.Sub(quantity)
 			free[res] = append(free[res], freeRes)
