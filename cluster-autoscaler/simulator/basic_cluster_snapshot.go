@@ -92,10 +92,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
 	nodeInfo := schedulerframework.NewNodeInfo()
-	err := nodeInfo.SetNode(node)
-	if err != nil {
-		return fmt.Errorf("cannot set node in NodeInfo; %v", err)
-	}
+	nodeInfo.SetNode(node)
 	data.nodeInfoMap[node.Name] = nodeInfo
 	return nil
 }

@@ -222,9 +222,7 @@ func deepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 
 	// Build a new node info.
 	newNodeInfo := schedulerframework.NewNodeInfo(newPods...)
-	if err := newNodeInfo.SetNode(nodeInfo.Node().DeepCopy()); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	newNodeInfo.SetNode(nodeInfo.Node().DeepCopy())
 	return newNodeInfo, nil
 }
 
@@ -245,9 +243,7 @@ func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName strin
 
 	// Build a new node info.
 	sanitizedNodeInfo := schedulerframework.NewNodeInfo(sanitizedPods...)
-	if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	sanitizedNodeInfo.SetNode(sanitizedNode)
 	return sanitizedNodeInfo, nil
 }
 
