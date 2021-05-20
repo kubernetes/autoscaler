@@ -29,7 +29,7 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
-	policy "k8s.io/api/policy/v1beta1"
+	policy "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -37,14 +37,13 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"
-	policylisters "k8s.io/client-go/listers/policy/v1beta1"
+	policylisters "k8s.io/client-go/listers/policy/v1"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	extenderv1 "k8s.io/kube-scheduler/extender/v1"
 	kubefeatures "k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
-	"k8s.io/kubernetes/pkg/scheduler/internal/parallelize"
 	"k8s.io/kubernetes/pkg/scheduler/metrics"
 	"k8s.io/kubernetes/pkg/scheduler/util"
 )
@@ -75,7 +74,7 @@ func New(dpArgs runtime.Object, fh framework.Handle) (framework.Plugin, error) {
 	if !ok {
 		return nil, fmt.Errorf("got args of type %T, want *DefaultPreemptionArgs", dpArgs)
 	}
-	if err := validation.ValidateDefaultPreemptionArgs(*args); err != nil {
+	if err := validation.ValidateDefaultPreemptionArgs(nil, args); err != nil {
 		return nil, err
 	}
 	pl := DefaultPreemption{
@@ -360,7 +359,7 @@ func dryRunPreemption(ctx context.Context, fh framework.Handle,
 			statusesLock.Unlock()
 		}
 	}
-	parallelize.Until(parallelCtx, len(potentialNodes), checkNode)
+	fh.Parallelizer().Until(parallelCtx, len(potentialNodes), checkNode)
 	return append(nonViolatingCandidates.get(), violatingCandidates.get()...), nodeStatuses
 }
 
@@ -695,13 +694,13 @@ func selectVictimsOnNode(
 // - Clear the low-priority pods' nominatedNodeName status if needed
 func PrepareCandidate(c Candidate, fh framework.Handle, cs kubernetes.Interface, pod *v1.Pod, pluginName string) *framework.Status {
 	for _, victim := range c.Victims().Pods {
-		if err := util.DeletePod(cs, victim); err != nil {
-			klog.ErrorS(err, "preempting pod", "pod", klog.KObj(victim))
-			return framework.AsStatus(err)
-		}
-		// If the victim is a WaitingPod, send a reject message to the PermitPlugin
+		// If the victim is a WaitingPod, send a reject message to the PermitPlugin.
+		// Otherwise we should delete the victim.
 		if waitingPod := fh.GetWaitingPod(victim.UID); waitingPod != nil {
 			waitingPod.Reject(pluginName, "preempted")
+		} else if err := util.DeletePod(cs, victim); err != nil {
+			klog.ErrorS(err, "Preempting pod", "pod", klog.KObj(victim), "preemptor", klog.KObj(pod))
+			return framework.AsStatus(err)
 		}
 		fh.EventRecorder().Eventf(victim, pod, v1.EventTypeNormal, "Preempted", "Preempting", "Preempted by %v/%v on node %v",
 			pod.Namespace, pod.Name, c.Name())
@@ -799,7 +798,7 @@ func filterPodsWithPDBViolation(podInfos []*framework.PodInfo, pdbs []*policy.Po
 
 func getPDBLister(informerFactory informers.SharedInformerFactory) policylisters.PodDisruptionBudgetLister {
 	if utilfeature.DefaultFeatureGate.Enabled(kubefeatures.PodDisruptionBudget) {
-		return informerFactory.Policy().V1beta1().PodDisruptionBudgets().Lister()
+		return informerFactory.Policy().V1().PodDisruptionBudgets().Lister()
 	}
 	return nil
 }

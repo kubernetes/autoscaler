@@ -62,8 +62,8 @@ type RuntimeClassSpec struct {
 
 	// Overhead represents the resource overhead associated with running a pod for a
 	// given RuntimeClass. For more details, see
-	// https://git.k8s.io/enhancements/keps/sig-node/20190226-pod-overhead.md
-	// This field is alpha-level as of Kubernetes v1.15, and is only honored by servers that enable the PodOverhead feature.
+	// https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead/README.md
+	// This field is beta-level as of Kubernetes v1.18, and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	Overhead *Overhead `json:"overhead,omitempty" protobuf:"bytes,2,opt,name=overhead"`
 
@@ -91,6 +91,7 @@ type Scheduling struct {
 	// with a pod's existing nodeSelector. Any conflicts will cause the pod to
 	// be rejected in admission.
 	// +optional
+	// +mapType=atomic
 	NodeSelector map[string]string `json:"nodeSelector,omitempty" protobuf:"bytes,1,opt,name=nodeSelector"`
 
 	// tolerations are appended (excluding duplicates) to pods running with this

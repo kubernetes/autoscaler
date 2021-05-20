@@ -75,6 +75,7 @@ type StorageClass struct {
 	// An empty TopologySelectorTerm list means there is no topology restriction.
 	// This field is only honored by servers that enable the VolumeScheduling feature.
 	// +optional
+	// +listType=atomic
 	AllowedTopologies []v1.TopologySelectorTerm `json:"allowedTopologies,omitempty" protobuf:"bytes,8,rep,name=allowedTopologies"`
 }
 
@@ -292,6 +293,9 @@ type CSIDriverSpec struct {
 	// If the CSIDriverRegistry feature gate is enabled and the value is
 	// specified to false, the attach operation will be skipped.
 	// Otherwise the attach operation will be called.
+	//
+	// This field is immutable.
+	//
 	// +optional
 	AttachRequired *bool `json:"attachRequired,omitempty" protobuf:"varint,1,opt,name=attachRequired"`
 
@@ -319,6 +323,9 @@ type CSIDriverSpec struct {
 	// As Kubernetes 1.15 doesn't support this field, drivers can only support one mode when
 	// deployed on such a cluster and the deployment determines which mode that is, for example
 	// via a command line parameter of the driver.
+	//
+	// This field is immutable.
+	//
 	// +optional
 	PodInfoOnMount *bool `json:"podInfoOnMount,omitempty" protobuf:"bytes,2,opt,name=podInfoOnMount"`
 
@@ -334,6 +341,9 @@ type CSIDriverSpec struct {
 	// https://kubernetes-csi.github.io/docs/ephemeral-local-volumes.html
 	// A driver can support one or more of these modes and
 	// more modes may be added in the future.
+	//
+	// This field is immutable.
+	//
 	// +optional
 	VolumeLifecycleModes []VolumeLifecycleMode `json:"volumeLifecycleModes,omitempty" protobuf:"bytes,3,opt,name=volumeLifecycleModes"`
 
@@ -352,6 +362,8 @@ type CSIDriverSpec struct {
 	// unset or false and it can be flipped later when storage
 	// capacity information has been published.
 	//
+	// This field is immutable.
+	//
 	// This is a beta field and only available when the CSIStorageCapacity
 	// feature is enabled. The default is false.
 	//
@@ -362,8 +374,15 @@ type CSIDriverSpec struct {
 	// Defines if the underlying volume supports changing ownership and
 	// permission of the volume before being mounted.
 	// Refer to the specific FSGroupPolicy values for additional details.
-	// This field is alpha-level, and is only honored by servers
+	// This field is beta, and is only honored by servers
 	// that enable the CSIVolumeFSGroupPolicy feature gate.
+	//
+	// This field is immutable.
+	//
+	// Defaults to ReadWriteOnceWithFSType, which will examine each volume
+	// to determine if Kubernetes should modify ownership and permissions of the volume.
+	// With the default policy the defined fsGroup will only be applied
+	// if a fstype is defined and the volume's access mode contains ReadWriteOnce.
 	// +optional
 	FSGroupPolicy *FSGroupPolicy `json:"fsGroupPolicy,omitempty" protobuf:"bytes,5,opt,name=fsGroupPolicy"`
 
@@ -383,7 +402,7 @@ type CSIDriverSpec struct {
 	// most one token is empty string. To receive a new token after expiry,
 	// RequiresRepublish can be used to trigger NodePublishVolume periodically.
 	//
-	// This is an alpha feature and only available when the
+	// This is a beta feature and only available when the
 	// CSIServiceAccountToken feature is enabled.
 	//
 	// +optional
@@ -398,7 +417,7 @@ type CSIDriverSpec struct {
 	// to NodePublishVolume should only update the contents of the volume. New
 	// mount points will not be seen by a running container.
 	//
-	// This is an alpha feature and only available when the
+	// This is a beta feature and only available when the
 	// CSIServiceAccountToken feature is enabled.
 	//
 	// +optional
@@ -419,9 +438,11 @@ const (
 	ReadWriteOnceWithFSTypeFSGroupPolicy FSGroupPolicy = "ReadWriteOnceWithFSType"
 
 	// FileFSGroupPolicy indicates that CSI driver supports volume ownership
-	// and permission change via fsGroup, and Kubernetes may use fsGroup
-	// to change permissions and ownership of the volume to match user requested fsGroup in
+	// and permission change via fsGroup, and Kubernetes will change the permissions
+	// and ownership of every file in the volume to match the user requested fsGroup in
 	// the pod's SecurityPolicy regardless of fstype or access mode.
+	// Use this mode if Kubernetes should modify the permissions and ownership
+	// of the volume.
 	FileFSGroupPolicy FSGroupPolicy = "File"
 
 	// None indicates that volumes will be mounted without performing
