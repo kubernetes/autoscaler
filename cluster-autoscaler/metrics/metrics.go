@@ -330,7 +330,7 @@ var (
 )
 
 // RegisterAll registers all metrics.
-func RegisterAll() {
+func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(clusterSafeToAutoscale)
 	legacyregistry.MustRegister(nodesCount)
 	legacyregistry.MustRegister(nodeGroupsCount)
@@ -340,8 +340,6 @@ func RegisterAll() {
 	legacyregistry.MustRegister(cpuLimitsCores)
 	legacyregistry.MustRegister(memoryCurrentBytes)
 	legacyregistry.MustRegister(memoryLimitsBytes)
-	legacyregistry.MustRegister(nodesGroupMinNodes)
-	legacyregistry.MustRegister(nodesGroupMaxNodes)
 	legacyregistry.MustRegister(lastActivity)
 	legacyregistry.MustRegister(functionDuration)
 	legacyregistry.MustRegister(functionDurationSummary)
@@ -359,6 +357,11 @@ func RegisterAll() {
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
+
+	if emitPerNodeGroupMetrics {
+		legacyregistry.MustRegister(nodesGroupMinNodes)
+		legacyregistry.MustRegister(nodesGroupMaxNodes)
+	}
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
