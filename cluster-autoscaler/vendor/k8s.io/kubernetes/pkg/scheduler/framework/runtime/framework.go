@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/events"
 	"k8s.io/component-helpers/scheduling/corev1"
 	"k8s.io/klog/v2"
@@ -66,7 +67,6 @@ var allClusterEvents = []framework.ClusterEvent{
 	{Resource: framework.CSINode, ActionType: framework.All},
 	{Resource: framework.PersistentVolume, ActionType: framework.All},
 	{Resource: framework.PersistentVolumeClaim, ActionType: framework.All},
-	{Resource: framework.Service, ActionType: framework.All},
 	{Resource: framework.StorageClass, ActionType: framework.All},
 }
 
@@ -92,6 +92,7 @@ type frameworkImpl struct {
 	permitPlugins         []framework.PermitPlugin
 
 	clientSet       clientset.Interface
+	kubeConfig      *restclient.Config
 	eventRecorder   events.EventRecorder
 	informerFactory informers.SharedInformerFactory
 
@@ -100,6 +101,8 @@ type frameworkImpl struct {
 
 	extenders []framework.Extender
 	framework.PodNominator
+
+	parallelizer parallelize.Parallelizer
 
 	// Indicates that RunFilterPlugins should accumulate all failed statuses and not return
 	// after the first failure.
@@ -140,6 +143,7 @@ func (f *frameworkImpl) Extenders() []framework.Extender {
 
 type frameworkOptions struct {
 	clientSet            clientset.Interface
+	kubeConfig           *restclient.Config
 	eventRecorder        events.EventRecorder
 	informerFactory      informers.SharedInformerFactory
 	snapshotSharedLister framework.SharedLister
@@ -149,6 +153,7 @@ type frameworkOptions struct {
 	runAllFilters        bool
 	captureProfile       CaptureProfile
 	clusterEventMap      map[framework.ClusterEvent]sets.String
+	parallelizer         parallelize.Parallelizer
 }
 
 // Option for the frameworkImpl.
@@ -158,6 +163,13 @@ type Option func(*frameworkOptions)
 func WithClientSet(clientSet clientset.Interface) Option {
 	return func(o *frameworkOptions) {
 		o.clientSet = clientSet
+	}
+}
+
+// WithKubeConfig sets kubeConfig for the scheduling frameworkImpl.
+func WithKubeConfig(kubeConfig *restclient.Config) Option {
+	return func(o *frameworkOptions) {
+		o.kubeConfig = kubeConfig
 	}
 }
 
@@ -190,13 +202,6 @@ func WithRunAllFilters(runAllFilters bool) Option {
 	}
 }
 
-// withMetricsRecorder is only used in tests.
-func withMetricsRecorder(recorder *metricsRecorder) Option {
-	return func(o *frameworkOptions) {
-		o.metricsRecorder = recorder
-	}
-}
-
 // WithPodNominator sets podNominator for the scheduling frameworkImpl.
 func WithPodNominator(nominator framework.PodNominator) Option {
 	return func(o *frameworkOptions) {
@@ -208,6 +213,13 @@ func WithPodNominator(nominator framework.PodNominator) Option {
 func WithExtenders(extenders []framework.Extender) Option {
 	return func(o *frameworkOptions) {
 		o.extenders = extenders
+	}
+}
+
+// WithParallelism sets parallelism for the scheduling frameworkImpl.
+func WithParallelism(parallelism int) Option {
+	return func(o *frameworkOptions) {
+		o.parallelizer = parallelize.NewParallelizer(parallelism)
 	}
 }
 
@@ -225,6 +237,7 @@ func defaultFrameworkOptions() frameworkOptions {
 	return frameworkOptions{
 		metricsRecorder: newMetricsRecorder(1000, time.Second),
 		clusterEventMap: make(map[framework.ClusterEvent]sets.String),
+		parallelizer:    parallelize.NewParallelizer(parallelize.DefaultParallelism),
 	}
 }
 
@@ -250,12 +263,14 @@ func NewFramework(r Registry, profile *config.KubeSchedulerProfile, opts ...Opti
 		pluginNameToWeightMap: make(map[string]int),
 		waitingPods:           newWaitingPodsMap(),
 		clientSet:             options.clientSet,
+		kubeConfig:            options.kubeConfig,
 		eventRecorder:         options.eventRecorder,
 		informerFactory:       options.informerFactory,
 		metricsRecorder:       options.metricsRecorder,
 		runAllFilters:         options.runAllFilters,
 		extenders:             options.extenders,
 		PodNominator:          options.podNominator,
+		parallelizer:          options.parallelizer,
 	}
 
 	if profile == nil {
@@ -764,7 +779,7 @@ func (f *frameworkImpl) RunScorePlugins(ctx context.Context, state *framework.Cy
 	errCh := parallelize.NewErrorChannel()
 
 	// Run Score method for each node in parallel.
-	parallelize.Until(ctx, len(nodes), func(index int) {
+	f.Parallelizer().Until(ctx, len(nodes), func(index int) {
 		for _, pl := range f.scorePlugins {
 			nodeName := nodes[index].Name
 			s, status := f.runScorePlugin(ctx, pl, state, pod, nodeName)
@@ -784,7 +799,7 @@ func (f *frameworkImpl) RunScorePlugins(ctx context.Context, state *framework.Cy
 	}
 
 	// Run NormalizeScore method for each ScorePlugin in parallel.
-	parallelize.Until(ctx, len(f.scorePlugins), func(index int) {
+	f.Parallelizer().Until(ctx, len(f.scorePlugins), func(index int) {
 		pl := f.scorePlugins[index]
 		nodeScoreList := pluginToNodeScores[pl.Name()]
 		if pl.ScoreExtensions() == nil {
@@ -802,7 +817,7 @@ func (f *frameworkImpl) RunScorePlugins(ctx context.Context, state *framework.Cy
 	}
 
 	// Apply score defaultWeights for each ScorePlugin in parallel.
-	parallelize.Until(ctx, len(f.scorePlugins), func(index int) {
+	f.Parallelizer().Until(ctx, len(f.scorePlugins), func(index int) {
 		pl := f.scorePlugins[index]
 		// Score plugins' weight has been checked when they are initialized.
 		weight := f.pluginNameToWeightMap[pl.Name()]
@@ -1144,6 +1159,11 @@ func (f *frameworkImpl) ClientSet() clientset.Interface {
 	return f.clientSet
 }
 
+// KubeConfig returns a kubernetes config.
+func (f *frameworkImpl) KubeConfig() *restclient.Config {
+	return f.kubeConfig
+}
+
 // EventRecorder returns an event recorder.
 func (f *frameworkImpl) EventRecorder() events.EventRecorder {
 	return f.eventRecorder
@@ -1175,4 +1195,9 @@ func (f *frameworkImpl) pluginsNeeded(plugins *config.Plugins) map[string]config
 // ProfileName returns the profile name associated to this framework.
 func (f *frameworkImpl) ProfileName() string {
 	return f.profileName
+}
+
+// Parallelizer returns a parallelizer holding parallelism for scheduler.
+func (f *frameworkImpl) Parallelizer() parallelize.Parallelizer {
+	return f.parallelizer
 }
