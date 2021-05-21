@@ -143,9 +143,7 @@ func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
 
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
 	nodeInfo := schedulerframework.NewNodeInfo()
-	if err := nodeInfo.SetNode(node); err != nil {
-		return fmt.Errorf("cannot set node in NodeInfo: %v", err)
-	}
+	nodeInfo.SetNode(node)
 	return data.addNodeInfo(nodeInfo)
 }
 

@@ -18,8 +18,10 @@ package scheduler
 
 import (
 	"fmt"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -61,6 +63,10 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	return nodeNameToNodeInfo
 }
 
+func isHugePageResourceName(name apiv1.ResourceName) bool {
+	return strings.HasPrefix(string(name), apiv1.ResourceHugePagesPrefix)
+}
+
 // DeepCopyTemplateNode copies NodeInfo object used as a template. It changes
 // names of UIDs of both node and pods running on it, so that copies can be used
 // to represent multiple nodes.
@@ -81,4 +87,22 @@ func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, index int) 
 		nodeInfo.AddPod(pod)
 	}
 	return nodeInfo
+}
+
+// ResourceToResourceList returns a resource list of the resource.
+func ResourceToResourceList(r *schedulerframework.Resource) apiv1.ResourceList {
+	result := apiv1.ResourceList{
+		apiv1.ResourceCPU:              *resource.NewMilliQuantity(r.MilliCPU, resource.DecimalSI),
+		apiv1.ResourceMemory:           *resource.NewQuantity(r.Memory, resource.BinarySI),
+		apiv1.ResourcePods:             *resource.NewQuantity(int64(r.AllowedPodNumber), resource.BinarySI),
+		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(r.EphemeralStorage, resource.BinarySI),
+	}
+	for rName, rQuant := range r.ScalarResources {
+		if isHugePageResourceName(rName) {
+			result[rName] = *resource.NewQuantity(rQuant, resource.BinarySI)
+		} else {
+			result[rName] = *resource.NewQuantity(rQuant, resource.DecimalSI)
+		}
+	}
+	return result
 }
