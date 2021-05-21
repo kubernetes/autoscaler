@@ -50,6 +50,9 @@ type BaseEndpointInfo struct {
 	IsLocal  bool
 	Topology map[string]string
 
+	// ZoneHints represent the zone hints for the endpoint. This is based on
+	// endpoint.hints.forZones[*].name in the EndpointSlice API.
+	ZoneHints sets.String
 	// Ready indicates whether this endpoint is ready and NOT terminating.
 	// For pods, this is true if a pod has a ready status and a nil deletion timestamp.
 	// This is only set when watching EndpointSlices. If using Endpoints, this is always
@@ -102,6 +105,11 @@ func (info *BaseEndpointInfo) GetTopology() map[string]string {
 	return info.Topology
 }
 
+// GetZoneHints returns the zone hint for the endpoint.
+func (info *BaseEndpointInfo) GetZoneHints() sets.String {
+	return info.ZoneHints
+}
+
 // IP returns just the IP part of the endpoint, it's a part of proxy.Endpoint interface.
 func (info *BaseEndpointInfo) IP() string {
 	return utilproxy.IPPart(info.Endpoint)
@@ -118,7 +126,7 @@ func (info *BaseEndpointInfo) Equal(other Endpoint) bool {
 }
 
 func newBaseEndpointInfo(IP string, port int, isLocal bool, topology map[string]string,
-	ready, serving, terminating bool) *BaseEndpointInfo {
+	ready, serving, terminating bool, zoneHints sets.String) *BaseEndpointInfo {
 	return &BaseEndpointInfo{
 		Endpoint:    net.JoinHostPort(IP, strconv.Itoa(port)),
 		IsLocal:     isLocal,
@@ -126,6 +134,7 @@ func newBaseEndpointInfo(IP string, port int, isLocal bool, topology map[string]
 		Ready:       ready,
 		Serving:     serving,
 		Terminating: terminating,
+		ZoneHints:   zoneHints,
 	}
 }
 
@@ -155,6 +164,11 @@ type EndpointChangeTracker struct {
 	// Map from the Endpoints namespaced-name to the times of the triggers that caused the endpoints
 	// object to change. Used to calculate the network-programming-latency.
 	lastChangeTriggerTimes map[types.NamespacedName][]time.Time
+	// record the time when the endpointChangeTracker was created so we can ignore the endpoints
+	// that were generated before, because we can't estimate the network-programming-latency on those.
+	// This is specially problematic on restarts, because we process all the endpoints that may have been
+	// created hours or days before.
+	trackerStartTime time.Time
 }
 
 // NewEndpointChangeTracker initializes an EndpointsChangeMap
@@ -166,6 +180,7 @@ func NewEndpointChangeTracker(hostname string, makeEndpointInfo makeEndpointFunc
 		ipFamily:                  ipFamily,
 		recorder:                  recorder,
 		lastChangeTriggerTimes:    make(map[types.NamespacedName][]time.Time),
+		trackerStartTime:          time.Now(),
 		processEndpointsMapChange: processEndpointsMapChange,
 	}
 	if endpointSlicesEnabled {
@@ -207,7 +222,7 @@ func (ect *EndpointChangeTracker) Update(previous, current *v1.Endpoints) bool {
 	// In case of Endpoints deletion, the LastChangeTriggerTime annotation is
 	// by-definition coming from the time of last update, which is not what
 	// we want to measure. So we simply ignore it in this cases.
-	if t := getLastChangeTriggerTime(endpoints.Annotations); !t.IsZero() && current != nil {
+	if t := getLastChangeTriggerTime(endpoints.Annotations); !t.IsZero() && current != nil && t.After(ect.trackerStartTime) {
 		ect.lastChangeTriggerTimes[namespacedName] = append(ect.lastChangeTriggerTimes[namespacedName], t)
 	}
 
@@ -267,7 +282,7 @@ func (ect *EndpointChangeTracker) EndpointSliceUpdate(endpointSlice *discovery.E
 		// we want to measure. So we simply ignore it in this cases.
 		// TODO(wojtek-t, robscott): Address the problem for EndpointSlice deletion
 		// when other EndpointSlice for that service still exist.
-		if t := getLastChangeTriggerTime(endpointSlice.Annotations); !t.IsZero() && !removeSlice {
+		if t := getLastChangeTriggerTime(endpointSlice.Annotations); !t.IsZero() && !removeSlice && t.After(ect.trackerStartTime) {
 			ect.lastChangeTriggerTimes[namespacedName] =
 				append(ect.lastChangeTriggerTimes[namespacedName], t)
 		}
@@ -427,8 +442,10 @@ func (ect *EndpointChangeTracker) endpointsToEndpointsMap(endpoints *v1.Endpoint
 				isServing := true
 				isTerminating := false
 				isLocal := addr.NodeName != nil && *addr.NodeName == ect.hostname
+				// Only supported with EndpointSlice API
+				zoneHints := sets.String{}
 
-				baseEndpointInfo := newBaseEndpointInfo(addr.IP, int(port.Port), isLocal, nil, isReady, isServing, isTerminating)
+				baseEndpointInfo := newBaseEndpointInfo(addr.IP, int(port.Port), isLocal, nil, isReady, isServing, isTerminating, zoneHints)
 				if ect.makeEndpointInfo != nil {
 					endpointsMap[svcPortName] = append(endpointsMap[svcPortName], ect.makeEndpointInfo(baseEndpointInfo))
 				} else {
