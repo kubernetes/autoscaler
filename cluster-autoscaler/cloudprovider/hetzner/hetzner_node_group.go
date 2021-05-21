@@ -230,10 +230,7 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
-	err = nodeInfo.SetNode(&node)
-	if err != nil {
-		return nil, fmt.Errorf("could not create node info for node group %s error: %v", n.id, err)
-	}
+	nodeInfo.SetNode(&node)
 
 	return nodeInfo, nil
 }

@@ -40,9 +40,7 @@ func BuildNodeInfoForNode(node *apiv1.Node, podsForNodes map[string][]*apiv1.Pod
 		return nil, err
 	}
 	result := schedulerframework.NewNodeInfo(requiredPods...)
-	if err := result.SetNode(node); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	result.SetNode(node)
 	return result, nil
 }
 

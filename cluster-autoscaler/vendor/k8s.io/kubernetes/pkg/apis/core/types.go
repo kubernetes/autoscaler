@@ -157,7 +157,7 @@ type VolumeSource struct {
 	// CSI (Container Storage Interface) represents ephemeral storage that is handled by certain external CSI drivers (Beta feature).
 	// +optional
 	CSI *CSIVolumeSource
-	// Ephemeral represents a volume that is handled by a cluster storage driver (Alpha feature).
+	// Ephemeral represents a volume that is handled by a cluster storage driver.
 	// The volume's lifecycle is tied to the pod that defines it - it will be created before the pod starts,
 	// and deleted when the pod is removed.
 	//
@@ -181,6 +181,9 @@ type VolumeSource struct {
 	//
 	// A pod can use both types of ephemeral volumes and
 	// persistent volumes at the same time.
+	//
+	// This is a beta feature and only available when the GenericEphemeralVolume
+	// feature gate is enabled.
 	//
 	// +optional
 	Ephemeral *EphemeralVolumeSource
@@ -1717,11 +1720,6 @@ type EphemeralVolumeSource struct {
 	//
 	// Required, must not be nil.
 	VolumeClaimTemplate *PersistentVolumeClaimTemplate
-
-	// ReadOnly specifies a read-only configuration for the volume.
-	// Defaults to false (read/write).
-	// +optional
-	ReadOnly bool
 }
 
 // PersistentVolumeClaimTemplate is used to produce
@@ -2022,6 +2020,17 @@ type Probe struct {
 	// Minimum consecutive failures for the probe to be considered failed after having succeeded.
 	// +optional
 	FailureThreshold int32
+	// Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+	// The grace period is the duration in seconds after the processes running in the pod are sent
+	// a termination signal and the time when the processes are forcibly halted with a kill signal.
+	// Set this value longer than the expected cleanup time for your process.
+	// If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+	// value overrides the value provided by the pod spec.
+	// Value must be non-negative integer. The value zero indicates stop immediately via
+	// the kill signal (no opportunity to shut down).
+	// This is an alpha field and requires enabling ProbeTerminationGracePeriod feature gate.
+	// +optional
+	TerminationGracePeriodSeconds *int64
 }
 
 // PullPolicy describes a policy for if/when to pull a container image
@@ -2295,6 +2304,7 @@ const (
 	PodFailed PodPhase = "Failed"
 	// PodUnknown means that for some reason the state of the pod could not be obtained, typically due
 	// to an error in communicating with the host of the pod.
+	// Deprecated in v1.21: It isn't being set since 2015 (74da3b14b0c0f658b3bb8d2def5094686d0e9095)
 	PodUnknown PodPhase = "Unknown"
 )
 
@@ -2721,7 +2731,8 @@ type PodSpec struct {
 	// +optional
 	RestartPolicy RestartPolicy
 	// Optional duration in seconds the pod needs to terminate gracefully. May be decreased in delete request.
-	// Value must be non-negative integer. The value zero indicates delete immediately.
+	// Value must be non-negative integer. The value zero indicates stop immediately via the kill
+	// signal (no opportunity to shut down).
 	// If this value is nil, the default grace period will be used instead.
 	// The grace period is the duration in seconds after the processes running in the pod are sent
 	// a termination signal and the time when the processes are forcibly halted with a kill signal.
@@ -2838,8 +2849,8 @@ type PodSpec struct {
 	// The RuntimeClass admission controller will reject Pod create requests which have the overhead already
 	// set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value
 	// defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero.
-	// More info: https://git.k8s.io/enhancements/keps/sig-node/20190226-pod-overhead.md
-	// This field is alpha-level as of Kubernetes v1.16, and is only honored by servers that enable the PodOverhead feature.
+	// More info: https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead/README.md
+	// This field is beta-level as of Kubernetes v1.18, and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	Overhead ResourceList
 	// EnableServiceLinks indicates whether information about services should be injected into pod's
@@ -4427,20 +4438,6 @@ type Binding struct {
 
 	// Target is the object to bind to.
 	Target ObjectReference
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// EphemeralContainers is a list of ephemeral containers used with the Pod ephemeralcontainers subresource.
-type EphemeralContainers struct {
-	metav1.TypeMeta
-	// +optional
-	metav1.ObjectMeta
-
-	// A list of ephemeral containers associated with this pod. New ephemeral containers
-	// may be appended to this list, but existing ephemeral containers may not be removed
-	// or modified.
-	EphemeralContainers []EphemeralContainer
 }
 
 // Preconditions must be fulfilled before an operation (update, delete, etc.) is carried out.

@@ -58,7 +58,7 @@ type InTreeToCSITranslator interface {
 	GetInTreePluginNameFromSpec(pv *v1.PersistentVolume, vol *v1.Volume) (string, error)
 	GetCSINameFromInTreeName(pluginName string) (string, error)
 	TranslateInTreePVToCSI(pv *v1.PersistentVolume) (*v1.PersistentVolume, error)
-	TranslateInTreeInlineVolumeToCSI(volume *v1.Volume) (*v1.PersistentVolume, error)
+	TranslateInTreeInlineVolumeToCSI(volume *v1.Volume, podNamespace string) (*v1.PersistentVolume, error)
 }
 
 var _ OperationGenerator = &operationGenerator{}
@@ -1551,6 +1551,14 @@ func (og *operationGenerator) GenerateExpandVolumeFunc(
 				klog.Warning(detailedErr)
 				return volumetypes.NewOperationContext(nil, nil, migrated)
 			}
+			oldCapacity := pvc.Status.Capacity[v1.ResourceStorage]
+			err = util.AddAnnPreResizeCapacity(pv, oldCapacity, og.kubeClient)
+			if err != nil {
+				detailedErr := fmt.Errorf("error updating pv %s annotation (%s) with pre-resize capacity %s: %v", pv.ObjectMeta.Name, util.AnnPreResizeCapacity, oldCapacity.String(), err)
+				klog.Warning(detailedErr)
+				return volumetypes.NewOperationContext(nil, nil, migrated)
+			}
+
 		}
 		return volumetypes.NewOperationContext(nil, nil, migrated)
 	}

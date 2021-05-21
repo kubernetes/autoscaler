@@ -25,15 +25,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/klog/v2"
-	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	"k8s.io/kubernetes/pkg/features"
 	schedutil "k8s.io/kubernetes/pkg/scheduler/util"
 )
@@ -75,15 +73,18 @@ const (
 	WildCard              GVK = "*"
 )
 
-// WildCardEvent semantically matches all resources on all actions.
-var WildCardEvent = ClusterEvent{Resource: WildCard, ActionType: All}
-
 // ClusterEvent abstracts how a system resource's state gets changed.
 // Resource represents the standard API resources such as Pod, Node, etc.
 // ActionType denotes the specific change such as Add, Update or Delete.
 type ClusterEvent struct {
 	Resource   GVK
 	ActionType ActionType
+	Label      string
+}
+
+// IsWildCard returns true if ClusterEvent follows WildCard semantics
+func (ce ClusterEvent) IsWildCard() bool {
+	return ce.Resource == WildCard && ce.ActionType == All
 }
 
 // QueuedPodInfo is a Pod wrapper with additional information related to
@@ -493,24 +494,6 @@ func (r *Resource) Add(rl v1.ResourceList) {
 	}
 }
 
-// ResourceList returns a resource list of this resource.
-func (r *Resource) ResourceList() v1.ResourceList {
-	result := v1.ResourceList{
-		v1.ResourceCPU:              *resource.NewMilliQuantity(r.MilliCPU, resource.DecimalSI),
-		v1.ResourceMemory:           *resource.NewQuantity(r.Memory, resource.BinarySI),
-		v1.ResourcePods:             *resource.NewQuantity(int64(r.AllowedPodNumber), resource.BinarySI),
-		v1.ResourceEphemeralStorage: *resource.NewQuantity(r.EphemeralStorage, resource.BinarySI),
-	}
-	for rName, rQuant := range r.ScalarResources {
-		if v1helper.IsHugePageResourceName(rName) {
-			result[rName] = *resource.NewQuantity(rQuant, resource.BinarySI)
-		} else {
-			result[rName] = *resource.NewQuantity(rQuant, resource.DecimalSI)
-		}
-	}
-	return result
-}
-
 // Clone returns a copy of this resource.
 func (r *Resource) Clone() *Resource {
 	res := &Resource{
@@ -551,25 +534,16 @@ func (r *Resource) SetMaxResource(rl v1.ResourceList) {
 	for rName, rQuantity := range rl {
 		switch rName {
 		case v1.ResourceMemory:
-			if mem := rQuantity.Value(); mem > r.Memory {
-				r.Memory = mem
-			}
+			r.Memory = max(r.Memory, rQuantity.Value())
 		case v1.ResourceCPU:
-			if cpu := rQuantity.MilliValue(); cpu > r.MilliCPU {
-				r.MilliCPU = cpu
-			}
+			r.MilliCPU = max(r.MilliCPU, rQuantity.MilliValue())
 		case v1.ResourceEphemeralStorage:
 			if utilfeature.DefaultFeatureGate.Enabled(features.LocalStorageCapacityIsolation) {
-				if ephemeralStorage := rQuantity.Value(); ephemeralStorage > r.EphemeralStorage {
-					r.EphemeralStorage = ephemeralStorage
-				}
+				r.EphemeralStorage = max(r.EphemeralStorage, rQuantity.Value())
 			}
 		default:
 			if schedutil.IsScalarResourceName(rName) {
-				value := rQuantity.Value()
-				if value > r.ScalarResources[rName] {
-					r.SetScalar(rName, value)
-				}
+				r.SetScalar(rName, max(r.ScalarResources[rName], rQuantity.Value()))
 			}
 		}
 	}
@@ -770,6 +744,13 @@ func (n *NodeInfo) resetSlicesIfEmpty() {
 	}
 }
 
+func max(a, b int64) int64 {
+	if a >= b {
+		return a
+	}
+	return b
+}
+
 // resourceRequest = max(sum(podSpec.Containers), podSpec.InitContainers) + overHead
 func calculateResource(pod *v1.Pod) (res Resource, non0CPU int64, non0Mem int64) {
 	resPtr := &res
@@ -784,13 +765,8 @@ func calculateResource(pod *v1.Pod) (res Resource, non0CPU int64, non0Mem int64)
 	for _, ic := range pod.Spec.InitContainers {
 		resPtr.SetMaxResource(ic.Resources.Requests)
 		non0CPUReq, non0MemReq := schedutil.GetNonzeroRequests(&ic.Resources.Requests)
-		if non0CPU < non0CPUReq {
-			non0CPU = non0CPUReq
-		}
-
-		if non0Mem < non0MemReq {
-			non0Mem = non0MemReq
-		}
+		non0CPU = max(non0CPU, non0CPUReq)
+		non0Mem = max(non0Mem, non0MemReq)
 	}
 
 	// If Overhead is being utilized, add to the total requests for the pod
@@ -824,12 +800,11 @@ func (n *NodeInfo) updateUsedPorts(pod *v1.Pod, add bool) {
 }
 
 // SetNode sets the overall node information.
-func (n *NodeInfo) SetNode(node *v1.Node) error {
+func (n *NodeInfo) SetNode(node *v1.Node) {
 	n.node = node
 	n.Allocatable = NewResource(node.Status.Allocatable)
 	n.TransientInfo = NewTransientSchedulerInfo()
 	n.Generation = nextGeneration()
-	return nil
 }
 
 // RemoveNode removes the node object, leaving all other tracking information.
@@ -876,7 +851,7 @@ func (n *NodeInfo) FilterOutPods(pods []*v1.Pod) []*v1.Pod {
 func GetPodKey(pod *v1.Pod) (string, error) {
 	uid := string(pod.UID)
 	if len(uid) == 0 {
-		return "", errors.New("Cannot get cache key for pod with empty UID")
+		return "", errors.New("cannot get cache key for pod with empty UID")
 	}
 	return uid, nil
 }

@@ -1797,8 +1797,7 @@ func TestFilterOutMasters(t *testing.T) {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodeInfo := schedulerframework.NewNodeInfo()
-		err := nodeInfo.SetNode(node)
-		assert.NoError(t, err)
+		nodeInfo.SetNode(node)
 		nodes[i] = nodeInfo
 		nodeMap[n.name] = nodeInfo
 	}

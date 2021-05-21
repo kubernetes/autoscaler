@@ -25,7 +25,6 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
-	"k8s.io/kubernetes/pkg/scheduler/internal/parallelize"
 )
 
 // preScoreStateKey is the key in CycleState to InterPodAffinity pre-computed data for Scoring.
@@ -150,12 +149,12 @@ func (pl *InterPodAffinity) PreScore(
 	if hasPreferredAffinityConstraints || hasPreferredAntiAffinityConstraints {
 		allNodes, err = pl.sharedLister.NodeInfos().List()
 		if err != nil {
-			framework.AsStatus(fmt.Errorf("failed to get all nodes from shared lister: %w", err))
+			return framework.AsStatus(fmt.Errorf("failed to get all nodes from shared lister: %w", err))
 		}
 	} else {
 		allNodes, err = pl.sharedLister.NodeInfos().HavePodsWithAffinityList()
 		if err != nil {
-			framework.AsStatus(fmt.Errorf("failed to get pods with affinity list: %w", err))
+			return framework.AsStatus(fmt.Errorf("failed to get pods with affinity list: %w", err))
 		}
 	}
 
@@ -206,7 +205,7 @@ func (pl *InterPodAffinity) PreScore(
 			topoScores[atomic.AddInt32(&index, 1)] = topoScore
 		}
 	}
-	parallelize.Until(context.Background(), len(allNodes), processNode)
+	pl.parallelizer.Until(context.Background(), len(allNodes), processNode)
 
 	for i := 0; i <= int(index); i++ {
 		state.topologyScore.append(topoScores[i])
