@@ -390,7 +390,6 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
 
-	// TODO: extract it somehow
 	result[apiv1.LabelArchStable] = template.InstanceType.Architecture
 	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
