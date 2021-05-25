@@ -256,7 +256,7 @@ func newNode(name string, maxPods int64) *apiv1.Node {
 func newNodeInfo(nodeName string, maxPod int64, pods ...*v1.Pod) *schedulerframework.NodeInfo {
 	node1 := newNode(nodeName, maxPod)
 	nodeInfo := schedulerframework.NewNodeInfo(pods...)
-	_ = nodeInfo.SetNode(node1)
+	nodeInfo.SetNode(node1)
 
 	return nodeInfo
 }
