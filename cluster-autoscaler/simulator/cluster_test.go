@@ -69,7 +69,7 @@ func TestUtilization(t *testing.T) {
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	terminatedPod := BuildTestPod("podTerminated", 100, 200000)
-	terminatedPod.DeletionTimestamp = &metav1.Time{testTime.Add(-10 * time.Minute)}
+	terminatedPod.DeletionTimestamp = &metav1.Time{Time: testTime.Add(-10 * time.Minute)}
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, terminatedPod)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
