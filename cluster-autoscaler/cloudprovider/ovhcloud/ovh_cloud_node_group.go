@@ -247,10 +247,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 
 	// Setup node info template
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.Id()))
-	err := nodeInfo.SetNode(node)
-	if err != nil {
-		return nil, fmt.Errorf("failed to set up node info: %w", err)
-	}
+	nodeInfo.SetNode(node)
 
 	return nodeInfo, nil
 }

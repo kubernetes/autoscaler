@@ -466,12 +466,19 @@ If there are multiple node groups that, if increased, would help with getting so
 different strategies can be selected for choosing which node group is increased. Check [What are Expanders?](#what-are-expanders) section to learn more about strategies.
 
 It may take some time before the created nodes appear in Kubernetes. It almost entirely
-depends on the cloud provider and the speed of node provisioning. Cluster
-Autoscaler expects requested nodes to appear within 15 minutes
+depends on the cloud provider and the speed of node provisioning, including the
+[TLS bootstrapping process](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/).
+Cluster Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
 different group if the pods are still pending. It will also attempt to remove
 any nodes left unregistered after this time.
+
+> Note: Cluster Autoscaler is **not** responsible for behaviour and registration
+> to the cluster of the new nodes it creates. The responsibility of registering the new nodes
+> into your cluster lies with the cluster provisioning tooling you use.
+> Example: If you use kubeadm to provision your cluster, it is up to you to automatically
+> execute `kubeadm join` at boot time via some script.
 
 ### How does scale-down work?
 
@@ -921,14 +928,15 @@ unexpected problems coming from version incompatibilities.
 
 To sync the repositories' vendored k8s libraries, we have a script that takes a
 released version of k8s and updates the `replace` directives of each k8s
-sub-library.
+sub-library. It can be used with custom kubernetes fork, by default it uses
+`git@github.com:kubernetes/kubernetes.git`.
 
 Example execution looks like this:
 ```
-./hack/update-vendor.sh 1.20.0-alpha.1
+./hack/update-vendor.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
 ```
 
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
 ```
-./hack/submodule-k8s.sh <k8s commit sha>
+./hack/submodule-k8s.sh <k8s commit sha> git@github.com:kubernetes/kubernetes.git
 ```

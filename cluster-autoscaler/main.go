@@ -332,6 +332,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	// These metrics should be published only once.
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	metrics.UpdateMaxNodesCount(autoscalingOptions.MaxNodesTotal)
+	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
+	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
 	return core.NewAutoscaler(opts)
@@ -436,10 +438,11 @@ func main() {
 		}
 
 		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
-			Lock:          lock,
-			LeaseDuration: leaderElection.LeaseDuration.Duration,
-			RenewDeadline: leaderElection.RenewDeadline.Duration,
-			RetryPeriod:   leaderElection.RetryPeriod.Duration,
+			Lock:            lock,
+			LeaseDuration:   leaderElection.LeaseDuration.Duration,
+			RenewDeadline:   leaderElection.RenewDeadline.Duration,
+			RetryPeriod:     leaderElection.RetryPeriod.Duration,
+			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing

@@ -576,6 +576,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		total = update(total, node, ready)
 	}
 
+	var longUnregisteredNodeNames []string
 	for _, unregistered := range csr.unregisteredNodes {
 		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
 		if errNg != nil {
@@ -588,6 +589,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
 		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
+			longUnregisteredNodeNames = append(longUnregisteredNodeNames, unregistered.Node.Name)
 			perNgCopy.LongUnregistered++
 			total.LongUnregistered++
 		} else {
@@ -595,6 +597,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			total.Unregistered++
 		}
 		perNodeGroup[nodeGroup.Id()] = perNgCopy
+	}
+	if total.LongUnregistered > 0 {
+		klog.V(3).Infof("Found longUnregistered Nodes %s", longUnregisteredNodeNames)
 	}
 
 	for ngId, ngReadiness := range perNodeGroup {

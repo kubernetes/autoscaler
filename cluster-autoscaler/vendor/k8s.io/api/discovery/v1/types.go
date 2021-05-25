@@ -106,6 +106,10 @@ type Endpoint struct {
 	// zone is the name of the Zone this endpoint exists in.
 	// +optional
 	Zone *string `json:"zone,omitempty" protobuf:"bytes,7,opt,name=zone"`
+	// hints contains information associated with how an endpoint should be
+	// consumed.
+	// +optional
+	Hints *EndpointHints `json:"hints,omitempty" protobuf:"bytes,8,opt,name=hints"`
 }
 
 // EndpointConditions represents the current condition of an endpoint.
@@ -134,7 +138,22 @@ type EndpointConditions struct {
 	Terminating *bool `json:"terminating,omitempty" protobuf:"bytes,3,name=terminating"`
 }
 
+// EndpointHints provides hints describing how an endpoint should be consumed.
+type EndpointHints struct {
+	// forZones indicates the zone(s) this endpoint should be consumed by to
+	// enable topology aware routing.
+	// +listType=atomic
+	ForZones []ForZone `json:"forZones,omitempty" protobuf:"bytes,1,name=forZones"`
+}
+
+// ForZone provides information about which zones should consume this endpoint.
+type ForZone struct {
+	// name represents the name of the zone.
+	Name string `json:"name" protobuf:"bytes,1,name=name"`
+}
+
 // EndpointPort represents a Port used by an EndpointSlice
+// +structType=atomic
 type EndpointPort struct {
 	// The name of this port. All ports in an EndpointSlice must have a unique
 	// name. If the EndpointSlice is dervied from a Kubernetes service, this

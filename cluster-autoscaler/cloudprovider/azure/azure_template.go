@@ -52,6 +52,7 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 
 	result[apiv1.LabelInstanceType] = *template.Sku.Name
 	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
+	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
 		failureDomains := make([]string, len(*template.Zones))
@@ -60,8 +61,10 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 		}
 
 		result[apiv1.LabelZoneFailureDomain] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
+		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
 		result[apiv1.LabelZoneFailureDomain] = "0"
+		result[apiv1.LabelTopologyZone] = "0"
 	}
 
 	result[apiv1.LabelHostname] = nodeName
@@ -196,11 +199,12 @@ func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string
 			continue
 		}
 
+		normalizedResourceName := strings.Replace(resourceName[1], "_", "/", -1)
 		quantity, err := resource.ParseQuantity(*tagValue)
 		if err != nil {
 			continue
 		}
-		resources[resourceName[1]] = &quantity
+		resources[normalizedResourceName] = &quantity
 	}
 
 	return resources
