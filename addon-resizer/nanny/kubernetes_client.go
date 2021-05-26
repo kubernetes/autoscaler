@@ -17,11 +17,13 @@ limitations under the License.
 package nanny
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -108,7 +110,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *core.ResourceRequirements
 		if container.Name == k.container {
 			// Update the deployment.
 			dep.Spec.Template.Spec.Containers[i].Resources = *resources
-			_, err := k.deploymentClient.Update(dep)
+			_, err := k.deploymentClient.Update(context.Background(), dep, metav1.UpdateOptions{})
 			return err
 		}
 	}
