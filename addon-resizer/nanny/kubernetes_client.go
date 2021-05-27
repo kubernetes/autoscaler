@@ -17,6 +17,7 @@ limitations under the License.
 package nanny
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -66,14 +67,14 @@ func (k *kubernetesClient) countNodesThroughAPI() (uint64, error) {
 	}
 	result := &metav1beta1.PartialObjectMetadataList{}
 	err := k.clientset.
-		Core().
+		CoreV1().
 		RESTClient().
 		Get().
 		Resource("nodes").
 		// Set as=PartialObjectMetadataList to fetch only nodes metadata.
 		SetHeader("Accept", "application/vnd.kubernetes.protobuf;as=PartialObjectMetadataList;g=meta.k8s.io;v=v1beta1").
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(context.Background()).
 		Into(result)
 	return uint64(len(result.Items)), err
 }
@@ -85,7 +86,7 @@ func hasEqualValues(a string, b *string) bool {
 func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
 	// Other than that, endpoint is visible from everywhere.
-	reader, err := k.clientset.Core().RESTClient().Get().RequestURI("/metrics").Stream()
+	reader, err := k.clientset.CoreV1().RESTClient().Get().RequestURI("/metrics").Stream(context.Background())
 	if err != nil {
 		return 0, err
 	}
@@ -131,7 +132,7 @@ func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
-	pod, err := k.clientset.Core().Pods(k.namespace).Get(k.pod, metav1.GetOptions{})
+	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(context.Background(), k.pod, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +146,7 @@ func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, e
 
 func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequirements) error {
 	// First, get the Deployment.
-	dep, err := k.clientset.AppsV1().Deployments(k.namespace).Get(k.deployment, metav1.GetOptions{})
+	dep, err := k.clientset.AppsV1().Deployments(k.namespace).Get(context.Background(), k.deployment, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -166,7 +167,7 @@ func (k *kubernetesClient) patchDeployment(patch patchRecord) error {
 		return fmt.Errorf("Cannot marshal deployment patch %+v. Reason: %+v", patch, err)
 	}
 
-	_, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(k.deployment, types.JSONPatchType, bytes)
+	_, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(context.Background(), k.deployment, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	return err
 }
 
