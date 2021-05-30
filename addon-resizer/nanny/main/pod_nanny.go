@@ -176,7 +176,7 @@ func userAgent() string {
 
 func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
 	path := filepath.Join(configDir, "NannyConfiguration")
-	scheme, codecs, err := nannyscheme.NewSchemeAndCodecs()
+	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
 	if err != nil {
 		return nil, err
 	}
@@ -187,26 +187,30 @@ func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.Na
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
-	} else if configMapConfig, err = decodeNannyConfiguration(data, scheme, codecs); err != nil {
+	} else if configMapConfig, err = decodeNannyConfiguration(data, codecs); err != nil {
 		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
 		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
 	}
 	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
 	// overwrite defaults with config map parameters
 	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, defaultConfig)
-	return convertNannyConfiguration(configMapConfig, scheme)
+	return convertNannyConfiguration(configMapConfig), nil
 }
 
-func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration, scheme *runtime.Scheme) (*nannyconfig.NannyConfiguration, error) {
-	config := &nannyconfig.NannyConfiguration{}
-	err := scheme.Convert(configAlpha, config, nil)
-	if err != nil {
-		return nil, err
+func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration) *nannyconfig.NannyConfiguration {
+	if configAlpha == nil {
+		return nil
 	}
-	return config, nil
+	return &nannyconfig.NannyConfiguration{
+		TypeMeta:      configAlpha.TypeMeta,
+		BaseCPU:       configAlpha.BaseCPU,
+		CPUPerNode:    configAlpha.CPUPerNode,
+		BaseMemory:    configAlpha.BaseMemory,
+		MemoryPerNode: configAlpha.MemoryPerNode,
+	}
 }
 
-func decodeNannyConfiguration(data []byte, scheme *runtime.Scheme, codecs *serializer.CodecFactory) (*nannyconfigalpha.NannyConfiguration, error) {
+func decodeNannyConfiguration(data []byte, codecs *serializer.CodecFactory) (*nannyconfigalpha.NannyConfiguration, error) {
 	obj, err := runtime.Decode(codecs.UniversalDecoder(nannyconfigalpha.SchemeGroupVersion), data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode, error: %v", err)
