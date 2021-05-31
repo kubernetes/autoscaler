@@ -200,6 +200,11 @@ func isLivingNode(nodeInfo *schedulerframework.NodeInfo) bool {
 		return true
 	}
 
+	// fresh but not yet ready nodes should be considered as live nodes
+	if node.CreationTimestamp.Time.Add(5 * time.Minute).After(time.Now()) {
+		return true
+	}
+
 	for _, cond := range node.Status.Conditions {
 		if cond.Type != apiv1.NodeReady {
 			continue

@@ -37,6 +37,7 @@ func NewFilteringPodListProcessor() *filteringPodListProcessor {
 	return &filteringPodListProcessor{
 		transforms: []proc.PodListProcessor{
 			NewTransformLocalData(),
+			NewTransformDataNodes(),
 		},
 		filters: []proc.PodListProcessor{
 			NewFilterOutLongPending(),
