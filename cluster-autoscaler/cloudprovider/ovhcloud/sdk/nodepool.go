@@ -43,7 +43,7 @@ type NodePool struct {
 	AvailableNodes uint32 `json:"availableNodes"`
 	UpToDateNodes  uint32 `json:"upToDateNodes"`
 
-	Autoscaling struct {
+	Autoscaling *struct {
 		CpuMin float32 `json:"cpuMin"`
 		CpuMax float32 `json:"cpuMax"`
 
@@ -54,7 +54,7 @@ type NodePool struct {
 
 		ScaleDownUnneededTimeSeconds int32 `json:"scaleDownUnneededTimeSeconds"`
 		ScaleDownUnreadyTimeSeconds  int32 `json:"scaleDownUnreadyTimeSeconds"`
-	} `json:"autoscaling"`
+	} `json:"autoscaling,omitempty"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -140,7 +140,7 @@ type UpdateNodePoolOpts struct {
 	MinNodes     *uint32 `json:"minNodes,omitempty"`
 	MaxNodes     *uint32 `json:"maxNodes,omitempty"`
 
-	Autoscale *bool `json:"autoscale"`
+	Autoscale *bool `json:"autoscale,omitempty"`
 
 	NodesToRemove []string `json:"nodesToRemove,omitempty"`
 }
