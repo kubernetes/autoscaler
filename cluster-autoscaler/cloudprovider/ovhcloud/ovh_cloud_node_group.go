@@ -314,6 +314,11 @@ func (ng *NodeGroup) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	// If node group autoscaling options nil, return defaults
+	if ng.Autoscaling == nil {
+		return nil, nil
+	}
+
 	// Forge autoscaling configuration from node pool
 	cfg := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUnneededTime: time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second,
