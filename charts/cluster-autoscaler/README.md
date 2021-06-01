@@ -87,7 +87,7 @@ Auto-discovery finds ASGs tags as below and automatically manages them based on 
 $ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION>
 ```
 
-Alternatively with your own AWS credencials
+Alternatively with your own AWS credentials
 
 ```console
 $ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION> --set awsAccessKeyID=<YOUR AWS KEY ID> --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
