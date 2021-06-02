@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -481,6 +482,17 @@ func TestUpcomingNodes(t *testing.T) {
 	provider.AddNodeGroup("ng4", 1, 10, 1)
 	provider.AddNode("ng4", ng4_1)
 
+	// Deleted node should not be counted as an upcoming node.
+	ng5_1 := BuildTestNode("ng5-1", 1000, 1000)
+	ng5_1.Spec.Taints = append(ng5_1.Spec.Taints, apiv1.Taint{
+		Key:    "ToBeDeletedByClusterAutoscaler",
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	SetNodeReadyState(ng5_1, false, now.Add(-time.Minute))
+	provider.AddNodeGroup("ng5", 1, 10, 1)
+	provider.AddNode("ng5", ng5_1)
+
 	assert.NotNil(t, provider)
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
@@ -488,7 +500,7 @@ func TestUpcomingNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff())
-	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1}, nil, now)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1, ng5_1}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
@@ -497,6 +509,7 @@ func TestUpcomingNodes(t *testing.T) {
 	assert.Equal(t, 1, upcomingNodes["ng2"])
 	assert.Equal(t, 2, upcomingNodes["ng3"])
 	assert.NotContains(t, upcomingNodes, "ng4")
+	assert.NotContains(t, upcomingNodes, "ng5")
 }
 
 func TestIncorrectSize(t *testing.T) {
