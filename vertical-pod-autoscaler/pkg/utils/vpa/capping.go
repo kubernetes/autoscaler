@@ -335,8 +335,8 @@ func getBoundaryRecommendation(recommendation apiv1.ResourceList, container apiv
 	if boundaryLimit == nil {
 		return apiv1.ResourceList{}
 	}
-	boundaryCpu := GetBoundaryRequest(container.Resources.Requests.Cpu(), container.Resources.Limits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
-	boundaryMem := GetBoundaryRequest(container.Resources.Requests.Memory(), container.Resources.Limits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
+	boundaryCpu := GetBoundaryRequest(apiv1.ResourceCPU, container.Resources.Requests.Cpu(), container.Resources.Limits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
+	boundaryMem := GetBoundaryRequest(apiv1.ResourceMemory, container.Resources.Requests.Memory(), container.Resources.Limits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
 	return apiv1.ResourceList{
 		apiv1.ResourceCPU:    *boundaryCpu,
 		apiv1.ResourceMemory: *boundaryMem,
@@ -373,9 +373,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 			request := (*fieldGetter(resources[i]))[resourceName]
 			var cappedContainerRequest *resource.Quantity
 			if resourceName == apiv1.ResourceMemory {
-				cappedContainerRequest, _ = scaleQuantityProportionally(&request, &sumRecommendation, &minLimit, roundUpToFullUnit)
+				cappedContainerRequest, _ = scaleQuantityProportionallyMem(&request, &sumRecommendation, &minLimit, roundUpToFullUnit)
 			} else {
-				cappedContainerRequest, _ = scaleQuantityProportionally(&request, &sumRecommendation, &minLimit, noRounding)
+				cappedContainerRequest, _ = scaleQuantityProportionallyCPU(&request, &sumRecommendation, &minLimit, noRounding)
 			}
 			(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 		}
@@ -397,9 +397,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		limit := (*fieldGetter(resources[i]))[resourceName]
 		var cappedContainerRequest *resource.Quantity
 		if resourceName == apiv1.ResourceMemory {
-			cappedContainerRequest, _ = scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit, roundDownToFullUnit)
+			cappedContainerRequest, _ = scaleQuantityProportionallyMem(&limit, &sumLimit, &targetTotalLimit, roundDownToFullUnit)
 		} else {
-			cappedContainerRequest, _ = scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit, noRounding)
+			cappedContainerRequest, _ = scaleQuantityProportionallyCPU(&limit, &sumLimit, &targetTotalLimit, noRounding)
 		}
 		(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 	}
