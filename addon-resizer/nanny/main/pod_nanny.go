@@ -57,7 +57,7 @@ var (
 	podName       = flag.String("pod", os.Getenv("MY_POD_NAME"), "The name of the pod to watch. This defaults to the nanny's own pod.")
 	containerName = flag.String("container", "pod-nanny", "The name of the container to watch. This defaults to the nanny itself.")
 	// Flags to control runtime behavior.
-	pollPeriod     = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
+	pollPeriod     = flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container.")
 	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
 	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
 	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.")
@@ -160,7 +160,7 @@ func main() {
 	}
 
 	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, pollPeriod, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
+	nanny.PollAPIServer(k8s, est, time.Duration(*pollPeriod)*time.Millisecond, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
 }
 
 func userAgent() string {
