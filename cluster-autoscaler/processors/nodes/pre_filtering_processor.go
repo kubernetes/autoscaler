@@ -40,7 +40,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(ctx *co
 	return nodes, nil
 }
 
-// GetScaleDownCandidates returns nodes that potentially could be scaled down and
+// GetScaleDownCandidates returns nodes that potentially could be scaled down.
 func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))

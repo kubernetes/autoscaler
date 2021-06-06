@@ -275,14 +275,14 @@ const (
 	ResourceNameMemory = "memory"
 )
 
-// IsCustomResource checks if given resource name point denotes a gpu type
+// IsCustomResource checks if given resource name point denotes a gpu type.
 func IsCustomResource(resourceName string) bool {
 	// hack: we assume anything which is not cpu/memory to be a gpu.
 	// we are not getting anything more that a map string->limits from the user
 	return resourceName != ResourceNameCores && resourceName != ResourceNameMemory
 }
 
-// ContainsCustomResources returns true iff given list contains any custom resource name
+// ContainsCustomResources returns true if given list contains any custom resource name.
 func ContainsCustomResources(resources []string) bool {
 	for _, resource := range resources {
 		if IsCustomResource(resource) {
