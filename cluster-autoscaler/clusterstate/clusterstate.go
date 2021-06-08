@@ -51,14 +51,6 @@ const (
 
 	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
 	NodeGroupBackoffResetTimeout = 3 * time.Hour
-
-	// FakeNodeReasonAnnotation is an annotation added to the fake placeholder nodes CA has created
-	// Note that this don't map to real nodes in k8s and are merely used for error handling
-	FakeNodeReasonAnnotation = "k8s.io/cluster-autoscaler/fake-node-reason"
-	// FakeNodeUnregistered represents a node that is identified by CA as unregistered
-	FakeNodeUnregistered = "unregistered"
-	// FakeNodeCreateError represents a node that is identified by CA as a created node with errors
-	FakeNodeCreateError = "create-error"
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -952,7 +944,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 		for _, instance := range instances {
 			if !registered.Has(instance.Id) {
 				notRegistered = append(notRegistered, UnregisteredNode{
-					Node:              fakeNode(instance, FakeNodeUnregistered),
+					Node:              fakeNode(instance, cloudprovider.FakeNodeUnregistered),
 					UnregisteredSince: time,
 				})
 			}
@@ -1099,7 +1091,7 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {
 			for _, instance := range instances {
-				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance, FakeNodeCreateError))
+				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance, cloudprovider.FakeNodeCreateError))
 			}
 		}
 	}
@@ -1121,7 +1113,7 @@ func fakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: instance.Id,
 			Annotations: map[string]string{
-				FakeNodeReasonAnnotation: reason,
+				cloudprovider.FakeNodeReasonAnnotation: reason,
 			},
 		},
 		Spec: apiv1.NodeSpec{
