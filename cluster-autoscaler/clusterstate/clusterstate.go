@@ -949,7 +949,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 		for _, instance := range instances {
 			if !registered.Has(instance.Id) {
 				notRegistered = append(notRegistered, UnregisteredNode{
-					Node:              fakeNode(instance),
+					Node:              fakeNode(instance, cloudprovider.FakeNodeUnregistered),
 					UnregisteredSince: time,
 				})
 			}
@@ -1096,7 +1096,7 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {
 			for _, instance := range instances {
-				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance))
+				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance, cloudprovider.FakeNodeCreateError))
 			}
 		}
 	}
@@ -1113,10 +1113,13 @@ func (csr *ClusterStateRegistry) InvalidateNodeInstancesCacheEntry(nodeGroup clo
 	csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 }
 
-func fakeNode(instance cloudprovider.Instance) *apiv1.Node {
+func fakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 	return &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: instance.Id,
+			Annotations: map[string]string{
+				cloudprovider.FakeNodeReasonAnnotation: reason,
+			},
 		},
 		Spec: apiv1.NodeSpec{
 			ProviderID: instance.Id,
