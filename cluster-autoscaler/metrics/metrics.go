@@ -90,6 +90,7 @@ const (
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"
 	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
+	CloudProviderRefresh       FunctionLabel = "cloudProviderRefresh"
 	Main                       FunctionLabel = "main"
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
