@@ -208,7 +208,6 @@ func TestLoadPods(t *testing.T) {
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
 
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
-
 			clusterState := model.NewClusterState(testGcPeriod)
 
 			clusterStateFeeder := clusterStateFeeder{
@@ -399,6 +398,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 			pod1: &pod1History,
 		},
 	}
+
 	clusterState := model.NewClusterState(testGcPeriod)
 	feeder := clusterStateFeeder{
 		clusterState: clusterState,
