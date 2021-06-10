@@ -47,8 +47,7 @@ type SchedulerBasedPredicateChecker struct {
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
 func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	providerRegistry := algorithmprovider.NewRegistry()
-	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
+	plugins := algorithmprovider.GetDefaultConfig()
 	sharedLister := NewDelegatingSchedulerSharedLister()
 	kubeSchedulerProfile := &scheduler_apis_config.KubeSchedulerProfile{
 		Plugins:      plugins,
