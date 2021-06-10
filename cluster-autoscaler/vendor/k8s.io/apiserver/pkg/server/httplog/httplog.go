@@ -23,6 +23,7 @@ import (
 	"net"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
 	"k8s.io/apiserver/pkg/endpoints/request"
@@ -52,7 +53,7 @@ type respLogger struct {
 	statusRecorded bool
 	status         int
 	statusStack    string
-	addedInfo      string
+	addedInfo      strings.Builder
 	startTime      time.Time
 
 	captureErrorOutput bool
@@ -65,6 +66,9 @@ type respLogger struct {
 
 // Simple logger that logs immediately when Addf is called
 type passthroughLogger struct{}
+
+//lint:ignore SA1019 Interface implementation check to make sure we don't drop CloseNotifier again
+var _ http.CloseNotifier = &respLogger{}
 
 // Addf logs info immediately.
 func (passthroughLogger) Addf(format string, data ...interface{}) {
@@ -80,7 +84,7 @@ func DefaultStacktracePred(status int) bool {
 func WithLogging(handler http.Handler, pred StacktracePred) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		if old := respLoggerFromContext(req); old != nil {
+		if old := respLoggerFromRequest(req); old != nil {
 			panic("multiple WithLogging calls!")
 		}
 
@@ -93,20 +97,23 @@ func WithLogging(handler http.Handler, pred StacktracePred) http.Handler {
 		req = req.WithContext(context.WithValue(ctx, respLoggerContextKey, rl))
 
 		if klog.V(3).Enabled() {
-			defer func() { klog.InfoS("HTTP", rl.LogArgs()...) }()
+			defer rl.Log()
 		}
 		handler.ServeHTTP(rl, req)
 	})
 }
 
 // respLoggerFromContext returns the respLogger or nil.
-func respLoggerFromContext(req *http.Request) *respLogger {
-	ctx := req.Context()
+func respLoggerFromContext(ctx context.Context) *respLogger {
 	val := ctx.Value(respLoggerContextKey)
 	if rl, ok := val.(*respLogger); ok {
 		return rl
 	}
 	return nil
+}
+
+func respLoggerFromRequest(req *http.Request) *respLogger {
+	return respLoggerFromContext(req.Context())
 }
 
 func newLoggedWithStartTime(req *http.Request, w http.ResponseWriter, startTime time.Time) *respLogger {
@@ -127,7 +134,7 @@ func newLogged(req *http.Request, w http.ResponseWriter) *respLogger {
 // then a passthroughLogger will be created which will log to stdout immediately
 // when Addf is called.
 func LogOf(req *http.Request, w http.ResponseWriter) logger {
-	if rl := respLoggerFromContext(req); rl != nil {
+	if rl := respLoggerFromRequest(req); rl != nil {
 		return rl
 	}
 	return &passthroughLogger{}
@@ -135,7 +142,7 @@ func LogOf(req *http.Request, w http.ResponseWriter) logger {
 
 // Unlogged returns the original ResponseWriter, or w if it is not our inserted logger.
 func Unlogged(req *http.Request, w http.ResponseWriter) http.ResponseWriter {
-	if rl := respLoggerFromContext(req); rl != nil {
+	if rl := respLoggerFromRequest(req); rl != nil {
 		return rl.w
 	}
 	return w
@@ -163,40 +170,43 @@ func StatusIsNot(statuses ...int) StacktracePred {
 
 // Addf adds additional data to be logged with this request.
 func (rl *respLogger) Addf(format string, data ...interface{}) {
-	rl.addedInfo += "\n" + fmt.Sprintf(format, data...)
+	rl.addedInfo.WriteString("\n")
+	rl.addedInfo.WriteString(fmt.Sprintf(format, data...))
 }
 
-func (rl *respLogger) LogArgs() []interface{} {
+func AddInfof(ctx context.Context, format string, data ...interface{}) {
+	if rl := respLoggerFromContext(ctx); rl != nil {
+		rl.Addf(format, data...)
+	}
+}
+
+// Log is intended to be called once at the end of your request handler, via defer
+func (rl *respLogger) Log() {
 	latency := time.Since(rl.startTime)
 	auditID := request.GetAuditIDTruncated(rl.req)
-	if rl.hijacked {
-		return []interface{}{
-			"verb", rl.req.Method,
-			"URI", rl.req.RequestURI,
-			"latency", latency,
-			"userAgent", rl.req.UserAgent(),
-			"audit-ID", auditID,
-			"srcIP", rl.req.RemoteAddr,
-			"hijacked", true,
-		}
-	}
-	args := []interface{}{
+	keysAndValues := []interface{}{
 		"verb", rl.req.Method,
 		"URI", rl.req.RequestURI,
 		"latency", latency,
 		"userAgent", rl.req.UserAgent(),
 		"audit-ID", auditID,
 		"srcIP", rl.req.RemoteAddr,
-		"resp", rl.status,
-	}
-	if len(rl.statusStack) > 0 {
-		args = append(args, "statusStack", rl.statusStack)
 	}
 
-	if len(rl.addedInfo) > 0 {
-		args = append(args, "addedInfo", rl.addedInfo)
+	if rl.hijacked {
+		keysAndValues = append(keysAndValues, "hijacked", true)
+	} else {
+		keysAndValues = append(keysAndValues, "resp", rl.status)
+		if len(rl.statusStack) > 0 {
+			keysAndValues = append(keysAndValues, "statusStack", rl.statusStack)
+		}
+		info := rl.addedInfo.String()
+		if len(info) > 0 {
+			keysAndValues = append(keysAndValues, "addedInfo", info)
+		}
 	}
-	return args
+
+	klog.InfoSDepth(1, "HTTP", keysAndValues...)
 }
 
 // Header implements http.ResponseWriter.
@@ -239,6 +249,7 @@ func (rl *respLogger) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 
 // CloseNotify implements http.CloseNotifier
 func (rl *respLogger) CloseNotify() <-chan bool {
+	//lint:ignore SA1019 There are places in the code base requiring the CloseNotifier interface to be implemented.
 	return rl.w.(http.CloseNotifier).CloseNotify()
 }
 
