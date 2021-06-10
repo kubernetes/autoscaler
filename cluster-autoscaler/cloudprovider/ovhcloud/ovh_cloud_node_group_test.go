@@ -116,14 +116,15 @@ func newTestNodeGroup(t *testing.T, isGpu bool) cloudprovider.NodeGroup {
 			DesiredNodes: 3,
 			MinNodes:     1,
 			MaxNodes:     5,
+			Autoscaling: &sdk.NodePoolAutoscaling{
+				ScaleDownUtilizationThreshold: 3.2,
+				ScaleDownUnneededTimeSeconds:  10,
+				ScaleDownUnreadyTimeSeconds:   20,
+			},
 		},
 
 		CurrentSize: 3,
 	}
-
-	ng.NodePool.Autoscaling.ScaleDownUtilizationThreshold = 3.2
-	ng.NodePool.Autoscaling.ScaleDownUnneededTimeSeconds = 10
-	ng.NodePool.Autoscaling.ScaleDownUnreadyTimeSeconds = 20
 
 	return ng
 }

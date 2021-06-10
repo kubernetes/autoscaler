@@ -43,21 +43,24 @@ type NodePool struct {
 	AvailableNodes uint32 `json:"availableNodes"`
 	UpToDateNodes  uint32 `json:"upToDateNodes"`
 
-	Autoscaling struct {
-		CpuMin float32 `json:"cpuMin"`
-		CpuMax float32 `json:"cpuMax"`
-
-		MemoryMin float32 `json:"memoryMin"`
-		MemoryMax float32 `json:"memoryMax"`
-
-		ScaleDownUtilizationThreshold float32 `json:"scaleDownUtilizationThreshold"`
-
-		ScaleDownUnneededTimeSeconds int32 `json:"scaleDownUnneededTimeSeconds"`
-		ScaleDownUnreadyTimeSeconds  int32 `json:"scaleDownUnreadyTimeSeconds"`
-	} `json:"autoscaling"`
+	Autoscaling *NodePoolAutoscaling `json:"autoscaling,omitempty"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// NodePoolAutoscaling defines the node group autoscaling options from OVHcloud API
+type NodePoolAutoscaling struct {
+	CpuMin float32 `json:"cpuMin"`
+	CpuMax float32 `json:"cpuMax"`
+
+	MemoryMin float32 `json:"memoryMin"`
+	MemoryMax float32 `json:"memoryMax"`
+
+	ScaleDownUtilizationThreshold float32 `json:"scaleDownUtilizationThreshold"`
+
+	ScaleDownUnneededTimeSeconds int32 `json:"scaleDownUnneededTimeSeconds"`
+	ScaleDownUnreadyTimeSeconds  int32 `json:"scaleDownUnreadyTimeSeconds"`
 }
 
 // ListNodePools allows to list all node pools available in a cluster
@@ -140,7 +143,7 @@ type UpdateNodePoolOpts struct {
 	MinNodes     *uint32 `json:"minNodes,omitempty"`
 	MaxNodes     *uint32 `json:"maxNodes,omitempty"`
 
-	Autoscale *bool `json:"autoscale"`
+	Autoscale *bool `json:"autoscale,omitempty"`
 
 	NodesToRemove []string `json:"nodesToRemove,omitempty"`
 }
