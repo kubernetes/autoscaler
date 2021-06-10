@@ -404,6 +404,11 @@ func (in *VerticalPodAutoscalerSpec) DeepCopyInto(out *VerticalPodAutoscalerSpec
 		*out = new(PodResourcePolicy)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Recommenders != nil {
+		in, out := &in.Recommenders, &out.Recommenders
+		*out = make([]*VerticalPodAutoscalerRecommenderSelector, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
