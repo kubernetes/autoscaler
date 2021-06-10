@@ -58,6 +58,7 @@ func (s *verticalPodAutoscalerCheckpointLister) VerticalPodAutoscalerCheckpoints
 }
 
 // VerticalPodAutoscalerCheckpointNamespaceLister helps list and get VerticalPodAutoscalerCheckpoints.
+// All objects returned here must be treated as read-only.
 type VerticalPodAutoscalerCheckpointNamespaceLister interface {
 	// List lists all VerticalPodAutoscalerCheckpoints in the indexer for a given namespace.
 	List(selector labels.Selector) (ret []*v1alpha1.VerticalPodAutoscalerCheckpoint, err error)

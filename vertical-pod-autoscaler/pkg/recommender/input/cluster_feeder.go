@@ -58,6 +58,7 @@ const (
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
 	defaultResyncPeriod          time.Duration = 10 * time.Minute
+	defaultRecommenderName                     = "default"
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -330,14 +331,46 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	}
 }
 
+func implicitDefaultRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector) bool {
+	return len(selectors) == 0
+}
+
+func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderSelector, name *string) bool {
+	for _, s := range selectors {
+		if s.Name == *name {
+			return true
+		}
+	}
+	return false
+}
+
+// Filter VPA objects whose specified recommender names are not default
+func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodAutoscaler) []*vpa_types.VerticalPodAutoscaler {
+	klog.V(3).Infof("Start selecting the vpaCRDs.")
+	var vpaCRDs []*vpa_types.VerticalPodAutoscaler
+	for _, vpaCRD := range allVpaCRDs {
+		currentRecommenderName := defaultRecommenderName
+		if !implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommender(vpaCRD.Spec.Recommenders, &currentRecommenderName) {
+			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as current recommender's name %v doesn't appear among its recommenders", vpaCRD.Name, vpaCRD.Namespace, currentRecommenderName)
+			continue
+		}
+		vpaCRDs = append(vpaCRDs, vpaCRD)
+	}
+	return vpaCRDs
+}
+
 // Fetch VPA objects and load them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
-	vpaCRDs, err := feeder.vpaLister.List(labels.Everything())
+	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Cannot list VPAs. Reason: %+v", err)
 		return
 	}
+
+	// Filter out VPAs that specified recommenders with names not equal to "default"
+	vpaCRDs := filterVPAs(feeder, allVpaCRDs)
+
 	klog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)

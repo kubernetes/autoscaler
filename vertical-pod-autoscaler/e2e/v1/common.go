@@ -299,7 +299,7 @@ func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, tar
 
 // SetupVPAForNHamsters creates and installs a simple pod with n hamster containers for e2e test purposes.
 func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
-	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
+	vpaCRD := NewVPA(f, "hamster-vpa", targetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 
 	cpuQuantity := ParseQuantityOrDie(cpu)
@@ -324,7 +324,7 @@ func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_ty
 }
 
 // NewVPA creates a VPA object for e2e test purposes.
-func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
+func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference, recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector) *vpa_types.VerticalPodAutoscaler {
 	updateMode := vpa_types.UpdateModeAuto
 	vpa := vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -341,6 +341,12 @@ func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVer
 			},
 		},
 	}
+
+	if len(recommenders) == 0 {
+		return &vpa
+	}
+
+	vpa.Spec.Recommenders = recommenders
 	return &vpa
 }
 

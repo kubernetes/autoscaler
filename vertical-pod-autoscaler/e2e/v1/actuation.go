@@ -321,7 +321,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		hamsterResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("100m")}
 		sidecarResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("5000m")}
 
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
