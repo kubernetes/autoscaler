@@ -119,6 +119,7 @@ type nonCSILimits struct {
 }
 
 var _ framework.FilterPlugin = &nonCSILimits{}
+var _ framework.EnqueueExtensions = &nonCSILimits{}
 
 // newNonCSILimitsWithInformerFactory returns a plugin with filter name and informer factory.
 func newNonCSILimitsWithInformerFactory(
@@ -195,6 +196,15 @@ func (pl *nonCSILimits) Name() string {
 	return pl.name
 }
 
+// EventsToRegister returns the possible events that may make a Pod
+// failed by this plugin schedulable.
+func (pl *nonCSILimits) EventsToRegister() []framework.ClusterEvent {
+	return []framework.ClusterEvent{
+		{Resource: framework.Node, ActionType: framework.Add},
+		{Resource: framework.Pod, ActionType: framework.Delete},
+	}
+}
+
 // Filter invoked at the filter extension point.
 func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
 	// If a pod doesn't have any volume attached to it, the predicate will always be true.
@@ -215,7 +225,7 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 
 	node := nodeInfo.Node()
 	if node == nil {
-		return framework.NewStatus(framework.Error, fmt.Sprintf("node not found: %s", node.Name))
+		return framework.NewStatus(framework.Error, "node not found")
 	}
 
 	var csiNode *storage.CSINode
@@ -284,7 +294,7 @@ func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, fil
 			pvID := fmt.Sprintf("%s-%s/%s", pl.randomVolumeIDPrefix, namespace, pvcName)
 
 			pvc, err := pl.pvcLister.PersistentVolumeClaims(namespace).Get(pvcName)
-			if err != nil || pvc == nil {
+			if err != nil {
 				// If the PVC is invalid, we don't count the volume because
 				// there's no guarantee that it belongs to the running predicate.
 				klog.V(4).InfoS("Unable to look up PVC info, assuming PVC doesn't match predicate when counting limits", "PVC", fmt.Sprintf("%s/%s", namespace, pvcName), "err", err)
@@ -305,7 +315,7 @@ func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, fil
 			}
 
 			pv, err := pl.pvLister.Get(pvName)
-			if err != nil || pv == nil {
+			if err != nil {
 				// If the PV is invalid and PVC belongs to the running predicate,
 				// log the error and count the PV towards the PV limit.
 				if pl.matchProvisioner(pvc) {
