@@ -533,12 +533,8 @@ func (cm *containerManagerImpl) setupNode(activePods ActivePodsFunc) error {
 			return err
 		}
 
-		manager, err := createManager(cm.KubeletCgroupsName)
-		if err != nil {
-			return err
-		}
 		cont.ensureStateFunc = func(_ cgroups.Manager) error {
-			return ensureProcessInContainerWithOOMScore(os.Getpid(), qos.KubeletOOMScoreAdj, manager)
+			return ensureProcessInContainerWithOOMScore(os.Getpid(), qos.KubeletOOMScoreAdj, cont.manager)
 		}
 		systemContainers = append(systemContainers, cont)
 	} else {
@@ -1034,7 +1030,7 @@ func ensureSystemCgroups(rootCgroupPath string, manager cgroups.Manager) error {
 			return nil
 		}
 
-		klog.InfoS("Moving non-kernel processes", "pids", pids)
+		klog.V(3).InfoS("Moving non-kernel processes", "pids", pids)
 		for _, pid := range pids {
 			err := manager.Apply(pid)
 			if err != nil {
