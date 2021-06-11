@@ -1354,6 +1354,48 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 	},
+	"m5zn.metal": {
+		VCPU:         48,
+		MemoryMb:     196608,
+		InstanceType: "m5zn.metal",
+		GPU:          0,
+	},
+	"m5zn.large": {
+		VCPU:         2,
+		MemoryMb:     8192,
+		InstanceType: "m5zn.large",
+		GPU:          0,
+	},
+	"m5zn.xlarge": {
+		VCPU:         4,
+		MemoryMb:     16384,
+		InstanceType: "m5zn.xlarge",
+		GPU:          0,
+	},
+	"m5zn.2xlarge": {
+		VCPU:         8,
+		MemoryMb:     32768,
+		InstanceType: "m5zn.2xlarge",
+		GPU:          0,
+	},
+	"m5zn.3xlarge": {
+		VCPU:         12,
+		MemoryMb:     49152,
+		InstanceType: "m5zn.3xlarge",
+		GPU:          0,
+	},
+	"m5zn.6xlarge": {
+		VCPU:         24,
+		MemoryMb:     98304,
+		InstanceType: "m5zn.6xlarge",
+		GPU:          0,
+	},
+	"m5zn.12xlarge": {
+		VCPU:         48,
+		MemoryMb:     196608,
+		InstanceType: "m5zn.12xlarge",
+		GPU:          0,
+	},
 	"m6g": {
 		InstanceType: "m6g",
 		VCPU:         64,
@@ -2200,6 +2242,12 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 	},
+	"u-3tb1.56xlarge": {
+		VCPU:         224,
+		MemoryMb:     3145728,
+		InstanceType: "u-3tb1.56xlarge",
+		GPU:          0,
+	},
 	"u-12tb1": {
 		InstanceType: "u-12tb1",
 		VCPU:         448,
@@ -2248,6 +2296,18 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 	},
+	"u-6tb1.56xlarge": {
+		VCPU:         224,
+		MemoryMb:     6291456,
+		InstanceType: "u-6tb1.56xlarge",
+		GPU:          0,
+	},
+	"u-6tb1.112xlarge": {
+		VCPU:         448,
+		MemoryMb:     6291456,
+		InstanceType: "u-6tb1.112xlarge",
+		GPU:          0,
+	},
 	"u-9tb1": {
 		InstanceType: "u-9tb1",
 		VCPU:         448,
@@ -2258,6 +2318,18 @@ var InstanceTypes = map[string]*InstanceType{
 		InstanceType: "u-9tb1.metal",
 		VCPU:         448,
 		MemoryMb:     9437184,
+		GPU:          0,
+	},
+	"u-9tb1.112xlarge": {
+		VCPU:         448,
+		MemoryMb:     9437184,
+		InstanceType: "u-9tb1.112xlarge",
+		GPU:          0,
+	},
+	"u-12tb1.112xlarge": {
+		VCPU:         448,
+		MemoryMb:     12582912,
+		InstanceType: "u-12tb1.112xlarge",
 		GPU:          0,
 	},
 	"x1": {
