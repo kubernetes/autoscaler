@@ -50,6 +50,10 @@ const (
 	// exhausted.
 	ErrorIPSpaceExhausted = "IP_SPACE_EXHAUSTED"
 
+	// ErrorCodePermissions is an error code used in InstanceErrorInfo if the user is facing
+	// permissions error
+	ErrorCodePermissions = "PERMISSIONS_ERROR"
+
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
 )
@@ -271,6 +275,9 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 				} else if isIPSpaceExhaustedErrorCode(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
 					errorInfo.ErrorCode = ErrorIPSpaceExhausted
+				} else if isPermissionsError(instanceError.Code) {
+					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
+					errorInfo.ErrorCode = ErrorCodePermissions
 				} else if isInstanceNotRunningYet(gceInstance) {
 					if !errorFound {
 						// do not override error code with OTHER
@@ -306,7 +313,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 	}
 	klogx.V(4).Over(errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -errorLoggingQuota.Left())
 	if len(errorCodeCounts) > 0 {
-		klog.V(4).Infof("Spotted following instance creation error codes: %#v", errorCodeCounts)
+		klog.Warningf("Spotted following instance creation error codes: %#v", errorCodeCounts)
 	}
 	return infos, nil
 }
@@ -328,6 +335,10 @@ func isQuotaExceededErrorCode(errorCode string) bool {
 
 func isIPSpaceExhaustedErrorCode(errorCode string) bool {
 	return strings.Contains(errorCode, "IP_SPACE_EXHAUSTED")
+}
+
+func isPermissionsError(errorCode string) bool {
+	return strings.Contains(errorCode, "PERMISSIONS_ERROR")
 }
 
 func isInstanceNotRunningYet(gceInstance *gce.ManagedInstance) bool {
