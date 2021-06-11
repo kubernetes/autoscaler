@@ -127,6 +127,11 @@ func TestErrors(t *testing.T) {
 			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
 		},
 		{
+			errorCodes:         []string{"PERMISSIONS_ERROR"},
+			expectedErrorCode:  "PERMISSIONS_ERROR",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
 			errorCodes:         []string{"xyz", "abc"},
 			expectedErrorCode:  "OTHER",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
