@@ -71,6 +71,8 @@ message Option {
 }
 ```
 
+If errors arise with the gRPC server, the client will handle these by falling back to the random expander strategy, similarly to the fallbacks of the current expanders.
+
 To communicate with the external gRPC server, CA needs new flags to expose details about the server.
 
 We’ll add a new option to the expander flag: `--expander=externalgrpc`, and inntroduce a new flag `--expander-plugin-url=https://external-grpc-url/server` to reach the gRPC server.
