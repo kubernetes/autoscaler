@@ -1,6 +1,7 @@
 # Config map for resource configuration.
-# Specify 'cpu', 'extra-cpu', 'memory' and 'extra-memory'
-# to overwrite resource requirements.
+# Specify 'baseCPU', 'cpuPerNode', 'baseMemory', and 'memoryPerNode' to
+# overwrite the CLI resource options 'cpu', 'extra-cpu', 'memory' and 'extra-memory'
+# respectively.
 apiVersion: v1
 kind: ConfigMap
 metadata:
