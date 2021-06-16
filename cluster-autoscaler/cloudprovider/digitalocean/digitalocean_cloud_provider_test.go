@@ -83,10 +83,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 
 	manager.client = client
 
-	provider, err := newDigitalOceanCloudProvider(manager, rl)
-	assert.NoError(t, err)
-	return provider
-
+	return newDigitalOceanCloudProvider(manager, rl)
 }
 
 func TestNewDigitalOceanCloudProvider(t *testing.T) {
@@ -106,6 +103,8 @@ func TestDigitalOceanCloudProvider_Name(t *testing.T) {
 
 func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
 	provider := testCloudProvider(t, nil)
+	err := provider.manager.Refresh()
+	assert.NoError(t, err)
 
 	t.Run("success", func(t *testing.T) {
 		nodes := provider.NodeGroups()
@@ -150,6 +149,8 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 		).Once()
 
 		provider := testCloudProvider(t, client)
+		err := provider.manager.Refresh()
+		assert.NoError(t, err)
 
 		// let's get the nodeGroup for the node with ID 4
 		node := &apiv1.Node{
@@ -190,6 +191,8 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 		).Once()
 
 		provider := testCloudProvider(t, client)
+		err := provider.manager.Refresh()
+		assert.NoError(t, err)
 
 		node := &apiv1.Node{
 			Spec: apiv1.NodeSpec{
