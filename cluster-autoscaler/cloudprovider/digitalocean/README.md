@@ -6,6 +6,20 @@ offering which can be enabled/disable dynamically for an existing cluster.
 
 # Configuration
 
+## Cloud config file
+
+The (JSON) configuration file of the DigitalOcean cloud provider supports the
+following values:
+
+- `cluster_id`: the ID of the cluster (a UUID)
+- `token`: the DigitalOcean access token literally defined
+- `token_file`: a file path containing the DigitalOcean access token
+- `url`: the DigitalOcean URL (optional; defaults to `https://api.digitalocean.com/`)
+
+Exactly one of `token` or `token_file` must be provided.
+
+## Behavior
+
 Parameters of the autoscaler (such as whether it is on or off, and the
 minimum/maximum values) are configured through the public DOKS API and
 subsequently reflected by the node pool objects. The cloud provider periodically
