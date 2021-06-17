@@ -107,13 +107,14 @@ func NewAutoscalingGceClientV1(client *http.Client, projectId string, userAgent 
 
 // NewCustomAutoscalingGceClientV1 creates a new client using custom server url and timeouts
 // for communicating with GCE v1 API.
-func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl string,
+func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl, userAgent string,
 	waitTimeout, pollInterval time.Duration, deletionPollInterval time.Duration) (*autoscalingGceClientV1, error) {
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
 	}
 	gceService.BasePath = serverUrl
+	gceService.UserAgent = userAgent
 
 	return &autoscalingGceClientV1{
 		projectId:                     projectId,
