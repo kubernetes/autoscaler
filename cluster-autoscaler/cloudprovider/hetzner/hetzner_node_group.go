@@ -353,7 +353,7 @@ func createServer(n *hetznerNodeGroup) error {
 		UserData:         n.manager.cloudInit,
 		Location:         &hcloud.Location{Name: n.region},
 		ServerType:       &hcloud.ServerType{Name: n.instanceType},
-		Image:            &hcloud.Image{Name: n.manager.image},
+		Image:            n.manager.image,
 		StartAfterCreate: &StartAfterCreate,
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
