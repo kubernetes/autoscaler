@@ -8,7 +8,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_CLOUD_INIT` Base64 encoded Cloud Init yaml with commands to join the cluster, Sample [examples/cloud-init.txt for (Kubernetes 1.20.1)](examples/cloud-init.txt)
 
-`HCLOUD_IMAGE` Defaults to `ubuntu-20.04`, @see https://docs.hetzner.cloud/#images. You can also use an image ID here (e.g. `15512617`), or a label selector associated with a custom snapshot (e.g. `customized_ubuntu=true`).
+`HCLOUD_IMAGE` Defaults to `ubuntu-20.04`, @see https://docs.hetzner.cloud/#images. You can also use an image ID here (e.g. `15512617`), or a label selector associated with a custom snapshot (e.g. `customized_ubuntu=true`). The most recent snapshot will be used in the latter case.
 
 `HCLOUD_NETWORK` Default empty , The name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 

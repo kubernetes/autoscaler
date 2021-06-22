@@ -72,18 +72,16 @@ func newManager() (*hetznerManager, error) {
 	// (e.g. "ubuntu-20.04"), or a label selector associated with an image
 	// snapshot. In the latter case it will use the most recent snapshot.
 	image, _, err := client.Image.Get(ctx, imageName)
-	if err != nil || image == nil {
-		labelSelector := strings.Split(imageName, "=")
-		if len(labelSelector) != 2 {
-			return nil, fmt.Errorf("unable to find image %s: invalid label selector", imageName)
-		}
-
+	if err != nil {
+		return nil, fmt.Errorf("unable to find image %s: %v", imageName, err)
+	}
+	if image == nil {
 		images, err := client.Image.AllWithOpts(ctx, hcloud.ImageListOpts{
 			Type:   []hcloud.ImageType{hcloud.ImageTypeSnapshot},
 			Status: []hcloud.ImageStatus{hcloud.ImageStatusAvailable},
 			Sort:   []string{"created:desc"},
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: fmt.Sprintf("%s=%s", labelSelector[0], labelSelector[1]),
+				LabelSelector: imageName,
 			},
 		})
 
