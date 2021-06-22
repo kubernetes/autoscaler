@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"google.golang.org/api/googleapi"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
@@ -39,6 +40,7 @@ const (
 	defaultOperationWaitTimeout          = 20 * time.Second
 	defaultOperationPollInterval         = 100 * time.Millisecond
 	defaultOperationDeletionPollInterval = 1 * time.Second
+	instanceGroupNameSuffix              = "-grp"
 	// ErrorCodeQuotaExceeded is an error code used in InstanceErrorInfo if quota exceeded error occurs.
 	ErrorCodeQuotaExceeded = "QUOTA_EXCEEDED"
 
@@ -75,6 +77,7 @@ type AutoscalingGceClient interface {
 	// modifying resources
 	ResizeMig(GceRef, int64) error
 	DeleteInstances(migRef GceRef, instances []GceRef) error
+	CreateInstances(GceRef, int64, []string) error
 }
 
 type autoscalingGceClientV1 struct {
@@ -189,6 +192,26 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error {
 	registerRequest("instance_group_managers", "resize")
 	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Do()
+	if err != nil {
+		return err
+	}
+	return client.waitForOp(op, migRef.Project, migRef.Zone, false)
+}
+
+func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, delta int64, existingInstances []string) error {
+	registerRequest("instance_group_managers", "create_instances")
+	req := gce.InstanceGroupManagersCreateInstancesRequest{}
+	instanceNames := map[string]bool{}
+	for _, inst := range existingInstances {
+		instanceNames[inst] = true
+	}
+	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
+	for i := int64(0); i < delta; i++ {
+		newInstanceName := generateInstanceName(migRef, instanceNames)
+		instanceNames[newInstanceName] = true
+		req.Instances = append(req.Instances, &gce.PerInstanceConfig{Name: newInstanceName})
+	}
+	op, err := client.gceService.InstanceGroupManagers.CreateInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
 	if err != nil {
 		return err
 	}
@@ -344,6 +367,18 @@ func isPermissionsError(errorCode string) bool {
 
 func isInstanceNotRunningYet(gceInstance *gce.ManagedInstance) bool {
 	return gceInstance.InstanceStatus == "" || gceInstance.InstanceStatus == "PROVISIONING" || gceInstance.InstanceStatus == "STAGING"
+}
+
+func generateInstanceName(migRef GceRef, existingNames map[string]bool) string {
+	for i := 0; i < 100; i++ {
+		name := fmt.Sprintf("%v-%v", strings.TrimSuffix(migRef.Name, instanceGroupNameSuffix), rand.String(4))
+		if ok, _ := existingNames[name]; !ok {
+			return name
+		}
+	}
+	klog.Warning("Unable to create unique name for a new instance, duplicate name might occur")
+	name := fmt.Sprintf("%v-%v", strings.TrimSuffix(migRef.Name, instanceGroupNameSuffix), rand.String(4))
+	return name
 }
 
 func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error) {
