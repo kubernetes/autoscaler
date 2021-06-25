@@ -1226,6 +1226,8 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 
 	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
 
+	daemonSetPods = podsToEvict(daemonSetPods, sd.context.DaemonSetEvictionForOccupiedNodes)
+
 	// attempt drain
 	evictionResults, err := drainNode(node, pods, daemonSetPods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime, PodEvictionHeadroom)
 	if err != nil {
@@ -1245,6 +1247,13 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 
 	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
 	return status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
+}
+
+func podsToEvict(pods []*apiv1.Pod, shouldEvict bool) []*apiv1.Pod {
+	if shouldEvict {
+		return pods
+	}
+	return []*apiv1.Pod{}
 }
 
 func evictPod(podToEvict *apiv1.Pod, isDaemonSetPod bool, client kube_client.Interface, recorder kube_record.EventRecorder,
