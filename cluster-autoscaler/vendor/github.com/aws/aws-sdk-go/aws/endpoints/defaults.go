@@ -21,6 +21,7 @@ const (
 	ApEast1RegionID      = "ap-east-1"      // Asia Pacific (Hong Kong).
 	ApNortheast1RegionID = "ap-northeast-1" // Asia Pacific (Tokyo).
 	ApNortheast2RegionID = "ap-northeast-2" // Asia Pacific (Seoul).
+	ApNortheast3RegionID = "ap-northeast-3" // Asia Pacific (Osaka).
 	ApSouth1RegionID     = "ap-south-1"     // Asia Pacific (Mumbai).
 	ApSoutheast1RegionID = "ap-southeast-1" // Asia Pacific (Singapore).
 	ApSoutheast2RegionID = "ap-southeast-2" // Asia Pacific (Sydney).
