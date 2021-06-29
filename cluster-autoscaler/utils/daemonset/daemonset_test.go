@@ -68,6 +68,76 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 	}
 }
 
+func TestEvictedPodsFilter(t *testing.T) {
+	testCases := []struct {
+		name            string
+		pods            map[string]string
+		evictionDefault bool
+		expectedPods    []string
+	}{
+		{
+			name: "all pods evicted by default",
+			pods: map[string]string{
+				"p1": "",
+				"p2": "",
+				"p3": "",
+			},
+			evictionDefault: true,
+			expectedPods:    []string{"p1", "p2", "p3"},
+		},
+		{
+			name: "no pods evicted by default",
+			pods: map[string]string{
+				"p1": "",
+				"p2": "",
+				"p3": "",
+			},
+			evictionDefault: false,
+			expectedPods:    []string{},
+		},
+		{
+			name: "all pods evicted by default, one opt-out",
+			pods: map[string]string{
+				"p1": "",
+				"p2": "false",
+				"p3": "",
+			},
+			evictionDefault: true,
+			expectedPods:    []string{"p1", "p3"},
+		},
+		{
+			name: "no pods evicted by default, one opt-in",
+			pods: map[string]string{
+				"p1": "",
+				"p2": "true",
+				"p3": "",
+			},
+			evictionDefault: false,
+			expectedPods:    []string{"p2"},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var dsPods []*apiv1.Pod
+			for n, av := range tc.pods {
+				p := BuildTestPod(n, 100, 0)
+				if av != "" {
+					p.Annotations[EnableDsEvictionKey] = av
+				}
+				dsPods = append(dsPods, p)
+			}
+			pte := PodsToEvict(dsPods, tc.evictionDefault)
+			got := make([]string, len(pte))
+			for i, p := range pte {
+				got[i] = p.Name
+			}
+			assert.ElementsMatch(t, got, tc.expectedPods)
+		})
+	}
+}
+
 func newDaemonSet(name string) *appsv1.DaemonSet {
 	return &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
