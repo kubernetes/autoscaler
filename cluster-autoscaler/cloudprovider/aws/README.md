@@ -362,6 +362,10 @@ spec:
                   - i3.2xlarge
 ```
 
+Similarly, if using the `balancing-label` flag, you should only choose labels which have the same value for all nodes in
+the node group.  Otherwise you may get unexpected results, as the flag values will vary based on the nodes created by
+the ASG.
+
 ### Example usage:
 
 - Create a [Launch
