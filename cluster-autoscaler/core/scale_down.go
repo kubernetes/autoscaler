@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -1114,7 +1115,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 			return deletedNodes, errors.ToAutoscalerError(errors.ApiCallError, taintErr)
 		}
 		deletedNodes = append(deletedNodes, node)
-		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, needToEvictDaemonSetPods bool) {
+		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, evictByDefault bool) {
 			sd.nodeDeletionTracker.StartDeletion(nodeGroupForDeletedNode.Id())
 			defer sd.nodeDeletionTracker.EndDeletion(nodeGroupForDeletedNode.Id())
 			var result status.NodeDeleteResult
@@ -1130,10 +1131,8 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 					sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: empty node %s removed", nodeToDelete.Name)
 				}
 			}()
-			if needToEvictDaemonSetPods {
-				if err := evictDaemonSetPods(sd.context.ClusterSnapshot, nodeToDelete, client, sd.context.MaxGracefulTerminationSec, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries, recorder); err != nil {
-					klog.Warningf("error while evicting DS pods from an empty node: %v", err)
-				}
+			if err := evictDaemonSetPods(sd.context.ClusterSnapshot, nodeToDelete, client, sd.context.MaxGracefulTerminationSec, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries, recorder, evictByDefault); err != nil {
+				klog.Warningf("error while evicting DS pods from an empty node: %v", err)
 			}
 			deleteErr = waitForDelayDeletion(nodeToDelete, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout)
 			if deleteErr != nil {
@@ -1161,7 +1160,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 
 // Create eviction object for all DaemonSet pods on the node
 func evictDaemonSetPods(clusterSnapshot simulator.ClusterSnapshot, nodeToDelete *apiv1.Node, client kube_client.Interface, maxGracefulTerminationSec int, timeNow time.Time, dsEvictionTimeout time.Duration, waitBetweenRetries time.Duration,
-	recorder kube_record.EventRecorder) error {
+	recorder kube_record.EventRecorder, evictByDefault bool) error {
 	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeToDelete.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get node info for %s", nodeToDelete.Name)
@@ -1170,6 +1169,8 @@ func evictDaemonSetPods(clusterSnapshot simulator.ClusterSnapshot, nodeToDelete 
 	if err != nil {
 		return fmt.Errorf("failed to get DaemonSet pods for %s (error: %v)", nodeToDelete.Name, err)
 	}
+
+	daemonSetPods = daemonset.PodsToEvict(daemonSetPods, evictByDefault)
 
 	dsEviction := make(chan status.PodEvictionResult, len(daemonSetPods))
 
@@ -1226,7 +1227,7 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 
 	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
 
-	daemonSetPods = podsToEvict(daemonSetPods, sd.context.DaemonSetEvictionForOccupiedNodes)
+	daemonSetPods = daemonset.PodsToEvict(daemonSetPods, sd.context.DaemonSetEvictionForOccupiedNodes)
 
 	// attempt drain
 	evictionResults, err := drainNode(node, pods, daemonSetPods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime, PodEvictionHeadroom)
@@ -1247,13 +1248,6 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 
 	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
 	return status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
-}
-
-func podsToEvict(pods []*apiv1.Pod, shouldEvict bool) []*apiv1.Pod {
-	if shouldEvict {
-		return pods
-	}
-	return []*apiv1.Pod{}
 }
 
 func evictPod(podToEvict *apiv1.Pod, isDaemonSetPod bool, client kube_client.Interface, recorder kube_record.EventRecorder,
