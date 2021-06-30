@@ -23,6 +23,7 @@ rules:
   - apiGroups: [""]
     resources:
       - "pods"
+      - "podtemplates"
       - "services"
       - "replicationcontrollers"
       - "persistentvolumeclaims"

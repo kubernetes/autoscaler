@@ -33,7 +33,7 @@ rules:
   resources: ["nodes"]
   verbs: ["watch","list","get","update"]
 - apiGroups: [""]
-  resources: ["pods","services","replicationcontrollers","persistentvolumeclaims","persistentvolumes"]
+  resources: ["pods","podtemplates","services","replicationcontrollers","persistentvolumeclaims","persistentvolumes"]
   verbs: ["watch","list","get"]
 - apiGroups: ["extensions"]
   resources: ["replicasets","daemonsets"]
