@@ -35,6 +35,7 @@ import (
 
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
+	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -67,6 +68,8 @@ type nodeInfoWithPodTemplateProcessor struct {
 	cancelFunc func()
 }
 
+const templateNodeFromTemplatePrefix = core_utils.TemplateNodeForNamePrefix + "-template"
+
 // Process returns unchanged nodeInfos.
 func (p *nodeInfoWithPodTemplateProcessor) Process(ctx *ca_context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error) {
 	// here we can use empty snapshot, since the NodeInfos that will be updated
@@ -85,10 +88,11 @@ func (p *nodeInfoWithPodTemplateProcessor) Process(ctx *ca_context.AutoscalingCo
 	for id, nodeInfo := range nodeInfosForNodeGroups {
 		var newNodeInfo *schedulerframework.NodeInfo
 
-		// only runs getNodeInfoWithPodTemplates() for NodeInfo generated from NodeTemplate
-		// If not a NodeTemplate, Pods from PodTemplates should alreadt be already present
+		// only runs getNodeInfoWithPodTemplates() for NodeInfo created from
+		// cloudprovider.TemplateNodeInfo.
+		// If not a NodeTemplate, Pods from PodTemplates should already be present
 		// in the PodList attached to the Node.
-		if strings.HasPrefix(nodeInfo.Node().Name, "template-node-for-") {
+		if strings.HasPrefix(nodeInfo.Node().Name, templateNodeFromTemplatePrefix) {
 			var err error
 			newNodeInfo, err = getNodeInfoWithPodTemplates(nodeInfo, podTemplates, clusterSnapshot, ctx.PredicateChecker)
 			if err != nil {

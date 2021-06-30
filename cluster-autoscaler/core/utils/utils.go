@@ -38,6 +38,9 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// TemplateNodeForNamePrefix template node prefix use in the sanitizeNodeInfo() function.
+const TemplateNodeForNamePrefix = "template-node-for"
+
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
@@ -67,7 +70,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if err != nil {
 				return false, "", err
 			}
-			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id, ignoredTaints)
+			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, "copy", id, ignoredTaints)
 			if err != nil {
 				return false, "", err
 			}
@@ -182,7 +185,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, "template", id, ignoredTaints)
 	if typedErr != nil {
 		return nil, typedErr
 	}
@@ -227,9 +230,9 @@ func deepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 	return newNodeInfo, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeSource string, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeSource, nodeGroupName, ignoredTaints)
 	if err != nil {
 		return nil, err
 	}
@@ -248,9 +251,9 @@ func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName strin
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taints.TaintKeySet) (*apiv1.Node, errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeSource string, nodeGroup string, ignoredTaints taints.TaintKeySet) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
-	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
+	nodeName := fmt.Sprintf("%s-%s-%s-%d", TemplateNodeForNamePrefix, nodeSource, nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
 		if k != apiv1.LabelHostname {

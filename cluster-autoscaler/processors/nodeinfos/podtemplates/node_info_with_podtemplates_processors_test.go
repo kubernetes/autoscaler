@@ -31,19 +31,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"k8s.io/client-go/kubernetes/fake"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
 func Test_getNodeInfoWithPodTemplates(t *testing.T) {
-	nodeName1 := "template-node-for-node-1"
+	nodeName1 := "template-node-template-for-node-1"
 	nodePod1 := newTestPod("bar", "foo", &apiv1.PodSpec{}, nodeName1)
 	nodeInfo := newNodeInfo(nodeName1, 42, nodePod1)
 	nodeInfoUnschedulable := newNodeInfo(nodeName1, 0, nodePod1)
@@ -116,8 +114,8 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 	namespace := "bar"
 	podName := "foo-dfsdfds"
-	nodeName1 := "template-node-for-node-1"
-	nodeNameRealNode := "node-real-1"
+	nodeName1 := "template-node-for-template-node-1"
+	nodeNameCopyNode := "template-node-for-copy-node-0"
 
 	tests := []struct {
 		name                   string
@@ -156,10 +154,10 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 			podTemplates:      []*apiv1.PodTemplate{newPodTemplate(namespace, podName, nil)},
 			podListerCreation: newTestDaemonSetLister,
 			nodeInfosForNodeGroups: map[string]*schedulerframework.NodeInfo{
-				nodeNameRealNode: newNodeInfo(nodeNameRealNode, 0),
+				nodeNameCopyNode: newNodeInfo(nodeNameCopyNode, 0),
 			},
 			want: map[string]*schedulerframework.NodeInfo{
-				nodeNameRealNode: newNodeInfo(nodeNameRealNode, 0),
+				nodeNameCopyNode: newNodeInfo(nodeNameCopyNode, 0),
 			},
 			wantErr: false,
 		},
@@ -206,12 +204,6 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 			}
 			assert.EqualValues(t, tt.want, got, "nodeInfoWithPodTemplateProcessor.Process() wrong expected value")
 		})
-	}
-}
-
-func newtTestAutoscalerOptions() *core.AutoscalerOptions {
-	return &core.AutoscalerOptions{
-		KubeClient: fake.NewSimpleClientset(),
 	}
 }
 
@@ -280,7 +272,8 @@ func newTestPod(namespace, name string, spec *apiv1.PodSpec, nodeName string) *a
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
-		}}
+		},
+	}
 	newPod.Namespace = namespace
 	newPod.Name = name
 	if spec != nil {

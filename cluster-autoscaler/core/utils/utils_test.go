@@ -227,7 +227,7 @@ func TestSanitizeNodeInfo(t *testing.T) {
 	nodeInfo := schedulerframework.NewNodeInfo(pod)
 	nodeInfo.SetNode(node)
 
-	res, err := sanitizeNodeInfo(nodeInfo, "test-group", nil)
+	res, err := sanitizeNodeInfo(nodeInfo, "template", "test-group", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res.Pods))
 }
@@ -238,7 +238,7 @@ func TestSanitizeLabels(t *testing.T) {
 		apiv1.LabelHostname: "abc",
 		"x":                 "y",
 	}
-	node, err := sanitizeTemplateNode(oldNode, "bzium", nil)
+	node, err := sanitizeTemplateNode(oldNode, "copy", "bzium", nil)
 	assert.NoError(t, err)
 	assert.NotEqual(t, node.Labels[apiv1.LabelHostname], "abc", nil)
 	assert.Equal(t, node.Labels["x"], "y")
@@ -277,7 +277,6 @@ func TestGetNodeResource(t *testing.T) {
 
 	memory = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceMemory)
 	assert.Equal(t, int64(0), memory)
-
 }
 
 func TestGetNodeCoresAndMemory(t *testing.T) {
