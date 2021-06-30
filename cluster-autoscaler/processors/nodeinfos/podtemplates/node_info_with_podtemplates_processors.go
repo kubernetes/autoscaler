@@ -36,7 +36,6 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -47,13 +46,7 @@ const (
 	PodTemplateDaemonSetLabelKey = "cluster-autoscaler.kubernetes.io/daemonset-pod"
 	// PodTemplateDaemonSetLabelValueTrue use as PodTemplateDaemonSetLabelKey label value.
 	PodTemplateDaemonSetLabelValueTrue = "true"
-	// processorsName use to identify the PodTemplate NodeInfoProcessor
-	processorName = "podtemplates"
 )
-
-func init() {
-	builder.Register(processorName, NewNodeInfoWithPodTemplateProcessor)
-}
 
 // NewNodeInfoWithPodTemplateProcessor returns a default instance of NodeInfoProcessor.
 func NewNodeInfoWithPodTemplateProcessor(opts *core.AutoscalerOptions) nodeinfos.NodeInfoProcessor {

@@ -43,8 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	nodeinfobuilder "k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos/builder"
-	_ "k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos/podtemplates"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos/podtemplates"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -182,7 +181,7 @@ var (
 	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
 	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
-	nodeInfoProcessorName              = flag.String("node-info-processor", "", "node-info processor type. Available values: ["+strings.Join(nodeinfobuilder.GetAvailableNodeInfoProcessors(), ",")+"]")
+	nodeInfoProcessorPodTemplates      = flag.Bool("node-info-processor-podtemplate", false, "Enable PodTemplate NodeInfoProcessor to consider specific PodTemplate as DaemonSet")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -260,7 +259,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
 		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
 		UserAgent:                          *userAgent,
-		NodeInfoProcessorName:              *nodeInfoProcessorName,
+		NodeInfoProcessorPodTemplates:      *nodeInfoProcessorPodTemplates,
 	}
 }
 
@@ -335,14 +334,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		Comparator: nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels),
 	}
 
-	// Enable a NodeInfoProcessorName if requested.
-	if autoscalingOptions.NodeInfoProcessorName != "" {
-		processor, err := nodeinfobuilder.Build(&opts)
-		if err != nil {
-			klog.Errorf("Unable to instantiate the requested NodeInfoProcessor, err: %w", err)
-		} else {
-			opts.Processors.NodeInfoProcessor = processor
-		}
+	if autoscalingOptions.NodeInfoProcessorPodTemplates {
+		opts.Processors.NodeInfoProcessor = podtemplates.NewNodeInfoWithPodTemplateProcessor(&opts)
 	}
 
 	// These metrics should be published only once.

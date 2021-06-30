@@ -165,6 +165,6 @@ type AutoscalingOptions struct {
 	DaemonSetEvictionForOccupiedNodes bool
 	// User agent to use for HTTP calls.
 	UserAgent string
-	// NodeInfoProcessorName sets the type of the NodeInfo processor. Allowed value: podtemplates.
-	NodeInfoProcessorName string
+	// NodeInfoProcessorPodTemplates Enable or disable the NodeInfoProcessor PodTemplate
+	NodeInfoProcessorPodTemplates bool
 }
