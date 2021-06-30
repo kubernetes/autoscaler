@@ -39,6 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -68,7 +69,7 @@ type nodeInfoWithPodTemplateProcessor struct {
 	cancelFunc func()
 }
 
-const templateNodeFromTemplatePrefix = core_utils.TemplateNodeForNamePrefix + "-template"
+const templateNodeFromTemplatePrefix = core_utils.TemplateNodeForNamePrefix + "-" + core_utils.TemplateNodeForNameFromTemplatePrefix
 
 // Process returns unchanged nodeInfos.
 func (p *nodeInfoWithPodTemplateProcessor) Process(ctx *ca_context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error) {
@@ -125,18 +126,22 @@ func newPodTemplateLister(kubeClient client.Interface, stopchannel <-chan struct
 	return lister
 }
 
+const nodeInfoDeepCopySuffix = "podtemplate"
+
 func getNodeInfoWithPodTemplates(baseNodeInfo *schedulerframework.NodeInfo, podTemplates []*apiv1.PodTemplate, clusterSnapshot *simulator.BasicClusterSnapshot, predicateChecker simulator.PredicateChecker) (*schedulerframework.NodeInfo, error) {
-	node := baseNodeInfo.Node()
+	// clone baseNodeInfo to not modify the input object.
+	newNodeInfo := scheduler_utils.DeepCopyTemplateNode(baseNodeInfo, nodeInfoDeepCopySuffix)
+	node := newNodeInfo.Node()
 	var pods []*apiv1.Pod
 
 	for _, podInfo := range baseNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
+
 	if err := clusterSnapshot.AddNodeWithPods(node, pods); err != nil {
 		return nil, err
 	}
-	// clone baseNodeInfo to not modify the input object.
-	newNodeInfo := baseNodeInfo.Clone()
+
 	for _, podTpl := range podTemplates {
 		newPod := newPod(podTpl, node.Name)
 		err := predicateChecker.CheckPredicates(clusterSnapshot, newPod, node.Name)

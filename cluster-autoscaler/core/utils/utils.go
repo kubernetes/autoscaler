@@ -38,8 +38,14 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-// TemplateNodeForNamePrefix template node prefix use in the sanitizeNodeInfo() function.
-const TemplateNodeForNamePrefix = "template-node-for"
+const (
+	// TemplateNodeForNamePrefix template node prefix use in the sanitizeNodeInfo() function.
+	TemplateNodeForNamePrefix = "template-node-for"
+	// TemplateNodeForNameFromTemplatePrefix sub-prefix when the template is generated based on a cloud-provider node template.
+	TemplateNodeForNameFromTemplatePrefix = "template"
+	// TemplateNodeForNameFromCopyPrefix sub-prefix when the template is generated from a copy of another exiting node.
+	TemplateNodeForNameFromCopyPrefix = "copy"
+)
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
@@ -70,7 +76,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if err != nil {
 				return false, "", err
 			}
-			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, "copy", id, ignoredTaints)
+			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, TemplateNodeForNameFromCopyPrefix, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
 			}
@@ -185,7 +191,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, "template", id, ignoredTaints)
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, TemplateNodeForNameFromTemplatePrefix, id, ignoredTaints)
 	if typedErr != nil {
 		return nil, typedErr
 	}

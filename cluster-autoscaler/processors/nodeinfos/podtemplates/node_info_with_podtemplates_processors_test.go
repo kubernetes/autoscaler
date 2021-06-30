@@ -38,6 +38,7 @@ import (
 
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 )
 
 func Test_getNodeInfoWithPodTemplates(t *testing.T) {
@@ -63,7 +64,7 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 				podTemplates: nil,
 			},
 			wantFunc: func() *schedulerframework.NodeInfo {
-				return nodeInfo.Clone()
+				return scheduler_utils.DeepCopyTemplateNode(nodeInfo, nodeInfoDeepCopySuffix)
 			},
 		},
 		{
@@ -75,8 +76,8 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 				},
 			},
 			wantFunc: func() *schedulerframework.NodeInfo {
-				nodeInfo := nodeInfo.Clone()
-				nodeInfo.AddPod(newTestPod("extra-ns", "extra-name-pod", nil, nodeName1))
+				nodeInfo := scheduler_utils.DeepCopyTemplateNode(nodeInfo, nodeInfoDeepCopySuffix)
+				nodeInfo.AddPod(newTestPod("extra-ns", "extra-name-pod", nil, nodeName1+"-podtemplate"))
 				return nodeInfo
 			},
 		},
@@ -89,7 +90,7 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 				},
 			},
 			wantFunc: func() *schedulerframework.NodeInfo {
-				return nodeInfoUnschedulable.Clone()
+				return scheduler_utils.DeepCopyTemplateNode(nodeInfoUnschedulable, nodeInfoDeepCopySuffix)
 			},
 		},
 	}
@@ -106,6 +107,9 @@ func Test_getNodeInfoWithPodTemplates(t *testing.T) {
 			want := tt.wantFunc()
 
 			got.Generation = want.Generation
+
+			resetNodeInfoGeneratedFields(got)
+			resetNodeInfoGeneratedFields(want)
 			assert.EqualValues(t, want, got, "getNodeInfoWithPodTemplates wrong expected value")
 		})
 	}
@@ -115,6 +119,7 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 	namespace := "bar"
 	podName := "foo-dfsdfds"
 	nodeName1 := "template-node-for-template-node-1"
+	wantNodeName1 := fmt.Sprintf("%s-%s", nodeName1, nodeInfoDeepCopySuffix)
 	nodeNameCopyNode := "template-node-for-copy-node-0"
 
 	tests := []struct {
@@ -133,7 +138,7 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 				nodeName1: newNodeInfo(nodeName1, 42),
 			},
 			want: map[string]*schedulerframework.NodeInfo{
-				nodeName1: newNodeInfo(nodeName1, 42, newTestPod(namespace, fmt.Sprintf("%s-pod", podName), nil, nodeName1)),
+				nodeName1: newNodeInfo(wantNodeName1, 42, newTestPod(namespace, fmt.Sprintf("%s-pod", podName), nil, wantNodeName1)),
 			},
 			wantErr: false,
 		},
@@ -145,7 +150,7 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 				nodeName1: newNodeInfo(nodeName1, 0),
 			},
 			want: map[string]*schedulerframework.NodeInfo{
-				nodeName1: newNodeInfo(nodeName1, 0),
+				nodeName1: newNodeInfo(wantNodeName1, 0),
 			},
 			wantErr: false,
 		},
@@ -195,8 +200,8 @@ func Test_nodeInfoWithPodTemplateProcessor_Process(t *testing.T) {
 
 			got, err := p.Process(caCtx, tt.nodeInfosForNodeGroups)
 
-			resetNodeInfoGeneration(got)
-			resetNodeInfoGeneration(tt.want)
+			resetNodeInfosGeneratedFields(got)
+			resetNodeInfosGeneratedFields(tt.want)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("nodeInfoWithPodTemplateProcessor.Process() error = %v, wantErr %v", err, tt.wantErr)
@@ -238,6 +243,9 @@ func newNode(name string, maxPods int64) *apiv1.Node {
 	return &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				"kubernetes.io/hostname": name,
+			},
 		},
 		Status: apiv1.NodeStatus{
 			Allocatable: newResourceList,
@@ -283,9 +291,17 @@ func newTestPod(namespace, name string, spec *apiv1.PodSpec, nodeName string) *a
 	return newPod
 }
 
-func resetNodeInfoGeneration(nodeInfos map[string]*schedulerframework.NodeInfo) {
+func resetNodeInfosGeneratedFields(nodeInfos map[string]*schedulerframework.NodeInfo) {
 	for _, nodeInfo := range nodeInfos {
-		nodeInfo.Generation = 0
+		resetNodeInfoGeneratedFields(nodeInfo)
+	}
+}
+
+func resetNodeInfoGeneratedFields(nodeInfo *schedulerframework.NodeInfo) {
+	nodeInfo.Generation = 0
+	nodeInfo.Node().UID = ""
+	for _, podInfo := range nodeInfo.Pods {
+		podInfo.Pod.UID = ""
 	}
 }
 
