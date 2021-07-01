@@ -65,9 +65,8 @@ test:
 	docker run --rm -it -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
         /bin/bash -c "\
-            go get github.com/tools/godep && \
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            godep go test ./nanny -v"
+            go test ./nanny -v"
 
 push: .push-$(ARCH)
 .push-$(ARCH): .container-$(ARCH)
