@@ -119,10 +119,10 @@ func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 			if metric.Gauge == nil || metric.Gauge.Value == nil {
 				continue
 			}
-			value := uint64(*metric.Gauge.Value)
-			if value < 0 {
+			if *metric.Gauge.Value < 0 {
 				return 0, fmt.Errorf("metric unknown")
 			}
+			value := uint64(*metric.Gauge.Value)
 			return value, nil
 
 		}
