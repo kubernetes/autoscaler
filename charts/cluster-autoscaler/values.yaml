@@ -195,7 +195,7 @@ image:
   # image.repository -- Image repository
   repository: k8s.gcr.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.20.0
+  tag: v1.21.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
