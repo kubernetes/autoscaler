@@ -294,7 +294,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
-				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+				status.GetReadableString(), a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
 		}
 
 		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
@@ -695,7 +695,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return
 	}
-	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
+	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, a.AutoscalingContext.StatusConfigMapName)
 
 	a.clusterStateRegistry.Stop()
 }
@@ -760,7 +760,7 @@ func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	metrics.UpdateClusterSafeToAutoscale(false)
 	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 	if a.AutoscalingContext.WriteStatusConfigMap {
-		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
 	}
 	if emitEvent {
 		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)

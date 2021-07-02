@@ -109,6 +109,8 @@ type AutoscalingOptions struct {
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
 	WriteStatusConfigMap bool
+	// StaticConfigMapName
+	StatusConfigMapName string
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
 	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
