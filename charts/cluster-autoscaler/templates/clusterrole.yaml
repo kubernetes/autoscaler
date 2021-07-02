@@ -104,6 +104,8 @@ rules:
   - apiGroups:
     - storage.k8s.io
     resources:
+    - csistoragecapacities
+    - csidrivers
     - storageclasses
     - csinodes
     verbs:
