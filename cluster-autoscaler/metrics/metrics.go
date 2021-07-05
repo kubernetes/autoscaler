@@ -171,6 +171,22 @@ var (
 		}, []string{"direction"},
 	)
 
+	nodesGroupMinNodes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_min_count",
+			Help:      "Minimum number of nodes in the node group",
+		}, []string{"node_group"},
+	)
+
+	nodesGroupMaxNodes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_max_count",
+			Help:      "Maximum number of nodes in the node group",
+		}, []string{"node_group"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -315,7 +331,7 @@ var (
 )
 
 // RegisterAll registers all metrics.
-func RegisterAll() {
+func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(clusterSafeToAutoscale)
 	legacyregistry.MustRegister(nodesCount)
 	legacyregistry.MustRegister(nodeGroupsCount)
@@ -342,6 +358,11 @@ func RegisterAll() {
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
+
+	if emitPerNodeGroupMetrics {
+		legacyregistry.MustRegister(nodesGroupMinNodes)
+		legacyregistry.MustRegister(nodesGroupMaxNodes)
+	}
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
@@ -421,6 +442,16 @@ func UpdateClusterMemoryCurrentBytes(memoryCount int64) {
 func UpdateMemoryLimitsBytes(minMemoryCount int64, maxMemoryCount int64) {
 	memoryLimitsBytes.WithLabelValues("minimum").Set(float64(minMemoryCount))
 	memoryLimitsBytes.WithLabelValues("maximum").Set(float64(maxMemoryCount))
+}
+
+// UpdateNodeGroupMin records the node group minimum allowed number of nodes
+func UpdateNodeGroupMin(nodeGroup string, minNodes int) {
+	nodesGroupMinNodes.WithLabelValues(nodeGroup).Set(float64(minNodes))
+}
+
+// UpdateNodeGroupMax records the node group maximum allowed number of nodes
+func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
+	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
 }
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.
