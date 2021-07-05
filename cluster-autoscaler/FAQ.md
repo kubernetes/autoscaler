@@ -32,6 +32,7 @@ this document:
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
+  * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -434,6 +435,30 @@ spec:
       serviceAccountName: cluster-proportional-autoscaler-service-account
 ```
 
+### How can I enable/disable eviction for a specific DaemonSet
+
+Cluster Autoscaler will evict DaemonSets based on its configuration, which is
+common for the entire cluster. It is possible, however, to specify the desired
+behavior on a per pod basis. All DaemonSet pods will be evicted when they have
+the following annotation.
+
+```
+"cluster-autoscaler.kubernetes.io/enable-ds-eviction": "true"
+```
+
+It is also possible to disable DaemonSet pods eviction expicitly:
+
+
+```
+"cluster-autoscaler.kubernetes.io/enable-ds-eviction": "false"
+```
+
+Note that this annotation needs to be specified on DaemonSet pods, not the
+DaemonSet object itself. In order to do that for all DaemonSet pods, it is
+sufficient to modify the pod spec in the DaemonSet object.
+
+This annotation has no effect on pods that are not a part of any DaemonSet.
+
 ****************
 
 # Internals
@@ -511,6 +536,17 @@ Empty nodes, on the other hand, can be terminated in bulk, up to 10 nodes at a t
 What happens when a non-empty node is terminated? As mentioned above, all pods should be migrated
 elsewhere. Cluster Autoscaler does this by evicting them and tainting the node, so they aren't
 scheduled there again.
+
+DaemonSet pods may also be evicted. This can be configured separately for empty
+(i.e. containing only DaemonSet pods) and non-empty nodes with
+`--daemonset-eviction-for-empty-nodes` and
+`--daemonset-eviction-for-occupied-nodes` flags, respectively. Note that the
+default behavior is different on each flag: by default DaemonSet pods eviction
+will happen only on occupied nodes.  Individual DaemonSet pods can also
+explicitly choose to be evicted (or not). See [How can I enable/disable eviction
+for a specific
+DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset) for more
+details.
 
 Example scenario:
 
@@ -690,6 +726,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-system-pods` | If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet or mirror pods) | true
 | `skip-nodes-with-local-storage`| If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true
 | `min-replica-count` | Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down | 0
+| `daemonset-eviction-for-empty-nodes` | Whether DaemonSet pods will be gracefully terminated from empty nodes | false
+| `daemonset-eviction-for-occupied-nodes` | Whether DaemonSet pods will be gracefully terminated from non-empty nodes | true
 
 # Troubleshooting:
 
