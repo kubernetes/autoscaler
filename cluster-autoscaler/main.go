@@ -36,6 +36,7 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -57,7 +58,7 @@ import (
 	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/component-base/config/options"
 	"k8s.io/component-base/metrics/legacyregistry"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -180,6 +181,12 @@ var (
 	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
 	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
+	initialNodeGroupBackoffDuration = flag.Duration("initial-node-group-backoff-duration", clusterstate.InitialNodeGroupBackoffDuration,
+		"initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start.")
+	maxNodeGroupBackoffDuration = flag.Duration("max-node-group-backoff-duration", clusterstate.MaxNodeGroupBackoffDuration,
+		"maxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.")
+	nodeGroupBackoffResetTimeout = flag.Duration("node-group-backoff-reset-timeout", clusterstate.NodeGroupBackoffResetTimeout,
+		"nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -257,6 +264,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
 		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
 		UserAgent:                          *userAgent,
+		InitialNodeGroupBackoffDuration:    *initialNodeGroupBackoffDuration,
+		MaxNodeGroupBackoffDuration:        *maxNodeGroupBackoffDuration,
+		NodeGroupBackoffResetTimeout:       *nodeGroupBackoffResetTimeout,
 	}
 }
 
