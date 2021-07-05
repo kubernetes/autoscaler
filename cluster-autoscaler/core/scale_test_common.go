@@ -260,7 +260,6 @@ type mockAutoprovisioningNodeGroupListProcessor struct {
 
 func (p *mockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
 	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error) {
-
 	machines, err := context.CloudProvider.GetAvailableMachineTypes()
 	assert.NoError(p.t, err)
 
