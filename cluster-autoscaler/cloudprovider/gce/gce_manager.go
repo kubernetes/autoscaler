@@ -95,6 +95,8 @@ type GceManager interface {
 	SetMigSize(mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
 	DeleteInstances(instances []GceRef) error
+	// CreateInstances creates delta new instances in a given mig.
+	CreateInstances(mig Mig, delta int64) error
 }
 
 type gceManagerImpl struct {
@@ -287,6 +289,22 @@ func (m *gceManagerImpl) Refresh() error {
 		return nil
 	}
 	return m.forceRefresh()
+}
+
+func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
+	if delta == 0 {
+		return nil
+	}
+	instances, err := m.GetMigNodes(mig)
+	if err != nil {
+		return err
+	}
+	instancesNames := make([]string, 0, len(instances))
+	for _, ins := range instances {
+		instancesNames = append(instancesNames, ins.Id)
+	}
+	m.cache.InvalidateMigTargetSize(mig.GceRef())
+	return m.GceService.CreateInstances(mig.GceRef(), delta, instancesNames)
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
