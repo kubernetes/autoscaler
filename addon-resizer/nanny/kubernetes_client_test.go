@@ -147,7 +147,7 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 		{
 			name:      "empty",
 			mf:        dto.MetricFamily{},
-			expectErr: fmt.Errorf("no valid metric values"),
+			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
 			name: "with proper value",
@@ -165,7 +165,7 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 					getMetric("wrong", "nodes", 4.0),
 				},
 			},
-			expectErr: fmt.Errorf("no valid metric values"),
+			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
 			name: "only wrong label value",
@@ -174,7 +174,7 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 					getMetric("resource", "pods", 4.0),
 				},
 			},
-			expectErr: fmt.Errorf("no valid metric values"),
+			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
 			name: "with negative value",
@@ -183,12 +183,12 @@ func TestExtractMetricValueForNodeCount(t *testing.T) {
 					getMetric("resource", "nodes", -4.0),
 				},
 			},
-			expectErr: fmt.Errorf("metric unknown"),
+			expectErr: fmt.Errorf("metric name: metric unknown"),
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotCount, gotErr := extractMetricValueForNodeCount(tc.mf)
+			gotCount, gotErr := extractMetricValueForNodeCount(tc.mf, "metric name")
 			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
@@ -221,7 +221,7 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 		{
 			name:        "empty",
 			finalResult: io.EOF,
-			expectErr:   fmt.Errorf("metric unset"),
+			expectErr:   fmt.Errorf("no metric set"),
 		},
 		{
 			name:        "with preferred metric",
@@ -273,6 +273,63 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			finalResult: fmt.Errorf("oops"),
 			expectErr:   fmt.Errorf("decoding error: oops"),
 		},
+		{
+			name:        "fallbacks on error preferred on preferred metric",
+			finalResult: io.EOF,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "nodes", 4.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "nodes", 5.0),
+					},
+				},
+			},
+			expectValue: 4,
+		},
+		{
+			name:        "reports error on both metrics",
+			finalResult: io.EOF,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &fallbackMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "nodes", 4.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("wrong", "nodes", 5.0),
+					},
+				},
+			},
+			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
+		},
+		{
+			name:        "multiple metrics in preferred metric family",
+			finalResult: io.EOF,
+			metricValues: []dto.MetricFamily{
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "nodes", 5.0),
+					},
+				},
+				{
+					Name: &preferredMetric,
+					Metric: []*dto.Metric{
+						getMetric("resource", "foobars", 3.0),
+					},
+				},
+			},
+			expectValue: 5.0,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -284,4 +341,40 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectErrorOrCount(t, tc.expectErr, tc.expectValue, gotErr, gotCount)
 		})
 	}
+}
+
+func TestGetNodeCountFromDecoder_MultpleLabels(t *testing.T) {
+	preferredMetric := objectCountMetricName
+	labelName1 := resourceLabel
+	labelValue1 := nodeResourceName
+	labelName2 := "flavor"
+	labelValue2 := "up"
+	value := 3.0
+	fd := fakeDecoder{
+		metricValues: []dto.MetricFamily{
+			{
+				Name: &preferredMetric,
+				Metric: []*dto.Metric{
+					{
+						Label: []*dto.LabelPair{
+							{
+								Name:  &labelName1,
+								Value: &labelValue1,
+							},
+							{
+								Name:  &labelName2,
+								Value: &labelValue2,
+							},
+						},
+						Gauge: &dto.Gauge{
+							Value: &value,
+						},
+					},
+				},
+			},
+		},
+		finalResult: io.EOF,
+	}
+	gotCount, gotErr := getNodeCountFromDecoder(&fd)
+	expectErrorOrCount(t, nil, 3.0, gotErr, gotCount)
 }

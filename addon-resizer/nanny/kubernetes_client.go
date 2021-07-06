@@ -85,7 +85,7 @@ func hasEqualValues(a string, b *string) bool {
 	return b != nil && a == *b
 }
 
-func extractMetricValueForNodeCount(mf dto.MetricFamily) (uint64, error) {
+func extractMetricValueForNodeCount(mf dto.MetricFamily, metricName string) (uint64, error) {
 	for _, metric := range mf.Metric {
 		hasLabel := false
 		for _, label := range metric.Label {
@@ -101,19 +101,19 @@ func extractMetricValueForNodeCount(mf dto.MetricFamily) (uint64, error) {
 			continue
 		}
 		if *metric.Gauge.Value < 0 {
-			return 0, fmt.Errorf("metric unknown")
+			return 0, fmt.Errorf("%s: metric unknown", metricName)
 		}
 		value := uint64(*metric.Gauge.Value)
 		return value, nil
 	}
-	return 0, fmt.Errorf("no valid metric values")
+	return 0, fmt.Errorf("%s: no valid metric values", metricName)
 }
 
 func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
 	var mf dto.MetricFamily
-	var fallbackNodeCountMetricValue uint64
-	var fallbackMetricError error
-	useNodeCountFromFallbackMetric := false
+	var preferredMetricValue, fallbackMetricValue uint64
+	var preferredMetricError, fallbackMetricError error
+	gotPrefferedMetric, gotFallbackMetric := false, false
 
 	for {
 		if err := decoder.Decode(&mf); err != nil {
@@ -123,20 +123,25 @@ func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
 			return 0, fmt.Errorf("decoding error: %v", err)
 		}
 		if hasEqualValues(objectCountMetricName, mf.Name) {
-			// Preferred metric is present - return immediately
-			return extractMetricValueForNodeCount(mf)
+			preferredMetricValue, preferredMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			gotPrefferedMetric = true
 		}
 		if hasEqualValues(objectCountFallbackMetricName, mf.Name) {
-			// Fallback metric is present - store values to return later (in case the preferred metric is missing)
-			fallbackNodeCountMetricValue, fallbackMetricError = extractMetricValueForNodeCount(mf)
-			useNodeCountFromFallbackMetric = true
+			fallbackMetricValue, fallbackMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			gotFallbackMetric = true
 		}
 	}
 
-	if useNodeCountFromFallbackMetric {
-		return fallbackNodeCountMetricValue, fallbackMetricError
+	if gotPrefferedMetric && preferredMetricError == nil {
+		return preferredMetricValue, nil
 	}
-	return 0, fmt.Errorf("metric unset")
+	if gotFallbackMetric && fallbackMetricError == nil {
+		return fallbackMetricValue, nil
+	}
+	if gotFallbackMetric || gotPrefferedMetric {
+		return 0, fmt.Errorf("at least one metric present but all present metrics have errors: %v, %v", preferredMetricError, fallbackMetricError)
+	}
+	return 0, fmt.Errorf("no metric set")
 }
 
 func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
