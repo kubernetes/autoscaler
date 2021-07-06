@@ -274,7 +274,7 @@ func TestGetNodeCountFromDecoder(t *testing.T) {
 			expectErr:   fmt.Errorf("decoding error: oops"),
 		},
 		{
-			name:        "fallbacks on error preferred on preferred metric",
+			name:        "falls back on error in preferred metric",
 			finalResult: io.EOF,
 			metricValues: []dto.MetricFamily{
 				{
