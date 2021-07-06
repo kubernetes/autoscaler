@@ -33,9 +33,11 @@ import (
 )
 
 const (
-	// objectCountMetricName is the metric to be used to get number of nodes
-	objectCountMetricName = "etcd_object_counts"
-	// nodeResourceName is the label value for Nodes in objectCountMetricName metric.
+	// objectCountMetricName is the preferred metric to be used to get number of nodes (present in Kubernetes 1.21 and higher)
+	objectCountMetricName = "apiserver_storage_objects"
+	// objectCountFallbackMetricName is the metric to be used to get number of nodes if objectCountMetricName metric is missing
+	objectCountFallbackMetricName = "etcd_object_counts"
+	// nodeResourceName is the label value for Nodes in objectCountFallbackMetricName and objectCountMetricName metrics.
 	nodeResourceName = "nodes"
 	// resourceLabel is the label name for resource.
 	resourceLabel = "resource"
@@ -83,17 +85,36 @@ func hasEqualValues(a string, b *string) bool {
 	return b != nil && a == *b
 }
 
-func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
-	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
-	// Other than that, endpoint is visible from everywhere.
-	reader, err := k.clientset.CoreV1().RESTClient().Get().RequestURI("/metrics").Stream(context.Background())
-	if err != nil {
-		return 0, err
+func extractMetricValueForNodeCount(mf dto.MetricFamily, metricName string) (uint64, error) {
+	for _, metric := range mf.Metric {
+		hasLabel := false
+		for _, label := range metric.Label {
+			if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(nodeResourceName, label.Value) {
+				hasLabel = true
+				break
+			}
+		}
+		if !hasLabel {
+			continue
+		}
+		if metric.Gauge == nil || metric.Gauge.Value == nil {
+			continue
+		}
+		if *metric.Gauge.Value < 0 {
+			return 0, fmt.Errorf("%s: metric unknown", metricName)
+		}
+		value := uint64(*metric.Gauge.Value)
+		return value, nil
 	}
+	return 0, fmt.Errorf("%s: no valid metric values", metricName)
+}
 
-	decoder := expfmt.NewDecoder(reader, expfmt.FmtText)
-
+func getNodeCountFromDecoder(decoder expfmt.Decoder) (uint64, error) {
 	var mf dto.MetricFamily
+	var preferredMetricValue, fallbackMetricValue uint64
+	var preferredMetricError, fallbackMetricError error
+	gotPrefferedMetric, gotFallbackMetric := false, false
+
 	for {
 		if err := decoder.Decode(&mf); err != nil {
 			if err == io.EOF {
@@ -101,34 +122,36 @@ func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
 			}
 			return 0, fmt.Errorf("decoding error: %v", err)
 		}
-
-		if !hasEqualValues(objectCountMetricName, mf.Name) {
-			continue
+		if hasEqualValues(objectCountMetricName, mf.Name) {
+			preferredMetricValue, preferredMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			gotPrefferedMetric = true
 		}
-		for _, metric := range mf.Metric {
-			hasLabel := false
-			for _, label := range metric.Label {
-				if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(nodeResourceName, label.Value) {
-					hasLabel = true
-					break
-				}
-			}
-			if !hasLabel {
-				continue
-			}
-			if metric.Gauge == nil || metric.Gauge.Value == nil {
-				continue
-			}
-			value := uint64(*metric.Gauge.Value)
-			if value < 0 {
-				return 0, fmt.Errorf("metric unknown")
-			}
-			return value, nil
-
+		if hasEqualValues(objectCountFallbackMetricName, mf.Name) {
+			fallbackMetricValue, fallbackMetricError = extractMetricValueForNodeCount(mf, *mf.Name)
+			gotFallbackMetric = true
 		}
 	}
 
-	return 0, fmt.Errorf("metric unset")
+	if gotPrefferedMetric && preferredMetricError == nil {
+		return preferredMetricValue, nil
+	}
+	if gotFallbackMetric && fallbackMetricError == nil {
+		return fallbackMetricValue, nil
+	}
+	if gotFallbackMetric || gotPrefferedMetric {
+		return 0, fmt.Errorf("at least one metric present but all present metrics have errors: %v, %v", preferredMetricError, fallbackMetricError)
+	}
+	return 0, fmt.Errorf("no metric set")
+}
+
+func (k *kubernetesClient) countNodesThroughMetrics() (uint64, error) {
+	// Similarly as for listing nodes, permissions for /metrics endpoint are needed.
+	// Other than that, endpoint is visible from everywhere.
+	reader, err := k.clientset.CoreV1().RESTClient().Get().RequestURI("/metrics").Stream(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	return getNodeCountFromDecoder(expfmt.NewDecoder(reader, expfmt.FmtText))
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
