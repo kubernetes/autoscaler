@@ -20,14 +20,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"io"
 	"io/ioutil"
-	klog "k8s.io/klog/v2"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+	klog "k8s.io/klog/v2"
 )
 
 var (
@@ -84,16 +86,9 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 
 			defer res.Body.Close()
 
-			body, err := ioutil.ReadAll(res.Body)
+			unmarshalled, err := unmarshalProductsResponse(res.Body)
 			if err != nil {
-				klog.Warningf("Error parsing %s skipping...\n", url)
-				continue
-			}
-
-			var unmarshalled = response{}
-			err = json.Unmarshal(body, &unmarshalled)
-			if err != nil {
-				klog.Warningf("Error unmarshalling %s, skip...\n", url)
+				klog.Warningf("Error parsing %s skipping...\n%s\n", url, err)
 				continue
 			}
 
@@ -130,6 +125,21 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 // GetStaticEC2InstanceTypes return pregenerated ec2 instance type list
 func GetStaticEC2InstanceTypes() (map[string]*InstanceType, string) {
 	return InstanceTypes, staticListLastUpdateTime
+}
+
+func unmarshalProductsResponse(r io.Reader) (*response, error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	var unmarshalled = response{}
+	err = json.Unmarshal(body, &unmarshalled)
+	if err != nil {
+		return nil, err
+	}
+
+	return &unmarshalled, nil
 }
 
 func parseMemory(memory string) int64 {
