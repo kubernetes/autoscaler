@@ -128,15 +128,44 @@ func GetStaticEC2InstanceTypes() (map[string]*InstanceType, string) {
 }
 
 func unmarshalProductsResponse(r io.Reader) (*response, error) {
-	body, err := ioutil.ReadAll(r)
+	dec := json.NewDecoder(r)
+	t, err := dec.Token()
 	if err != nil {
 		return nil, err
 	}
+	if delim, ok := t.(json.Delim); !ok || delim.String() != "{" {
+		return nil, errors.New("Invalid products json")
+	}
 
-	var unmarshalled = response{}
-	err = json.Unmarshal(body, &unmarshalled)
-	if err != nil {
-		return nil, err
+	unmarshalled := response{map[string]product{}}
+
+	for dec.More() {
+		t, err = dec.Token()
+		if err != nil {
+			return nil, err
+		}
+
+		if t == "products" {
+			tt, err := dec.Token()
+			if err != nil {
+				return nil, err
+			}
+			if delim, ok := tt.(json.Delim); !ok || delim.String() != "{" {
+				return nil, errors.New("Invalid products json")
+			}
+			for dec.More() {
+				productCode, err := dec.Token()
+				if err != nil {
+					return nil, err
+				}
+
+				prod := product{}
+				if err = dec.Decode(&prod); err != nil {
+					return nil, err
+				}
+				unmarshalled.Products[productCode.(string)] = prod
+			}
+		}
 	}
 
 	return &unmarshalled, nil
