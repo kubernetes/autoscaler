@@ -42,6 +42,7 @@ type hetznerManager struct {
 	image          *hcloud.Image
 	sshKey         *hcloud.SSHKey
 	network        *hcloud.Network
+	firewall       *hcloud.Firewall
 }
 
 func newManager() (*hetznerManager, error) {
@@ -92,9 +93,6 @@ func newManager() (*hetznerManager, error) {
 		image = images[0]
 	}
 
-	var network *hcloud.Network
-	networkName := os.Getenv("HCLOUD_NETWORK")
-
 	var sshKey *hcloud.SSHKey
 	sshKeyName := os.Getenv("HCLOUD_SSH_KEY")
 	if sshKeyName != "" {
@@ -104,12 +102,23 @@ func newManager() (*hetznerManager, error) {
 		}
 	}
 
+	var network *hcloud.Network
+	networkName := os.Getenv("HCLOUD_NETWORK")
 	if networkName != "" {
 		network, _, err = client.Network.Get(ctx, networkName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get network error: %s", err)
 		}
 
+	}
+
+	var firewall *hcloud.Firewall
+	firewallName := os.Getenv("HCLOUD_FIREWALL")
+	if firewallName != "" {
+		firewall, _, err = client.Firewall.Get(ctx, firewallName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get firewall error: %s", err)
+		}
 	}
 
 	m := &hetznerManager{
@@ -119,6 +128,7 @@ func newManager() (*hetznerManager, error) {
 		image:          image,
 		sshKey:         sshKey,
 		network:        network,
+		firewall:		firewall,
 		apiCallContext: ctx,
 	}
 
