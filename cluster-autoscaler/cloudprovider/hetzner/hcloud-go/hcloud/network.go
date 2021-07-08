@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -27,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // NetworkZone specifies a network zone.
@@ -43,8 +27,9 @@ type NetworkSubnetType string
 
 // List of available network subnet types.
 const (
-	NetworkSubnetTypeCloud  NetworkSubnetType = "cloud"
-	NetworkSubnetTypeServer NetworkSubnetType = "server"
+	NetworkSubnetTypeCloud   NetworkSubnetType = "cloud"
+	NetworkSubnetTypeServer  NetworkSubnetType = "server"
+	NetworkSubnetTypeVSwitch NetworkSubnetType = "vswitch"
 )
 
 // Network represents a network in the Hetzner Cloud.
@@ -66,6 +51,7 @@ type NetworkSubnet struct {
 	IPRange     *net.IPNet
 	NetworkZone NetworkZone
 	Gateway     net.IP
+	VSwitchID   int
 }
 
 // NetworkRoute represents a route of a network.
@@ -169,7 +155,7 @@ func (c *NetworkClient) All(ctx context.Context) ([]*Network, error) {
 func (c *NetworkClient) AllWithOpts(ctx context.Context, opts NetworkListOpts) ([]*Network, error) {
 	var allNetworks []*Network
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		Networks, resp, err := c.List(ctx, opts)
 		if err != nil {
@@ -257,11 +243,15 @@ func (c *NetworkClient) Create(ctx context.Context, opts NetworkCreateOpts) (*Ne
 		IPRange: opts.IPRange.String(),
 	}
 	for _, subnet := range opts.Subnets {
-		reqBody.Subnets = append(reqBody.Subnets, schema.NetworkSubnet{
+		s := schema.NetworkSubnet{
 			Type:        string(subnet.Type),
 			IPRange:     subnet.IPRange.String(),
 			NetworkZone: string(subnet.NetworkZone),
-		})
+		}
+		if subnet.VSwitchID != 0 {
+			s.VSwitchID = subnet.VSwitchID
+		}
+		reqBody.Subnets = append(reqBody.Subnets, s)
 	}
 	for _, route := range opts.Routes {
 		reqBody.Routes = append(reqBody.Routes, schema.NetworkRoute{
@@ -331,6 +321,9 @@ func (c *NetworkClient) AddSubnet(ctx context.Context, network *Network, opts Ne
 	}
 	if opts.Subnet.IPRange != nil {
 		reqBody.IPRange = opts.Subnet.IPRange.String()
+	}
+	if opts.Subnet.VSwitchID != 0 {
+		reqBody.VSwitchID = opts.Subnet.VSwitchID
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
