@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -31,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // Endpoint is the base URL of the API.
@@ -77,6 +61,7 @@ type Client struct {
 	Action           ActionClient
 	Certificate      CertificateClient
 	Datacenter       DatacenterClient
+	Firewall         FirewallClient
 	FloatingIP       FloatingIPClient
 	Image            ImageClient
 	ISO              ISOClient
@@ -178,6 +163,7 @@ func NewClient(options ...ClientOption) *Client {
 	client.LoadBalancer = LoadBalancerClient{client: client}
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
 	client.Certificate = CertificateClient{client: client}
+	client.Firewall = FirewallClient{client: client}
 
 	return client
 }
@@ -220,8 +206,7 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 		}
 
 		if c.debugWriter != nil {
-			// To get the response body we need to read it before the request was actually send. https://github.com/golang/go/issues/29792
-			dumpReq, err := httputil.DumpRequestOut(r, true)
+			dumpReq, err := dumpRequest(r)
 			if err != nil {
 				return nil, err
 			}
@@ -257,12 +242,10 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 			err = errorFromResponse(resp, body)
 			if err == nil {
 				err = fmt.Errorf("hcloud: server responded with status code %d", resp.StatusCode)
-			} else {
-				if isRetryable(err) {
-					c.backoff(retries)
-					retries++
-					continue
-				}
+			} else if isRetryable(err) {
+				c.backoff(retries)
+				retries++
+				continue
 			}
 			return response, err
 		}
@@ -290,17 +273,17 @@ func (c *Client) backoff(retries int) {
 	time.Sleep(c.backoffFunc(retries))
 }
 
-func (c *Client) all(f func(int) (*Response, error)) (*Response, error) {
+func (c *Client) all(f func(int) (*Response, error)) error {
 	var (
 		page = 1
 	)
 	for {
 		resp, err := f(page)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if resp.Meta.Pagination == nil || resp.Meta.Pagination.NextPage == 0 {
-			return resp, nil
+			return nil
 		}
 		page = resp.Meta.Pagination.NextPage
 	}
@@ -315,6 +298,25 @@ func (c *Client) buildUserAgent() {
 	default:
 		c.userAgent = UserAgent
 	}
+}
+
+func dumpRequest(r *http.Request) ([]byte, error) {
+	// Duplicate the request, so we can redact the auth header
+	rDuplicate := r.Clone(context.Background())
+	rDuplicate.Header.Set("Authorization", "REDACTED")
+
+	// To get the request body we need to read it before the request was actually sent.
+	// See https://github.com/golang/go/issues/29792
+	dumpReq, err := httputil.DumpRequestOut(rDuplicate, true)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set original request body to the duplicate created by DumpRequestOut. The request body is not duplicated
+	// by .Clone() and instead just referenced, so it would be completely read otherwise.
+	r.Body = rDuplicate.Body
+
+	return dumpReq, nil
 }
 
 func errorFromResponse(resp *http.Response, body []byte) error {

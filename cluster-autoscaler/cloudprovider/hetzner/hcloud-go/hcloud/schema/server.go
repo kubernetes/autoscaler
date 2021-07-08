@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package schema
 
 import "time"
@@ -54,6 +38,7 @@ type ServerPublicNet struct {
 	IPv4        ServerPublicNetIPv4 `json:"ipv4"`
 	IPv6        ServerPublicNetIPv6 `json:"ipv6"`
 	FloatingIPs []int               `json:"floating_ips"`
+	Firewalls   []ServerFirewall    `json:"firewalls"`
 }
 
 // ServerPublicNetIPv4 defines the schema of a server's public
@@ -79,6 +64,13 @@ type ServerPublicNetIPv6DNSPtr struct {
 	DNSPtr string `json:"dns_ptr"`
 }
 
+// ServerFirewall defines the schema of a Server's Firewalls on
+// a certain network interface.
+type ServerFirewall struct {
+	ID     int    `json:"id"`
+	Status string `json:"status"`
+}
+
 // ServerPrivateNet defines the schema of a server's private network information.
 type ServerPrivateNet struct {
 	Network    int      `json:"network"`
@@ -102,18 +94,24 @@ type ServerListResponse struct {
 // ServerCreateRequest defines the schema for the request to
 // create a server.
 type ServerCreateRequest struct {
-	Name             string             `json:"name"`
-	ServerType       interface{}        `json:"server_type"` // int or string
-	Image            interface{}        `json:"image"`       // int or string
-	SSHKeys          []int              `json:"ssh_keys,omitempty"`
-	Location         string             `json:"location,omitempty"`
-	Datacenter       string             `json:"datacenter,omitempty"`
-	UserData         string             `json:"user_data,omitempty"`
-	StartAfterCreate *bool              `json:"start_after_create,omitempty"`
-	Labels           *map[string]string `json:"labels,omitempty"`
-	Automount        *bool              `json:"automount,omitempty"`
-	Volumes          []int              `json:"volumes,omitempty"`
-	Networks         []int              `json:"networks,omitempty"`
+	Name             string                  `json:"name"`
+	ServerType       interface{}             `json:"server_type"` // int or string
+	Image            interface{}             `json:"image"`       // int or string
+	SSHKeys          []int                   `json:"ssh_keys,omitempty"`
+	Location         string                  `json:"location,omitempty"`
+	Datacenter       string                  `json:"datacenter,omitempty"`
+	UserData         string                  `json:"user_data,omitempty"`
+	StartAfterCreate *bool                   `json:"start_after_create,omitempty"`
+	Labels           *map[string]string      `json:"labels,omitempty"`
+	Automount        *bool                   `json:"automount,omitempty"`
+	Volumes          []int                   `json:"volumes,omitempty"`
+	Networks         []int                   `json:"networks,omitempty"`
+	Firewalls        []ServerCreateFirewalls `json:"firewalls,omitempty"`
+}
+
+// ServerCreateFirewall defines which Firewalls to apply when creating a Server.
+type ServerCreateFirewalls struct {
+	Firewall int `json:"firewall"`
 }
 
 // ServerCreateResponse defines the schema of the response when
@@ -380,4 +378,20 @@ type ServerActionChangeAliasIPsRequest struct {
 // creating an change_alias_ips server action.
 type ServerActionChangeAliasIPsResponse struct {
 	Action Action `json:"action"`
+}
+
+// ServerGetMetricsResponse defines the schema of the response when requesting
+// metrics for a server.
+type ServerGetMetricsResponse struct {
+	Metrics struct {
+		Start      time.Time                       `json:"start"`
+		End        time.Time                       `json:"end"`
+		Step       float64                         `json:"step"`
+		TimeSeries map[string]ServerTimeSeriesVals `json:"time_series"`
+	} `json:"metrics"`
+}
+
+// ServerTimeSeriesVals contains the values for a Server time series.
+type ServerTimeSeriesVals struct {
+	Values []interface{} `json:"values"`
 }

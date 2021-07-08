@@ -1,25 +1,9 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
 	"context"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // Pricing specifies pricing information for various resources.
@@ -30,6 +14,7 @@ type Pricing struct {
 	ServerBackup      ServerBackupPricing
 	ServerTypes       []ServerTypePricing
 	LoadBalancerTypes []LoadBalancerTypePricing
+	Volume            VolumePricing
 }
 
 // Price represents a price. Net amount, gross amount, as well as VAT rate are
@@ -55,6 +40,11 @@ type FloatingIPPricing struct {
 // TrafficPricing provides pricing information for traffic.
 type TrafficPricing struct {
 	PerTB Price
+}
+
+// VolumePricing provides pricing information for a Volume.
+type VolumePricing struct {
+	PerGBMonthly Price
 }
 
 // ServerBackupPricing provides pricing information for server backups.
