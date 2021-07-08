@@ -24,12 +24,14 @@ import (
 )
 
 func TestDisabledPerNodeGroupMetrics(t *testing.T) {
+	t.Skip("Registering metrics multiple times causes panic. Skipping until the test is fixed to not impact other tests.")
 	RegisterAll(false)
 	assert.False(t, nodesGroupMinNodes.IsCreated())
 	assert.False(t, nodesGroupMaxNodes.IsCreated())
 }
 
 func TestEnabledPerNodeGroupMetrics(t *testing.T) {
+	t.Skip("Registering metrics multiple times causes panic. Skipping until the test is fixed to not impact other tests.")
 	RegisterAll(true)
 	assert.True(t, nodesGroupMinNodes.IsCreated())
 	assert.True(t, nodesGroupMaxNodes.IsCreated())
