@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -23,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // Server represents a server in the Hetzner Cloud.
@@ -91,11 +76,23 @@ const (
 	ServerStatusUnknown ServerStatus = "unknown"
 )
 
+// FirewallStatus specifies a Firewall's status.
+type FirewallStatus string
+
+const (
+	// FirewallStatusPending is the status when a Firewall is pending.
+	FirewallStatusPending FirewallStatus = "pending"
+
+	// FirewallStatusApplied is the status when a Firewall is applied.
+	FirewallStatusApplied FirewallStatus = "applied"
+)
+
 // ServerPublicNet represents a server's public network.
 type ServerPublicNet struct {
 	IPv4        ServerPublicNetIPv4
 	IPv6        ServerPublicNetIPv6
 	FloatingIPs []*FloatingIP
+	Firewalls   []*ServerFirewallStatus
 }
 
 // ServerPublicNetIPv4 represents a server's public IPv4 address.
@@ -105,7 +102,7 @@ type ServerPublicNetIPv4 struct {
 	DNSPtr  string
 }
 
-// ServerPublicNetIPv6 represents a server's public IPv6 network and address.
+// ServerPublicNetIPv6 represents a Server's public IPv6 network and address.
 type ServerPublicNetIPv6 struct {
 	IP      net.IP
 	Network *net.IPNet
@@ -113,7 +110,7 @@ type ServerPublicNetIPv6 struct {
 	DNSPtr  map[string]string
 }
 
-// ServerPrivateNet defines the schema of a server's private network information.
+// ServerPrivateNet defines the schema of a Server's private network information.
 type ServerPrivateNet struct {
 	Network    *Network
 	IP         net.IP
@@ -124,6 +121,13 @@ type ServerPrivateNet struct {
 // DNSPtrForIP returns the reverse dns pointer of the ip address.
 func (s *ServerPublicNetIPv6) DNSPtrForIP(ip net.IP) string {
 	return s.DNSPtr[ip.String()]
+}
+
+// ServerFirewallStatus represents a Firewall and its status on a Server's
+// network interface.
+type ServerFirewallStatus struct {
+	Firewall Firewall
+	Status   FirewallStatus
 }
 
 // ServerRescueType represents rescue types.
@@ -230,7 +234,7 @@ func (c *ServerClient) All(ctx context.Context) ([]*Server, error) {
 func (c *ServerClient) AllWithOpts(ctx context.Context, opts ServerListOpts) ([]*Server, error) {
 	allServers := []*Server{}
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		servers, resp, err := c.List(ctx, opts)
 		if err != nil {
@@ -260,6 +264,12 @@ type ServerCreateOpts struct {
 	Automount        *bool
 	Volumes          []*Volume
 	Networks         []*Network
+	Firewalls        []*ServerCreateFirewall
+}
+
+// ServerCreateFirewall defines which Firewalls to apply when creating a Server.
+type ServerCreateFirewall struct {
+	Firewall Firewall
 }
 
 // Validate checks if options are valid.
@@ -320,7 +330,11 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 	for _, network := range opts.Networks {
 		reqBody.Networks = append(reqBody.Networks, network.ID)
 	}
-
+	for _, firewall := range opts.Firewalls {
+		reqBody.Firewalls = append(reqBody.Firewalls, schema.ServerCreateFirewalls{
+			Firewall: firewall.Firewall.ID,
+		})
+	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {
 			reqBody.Location = strconv.Itoa(opts.Location.ID)
@@ -967,4 +981,92 @@ func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts 
 		return nil, resp, err
 	}
 	return ActionFromSchema(respBody.Action), resp, err
+}
+
+// ServerMetricType is the type of available metrics for servers.
+type ServerMetricType string
+
+// Available types of server metrics. See Hetzner Cloud API documentation for
+// details.
+const (
+	ServerMetricCPU     ServerMetricType = "cpu"
+	ServerMetricDisk    ServerMetricType = "disk"
+	ServerMetricNetwork ServerMetricType = "network"
+)
+
+// ServerGetMetricsOpts configures the call to get metrics for a Server.
+type ServerGetMetricsOpts struct {
+	Types []ServerMetricType
+	Start time.Time
+	End   time.Time
+	Step  int
+}
+
+func (o *ServerGetMetricsOpts) addQueryParams(req *http.Request) error {
+	query := req.URL.Query()
+
+	if len(o.Types) == 0 {
+		return fmt.Errorf("no metric types specified")
+	}
+	for _, typ := range o.Types {
+		query.Add("type", string(typ))
+	}
+
+	if o.Start.IsZero() {
+		return fmt.Errorf("no start time specified")
+	}
+	query.Add("start", o.Start.Format(time.RFC3339))
+
+	if o.End.IsZero() {
+		return fmt.Errorf("no end time specified")
+	}
+	query.Add("end", o.End.Format(time.RFC3339))
+
+	if o.Step > 0 {
+		query.Add("step", strconv.Itoa(o.Step))
+	}
+	req.URL.RawQuery = query.Encode()
+
+	return nil
+}
+
+// ServerMetrics contains the metrics requested for a Server.
+type ServerMetrics struct {
+	Start      time.Time
+	End        time.Time
+	Step       float64
+	TimeSeries map[string][]ServerMetricsValue
+}
+
+// ServerMetricsValue represents a single value in a time series of metrics.
+type ServerMetricsValue struct {
+	Timestamp float64
+	Value     string
+}
+
+// GetMetrics obtains metrics for Server.
+func (c *ServerClient) GetMetrics(ctx context.Context, server *Server, opts ServerGetMetricsOpts) (*ServerMetrics, *Response, error) {
+	var respBody schema.ServerGetMetricsResponse
+
+	if server == nil {
+		return nil, nil, fmt.Errorf("illegal argument: server is nil")
+	}
+
+	path := fmt.Sprintf("/servers/%d/metrics", server.ID)
+	req, err := c.client.NewRequest(ctx, "GET", path, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("new request: %v", err)
+	}
+	if err := opts.addQueryParams(req); err != nil {
+		return nil, nil, fmt.Errorf("add query params: %v", err)
+	}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get metrics: %v", err)
+	}
+	ms, err := serverMetricsFromSchema(&respBody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("convert response body: %v", err)
+	}
+	return ms, resp, nil
 }
