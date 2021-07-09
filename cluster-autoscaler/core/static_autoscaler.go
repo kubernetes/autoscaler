@@ -75,9 +75,7 @@ type StaticAutoscaler struct {
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
-	// Caches nodeInfo computed for previously seen nodes
-	nodeInfoCache map[string]*schedulerframework.NodeInfo
-	ignoredTaints taints.TaintKeySet
+	ignoredTaints           taints.TaintKeySet
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -161,7 +159,6 @@ func NewStaticAutoscaler(
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
-		nodeInfoCache:           make(map[string]*schedulerframework.NodeInfo),
 		ignoredTaints:           ignoredTaints,
 	}
 }
@@ -280,8 +277,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return typedErr.AddPrefix("Initialize ClusterSnapshot")
 	}
 
-	nodeInfosForGroups, autoscalerError := core_utils.GetNodeInfosForGroups(
-		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker, a.ignoredTaints)
+	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(readyNodes, autoscalingContext, daemonsets, a.ignoredTaints)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
