@@ -37,13 +37,13 @@ import (
 	utilnet "k8s.io/utils/net"
 
 	v1 "k8s.io/api/core/v1"
-	discovery "k8s.io/api/discovery/v1beta1"
+	discovery "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/apimachinery/pkg/util/wait"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/proxy"
 	"k8s.io/kubernetes/pkg/proxy/healthcheck"
@@ -221,10 +221,9 @@ type Proxier struct {
 	endpointsMap proxy.EndpointsMap
 	portsMap     map[utilnet.LocalPort]utilnet.Closeable
 	nodeLabels   map[string]string
-	// endpointsSynced, endpointSlicesSynced, and servicesSynced are set to true when
+	// endpointSlicesSynced, and servicesSynced are set to true when
 	// corresponding objects are synced after startup. This is used to avoid updating
 	// ipvs rules with some partial data after kube-proxy restart.
-	endpointsSynced      bool
 	endpointSlicesSynced bool
 	servicesSynced       bool
 	initialized          int32
@@ -247,7 +246,7 @@ type Proxier struct {
 	hostname       string
 	nodeIP         net.IP
 	portMapper     utilnet.PortOpener
-	recorder       record.EventRecorder
+	recorder       events.EventRecorder
 
 	serviceHealthServer healthcheck.ServiceHealthServer
 	healthzServer       healthcheck.ProxierHealthUpdater
@@ -349,7 +348,7 @@ func NewProxier(ipt utiliptables.Interface,
 	localDetector proxyutiliptables.LocalTrafficDetector,
 	hostname string,
 	nodeIP net.IP,
-	recorder record.EventRecorder,
+	recorder events.EventRecorder,
 	healthzServer healthcheck.ProxierHealthUpdater,
 	scheduler string,
 	nodePortAddresses []string,
@@ -438,8 +437,6 @@ func NewProxier(ipt utiliptables.Interface,
 
 	serviceHealthServer := healthcheck.NewServiceHealthServer(hostname, recorder)
 
-	endpointSlicesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying)
-
 	ipFamilyMap := utilproxy.MapCIDRsByIPFamily(nodePortAddresses)
 	nodePortAddresses = ipFamilyMap[ipFamily]
 	// Log the IPs not matching the ipFamily
@@ -456,7 +453,7 @@ func NewProxier(ipt utiliptables.Interface,
 		serviceMap:            make(proxy.ServiceMap),
 		serviceChanges:        proxy.NewServiceChangeTracker(newServiceInfo, ipFamily, recorder, nil),
 		endpointsMap:          make(proxy.EndpointsMap),
-		endpointsChanges:      proxy.NewEndpointChangeTracker(hostname, nil, ipFamily, recorder, endpointSlicesEnabled, nil),
+		endpointsChanges:      proxy.NewEndpointChangeTracker(hostname, nil, ipFamily, recorder, nil),
 		syncPeriod:            syncPeriod,
 		minSyncPeriod:         minSyncPeriod,
 		excludeCIDRs:          parsedExcludeCIDRs,
@@ -517,7 +514,7 @@ func NewDualStackProxier(
 	localDetectors [2]proxyutiliptables.LocalTrafficDetector,
 	hostname string,
 	nodeIP [2]net.IP,
-	recorder record.EventRecorder,
+	recorder events.EventRecorder,
 	healthzServer healthcheck.ProxierHealthUpdater,
 	scheduler string,
 	nodePortAddresses []string,
@@ -633,6 +630,7 @@ func (handle *LinuxKernelHandler) GetModules() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read file /proc/modules with error %v", err)
 	}
+	defer modulesFile.Close()
 
 	mods, err := getFirstColumn(modulesFile)
 	if err != nil {
@@ -880,44 +878,27 @@ func (proxier *Proxier) OnServiceDelete(service *v1.Service) {
 func (proxier *Proxier) OnServiceSynced() {
 	proxier.mu.Lock()
 	proxier.servicesSynced = true
-	if utilfeature.DefaultFeatureGate.Enabled(features.EndpointSliceProxying) {
-		proxier.setInitialized(proxier.endpointSlicesSynced)
-	} else {
-		proxier.setInitialized(proxier.endpointsSynced)
-	}
+	proxier.setInitialized(proxier.endpointSlicesSynced)
 	proxier.mu.Unlock()
 
 	// Sync unconditionally - this is called once per lifetime.
 	proxier.syncProxyRules()
 }
+
+// The following methods exist to implement the Proxier interface however
+// ipvs proxier only uses EndpointSlices so the following are noops
 
 // OnEndpointsAdd is called whenever creation of new endpoints object is observed.
-func (proxier *Proxier) OnEndpointsAdd(endpoints *v1.Endpoints) {
-	proxier.OnEndpointsUpdate(nil, endpoints)
-}
+func (proxier *Proxier) OnEndpointsAdd(endpoints *v1.Endpoints) {}
 
 // OnEndpointsUpdate is called whenever modification of an existing endpoints object is observed.
-func (proxier *Proxier) OnEndpointsUpdate(oldEndpoints, endpoints *v1.Endpoints) {
-	if proxier.endpointsChanges.Update(oldEndpoints, endpoints) && proxier.isInitialized() {
-		proxier.Sync()
-	}
-}
+func (proxier *Proxier) OnEndpointsUpdate(oldEndpoints, endpoints *v1.Endpoints) {}
 
 // OnEndpointsDelete is called whenever deletion of an existing endpoints object is observed.
-func (proxier *Proxier) OnEndpointsDelete(endpoints *v1.Endpoints) {
-	proxier.OnEndpointsUpdate(endpoints, nil)
-}
+func (proxier *Proxier) OnEndpointsDelete(endpoints *v1.Endpoints) {}
 
 // OnEndpointsSynced is called once all the initial event handlers were called and the state is fully propagated to local cache.
-func (proxier *Proxier) OnEndpointsSynced() {
-	proxier.mu.Lock()
-	proxier.endpointsSynced = true
-	proxier.setInitialized(proxier.servicesSynced)
-	proxier.mu.Unlock()
-
-	// Sync unconditionally - this is called once per lifetime.
-	proxier.syncProxyRules()
-}
+func (proxier *Proxier) OnEndpointsSynced() {}
 
 // OnEndpointSliceAdd is called whenever creation of a new endpoint slice object
 // is observed.
@@ -1237,7 +1218,11 @@ func (proxier *Proxier) syncProxyRules() {
 			activeBindAddrs[serv.Address.String()] = true
 			// ExternalTrafficPolicy only works for NodePort and external LB traffic, does not affect ClusterIP
 			// So we still need clusterIP rules in onlyNodeLocalEndpoints mode.
-			if err := proxier.syncEndpoint(svcName, false, svcInfo.NodeLocalInternal(), serv); err != nil {
+			internalNodeLocal := false
+			if utilfeature.DefaultFeatureGate.Enabled(features.ServiceInternalTrafficPolicy) && svcInfo.NodeLocalInternal() {
+				internalNodeLocal = true
+			}
+			if err := proxier.syncEndpoint(svcName, internalNodeLocal, serv); err != nil {
 				klog.ErrorS(err, "Failed to sync endpoint for service", "service", serv.String())
 			}
 		} else {
@@ -1272,7 +1257,7 @@ func (proxier *Proxier) syncProxyRules() {
 								Name:      proxier.hostname,
 								UID:       types.UID(proxier.hostname),
 								Namespace: "",
-							}, v1.EventTypeWarning, err.Error(), msg)
+							}, nil, v1.EventTypeWarning, err.Error(), "SyncProxyRules", msg)
 						klog.ErrorS(err, "can't open port, skipping it", "port", lp.String())
 						continue
 					}
@@ -1319,9 +1304,7 @@ func (proxier *Proxier) syncProxyRules() {
 				activeIPVSServices[serv.String()] = true
 				activeBindAddrs[serv.Address.String()] = true
 
-				onlyNodeLocalEndpoints := svcInfo.NodeLocalExternal()
-				onlyNodeLocalEndpointsForInternal := svcInfo.NodeLocalInternal()
-				if err := proxier.syncEndpoint(svcName, onlyNodeLocalEndpoints, onlyNodeLocalEndpointsForInternal, serv); err != nil {
+				if err := proxier.syncEndpoint(svcName, svcInfo.NodeLocalExternal(), serv); err != nil {
 					klog.ErrorS(err, "Failed to sync endpoint for service", "service", serv.String())
 				}
 			} else {
@@ -1422,7 +1405,7 @@ func (proxier *Proxier) syncProxyRules() {
 				if err := proxier.syncService(svcNameString, serv, true, bindedAddresses); err == nil {
 					activeIPVSServices[serv.String()] = true
 					activeBindAddrs[serv.Address.String()] = true
-					if err := proxier.syncEndpoint(svcName, svcInfo.NodeLocalExternal(), svcInfo.NodeLocalInternal(), serv); err != nil {
+					if err := proxier.syncEndpoint(svcName, svcInfo.NodeLocalExternal(), serv); err != nil {
 						klog.ErrorS(err, "Failed to sync endpoint for service", "service", serv)
 					}
 				} else {
@@ -1475,7 +1458,7 @@ func (proxier *Proxier) syncProxyRules() {
 								Name:      proxier.hostname,
 								UID:       types.UID(proxier.hostname),
 								Namespace: "",
-							}, v1.EventTypeWarning, err.Error(), msg)
+							}, nil, v1.EventTypeWarning, err.Error(), "SyncProxyRules", msg)
 						klog.ErrorS(err, "can't open port, skipping it", "port", lp.String())
 						continue
 					}
@@ -1590,7 +1573,7 @@ func (proxier *Proxier) syncProxyRules() {
 				// There is no need to bind Node IP to dummy interface, so set parameter `bindAddr` to `false`.
 				if err := proxier.syncService(svcNameString, serv, false, bindedAddresses); err == nil {
 					activeIPVSServices[serv.String()] = true
-					if err := proxier.syncEndpoint(svcName, svcInfo.NodeLocalExternal(), svcInfo.NodeLocalInternal(), serv); err != nil {
+					if err := proxier.syncEndpoint(svcName, svcInfo.NodeLocalExternal(), serv); err != nil {
 						klog.ErrorS(err, "Failed to sync endpoint for service", "service", serv)
 					}
 				} else {
@@ -2041,7 +2024,7 @@ func (proxier *Proxier) syncService(svcName string, vs *utilipvs.VirtualServer, 
 	return nil
 }
 
-func (proxier *Proxier) syncEndpoint(svcPortName proxy.ServicePortName, onlyNodeLocalEndpoints bool, onlyNodeLocalEndpointsForInternal bool, vs *utilipvs.VirtualServer) error {
+func (proxier *Proxier) syncEndpoint(svcPortName proxy.ServicePortName, onlyNodeLocalEndpoints bool, vs *utilipvs.VirtualServer) error {
 	appliedVirtualServer, err := proxier.ipvs.GetVirtualServer(vs)
 	if err != nil {
 		klog.Errorf("Failed to get IPVS service, error: %v", err)
@@ -2053,8 +2036,13 @@ func (proxier *Proxier) syncEndpoint(svcPortName proxy.ServicePortName, onlyNode
 
 	// curEndpoints represents IPVS destinations listed from current system.
 	curEndpoints := sets.NewString()
-	// newEndpoints represents Endpoints watched from API Server.
-	newEndpoints := sets.NewString()
+	// readyEndpoints represents Endpoints watched from API Server.
+	readyEndpoints := sets.NewString()
+	// localReadyEndpoints represents local endpoints that are ready and NOT terminating.
+	localReadyEndpoints := sets.NewString()
+	// localReadyTerminatingEndpoints represents local endpoints that are ready AND terminating.
+	// Fall back to these endpoints if no non-terminating ready endpoints exist for node-local traffic.
+	localReadyTerminatingEndpoints := sets.NewString()
 
 	curDests, err := proxier.ipvs.GetRealServers(appliedVirtualServer)
 	if err != nil {
@@ -2079,15 +2067,28 @@ func (proxier *Proxier) syncEndpoint(svcPortName proxy.ServicePortName, onlyNode
 	}
 
 	for _, epInfo := range endpoints {
-		if !epInfo.IsReady() {
-			continue
+		if epInfo.IsReady() {
+			readyEndpoints.Insert(epInfo.String())
 		}
 
-		if onlyNodeLocalEndpoints && !epInfo.GetIsLocal() {
-			continue
+		if onlyNodeLocalEndpoints && epInfo.GetIsLocal() {
+			if epInfo.IsReady() {
+				localReadyEndpoints.Insert(epInfo.String())
+			} else if epInfo.IsServing() && epInfo.IsTerminating() {
+				localReadyTerminatingEndpoints.Insert(epInfo.String())
+			}
 		}
+	}
 
-		newEndpoints.Insert(epInfo.String())
+	newEndpoints := readyEndpoints
+	if onlyNodeLocalEndpoints {
+		newEndpoints = localReadyEndpoints
+
+		if utilfeature.DefaultFeatureGate.Enabled(features.ProxyTerminatingEndpoints) {
+			if len(newEndpoints) == 0 && localReadyTerminatingEndpoints.Len() > 0 {
+				newEndpoints = localReadyTerminatingEndpoints
+			}
+		}
 	}
 
 	// Create new endpoints
