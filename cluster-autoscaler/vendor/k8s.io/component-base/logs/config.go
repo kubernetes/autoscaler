@@ -22,9 +22,9 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
-	"k8s.io/klog/v2"
 
-	json "k8s.io/component-base/logs/json"
+	"k8s.io/component-base/config"
+	"k8s.io/klog/v2"
 )
 
 // Supported klog formats
@@ -39,7 +39,6 @@ var LogRegistry = NewLogFormatRegistry()
 func init() {
 	// Text format is default klog format
 	LogRegistry.Register(DefaultLogFormat, nil)
-	LogRegistry.Register(JSONLogFormat, json.JSONLogger)
 }
 
 // List of logs (k8s.io/klog + k8s.io/component-base/logs) flags supported by all logging formats
@@ -49,19 +48,17 @@ var supportedLogsFlags = map[string]struct{}{
 }
 
 // BindLoggingFlags binds the Options struct fields to a flagset
-func BindLoggingFlags(o *Options, fs *pflag.FlagSet) {
+func BindLoggingFlags(c *config.LoggingConfiguration, fs *pflag.FlagSet) {
 	normalizeFunc := func(name string) string {
 		f := fs.GetNormalizeFunc()
 		return string(f(fs, name))
 	}
-
 	unsupportedFlags := fmt.Sprintf("--%s", strings.Join(UnsupportedLoggingFlags(normalizeFunc), ", --"))
 	formats := fmt.Sprintf(`"%s"`, strings.Join(LogRegistry.List(), `", "`))
-	fs.StringVar(&o.LogFormat, "logging-format", DefaultLogFormat, fmt.Sprintf("Sets the log format. Permitted formats: %s.\nNon-default formats don't honor these flags: %s.\nNon-default choices are currently alpha and subject to change without warning.", formats, unsupportedFlags))
-
+	fs.StringVar(&c.Format, "logging-format", c.Format, fmt.Sprintf("Sets the log format. Permitted formats: %s.\nNon-default formats don't honor these flags: %s.\nNon-default choices are currently alpha and subject to change without warning.", formats, unsupportedFlags))
 	// No new log formats should be added after generation is of flag options
 	LogRegistry.Freeze()
-	fs.BoolVar(&o.LogSanitization, "experimental-logging-sanitization", o.LogSanitization, `[Experimental] When enabled prevents logging of fields tagged as sensitive (passwords, keys, tokens).
+	fs.BoolVar(&c.Sanitization, "experimental-logging-sanitization", c.Sanitization, `[Experimental] When enabled prevents logging of fields tagged as sensitive (passwords, keys, tokens).
 Runtime log sanitization may introduce significant computation overhead and therefore should not be enabled in production.`)
 }
 
