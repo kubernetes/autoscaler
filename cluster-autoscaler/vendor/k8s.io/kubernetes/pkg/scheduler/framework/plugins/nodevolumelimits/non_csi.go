@@ -29,14 +29,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/sets"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/informers"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	storagelisters "k8s.io/client-go/listers/storage/v1"
 	csilibplugins "k8s.io/csi-translation-lib/plugins"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/names"
 	volumeutil "k8s.io/kubernetes/pkg/volume/util"
 )
 
@@ -66,7 +65,7 @@ const (
 )
 
 // AzureDiskName is the name of the plugin used in the plugin registry and configurations.
-const AzureDiskName = "AzureDiskLimits"
+const AzureDiskName = names.AzureDiskLimits
 
 // NewAzureDisk returns function that initializes a new plugin and returns it.
 func NewAzureDisk(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -75,7 +74,7 @@ func NewAzureDisk(_ runtime.Object, handle framework.Handle) (framework.Plugin, 
 }
 
 // CinderName is the name of the plugin used in the plugin registry and configurations.
-const CinderName = "CinderLimits"
+const CinderName = names.CinderLimits
 
 // NewCinder returns function that initializes a new plugin and returns it.
 func NewCinder(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -84,7 +83,7 @@ func NewCinder(_ runtime.Object, handle framework.Handle) (framework.Plugin, err
 }
 
 // EBSName is the name of the plugin used in the plugin registry and configurations.
-const EBSName = "EBSLimits"
+const EBSName = names.EBSLimits
 
 // NewEBS returns function that initializes a new plugin and returns it.
 func NewEBS(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -93,7 +92,7 @@ func NewEBS(_ runtime.Object, handle framework.Handle) (framework.Plugin, error)
 }
 
 // GCEPDName is the name of the plugin used in the plugin registry and configurations.
-const GCEPDName = "GCEPDLimits"
+const GCEPDName = names.GCEPDLimits
 
 // NewGCEPD returns function that initializes a new plugin and returns it.
 func NewGCEPD(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -267,12 +266,6 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 
 	if numExistingVolumes+numNewVolumes > maxAttachLimit {
 		return framework.NewStatus(framework.Unschedulable, ErrReasonMaxVolumeCountExceeded)
-	}
-	if nodeInfo != nil && nodeInfo.TransientInfo != nil && utilfeature.DefaultFeatureGate.Enabled(features.BalanceAttachedNodeVolumes) {
-		nodeInfo.TransientInfo.TransientLock.Lock()
-		defer nodeInfo.TransientInfo.TransientLock.Unlock()
-		nodeInfo.TransientInfo.TransNodeInfo.AllocatableVolumesCount = maxAttachLimit - numExistingVolumes
-		nodeInfo.TransientInfo.TransNodeInfo.RequestedVolumes = numNewVolumes
 	}
 	return nil
 }

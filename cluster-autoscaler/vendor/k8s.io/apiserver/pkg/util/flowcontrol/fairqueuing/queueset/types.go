@@ -24,6 +24,7 @@ import (
 	"k8s.io/apiserver/pkg/util/flowcontrol/debug"
 	fq "k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing"
 	"k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing/promise"
+	fcrequest "k8s.io/apiserver/pkg/util/flowcontrol/request"
 )
 
 // request is a temporary container for "requests" with additional
@@ -44,7 +45,7 @@ type request struct {
 	startTime time.Time
 
 	// width of the request
-	width float64
+	width fcrequest.Width
 
 	// decision gets set to a `requestDecision` indicating what to do
 	// with this request.  It gets set exactly once, when the request
@@ -99,17 +100,6 @@ func (q *queue) Enqueue(request *request) {
 func (q *queue) Dequeue() (*request, bool) {
 	request, ok := q.requests.Dequeue()
 	return request, ok
-}
-
-// GetVirtualFinish returns the expected virtual finish time of the request at
-// index J in the queue with estimated finish time G
-func (q *queue) GetVirtualFinish(J int, G float64) float64 {
-	// The virtual finish time of request number J in the queue
-	// (counting from J=1 for the head) is J * G + (virtual start time).
-
-	// counting from J=1 for the head (eg: queue.requests[0] -> J=1) - J+1
-	jg := float64(J+1) * float64(G)
-	return jg + q.virtualStart
 }
 
 func (q *queue) dump(includeDetails bool) debug.QueueDump {

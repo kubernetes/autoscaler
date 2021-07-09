@@ -39,6 +39,7 @@ import (
 	utilpath "k8s.io/utils/path"
 
 	libcontainerdevices "github.com/opencontainers/runc/libcontainer/devices"
+	libcontaineruserns "github.com/opencontainers/runc/libcontainer/userns"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -55,6 +56,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpumanager"
 	"k8s.io/kubernetes/pkg/kubelet/cm/devicemanager"
 	"k8s.io/kubernetes/pkg/kubelet/cm/memorymanager"
+	memorymanagerstate "k8s.io/kubernetes/pkg/kubelet/cm/memorymanager/state"
 	"k8s.io/kubernetes/pkg/kubelet/cm/topologymanager"
 	cmutil "k8s.io/kubernetes/pkg/kubelet/cm/util"
 	"k8s.io/kubernetes/pkg/kubelet/config"
@@ -454,6 +456,13 @@ func setupKernelTunables(option KernelTunableBehavior) error {
 			klog.V(2).InfoS("Updating kernel flag", "flag", flag, "expectedValue", expectedValue, "actualValue", val)
 			err = sysctl.SetSysctl(flag, expectedValue)
 			if err != nil {
+				if libcontaineruserns.RunningInUserNS() {
+					if utilfeature.DefaultFeatureGate.Enabled(kubefeatures.KubeletInUserNamespace) {
+						klog.V(2).InfoS("Updating kernel flag failed (running in UserNS, ignoring)", "flag", flag, "err", err)
+						continue
+					}
+					klog.ErrorS(err, "Updating kernel flag failed (Hint: enable KubeletInUserNamespace feature flag to ignore the error)", "flag", flag)
+				}
 				errList = append(errList, err)
 			}
 		}
@@ -1073,11 +1082,33 @@ func (cm *containerManagerImpl) GetAllocatableDevices() []*podresourcesapi.Conta
 }
 
 func (cm *containerManagerImpl) GetCPUs(podUID, containerName string) []int64 {
-	return cm.cpuManager.GetCPUs(podUID, containerName).ToSliceNoSortInt64()
+	if cm.cpuManager != nil {
+		return cm.cpuManager.GetCPUs(podUID, containerName).ToSliceNoSortInt64()
+	}
+	return []int64{}
 }
 
 func (cm *containerManagerImpl) GetAllocatableCPUs() []int64 {
-	return cm.cpuManager.GetAllocatableCPUs().ToSliceNoSortInt64()
+	if cm.cpuManager != nil {
+		return cm.cpuManager.GetAllocatableCPUs().ToSliceNoSortInt64()
+	}
+	return []int64{}
+}
+
+func (cm *containerManagerImpl) GetMemory(podUID, containerName string) []*podresourcesapi.ContainerMemory {
+	if cm.memoryManager == nil {
+		return []*podresourcesapi.ContainerMemory{}
+	}
+
+	return containerMemoryFromBlock(cm.memoryManager.GetMemory(podUID, containerName))
+}
+
+func (cm *containerManagerImpl) GetAllocatableMemory() []*podresourcesapi.ContainerMemory {
+	if cm.memoryManager == nil {
+		return []*podresourcesapi.ContainerMemory{}
+	}
+
+	return containerMemoryFromBlock(cm.memoryManager.GetAllocatableMemory())
 }
 
 func (cm *containerManagerImpl) ShouldResetExtendedResourceCapacity() bool {
@@ -1086,4 +1117,26 @@ func (cm *containerManagerImpl) ShouldResetExtendedResourceCapacity() bool {
 
 func (cm *containerManagerImpl) UpdateAllocatedDevices() {
 	cm.deviceManager.UpdateAllocatedDevices()
+}
+
+func containerMemoryFromBlock(blocks []memorymanagerstate.Block) []*podresourcesapi.ContainerMemory {
+	var containerMemories []*podresourcesapi.ContainerMemory
+
+	for _, b := range blocks {
+		containerMemory := podresourcesapi.ContainerMemory{
+			MemoryType: string(b.Type),
+			Size_:      b.Size,
+			Topology: &podresourcesapi.TopologyInfo{
+				Nodes: []*podresourcesapi.NUMANode{},
+			},
+		}
+
+		for _, numaNodeID := range b.NUMAAffinity {
+			containerMemory.Topology.Nodes = append(containerMemory.Topology.Nodes, &podresourcesapi.NUMANode{ID: int64(numaNodeID)})
+		}
+
+		containerMemories = append(containerMemories, &containerMemory)
+	}
+
+	return containerMemories
 }
