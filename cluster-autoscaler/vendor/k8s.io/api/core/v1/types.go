@@ -492,13 +492,31 @@ type PersistentVolumeClaimSpec struct {
 	// This field can be used to specify either:
 	// * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
 	// * An existing PVC (PersistentVolumeClaim)
-	// * An existing custom resource that implements data population (Alpha)
-	// In order to use custom resource types that implement data population,
-	// the AnyVolumeDataSource feature gate must be enabled.
 	// If the provisioner or an external controller can support the specified data source,
 	// it will create a new volume based on the contents of the specified data source.
+	// If the AnyVolumeDataSource feature gate is enabled, this field will always have
+	// the same contents as the DataSourceRef field.
 	// +optional
 	DataSource *TypedLocalObjectReference `json:"dataSource,omitempty" protobuf:"bytes,7,opt,name=dataSource"`
+	// Specifies the object from which to populate the volume with data, if a non-empty
+	// volume is desired. This may be any local object from a non-empty API group (non
+	// core object) or a PersistentVolumeClaim object.
+	// When this field is specified, volume binding will only succeed if the type of
+	// the specified object matches some installed volume populator or dynamic
+	// provisioner.
+	// This field will replace the functionality of the DataSource field and as such
+	// if both fields are non-empty, they must have the same value. For backwards
+	// compatibility, both fields (DataSource and DataSourceRef) will be set to the same
+	// value automatically if one of them is empty and the other is non-empty.
+	// There are two important differences between DataSource and DataSourceRef:
+	// * While DataSource only allows two specific types of objects, DataSourceRef
+	//   allows any non-core object, as well as PersistentVolumeClaim objects.
+	// * While DataSource ignores disallowed values (dropping them), DataSourceRef
+	//   preserves all values, and generates an error if a disallowed value is
+	//   specified.
+	// (Alpha) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
+	// +optional
+	DataSourceRef *TypedLocalObjectReference `json:"dataSourceRef,omitempty" protobuf:"bytes,8,opt,name=dataSourceRef"`
 }
 
 // PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type
@@ -560,6 +578,9 @@ const (
 	ReadOnlyMany PersistentVolumeAccessMode = "ReadOnlyMany"
 	// can be mounted in read/write mode to many hosts
 	ReadWriteMany PersistentVolumeAccessMode = "ReadWriteMany"
+	// can be mounted in read/write mode to exactly 1 pod
+	// cannot be used in combination with other access modes
+	ReadWriteOncePod PersistentVolumeAccessMode = "ReadWriteOncePod"
 )
 
 type PersistentVolumePhase string
@@ -4273,11 +4294,14 @@ type ServiceSpec struct {
 	IPFamilyPolicy *IPFamilyPolicyType `json:"ipFamilyPolicy,omitempty" protobuf:"bytes,17,opt,name=ipFamilyPolicy,casttype=IPFamilyPolicyType"`
 
 	// allocateLoadBalancerNodePorts defines if NodePorts will be automatically
-	// allocated for services with type LoadBalancer.  Default is "true". It may be
-	// set to "false" if the cluster load-balancer does not rely on NodePorts.
-	// allocateLoadBalancerNodePorts may only be set for services with type LoadBalancer
-	// and will be cleared if the type is changed to any other type.
-	// This field is alpha-level and is only honored by servers that enable the ServiceLBNodePortControl feature.
+	// allocated for services with type LoadBalancer.  Default is "true". It
+	// may be set to "false" if the cluster load-balancer does not rely on
+	// NodePorts.  If the caller requests specific NodePorts (by specifying a
+	// value), those requests will be respected, regardless of this field.
+	// This field may only be set for services with type LoadBalancer and will
+	// be cleared if the type is changed to any other type.
+	// This field is beta-level and is only honored by servers that enable the ServiceLBNodePortControl feature.
+	// +featureGate=ServiceLBNodePortControl
 	// +optional
 	AllocateLoadBalancerNodePorts *bool `json:"allocateLoadBalancerNodePorts,omitempty" protobuf:"bytes,20,opt,name=allocateLoadBalancerNodePorts"`
 
@@ -4328,8 +4352,6 @@ type ServicePort struct {
 	// RFC-6335 and http://www.iana.org/assignments/service-names).
 	// Non-standard protocols should use prefixed names such as
 	// mycompany.com/my-custom-protocol.
-	// This is a beta field that is guarded by the ServiceAppProtocol feature
-	// gate and enabled by default.
 	// +optional
 	AppProtocol *string `json:"appProtocol,omitempty" protobuf:"bytes,6,opt,name=appProtocol"`
 
@@ -4561,8 +4583,6 @@ type EndpointPort struct {
 	// RFC-6335 and http://www.iana.org/assignments/service-names).
 	// Non-standard protocols should use prefixed names such as
 	// mycompany.com/my-custom-protocol.
-	// This is a beta field that is guarded by the ServiceAppProtocol feature
-	// gate and enabled by default.
 	// +optional
 	AppProtocol *string `json:"appProtocol,omitempty" protobuf:"bytes,4,opt,name=appProtocol"`
 }
@@ -4604,8 +4624,10 @@ type NodeSpec struct {
 	// If specified, the node's taints.
 	// +optional
 	Taints []Taint `json:"taints,omitempty" protobuf:"bytes,5,opt,name=taints"`
-	// If specified, the source to get node configuration from
-	// The DynamicKubeletConfig feature gate must be enabled for the Kubelet to use this field
+
+	// Deprecated. If specified, the source of the node's configuration.
+	// The DynamicKubeletConfig feature gate must be enabled for the Kubelet to use this field.
+	// This field is deprecated as of 1.22: https://git.k8s.io/enhancements/keps/sig-node/281-dynamic-kubelet-configuration
 	// +optional
 	ConfigSource *NodeConfigSource `json:"configSource,omitempty" protobuf:"bytes,6,opt,name=configSource"`
 
@@ -4616,6 +4638,7 @@ type NodeSpec struct {
 }
 
 // NodeConfigSource specifies a source of node configuration. Exactly one subfield (excluding metadata) must be non-nil.
+// This API is deprecated since 1.22
 type NodeConfigSource struct {
 	// For historical context, regarding the below kind, apiVersion, and configMapRef deprecation tags:
 	// 1. kind/apiVersion were used by the kubelet to persist this struct to disk (they had no protobuf tags)
@@ -4633,6 +4656,7 @@ type NodeConfigSource struct {
 }
 
 // ConfigMapNodeConfigSource contains the information to reference a ConfigMap as a config source for the Node.
+// This API is deprecated since 1.22: https://git.k8s.io/enhancements/keps/sig-node/281-dynamic-kubelet-configuration
 type ConfigMapNodeConfigSource struct {
 	// Namespace is the metadata.namespace of the referenced ConfigMap.
 	// This field is required in all cases.
@@ -4912,11 +4936,44 @@ type NodeAddressType string
 
 // These are valid address type of node.
 const (
-	NodeHostName    NodeAddressType = "Hostname"
-	NodeExternalIP  NodeAddressType = "ExternalIP"
-	NodeInternalIP  NodeAddressType = "InternalIP"
-	NodeExternalDNS NodeAddressType = "ExternalDNS"
+	// NodeHostName identifies a name of the node. Although every node can be assumed
+	// to have a NodeAddress of this type, its exact syntax and semantics are not
+	// defined, and are not consistent between different clusters.
+	NodeHostName NodeAddressType = "Hostname"
+
+	// NodeInternalIP identifies an IP address which is assigned to one of the node's
+	// network interfaces. Every node should have at least one address of this type.
+	//
+	// An internal IP is normally expected to be reachable from every other node, but
+	// may not be visible to hosts outside the cluster. By default it is assumed that
+	// kube-apiserver can reach node internal IPs, though it is possible to configure
+	// clusters where this is not the case.
+	//
+	// NodeInternalIP is the default type of node IP, and does not necessarily imply
+	// that the IP is ONLY reachable internally. If a node has multiple internal IPs,
+	// no specific semantics are assigned to the additional IPs.
+	NodeInternalIP NodeAddressType = "InternalIP"
+
+	// NodeExternalIP identifies an IP address which is, in some way, intended to be
+	// more usable from outside the cluster then an internal IP, though no specific
+	// semantics are defined. It may be a globally routable IP, though it is not
+	// required to be.
+	//
+	// External IPs may be assigned directly to an interface on the node, like a
+	// NodeInternalIP, or alternatively, packets sent to the external IP may be NAT'ed
+	// to an internal node IP rather than being delivered directly (making the IP less
+	// efficient for node-to-node traffic than a NodeInternalIP).
+	NodeExternalIP NodeAddressType = "ExternalIP"
+
+	// NodeInternalDNS identifies a DNS name which resolves to an IP address which has
+	// the characteristics of a NodeInternalIP. The IP it resolves to may or may not
+	// be a listed NodeInternalIP address.
 	NodeInternalDNS NodeAddressType = "InternalDNS"
+
+	// NodeExternalDNS identifies a DNS name which resolves to an IP address which has
+	// the characteristics of a NodeExternalIP. The IP it resolves to may or may not
+	// be a listed NodeExternalIP address.
+	NodeExternalDNS NodeAddressType = "ExternalDNS"
 )
 
 // NodeAddress contains information for the node's address.
