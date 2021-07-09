@@ -141,6 +141,12 @@ type kubeGenericRuntimeManager struct {
 
 	// PodState provider instance
 	podStateProvider podStateProvider
+
+	// Use RuntimeDefault as the default seccomp profile for all workloads.
+	seccompDefault bool
+
+	// MemorySwapBehavior defines how swap is used
+	memorySwapBehavior string
 }
 
 // KubeGenericRuntime is a interface contains interfaces for container runtime and command.
@@ -182,6 +188,8 @@ func NewKubeGenericRuntimeManager(
 	legacyLogProvider LegacyLogProvider,
 	logManager logs.ContainerLogManager,
 	runtimeClassManager *runtimeclass.Manager,
+	seccompDefault bool,
+	memorySwapBehavior string,
 ) (KubeGenericRuntime, error) {
 	kubeRuntimeManager := &kubeGenericRuntimeManager{
 		recorder:            recorder,
@@ -201,6 +209,8 @@ func NewKubeGenericRuntimeManager(
 		logManager:          logManager,
 		runtimeClassManager: runtimeClassManager,
 		logReduction:        logreduction.NewLogReduction(identicalErrorDelay),
+		seccompDefault:      seccompDefault,
+		memorySwapBehavior:  memorySwapBehavior,
 	}
 
 	typedVersion, err := kubeRuntimeManager.getTypedVersion()

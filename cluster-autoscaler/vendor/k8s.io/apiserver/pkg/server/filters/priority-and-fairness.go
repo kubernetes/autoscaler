@@ -28,6 +28,7 @@ import (
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	utilflowcontrol "k8s.io/apiserver/pkg/util/flowcontrol"
 	fcmetrics "k8s.io/apiserver/pkg/util/flowcontrol/metrics"
+	flowcontrolrequest "k8s.io/apiserver/pkg/util/flowcontrol/request"
 	"k8s.io/klog/v2"
 )
 
@@ -59,6 +60,7 @@ func WithPriorityAndFairness(
 	handler http.Handler,
 	longRunningRequestCheck apirequest.LongRunningRequestCheck,
 	fcIfc utilflowcontrol.Interface,
+	widthEstimator flowcontrolrequest.WidthEstimatorFunc,
 ) http.Handler {
 	if fcIfc == nil {
 		klog.Warningf("priority and fairness support not found, skipping")
@@ -112,6 +114,7 @@ func WithPriorityAndFairness(
 			}
 		}
 		var resultCh chan interface{}
+		var forgetWatch utilflowcontrol.ForgetWatchFunc
 		if isWatchRequest {
 			resultCh = make(chan interface{})
 		}
@@ -130,6 +133,8 @@ func WithPriorityAndFairness(
 				innerReq = r.Clone(innerCtx)
 			}
 			setResponseHeaders(classification, w)
+
+			forgetWatch = fcIfc.RegisterWatch(requestInfo)
 
 			if isWatchRequest {
 				go func() {
@@ -159,7 +164,13 @@ func WithPriorityAndFairness(
 				handler.ServeHTTP(w, innerReq)
 			}
 		}
-		digest := utilflowcontrol.RequestDigest{RequestInfo: requestInfo, User: user}
+
+		// find the estimated "width" of the request
+		// TODO: Maybe just make it costEstimator and let it return additionalLatency too for the watch?
+		// TODO: Estimate cost should also take fcIfc.GetWatchCount(requestInfo) as a parameter.
+		width := widthEstimator.EstimateWidth(r)
+		digest := utilflowcontrol.RequestDigest{RequestInfo: requestInfo, User: user, Width: width}
+
 		fcIfc.Handle(ctx, digest, note, func(inQueue bool) {
 			if inQueue {
 				noteWaitingDelta(1)
@@ -188,6 +199,9 @@ func WithPriorityAndFairness(
 		// 1) finished being processed or
 		// 2) rejected
 		if isWatchRequest {
+			if forgetWatch != nil {
+				forgetWatch()
+			}
 			err := <-resultCh
 			if err != nil {
 				panic(err)
