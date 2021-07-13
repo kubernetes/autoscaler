@@ -227,7 +227,7 @@ More about Pod Priority and Preemption:
 
 Cluster Autoscaler terminates the underlying instance in a cloud-provider-dependent manner.
 
-It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/).
+It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://v1-19.docs.kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/).
 
 
 ****************
@@ -272,7 +272,7 @@ CA could not scale the cluster down and the user could end up with a completely 
 If the user configures a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
 for the kube-system pod, then the default strategy of not touching the node running this pod
 is overridden with PDB settings. So, to enable kube-system pods migration, one should set
-[minAvailable](https://kubernetes.io/docs/api-reference/v1.7/#poddisruptionbudgetspec-v1beta1-policy)
+[minAvailable](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.21/#poddisruptionbudget-v1-policy)
 to 0 (or <= N if there are N+1 pod replicas.)
 See also [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
 
