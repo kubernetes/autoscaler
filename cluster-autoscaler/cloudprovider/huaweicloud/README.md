@@ -134,7 +134,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 ```
 ### 5. Generate Token
 ```bash
-kubeadm token create -ttl 0
+kubeadm token create --ttl 0
 ```
 Generate a token that never expires. Remember this token since it will be used later.
 
