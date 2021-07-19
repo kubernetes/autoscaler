@@ -197,3 +197,32 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	n2.ObjectMeta.Labels["example.com/ready"] = "false"
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
+
+func TestNodesWithVariousExplicitLabels(t *testing.T) {
+	comparator := CreateGenericNodeInfoLabelComparator([]string{"test-label", "foo"})
+	n1 := BuildTestNode("node1", 1000, 2000)
+	n1.ObjectMeta.Labels["test-label"] = "test-value"
+	n1.ObjectMeta.Labels["character"] = "winnie the pooh"
+
+	n2 := BuildTestNode("node2", 1000, 2000)
+	n2.ObjectMeta.Labels["test-label"] = "test-value"
+
+	n3 := BuildTestNode("node3", 1000, 1000)
+	n3.ObjectMeta.Labels["test-label"] = "test-value"
+
+	// Matching explicit balancing labels
+	checkNodesSimilar(t, n1, n2, comparator, true)
+
+	// Matching explicit balancing labels but dissimilar nodes
+	checkNodesSimilar(t, n1, n3, comparator, false)
+
+	n2.ObjectMeta.Labels["test-label"] = "something-else"
+
+	// Mismatch in one of explicit balancing labels in the nodes
+	checkNodesSimilar(t, n1, n2, comparator, false)
+
+	// Balancing label present on one node, but missing on another
+	comparator = CreateGenericNodeInfoLabelComparator([]string{"test-label", "character", "foo"})
+
+	checkNodesSimilar(t, n1, n2, comparator, false)
+}
