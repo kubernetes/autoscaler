@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 
@@ -217,7 +218,9 @@ func (m *asgCache) setAsgSizeNoLock(asg *asg, size int) error {
 		HonorCooldown:        aws.Bool(false),
 	}
 	klog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
+	start := time.Now()
 	_, err := m.service.SetDesiredCapacity(params)
+	observeAWSRequest("SetDesiredCapacity", err, start)
 	if err != nil {
 		return err
 	}
@@ -270,7 +273,9 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 				InstanceId:                     aws.String(instance.Name),
 				ShouldDecrementDesiredCapacity: aws.Bool(true),
 			}
+			start := time.Now()
 			resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
+			observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
 			if err != nil {
 				return err
 			}

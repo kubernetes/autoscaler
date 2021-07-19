@@ -18,6 +18,7 @@ package aws
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -37,7 +38,9 @@ func (m ec2Wrapper) getInstanceTypeByLT(launchTemplate *launchTemplate) (string,
 		Versions:           []*string{aws.String(launchTemplate.version)},
 	}
 
+	start := time.Now()
 	describeData, err := m.DescribeLaunchTemplateVersions(params)
+	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
 	if err != nil {
 		return "", err
 	}
