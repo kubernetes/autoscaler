@@ -452,7 +452,9 @@ func (c *machineController) scalableResourceProviderIDs(scalableResource *unstru
 			}
 		}
 
-		klog.Warningf("Machine %q has no providerID", machine.GetName())
+		if klog.V(3).Enabled() {
+			klog.Warningf("Machine %q has no providerID", machine.GetName())
+		}
 
 		failureMessage, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "failureMessage")
 		if err != nil {
