@@ -239,6 +239,9 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				PodID:         podID,
 				ContainerName: containerName,
 			}
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil); err != nil {
+				klog.Warningf("Failed to add container %+v. Reason: %+v", containerID, err)
+			}
 			klog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
 			for _, sample := range sampleList {
 				if err := feeder.clusterState.AddSample(
