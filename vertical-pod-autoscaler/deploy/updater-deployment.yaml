@@ -26,6 +26,12 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: updater
+          args:
+            # These 2 lines are default: https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-0.6.3/vertical-pod-autoscaler/pkg/updater/Dockerfile#L22
+            - --v=4
+            - --stderrthreshold=info
+            # Allow Deployments with only 1 replica to be restarted with new settings
+            - --min-replicas=1
           image: k8s.gcr.io/autoscaling/vpa-updater:0.9.2
           imagePullPolicy: Always
           resources:
