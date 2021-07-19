@@ -18,25 +18,14 @@ package aws
 
 import (
 	"fmt"
-	"sync"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/client-go/tools/cache"
-	klog "k8s.io/klog/v2"
-)
-
-const (
-	launchConfigurationCachedTTL = time.Minute * 20
-	cacheMinTTL                  = 120
-	cacheMaxTTL                  = 600
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 // autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
-type autoScaling interface {
+type autoScalingI interface {
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeTagsPages(input *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error
@@ -44,57 +33,18 @@ type autoScaling interface {
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
 
-// autoScalingWrapper provides several utility methods over the auto-scaling service provided by AWS SDK
-type autoScalingWrapper struct {
-	autoScaling
-	launchConfigurationInstanceTypeCache *expirationStore
+type ec2I interface {
+	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
 }
 
-// expirationStore cache the launch configuration with their instance type.
-// The store expires its keys based on a TTL. This TTL can have a jitter applied to it.
-// This allows to get a better repartition of the AWS queries.
-type expirationStore struct {
-	cache.Store
-	jitterClock *jitterClock
+// awsWrapper provides several utility methods over the services provided by the AWS SDK
+type awsWrapper struct {
+	autoScalingI
+	ec2I
 }
 
-type instanceTypeCachedObject struct {
-	name         string
-	instanceType string
-}
-
-type jitterClock struct {
-	clock.Clock
-
-	jitter bool
-	sync.RWMutex
-}
-
-func newLaunchConfigurationInstanceTypeCache() *expirationStore {
-	jc := &jitterClock{}
-	return &expirationStore{
-		cache.NewExpirationStore(func(obj interface{}) (s string, e error) {
-			return obj.(instanceTypeCachedObject).name, nil
-		}, &cache.TTLPolicy{
-			TTL:   launchConfigurationCachedTTL,
-			Clock: jc,
-		}),
-		jc,
-	}
-}
-
-func (c *jitterClock) Since(ts time.Time) time.Duration {
-	since := time.Since(ts)
-	c.RLock()
-	defer c.RUnlock()
-	if c.jitter {
-		return since + (time.Second * time.Duration(rand.IntnRange(cacheMinTTL, cacheMaxTTL)))
-	}
-	return since
-}
-
-func (m autoScalingWrapper) getInstanceTypeByLCNames(launchConfigToQuery []*string) ([]*autoscaling.LaunchConfiguration, error) {
-	var launchConfigurations []*autoscaling.LaunchConfiguration
+func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*string) (map[string]string, error) {
+	launchConfigurationsToInstanceType := map[string]string{}
 
 	for i := 0; i < len(launchConfigToQuery); i += 50 {
 		end := i + 50
@@ -110,34 +60,14 @@ func (m autoScalingWrapper) getInstanceTypeByLCNames(launchConfigToQuery []*stri
 		if err != nil {
 			return nil, err
 		}
-		launchConfigurations = append(launchConfigurations, r.LaunchConfigurations...)
 		for _, lc := range r.LaunchConfigurations {
-			_ = m.launchConfigurationInstanceTypeCache.Add(instanceTypeCachedObject{
-				name:         *lc.LaunchConfigurationName,
-				instanceType: *lc.InstanceType,
-			})
+			launchConfigurationsToInstanceType[*lc.LaunchConfigurationName] = *lc.InstanceType
 		}
 	}
-	return launchConfigurations, nil
+	return launchConfigurationsToInstanceType, nil
 }
 
-func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error) {
-	if obj, found, _ := m.launchConfigurationInstanceTypeCache.GetByKey(name); found {
-		return obj.(instanceTypeCachedObject).instanceType, nil
-	}
-
-	launchConfigs, err := m.getInstanceTypeByLCNames([]*string{aws.String(name)})
-	if err != nil {
-		klog.Errorf("Failed to query the launch configuration %s to get the instance type: %v", name, err)
-		return "", err
-	}
-	if len(launchConfigs) < 1 || launchConfigs[0].InstanceType == nil {
-		return "", fmt.Errorf("unable to get first LaunchConfiguration for %s", name)
-	}
-	return *launchConfigs[0].InstanceType, nil
-}
-
-func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
+func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
 	if len(names) == 0 {
 		return nil, nil
 	}
@@ -169,49 +99,7 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*aut
 	return asgs, nil
 }
 
-func (m autoScalingWrapper) populateLaunchConfigurationInstanceTypeCache(autoscalingGroups []*autoscaling.Group) error {
-	var launchConfigToQuery []*string
-
-	m.launchConfigurationInstanceTypeCache.jitterClock.Lock()
-	m.launchConfigurationInstanceTypeCache.jitterClock.jitter = true
-	m.launchConfigurationInstanceTypeCache.jitterClock.Unlock()
-	for _, asg := range autoscalingGroups {
-		if asg == nil {
-			continue
-		}
-		if asg.LaunchConfigurationName == nil {
-			continue
-		}
-		_, found, _ := m.launchConfigurationInstanceTypeCache.GetByKey(*asg.LaunchConfigurationName)
-		if found {
-			continue
-		}
-		launchConfigToQuery = append(launchConfigToQuery, asg.LaunchConfigurationName)
-	}
-	m.launchConfigurationInstanceTypeCache.jitterClock.Lock()
-	m.launchConfigurationInstanceTypeCache.jitterClock.jitter = false
-	m.launchConfigurationInstanceTypeCache.jitterClock.Unlock()
-
-	// List expire old entries
-	_ = m.launchConfigurationInstanceTypeCache.List()
-
-	if len(launchConfigToQuery) == 0 {
-		klog.V(4).Infof("%d launch configurations already in cache", len(autoscalingGroups))
-		return nil
-	}
-	klog.V(4).Infof("%d launch configurations to query", len(launchConfigToQuery))
-
-	_, err := m.getInstanceTypeByLCNames(launchConfigToQuery)
-	if err != nil {
-		klog.Errorf("Failed to query %d launch configurations", len(launchConfigToQuery))
-		return err
-	}
-
-	klog.V(4).Infof("Successfully query %d launch configurations", len(launchConfigToQuery))
-	return nil
-}
-
-func (m *autoScalingWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
+func (m *awsWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
 	// DescribeTags does an OR query when multiple filters on different tags are
 	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
 	// [t1, t2] when there's only one asg tagged both t1 and t2.
@@ -260,4 +148,59 @@ func (m *autoScalingWrapper) getAutoscalingGroupNamesByTags(kvs map[string]strin
 	}
 
 	return asgNames, nil
+}
+
+func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTemplate) (string, error) {
+	params := &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(launchTemplate.name),
+		Versions:           []*string{aws.String(launchTemplate.version)},
+	}
+
+	describeData, err := m.DescribeLaunchTemplateVersions(params)
+	if err != nil {
+		return "", err
+	}
+
+	if len(describeData.LaunchTemplateVersions) == 0 {
+		return "", fmt.Errorf("unable to find template versions")
+	}
+
+	lt := describeData.LaunchTemplateVersions[0]
+	instanceType := lt.LaunchTemplateData.InstanceType
+
+	if instanceType == nil {
+		return "", fmt.Errorf("unable to find instance type within launch template")
+	}
+
+	return aws.StringValue(instanceType), nil
+}
+
+func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification) *launchTemplate {
+	// NOTE(jaypipes): The LaunchTemplateSpecification.Version is a pointer to
+	// string. When the pointer is nil, EC2 AutoScaling API considers the value
+	// to be "$Default", however aws.StringValue(ltSpec.Version) will return an
+	// empty string (which is not considered the same as "$Default" or a nil
+	// string pointer. So, in order to not pass an empty string as the version
+	// for the launch template when we communicate with the EC2 AutoScaling API
+	// using the information in the launchTemplate, we store the string
+	// "$Default" here when the ltSpec.Version is a nil pointer.
+	//
+	// See:
+	//
+	// https://github.com/kubernetes/autoscaler/issues/1728
+	// https://github.com/aws/aws-sdk-go/blob/81fad3b797f4a9bd1b452a5733dd465eefef1060/service/autoscaling/api.go#L10666-L10671
+	//
+	// A cleaner alternative might be to make launchTemplate.version a string
+	// pointer instead of a string, or even store the aws-sdk-go's
+	// LaunchTemplateSpecification structs directly.
+	var version string
+	if ltSpec.Version == nil {
+		version = "$Default"
+	} else {
+		version = aws.StringValue(ltSpec.Version)
+	}
+	return &launchTemplate{
+		name:    aws.StringValue(ltSpec.LaunchTemplateName),
+		version: version,
+	}
 }
