@@ -35,7 +35,6 @@ import (
 	huaweicloudsdkecsmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 )
 
 // ElasticCloudServerService represents the elastic cloud server interfaces.
@@ -569,13 +568,13 @@ func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelInstanceType] = template.name
+	result[apiv1.LabelInstanceTypeStable] = template.name
 
-	result[apiv1.LabelZoneRegion] = template.region
-	result[apiv1.LabelZoneFailureDomain] = template.zone
+	result[apiv1.LabelTopologyRegion] = template.region
+	result[apiv1.LabelTopologyZone] = template.zone
 	result[apiv1.LabelHostname] = nodeName
 
 	// append custom node labels
