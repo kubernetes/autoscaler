@@ -17,6 +17,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Azure](./cloudprovider/azure/README.md)
 * [AWS](./cloudprovider/aws/README.md)
 * [BaiduCloud](./cloudprovider/baiducloud/README.md)
+* [Brightbox](./cloudprovider/brightbox/README.md)
 * [CloudStack](./cloudprovider/cloudstack/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
@@ -150,6 +151,7 @@ Supported cloud providers:
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
 * Alibaba Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
+* Brightbox https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/brightbox/README.md
 * OpenStack Magnum https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/magnum/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
 * CloudStack https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloudstack/README.md
