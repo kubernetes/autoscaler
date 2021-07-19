@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-autoscaler-cloud-config
+  namespace: kube-system
+type: Opaque
+stringData:
+  cloud-config: |-
+    [Global]
+    url=https://rancherapi.com/v3
+    access=token-abcdef
+    secret=ksjdhfiusdhfkjsdfhisudhfnskjdfhskjdfhksdjfhksjdfhksdjf
+    cluster-id=c-abcdef
+  autoscaler_node_arg: "2:6:c-abcdef:np-abcde"
