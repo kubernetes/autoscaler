@@ -238,8 +238,8 @@ func (c RecommenderFactory) Make() Recommender {
 // NewRecommender creates a new recommender instance.
 // Dependencies are created automatically.
 // Deprecated; use RecommenderFactory instead.
-func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, namespace string) Recommender {
-	clusterState := model.NewClusterState()
+func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, recommenderName string, namespace string) Recommender {
+	clusterState := model.NewClusterState(recommenderName)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace),

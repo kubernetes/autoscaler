@@ -57,6 +57,7 @@ var (
 	unsupportedConditionNoTargetRef       = "Cannot read targetRef"
 	unsupportedConditionMudaMudaMuda      = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
 	unsupportedTargetRefHasParent         = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
+	recommenderName                       = "default"
 )
 
 const (
@@ -206,7 +207,7 @@ func TestLoadPods(t *testing.T) {
 
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(recommenderName)
 
 			clusterStateFeeder := clusterStateFeeder{
 				vpaLister:       vpaLister,
@@ -321,7 +322,7 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(recommenderName)
 			for i, selector := range tc.VPALabelSelectors {
 				vpaLabel, err := labels.Parse(selector)
 				assert.NoError(t, err)

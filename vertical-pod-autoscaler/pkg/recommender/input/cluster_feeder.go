@@ -58,6 +58,7 @@ const (
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
 	defaultResyncPeriod          time.Duration = 10 * time.Minute
+	defaultRecommenderName                     = "default"
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -330,11 +331,44 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 // Fetch VPA objects and load them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
-	vpaCRDs, err := feeder.vpaLister.List(labels.Everything())
+	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Cannot list VPAs. Reason: %+v", err)
 		return
 	}
+
+	// Define a findElement function to check if clusterState.RecommenderName is in the vpaCRD.Spec.RecommenderName
+	findElement := func(slice []string, val string) bool {
+		for _, item := range slice {
+			if item == val {
+				return true
+			}
+		}
+		return false
+	}
+
+	klog.V(3).Infof("Start selecting the vpaCRDs.")
+	var vpaCRDs []*vpa_types.VerticalPodAutoscaler
+	for _, vpaCRD := range allVpaCRDs {
+		currentRecommenderName := feeder.clusterState.RecommenderName
+		if len(vpaCRD.Spec.RecommenderNames) > 0 {
+			if !findElement(vpaCRD.Spec.RecommenderNames, currentRecommenderName) {
+				klog.V(3).Infof("Ignoring the vpaCRD %s as its recommender %v does not include the current recommender's name %v", vpaCRD.Name, vpaCRD.Spec.RecommenderNames, currentRecommenderName)
+				continue
+			} else {
+				klog.V(3).Infof("The vpaCRD %s recommender name %v includes the current recommender's name %v, so the vpaCRD is selected", vpaCRD.Name, vpaCRD.Spec.RecommenderNames, currentRecommenderName)
+			}
+		} else {
+			if currentRecommenderName != defaultRecommenderName {
+				klog.V(3).Infof("vpaCRD %s does not have recommenderName defined so it will use the default recommender and skip the current recommender %v", vpaCRD.Name, currentRecommenderName)
+				continue
+			} else {
+				klog.V(3).Infof("vpaCRD %s does not have recommenderName defined so it is watched by the default recommender (currentRecommenderName=%s)", vpaCRD.Name, currentRecommenderName)
+			}
+		}
+		vpaCRDs = append(vpaCRDs, vpaCRD)
+	}
+
 	klog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
