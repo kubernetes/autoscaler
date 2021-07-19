@@ -682,6 +682,7 @@ func BuildGenericLabels(nodegroup string, instanceType string) map[string]string
 	//result[kubeletapis.LabelArch] = "amd64"
 	//result[kubeletapis.LabelOS] = "linux"
 	result[apiv1.LabelInstanceType] = instanceType
+	result[apiv1.LabelInstanceTypeStable] = instanceType
 	//result[apiv1.LabelZoneRegion] = ""
 	//result[apiv1.LabelZoneFailureDomain] = "0"
 	//result[apiv1.LabelHostname] = ""
