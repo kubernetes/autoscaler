@@ -18,4 +18,5 @@ limitations under the License.
 
 // Package v1beta1 contains definitions of Vertical Pod Autoscaler related objects.
 // +groupName=autoscaling.k8s.io
+// +kubebuilder:skip
 package v1beta1

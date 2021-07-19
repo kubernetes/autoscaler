@@ -19,7 +19,7 @@ package main
 import (
 	"io/ioutil"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 type certsContainer struct {

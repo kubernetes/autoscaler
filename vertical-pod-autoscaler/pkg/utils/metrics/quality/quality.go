@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/prometheus/client_golang/prometheus"
 )

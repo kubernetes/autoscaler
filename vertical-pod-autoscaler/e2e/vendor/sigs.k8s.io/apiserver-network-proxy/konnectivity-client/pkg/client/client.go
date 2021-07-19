@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client"
 )
 
@@ -51,9 +51,17 @@ type grpcTunnel struct {
 	connsLock       sync.RWMutex
 }
 
-// CreateGrpcTunnel creates a Tunnel to dial to a remote server through a
+type clientConn interface {
+	Close() error
+}
+
+var _ clientConn = &grpc.ClientConn{}
+
+// CreateSingleUseGrpcTunnel creates a Tunnel to dial to a remote server through a
 // gRPC based proxy service.
-func CreateGrpcTunnel(address string, opts ...grpc.DialOption) (Tunnel, error) {
+// Currently, a single tunnel supports a single connection, and the tunnel is closed when the connection is terminated
+// The Dial() method of the returned tunnel should only be called once
+func CreateSingleUseGrpcTunnel(address string, opts ...grpc.DialOption) (Tunnel, error) {
 	c, err := grpc.Dial(address, opts...)
 	if err != nil {
 		return nil, err
@@ -72,23 +80,25 @@ func CreateGrpcTunnel(address string, opts ...grpc.DialOption) (Tunnel, error) {
 		conns:       make(map[int64]*conn),
 	}
 
-	go tunnel.serve()
+	go tunnel.serve(c)
 
 	return tunnel, nil
 }
 
-func (t *grpcTunnel) serve() {
+func (t *grpcTunnel) serve(c clientConn) {
+	defer c.Close()
+
 	for {
 		pkt, err := t.stream.Recv()
 		if err == io.EOF {
 			return
 		}
 		if err != nil || pkt == nil {
-			klog.Warningf("stream read error: %v", err)
+			klog.ErrorS(err, "stream read failure")
 			return
 		}
 
-		klog.V(6).Infof("[tracing] recv packet, type: %s", pkt.Type)
+		klog.V(5).InfoS("[tracing] recv packet", "type", pkt.Type)
 
 		switch pkt.Type {
 		case client.PacketType_DIAL_RSP:
@@ -98,13 +108,19 @@ func (t *grpcTunnel) serve() {
 			t.pendingDialLock.RUnlock()
 
 			if !ok {
-				klog.Warning("DialResp not recognized; dropped")
+				klog.V(1).Infoln("DialResp not recognized; dropped")
 			} else {
 				ch <- dialResult{
 					err:    resp.Error,
 					connid: resp.ConnectID,
 				}
 			}
+
+			if resp.Error != "" {
+				// On dial error, avoid leaking serve goroutine.
+				return
+			}
+
 		case client.PacketType_DATA:
 			resp := pkt.GetData()
 			// TODO: flow control
@@ -115,7 +131,7 @@ func (t *grpcTunnel) serve() {
 			if ok {
 				conn.readCh <- resp.Data
 			} else {
-				klog.Warningf("connection id %d not recognized", resp.ConnectID)
+				klog.V(1).InfoS("connection not recognized", "connectionID", resp.ConnectID)
 			}
 		case client.PacketType_CLOSE_RSP:
 			resp := pkt.GetCloseResponse()
@@ -130,9 +146,9 @@ func (t *grpcTunnel) serve() {
 				t.connsLock.Lock()
 				delete(t.conns, resp.ConnectID)
 				t.connsLock.Unlock()
-			} else {
-				klog.Warningf("connection id %d not recognized", resp.ConnectID)
+				return
 			}
+			klog.V(1).InfoS("connection not recognized", "connectionID", resp.ConnectID)
 		}
 	}
 }
@@ -165,14 +181,14 @@ func (t *grpcTunnel) Dial(protocol, address string) (net.Conn, error) {
 			},
 		},
 	}
-	klog.V(6).Infof("[tracing] send packet, type: %s", req.Type)
+	klog.V(5).InfoS("[tracing] send packet", "type", req.Type)
 
 	err := t.stream.Send(req)
 	if err != nil {
 		return nil, err
 	}
 
-	klog.Info("DIAL_REQ sent to proxy server")
+	klog.V(5).Infoln("DIAL_REQ sent to proxy server")
 
 	c := &conn{stream: t.stream}
 

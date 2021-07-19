@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // OomInfo contains data of the OOM event occurrence

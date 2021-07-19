@@ -42,7 +42,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler

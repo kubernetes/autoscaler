@@ -38,7 +38,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/discovery"
 	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
@@ -48,15 +47,12 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	scaleclient "k8s.io/client-go/scale"
-	testutils "k8s.io/kubernetes/test/utils"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 
 	// TODO: Remove the following imports (ref: https://github.com/kubernetes/kubernetes/issues/81245)
 	e2emetrics "k8s.io/kubernetes/test/e2e/framework/metrics"
-	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
-	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
 )
 
 const (
@@ -123,6 +119,9 @@ type Framework struct {
 
 	// Place to keep ClusterAutoscaler metrics from before test in order to compute delta.
 	clusterAutoscalerMetricsBeforeTest e2emetrics.Collection
+
+	// Timeouts contains the custom timeouts used during the test execution.
+	Timeouts *TimeoutContext
 }
 
 // AfterEachActionFunc is a function that can be called after each test
@@ -142,6 +141,13 @@ type Options struct {
 	GroupVersion *schema.GroupVersion
 }
 
+// NewFrameworkWithCustomTimeouts makes a framework with with custom timeouts.
+func NewFrameworkWithCustomTimeouts(baseName string, timeouts *TimeoutContext) *Framework {
+	f := NewDefaultFramework(baseName)
+	f.Timeouts = timeouts
+	return f
+}
+
 // NewDefaultFramework makes a new framework and sets up a BeforeEach/AfterEach for
 // you (you can write additional before/after each functions).
 func NewDefaultFramework(baseName string) *Framework {
@@ -159,6 +165,7 @@ func NewFramework(baseName string, options Options, client clientset.Interface) 
 		AddonResourceConstraints: make(map[string]ResourceConstraint),
 		Options:                  options,
 		ClientSet:                client,
+		Timeouts:                 NewTimeoutContextWithDefaults(),
 	}
 
 	f.AddAfterEach("dumpNamespaceInfo", func(f *Framework, failed bool) {
@@ -205,10 +212,6 @@ func (f *Framework) BeforeEach() {
 		f.ClientSet, err = clientset.NewForConfig(config)
 		ExpectNoError(err)
 		f.DynamicClient, err = dynamic.NewForConfig(config)
-		ExpectNoError(err)
-		// node.k8s.io is based on CRD, which is served only as JSON
-		jsonConfig := config
-		jsonConfig.ContentType = "application/json"
 		ExpectNoError(err)
 
 		// create scales getter, set GroupVersion and NegotiatedSerializer to default values
@@ -477,6 +480,38 @@ func (f *Framework) AfterEach() {
 	}
 }
 
+// DeleteNamespace can be used to delete a namespace. Additionally it can be used to
+// dump namespace information so as it can be used as an alternative of framework
+// deleting the namespace towards the end.
+func (f *Framework) DeleteNamespace(name string) {
+	defer func() {
+		err := f.ClientSet.CoreV1().Namespaces().Delete(context.TODO(), name, metav1.DeleteOptions{})
+		if err != nil && !apierrors.IsNotFound(err) {
+			Logf("error deleting namespace %s: %v", name, err)
+			return
+		}
+		err = WaitForNamespacesDeleted(f.ClientSet, []string{name}, DefaultNamespaceDeletionTimeout)
+		if err != nil {
+			Logf("error deleting namespace %s: %v", name, err)
+			return
+		}
+		// remove deleted namespace from namespacesToDelete map
+		for i, ns := range f.namespacesToDelete {
+			if ns == nil {
+				continue
+			}
+			if ns.Name == name {
+				f.namespacesToDelete = append(f.namespacesToDelete[:i], f.namespacesToDelete[i+1:]...)
+			}
+		}
+	}()
+	// if current test failed then we should dump namespace information
+	if !f.SkipNamespaceCreation && ginkgo.CurrentGinkgoTestDescription().Failed && TestContext.DumpLogsOnFailure {
+		DumpAllNamespaceInfo(f.ClientSet, name)
+	}
+
+}
+
 // CreateNamespace creates a namespace for e2e testing.
 func (f *Framework) CreateNamespace(baseName string, labels map[string]string) (*v1.Namespace, error) {
 	createTestingNS := TestContext.CreateTestingNS
@@ -513,38 +548,6 @@ func (f *Framework) AddNamespacesToDelete(namespaces ...*v1.Namespace) {
 	}
 }
 
-// WaitForPodTerminated waits for the pod to be terminated with the given reason.
-func (f *Framework) WaitForPodTerminated(podName, reason string) error {
-	return e2epod.WaitForPodTerminatedInNamespace(f.ClientSet, podName, reason, f.Namespace.Name)
-}
-
-// WaitForPodNotFound waits for the pod to be completely terminated (not "Get-able").
-func (f *Framework) WaitForPodNotFound(podName string, timeout time.Duration) error {
-	return e2epod.WaitForPodNotFoundInNamespace(f.ClientSet, podName, f.Namespace.Name, timeout)
-}
-
-// WaitForPodRunning waits for the pod to run in the namespace.
-func (f *Framework) WaitForPodRunning(podName string) error {
-	return e2epod.WaitForPodNameRunningInNamespace(f.ClientSet, podName, f.Namespace.Name)
-}
-
-// WaitForPodReady waits for the pod to flip to ready in the namespace.
-func (f *Framework) WaitForPodReady(podName string) error {
-	return e2epod.WaitTimeoutForPodReadyInNamespace(f.ClientSet, podName, f.Namespace.Name, PodStartTimeout)
-}
-
-// WaitForPodRunningSlow waits for the pod to run in the namespace.
-// It has a longer timeout then WaitForPodRunning (util.slowPodStartTimeout).
-func (f *Framework) WaitForPodRunningSlow(podName string) error {
-	return e2epod.WaitForPodRunningInNamespaceSlow(f.ClientSet, podName, f.Namespace.Name)
-}
-
-// WaitForPodNoLongerRunning waits for the pod to no longer be running in the namespace, for either
-// success or failure.
-func (f *Framework) WaitForPodNoLongerRunning(podName string) error {
-	return e2epod.WaitForPodNoLongerRunningInNamespace(f.ClientSet, podName, f.Namespace.Name)
-}
-
 // ClientConfig an externally accessible method for reading the kube client config.
 func (f *Framework) ClientConfig() *rest.Config {
 	ret := rest.CopyConfig(f.clientConfig)
@@ -568,83 +571,13 @@ func (f *Framework) TestContainerOutputRegexp(scenarioName string, pod *v1.Pod, 
 	f.testContainerOutputMatcher(scenarioName, pod, containerIndex, expectedOutput, gomega.MatchRegexp)
 }
 
-// CreateServiceForSimpleAppWithPods is a convenience wrapper to create a service and its matching pods all at once.
-func (f *Framework) CreateServiceForSimpleAppWithPods(contPort int, svcPort int, appName string, podSpec func(n v1.Node) v1.PodSpec, count int, block bool) (*v1.Service, error) {
-	var err error
-	theService := f.CreateServiceForSimpleApp(contPort, svcPort, appName)
-	f.CreatePodsPerNodeForSimpleApp(appName, podSpec, count)
-	if block {
-		err = testutils.WaitForPodsWithLabelRunning(f.ClientSet, f.Namespace.Name, labels.SelectorFromSet(labels.Set(theService.Spec.Selector)))
-	}
-	return theService, err
-}
-
-// CreateServiceForSimpleApp returns a service that selects/exposes pods (send -1 ports if no exposure needed) with an app label.
-func (f *Framework) CreateServiceForSimpleApp(contPort, svcPort int, appName string) *v1.Service {
-	if appName == "" {
-		panic(fmt.Sprintf("no app name provided"))
-	}
-
-	serviceSelector := map[string]string{
-		"app": appName + "-pod",
-	}
-
-	// For convenience, user sending ports are optional.
-	portsFunc := func() []v1.ServicePort {
-		if contPort < 1 || svcPort < 1 {
-			return nil
-		}
-		return []v1.ServicePort{{
-			Protocol:   v1.ProtocolTCP,
-			Port:       int32(svcPort),
-			TargetPort: intstr.FromInt(contPort),
-		}}
-	}
-	Logf("Creating a service-for-%v for selecting app=%v-pod", appName, appName)
-	service, err := f.ClientSet.CoreV1().Services(f.Namespace.Name).Create(context.TODO(), &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "service-for-" + appName,
-			Labels: map[string]string{
-				"app": appName + "-service",
-			},
-		},
-		Spec: v1.ServiceSpec{
-			Ports:    portsFunc(),
-			Selector: serviceSelector,
-		},
-	}, metav1.CreateOptions{})
-	ExpectNoError(err)
-	return service
-}
-
-// CreatePodsPerNodeForSimpleApp creates pods w/ labels.  Useful for tests which make a bunch of pods w/o any networking.
-func (f *Framework) CreatePodsPerNodeForSimpleApp(appName string, podSpec func(n v1.Node) v1.PodSpec, maxCount int) map[string]string {
-	nodes, err := e2enode.GetBoundedReadySchedulableNodes(f.ClientSet, maxCount)
-	ExpectNoError(err)
-	podLabels := map[string]string{
-		"app": appName + "-pod",
-	}
-	for i, node := range nodes.Items {
-		Logf("%v/%v : Creating container with label app=%v-pod", i, maxCount, appName)
-		_, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Create(context.TODO(), &v1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:   fmt.Sprintf(appName+"-pod-%v", i),
-				Labels: podLabels,
-			},
-			Spec: podSpec(node),
-		}, metav1.CreateOptions{})
-		ExpectNoError(err)
-	}
-	return podLabels
-}
-
 // KubeUser is a struct for managing kubernetes user info.
 type KubeUser struct {
 	Name string `yaml:"name"`
 	User struct {
 		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-		Token    string `yaml:"token"`
+		Password string `yaml:"password" datapolicy:"password"`
+		Token    string `yaml:"token" datapolicy:"token"`
 	} `yaml:"user"`
 }
 
@@ -690,12 +623,6 @@ func (kc *KubeConfig) FindCluster(name string) *KubeCluster {
 		}
 	}
 	return nil
-}
-
-// KubeDescribe is wrapper function for ginkgo describe.  Adds namespacing.
-// TODO: Support type safe tagging as well https://github.com/kubernetes/kubernetes/pull/22401.
-func KubeDescribe(text string, body func()) bool {
-	return ginkgo.Describe("[k8s.io] "+text, body)
 }
 
 // ConformanceIt is wrapper function for ginkgo It.  Adds "[Conformance]" tag and makes static analysis easier.

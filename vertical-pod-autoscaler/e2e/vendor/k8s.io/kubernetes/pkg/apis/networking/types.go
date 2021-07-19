@@ -77,7 +77,7 @@ type NetworkPolicySpec struct {
 	Egress []NetworkPolicyEgressRule
 
 	// List of rule types that the NetworkPolicy relates to.
-	// Valid options are "Ingress", "Egress", or "Ingress,Egress".
+	// Valid options are ["Ingress"], ["Egress"], or ["Ingress", "Egress"].
 	// If this field is not specified, it will default based on the existence of Ingress or Egress rules;
 	// policies that contain an Egress section are assumed to affect Egress, and all policies
 	// (whether or not they contain an Ingress section) are assumed to affect Ingress.
@@ -138,10 +138,21 @@ type NetworkPolicyPort struct {
 	// +optional
 	Protocol *api.Protocol
 
-	// The port on the given protocol. This can either be a numerical or named port on
-	// a pod. If this field is not provided, this matches all port names and numbers.
+	// The port on the given protocol. This can either be a numerical or named
+	// port on a pod. If this field is not provided, this matches all port names and
+	// numbers.
+	// If present, only traffic on the specified protocol AND port will be matched.
 	// +optional
 	Port *intstr.IntOrString
+
+	// If set, indicates that the range of ports from port to endPort, inclusive,
+	// should be allowed by the policy. This field cannot be defined if the port field
+	// is not defined or if the port field is defined as a named (string) port.
+	// The endPort must be equal or greater than port.
+	// This feature is in Alpha state and should be enabled using the Feature Gate
+	// "NetworkPolicyEndPort".
+	// +optional
+	EndPort *int32
 }
 
 // IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed
@@ -158,7 +169,7 @@ type IPBlock struct {
 	Except []string
 }
 
-// NetworkPolicyPeer describes a peer to allow traffic from.
+// NetworkPolicyPeer describes a peer to allow traffic to/from.
 type NetworkPolicyPeer struct {
 	// This is a label selector which selects Pods. This field follows standard label
 	// selector semantics; if present but empty, it selects all pods.
@@ -248,26 +259,27 @@ type IngressSpec struct {
 	// +optional
 	IngressClassName *string
 
-	// Backend is a default backend capable of servicing requests that don't
-	// match any rule. At least one of 'backend' or 'rules' must be specified.
-	// This field is optional to allow the loadbalancer controller or defaulting
-	// logic to specify a global default.
+	// DefaultBackend is the backend that should handle requests that don't
+	// match any rule. If Rules are not specified, DefaultBackend must be specified.
+	// If DefaultBackend is not set, the handling of requests that do not match any
+	// of the rules will be up to the Ingress controller.
 	// +optional
-	Backend *IngressBackend
+	DefaultBackend *IngressBackend
 
 	// TLS configuration. Currently the Ingress only supports a single TLS
 	// port, 443. If multiple members of this list specify different hosts, they
 	// will be multiplexed on the same port according to the hostname specified
 	// through the SNI TLS extension, if the ingress controller fulfilling the
 	// ingress supports SNI.
+	// +listType=atomic
 	// +optional
 	TLS []IngressTLS
 
 	// A list of host rules used to configure the Ingress. If unspecified, or
 	// no rule matches, all traffic is sent to the default backend.
+	// +listType=atomic
 	// +optional
 	Rules []IngressRule
-	// TODO: Add the ability to specify load-balancer IP through claims
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -301,7 +313,42 @@ type IngressClassSpec struct {
 	// configuration for the controller. This is optional if the controller does
 	// not require extra parameters.
 	// +optional
-	Parameters *api.TypedLocalObjectReference
+	Parameters *IngressClassParametersReference
+}
+
+const (
+	// IngressClassParametersReferenceScopeNamespace indicates that the
+	// referenced Parameters resource is namespace-scoped.
+	IngressClassParametersReferenceScopeNamespace = "Namespace"
+	// IngressClassParametersReferenceScopeNamespace indicates that the
+	// referenced Parameters resource is cluster-scoped.
+	IngressClassParametersReferenceScopeCluster = "Cluster"
+)
+
+// IngressClassParametersReference identifies an API object. This can be used
+// to specify a cluster or namespace-scoped resource.
+type IngressClassParametersReference struct {
+	// APIGroup is the group for the resource being referenced. If APIGroup is
+	// not specified, the specified Kind must be in the core API group. For any
+	// other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string
+	// Kind is the type of resource being referenced.
+	Kind string
+	// Name is the name of resource being referenced.
+	Name string
+	// Scope represents if this refers to a cluster or namespace scoped resource.
+	// This may be set to "Cluster" (default) or "Namespace".
+	// Field can be enabled with IngressClassNamespacedParams feature gate.
+	// +optional
+	// +featureGate=IngressClassNamespacedParams
+	Scope *string
+	// Namespace is the namespace of the resource being referenced. This field is
+	// required when scope is set to "Namespace" and must be unset when scope is set to
+	// "Cluster".
+	// +optional
+	// +featureGate=IngressClassNamespacedParams
+	Namespace *string
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -314,7 +361,6 @@ type IngressClassList struct {
 	metav1.ListMeta
 
 	// Items is the list of IngressClasses.
-	// +listType=set
 	Items []IngressClass
 }
 
@@ -324,6 +370,7 @@ type IngressTLS struct {
 	// this list must match the name/s used in the tlsSecret. Defaults to the
 	// wildcard host setting for the loadbalancer controller fulfilling this
 	// Ingress, if left unspecified.
+	// +listType=atomic
 	// +optional
 	Hosts []string
 	// SecretName is the name of the secret used to terminate TLS traffic on
@@ -404,6 +451,7 @@ type IngressRuleValue struct {
 // or '#'.
 type HTTPIngressRuleValue struct {
 	// A collection of paths that map requests to backends.
+	// +listType=atomic
 	Paths []HTTPIngressPath
 	// TODO: Consider adding fields for ingress-type specific global
 	// options usable by a loadbalancer, like http keep-alive.
@@ -462,17 +510,40 @@ type HTTPIngressPath struct {
 
 // IngressBackend describes all endpoints for a given service and port.
 type IngressBackend struct {
-	// Specifies the name of the referenced service.
+	// Service references a Service as a Backend.
+	// This is a mutually exclusive setting with "Resource".
 	// +optional
-	ServiceName string
-
-	// Specifies the port of the referenced service.
-	// +optional
-	ServicePort intstr.IntOrString
+	Service *IngressServiceBackend
 
 	// Resource is an ObjectRef to another Kubernetes resource in the namespace
-	// of the Ingress object. If resource is specified, serviceName and servicePort
-	// must not be specified.
+	// of the Ingress object. If resource is specified, a service.Name and
+	// service.Port must not be specified.
+	// This is a mutually exclusive setting with "Service".
 	// +optional
 	Resource *api.TypedLocalObjectReference
+}
+
+// IngressServiceBackend references a Kubernetes Service as a Backend.
+type IngressServiceBackend struct {
+	// Name is the referenced service. The service must exist in
+	// the same namespace as the Ingress object.
+	Name string
+
+	// Port of the referenced service. A port name or port number
+	// is required for a IngressServiceBackend.
+	Port ServiceBackendPort
+}
+
+// ServiceBackendPort is the service port being referenced.
+type ServiceBackendPort struct {
+	// Name is the name of the port on the Service.
+	// This must be an IANA_SVC_NAME (following RFC6335).
+	// This is a mutually exclusive setting with "Number".
+	// +optional
+	Name string
+
+	// Number is the numerical port number (e.g. 80) on the Service.
+	// This is a mutually exclusive setting with "Name".
+	// +optional
+	Number int32
 }
