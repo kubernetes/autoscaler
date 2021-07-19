@@ -148,6 +148,9 @@ type AutoscalingOptions struct {
 	// BalancingExtraIgnoredLabels is a list of labels to additionally ignore when comparing if two node groups are similar.
 	// Labels in BasicIgnoredLabels and the cloud provider-specific ignored labels are always ignored.
 	BalancingExtraIgnoredLabels []string
+	// BalancingLabels is a list of labels to use when comparing if two node groups are similar.
+	// If this is set, only labels are used to compare node groups. It is mutually exclusive with BalancingExtraIgnoredLabels.
+	BalancingLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
 	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
