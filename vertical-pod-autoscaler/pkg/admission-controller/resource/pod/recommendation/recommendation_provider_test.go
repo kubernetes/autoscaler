@@ -256,7 +256,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedCPU:      resource.MustParse("1Ei"),
 			expectedMem:      resource.MustParse("1Ei"),
 			expectedCPULimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
-			expectedMemLimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
+			expectedMemLimit: resource.NewQuantity(math.MaxInt64, resource.DecimalExponent),
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{
 					"cpu: failed to keep limit to request ratio; capping limit to int64",
