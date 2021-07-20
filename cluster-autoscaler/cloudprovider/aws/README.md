@@ -356,4 +356,4 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
   STS) the env `AWS_STS_REGIONAL_ENDPOINTS=regional` should be set.
 * If you want to run it on instances with IMDSv1 disabled make sure your
   EC2 launch configuration has the setting `Metadata response hop limit` set to `2`.
-  Otherwise, the `/latest/api/token` call will timeout and result in an error.
+  Otherwise, the `/latest/api/token` call will timeout and result in an error. See [AWS docs here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) for further information. 
