@@ -907,24 +907,12 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         scalar: string
       default: ""
-- name: io.k8s.api.apps.v1.StatefulSetPersistentVolumeClaimRetentionPolicy
-  map:
-    fields:
-    - name: whenDeleted
-      type:
-        scalar: string
-    - name: whenScaled
-      type:
-        scalar: string
 - name: io.k8s.api.apps.v1.StatefulSetSpec
   map:
     fields:
     - name: minReadySeconds
       type:
         scalar: numeric
-    - name: persistentVolumeClaimRetentionPolicy
-      type:
-        namedType: io.k8s.api.apps.v1.StatefulSetPersistentVolumeClaimRetentionPolicy
     - name: podManagementPolicy
       type:
         scalar: string
@@ -1206,24 +1194,12 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         scalar: string
       default: ""
-- name: io.k8s.api.apps.v1beta1.StatefulSetPersistentVolumeClaimRetentionPolicy
-  map:
-    fields:
-    - name: whenDeleted
-      type:
-        scalar: string
-    - name: whenScaled
-      type:
-        scalar: string
 - name: io.k8s.api.apps.v1beta1.StatefulSetSpec
   map:
     fields:
     - name: minReadySeconds
       type:
         scalar: numeric
-    - name: persistentVolumeClaimRetentionPolicy
-      type:
-        namedType: io.k8s.api.apps.v1beta1.StatefulSetPersistentVolumeClaimRetentionPolicy
     - name: podManagementPolicy
       type:
         scalar: string
@@ -1703,24 +1679,12 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         scalar: string
       default: ""
-- name: io.k8s.api.apps.v1beta2.StatefulSetPersistentVolumeClaimRetentionPolicy
-  map:
-    fields:
-    - name: whenDeleted
-      type:
-        scalar: string
-    - name: whenScaled
-      type:
-        scalar: string
 - name: io.k8s.api.apps.v1beta2.StatefulSetSpec
   map:
     fields:
     - name: minReadySeconds
       type:
         scalar: numeric
-    - name: persistentVolumeClaimRetentionPolicy
-      type:
-        namedType: io.k8s.api.apps.v1beta2.StatefulSetPersistentVolumeClaimRetentionPolicy
     - name: podManagementPolicy
       type:
         scalar: string
@@ -2710,6 +2674,9 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: succeeded
       type:
         scalar: numeric
+    - name: uncountedTerminatedPods
+      type:
+        namedType: io.k8s.api.batch.v1.UncountedTerminatedPods
 - name: io.k8s.api.batch.v1.JobTemplateSpec
   map:
     fields:
@@ -2721,6 +2688,21 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         namedType: io.k8s.api.batch.v1.JobSpec
       default: {}
+- name: io.k8s.api.batch.v1.UncountedTerminatedPods
+  map:
+    fields:
+    - name: failed
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: associative
+    - name: succeeded
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: associative
 - name: io.k8s.api.batch.v1beta1.CronJob
   map:
     fields:
