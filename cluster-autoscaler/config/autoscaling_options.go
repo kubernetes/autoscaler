@@ -71,6 +71,10 @@ type AutoscalingOptions struct {
 	EstimatorName string
 	// ExpanderNames sets the chain of node group expanders to be used in scale up
 	ExpanderNames string
+	// GRPCExpanderCert is the location of the cert passed to the gRPC server for TLS when using the gRPC expander
+	GRPCExpanderCert string
+	// GRPCExpanderURL is the url of the gRPC server when using the gRPC expander
+	GRPCExpanderURL string
 	// IgnoreDaemonSetsUtilization is whether CA will ignore DaemonSet pods when calculating resource utilization for scaling down
 	IgnoreDaemonSetsUtilization bool
 	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
