@@ -2050,7 +2050,7 @@ type Probe struct {
 	// value overrides the value provided by the pod spec.
 	// Value must be non-negative integer. The value zero indicates stop immediately via
 	// the kill signal (no opportunity to shut down).
-	// This is an alpha field and requires enabling ProbeTerminationGracePeriod feature gate.
+	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
 	// +optional
 	TerminationGracePeriodSeconds *int64
 }
@@ -3161,7 +3161,8 @@ type EphemeralContainerCommon struct {
 	TerminationMessagePolicy TerminationMessagePolicy
 	// Required: Policy for pulling images for this container
 	ImagePullPolicy PullPolicy
-	// SecurityContext is not allowed for ephemeral containers.
+	// Optional: SecurityContext defines the security options the ephemeral container should be run with.
+	// If set, the fields of SecurityContext override the equivalent fields of PodSecurityContext.
 	// +optional
 	SecurityContext *SecurityContext
 
