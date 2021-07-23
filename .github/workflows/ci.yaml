@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
+          go-version: 1.16
 
       - uses: actions/checkout@v2
         with:
@@ -26,11 +26,17 @@ jobs:
       - name: Prepare
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
         run: hack/install-verify-tools.sh
+        env:
+          GO111MODULE: auto
 
       - name: Verify
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
         run: hack/verify-all.sh -v
+        env:
+          GO111MODULE: auto
 
       - name: Test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
         run: hack/for-go-proj.sh test
+        env:
+          GO111MODULE: auto
