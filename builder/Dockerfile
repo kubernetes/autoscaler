@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.14
+FROM golang:1.16
 LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ENV GOPATH /gopath/
 ENV PATH $GOPATH/bin:$PATH
+ENV GO111MODULE auto
 
 RUN apt-get update && apt-get --yes install libseccomp-dev
 RUN go version
