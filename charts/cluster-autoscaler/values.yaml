@@ -125,9 +125,15 @@ dnsPolicy: ClusterFirst
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
 
+# priorityConfigMapAnnotations -- Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap.
+priorityConfigMapAnnotations: {}
+  # key1: "value1"
+  # key2: "value2"
+
 # extraArgs -- Additional container arguments.
 # Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
 # parameters and their default values.
+# Everything after the first _ will be ignored allowing the use of multi-string arguments.
 extraArgs:
   logtostderr: true
   stderrthreshold: info
@@ -149,6 +155,8 @@ extraArgs:
   # scale-down-delay-after-failure: 3m
   # scale-down-unneeded-time: 10m
   # skip-nodes-with-system-pods: true
+  # balancing-ignore-label_1: first-label-to-ignore
+  # balancing-ignore-label_2: second-label-to-ignore
 
 # extraEnv -- Additional container environment variables.
 extraEnv: {}
