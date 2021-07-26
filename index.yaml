@@ -22,7 +22,7 @@ entries:
     - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
     type: application
     urls:
-    - cluster-autoscaler-9.10.3.tgz
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.10.3/cluster-autoscaler-9.10.3.tgz
     version: 9.10.3
   - apiVersion: v2
     appVersion: 1.21.0
