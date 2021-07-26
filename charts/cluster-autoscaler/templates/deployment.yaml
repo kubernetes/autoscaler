@@ -74,7 +74,7 @@ spec:
             - --cloud-config={{ .Values.cloudConfigPath }}
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
-            - --{{ $key }}={{ $value }}
+            - --{{ $key | mustRegexFind "^[^_]+" }}={{ $value }}
           {{- end }}
           env:
           {{- if and (eq .Values.cloudProvider "aws") (ne .Values.awsRegion "") }}
