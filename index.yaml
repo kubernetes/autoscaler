@@ -2,6 +2,98 @@ apiVersion: v1
 entries:
   cluster-autoscaler:
   - apiVersion: v2
+    appVersion: 1.21.0
+    created: "2021-07-26T11:10:25.734748+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: d26a491b75a400b4af77409c886a6ff37da0160c892559a6f870c02db78baec9
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - cluster-autoscaler-9.10.3.tgz
+    version: 9.10.3
+  - apiVersion: v2
+    appVersion: 1.21.0
+    created: "2021-07-08T14:14:58.153453+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 4a6418c2a33d3b380a1396efa885ec7f8fe1ade4a8c597fefcce419cbc3d98dc
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.10.2/cluster-autoscaler-9.10.2.tgz
+    version: 9.10.2
+  - apiVersion: v2
+    appVersion: 1.21.0
+    created: "2021-07-08T09:39:32.195117+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 81c51e509c6b2947c436e57046b93a83b49307e565a4827c81d109ac76a56bf1
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.10.01/cluster-autoscaler-9.10.01.tgz
+    version: 9.10.1
+  - apiVersion: v2
+    appVersion: 1.21.0
+    created: "2021-07-05T12:13:20.500277+01:00"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: f9a1722712213c89bc228fd3315fdf06d289ed92aa06f7ec81a8580ec5aed748
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.10.0/cluster-autoscaler-9.10.0.tgz
+    version: 9.10.0
+  - apiVersion: v2
     appVersion: 1.20.0
     created: "2021-03-24T10:33:47.635168Z"
     description: Scales Kubernetes worker nodes within autoscaling groups.
@@ -532,4 +624,4 @@ entries:
     urls:
     - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-1.0.0/cluster-autoscaler-chart-1.0.0.tgz
     version: 1.0.0
-generated: "2021-03-24T10:33:47.631906Z"
+generated: "2021-07-26T11:10:25.731392+01:00"
