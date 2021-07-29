@@ -40,7 +40,6 @@ const (
 	defaultOperationWaitTimeout          = 20 * time.Second
 	defaultOperationPollInterval         = 100 * time.Millisecond
 	defaultOperationDeletionPollInterval = 1 * time.Second
-	instanceGroupNameSuffix              = "-grp"
 	// ErrorCodeQuotaExceeded is an error code used in InstanceErrorInfo if quota exceeded error occurs.
 	ErrorCodeQuotaExceeded = "QUOTA_EXCEEDED"
 
@@ -77,7 +76,7 @@ type AutoscalingGceClient interface {
 	// modifying resources
 	ResizeMig(GceRef, int64) error
 	DeleteInstances(migRef GceRef, instances []GceRef) error
-	CreateInstances(GceRef, int64, []string) error
+	CreateInstances(GceRef, string, int64, []string) error
 }
 
 type autoscalingGceClientV1 struct {
@@ -198,7 +197,7 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 	return client.waitForOp(op, migRef.Project, migRef.Zone, false)
 }
 
-func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, delta int64, existingInstances []string) error {
+func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstances []string) error {
 	registerRequest("instance_group_managers", "create_instances")
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
 	instanceNames := map[string]bool{}
@@ -207,7 +206,7 @@ func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, delta int64
 	}
 	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
 	for i := int64(0); i < delta; i++ {
-		newInstanceName := generateInstanceName(migRef, instanceNames)
+		newInstanceName := generateInstanceName(baseName, instanceNames)
 		instanceNames[newInstanceName] = true
 		req.Instances = append(req.Instances, &gce.PerInstanceConfig{Name: newInstanceName})
 	}
@@ -369,15 +368,15 @@ func isInstanceNotRunningYet(gceInstance *gce.ManagedInstance) bool {
 	return gceInstance.InstanceStatus == "" || gceInstance.InstanceStatus == "PROVISIONING" || gceInstance.InstanceStatus == "STAGING"
 }
 
-func generateInstanceName(migRef GceRef, existingNames map[string]bool) string {
+func generateInstanceName(baseName string, existingNames map[string]bool) string {
 	for i := 0; i < 100; i++ {
-		name := fmt.Sprintf("%v-%v", strings.TrimSuffix(migRef.Name, instanceGroupNameSuffix), rand.String(4))
+		name := fmt.Sprintf("%v-%v", baseName, rand.String(4))
 		if ok, _ := existingNames[name]; !ok {
 			return name
 		}
 	}
 	klog.Warning("Unable to create unique name for a new instance, duplicate name might occur")
-	name := fmt.Sprintf("%v-%v", strings.TrimSuffix(migRef.Name, instanceGroupNameSuffix), rand.String(4))
+	name := fmt.Sprintf("%v-%v", baseName, rand.String(4))
 	return name
 }
 
