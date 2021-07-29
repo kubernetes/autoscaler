@@ -303,8 +303,16 @@ func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
 	for _, ins := range instances {
 		instancesNames = append(instancesNames, ins.Id)
 	}
+	baseName, found := m.cache.GetMigBasename(mig.GceRef())
+	if !found {
+		baseName, err = m.GceService.FetchMigBasename(mig.GceRef())
+		if err != nil {
+			return fmt.Errorf("can't upscale %s: failed to collect BaseInstanceName: %w", mig.GceRef(), err)
+		}
+		m.cache.SetMigBasename(mig.GceRef(), baseName)
+	}
 	m.cache.InvalidateMigTargetSize(mig.GceRef())
-	return m.GceService.CreateInstances(mig.GceRef(), delta, instancesNames)
+	return m.GceService.CreateInstances(mig.GceRef(), baseName, delta, instancesNames)
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
