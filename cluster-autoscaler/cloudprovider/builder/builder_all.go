@@ -1,5 +1,5 @@
-//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !packet
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!packet
+//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !packet && !oci
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!packet,!oci
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -37,6 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -55,6 +56,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ExoscaleProviderName,
 	cloudprovider.HuaweicloudProviderName,
 	cloudprovider.HetznerProviderName,
+	cloudprovider.OracleCloudProviderName,
 	cloudprovider.OVHcloudProviderName,
 	cloudprovider.ClusterAPIProviderName,
 	cloudprovider.IonoscloudProviderName,
@@ -105,6 +107,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return ionoscloud.BuildIonosCloud(opts, do, rl)
 	case cloudprovider.LinodeProviderName:
 		return linode.BuildLinode(opts, do, rl)
+	case cloudprovider.OracleCloudProviderName:
+		return oci.BuildOCI(opts, do, rl)
 	}
 	return nil
 }
