@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"math/rand"
 	"time"
 )
@@ -237,13 +236,13 @@ func (m *AliCloudManager) buildNodeFromTemplate(sg *Asg, template *sgTemplate) (
 
 func buildGenericLabels(template *sgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelInstanceType] = template.InstanceType.instanceTypeID
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.instanceTypeID
 
-	result[apiv1.LabelZoneRegion] = template.Region
-	result[apiv1.LabelZoneFailureDomain] = template.Zone
+	result[apiv1.LabelTopologyRegion] = template.Region
+	result[apiv1.LabelTopologyZone] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
 
 	// append custom node labels
