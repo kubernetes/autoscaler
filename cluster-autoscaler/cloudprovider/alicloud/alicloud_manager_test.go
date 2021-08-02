@@ -36,7 +36,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	}
 	nodeName := "virtual-node"
 	labels := buildGenericLabels(template, nodeName)
-	assert.Equal(t, labels[apiv1.LabelInstanceType], template.InstanceType.instanceTypeID)
+	assert.Equal(t, labels[apiv1.LabelInstanceTypeStable], template.InstanceType.instanceTypeID)
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {
