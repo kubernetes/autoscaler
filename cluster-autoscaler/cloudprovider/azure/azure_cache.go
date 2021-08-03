@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -53,6 +54,7 @@ type azureCache struct {
 	registeredNodeGroups []cloudprovider.NodeGroup
 	instanceToNodeGroup  map[azureRef]cloudprovider.NodeGroup
 	unownedInstances     map[azureRef]bool
+	autoscalingOptions   map[azureRef]map[string]string
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string) (*azureCache, error) {
@@ -67,6 +69,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmTy
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
 		unownedInstances:     make(map[azureRef]bool),
+		autoscalingOptions:   make(map[azureRef]map[string]string),
 	}
 
 	if err := cache.regenerate(); err != nil {
@@ -117,10 +120,22 @@ func (m *azureCache) regenerate() error {
 		}
 	}
 
+	// Regenerate VMSS to autoscaling options mapping.
+	newAutoscalingOptions := make(map[azureRef]map[string]string)
+	for _, vmss := range m.scaleSets {
+		ref := azureRef{Name: *vmss.Name}
+		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
+		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
+			klog.V(4).Infof("Extracted autoscaling options from %q ScaleSet tags: %v", *vmss.Name, options)
+		}
+		newAutoscalingOptions[ref] = options
+	}
+
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
+	m.autoscalingOptions = newAutoscalingOptions
 
 	// Reset unowned instances cache.
 	m.unownedInstances = make(map[azureRef]bool)
@@ -254,6 +269,13 @@ func (m *azureCache) getRegisteredNodeGroups() []cloudprovider.NodeGroup {
 	defer m.mutex.Unlock()
 
 	return m.registeredNodeGroups
+}
+
+func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.autoscalingOptions[ref]
 }
 
 // FindForInstance returns node group of the given Instance

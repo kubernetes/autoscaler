@@ -116,7 +116,11 @@ func (scaleSet *ScaleSet) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return nil, err.Error()
+	}
+	return scaleSet.manager.GetScaleSetOptions(*template.Name, defaults), nil
 }
 
 // MaxSize returns maximum size of the node group.

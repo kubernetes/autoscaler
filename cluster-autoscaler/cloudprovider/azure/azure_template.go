@@ -28,7 +28,9 @@ import (
 	"k8s.io/klog/v2"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
@@ -181,6 +183,53 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 	}
 
 	return taints
+}
+
+func extractAutoscalingOptionsFromScaleSetTags(tags map[string]*string) map[string]string {
+	options := make(map[string]string)
+	for tagName, tagValue := range tags {
+		if !strings.HasPrefix(tagName, nodeOptionsTagName) {
+			continue
+		}
+		resourceName := strings.Split(tagName, nodeOptionsTagName)
+		if len(resourceName) < 2 || resourceName[1] == "" || tagValue == nil {
+			continue
+		}
+		options[resourceName[1]] = strings.ToLower(*tagValue)
+	}
+	return options
+}
+
+func getFloat64Option(options map[string]string, vmssName, name string) (float64, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to float: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func getDurationOption(options map[string]string, vmssName, name string) (time.Duration, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := time.ParseDuration(raw)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to duration: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
 }
 
 func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string]*resource.Quantity {

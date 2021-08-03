@@ -54,6 +54,26 @@ k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
 k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
 ```
 
+#### Autoscaling options
+
+Some autoscaling options can be defined per VM Scale Set, with tags.
+Those tags values have the format as the respective cluster-autoscaler flags they override: floats or durations encoded as strings.
+
+Supported options tags (with example values) are:
+```
+# overrides --scale-down-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownutilizationthreshold: "0.5"
+
+# overrides --scale-down-gpu-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledowngpuutilizationthreshold: "0.5"
+
+# overrides --scale-down-unneeded-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunneededtime: "10m0s"
+
+# overrides --scale-down-unready-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunreadytime: "20m0s"
+```
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
