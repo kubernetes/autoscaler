@@ -46,6 +46,7 @@ type asgCache struct {
 
 	asgAutoDiscoverySpecs []asgAutoDiscoveryConfig
 	explicitlyConfigured  map[AwsRef]bool
+	autoscalingOptions    map[AwsRef]map[string]string
 }
 
 type launchTemplate struct {
@@ -82,6 +83,7 @@ func newASGCache(awsService *awsWrapper, explicitSpecs []string, autoDiscoverySp
 		interrupt:             make(chan struct{}),
 		asgAutoDiscoverySpecs: autoDiscoverySpecs,
 		explicitlyConfigured:  make(map[AwsRef]bool),
+		autoscalingOptions:    make(map[AwsRef]map[string]string),
 	}
 
 	if err := registry.parseExplicitAsgs(explicitSpecs); err != nil {
@@ -187,6 +189,13 @@ func (m *asgCache) Get() []*asg {
 	defer m.mutex.Unlock()
 
 	return m.registeredAsgs
+}
+
+// GetAutoscalingOptions return autoscaling options strings obtained from ASG tags.
+func (m *asgCache) GetAutoscalingOptions(ref AwsRef) map[string]string {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	return m.autoscalingOptions[ref]
 }
 
 // FindForInstance returns AsgConfig of the given Instance
@@ -409,8 +418,19 @@ func (m *asgCache) regenerate() error {
 		klog.Warningf("Failed to fully populate ASG->instanceType mapping: %v", err)
 	}
 
+	// Rebuild autoscaling options cache
+	newAutoscalingOptions := make(map[AwsRef]map[string]string)
+	for _, asg := range m.registeredAsgs {
+		options := extractAutoscalingOptionsFromTags(asg.Tags)
+		if !reflect.DeepEqual(m.autoscalingOptions[asg.AwsRef], options) {
+			klog.V(4).Infof("Extracted autoscaling options from %q ASG tags: %v", asg.Name, options)
+		}
+		newAutoscalingOptions[asg.AwsRef] = options
+	}
+
 	m.asgToInstances = newAsgToInstancesCache
 	m.instanceToAsg = newInstanceToAsgCache
+	m.autoscalingOptions = newAutoscalingOptions
 	return nil
 }
 
