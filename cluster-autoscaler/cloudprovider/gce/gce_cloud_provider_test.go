@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -85,6 +86,11 @@ func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	args := m.Called()
 	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *gceManagerMock) GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
+	args := m.Called(mig, defaults)
+	return args.Get(0).(*config.NodeGroupAutoscalingOptions)
 }
 
 func (m *gceManagerMock) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
