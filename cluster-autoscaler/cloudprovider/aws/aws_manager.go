@@ -25,6 +25,7 @@ import (
 	"math/rand"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
@@ -52,6 +54,7 @@ const (
 	refreshInterval         = 1 * time.Minute
 	autoDiscovererTypeASG   = "asg"
 	asgAutoDiscovererKeyTag = "tag"
+	optionsTagsPrefix       = "k8s.io/cluster-autoscaler/node-template/autoscaling-options/"
 )
 
 // AwsManager is handles aws communication and data caching.
@@ -273,6 +276,10 @@ func (m *AwsManager) getAsgs() []*asg {
 	return m.asgCache.Get()
 }
 
+func (m *AwsManager) getAutoscalingOptions(ref AwsRef) map[string]string {
+	return m.asgCache.GetAutoscalingOptions(ref)
+}
+
 // SetAsgSize sets ASG size.
 func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
 	return m.asgCache.SetAsgSize(asg, size)
@@ -319,6 +326,52 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		}, nil
 	}
 	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
+}
+
+// GetAsgOptions parse options extracted from ASG tags and merges them with provided defaults
+func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
+	options := m.getAutoscalingOptions(asg.AwsRef)
+	if options == nil || len(options) == 0 {
+		return &defaults
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownUtilizationThresholdKey]; found {
+		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to float: %v",
+				asg.Name, config.DefaultScaleDownUtilizationThresholdKey, err)
+		} else {
+			defaults.ScaleDownUtilizationThreshold = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownGpuUtilizationThresholdKey]; found {
+		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to float: %v",
+				asg.Name, config.DefaultScaleDownGpuUtilizationThresholdKey, err)
+		} else {
+			defaults.ScaleDownGpuUtilizationThreshold = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownUnneededTimeKey]; found {
+		if opt, err := time.ParseDuration(stringOpt); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+				asg.Name, config.DefaultScaleDownUnneededTimeKey, err)
+		} else {
+			defaults.ScaleDownUnneededTime = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownUnreadyTimeKey]; found {
+		if opt, err := time.ParseDuration(stringOpt); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+				asg.Name, config.DefaultScaleDownUnreadyTimeKey, err)
+		} else {
+			defaults.ScaleDownUnreadyTime = opt
+		}
+	}
+
+	return &defaults
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {
@@ -399,6 +452,21 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 	}
 
 	return result
+}
+
+func extractAutoscalingOptionsFromTags(tags []*autoscaling.TagDescription) map[string]string {
+	options := make(map[string]string)
+	for _, tag := range tags {
+		if !strings.HasPrefix(aws.StringValue(tag.Key), optionsTagsPrefix) {
+			continue
+		}
+		splits := strings.Split(aws.StringValue(tag.Key), optionsTagsPrefix)
+		if len(splits) != 2 || splits[1] == "" {
+			continue
+		}
+		options[splits[1]] = aws.StringValue(tag.Value)
+	}
+	return options
 }
 
 func extractAllocatableResourcesFromAsg(tags []*autoscaling.TagDescription) map[string]*resource.Quantity {
