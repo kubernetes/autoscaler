@@ -162,6 +162,20 @@ Example tags:
 
 - `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
 
+ASG labels can specify autoscaling options, overriding the global cluster-autoscaler
+settings for the labeled ASGs. Those labels takes the same values format as the
+cluster-autoscaler command line flags they override (a float or a duration, encoded
+as string). Currently supported autoscaling options (and example values) are:
+
+* `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledownutilizationthreshold`: `0.5`
+  (overrides `--scale-down-utilization-threshold` value for that specific ASG)
+* `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledowngpuutilizationthreshold`: `0.5`
+  (overrides `--scale-down-gpu-utilization-threshold` value for that specific ASG)
+* `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledownunneededtime`: `10m0s`
+  (overrides `--scale-down-unneeded-time` value for that specific ASG)
+* `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledownunreadytime`: `20m0s`
+  (overrides `--scale-down-unready-time` value for that specific ASG)
+
 **NOTE:** It is your responsibility to ensure such labels and/or taints are
 applied via the node's kubelet configuration at startup. Cluster Autoscaler will not set the node taints for you.
 
