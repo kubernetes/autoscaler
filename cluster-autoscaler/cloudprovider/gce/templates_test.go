@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -478,6 +479,64 @@ func TestBuildCapacityMemory(t *testing.T) {
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
 			assertEqualResourceLists(t, "Capacity", expectedCapacity, buildCapacity)
+		})
+	}
+}
+
+func TestExtractAutoscalingOptionsFromKubeEnv(t *testing.T) {
+	cases := []struct {
+		desc          string
+		env           string
+		expectedValue map[string]string
+		expectedErr   bool
+	}{
+		{
+			desc:          "autoscaling_options not specified",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: map[string]string{},
+			expectedErr:   false,
+		},
+		{
+			desc:          "empty KubeEnv",
+			env:           "",
+			expectedValue: map[string]string{},
+			expectedErr:   false,
+		},
+		{
+			desc:          "unparsable KubeEnv",
+			env:           "AUTOSCALER_ENV_VARS",
+			expectedValue: nil,
+			expectedErr:   true,
+		},
+		{
+			desc: "partial option set",
+			env:  "AUTOSCALER_ENV_VARS: node_labels=a=b;autoscaling_options=scaledownunreadytime=1h",
+			expectedValue: map[string]string{
+				config.DefaultScaleDownUnreadyTimeKey: "1h",
+			},
+			expectedErr: false,
+		},
+		{
+			desc: "full option set",
+			env:  "AUTOSCALER_ENV_VARS: node_labels=a,b;autoscaling_options=scaledownutilizationthreshold=0.4,scaledowngpuutilizationthreshold=0.5,scaledownunneededtime=30m,scaledownunreadytime=1h",
+			expectedValue: map[string]string{
+				config.DefaultScaleDownUtilizationThresholdKey:    "0.4",
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.5",
+				config.DefaultScaleDownUnneededTimeKey:            "30m",
+				config.DefaultScaleDownUnreadyTimeKey:             "1h",
+			},
+			expectedErr: false,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			value, err := extractAutoscalingOptionsFromKubeEnv(c.env)
+			assert.Equal(t, c.expectedValue, value)
+			if c.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
