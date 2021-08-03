@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -336,6 +337,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		GceService:               gceService,
 		instanceRefToMigRef:      make(map[GceRef]GceRef),
 		instancesFromUnknownMigs: make(map[GceRef]struct{}),
+		autoscalingOptionsCache:  map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]machinesCacheValue{
 			{"us-central1-b", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
 			{"us-central1-c", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
@@ -1575,4 +1577,70 @@ func TestAppendInstances(t *testing.T) {
 	err := g.CreateInstances(defaultPoolMig, 2)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestGetMigOptions(t *testing.T) {
+	defaultOptions := &config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.1,
+		ScaleDownGpuUtilizationThreshold: 0.2,
+		ScaleDownUnneededTime:            time.Second,
+		ScaleDownUnreadyTime:             time.Minute,
+	}
+
+	cases := []struct {
+		desc     string
+		opts     map[string]string
+		expected *config.NodeGroupAutoscalingOptions
+	}{
+		{
+			desc:     "return provided defaults on empty metadata",
+			opts:     map[string]string{},
+			expected: defaultOptions,
+		},
+		{
+			desc: "return specified options",
+			opts: map[string]string{
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.6",
+				config.DefaultScaleDownUtilizationThresholdKey:    "0.7",
+				config.DefaultScaleDownUnneededTimeKey:            "1h",
+				config.DefaultScaleDownUnreadyTimeKey:             "30m",
+			},
+			expected: &config.NodeGroupAutoscalingOptions{
+				ScaleDownGpuUtilizationThreshold: 0.6,
+				ScaleDownUtilizationThreshold:    0.7,
+				ScaleDownUnneededTime:            time.Hour,
+				ScaleDownUnreadyTime:             30 * time.Minute,
+			},
+		},
+		{
+			desc: "complete partial options specs with defaults",
+			opts: map[string]string{
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.1",
+				config.DefaultScaleDownUnneededTimeKey:            "1m",
+			},
+			expected: &config.NodeGroupAutoscalingOptions{
+				ScaleDownGpuUtilizationThreshold: 0.1,
+				ScaleDownUtilizationThreshold:    defaultOptions.ScaleDownUtilizationThreshold,
+				ScaleDownUnneededTime:            time.Minute,
+				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
+			},
+		},
+		{
+			desc: "keep defaults on unparsable options values",
+			opts: map[string]string{
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "foo",
+				config.DefaultScaleDownUnneededTimeKey:            "bar",
+			},
+			expected: defaultOptions,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			mgr := newTestGceManager(t, "", false)
+			mig := setupTestDefaultPool(mgr, true)
+			mgr.cache.SetAutoscalingOptions(mig.GceRef(), c.opts)
+			actual := mgr.GetMigOptions(mig, *defaultOptions)
+			assert.Equal(t, c.expected, actual)
+		})
+	}
 }
