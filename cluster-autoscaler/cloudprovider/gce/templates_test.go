@@ -226,13 +226,13 @@ func TestBuildGenericLabels(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			expectedLabels := map[string]string{
-				apiv1.LabelTopologyRegion:          "us-central1",
-				apiv1.LabelTopologyZone:       	    "us-central1-b",
-				gceCSITopologyKeyZone:              "us-central1-b",
-				apiv1.LabelHostname:                "sillyname",
-				apiv1.LabelInstanceTypeStable:      "n1-standard-8",
-				apiv1.LabelArchStable:              cloudprovider.DefaultArch,
-				apiv1.LabelOSStable:                tc.expectedOsLabel,
+				apiv1.LabelTopologyRegion:     "us-central1",
+				apiv1.LabelTopologyZone:       "us-central1-b",
+				gceCSITopologyKeyZone:         "us-central1-b",
+				apiv1.LabelHostname:           "sillyname",
+				apiv1.LabelInstanceTypeStable: "n1-standard-8",
+				apiv1.LabelArchStable:         cloudprovider.DefaultArch,
+				apiv1.LabelOSStable:           tc.expectedOsLabel,
 			}
 			labels, err := BuildGenericLabels(GceRef{
 				Name:    "kubernetes-minion-group",
