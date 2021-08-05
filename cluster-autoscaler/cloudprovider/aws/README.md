@@ -143,9 +143,10 @@ be labeled or tainted when they join the cluster, such as:
 
 * `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
 * `k8s.io/cluster-autoscaler/node-template/taint/dedicated`: `NoSchedule`
+* `k8s.io/cluster-autoscaler/node-template/taint/tier:` `batch:NoSchedule`
 
 **NOTE:** It is your responsibility to ensure such labels and/or taints are
-applied via the node's kubelet configuration at startup.
+applied via the node's kubelet configuration at startup. Cluster Autoscaler will not set the node taints for you.
 
 Recommendations:
 
