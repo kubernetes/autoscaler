@@ -17,4 +17,4 @@ name: cluster-autoscaler
 sources:
   - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
 type: application
-version: 9.10.3
+version: 9.10.4
