@@ -28,6 +28,11 @@ spec:
         - name: updater
           image: k8s.gcr.io/autoscaling/vpa-updater:0.9.2
           imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           resources:
             limits:
               cpu: 200m
