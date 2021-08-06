@@ -125,6 +125,11 @@ dnsPolicy: ClusterFirst
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
 
+# priorityConfigMapAnnotations -- Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap.
+priorityConfigMapAnnotations: {}
+  # key1: "value1"
+  # key2: "value2"
+
 # extraArgs -- Additional container arguments.
 # Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
 # parameters and their default values.
