@@ -62,6 +62,9 @@ const (
 
 	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
 	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
+
+	// podScaleUpDelayAnnotationKey is an annotation how long pod can wait to be scaled up.
+	podScaleUpDelayAnnotationKey = "cluster-autoscaler.kubernetes.io/pod-scale-up-delay"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -719,17 +722,32 @@ func (a *StaticAutoscaler) nodeGroupsById() map[string]cloudprovider.NodeGroup {
 	return nodeGroups
 }
 
-// don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable
+// Don't consider pods newer than newPodScaleUpDelay or annotated podScaleUpDelay
+// seconds old as unschedulable.
 func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod, currentTime time.Time) []*apiv1.Pod {
 	var oldUnschedulablePods []*apiv1.Pod
 	newPodScaleUpDelay := a.AutoscalingOptions.NewPodScaleUpDelay
 	for _, pod := range allUnschedulablePods {
 		podAge := currentTime.Sub(pod.CreationTimestamp.Time)
-		if podAge > newPodScaleUpDelay {
+		podScaleUpDelay := newPodScaleUpDelay
+
+		if podScaleUpDelayAnnotationStr, ok := pod.Annotations[podScaleUpDelayAnnotationKey]; ok {
+			podScaleUpDelayAnnotation, err := time.ParseDuration(podScaleUpDelayAnnotationStr)
+			if err != nil {
+				klog.Errorf("Failed to parse pod %q annotation %s: %v", pod.Name, podScaleUpDelayAnnotationKey, err)
+			} else {
+				if podScaleUpDelayAnnotation < podScaleUpDelay {
+					klog.Errorf("Failed to set pod scale up delay for %q through annotation %s: %d is less then %d", pod.Name, podScaleUpDelayAnnotationKey, podScaleUpDelayAnnotation, newPodScaleUpDelay)
+				} else {
+					podScaleUpDelay = podScaleUpDelayAnnotation
+				}
+			}
+		}
+
+		if podAge > podScaleUpDelay {
 			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		} else {
 			klog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
-
 		}
 	}
 	return oldUnschedulablePods
