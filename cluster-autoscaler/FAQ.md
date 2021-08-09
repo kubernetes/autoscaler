@@ -33,6 +33,7 @@ this document:
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
   * [How can I prevent Cluster Autoscaler from scaling down non-empty nodes?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-non-empty-nodes)
+  * [How can I modify Cluster Autoscaler reaction time?](#how-can-i-modify-cluster-autoscaler-reaction-time)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
@@ -331,6 +332,23 @@ CA might scale down non-empty nodes with utilization below a threshold
 
 To prevent this behavior, set the utilization threshold to `0`.
 
+### How can I modify Cluster Autoscaler reaction time?
+
+There are multiple flags which can be used to configure scale up and scale down delays.
+
+In some environments, you may wish to give the k8s scheduler a bit more time to schedule a pod than the CA's scan-interval.
+One way to do this is by setting `--new-pod-scale-up-delay`, which causes the CA to ignore unschedulable pods until they are
+a certain "age", regardless of the scan-interval. This setting can be overridden per pod through
+`cluster-autoscaler.kubernetes.io/pod-scale-up-delay` annotation. If k8s has not scheduled them by the end of that delay,
+then they may be considered by the CA for a possible scale-up.
+
+```
+"cluster-autoscaler.kubernetes.io/pod-scale-up-delay": "600s"
+```
+
+Scaling down of unneeded nodes can be configured by setting `--scale-down-unneeded-time`. Increasing value will make nodes stay
+up longer, waiting for pods to be scheduled while decreasing value will make nodes be deleted sooner.
+
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
 Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
@@ -620,10 +638,7 @@ then this node group may be excluded from future scale-ups.
 ### How fast is Cluster Autoscaler?
 
 By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded.
-There are multiple flags which can be used to configure these thresholds. For example, in some environments, you may wish to give the k8s scheduler
-a bit more time to schedule a pod than the CA's scan-interval. One way to do this is by setting `--new-pod-scale-up-delay`, which causes the CA to
-ignore unschedulable pods until they are a certain "age", regardless of the scan-interval. If k8s has not scheduled them by the end of that delay,
-then they may be considered by the CA for a possible scale-up.
+Read [this section](#how-can-i-modify-cluster-autoscaler-reaction-time) to see how you can modify this behaviour.
 
 Assuming default settings, [SLOs described here apply](#what-are-the-service-level-objectives-for-cluster-autoscaler).
 
