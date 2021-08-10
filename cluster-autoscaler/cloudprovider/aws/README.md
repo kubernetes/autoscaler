@@ -143,9 +143,10 @@ be labeled or tainted when they join the cluster, such as:
 
 * `k8s.io/cluster-autoscaler/node-template/label/foo`: `bar`
 * `k8s.io/cluster-autoscaler/node-template/taint/dedicated`: `NoSchedule`
+* `k8s.io/cluster-autoscaler/node-template/taint/tier:` `batch:NoSchedule`
 
 **NOTE:** It is your responsibility to ensure such labels and/or taints are
-applied via the node's kubelet configuration at startup.
+applied via the node's kubelet configuration at startup. Cluster Autoscaler will not set the node taints for you.
 
 Recommendations:
 
@@ -208,16 +209,17 @@ kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 kubectl apply -f examples/cluster-autoscaler-multi-asg.yaml
 ```
 
-## Master Node Setup
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+## Control Plane (previously referred to as master) Node Setup
 
 **NOTE**: This setup is not compatible with Amazon EKS.
 
-To run a CA pod in master node - CA deployment should tolerate the master
-`taint` and `nodeSelector` should be used to schedule the pods in master node.
+To run a CA pod on a control plane node the CA deployment should tolerate the `master`
+taint and `nodeSelector` should be used to schedule the pods on a control plane node.
 Please replace `{{ node_asg_min }}`, `{{ node_asg_max }}` and `{{ name }}` with
 your ASG setting in the yaml file.
 ```
-kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
+kubectl apply -f examples/cluster-autoscaler-run-on-control-plane.yaml
 ```
 
 ## Using Mixed Instances Policies and Spot Instances
@@ -354,3 +356,6 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
   `aws:///us-east-1a/i-01234abcdef`.
 * If you want to use regional STS endpoints (e.g. when using VPC endpoint for
   STS) the env `AWS_STS_REGIONAL_ENDPOINTS=regional` should be set.
+* If you want to run it on instances with IMDSv1 disabled make sure your
+  EC2 launch configuration has the setting `Metadata response hop limit` set to `2`.
+  Otherwise, the `/latest/api/token` call will timeout and result in an error. See [AWS docs here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) for further information. 

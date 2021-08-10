@@ -32,7 +32,10 @@ import (
 	"k8s.io/kubernetes/pkg/controller/volume/scheduling"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/helper"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/names"
 )
 
 const (
@@ -40,6 +43,8 @@ const (
 	DefaultBindTimeoutSeconds = 600
 
 	stateKey framework.StateKey = Name
+
+	maxUtilization = 100
 )
 
 // the state is initialized in PreFilter phase. because we save the pointer in
@@ -68,19 +73,51 @@ type VolumeBinding struct {
 	Binder                               scheduling.SchedulerVolumeBinder
 	PVCLister                            corelisters.PersistentVolumeClaimLister
 	GenericEphemeralVolumeFeatureEnabled bool
+	scorer                               volumeCapacityScorer
 }
 
 var _ framework.PreFilterPlugin = &VolumeBinding{}
 var _ framework.FilterPlugin = &VolumeBinding{}
 var _ framework.ReservePlugin = &VolumeBinding{}
 var _ framework.PreBindPlugin = &VolumeBinding{}
+var _ framework.ScorePlugin = &VolumeBinding{}
+var _ framework.EnqueueExtensions = &VolumeBinding{}
 
 // Name is the name of the plugin used in Registry and configurations.
-const Name = "VolumeBinding"
+const Name = names.VolumeBinding
 
 // Name returns name of the plugin. It is used in logs, etc.
 func (pl *VolumeBinding) Name() string {
 	return Name
+}
+
+// EventsToRegister returns the possible events that may make a Pod
+// failed by this plugin schedulable.
+func (pl *VolumeBinding) EventsToRegister() []framework.ClusterEvent {
+	events := []framework.ClusterEvent{
+		// Pods may fail because of missing or mis-configured storage class
+		// (e.g., allowedTopologies, volumeBindingMode), and hence may become
+		// schedulable upon StorageClass Add or Update events.
+		{Resource: framework.StorageClass, ActionType: framework.Add | framework.Update},
+		// We bind PVCs with PVs, so any changes may make the pods schedulable.
+		{Resource: framework.PersistentVolumeClaim, ActionType: framework.Add | framework.Update},
+		{Resource: framework.PersistentVolume, ActionType: framework.Add | framework.Update},
+		// Pods may fail to find available PVs because the node labels do not
+		// match the storage class's allowed topologies or PV's node affinity.
+		// A new or updated node may make pods schedulable.
+		{Resource: framework.Node, ActionType: framework.Add | framework.Update},
+		// We rely on CSI node to translate in-tree PV to CSI.
+		{Resource: framework.CSINode, ActionType: framework.Add | framework.Update},
+	}
+	if utilfeature.DefaultFeatureGate.Enabled(features.CSIStorageCapacity) {
+		// When CSIStorageCapacity is enabled, pods may become schedulable
+		// on CSI driver & storage capacity changes.
+		events = append(events, []framework.ClusterEvent{
+			{Resource: framework.CSIDriver, ActionType: framework.Add | framework.Update},
+			{Resource: framework.CSIStorageCapacity, ActionType: framework.Add | framework.Update},
+		}...)
+	}
+	return events
 }
 
 // podHasPVCs returns 2 values:
@@ -196,7 +233,7 @@ func (pl *VolumeBinding) Filter(ctx context.Context, cs *framework.CycleState, p
 	podVolumes, reasons, err := pl.Binder.FindPodVolumes(pod, state.boundClaims, state.claimsToBind, node)
 
 	if err != nil {
-		return framework.NewStatus(framework.Error, err.Error())
+		return framework.AsStatus(err)
 	}
 
 	if len(reasons) > 0 {
@@ -211,6 +248,41 @@ func (pl *VolumeBinding) Filter(ctx context.Context, cs *framework.CycleState, p
 	state.Lock()
 	state.podVolumesByNode[node.Name] = podVolumes
 	state.Unlock()
+	return nil
+}
+
+// Score invoked at the score extension point.
+func (pl *VolumeBinding) Score(ctx context.Context, cs *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
+	if pl.scorer == nil {
+		return 0, nil
+	}
+	state, err := getStateData(cs)
+	if err != nil {
+		return 0, framework.AsStatus(err)
+	}
+	podVolumes, ok := state.podVolumesByNode[nodeName]
+	if !ok {
+		return 0, nil
+	}
+	// group by storage class
+	classResources := make(classResourceMap)
+	for _, staticBinding := range podVolumes.StaticBindings {
+		class := staticBinding.StorageClassName()
+		storageResource := staticBinding.StorageResource()
+		if _, ok := classResources[class]; !ok {
+			classResources[class] = &scheduling.StorageResource{
+				Requested: 0,
+				Capacity:  0,
+			}
+		}
+		classResources[class].Requested += storageResource.Requested
+		classResources[class].Capacity += storageResource.Capacity
+	}
+	return pl.scorer(classResources), nil
+}
+
+// ScoreExtensions of the Score plugin.
+func (pl *VolumeBinding) ScoreExtensions() framework.ScoreExtensions {
 	return nil
 }
 
@@ -254,13 +326,13 @@ func (pl *VolumeBinding) PreBind(ctx context.Context, cs *framework.CycleState, 
 	if !ok {
 		return framework.AsStatus(fmt.Errorf("no pod volumes found for node %q", nodeName))
 	}
-	klog.V(5).Infof("Trying to bind volumes for pod \"%v/%v\"", pod.Namespace, pod.Name)
+	klog.V(5).InfoS("Trying to bind volumes for pod", "pod", klog.KObj(pod))
 	err = pl.Binder.BindPodVolumes(pod, podVolumes)
 	if err != nil {
-		klog.V(1).Infof("Failed to bind volumes for pod \"%v/%v\": %v", pod.Namespace, pod.Name, err)
+		klog.V(1).InfoS("Failed to bind volumes for pod", "pod", klog.KObj(pod), "err", err)
 		return framework.AsStatus(err)
 	}
-	klog.V(5).Infof("Success binding volumes for pod \"%v/%v\"", pod.Namespace, pod.Name)
+	klog.V(5).InfoS("Success binding volumes for pod", "pod", klog.KObj(pod))
 	return nil
 }
 
@@ -286,7 +358,7 @@ func New(plArgs runtime.Object, fh framework.Handle) (framework.Plugin, error) {
 	if !ok {
 		return nil, fmt.Errorf("want args to be of type VolumeBindingArgs, got %T", plArgs)
 	}
-	if err := validateArgs(args); err != nil {
+	if err := validation.ValidateVolumeBindingArgs(nil, args); err != nil {
 		return nil, err
 	}
 	podInformer := fh.SharedInformerFactory().Core().V1().Pods()
@@ -299,20 +371,27 @@ func New(plArgs runtime.Object, fh framework.Handle) (framework.Plugin, error) {
 	if utilfeature.DefaultFeatureGate.Enabled(features.CSIStorageCapacity) {
 		capacityCheck = &scheduling.CapacityCheck{
 			CSIDriverInformer:          fh.SharedInformerFactory().Storage().V1().CSIDrivers(),
-			CSIStorageCapacityInformer: fh.SharedInformerFactory().Storage().V1alpha1().CSIStorageCapacities(),
+			CSIStorageCapacityInformer: fh.SharedInformerFactory().Storage().V1beta1().CSIStorageCapacities(),
 		}
 	}
 	binder := scheduling.NewVolumeBinder(fh.ClientSet(), podInformer, nodeInformer, csiNodeInformer, pvcInformer, pvInformer, storageClassInformer, capacityCheck, time.Duration(args.BindTimeoutSeconds)*time.Second)
+
+	// build score function
+	var scorer volumeCapacityScorer
+	if utilfeature.DefaultFeatureGate.Enabled(features.VolumeCapacityPriority) {
+		shape := make(helper.FunctionShape, 0, len(args.Shape))
+		for _, point := range args.Shape {
+			shape = append(shape, helper.FunctionShapePoint{
+				Utilization: int64(point.Utilization),
+				Score:       int64(point.Score) * (framework.MaxNodeScore / config.MaxCustomPriorityScore),
+			})
+		}
+		scorer = buildScorerFunction(shape)
+	}
 	return &VolumeBinding{
 		Binder:                               binder,
 		PVCLister:                            pvcInformer.Lister(),
 		GenericEphemeralVolumeFeatureEnabled: utilfeature.DefaultFeatureGate.Enabled(features.GenericEphemeralVolume),
+		scorer:                               scorer,
 	}, nil
-}
-
-func validateArgs(args *config.VolumeBindingArgs) error {
-	if args.BindTimeoutSeconds <= 0 {
-		return fmt.Errorf("invalid BindTimeoutSeconds: %d, must be positive integer", args.BindTimeoutSeconds)
-	}
-	return nil
 }

@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -110,6 +111,12 @@ func (scaleSet *ScaleSet) Delete() error {
 // Autoprovisioned returns true if the node group is autoprovisioned.
 func (scaleSet *ScaleSet) Autoprovisioned() bool {
 	return false
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // MaxSize returns maximum size of the node group.
@@ -333,7 +340,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
+func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregisteredNodes bool) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -398,9 +405,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
-	scaleSet.sizeMutex.Lock()
-	scaleSet.curSize -= int64(len(instanceIDs))
-	scaleSet.sizeMutex.Unlock()
+	// only do it for non-unregistered nodes
+	if !hasUnregisteredNodes {
+		scaleSet.sizeMutex.Lock()
+		scaleSet.curSize -= int64(len(instanceIDs))
+		scaleSet.sizeMutex.Unlock()
+	}
 
 	// Proactively set the status of the instances to be deleted in cache
 	for _, instance := range instancesToDelete {
@@ -425,6 +435,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	refs := make([]*azureRef, 0, len(nodes))
+	hasUnregisteredNodes := false
 	for _, node := range nodes {
 		belongs, err := scaleSet.Belongs(node)
 		if err != nil {
@@ -435,13 +446,16 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
 		}
 
+		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
+			hasUnregisteredNodes = true
+		}
 		ref := &azureRef{
 			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
 	}
 
-	return scaleSet.DeleteInstances(refs)
+	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
 }
 
 // Id returns ScaleSet id.

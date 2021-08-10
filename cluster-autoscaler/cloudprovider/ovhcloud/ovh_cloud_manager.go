@@ -120,7 +120,7 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 			return nil, fmt.Errorf("failed to create OpenStack provider: %w", err)
 		}
 
-		client, err = sdk.NewDefaultClientWithToken(openStackProvider.Token)
+		client, err = sdk.NewDefaultClientWithToken(openStackProvider.AuthUrl, openStackProvider.Token)
 	case ApplicationConsumerAuthenticationType:
 		client, err = sdk.NewClient(cfg.ApplicationEndpoint, cfg.ApplicationKey, cfg.ApplicationSecret, cfg.ApplicationConsumerKey)
 	default:
@@ -151,7 +151,7 @@ func (m *OvhCloudManager) ReAuthenticate() error {
 				return fmt.Errorf("failed to re-authenticate OpenStack token: %w", err)
 			}
 
-			client, err := sdk.NewDefaultClientWithToken(m.OpenStackProvider.Token)
+			client, err := sdk.NewDefaultClientWithToken(m.OpenStackProvider.AuthUrl, m.OpenStackProvider.Token)
 			if err != nil {
 				return fmt.Errorf("failed to re-create client: %w", err)
 			}

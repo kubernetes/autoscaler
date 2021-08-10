@@ -38,6 +38,7 @@ import (
 	"k8s.io/apiserver/pkg/features"
 	"k8s.io/apiserver/pkg/storage"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	utilflowcontrol "k8s.io/apiserver/pkg/util/flowcontrol"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	utiltrace "k8s.io/utils/trace"
@@ -431,8 +432,21 @@ func (c *Cacher) Create(ctx context.Context, key string, obj, out runtime.Object
 }
 
 // Delete implements storage.Interface.
-func (c *Cacher) Delete(ctx context.Context, key string, out runtime.Object, preconditions *storage.Preconditions, validateDeletion storage.ValidateObjectFunc) error {
-	return c.storage.Delete(ctx, key, out, preconditions, validateDeletion)
+func (c *Cacher) Delete(
+	ctx context.Context, key string, out runtime.Object, preconditions *storage.Preconditions,
+	validateDeletion storage.ValidateObjectFunc, _ runtime.Object) error {
+	// Ignore the suggestion and try to pass down the current version of the object
+	// read from cache.
+	if elem, exists, err := c.watchCache.GetByKey(key); err != nil {
+		klog.Errorf("GetByKey returned error: %v", err)
+	} else if exists {
+		// DeepCopy the object since we modify resource version when serializing the
+		// current object.
+		currObj := elem.(*storeElement).Object.DeepCopyObject()
+		return c.storage.Delete(ctx, key, out, preconditions, validateDeletion, currObj)
+	}
+	// If we couldn't get the object, fallback to no-suggestion.
+	return c.storage.Delete(ctx, key, out, preconditions, validateDeletion, nil)
 }
 
 // Watch implements storage.Interface.
@@ -474,11 +488,14 @@ func (c *Cacher) Watch(ctx context.Context, key string, opts storage.ListOptions
 
 	// Determine watch timeout('0' means deadline is not set, ignore checking)
 	deadline, _ := ctx.Deadline()
+
+	identifier := fmt.Sprintf("key: %q, labels: %q, fields: %q", key, pred.Label, pred.Field)
+
 	// Create a watcher here to reduce memory allocations under lock,
 	// given that memory allocation may trigger GC and block the thread.
 	// Also note that emptyFunc is a placeholder, until we will be able
 	// to compute watcher.forget function (which has to happen under lock).
-	watcher := newCacheWatcher(chanSize, filterWithAttrsFunction(key, pred), emptyFunc, c.versioner, deadline, pred.AllowWatchBookmarks, c.objectType)
+	watcher := newCacheWatcher(chanSize, filterWithAttrsFunction(key, pred), emptyFunc, c.versioner, deadline, pred.AllowWatchBookmarks, c.objectType, identifier)
 
 	// We explicitly use thread unsafe version and do locking ourself to ensure that
 	// no new events will be processed in the meantime. The watchCache will be unlocked
@@ -576,20 +593,27 @@ func (c *Cacher) Get(ctx context.Context, key string, opts storage.GetOptions, o
 	return nil
 }
 
-// GetToList implements storage.Interface.
-func (c *Cacher) GetToList(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object) error {
+func shouldDelegateList(opts storage.ListOptions) bool {
 	resourceVersion := opts.ResourceVersion
 	pred := opts.Predicate
 	pagingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.APIListChunking)
 	hasContinuation := pagingEnabled && len(pred.Continue) > 0
 	hasLimit := pagingEnabled && pred.Limit > 0 && resourceVersion != "0"
-	if resourceVersion == "" || hasContinuation || hasLimit || opts.ResourceVersionMatch == metav1.ResourceVersionMatchExact {
-		// If resourceVersion is not specified, serve it from underlying
-		// storage (for backward compatibility). If a continuation is
-		// requested, serve it from the underlying storage as well.
-		// Limits are only sent to storage when resourceVersion is non-zero
-		// since the watch cache isn't able to perform continuations, and
-		// limits are ignored when resource version is zero
+
+	// If resourceVersion is not specified, serve it from underlying
+	// storage (for backward compatibility). If a continuation is
+	// requested, serve it from the underlying storage as well.
+	// Limits are only sent to storage when resourceVersion is non-zero
+	// since the watch cache isn't able to perform continuations, and
+	// limits are ignored when resource version is zero
+	return resourceVersion == "" || hasContinuation || hasLimit || opts.ResourceVersionMatch == metav1.ResourceVersionMatchExact
+}
+
+// GetToList implements storage.Interface.
+func (c *Cacher) GetToList(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object) error {
+	resourceVersion := opts.ResourceVersion
+	pred := opts.Predicate
+	if shouldDelegateList(opts) {
 		return c.storage.GetToList(ctx, key, opts, listObj)
 	}
 
@@ -654,16 +678,7 @@ func (c *Cacher) GetToList(ctx context.Context, key string, opts storage.ListOpt
 func (c *Cacher) List(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object) error {
 	resourceVersion := opts.ResourceVersion
 	pred := opts.Predicate
-	pagingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.APIListChunking)
-	hasContinuation := pagingEnabled && len(pred.Continue) > 0
-	hasLimit := pagingEnabled && pred.Limit > 0 && resourceVersion != "0"
-	if resourceVersion == "" || hasContinuation || hasLimit || opts.ResourceVersionMatch == metav1.ResourceVersionMatchExact {
-		// If resourceVersion is not specified, serve it from underlying
-		// storage (for backward compatibility). If a continuation is
-		// requested, serve it from the underlying storage as well.
-		// Limits are only sent to storage when resourceVersion is non-zero
-		// since the watch cache isn't able to perform continuations, and
-		// limits are ignored when resource version is zero.
+	if shouldDelegateList(opts) {
 		return c.storage.List(ctx, key, opts, listObj)
 	}
 
@@ -739,6 +754,8 @@ func (c *Cacher) GuaranteedUpdate(
 	if elem, exists, err := c.watchCache.GetByKey(key); err != nil {
 		klog.Errorf("GetByKey returned error: %v", err)
 	} else if exists {
+		// DeepCopy the object since we modify resource version when serializing the
+		// current object.
 		currObj := elem.(*storeElement).Object.DeepCopyObject()
 		return c.storage.GuaranteedUpdate(ctx, key, ptrToType, ignoreNotFound, preconditions, tryUpdate, currObj)
 	}
@@ -1179,9 +1196,13 @@ type cacheWatcher struct {
 	allowWatchBookmarks bool
 	// Object type of the cache watcher interests
 	objectType reflect.Type
+
+	// human readable identifier that helps assigning cacheWatcher
+	// instance with request
+	identifier string
 }
 
-func newCacheWatcher(chanSize int, filter filterWithAttrsFunc, forget func(), versioner storage.Versioner, deadline time.Time, allowWatchBookmarks bool, objectType reflect.Type) *cacheWatcher {
+func newCacheWatcher(chanSize int, filter filterWithAttrsFunc, forget func(), versioner storage.Versioner, deadline time.Time, allowWatchBookmarks bool, objectType reflect.Type, identifier string) *cacheWatcher {
 	return &cacheWatcher{
 		input:               make(chan *watchCacheEvent, chanSize),
 		result:              make(chan watch.Event, chanSize),
@@ -1193,6 +1214,7 @@ func newCacheWatcher(chanSize int, filter filterWithAttrsFunc, forget func(), ve
 		deadline:            deadline,
 		allowWatchBookmarks: allowWatchBookmarks,
 		objectType:          objectType,
+		identifier:          identifier,
 	}
 }
 
@@ -1235,7 +1257,8 @@ func (c *cacheWatcher) add(event *watchCacheEvent, timer *time.Timer) bool {
 		// This means that we couldn't send event to that watcher.
 		// Since we don't want to block on it infinitely,
 		// we simply terminate it.
-		klog.V(1).Infof("Forcing watcher close due to unresponsiveness: %v", c.objectType.String())
+		klog.V(1).Infof("Forcing %v watcher close due to unresponsiveness: %v. len(c.input) = %v, len(c.result) = %v", c.objectType.String(), c.identifier, len(c.input), len(c.result))
+		terminatedWatchersCounter.WithLabelValues(c.objectType.String()).Inc()
 		c.forget()
 	}
 
@@ -1386,8 +1409,16 @@ func (c *cacheWatcher) process(ctx context.Context, initEvents []*watchCacheEven
 	}
 	processingTime := time.Since(startTime)
 	if processingTime > initProcessThreshold {
-		klog.V(2).Infof("processing %d initEvents of %s took %v", len(initEvents), objType, processingTime)
+		klog.V(2).Infof("processing %d initEvents of %s (%s) took %v", len(initEvents), objType, c.identifier, processingTime)
 	}
+
+	// At this point we already start processing incoming watch events.
+	// However, the init event can still be processed because their serialization
+	// and sending to the client happens asynchrnously.
+	// TODO: As describe in the KEP, we would like to estimate that by delaying
+	//   the initialization signal proportionally to the number of events to
+	//   process, but we're leaving this to the tuning phase.
+	utilflowcontrol.WatchInitialized(ctx)
 
 	defer close(c.result)
 	defer c.Stop()

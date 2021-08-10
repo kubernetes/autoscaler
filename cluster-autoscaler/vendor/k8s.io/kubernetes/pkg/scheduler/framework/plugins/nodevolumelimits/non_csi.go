@@ -18,6 +18,7 @@ package nodevolumelimits
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -27,15 +28,14 @@ import (
 	storage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/informers"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	storagelisters "k8s.io/client-go/listers/storage/v1"
 	csilibplugins "k8s.io/csi-translation-lib/plugins"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/features"
-	kubefeatures "k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/names"
 	volumeutil "k8s.io/kubernetes/pkg/volume/util"
 )
 
@@ -65,7 +65,7 @@ const (
 )
 
 // AzureDiskName is the name of the plugin used in the plugin registry and configurations.
-const AzureDiskName = "AzureDiskLimits"
+const AzureDiskName = names.AzureDiskLimits
 
 // NewAzureDisk returns function that initializes a new plugin and returns it.
 func NewAzureDisk(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -74,7 +74,7 @@ func NewAzureDisk(_ runtime.Object, handle framework.Handle) (framework.Plugin, 
 }
 
 // CinderName is the name of the plugin used in the plugin registry and configurations.
-const CinderName = "CinderLimits"
+const CinderName = names.CinderLimits
 
 // NewCinder returns function that initializes a new plugin and returns it.
 func NewCinder(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -83,7 +83,7 @@ func NewCinder(_ runtime.Object, handle framework.Handle) (framework.Plugin, err
 }
 
 // EBSName is the name of the plugin used in the plugin registry and configurations.
-const EBSName = "EBSLimits"
+const EBSName = names.EBSLimits
 
 // NewEBS returns function that initializes a new plugin and returns it.
 func NewEBS(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -92,7 +92,7 @@ func NewEBS(_ runtime.Object, handle framework.Handle) (framework.Plugin, error)
 }
 
 // GCEPDName is the name of the plugin used in the plugin registry and configurations.
-const GCEPDName = "GCEPDLimits"
+const GCEPDName = names.GCEPDLimits
 
 // NewGCEPD returns function that initializes a new plugin and returns it.
 func NewGCEPD(_ runtime.Object, handle framework.Handle) (framework.Plugin, error) {
@@ -118,6 +118,7 @@ type nonCSILimits struct {
 }
 
 var _ framework.FilterPlugin = &nonCSILimits{}
+var _ framework.EnqueueExtensions = &nonCSILimits{}
 
 // newNonCSILimitsWithInformerFactory returns a plugin with filter name and informer factory.
 func newNonCSILimitsWithInformerFactory(
@@ -126,9 +127,10 @@ func newNonCSILimitsWithInformerFactory(
 ) framework.Plugin {
 	pvLister := informerFactory.Core().V1().PersistentVolumes().Lister()
 	pvcLister := informerFactory.Core().V1().PersistentVolumeClaims().Lister()
+	csiNodesLister := informerFactory.Storage().V1().CSINodes().Lister()
 	scLister := informerFactory.Storage().V1().StorageClasses().Lister()
 
-	return newNonCSILimits(filterName, getCSINodeListerIfEnabled(informerFactory), scLister, pvLister, pvcLister)
+	return newNonCSILimits(filterName, csiNodesLister, scLister, pvLister, pvcLister)
 }
 
 // newNonCSILimits creates a plugin which evaluates whether a pod can fit based on the
@@ -170,8 +172,7 @@ func newNonCSILimits(
 		filter = cinderVolumeFilter
 		volumeLimitKey = v1.ResourceName(volumeutil.CinderVolumeLimitKey)
 	default:
-		klog.Fatalf("Wrong filterName, Only Support %v %v %v %v", ebsVolumeFilterType,
-			gcePDVolumeFilterType, azureDiskVolumeFilterType, cinderVolumeFilterType)
+		klog.ErrorS(errors.New("wrong filterName"), "Cannot create nonCSILimits plugin", "candidates", fmt.Sprintf("%v %v %v %v", ebsVolumeFilterType, gcePDVolumeFilterType, azureDiskVolumeFilterType, cinderVolumeFilterType))
 		return nil
 	}
 	pl := &nonCSILimits{
@@ -194,6 +195,15 @@ func (pl *nonCSILimits) Name() string {
 	return pl.name
 }
 
+// EventsToRegister returns the possible events that may make a Pod
+// failed by this plugin schedulable.
+func (pl *nonCSILimits) EventsToRegister() []framework.ClusterEvent {
+	return []framework.ClusterEvent{
+		{Resource: framework.Node, ActionType: framework.Add},
+		{Resource: framework.Pod, ActionType: framework.Delete},
+	}
+}
+
 // Filter invoked at the filter extension point.
 func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
 	// If a pod doesn't have any volume attached to it, the predicate will always be true.
@@ -202,9 +212,9 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 		return nil
 	}
 
-	newVolumes := make(map[string]bool)
+	newVolumes := make(sets.String)
 	if err := pl.filterVolumes(pod.Spec.Volumes, pod.Namespace, newVolumes); err != nil {
-		return framework.NewStatus(framework.Error, err.Error())
+		return framework.AsStatus(err)
 	}
 
 	// quick return
@@ -214,7 +224,7 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 
 	node := nodeInfo.Node()
 	if node == nil {
-		return framework.NewStatus(framework.Error, fmt.Sprintf("node not found"))
+		return framework.NewStatus(framework.Error, "node not found")
 	}
 
 	var csiNode *storage.CSINode
@@ -224,7 +234,7 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 		if err != nil {
 			// we don't fail here because the CSINode object is only necessary
 			// for determining whether the migration is enabled or not
-			klog.V(5).Infof("Could not get a CSINode object for the node: %v", err)
+			klog.V(5).InfoS("Could not get a CSINode object for the node", "node", node.Name, "err", err)
 		}
 	}
 
@@ -234,10 +244,10 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 	}
 
 	// count unique volumes
-	existingVolumes := make(map[string]bool)
+	existingVolumes := make(sets.String)
 	for _, existingPod := range nodeInfo.Pods {
 		if err := pl.filterVolumes(existingPod.Pod.Spec.Volumes, existingPod.Pod.Namespace, existingVolumes); err != nil {
-			return framework.NewStatus(framework.Error, err.Error())
+			return framework.AsStatus(err)
 		}
 	}
 	numExistingVolumes := len(existingVolumes)
@@ -257,20 +267,14 @@ func (pl *nonCSILimits) Filter(ctx context.Context, _ *framework.CycleState, pod
 	if numExistingVolumes+numNewVolumes > maxAttachLimit {
 		return framework.NewStatus(framework.Unschedulable, ErrReasonMaxVolumeCountExceeded)
 	}
-	if nodeInfo != nil && nodeInfo.TransientInfo != nil && utilfeature.DefaultFeatureGate.Enabled(features.BalanceAttachedNodeVolumes) {
-		nodeInfo.TransientInfo.TransientLock.Lock()
-		defer nodeInfo.TransientInfo.TransientLock.Unlock()
-		nodeInfo.TransientInfo.TransNodeInfo.AllocatableVolumesCount = maxAttachLimit - numExistingVolumes
-		nodeInfo.TransientInfo.TransNodeInfo.RequestedVolumes = numNewVolumes
-	}
 	return nil
 }
 
-func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, filteredVolumes map[string]bool) error {
+func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, filteredVolumes sets.String) error {
 	for i := range volumes {
 		vol := &volumes[i]
 		if id, ok := pl.filter.FilterVolume(vol); ok {
-			filteredVolumes[id] = true
+			filteredVolumes.Insert(id)
 		} else if vol.PersistentVolumeClaim != nil {
 			pvcName := vol.PersistentVolumeClaim.ClaimName
 			if pvcName == "" {
@@ -283,10 +287,10 @@ func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, fil
 			pvID := fmt.Sprintf("%s-%s/%s", pl.randomVolumeIDPrefix, namespace, pvcName)
 
 			pvc, err := pl.pvcLister.PersistentVolumeClaims(namespace).Get(pvcName)
-			if err != nil || pvc == nil {
+			if err != nil {
 				// If the PVC is invalid, we don't count the volume because
 				// there's no guarantee that it belongs to the running predicate.
-				klog.V(4).Infof("Unable to look up PVC info for %s/%s, assuming PVC doesn't match predicate when counting limits: %v", namespace, pvcName, err)
+				klog.V(4).InfoS("Unable to look up PVC info, assuming PVC doesn't match predicate when counting limits", "PVC", fmt.Sprintf("%s/%s", namespace, pvcName), "err", err)
 				continue
 			}
 
@@ -297,25 +301,25 @@ func (pl *nonCSILimits) filterVolumes(volumes []v1.Volume, namespace string, fil
 				// original PV where it was bound to, so we count the volume if
 				// it belongs to the running predicate.
 				if pl.matchProvisioner(pvc) {
-					klog.V(4).Infof("PVC %s/%s is not bound, assuming PVC matches predicate when counting limits", namespace, pvcName)
-					filteredVolumes[pvID] = true
+					klog.V(4).InfoS("PVC is not bound, assuming PVC matches predicate when counting limits", "PVC", fmt.Sprintf("%s/%s", namespace, pvcName))
+					filteredVolumes.Insert(pvID)
 				}
 				continue
 			}
 
 			pv, err := pl.pvLister.Get(pvName)
-			if err != nil || pv == nil {
+			if err != nil {
 				// If the PV is invalid and PVC belongs to the running predicate,
 				// log the error and count the PV towards the PV limit.
 				if pl.matchProvisioner(pvc) {
-					klog.V(4).Infof("Unable to look up PV info for %s/%s/%s, assuming PV matches predicate when counting limits: %v", namespace, pvcName, pvName, err)
-					filteredVolumes[pvID] = true
+					klog.V(4).InfoS("Unable to look up PV, assuming PV matches predicate when counting limits", "PV", fmt.Sprintf("%s/%s/%s", namespace, pvcName, pvName), "err", err)
+					filteredVolumes.Insert(pvID)
 				}
 				continue
 			}
 
 			if id, ok := pl.filter.FilterPersistentVolume(pv); ok {
-				filteredVolumes[id] = true
+				filteredVolumes.Insert(id)
 			}
 		}
 	}
@@ -341,9 +345,9 @@ func (pl *nonCSILimits) matchProvisioner(pvc *v1.PersistentVolumeClaim) bool {
 func getMaxVolLimitFromEnv() int {
 	if rawMaxVols := os.Getenv(KubeMaxPDVols); rawMaxVols != "" {
 		if parsedMaxVols, err := strconv.Atoi(rawMaxVols); err != nil {
-			klog.Errorf("Unable to parse maximum PD volumes value, using default: %v", err)
+			klog.ErrorS(err, "Unable to parse maximum PD volumes value, using default.")
 		} else if parsedMaxVols <= 0 {
-			klog.Errorf("Maximum PD volumes must be a positive value, using default")
+			klog.Error("Maximum PD volumes must be a positive value, using default")
 		} else {
 			return parsedMaxVols
 		}
@@ -510,12 +514,4 @@ func getMaxEBSVolume(nodeInstanceType string) int {
 		return volumeutil.DefaultMaxEBSNitroVolumeLimit
 	}
 	return volumeutil.DefaultMaxEBSVolumes
-}
-
-// getCSINodeListerIfEnabled returns the CSINode lister or nil if the feature is disabled
-func getCSINodeListerIfEnabled(factory informers.SharedInformerFactory) storagelisters.CSINodeLister {
-	if !utilfeature.DefaultFeatureGate.Enabled(kubefeatures.CSINodeInfo) {
-		return nil
-	}
-	return factory.Storage().V1().CSINodes().Lister()
 }

@@ -19,10 +19,12 @@ package options
 import (
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/server"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 
@@ -34,6 +36,7 @@ type ServerRunOptions struct {
 	AdvertiseAddress net.IP
 
 	CorsAllowedOriginList       []string
+	HSTSDirectives              []string
 	ExternalHost                string
 	MaxRequestsInFlight         int
 	MaxMutatingRequestsInFlight int
@@ -71,6 +74,7 @@ func NewServerRunOptions() *ServerRunOptions {
 // ApplyTo applies the run options to the method receiver and returns self
 func (s *ServerRunOptions) ApplyTo(c *server.Config) error {
 	c.CorsAllowedOriginList = s.CorsAllowedOriginList
+	c.HSTSDirectives = s.HSTSDirectives
 	c.ExternalAddress = s.ExternalHost
 	c.MaxRequestsInFlight = s.MaxRequestsInFlight
 	c.MaxMutatingRequestsInFlight = s.MaxMutatingRequestsInFlight
@@ -143,7 +147,29 @@ func (s *ServerRunOptions) Validate() []error {
 		errors = append(errors, fmt.Errorf("--max-resource-write-bytes can not be negative value"))
 	}
 
+	if err := validateHSTSDirectives(s.HSTSDirectives); err != nil {
+		errors = append(errors, err)
+	}
 	return errors
+}
+
+func validateHSTSDirectives(hstsDirectives []string) error {
+	// HSTS Headers format: Strict-Transport-Security:max-age=expireTime [;includeSubDomains] [;preload]
+	// See https://tools.ietf.org/html/rfc6797#section-6.1 for more information
+	allErrors := []error{}
+	for _, hstsDirective := range hstsDirectives {
+		if len(strings.TrimSpace(hstsDirective)) == 0 {
+			allErrors = append(allErrors, fmt.Errorf("empty value in strict-transport-security-directives"))
+			continue
+		}
+		if hstsDirective != "includeSubDomains" && hstsDirective != "preload" {
+			maxAgeDirective := strings.Split(hstsDirective, "=")
+			if len(maxAgeDirective) != 2 || maxAgeDirective[0] != "max-age" {
+				allErrors = append(allErrors, fmt.Errorf("--strict-transport-security-directives invalid, allowed values: max-age=expireTime, includeSubDomains, preload. see https://tools.ietf.org/html/rfc6797#section-6.1 for more information"))
+			}
+		}
+	}
+	return errors.NewAggregate(allErrors)
 }
 
 // AddUniversalFlags adds flags for a specific APIServer to the specified FlagSet
@@ -161,6 +187,10 @@ func (s *ServerRunOptions) AddUniversalFlags(fs *pflag.FlagSet) {
 		"List of allowed origins for CORS, comma separated.  An allowed origin can be a regular "+
 		"expression to support subdomain matching. If this list is empty CORS will not be enabled.")
 
+	fs.StringSliceVar(&s.HSTSDirectives, "strict-transport-security-directives", s.HSTSDirectives, ""+
+		"List of directives for HSTS, comma separated. If this list is empty, then HSTS directives will not "+
+		"be added. Example: 'max-age=31536000,includeSubDomains,preload'")
+
 	deprecatedTargetRAMMB := 0
 	fs.IntVar(&deprecatedTargetRAMMB, "target-ram-mb", deprecatedTargetRAMMB,
 		"DEPRECATED: Memory limit for apiserver in MB (used to configure sizes of caches, etc.)")
@@ -174,12 +204,16 @@ func (s *ServerRunOptions) AddUniversalFlags(fs *pflag.FlagSet) {
 		"DEPRECATED: the namespace from which the Kubernetes master services should be injected into pods.")
 
 	fs.IntVar(&s.MaxRequestsInFlight, "max-requests-inflight", s.MaxRequestsInFlight, ""+
-		"The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, "+
-		"it rejects requests. Zero for no limit.")
+		"This and --max-mutating-requests-inflight are summed to determine the server's total concurrency limit "+
+		"(which must be positive) if --enable-priority-and-fairness is true. "+
+		"Otherwise, this flag limits the maximum number of non-mutating requests in flight, "+
+		"or a zero value disables the limit completely.")
 
 	fs.IntVar(&s.MaxMutatingRequestsInFlight, "max-mutating-requests-inflight", s.MaxMutatingRequestsInFlight, ""+
-		"The maximum number of mutating requests in flight at a given time. When the server exceeds this, "+
-		"it rejects requests. Zero for no limit.")
+		"This and --max-requests-inflight are summed to determine the server's total concurrency limit "+
+		"(which must be positive) if --enable-priority-and-fairness is true. "+
+		"Otherwise, this flag limits the maximum number of mutating requests in flight, "+
+		"or a zero value disables the limit completely.")
 
 	fs.DurationVar(&s.RequestTimeout, "request-timeout", s.RequestTimeout, ""+
 		"An optional field indicating the duration a handler must keep a request open before timing "+

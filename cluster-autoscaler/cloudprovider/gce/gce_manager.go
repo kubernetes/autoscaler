@@ -95,6 +95,8 @@ type GceManager interface {
 	SetMigSize(mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
 	DeleteInstances(instances []GceRef) error
+	// CreateInstances creates delta new instances in a given mig.
+	CreateInstances(mig Mig, delta int64) error
 }
 
 type gceManagerImpl struct {
@@ -117,7 +119,7 @@ type gceManagerImpl struct {
 }
 
 // CreateGceManager constructs GceManager object.
-func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool, concurrentGceRefreshes int) (GceManager, error) {
+func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool, concurrentGceRefreshes int, userAgent string) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -167,7 +169,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	client.Timeout = httpTimeout
-	gceService, err := NewAutoscalingGceClientV1(client, projectId)
+	gceService, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -287,6 +289,30 @@ func (m *gceManagerImpl) Refresh() error {
 		return nil
 	}
 	return m.forceRefresh()
+}
+
+func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
+	if delta == 0 {
+		return nil
+	}
+	instances, err := m.GetMigNodes(mig)
+	if err != nil {
+		return err
+	}
+	instancesNames := make([]string, 0, len(instances))
+	for _, ins := range instances {
+		instancesNames = append(instancesNames, ins.Id)
+	}
+	baseName, found := m.cache.GetMigBasename(mig.GceRef())
+	if !found {
+		baseName, err = m.GceService.FetchMigBasename(mig.GceRef())
+		if err != nil {
+			return fmt.Errorf("can't upscale %s: failed to collect BaseInstanceName: %w", mig.GceRef(), err)
+		}
+		m.cache.SetMigBasename(mig.GceRef(), baseName)
+	}
+	m.cache.InvalidateMigTargetSize(mig.GceRef())
+	return m.GceService.CreateInstances(mig.GceRef(), baseName, delta, instancesNames)
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
@@ -474,11 +500,20 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	if err != nil {
 		return nil, err
 	}
-	for _, z := range zones {
-		zl, err := m.GceService.FetchMigsWithName(z, name)
+
+	zoneLinks := make([][]string, len(zones))
+	errors := make([]error, len(zones))
+	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
+		zoneLinks[piece], errors[piece] = m.GceService.FetchMigsWithName(zones[piece], name)
+	})
+
+	for _, err := range errors {
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%v", errors)
 		}
+	}
+
+	for _, zl := range zoneLinks {
 		for _, link := range zl {
 			links = append(links, link)
 		}

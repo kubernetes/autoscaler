@@ -23,7 +23,7 @@ import (
 
 /*
  * By default, all the following metrics are defined as falling under
- * ALPHA stability level https://github.com/kubernetes/enhancements/blob/master/keps/sig-instrumentation/20190404-kubernetes-control-plane-metrics-stability.md#stability-classes)
+ * ALPHA stability level https://github.com/kubernetes/enhancements/blob/master/keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md#stability-classes)
  *
  * Promoting the stability level of the metric is a responsibility of the component owner, since it
  * involves explicitly acknowledging support for the metric across multiple releases, in accordance with
@@ -34,6 +34,15 @@ var (
 		&metrics.CounterOpts{
 			Name:           "apiserver_init_events_total",
 			Help:           "Counter of init events processed in watchcache broken by resource type.",
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"resource"},
+	)
+
+	terminatedWatchersCounter = metrics.NewCounterVec(
+		&metrics.CounterOpts{
+			Name:           "apiserver_terminated_watchers_total",
+			Help:           "Counter of watchers closed due to unresponsiveness broken by resource type.",
 			StabilityLevel: metrics.ALPHA,
 		},
 		[]string{"resource"},
@@ -56,16 +65,28 @@ var (
 		},
 		[]string{"resource"},
 	)
+
+	watchCacheCapacity = metrics.NewGaugeVec(
+		&metrics.GaugeOpts{
+			Name:           "watch_cache_capacity",
+			Help:           "Total capacity of watch cache broken by resource type.",
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"resource"},
+	)
 )
 
 func init() {
 	legacyregistry.MustRegister(initCounter)
+	legacyregistry.MustRegister(terminatedWatchersCounter)
 	legacyregistry.MustRegister(watchCacheCapacityIncreaseTotal)
 	legacyregistry.MustRegister(watchCacheCapacityDecreaseTotal)
+	legacyregistry.MustRegister(watchCacheCapacity)
 }
 
 // recordsWatchCacheCapacityChange record watchCache capacity resize(increase or decrease) operations.
 func recordsWatchCacheCapacityChange(objType string, old, new int) {
+	watchCacheCapacity.WithLabelValues(objType).Set(float64(new))
 	if old < new {
 		watchCacheCapacityIncreaseTotal.WithLabelValues(objType).Inc()
 		return

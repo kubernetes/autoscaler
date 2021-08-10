@@ -47,7 +47,7 @@ type EgressSelector struct {
 }
 
 // EgressType is an indicator of which egress selection should be used for sending traffic.
-// See https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/20190226-network-proxy.md#network-context
+// See https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/1281-network-proxy/README.md#network-context
 type EgressType int
 
 const (
@@ -134,7 +134,7 @@ func tunnelHTTPConnect(proxyConn net.Conn, proxyAddress, addr string) (net.Conn,
 
 type proxier interface {
 	// proxy returns a connection to addr.
-	proxy(addr string) (net.Conn, error)
+	proxy(ctx context.Context, addr string) (net.Conn, error)
 }
 
 var _ proxier = &httpConnectProxier{}
@@ -144,7 +144,7 @@ type httpConnectProxier struct {
 	proxyAddress string
 }
 
-func (t *httpConnectProxier) proxy(addr string) (net.Conn, error) {
+func (t *httpConnectProxier) proxy(ctx context.Context, addr string) (net.Conn, error) {
 	return tunnelHTTPConnect(t.conn, t.proxyAddress, addr)
 }
 
@@ -154,8 +154,8 @@ type grpcProxier struct {
 	tunnel client.Tunnel
 }
 
-func (g *grpcProxier) proxy(addr string) (net.Conn, error) {
-	return g.tunnel.Dial("tcp", addr)
+func (g *grpcProxier) proxy(ctx context.Context, addr string) (net.Conn, error) {
+	return g.tunnel.DialContext(ctx, "tcp", addr)
 }
 
 type proxyServerConnector interface {
@@ -203,7 +203,8 @@ func (u *udsGRPCConnector) connect() (proxier, error) {
 		return c, err
 	})
 
-	tunnel, err := client.CreateSingleUseGrpcTunnel(udsName, dialOption, grpc.WithInsecure())
+	ctx := context.TODO()
+	tunnel, err := client.CreateSingleUseGrpcTunnel(ctx, udsName, dialOption, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +227,7 @@ func (d *dialerCreator) createDialer() utilnet.DialFunc {
 		return directDialer
 	}
 	return func(ctx context.Context, network, addr string) (net.Conn, error) {
-		trace := utiltrace.New(fmt.Sprintf("Proxy via HTTP Connect over %s", d.options.transport), utiltrace.Field{Key: "address", Value: addr})
+		trace := utiltrace.New(fmt.Sprintf("Proxy via %s protocol over %s", d.options.protocol, d.options.transport), utiltrace.Field{Key: "address", Value: addr})
 		defer trace.LogIfLong(500 * time.Millisecond)
 		start := egressmetrics.Metrics.Clock().Now()
 		proxier, err := d.connector.connect()
@@ -234,7 +235,7 @@ func (d *dialerCreator) createDialer() utilnet.DialFunc {
 			egressmetrics.Metrics.ObserveDialFailure(d.options.protocol, d.options.transport, egressmetrics.StageConnect)
 			return nil, err
 		}
-		conn, err := proxier.proxy(addr)
+		conn, err := proxier.proxy(ctx, addr)
 		if err != nil {
 			egressmetrics.Metrics.ObserveDialFailure(d.options.protocol, d.options.transport, egressmetrics.StageProxy)
 			return nil, err

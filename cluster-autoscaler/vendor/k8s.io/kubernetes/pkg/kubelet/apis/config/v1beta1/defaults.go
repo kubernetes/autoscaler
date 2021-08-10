@@ -23,6 +23,7 @@ import (
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	componentbaseconfigv1alpha1 "k8s.io/component-base/config/v1alpha1"
 	kubeletconfigv1beta1 "k8s.io/kubelet/config/v1beta1"
+
 	// TODO: Cut references to k8s.io/kubernetes, eventually there should be none from this package
 	"k8s.io/kubernetes/pkg/cluster/ports"
 	"k8s.io/kubernetes/pkg/kubelet/qos"
@@ -35,6 +36,9 @@ const (
 	DefaultIPTablesMasqueradeBit = 14
 	DefaultIPTablesDropBit       = 15
 	DefaultVolumePluginDir       = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
+
+	// See https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2570-memory-qos
+	DefaultMemoryThrottlingFactor = 0.8
 )
 
 var (
@@ -154,6 +158,9 @@ func SetDefaults_KubeletConfiguration(obj *kubeletconfigv1beta1.KubeletConfigura
 		// Keep the same as default NodeStatusUpdateFrequency
 		obj.CPUManagerReconcilePeriod = metav1.Duration{Duration: 10 * time.Second}
 	}
+	if obj.MemoryManagerPolicy == "" {
+		obj.MemoryManagerPolicy = kubeletconfigv1beta1.NoneMemoryManagerPolicy
+	}
 	if obj.TopologyManagerPolicy == "" {
 		obj.TopologyManagerPolicy = kubeletconfigv1beta1.NoneTopologyManagerPolicy
 	}
@@ -241,5 +248,17 @@ func SetDefaults_KubeletConfiguration(obj *kubeletconfigv1beta1.KubeletConfigura
 	componentbaseconfigv1alpha1.RecommendedLoggingConfiguration(&obj.Logging)
 	if obj.EnableSystemLogHandler == nil {
 		obj.EnableSystemLogHandler = utilpointer.BoolPtr(true)
+	}
+	if obj.EnableProfilingHandler == nil {
+		obj.EnableProfilingHandler = utilpointer.BoolPtr(true)
+	}
+	if obj.EnableDebugFlagsHandler == nil {
+		obj.EnableDebugFlagsHandler = utilpointer.BoolPtr(true)
+	}
+	if obj.SeccompDefault == nil {
+		obj.SeccompDefault = utilpointer.BoolPtr(false)
+	}
+	if obj.MemoryThrottlingFactor == nil {
+		obj.MemoryThrottlingFactor = utilpointer.Float64Ptr(DefaultMemoryThrottlingFactor)
 	}
 }
