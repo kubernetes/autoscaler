@@ -76,7 +76,8 @@ var (
 	providerIDRE       = regexp.MustCompile(`.*/subscriptions/(?:.*)/Microsoft.Compute/virtualMachines/(.+)$`)
 	backendPoolIDRE    = regexp.MustCompile(`^/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Network/loadBalancers/(.+)/backendAddressPools/(?:.*)`)
 	nicResourceGroupRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/networkInterfaces/(?:.*)`)
-	nicIDRE            = regexp.MustCompile(`/subscriptions/(?:.*)/resourceGroups/(?:.+)/providers/Microsoft.Network/networkInterfaces/(.+)-nic-(.+)/ipConfigurations/(?:.*)`)
+	nicIDRE            = regexp.MustCompile(`(?i)/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/networkInterfaces/(.+)/ipConfigurations/(?:.*)`)
+	vmIDRE             = regexp.MustCompile(`(?i)/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)`)
 	vmasIDRE           = regexp.MustCompile(`/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/availabilitySets/(.+)`)
 )
 
@@ -364,9 +365,13 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 			klog.Warningf("serviceOwnsFrontendIP: unexpected error when finding match public IP of the service %s with loadBalancerLP %s: %v", service.Name, loadBalancerIP, err)
 			return false, isPrimaryService, nil
 		}
-
-		if pip != nil && pip.ID != nil && pip.PublicIPAddressPropertiesFormat != nil && pip.IPAddress != nil {
-			if strings.EqualFold(*pip.ID, *fip.PublicIPAddress.ID) {
+		if pip != nil &&
+			pip.ID != nil &&
+			pip.PublicIPAddressPropertiesFormat != nil &&
+			pip.IPAddress != nil &&
+			fip.FrontendIPConfigurationPropertiesFormat != nil &&
+			fip.FrontendIPConfigurationPropertiesFormat.PublicIPAddress != nil {
+			if strings.EqualFold(to.String(pip.ID), to.String(fip.PublicIPAddress.ID)) {
 				klog.V(4).Infof("serviceOwnsFrontendIP: found secondary service %s of the frontend IP config %s", service.Name, *fip.Name)
 
 				return true, isPrimaryService, nil
@@ -376,7 +381,7 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 			return false, isPrimaryService, nil
 		}
 
-		return false, isPrimaryService, fmt.Errorf("serviceOwnsFrontendIP: wrong parameters")
+		return false, isPrimaryService, nil
 	}
 
 	// for internal secondary service the private IP address on the frontend IP config should be checked
@@ -1029,6 +1034,11 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 }
 
 func getAvailabilitySetNameByID(asID string) (string, error) {
+	// for standalone VM
+	if asID == "" {
+		return "", nil
+	}
+
 	matches := vmasIDRE.FindStringSubmatch(asID)
 	if len(matches) != 2 {
 		return "", fmt.Errorf("getAvailabilitySetNameByID: failed to parse the VMAS ID %s", asID)
@@ -1055,24 +1065,44 @@ func (as *availabilitySet) GetNodeNameByIPConfigurationID(ipConfigurationID stri
 		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
 	}
 
-	prefix := matches[1]
-	suffix := matches[2]
-	nodeName := fmt.Sprintf("%s-%s", prefix, suffix)
+	nicResourceGroup, nicName := matches[1], matches[2]
+	if nicResourceGroup == "" || nicName == "" {
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+	nic, rerr := as.InterfacesClient.Get(context.Background(), nicResourceGroup, nicName, "")
+	if rerr != nil {
+		return "", "", fmt.Errorf("GetNodeNameByIPConfigurationID(%s): failed to get interface of name %s: %s", ipConfigurationID, nicName, rerr.Error().Error())
+	}
+	vmID := ""
+	if nic.InterfacePropertiesFormat != nil && nic.VirtualMachine != nil {
+		vmID = to.String(nic.VirtualMachine.ID)
+	}
+	if vmID == "" {
+		klog.V(2).Infof("GetNodeNameByIPConfigurationID(%s): empty vmID", ipConfigurationID)
+		return "", "", nil
+	}
 
-	vm, err := as.getVirtualMachine(types.NodeName(nodeName), azcache.CacheReadTypeDefault)
+	matches = vmIDRE.FindStringSubmatch(vmID)
+	if len(matches) != 2 {
+		return "", "", fmt.Errorf("invalid virtual machine ID %s", vmID)
+	}
+	vmName := matches[1]
+
+	vm, err := as.getVirtualMachine(types.NodeName(vmName), azcache.CacheReadTypeDefault)
 	if err != nil {
-		return "", "", fmt.Errorf("cannot get the virtual machine by node name %s", nodeName)
+		return "", "", fmt.Errorf("cannot get the virtual machine by node name %s", vmName)
 	}
 	asID := ""
 	if vm.VirtualMachineProperties != nil && vm.AvailabilitySet != nil {
 		asID = to.String(vm.AvailabilitySet.ID)
 	}
 	if asID == "" {
-		return "", "", fmt.Errorf("cannot get the availability set ID from the virtual machine with node name %s", nodeName)
+		return vmName, "", nil
 	}
+
 	asName, err := getAvailabilitySetNameByID(asID)
 	if err != nil {
 		return "", "", fmt.Errorf("cannot get the availability set name by the availability set ID %s", asID)
 	}
-	return nodeName, strings.ToLower(asName), nil
+	return vmName, strings.ToLower(asName), nil
 }

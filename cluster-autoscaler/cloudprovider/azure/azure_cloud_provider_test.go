@@ -135,6 +135,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 

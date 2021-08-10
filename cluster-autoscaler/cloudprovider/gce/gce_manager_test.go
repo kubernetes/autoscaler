@@ -325,7 +325,7 @@ func buildListInstanceGroupManagersResponse(listInstanceGroupManagerResponsePart
 }
 
 func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceManagerImpl {
-	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
+	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL, "")
 
 	// Override wait for op timeouts.
 	gceService.operationWaitTimeout = 50 * time.Millisecond
@@ -1529,4 +1529,50 @@ func TestParseMIGAutoDiscoverySpecs(t *testing.T) {
 			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
 		})
 	}
+}
+
+const createInstancesResponse = `{
+  "kind": "compute#operation",
+  "id": "2890052495600280364",
+  "name": "operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b",
+  "operationType": "compute.instanceGroupManagers.createInstances",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool-e25725dc-grp",
+  "targetId": "7836594831806456968",
+  "status": "DONE",
+  "user": "user@example.com",
+  "progress": 100,
+  "insertTime": "2021-06-22T05:55:31.903-07:00",
+  "startTime": "2021-06-22T05:55:31.907-07:00",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32"
+}`
+
+const createInstancesOperationResponse = `{
+  "kind": "compute#operation",
+  "id": "2890052495600280364",
+  "name": "operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b",
+  "operationType": "compute.instanceGroupManagers.createInstances",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool-e25725dc-grp",
+  "targetId": "7836594831806456968",
+  "status": "DONE",
+  "user": "user@example.com",
+  "progress": 100,
+  "insertTime": "2021-06-22T05:55:31.903-07:00",
+  "startTime": "2021-06-22T05:55:31.907-07:00",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32"
+}`
+
+func TestAppendInstances(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	g := newTestGceManager(t, server.URL, false)
+
+	defaultPoolMig := setupTestDefaultPool(g, true)
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
+	server.On("handle", fmt.Sprintf("/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", defaultPoolMig.gceRef.Name)).Return(createInstancesResponse).Once()
+	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32").Return(createInstancesOperationResponse).Once()
+	err := g.CreateInstances(defaultPoolMig, 2)
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, server)
 }

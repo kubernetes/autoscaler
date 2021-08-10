@@ -18,7 +18,7 @@ one and use current recommendation to set resource requests in the pod.
 Its `--admission-control` flag should have `MutatingAdmissionWebhook` as one of
 the values on the list and its `--runtime-config` flag should include
 `admissionregistration.k8s.io/v1beta1=true`.
-To change those flags, ssh to your master instance, edit
+To change those flags, ssh to your API Server instance, edit
 `/etc/kubernetes/manifests/kube-apiserver.manifest` and restart kubelet to pick
 up the changes: ```sudo systemctl restart kubelet.service```
 1. Generate certs by running `bash gencerts.sh`. This will use kubectl to create

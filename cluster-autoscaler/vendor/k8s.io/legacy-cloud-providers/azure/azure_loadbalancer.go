@@ -95,18 +95,9 @@ const (
 	// to specify the idle timeout for connections on the load balancer in minutes.
 	ServiceAnnotationLoadBalancerIdleTimeout = "service.beta.kubernetes.io/azure-load-balancer-tcp-idle-timeout"
 
-	// ServiceAnnotationLoadBalancerMixedProtocols is the annotation used on the service
-	// to create both TCP and UDP protocols when creating load balancer rules.
-	ServiceAnnotationLoadBalancerMixedProtocols = "service.beta.kubernetes.io/azure-load-balancer-mixed-protocols"
-
 	// ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts is the annotation used on the service
 	// to enable the high availability ports on the standard internal load balancer.
 	ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts = "service.beta.kubernetes.io/azure-load-balancer-enable-high-availability-ports"
-
-	// ServiceAnnotationLoadBalancerDisableTCPReset is the annotation used on the service
-	// to set enableTcpReset to false in load balancer rule. This only works for Azure standard load balancer backed service.
-	// TODO(feiskyer): disable-tcp-reset annotations has been depracated since v1.18, it would removed on v1.20.
-	ServiceAnnotationLoadBalancerDisableTCPReset = "service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset"
 
 	// ServiceAnnotationLoadBalancerHealthProbeProtocol determines the network protocol that the load balancer health probe use.
 	// If not set, the local service would use the HTTP and the cluster service would use the TCP by default.
@@ -317,7 +308,7 @@ func (az *Cloud) cleanBackendpoolForPrimarySLB(primarySLB *network.LoadBalancer,
 						return nil, err
 					}
 					primaryVMSetName := az.VMSet.GetPrimaryVMSetName()
-					if !strings.EqualFold(primaryVMSetName, vmSetName) {
+					if !strings.EqualFold(primaryVMSetName, vmSetName) && vmSetName != "" {
 						klog.V(2).Infof("cleanBackendpoolForPrimarySLB: found unwanted vmSet %s, decouple it from the LB", vmSetName)
 						// construct a backendPool that only contains the IP config of the node to be deleted
 						interfaceIPConfigToBeDeleted := network.InterfaceIPConfiguration{
@@ -654,11 +645,19 @@ func (az *Cloud) ensurePublicIPExists(service *v1.Service, pipName string, domai
 
 	serviceName := getServiceName(service)
 
+	var changed bool
 	if existsPip {
-		// ensure that the service tag is good
-		changed, err := bindServicesToPIP(&pip, []string{serviceName}, false)
-		if err != nil {
-			return nil, err
+		// ensure that the service tag is good for managed pips
+		owns, isUserAssignedPIP := serviceOwnsPublicIP(service, &pip, clusterName)
+		if owns && !isUserAssignedPIP {
+			changed, err = bindServicesToPIP(&pip, []string{serviceName}, false)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if pip.Tags == nil {
+			pip.Tags = make(map[string]*string)
 		}
 
 		// return if pip exist and dns label is the same
@@ -1132,6 +1131,10 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 						nodeName, _, err := az.VMSet.GetNodeNameByIPConfigurationID(ipConfID)
 						if err != nil {
 							return nil, err
+						}
+						if nodeName == "" {
+							// VM may under deletion
+							continue
 						}
 						// If a node is not supposed to be included in the LB, it
 						// would not be in the `nodes` slice. We need to check the nodes that
@@ -1619,124 +1622,116 @@ func (az *Cloud) reconcileLoadBalancerRule(
 	var enableTCPReset *bool
 	if az.useStandardLoadBalancer() {
 		enableTCPReset = to.BoolPtr(true)
-		if _, ok := service.Annotations[ServiceAnnotationLoadBalancerDisableTCPReset]; ok {
-			klog.Warning("annotation service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset has been removed as of Kubernetes 1.20. TCP Resets are always enabled on Standard SKU load balancers.")
-		}
 	}
 
 	var expectedProbes []network.Probe
 	var expectedRules []network.LoadBalancingRule
+	highAvailabilityPortsEnabled := false
 	for _, port := range ports {
-		protocols := []v1.Protocol{port.Protocol}
-		if v, ok := service.Annotations[ServiceAnnotationLoadBalancerMixedProtocols]; ok && v == "true" {
-			klog.V(2).Infof("reconcileLoadBalancerRule lb name (%s) flag(%s) is set", lbName, ServiceAnnotationLoadBalancerMixedProtocols)
-			if port.Protocol == v1.ProtocolTCP {
-				protocols = append(protocols, v1.ProtocolUDP)
-			} else if port.Protocol == v1.ProtocolUDP {
-				protocols = append(protocols, v1.ProtocolTCP)
-			}
+		if highAvailabilityPortsEnabled {
+			// Since the port is always 0 when enabling HA, only one rule should be configured.
+			break
 		}
 
-		for _, protocol := range protocols {
-			lbRuleName := az.getLoadBalancerRuleName(service, protocol, port.Port)
-			klog.V(2).Infof("reconcileLoadBalancerRule lb name (%s) rule name (%s)", lbName, lbRuleName)
+		lbRuleName := az.getLoadBalancerRuleName(service, port.Protocol, port.Port)
+		klog.V(2).Infof("reconcileLoadBalancerRule lb name (%s) rule name (%s)", lbName, lbRuleName)
 
-			transportProto, _, probeProto, err := getProtocolsFromKubernetesProtocol(protocol)
-			if err != nil {
-				return expectedProbes, expectedRules, err
+		transportProto, _, probeProto, err := getProtocolsFromKubernetesProtocol(port.Protocol)
+		if err != nil {
+			return expectedProbes, expectedRules, err
+		}
+
+		probeProtocol, requestPath := parseHealthProbeProtocolAndPath(service)
+		if servicehelpers.NeedsHealthCheck(service) {
+			podPresencePath, podPresencePort := servicehelpers.GetServiceHealthCheckPathPort(service)
+			if probeProtocol == "" {
+				probeProtocol = string(network.ProbeProtocolHTTP)
+			}
+			if requestPath == "" {
+				requestPath = podPresencePath
 			}
 
-			probeProtocol, requestPath := parseHealthProbeProtocolAndPath(service)
-			if servicehelpers.NeedsHealthCheck(service) {
-				podPresencePath, podPresencePort := servicehelpers.GetServiceHealthCheckPathPort(service)
-				if probeProtocol == "" {
-					probeProtocol = string(network.ProbeProtocolHTTP)
-				}
-				if requestPath == "" {
-					requestPath = podPresencePath
-				}
-
-				expectedProbes = append(expectedProbes, network.Probe{
-					Name: &lbRuleName,
-					ProbePropertiesFormat: &network.ProbePropertiesFormat{
-						RequestPath:       to.StringPtr(requestPath),
-						Protocol:          network.ProbeProtocol(probeProtocol),
-						Port:              to.Int32Ptr(podPresencePort),
-						IntervalInSeconds: to.Int32Ptr(5),
-						NumberOfProbes:    to.Int32Ptr(2),
-					},
-				})
-			} else if protocol != v1.ProtocolUDP && protocol != v1.ProtocolSCTP {
-				// we only add the expected probe if we're doing TCP
-				if probeProtocol == "" {
-					probeProtocol = string(*probeProto)
-				}
-				var actualPath *string
-				if !strings.EqualFold(probeProtocol, string(network.ProbeProtocolTCP)) {
-					if requestPath != "" {
-						actualPath = to.StringPtr(requestPath)
-					} else {
-						actualPath = to.StringPtr("/healthz")
-					}
-				}
-				expectedProbes = append(expectedProbes, network.Probe{
-					Name: &lbRuleName,
-					ProbePropertiesFormat: &network.ProbePropertiesFormat{
-						Protocol:          network.ProbeProtocol(probeProtocol),
-						RequestPath:       actualPath,
-						Port:              to.Int32Ptr(port.NodePort),
-						IntervalInSeconds: to.Int32Ptr(5),
-						NumberOfProbes:    to.Int32Ptr(2),
-					},
-				})
-			}
-
-			loadDistribution := network.LoadDistributionDefault
-			if service.Spec.SessionAffinity == v1.ServiceAffinityClientIP {
-				loadDistribution = network.LoadDistributionSourceIP
-			}
-
-			expectedRule := network.LoadBalancingRule{
+			expectedProbes = append(expectedProbes, network.Probe{
 				Name: &lbRuleName,
-				LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
-					Protocol: *transportProto,
-					FrontendIPConfiguration: &network.SubResource{
-						ID: to.StringPtr(lbFrontendIPConfigID),
-					},
-					BackendAddressPool: &network.SubResource{
-						ID: to.StringPtr(lbBackendPoolID),
-					},
-					LoadDistribution:    loadDistribution,
-					FrontendPort:        to.Int32Ptr(port.Port),
-					BackendPort:         to.Int32Ptr(port.Port),
-					DisableOutboundSnat: to.BoolPtr(az.disableLoadBalancerOutboundSNAT()),
-					EnableTCPReset:      enableTCPReset,
-					EnableFloatingIP:    to.BoolPtr(true),
+				ProbePropertiesFormat: &network.ProbePropertiesFormat{
+					RequestPath:       to.StringPtr(requestPath),
+					Protocol:          network.ProbeProtocol(probeProtocol),
+					Port:              to.Int32Ptr(podPresencePort),
+					IntervalInSeconds: to.Int32Ptr(5),
+					NumberOfProbes:    to.Int32Ptr(2),
 				},
+			})
+		} else if port.Protocol != v1.ProtocolUDP && port.Protocol != v1.ProtocolSCTP {
+			// we only add the expected probe if we're doing TCP
+			if probeProtocol == "" {
+				probeProtocol = string(*probeProto)
 			}
-
-			if protocol == v1.ProtocolTCP {
-				expectedRule.LoadBalancingRulePropertiesFormat.IdleTimeoutInMinutes = lbIdleTimeout
-			}
-
-			if requiresInternalLoadBalancer(service) &&
-				strings.EqualFold(az.LoadBalancerSku, loadBalancerSkuStandard) &&
-				strings.EqualFold(service.Annotations[ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts], "true") {
-				expectedRule.FrontendPort = to.Int32Ptr(0)
-				expectedRule.BackendPort = to.Int32Ptr(0)
-				expectedRule.Protocol = network.TransportProtocolAll
-			}
-
-			// we didn't construct the probe objects for UDP or SCTP because they're not allowed on Azure.
-			// However, when externalTrafficPolicy is Local, Kubernetes HTTP health check would be used for probing.
-			if servicehelpers.NeedsHealthCheck(service) || (protocol != v1.ProtocolUDP && protocol != v1.ProtocolSCTP) {
-				expectedRule.Probe = &network.SubResource{
-					ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), lbRuleName)),
+			var actualPath *string
+			if !strings.EqualFold(probeProtocol, string(network.ProbeProtocolTCP)) {
+				if requestPath != "" {
+					actualPath = to.StringPtr(requestPath)
+				} else {
+					actualPath = to.StringPtr("/healthz")
 				}
 			}
-
-			expectedRules = append(expectedRules, expectedRule)
+			expectedProbes = append(expectedProbes, network.Probe{
+				Name: &lbRuleName,
+				ProbePropertiesFormat: &network.ProbePropertiesFormat{
+					Protocol:          network.ProbeProtocol(probeProtocol),
+					RequestPath:       actualPath,
+					Port:              to.Int32Ptr(port.NodePort),
+					IntervalInSeconds: to.Int32Ptr(5),
+					NumberOfProbes:    to.Int32Ptr(2),
+				},
+			})
 		}
+
+		loadDistribution := network.LoadDistributionDefault
+		if service.Spec.SessionAffinity == v1.ServiceAffinityClientIP {
+			loadDistribution = network.LoadDistributionSourceIP
+		}
+
+		expectedRule := network.LoadBalancingRule{
+			Name: &lbRuleName,
+			LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
+				Protocol: *transportProto,
+				FrontendIPConfiguration: &network.SubResource{
+					ID: to.StringPtr(lbFrontendIPConfigID),
+				},
+				BackendAddressPool: &network.SubResource{
+					ID: to.StringPtr(lbBackendPoolID),
+				},
+				LoadDistribution:    loadDistribution,
+				FrontendPort:        to.Int32Ptr(port.Port),
+				BackendPort:         to.Int32Ptr(port.Port),
+				DisableOutboundSnat: to.BoolPtr(az.disableLoadBalancerOutboundSNAT()),
+				EnableTCPReset:      enableTCPReset,
+				EnableFloatingIP:    to.BoolPtr(true),
+			},
+		}
+
+		if port.Protocol == v1.ProtocolTCP {
+			expectedRule.LoadBalancingRulePropertiesFormat.IdleTimeoutInMinutes = lbIdleTimeout
+		}
+
+		if requiresInternalLoadBalancer(service) &&
+			strings.EqualFold(az.LoadBalancerSku, loadBalancerSkuStandard) &&
+			strings.EqualFold(service.Annotations[ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts], "true") {
+			expectedRule.FrontendPort = to.Int32Ptr(0)
+			expectedRule.BackendPort = to.Int32Ptr(0)
+			expectedRule.Protocol = network.TransportProtocolAll
+			highAvailabilityPortsEnabled = true
+		}
+
+		// we didn't construct the probe objects for UDP or SCTP because they're not allowed on Azure.
+		// However, when externalTrafficPolicy is Local, Kubernetes HTTP health check would be used for probing.
+		if servicehelpers.NeedsHealthCheck(service) || (port.Protocol != v1.ProtocolUDP && port.Protocol != v1.ProtocolSCTP) {
+			expectedRule.Probe = &network.SubResource{
+				ID: to.StringPtr(az.getLoadBalancerProbeID(lbName, az.getLoadBalancerResourceGroup(), lbRuleName)),
+			}
+		}
+
+		expectedRules = append(expectedRules, expectedRule)
 	}
 
 	return expectedProbes, expectedRules, nil
@@ -2096,7 +2091,12 @@ func deduplicate(collection *[]string) *[]string {
 }
 
 // Determine if we should release existing owned public IPs
-func shouldReleaseExistingOwnedPublicIP(existingPip *network.PublicIPAddress, lbShouldExist, lbIsInternal bool, desiredPipName, svcName string, ipTagRequest serviceIPTagRequest) bool {
+func shouldReleaseExistingOwnedPublicIP(existingPip *network.PublicIPAddress, lbShouldExist, lbIsInternal, isUserAssignedPIP bool, desiredPipName string, ipTagRequest serviceIPTagRequest) bool {
+	// skip deleting user created pip
+	if isUserAssignedPIP {
+		return false
+	}
+
 	// Latch some variables for readability purposes.
 	pipName := *(*existingPip).Name
 
@@ -2219,9 +2219,10 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 
 		// Now, let's perform additional analysis to determine if we should release the public ips we have found.
 		// We can only let them go if (a) they are owned by this service and (b) they meet the criteria for deletion.
-		if serviceOwnsPublicIP(&pip, clusterName, serviceName) {
+		owns, isUserAssignedPIP := serviceOwnsPublicIP(service, &pip, clusterName)
+		if owns {
 			var dirtyPIP, toBeDeleted bool
-			if !wantLb {
+			if !wantLb && !isUserAssignedPIP {
 				klog.V(2).Infof("reconcilePublicIP for service(%s): unbinding the service from pip %s", serviceName, *pip.Name)
 				err = unbindServiceFromPIP(&pip, serviceName)
 				if err != nil {
@@ -2229,11 +2230,13 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 				}
 				dirtyPIP = true
 			}
-			changed := az.ensurePIPTagged(service, &pip)
-			if changed {
-				dirtyPIP = true
+			if !isUserAssignedPIP {
+				changed := az.ensurePIPTagged(service, &pip)
+				if changed {
+					dirtyPIP = true
+				}
 			}
-			if shouldReleaseExistingOwnedPublicIP(&pip, wantLb, isInternal, desiredPipName, serviceName, serviceIPTagRequest) {
+			if shouldReleaseExistingOwnedPublicIP(&pip, wantLb, isInternal, isUserAssignedPIP, desiredPipName, serviceIPTagRequest) {
 				// Then, release the public ip
 				pipsToBeDeleted = append(pipsToBeDeleted, &pip)
 
@@ -2554,26 +2557,55 @@ func getServiceTags(service *v1.Service) []string {
 	return nil
 }
 
-func serviceOwnsPublicIP(pip *network.PublicIPAddress, clusterName, serviceName string) bool {
-	if pip != nil && pip.Tags != nil {
+// serviceOwnsPublicIP checks if the service owns the pip and if the pip is user-created.
+// The pip is user-created if and only if there is no service tags.
+// The service owns the pip if:
+// 1. The serviceName is included in the service tags of a system-created pip.
+// 2. The service.Spec.LoadBalancerIP matches the IP address of a user-created pip.
+func serviceOwnsPublicIP(service *v1.Service, pip *network.PublicIPAddress, clusterName string) (bool, bool) {
+	if service == nil || pip == nil {
+		klog.Warningf("serviceOwnsPublicIP: nil service or public IP")
+		return false, false
+	}
+
+	if pip.PublicIPAddressPropertiesFormat == nil || to.String(pip.IPAddress) == "" {
+		klog.Warningf("serviceOwnsPublicIP: empty pip.IPAddress")
+		return false, false
+	}
+
+	serviceName := getServiceName(service)
+
+	if pip.Tags != nil {
 		serviceTag := pip.Tags[serviceTagKey]
 		clusterTag := pip.Tags[clusterNameKey]
 
-		if serviceTag != nil && isSVCNameInPIPTag(*serviceTag, serviceName) {
-			// Backward compatible for clusters upgraded from old releases.
-			// In such case, only "service" tag is set.
-			if clusterTag == nil {
-				return true
-			}
+		// if there is no service tag on the pip, it is user-created pip
+		if to.String(serviceTag) == "" {
+			return strings.EqualFold(to.String(pip.IPAddress), service.Spec.LoadBalancerIP), true
+		}
 
-			// If cluster name tag is set, then return true if it matches.
-			if *clusterTag == clusterName {
-				return true
+		if serviceTag != nil {
+			// if there is service tag on the pip, it is system-created pip
+			if isSVCNameInPIPTag(*serviceTag, serviceName) {
+				// Backward compatible for clusters upgraded from old releases.
+				// In such case, only "service" tag is set.
+				if clusterTag == nil {
+					return true, false
+				}
+
+				// If cluster name tag is set, then return true if it matches.
+				if *clusterTag == clusterName {
+					return true, false
+				}
+			} else {
+				// if the service is not included in te tags of the system-created pip, check the ip address
+				// this could happen for secondary services
+				return strings.EqualFold(to.String(pip.IPAddress), service.Spec.LoadBalancerIP), false
 			}
 		}
 	}
 
-	return false
+	return false, false
 }
 
 func isSVCNameInPIPTag(tag, svcName string) bool {

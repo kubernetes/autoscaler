@@ -391,3 +391,9 @@ func (asg *Asg) Delete() error {
 func (asg *Asg) Autoprovisioned() bool {
 	return false
 }
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (asg *Asg) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
