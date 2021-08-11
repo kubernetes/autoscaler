@@ -341,7 +341,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
 	if err != nil {
-		return &status.ScaleUpStatus{Result: status.ScaleUpError}, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: ")
+		return scaleUpError(&status.ScaleUpStatus{}, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: "))
 	}
 
 	nodeGroups := context.CloudProvider.NodeGroups()
@@ -350,24 +350,24 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	resourceLimiter, errCP := context.CloudProvider.GetResourceLimiter()
 	if errCP != nil {
-		return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(
+		return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(
 			errors.CloudProviderError,
-			errCP)
+			errCP))
 	}
 
 	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(context, processors, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
 	if errLimits != nil {
-		return &status.ScaleUpStatus{Result: status.ScaleUpError}, errLimits.AddPrefix("Could not compute total resources: ")
+		return scaleUpError(&status.ScaleUpStatus{}, errLimits.AddPrefix("Could not compute total resources: "))
 	}
 
 	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
+			return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
 				errors.InternalError,
 				"failed to find template node for node group %s",
-				nodeGroup)
+				nodeGroup))
 		}
 		for i := 0; i < numberOfNodes; i++ {
 			upcomingNodes = append(upcomingNodes, nodeTemplate)
@@ -381,7 +381,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		var errProc error
 		nodeGroups, nodeInfos, errProc = processors.NodeGroupListProcessor.Process(context, nodeGroups, nodeInfos, unschedulablePods)
 		if errProc != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, errProc)
+			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, errProc))
 		}
 	}
 
@@ -436,7 +436,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		option, err := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 		if err != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, err)
+			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
 		}
 
 		if len(option.Pods) > 0 {
@@ -478,9 +478,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			newNodes = context.MaxNodesTotal - len(nodes) - len(upcomingNodes)
 			context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
 			if newNodes < 1 {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
+				return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
 					errors.TransientError,
-					"max node total count already reached")
+					"max node total count already reached"))
 			}
 		}
 
@@ -489,7 +489,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
 			if err != nil {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
+				return scaleUpError(&status.ScaleUpStatus{}, err)
 			}
 			createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
 			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
@@ -520,7 +520,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 				option, err2 := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 				if err2 != nil {
-					return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.ToAutoscalerError(errors.InternalError, err)
+					return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
 				}
 
 				if len(option.Pods) > 0 && option.NodeCount > 0 {
@@ -539,22 +539,22 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			// This should never happen, as we already should have retrieved
 			// nodeInfo for any considered nodegroup.
 			klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, errors.NewAutoscalerError(
+			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, errors.NewAutoscalerError(
 				errors.CloudProviderError,
-				"No node info for best expansion option!")
+				"No node info for best expansion option!"))
 		}
 
 		// apply upper limits for CPU and memory
 		newNodes, err = applyScaleUpResourcesLimits(context, processors, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
 		if err != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, err
+			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, err)
 		}
 
 		targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
 		if context.BalanceSimilarNodeGroups {
 			similarNodeGroups, typedErr := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, bestOption.NodeGroup, nodeInfos)
 			if typedErr != nil {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr.AddPrefix("Failed to find matching node groups: ")
+				return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr.AddPrefix("Failed to find matching node groups: "))
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, expansionOptions)
 			for _, ng := range similarNodeGroups {
@@ -581,13 +581,13 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
 			context, targetNodeGroups, newNodes)
 		if typedErr != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr
+			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr)
 		}
 		klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
 			typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
 			if typedErr != nil {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr
+				return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr)
 			}
 		}
 
@@ -732,4 +732,10 @@ func applyScaleUpResourcesLimits(
 		}
 	}
 	return newNodes, nil
+}
+
+func scaleUpError(s *status.ScaleUpStatus, err errors.AutoscalerError) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	s.ScaleUpError = &err
+	s.Result = status.ScaleUpError
+	return s, err
 }
