@@ -76,10 +76,16 @@ type AutoscalingOptions struct {
 	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
 	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
-	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
-	//  Maximum time CA waits for node to be provisioned
+	// MaxNodeProvisionTime is the maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
+	// NodeReadinessGraceTime is a grace period CA gives a Kubernetes node to be considered as ready
+	// before basing node-group node templates on it.
+	NodeReadinessGraceTime time.Duration
+	// NodeCacheExpirationTime is the time CA waits before expiring stale Kubernetes nodes from its node-group node template cache.
+	// Post expiration, CA will retrieve node information from the cloud provider instead.
+	// Setting this to -1 will cause cache entries to never expire.
+	NodeCacheExpirationTime time.Duration
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage

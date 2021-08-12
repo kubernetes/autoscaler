@@ -70,7 +70,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assert.NoError(t, err)
 
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	info, found := res["ng1"]
@@ -88,7 +88,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, registry,
-		[]*appsv1.DaemonSet{}, predicateChecker, nil)
+		[]*appsv1.DaemonSet{}, predicateChecker, nil, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -138,11 +138,11 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
-	nodeInfoCache := make(map[string]*schedulerframework.NodeInfo)
+	nodeInfoCache := NewNodeInfoCache(NoExpiration)
 
 	// Fill cache
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, 0)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -159,15 +159,15 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, tn, info.Node())
 	// Check cache
-	cachedInfo, found := nodeInfoCache["ng1"]
+	cachedInfo, found := nodeInfoCache.Get("ng1")
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready1, cachedInfo.Node())
-	cachedInfo, found = nodeInfoCache["ng2"]
+	cachedInfo, found = nodeInfoCache.Get("ng2")
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = nodeInfoCache["ng3"]
+	cachedInfo, found = nodeInfoCache.Get("ng3")
 	assert.False(t, found)
-	cachedInfo, found = nodeInfoCache["ng4"]
+	cachedInfo, found = nodeInfoCache.Get("ng4")
 	assert.False(t, found)
 
 	// Invalidate part of cache in two different ways
@@ -177,7 +177,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	// Check cache with all nodes removed
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, 0)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -189,19 +189,20 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, tn, info.Node())
 	// Check cache
-	cachedInfo, found = nodeInfoCache["ng2"]
+	cachedInfo, found = nodeInfoCache.Get("ng2")
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = nodeInfoCache["ng4"]
+	cachedInfo, found = nodeInfoCache.Get("ng4")
 	assert.False(t, found)
 
 	// Fill cache manually
 	infoNg4Node6 := schedulerframework.NewNodeInfo()
 	infoNg4Node6.SetNode(ready6.DeepCopy())
-	nodeInfoCache = map[string]*schedulerframework.NodeInfo{"ng4": infoNg4Node6}
+	nodeInfoCache = NewNodeInfoCache(NoExpiration)
+	nodeInfoCache.Set("ng4", infoNg4Node6)
 	// Check if cache was used
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
+		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
 	info, found = res["ng2"]
@@ -210,6 +211,123 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	info, found = res["ng4"]
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready6, info.Node())
+}
+
+func TestGetNodeInfosForGroupsCacheExpiration(t *testing.T) {
+	nodeName, mcpu, mem := "n1", int64(1000), int64(1000)
+	node := BuildTestNode(nodeName, mcpu, mem)
+	SetNodeReadyState(node, true, time.Now())
+
+	nodeInfo := schedulerframework.NewNodeInfo()
+	nodeInfo.SetNode(node)
+
+	onDeleteGroup := func(string) error { return nil }
+	nodeGroupName := "ng1"
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, onDeleteGroup, nil,
+		map[string]*schedulerframework.NodeInfo{nodeGroupName: nodeInfo})
+	minGroupSize, maxGroupSize, currentGroupSize := 1, 10, 1
+	provider.AddNodeGroup(nodeGroupName, minGroupSize, maxGroupSize, currentGroupSize)
+	provider.AddNode(nodeGroupName, node)
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
+
+	expiration := 5 * time.Minute
+	nodeInfoCache := NewNodeInfoCache(expiration)
+	nodeInfoCache.Set(nodeGroupName, nodeInfo)
+
+	// Cache node info
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{node}, nodeInfoCache,
+		provider, registry, nil, predicateChecker, nil, 0)
+	assert.NoError(t, err)
+	assert.Len(t, res, 1)
+	actualNodeInfo, found := res[nodeGroupName]
+	assert.True(t, found)
+	assert.Empty(t, actualNodeInfo.Node().GetLabels())
+
+	// Check stale retrieval from cache - should not include the newly set labels
+	newNode := node.DeepCopy()
+	labelKey, labelValue := "my-label", "pasten"
+	newNode.SetLabels(map[string]string{labelKey: labelValue})
+	nodeInfo.SetNode(newNode)
+	res, err = GetNodeInfosForGroups(nil, nodeInfoCache, provider, registry, nil, predicateChecker,
+		nil, 0)
+	assert.NoError(t, err)
+	assert.Len(t, res, 1)
+	actualNodeInfo, found = res[nodeGroupName]
+	assert.True(t, found)
+	staleNode := node
+	assert.EqualValues(t, staleNode.GetLabels(), actualNodeInfo.Node().GetLabels())
+
+	// Check expiry - should now include the previously set labels
+	defer func() { now = time.Now }()
+	now = func() time.Time {
+		return time.Now().Add(expiration * 2)
+	}
+
+	res, err = GetNodeInfosForGroups(nil, nodeInfoCache, provider, registry, nil, predicateChecker,
+		nil, 0)
+	assert.NoError(t, err)
+	assert.Len(t, res, 1)
+	actualNodeInfo, found = res[nodeGroupName]
+	assert.True(t, found)
+	assert.EqualValues(t, newNode.GetLabels(), actualNodeInfo.Node().GetLabels())
+}
+
+func TestGetNodeInfosForGroupsNodeReadinessGraceTime(t *testing.T) {
+	nodeName, mcpu, mem := "n1", int64(1000), int64(1000)
+	k8sNode := BuildTestNode(nodeName, mcpu, mem)
+	SetNodeReadyState(k8sNode, true, time.Now())
+
+	nodeInfo := schedulerframework.NewNodeInfo()
+	onDeleteGroup := func(string) error { return nil }
+	nodeGroupName := "ng1"
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, onDeleteGroup, nil,
+		map[string]*schedulerframework.NodeInfo{nodeGroupName: nodeInfo})
+	minGroupSize, maxGroupSize, currentGroupSize := 1, 10, 1
+	provider.AddNodeGroup(nodeGroupName, minGroupSize, maxGroupSize, currentGroupSize)
+	cloudProviderNode := k8sNode.DeepCopy()
+	labelKey, labelValue := "my-label", "pasten"
+	cloudProviderNode.SetLabels(map[string]string{labelKey: labelValue})
+	// Cloud provider node template contains labels the k8s node does not - possible because the node wasn't fully initialized yet
+	provider.AddNode(nodeGroupName, cloudProviderNode)
+	nodeInfo.SetNode(cloudProviderNode)
+
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+
+	predicateChecker, err := simulator.NewTestPredicateChecker()
+	assert.NoError(t, err)
+
+	nodeInfoCache := NewNodeInfoCache(NoExpiration)
+	nodeReadinessGraceTime := 5 * time.Minute
+	// Check k8s node isn't used before grace time had passed
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{k8sNode}, nodeInfoCache,
+		provider, registry, nil, predicateChecker, nil, nodeReadinessGraceTime)
+	assert.NoError(t, err)
+	assert.Len(t, res, 1)
+	actualNodeInfo, found := res[nodeGroupName]
+	assert.True(t, found)
+	assert.EqualValues(t, actualNodeInfo.Node().GetLabels(), cloudProviderNode.GetLabels())
+
+	// Check k8s node is now used after grace time had passed
+	postInitLabels := map[string]string{labelKey: labelValue, "another-key": "pistun"}
+	k8sNode.SetLabels(postInitLabels)
+	SetNodeReadyState(k8sNode, true, time.Now().Add(-2*nodeReadinessGraceTime))
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{k8sNode}, nodeInfoCache,
+		provider, registry, nil, predicateChecker, nil, nodeReadinessGraceTime)
+	assert.NoError(t, err)
+	assert.Len(t, res, 1)
+	actualNodeInfo, found = res[nodeGroupName]
+	assert.True(t, found)
+	assert.EqualValues(t, actualNodeInfo.Node().GetLabels(), k8sNode.GetLabels())
 }
 
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {

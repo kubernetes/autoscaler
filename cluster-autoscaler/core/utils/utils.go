@@ -40,10 +40,12 @@ import (
 )
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulerframework.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
+func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache *NodeInfoCache, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet,
+	nodeReadinessGraceTime time.Duration,
+) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulerframework.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -83,13 +85,19 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 		if !kube_util.IsNodeReadyAndSchedulable(node) {
 			continue
 		}
+
+		_, lastTransitionTime, err := kube_util.GetReadinessState(node)
+		if err == nil && time.Now().Before(lastTransitionTime.Add(nodeReadinessGraceTime)) {
+			continue
+		}
+
 		added, id, typedErr := processNode(node)
 		if typedErr != nil {
 			return map[string]*schedulerframework.NodeInfo{}, typedErr
 		}
 		if added && nodeInfoCache != nil {
 			if nodeInfoCopy, err := deepCopyNodeInfo(result[id]); err == nil {
-				nodeInfoCache[id] = nodeInfoCopy
+				nodeInfoCache.Set(id, nodeInfoCopy)
 			}
 		}
 	}
@@ -102,7 +110,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 
 		// No good template, check cache of previously running nodes.
 		if nodeInfoCache != nil {
-			if nodeInfo, found := nodeInfoCache[id]; found {
+			if nodeInfo, found := nodeInfoCache.Get(id); found {
 				if nodeInfoCopy, err := deepCopyNodeInfo(nodeInfo); err == nil {
 					result[id] = nodeInfoCopy
 					continue
@@ -124,11 +132,13 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 		result[id] = nodeInfo
 	}
 
-	// Remove invalid node groups from cache
-	for id := range nodeInfoCache {
-		if _, ok := seenGroups[id]; !ok {
-			delete(nodeInfoCache, id)
-		}
+	// Remove stale node groups from cache
+	if nodeInfoCache != nil {
+		nodeInfoCache.Range(func(nodeGroupID string, nodeInfo *schedulerframework.NodeInfo) {
+			if _, seen := seenGroups[nodeGroupID]; !seen {
+				nodeInfoCache.Delete(nodeGroupID)
+			}
+		})
 	}
 
 	// Last resort - unready/unschedulable nodes.

@@ -149,6 +149,8 @@ extraArgs:
   # scale-down-utilization-threshold: 0.5
   # scale-down-non-empty-candidates-count: 30
   # max-node-provision-time: 15m0s
+  # node-readiness-grace-time: 5m
+  # node-cache-expiration-time: 10m
   # scan-interval: 10s
   # scale-down-delay-after-add: 10m
   # scale-down-delay-after-delete: 0s

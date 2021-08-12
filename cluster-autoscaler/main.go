@@ -135,6 +135,8 @@ var (
 	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	scaleUpFromZero            = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there 0 ready nodes.")
 	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
+	nodeReadinessGraceTime     = flag.Duration("node-readiness-grace-time", 5*time.Minute, "Grace period CA waits for a Kubernetes node to be considered as ready before basing autoscaling decisions on it.")
+	nodeCacheExpirationTime    = flag.Duration("node-cache-expiration-time", 10*time.Minute, "Time CA waits before expiring stale Kubernetes nodes from its cache. Set to -1 to never expire cache entries.")
 	nodeGroupsFlag             = multiStringFlag(
 		"nodes",
 		"sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
@@ -223,6 +225,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxEmptyBulkDelete:                 *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:          *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:               *maxNodeProvisionTime,
+		NodeReadinessGraceTime:             *nodeReadinessGraceTime,
+		NodeCacheExpirationTime:            *nodeCacheExpirationTime,
 		MaxNodesTotal:                      *maxNodesTotal,
 		MaxCoresTotal:                      maxCoresTotal,
 		MinCoresTotal:                      minCoresTotal,
