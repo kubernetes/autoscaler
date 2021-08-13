@@ -28,7 +28,8 @@ autoscaler:
   jobs:
     head-update:
       traits:
-        component_descriptor: ~
+        component_descriptor:
+          snapshot_ctx_repository: gardener-public
         draft_release: ~
     pull-request:
       traits:
@@ -45,4 +46,5 @@ autoscaler:
             internal_scp_workspace:
               channel_name: 'C0170QTBJUW' # gardener-mcm
               slack_cfg_name: 'scp_workspace'
-        component_descriptor: ~
+        component_descriptor:
+          snapshot_ctx_repository: gardener-public
