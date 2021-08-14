@@ -21,7 +21,9 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -219,7 +221,46 @@ func (ng *AwsNodeGroup) Delete() error {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (ng *AwsNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	newNodeGroupAutoscalingOptions := defaults
+	for _, tag := range ng.asg.Tags {
+		if "k8s.io/cluster-autoscaler/ScaleDownUtilizationThreshold" == *tag.Key {
+			scaleDownUtilizationThreshold, err := strconv.ParseFloat(*tag.Value, 64)
+			if err != nil {
+				klog.Warningf("fail to convert ScaleDownUtilizationThreshold time value to float, ScaleDownUtilizationThreshold : %s, %#v", scaleDownUtilizationThreshold, err)
+				return nil, cloudprovider.ErrNotImplemented
+			}
+			newNodeGroupAutoscalingOptions.ScaleDownUtilizationThreshold = scaleDownUtilizationThreshold
+		}
+
+		if "k8s.io/cluster-autoscaler/ScaleDownGpuUtilizationThreshold" == *tag.Key {
+			scaleDownGpuUtilizationThreshold, err := strconv.ParseFloat(*tag.Value, 64)
+			if err != nil {
+				klog.Warningf("fail to convert ScaleDownGpuUtilizationThreshold time value to float, ScaleDownGpuUtilizationThreshold : %s, %#v", scaleDownGpuUtilizationThreshold, err)
+				return nil, cloudprovider.ErrNotImplemented
+			}
+			newNodeGroupAutoscalingOptions.ScaleDownGpuUtilizationThreshold = scaleDownGpuUtilizationThreshold
+		}
+
+		if "k8s.io/cluster-autoscaler/ScaleDownUnneededTime" == *tag.Key {
+			scaleDownUnneededTime, err := time.ParseDuration(*tag.Value)
+			if err != nil {
+				klog.Warningf("fail to convert ScaleDownUnneededTime value to duration, unneedTimeValue : %s, %#v", scaleDownUnneededTime, err)
+				return nil, cloudprovider.ErrNotImplemented
+			}
+			newNodeGroupAutoscalingOptions.ScaleDownUnneededTime = scaleDownUnneededTime
+		}
+
+		if "k8s.io/cluster-autoscaler/ScaleDownUnreadyTime" == *tag.Key {
+			scaleDownUnreadyTime, err := time.ParseDuration(*tag.Value)
+			if err != nil {
+				klog.Warningf("fail to convert ScaleDownUnreadyTime value to duration, unneedTimeValue : %s, %#v", scaleDownUnreadyTime, err)
+				return nil, cloudprovider.ErrNotImplemented
+			}
+			newNodeGroupAutoscalingOptions.ScaleDownUnreadyTime = scaleDownUnreadyTime
+		}
+	}
+
+	return &newNodeGroupAutoscalingOptions, nil
 }
 
 // IncreaseSize increases Asg size
