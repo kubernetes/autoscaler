@@ -36,14 +36,14 @@ func TestCache_GetInstancesForNodeGroup(t *testing.T) {
 		"node-3": "nodepool-1",
 	}
 	cache.instances = map[string]cloudprovider.Instance{
-		"node-1": {Id: convertToInstanceId("node-1")},
-		"node-2": {Id: convertToInstanceId("node-2")},
-		"node-3": {Id: convertToInstanceId("node-3")},
+		"node-1": {Id: "node-1"},
+		"node-2": {Id: "node-2"},
+		"node-3": {Id: "node-3"},
 	}
 
 	expect := []cloudprovider.Instance{
-		{Id: convertToInstanceId("node-1")},
-		{Id: convertToInstanceId("node-3")},
+		{Id: "node-1"},
+		{Id: "node-3"},
 	}
 	instances := cache.GetInstancesForNodeGroup("nodepool-1")
 	require.ElementsMatch(t, expect, instances)

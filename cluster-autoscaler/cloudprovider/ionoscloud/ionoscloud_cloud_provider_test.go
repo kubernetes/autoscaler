@@ -25,6 +25,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
+// convertToProviderId converts an IonosCloud datacenter Id and kubernetes node Id to a kubernetes node's provider Id.
+func convertToProviderId(dcId, nodeId string) string {
+	return fmt.Sprintf("%s%s/%s", ProviderIdPrefix, dcId, nodeId)
+}
+
 type NodeGroupTestSuite struct {
 	suite.Suite
 	manager    *MockIonosCloudManager
@@ -41,7 +46,7 @@ func (s *NodeGroupTestSuite) SetupTest() {
 		manager: s.manager,
 	}
 	s.deleteNode = []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: convertToInstanceId("testnode")}},
+		{Spec: apiv1.NodeSpec{ProviderID: convertToProviderId("testdatacenter", "testnode")}},
 	}
 }
 

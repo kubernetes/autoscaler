@@ -205,12 +205,12 @@ func (ic *IonosCloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	providerID := node.Spec.ProviderID
+	nodeID := convertToNodeId(node.Spec.ProviderID)
 	if nodeGroup := ic.manager.GetNodeGroupForNode(node); nodeGroup != nil {
-		klog.V(4).Infof("Node %s found in cache", providerID)
+		klog.V(4).Infof("Node %s found in cache", nodeID)
 		return nodeGroup, nil
 	}
-	klog.V(4).Infof("Node %s not found in cache", providerID)
+	klog.V(4).Infof("Node %s not found in cache", nodeID)
 
 	for _, nodeGroup := range ic.manager.GetNodeGroups() {
 		klog.V(5).Infof("Checking node group %s", nodeGroup.Id())
@@ -220,10 +220,10 @@ func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 		}
 
 		for _, node := range nodes {
-			if node.Id != providerID {
+			if node.Id != nodeID {
 				continue
 			}
-			klog.V(4).Infof("Node %s found after refresh in node group %s", providerID, nodeGroup.Id())
+			klog.V(4).Infof("Node %s found after refresh in node group %s", nodeID, nodeGroup.Id())
 			return nodeGroup, nil
 		}
 	}

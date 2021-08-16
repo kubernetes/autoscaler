@@ -131,9 +131,8 @@ func (cache *IonosCache) SetInstancesCacheForNodeGroup(id string, instances []cl
 
 func (cache *IonosCache) setInstancesCacheForNodeGroupNoLock(id string, instances []cloudprovider.Instance) {
 	for _, instance := range instances {
-		nodeId := convertToNodeId(instance.Id)
-		cache.nodesToNodeGroups[nodeId] = id
-		cache.instances[nodeId] = instance
+		cache.nodesToNodeGroups[instance.Id] = id
+		cache.instances[instance.Id] = instance
 	}
 	cache.updateNodeGroupTimestampNoLock(id)
 }

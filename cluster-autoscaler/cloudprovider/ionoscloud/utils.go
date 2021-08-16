@@ -28,18 +28,20 @@ import (
 const (
 	// ProviderIdPrefix is the prefix of the provider id of a Kubernetes node object.
 	ProviderIdPrefix = "ionos://"
-	// ErrorCodeUnknownState is set if the IonosCloud Kubernetes instace has an unknown state.
+	// ErrorCodeUnknownState is set if the IonosCloud Kubernetes instance has an unknown state.
 	ErrorCodeUnknownState = "UNKNOWN_STATE"
 )
 
-// convertToInstanceId converts an IonosCloud kubernetes node Id to a cloudprovider.Instance Id.
-func convertToInstanceId(nodeId string) string {
-	return fmt.Sprintf("%s%s", ProviderIdPrefix, nodeId)
-}
-
-// convertToNodeId converts a cloudprovider.Instance Id to an IonosCloud kubernetes node Id.
+// convertToNodeId converts a kubernetes node's provider Id to an IonosCloud kubernetes node Id.
 func convertToNodeId(providerId string) string {
-	return strings.TrimPrefix(providerId, ProviderIdPrefix)
+	withoutPrefix := strings.TrimPrefix(providerId, ProviderIdPrefix)
+	// check if we have an up-to-date or legacy provider ID
+	if parts := strings.Split(withoutPrefix, "/"); len(parts) > 1 {
+		// handle the up-to-date provider ID including the datacenter ID
+		return parts[1]
+	}
+	// handle the legacy provider ID lacking the datacenter ID
+	return withoutPrefix
 }
 
 // convertToInstances converts a list IonosCloud kubernetes nodes to a list of cloudprovider.Instances.
@@ -51,10 +53,10 @@ func convertToInstances(nodes *ionos.KubernetesNodes) []cloudprovider.Instance {
 	return instances
 }
 
-// to Instance converts an IonosCloud kubernetes node to a cloudprovider.Instance.
+// convertToInstance converts an IonosCloud kubernetes node to a cloudprovider.Instance.
 func convertToInstance(node ionos.KubernetesNode) cloudprovider.Instance {
 	return cloudprovider.Instance{
-		Id:     convertToInstanceId(*node.Id),
+		Id:     *node.Id,
 		Status: convertToInstanceStatus(*node.Metadata.State),
 	}
 }

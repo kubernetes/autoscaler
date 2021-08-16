@@ -148,7 +148,7 @@ func newKubernetesNode(id, state string) ionos.KubernetesNode {
 }
 
 func newInstance(id string) cloudprovider.Instance {
-	return cloudprovider.Instance{Id: convertToInstanceId(id)}
+	return cloudprovider.Instance{Id: id}
 }
 
 func newInstanceWithState(id string, state cloudprovider.InstanceState) cloudprovider.Instance {
@@ -162,7 +162,7 @@ func newInstanceWithState(id string, state cloudprovider.InstanceState) cloudpro
 func newAPINode(id string) *apiv1.Node {
 	return &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: convertToInstanceId(id),
+			ProviderID: convertToProviderId("testdatacenter", id),
 		},
 	}
 }

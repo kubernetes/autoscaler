@@ -75,27 +75,27 @@ var (
 	}
 	cloudproviderInstances = []cloudprovider.Instance{
 		{
-			Id: "ionos://1",
+			Id: "1",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceCreating,
 			},
 		}, {
-			Id: "ionos://2",
+			Id: "2",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceCreating,
 			},
 		}, {
-			Id: "ionos://3",
+			Id: "3",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceCreating,
 			},
 		}, {
-			Id: "ionos://4",
+			Id: "4",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceDeleting,
 			},
 		}, {
-			Id: "ionos://5",
+			Id: "5",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceRunning,
 			},
@@ -103,17 +103,15 @@ var (
 	}
 )
 
-func TestUtils_ConvertToInstanceId(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
-		in := "1-2-3-4"
-		want := "ionos://1-2-3-4"
-		got := convertToInstanceId(in)
+func TestUtils_ConvertToNodeId(t *testing.T) {
+	t.Run("up-to-date format", func(t *testing.T) {
+		in := "ionos://0/1-2-3-4"
+		want := "1-2-3-4"
+		got := convertToNodeId(in)
 		require.Equal(t, want, got)
 	})
-}
 
-func TestUtils_ConvertToNodeId(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
+	t.Run("legacy format", func(t *testing.T) {
 		in := "ionos://1-2-3-4"
 		want := "1-2-3-4"
 		got := convertToNodeId(in)
@@ -141,7 +139,7 @@ func TestUtils_ConvertToInstance(t *testing.T) {
 			},
 		}
 		want := cloudprovider.Instance{
-			Id: "ionos://1",
+			Id: "1",
 			Status: &cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceRunning,
 			},
