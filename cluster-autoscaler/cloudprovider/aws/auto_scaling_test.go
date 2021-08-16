@@ -27,22 +27,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMoreThen50Groups(t *testing.T) {
+func TestMoreThen100Groups(t *testing.T) {
 	service := &AutoScalingMock{}
 	autoScalingWrapper := &autoScalingWrapper{
 		autoScaling: service,
 	}
 
-	// Generate 51 ASG names
-	names := make([]string, 51)
+	// Generate 101 ASG names
+	names := make([]string, 101)
 	for i := 0; i < len(names); i++ {
 		names[i] = fmt.Sprintf("asg-%d", i)
 	}
 
-	// First batch, first 50 elements
+	// First batch, first 100 elements
 	service.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice(names[:50]),
+			AutoScalingGroupNames: aws.StringSlice(names[:100]),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
 		},
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
@@ -51,10 +51,10 @@ func TestMoreThen50Groups(t *testing.T) {
 		fn(testNamedDescribeAutoScalingGroupsOutput("asg-1", 1, "test-instance-id"), false)
 	}).Return(nil)
 
-	// Second batch, element 51
+	// Second batch, element 101
 	service.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"asg-50"}),
+			AutoScalingGroupNames: aws.StringSlice([]string{"asg-100"}),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
 		},
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
