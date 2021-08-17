@@ -20,18 +20,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"io/ioutil"
-	klog "k8s.io/klog/v2"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/session"
+
+	klog "k8s.io/klog/v2"
 )
 
 var (
-	ec2MetaDataServiceUrl          = "http://169.254.169.254/latest/dynamic/instance-identity/document"
+	ec2MetaDataServiceUrl          = "http://169.254.169.254"
 	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
 	staticListLastUpdateTime       = "2020-12-07"
@@ -82,16 +87,9 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 
 			defer res.Body.Close()
 
-			body, err := ioutil.ReadAll(res.Body)
+			unmarshalled, err := unmarshalProductsResponse(res.Body)
 			if err != nil {
-				klog.Warningf("Error parsing %s skipping...\n", url)
-				continue
-			}
-
-			var unmarshalled = response{}
-			err = json.Unmarshal(body, &unmarshalled)
-			if err != nil {
-				klog.Warningf("Error unmarshalling %s, skip...\n", url)
+				klog.Warningf("Error parsing %s skipping...\n%s\n", url, err)
 				continue
 			}
 
@@ -127,6 +125,58 @@ func GetStaticEC2InstanceTypes() (map[string]*InstanceType, string) {
 	return InstanceTypes, staticListLastUpdateTime
 }
 
+func unmarshalProductsResponse(r io.Reader) (*response, error) {
+	dec := json.NewDecoder(r)
+	t, err := dec.Token()
+	if err != nil {
+		return nil, err
+	}
+	if delim, ok := t.(json.Delim); !ok || delim.String() != "{" {
+		return nil, errors.New("Invalid products json")
+	}
+
+	unmarshalled := response{map[string]product{}}
+
+	for dec.More() {
+		t, err = dec.Token()
+		if err != nil {
+			return nil, err
+		}
+
+		if t == "products" {
+			tt, err := dec.Token()
+			if err != nil {
+				return nil, err
+			}
+			if delim, ok := tt.(json.Delim); !ok || delim.String() != "{" {
+				return nil, errors.New("Invalid products json")
+			}
+			for dec.More() {
+				productCode, err := dec.Token()
+				if err != nil {
+					return nil, err
+				}
+
+				prod := product{}
+				if err = dec.Decode(&prod); err != nil {
+					return nil, err
+				}
+				unmarshalled.Products[productCode.(string)] = prod
+			}
+		}
+	}
+
+	t, err = dec.Token()
+	if err != nil {
+		return nil, err
+	}
+	if delim, ok := t.(json.Delim); !ok || delim.String() != "}" {
+		return nil, errors.New("Invalid products json")
+	}
+
+	return &unmarshalled, nil
+}
+
 func parseMemory(memory string) int64 {
 	reg, err := regexp.Compile("[^0-9\\.]+")
 	if err != nil {
@@ -155,26 +205,13 @@ func GetCurrentAwsRegion() (string, error) {
 	region, present := os.LookupEnv("AWS_REGION")
 
 	if !present {
-		klog.V(1).Infof("fetching %s\n", ec2MetaDataServiceUrl)
-		res, err := http.Get(ec2MetaDataServiceUrl)
+		c := aws.NewConfig().
+			WithEndpoint(ec2MetaDataServiceUrl)
+		sess, err := session.NewSession()
 		if err != nil {
-			return "", fmt.Errorf("Error fetching %s", ec2MetaDataServiceUrl)
+			return "", fmt.Errorf("failed to create session")
 		}
-
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing %s", ec2MetaDataServiceUrl)
-		}
-
-		var unmarshalled = map[string]string{}
-		err = json.Unmarshal(body, &unmarshalled)
-		if err != nil {
-			klog.Warningf("Error unmarshalling %s, skip...\n", ec2MetaDataServiceUrl)
-		}
-
-		region = unmarshalled["region"]
+		return ec2metadata.New(sess, c).Region()
 	}
 
 	return region, nil
