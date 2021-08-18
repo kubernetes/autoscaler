@@ -32,4 +32,15 @@ rules:
 {{- if eq (default "" .Values.extraArgs.expander) "priority" }}
       - watch
 {{- end }}
+{{- if  eq (default "" (index .Values.extraArgs "leader-elect-resource-lock")) "configmaps" }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - cluster-autoscaler
+    verbs:
+      - get
+      - update
+{{- end }}
 {{- end -}}
