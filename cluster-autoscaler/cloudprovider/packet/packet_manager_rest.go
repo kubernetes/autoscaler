@@ -292,7 +292,12 @@ func Contains(a []string, x string) bool {
 // createPacketManagerRest sets up the client and returns
 // an packetManagerRest.
 func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*packetManagerRest, error) {
-	var cfg ConfigFile
+	// Initialize ConfigFile instance
+	cfg := ConfigFile{
+		DefaultNodegroupdef: ConfigNodepool{},
+		Nodegroupdef:        map[string]*ConfigNodepool{},
+	}
+
 	if configReader != nil {
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			klog.Errorf("Couldn't read config: %v", err)
