@@ -79,6 +79,35 @@ affinity:
           - t1.small.x86
 ```
 
+## CCM and Controller node labels
+
+### CCM
+By default, autoscaler assumes that you have an older deprecated version of `packet-ccm` installed in your
+cluster.  If however, that is not the case and you've migrated to the new `cloud-provider-equinix-metal` CCM,
+then this must be told to autoscaler. This can be done via setting an environment variable in the deployment:
+```
+env:
+  - name: INSTALLED_CCM
+    value: cloud-provider-equinix-metal
+```
+**NOTE**: As a prerequisite, ensure that all worker nodes in your cluster have the prefix `equinixmetal://` in
+the Node spec `.spec.providerID`. If there are any existing worker nodes with prefix `packet://`, then drain
+the node, remove the node and restart the kubelet on that worker node to re-register the node in the cluster,
+this would ensure that `cloud-provider-equinix-metal` CCM sets the uuid with prefix `equinixmetal://` to the
+field `.spec.ProviderID`.
+
+### Controller node labels
+
+Autoscaler assumes that control plane nodes in your cluster are identified by the label
+`node-role.kubernetes.io/master`. If for some reason, this assumption is not true in your case, then set the
+envirnment variable in the deployment:
+
+```
+env:
+  - name: PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL
+    value: <label>
+```
+
 ## Notes
 
 The autoscaler will not remove nodes which have non-default kube-system pods.
