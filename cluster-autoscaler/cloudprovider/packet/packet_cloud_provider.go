@@ -37,6 +37,11 @@ const (
 	ProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
+	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
+	// master/controller node.
+	DefaultControllerNodeLabelKey = "node-role.kubernetes.io/master"
+	// ControllerNodeIdentifierEnv is the string for the environment variable.
+	ControllerNodeIdentifierEnv = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
 )
 
 var (
@@ -94,7 +99,13 @@ func (pcp *packetCloudProvider) AddNodeGroup(group packetNodeGroup) {
 //
 // Since only a single node group is currently supported, the first node group is always returned.
 func (pcp *packetCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]; found {
+	controllerNodeLabel := os.Getenv(ControllerNodeIdentifierEnv)
+	if controllerNodeLabel == "" {
+		klog.V(3).Infof("env %s not set, using default: %s", ControllerNodeIdentifierEnv, DefaultControllerNodeLabelKey)
+		controllerNodeLabel = DefaultControllerNodeLabelKey
+	}
+
+	if _, found := node.ObjectMeta.Labels[controllerNodeLabel]; found {
 		return nil, nil
 	}
 	nodeGroupId, err := pcp.packetManager.NodeGroupForNode(node.ObjectMeta.Labels, node.Spec.ProviderID)
