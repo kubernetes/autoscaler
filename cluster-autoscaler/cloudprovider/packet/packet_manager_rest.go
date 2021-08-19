@@ -48,6 +48,8 @@ import (
 const (
 	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
+	packetPrefix                 = "packet://"
+	equinixMetalPrefix           = "equinixmetal://"
 )
 
 type instanceType struct {
@@ -292,7 +294,12 @@ func Contains(a []string, x string) bool {
 // createPacketManagerRest sets up the client and returns
 // an packetManagerRest.
 func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*packetManagerRest, error) {
-	var cfg ConfigFile
+	// Initialize ConfigFile instance
+	cfg := ConfigFile{
+		DefaultNodegroupdef: ConfigNodepool{},
+		Nodegroupdef:        map[string]*ConfigNodepool{},
+	}
+
 	if configReader != nil {
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			klog.Errorf("Couldn't read config: %v", err)
@@ -431,7 +438,11 @@ func (mgr *packetManagerRest) NodeGroupForNode(labels map[string]string, nodeId 
 	if nodegroup, ok := labels["pool"]; ok {
 		return nodegroup, nil
 	}
-	device, err := mgr.getPacketDevice(context.TODO(), strings.TrimPrefix(nodeId, "packet://"))
+
+	trimmedNodeId := strings.TrimPrefix(nodeId, packetPrefix)
+	trimmedNodeId = strings.TrimPrefix(trimmedNodeId, equinixMetalPrefix)
+
+	device, err := mgr.getPacketDevice(context.TODO(), trimmedNodeId)
 	if err != nil {
 		return "", fmt.Errorf("Could not find group for node: %s %s", nodeId, err)
 	}
@@ -590,9 +601,30 @@ func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
 
 	nodes := []string{}
 
+	// This bit of code along with the switch statement, checks if the CCM installed on the cluster is
+	// `packet-ccm` or `cloud-provider-equinix-metal`. The reason its important to check because depending
+	// on the CCM installed, the prefix in providerID of K8s Node spec differs from either `packet://` or
+	// `equinixmetal://`. This is now needed as `packet-ccm` is now deprecated and renamed in favor of
+	// `cloud-provider-equinix-metal`.
+	// This code checks if the INSTALLED_CCM env var is set or not. If set to `cloud-provider-equinix-metal`,
+	// the prefix is set to `equinixmetal://` and any other case the prefix is `packet://`.
+	// At a later point in time, there would be a need to make `equinixmetal://` prefix as the default or do away
+	// with `packet://` prefix entirely. This should happen presumably when the packet code in autoscaler is
+	// renamed from packet to equinixmetal.
+	prefix := packetPrefix
+
+	switch installedCCM := os.Getenv("INSTALLED_CCM"); installedCCM {
+	case "packet-ccm":
+		prefix = packetPrefix
+	case "cloud-provider-equinix-metal":
+		prefix = equinixMetalPrefix
+	default:
+		klog.V(3).Info("Unrecognized value: expected INSTALLED_CCM to be either `packet-ccm` or `cloud-provider-equinix-metal`, using default: `packet-ccm`")
+	}
+
 	for _, d := range devices.Devices {
 		if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
-			nodes = append(nodes, fmt.Sprintf("packet://%s", d.ID))
+			nodes = append(nodes, fmt.Sprintf("%s%s", prefix, d.ID))
 		}
 	}
 
@@ -660,11 +692,15 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 			klog.Infof("Checking device %v", d)
 			if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
+
+				trimmedName := strings.TrimPrefix(n.Name, packetPrefix)
+				trimmedName = strings.TrimPrefix(trimmedName, equinixMetalPrefix)
+
 				switch {
 				case d.Hostname == n.Name:
 					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
 					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
-				case fakeNode && strings.TrimPrefix(n.Name, "packet://") == d.ID:
+				case fakeNode && trimmedName == d.ID:
 					klog.V(1).Infof("Fake Node %s", d.ID)
 					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
 				}
