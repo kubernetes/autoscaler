@@ -47,7 +47,7 @@ You can also use forward slashes in taints by setting them as an underscore in t
 
 #### Resources
 
-When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided presources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
+When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided resources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
 This can be overridden (for instance, to account for system reserved resources) by specifying capacities with VMSS tags, formated as: `k8s.io_cluster-autoscaler_node-template_resources_<resource name>: <resource value>`. For instance:
 ```
 k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
