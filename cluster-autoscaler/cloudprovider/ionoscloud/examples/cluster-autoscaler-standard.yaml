@@ -34,6 +34,7 @@ rules:
     verbs: ["watch", "list", "get", "update"]
   - apiGroups: [""]
     resources:
+      - "namespaces"
       - "pods"
       - "services"
       - "replicationcontrollers"
