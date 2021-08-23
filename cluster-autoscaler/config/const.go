@@ -21,4 +21,13 @@ const (
 	DefaultMaxClusterCores = 5000 * 64
 	// DefaultMaxClusterMemory is the default maximum number of gigabytes of memory in cluster.
 	DefaultMaxClusterMemory = 5000 * 64 * 20
+
+	// DefaultScaleDownUtilizationThresholdKey identifies ScaleDownUtilizationThreshold autoscaling option
+	DefaultScaleDownUtilizationThresholdKey = "scaledownutilizationthreshold"
+	// DefaultScaleDownGpuUtilizationThresholdKey identifies ScaleDownGpuUtilizationThreshold autoscaling option
+	DefaultScaleDownGpuUtilizationThresholdKey = "scaledowngpuutilizationthreshold"
+	// DefaultScaleDownUnneededTimeKey identifies ScaleDownUnneededTime autoscaling option
+	DefaultScaleDownUnneededTimeKey = "scaledownunneededtime"
+	// DefaultScaleDownUnreadyTimeKey identifies ScaleDownUnreadyTime autoscaling option
+	DefaultScaleDownUnreadyTimeKey = "scaledownunreadytime"
 )

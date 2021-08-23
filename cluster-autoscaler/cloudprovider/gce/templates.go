@@ -21,7 +21,9 @@ import (
 	"math"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	gce "google.golang.org/api/compute/v1"
@@ -450,6 +452,51 @@ func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSyst
 		klog.Errorf("unexpected os-distribution=%v passed via AUTOSCALER_ENV_VARS", osDistributionValue)
 		return OperatingSystemDistributionUnknown
 	}
+}
+
+func getFloat64Option(options map[string]string, templateName, name string) (float64, bool) {
+	raw, ok := options[name]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		klog.Warningf("failed to convert autoscaling_options option %q (value %q) for MIG %q to float: %v", name, raw, templateName, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func getDurationOption(options map[string]string, templateName, name string) (time.Duration, bool) {
+	raw, ok := options[name]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := time.ParseDuration(raw)
+	if err != nil {
+		klog.Warningf("failed to convert autoscaling_options option %q (value %q) for MIG %q to duration: %v", name, raw, templateName, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func extractAutoscalingOptionsFromKubeEnv(kubeEnvValue string) (map[string]string, error) {
+	optionsAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "autoscaling_options")
+	if err != nil {
+		klog.Warningf("error while obtaining autoscaling_options from AUTOSCALER_ENV_VARS: %v", err)
+		return nil, err
+	}
+
+	if !found {
+		klog.V(5).Info("no autoscaling_options defined in AUTOSCALER_ENV_VARS")
+		return make(map[string]string), nil
+	}
+
+	return parseKeyValueListToMap(optionsAsString)
 }
 
 func extractEvictionHardFromKubeEnv(kubeEnvValue string) (map[string]string, error) {

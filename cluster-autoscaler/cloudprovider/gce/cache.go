@@ -69,6 +69,7 @@ type GceCache struct {
 	instanceRefToMigRef      map[GceRef]GceRef
 	instancesFromUnknownMigs map[GceRef]struct{}
 	resourceLimiter          *cloudprovider.ResourceLimiter
+	autoscalingOptionsCache  map[GceRef]map[string]string
 	machinesCache            map[MachineTypeKey]machinesCacheValue
 	migTargetSizeCache       map[GceRef]int64
 	migBaseNameCache         map[GceRef]string
@@ -85,6 +86,7 @@ func NewGceCache(gceService AutoscalingGceClient, concurrentGceRefreshes int) *G
 		migs:                     map[GceRef]Mig{},
 		instanceRefToMigRef:      map[GceRef]GceRef{},
 		instancesFromUnknownMigs: map[GceRef]struct{}{},
+		autoscalingOptionsCache:  map[GceRef]map[string]string{},
 		machinesCache:            map[MachineTypeKey]machinesCacheValue{},
 		migTargetSizeCache:       map[GceRef]int64{},
 		migBaseNameCache:         map[GceRef]string{},
@@ -288,6 +290,20 @@ func (gc *GceCache) RegenerateInstancesCache() error {
 	}
 
 	return nil
+}
+
+// SetAutoscalingOptions stores autoscaling options strings obtained from IT.
+func (gc *GceCache) SetAutoscalingOptions(ref GceRef, options map[string]string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.autoscalingOptionsCache[ref] = options
+}
+
+// GetAutoscalingOptions return autoscaling options strings obtained from IT.
+func (gc *GceCache) GetAutoscalingOptions(ref GceRef) map[string]string {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	return gc.autoscalingOptionsCache[ref]
 }
 
 // SetResourceLimiter sets resource limiter.
