@@ -32,6 +32,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	azclients "k8s.io/legacy-cloud-providers/azure/clients"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
 	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
@@ -790,4 +791,48 @@ func TestManagerRefreshAndCleanup(t *testing.T) {
 	err := manager.Refresh()
 	assert.NoError(t, err)
 	manager.Cleanup()
+}
+
+func TestGetScaleSetOptions(t *testing.T) {
+	manager := &AzureManager{
+		azureCache: &azureCache{
+			autoscalingOptions: make(map[azureRef]map[string]string),
+		},
+	}
+	defaultOptions := config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.1,
+		ScaleDownGpuUtilizationThreshold: 0.2,
+		ScaleDownUnneededTime:            time.Second,
+		ScaleDownUnreadyTime:             time.Minute,
+	}
+
+	tags := map[string]string{
+		config.DefaultScaleDownUtilizationThresholdKey:    "0.2",
+		config.DefaultScaleDownGpuUtilizationThresholdKey: "0.3",
+		config.DefaultScaleDownUnneededTimeKey:            "30m",
+		config.DefaultScaleDownUnreadyTimeKey:             "1h",
+	}
+	manager.azureCache.autoscalingOptions[azureRef{Name: "test1"}] = tags
+	opts := manager.GetScaleSetOptions("test1", defaultOptions)
+	assert.Equal(t, opts.ScaleDownUtilizationThreshold, 0.2)
+	assert.Equal(t, opts.ScaleDownGpuUtilizationThreshold, 0.3)
+	assert.Equal(t, opts.ScaleDownUnneededTime, 30*time.Minute)
+	assert.Equal(t, opts.ScaleDownUnreadyTime, time.Hour)
+
+	tags = map[string]string{
+		//config.DefaultScaleDownUtilizationThresholdKey: ... // not specified (-> default)
+		config.DefaultScaleDownGpuUtilizationThresholdKey: "not-a-float",
+		config.DefaultScaleDownUnneededTimeKey:            "1m",
+		config.DefaultScaleDownUnreadyTimeKey:             "not-a-duration",
+	}
+	manager.azureCache.autoscalingOptions[azureRef{Name: "test2"}] = tags
+	opts = manager.GetScaleSetOptions("test2", defaultOptions)
+	assert.Equal(t, opts.ScaleDownUtilizationThreshold, defaultOptions.ScaleDownUtilizationThreshold)
+	assert.Equal(t, opts.ScaleDownGpuUtilizationThreshold, defaultOptions.ScaleDownGpuUtilizationThreshold)
+	assert.Equal(t, opts.ScaleDownUnneededTime, time.Minute)
+	assert.Equal(t, opts.ScaleDownUnreadyTime, defaultOptions.ScaleDownUnreadyTime)
+
+	manager.azureCache.autoscalingOptions[azureRef{Name: "test3"}] = map[string]string{}
+	opts = manager.GetScaleSetOptions("test3", defaultOptions)
+	assert.Equal(t, *opts, defaultOptions)
 }
