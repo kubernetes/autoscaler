@@ -18,20 +18,21 @@ package azure
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"io"
 	"io/ioutil"
-	"k8s.io/klog/v2"
-	providerazure "k8s.io/legacy-cloud-providers/azure"
-	azclients "k8s.io/legacy-cloud-providers/azure/clients"
-	"k8s.io/legacy-cloud-providers/azure/retry"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/azure"
+	"k8s.io/klog/v2"
+	providerazure "k8s.io/legacy-cloud-providers/azure"
+	azclients "k8s.io/legacy-cloud-providers/azure/clients"
+	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 
 const (
@@ -53,6 +54,10 @@ const (
 	rateLimitReadBucketsEnvVar          = "RATE_LIMIT_READ_BUCKETS"
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
+
+	// auth methods
+	authMethodPrincipal = "principal"
+	authMethodCLI       = "cli"
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -79,6 +84,14 @@ type Config struct {
 	SubscriptionID string `json:"subscriptionId" yaml:"subscriptionId"`
 	ResourceGroup  string `json:"resourceGroup" yaml:"resourceGroup"`
 	VMType         string `json:"vmType" yaml:"vmType"`
+
+	// AuthMethod determines how to authorize requests for the Azure
+	// cloud. Valid options are "principal" (= the traditional
+	// service principle approach) and "cli" (= load az command line
+	// config file). The default is "principal".
+	AuthMethod string `json:"authMethod" yaml:"authMethod"`
+
+	// Settings for a service principal.
 
 	AADClientID                 string `json:"aadClientId" yaml:"aadClientId"`
 	AADClientSecret             string `json:"aadClientSecret" yaml:"aadClientSecret"`
@@ -373,12 +386,12 @@ func overrideDefaultRateLimitConfig(defaults, config *azclients.RateLimitConfig)
 	return config
 }
 
-func (cfg *Config) getAzureClientConfig(servicePrincipalToken *adal.ServicePrincipalToken, env *azure.Environment) *azclients.ClientConfig {
+func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azure.Environment) *azclients.ClientConfig {
 	azClientConfig := &azclients.ClientConfig{
 		Location:                cfg.Location,
 		SubscriptionID:          cfg.SubscriptionID,
 		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
-		Authorizer:              autorest.NewBearerAuthorizer(servicePrincipalToken),
+		Authorizer:              authorizer,
 		Backoff:                 &retry.Backoff{Steps: 1},
 	}
 
@@ -445,8 +458,15 @@ func (cfg *Config) validate() error {
 		return fmt.Errorf("tenant ID not set")
 	}
 
-	if cfg.AADClientID == "" {
-		return fmt.Errorf("ARM Client ID not set")
+	switch cfg.AuthMethod {
+	case "", authMethodPrincipal:
+		if cfg.AADClientID == "" {
+			return errors.New("ARM Client ID not set")
+		}
+	case authMethodCLI:
+		// Nothing to check at the moment.
+	default:
+		return fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
 	}
 
 	if cfg.CloudProviderBackoff && cfg.CloudProviderBackoffRetries == 0 {
