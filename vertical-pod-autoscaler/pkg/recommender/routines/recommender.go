@@ -60,8 +60,6 @@ type Recommender interface {
 	// MaintainCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
 	MaintainCheckpoints(ctx context.Context, minCheckpoints int)
-	// GarbageCollect removes old AggregateCollectionStates
-	GarbageCollect()
 }
 
 type recommender struct {
@@ -169,14 +167,6 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 	}
 }
 
-func (r *recommender) GarbageCollect() {
-	gcTime := time.Now()
-	if gcTime.Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
-		r.clusterState.GarbageCollectAggregateCollectionStates(gcTime, r.controllerFetcher)
-		r.lastAggregateContainerStateGC = gcTime
-	}
-}
-
 func (r *recommender) RunOnce() {
 	timer := metrics_recommender.NewExecutionTimer()
 	defer timer.ObserveTotal()
@@ -203,7 +193,7 @@ func (r *recommender) RunOnce() {
 	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.GarbageCollect()
+	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now())
 	timer.ObserveStep("GarbageCollect")
 	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }
@@ -245,9 +235,7 @@ func (c RecommenderFactory) Make() Recommender {
 // Dependencies are created automatically.
 // Deprecated; use RecommenderFactory instead.
 func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, namespace string) Recommender {
-	clusterState := model.NewClusterState()
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	clusterState := model.NewClusterState(AggregateContainerStateGCInterval)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace),
