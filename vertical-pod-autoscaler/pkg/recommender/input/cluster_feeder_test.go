@@ -19,6 +19,7 @@ package input
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -60,11 +61,12 @@ var (
 )
 
 const (
-	kind       = "dodokind"
-	name1      = "dotaro"
-	name2      = "doseph"
-	namespace  = "testNamespace"
-	apiVersion = "stardust"
+	kind         = "dodokind"
+	name1        = "dotaro"
+	name2        = "doseph"
+	namespace    = "testNamespace"
+	apiVersion   = "stardust"
+	testGcPeriod = time.Minute
 )
 
 func TestLoadPods(t *testing.T) {
@@ -206,7 +208,7 @@ func TestLoadPods(t *testing.T) {
 
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(testGcPeriod)
 
 			clusterStateFeeder := clusterStateFeeder{
 				vpaLister:       vpaLister,
@@ -321,7 +323,7 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(testGcPeriod)
 			for i, selector := range tc.VPALabelSelectors {
 				vpaLabel, err := labels.Parse(selector)
 				assert.NoError(t, err)
