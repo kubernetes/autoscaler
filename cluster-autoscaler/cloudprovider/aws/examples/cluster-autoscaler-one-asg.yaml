@@ -137,9 +137,13 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8085'
     spec:
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.17.3
+        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.22.0
           name: cluster-autoscaler
           resources:
             limits:

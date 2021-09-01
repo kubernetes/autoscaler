@@ -137,6 +137,10 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8085'
     spec:
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
       serviceAccountName: cluster-autoscaler
       tolerations:
         - effect: NoSchedule
