@@ -32,12 +32,19 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/replace"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+// NodeTransformation contains settings for creating node templates.
+type NodeTransformation struct {
+	IgnoredTaints     taints.TaintKeySet
+	LabelReplacements replace.Replacements
+}
+
 // GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker simulator.PredicateChecker, nodeTransformation *NodeTransformation) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -55,7 +62,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	}
 	fullNodeInfo := schedulerframework.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
+	sanitizedNodeInfo, typedErr := SanitizeNodeInfo(fullNodeInfo, id, nodeTransformation)
 	if typedErr != nil {
 		return nil, typedErr
 	}
@@ -102,9 +109,9 @@ func DeepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 }
 
 // SanitizeNodeInfo modify nodeInfos generated from templates to avoid using duplicated host names
-func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, ignoredTaints taints.TaintKeySet) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName string, nodeTransformation *NodeTransformation) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, nodeTransformation)
 	if err != nil {
 		return nil, err
 	}
@@ -123,19 +130,26 @@ func SanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName strin
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taints.TaintKeySet) (*apiv1.Node, errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, nodeTransformation *NodeTransformation) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
+	newNode.Name = nodeName
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
 		if k != apiv1.LabelHostname {
+			if nodeTransformation != nil {
+				// Removing labels is not supported, only
+				// modifying them.
+				k, v = nodeTransformation.LabelReplacements.ApplyToPair(k, v)
+			}
 			newNode.Labels[k] = v
 		} else {
 			newNode.Labels[k] = nodeName
 		}
 	}
-	newNode.Name = nodeName
-	newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, ignoredTaints)
+	if nodeTransformation != nil {
+		newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, nodeTransformation.IgnoredTaints)
+	}
 	return newNode, nil
 }
 

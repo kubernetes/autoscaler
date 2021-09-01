@@ -35,6 +35,7 @@ this document:
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
+  * [How can I enable autoscaling for Pods with volumes?](#how-can-i-enable-autoscaling-for-pods-with-volumes)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -482,6 +483,99 @@ For example:
 For a complete list of the feature gates and their default values per Kubernetes versions, refer to the [Feature Gates documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/).
 
 ****************
+
+### How can I enable autoscaling for Pods with volumes?
+
+For network-attached storage, autoscaling works as long as the storage system
+does not run out of space for new volumes. Cluster Autoscaler has no support
+for automatically increasing storage pools when that happens.
+
+For storage that is local to nodes the situation is different. Solutions
+depend on the specific scenario.
+
+#### Dynamic provisioning with immediate binding
+
+When volumes are provisioned dynamically through a storage class with immediate
+[binding](https://kubernetes.io/docs/concepts/storage/storage-classes/#volume-binding-mode),
+then scheduling and thus the code in Cluster Autoscaler just waits for the
+volumes to be created. If that depends on creating new nodes, then scale up is
+not triggered. It's better to use the `WaitForFirstConsumer` binding mode.
+
+#### Dynamic provisioning with delayed binding
+
+When the binding mode is `WaitForFirstConsumer`, volume provisioning starts
+when the first Pod tries to use a PersistentVolumeClaim. The scheduler is
+involved in choosing a node candidate and then the provisioner tries to create
+the volume on that node.
+
+When the Cluster Autoscaler considers whether a Pod waiting for such a volume
+could run on a new node, the outcome depends on whether storage capacity
+tracking, a beta feature for CSI drivers since Kubernetes 1.21, is enabled or
+disabled. When disabled, the volume binder will assume that all nodes are
+suitable. This may cause the Cluster Autoscaler to create new nodes from a pool
+that doesn't actually have local storage.
+
+If it is enabled, then additional configuration of the Cluster Autoscaler is
+needed to inform it how much storage new nodes of a pool will have. This must
+be done for each CSI driver and each storage class of that driver. Suppose
+there is a `csi-lvm-fast` storage class for a fictional LVM CSI driver and a
+node pool where node names are `aks-workerpool-<unique id>`. The following
+command will create a CSIStorageCapacity object that states that new nodes
+will have a certain amount of free storage:
+
+```
+kubectl apply -f - <<EOF
+apiVersion: storage.k8s.io/v1beta1
+kind: CSIStorageCapacity
+metadata:
+  # The name does not matter. It just has to be unique
+  # inside the namespace.
+  name: aks-workerpool-csi-lvm-fast-storage
+  # Other namespaces also work. As this object is owned by the
+  # cluster administrator, kube-system is a good choice.
+  namespace: kube-system
+# Capacity and maximumVolumeSize must be the same as what the CSI driver
+# will report for new nodes with unused storage.
+capacity: 100Gi
+maximumVolumeSize: 100Gi
+nodeTopology:
+  matchLabels:
+    # This never matches a real node, only the node templates
+    # inside Cluster Autoscaler.
+    topology.hostpath.csi/node: aks-workerpool-template
+storageClassName: csi-lvm-fast
+EOF
+```
+
+Now Cluster Autoscaler must be configured to change the node template labels
+such that the volume capacity check looks at that object instead of the one for
+the node from which the template was created. This is done with a command line
+flag that enables regular expression matching and replacement for labels,
+similar to `sed -e s/foo-.*/foo-template/`:
+
+```
+--replace-labels ';^topology.lvm.csi/node=aks-workerpool.*;topology.lvm.csi/node=aks-workerpool-template;'
+```
+
+`topology.lvm.csi/node` in this example is the label that gets added when the
+LVM CSI driver is registered on a node by kubelet. For local storage, the value
+of that label is usually the host name, which is what must be modified.
+
+For scaling up from zero, the `topology.lvm.csi/node=aks-workerpool-template`
+label must be added to the configuration for the node pool. How to do this
+depends on the cloud provider.
+
+TODO: describe how to avoid over-provisioning
+
+#### Static provisioning
+
+When using something like the [Local Persistence Volume Static
+Provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner),
+new PersistentVolumes are created when new nodes are added. Those
+PersistentVolumes then may be used to satisfy unbound volume claims that
+prevented Pods from running earlier.
+
+Cluster Autoscaler currently has no support for this scenario.
 
 # Internals
 

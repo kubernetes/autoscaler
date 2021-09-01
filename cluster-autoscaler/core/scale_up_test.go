@@ -1180,8 +1180,8 @@ func TestScaleUpEnoughStorage(t *testing.T) {
 	// unbound PVC with late binding can be scheduled only if the
 	// node candidates are known to have capacity available.
 	// This can be configured for node candidates by giving them
-	// special labels (TODO: how?) and then manually creating
-	// CSIStorageCapacity objects for them.
+	// special labels (via regex replace and/or labels on the node pool)
+	// and then manually creating CSIStorageCapacity objects for them.
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 100, 100, 0, true, "ng1"},

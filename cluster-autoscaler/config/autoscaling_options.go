@@ -18,6 +18,8 @@ package config
 
 import (
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/utils/replace"
 )
 
 // GpuLimits define lower and upper bound on GPU instances of given type in cluster
@@ -145,6 +147,11 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
 	IgnoredTaints []string
+	// LabelReplacements is a list of regular expressions and their replacement that get applied
+	// to labels of existing nodes when creating node templates. The string that the regular
+	// expression is matched against is "<key>=<value>". If the value part is empty or missing
+	// after the transformation, the tag gets removed.
+	LabelReplacements replace.Replacements
 	// BalancingExtraIgnoredLabels is a list of labels to additionally ignore when comparing if two node groups are similar.
 	// Labels in BasicIgnoredLabels and the cloud provider-specific ignored labels are always ignored.
 	BalancingExtraIgnoredLabels []string
