@@ -142,7 +142,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	_, ipExist := observedNode.Status.Capacity[apiv1.ResourceName(vpcIPKey)]
 	assert.False(t, ipExist)
 
-	// Nod with labels
+	// Node with labels
 	GPULabelValue := "nvidia-telsa-v100"
 	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
@@ -157,6 +157,22 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	gpuValue, gpuLabelExist := observedNode.Labels[GPULabel]
 	assert.True(t, gpuLabelExist)
 	assert.Equal(t, GPULabelValue, gpuValue)
+
+	// Node with EKS labels
+	ngNameLabelValue := "nodegroup-1"
+	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String(ngNameLabelValue),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
+	assert.True(t, ngLabelExist)
+	assert.Equal(t, ngNameLabelValue, ngNameValue)
 
 	// Node with taints
 	gpuTaint := apiv1.Taint{
@@ -187,6 +203,10 @@ func TestExtractLabelsFromAsg(t *testing.T) {
 			Value: aws.String("bar"),
 		},
 		{
+			Key:   aws.String("eks:nodegroup-name"),
+			Value: aws.String("bar2"),
+		},
+		{
 			Key:   aws.String("bar"),
 			Value: aws.String("baz"),
 		},
@@ -194,8 +214,9 @@ func TestExtractLabelsFromAsg(t *testing.T) {
 
 	labels := extractLabelsFromAsg(tags)
 
-	assert.Equal(t, 1, len(labels))
+	assert.Equal(t, 2, len(labels))
 	assert.Equal(t, "bar", labels["foo"])
+	assert.Equal(t, "bar2", labels["nodegroup-name"])
 }
 
 func TestExtractTaintsFromAsg(t *testing.T) {
