@@ -381,6 +381,11 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// NodeLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
+	if nodegroupName, ok := node.Labels["nodegroup-name"]; ok {
+		klog.V(5).Infof("Nodegroup %s is an EKS managed nodegroup.", nodegroupName)
+		// TODO: Call AWS EKS DescribeNodegroup API, check if keys already exist in Labels and do NOT overwrite
+	}
+
 	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
@@ -408,6 +413,10 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 		k := *tag.Key
 		v := *tag.Value
 		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/label/")
+		// Extract EKS labels from ASG
+		if len(splits) <= 1 {
+			splits = strings.Split(k, "eks:")
+		}
 		if len(splits) > 1 {
 			label := splits[1]
 			if label != "" {
