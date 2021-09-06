@@ -25,8 +25,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"k8s.io/klog"
-	"k8s.io/utils/mount"
+	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
@@ -111,7 +111,7 @@ func clearBackingDev(path string) {
 // Breaking this up helps with testing
 func detectMountpointInternal(m mount.Interface, path string) (string, error) {
 	for path != "" && path != "/" {
-		// per k8s.io/utils/mount/mount_linux this detects all but
+		// per k8s.io/mount-utils/mount_linux this detects all but
 		// a bind mount from one part of a mount to another.
 		// For our purposes that's fine; we simply want the "true"
 		// mount point
@@ -170,7 +170,7 @@ func getFSInfo(m mount.Interface, path string) (string, string, error) {
 	if !okMountpoint {
 		mountpoint, err = detectMountpoint(m, path)
 		if err != nil {
-			return "", "", fmt.Errorf("Cannot determine mountpoint for %s: %v", path, err)
+			return "", "", fmt.Errorf("cannot determine mountpoint for %s: %v", path, err)
 		}
 	}
 
@@ -178,7 +178,7 @@ func getFSInfo(m mount.Interface, path string) (string, string, error) {
 	if !okBackingDev {
 		backingDev, err = detectBackingDev(m, mountpoint)
 		if err != nil {
-			return "", "", fmt.Errorf("Cannot determine backing device for %s: %v", path, err)
+			return "", "", fmt.Errorf("cannot determine backing device for %s: %v", path, err)
 		}
 	}
 	mountpointMap[path] = mountpoint
@@ -303,29 +303,30 @@ func SupportsQuotas(m mount.Interface, path string) (bool, error) {
 // AssignQuota chooses the quota ID based on the pod UID and path.
 // If the pod UID is identical to another one known, it may (but presently
 // doesn't) choose the same quota ID as other volumes in the pod.
+//lint:ignore SA4009 poduid is overwritten by design, see comment below
 func AssignQuota(m mount.Interface, path string, poduid types.UID, bytes *resource.Quantity) error {
 	if bytes == nil {
-		return fmt.Errorf("Attempting to assign null quota to %s", path)
+		return fmt.Errorf("attempting to assign null quota to %s", path)
 	}
 	ibytes := bytes.Value()
 	if ok, err := SupportsQuotas(m, path); !ok {
-		return fmt.Errorf("Quotas not supported on %s: %v", path, err)
+		return fmt.Errorf("quotas not supported on %s: %v", path, err)
 	}
 	quotaLock.Lock()
 	defer quotaLock.Unlock()
 	// Current policy is to set individual quotas on each volumes.
 	// If we decide later that we want to assign one quota for all
 	// volumes in a pod, we can simply remove this line of code.
-	// If and when we decide permanently that we're going to adop
+	// If and when we decide permanently that we're going to adopt
 	// one quota per volume, we can rip all of the pod code out.
 	poduid = types.UID(uuid.NewUUID())
 	if pod, ok := dirPodMap[path]; ok && pod != poduid {
-		return fmt.Errorf("Requesting quota on existing directory %s but different pod %s %s", path, pod, poduid)
+		return fmt.Errorf("requesting quota on existing directory %s but different pod %s %s", path, pod, poduid)
 	}
 	oid, ok := podQuotaMap[poduid]
 	if ok {
 		if quotaSizeMap[oid] != ibytes {
-			return fmt.Errorf("Requesting quota of different size: old %v new %v", quotaSizeMap[oid], bytes)
+			return fmt.Errorf("requesting quota of different size: old %v new %v", quotaSizeMap[oid], bytes)
 		}
 	} else {
 		oid = common.BadQuotaID
@@ -333,7 +334,7 @@ func AssignQuota(m mount.Interface, path string, poduid types.UID, bytes *resour
 	id, err := createProjectID(path, oid)
 	if err == nil {
 		if oid != common.BadQuotaID && oid != id {
-			return fmt.Errorf("Attempt to reassign quota %v to %v", oid, id)
+			return fmt.Errorf("attempt to reassign quota %v to %v", oid, id)
 		}
 		// When enforcing quotas are enabled, we'll condition this
 		// on their being disabled also.
@@ -352,7 +353,7 @@ func AssignQuota(m mount.Interface, path string, poduid types.UID, bytes *resour
 		}
 		removeProjectID(path, id)
 	}
-	return fmt.Errorf("Assign quota FAILED %v", err)
+	return fmt.Errorf("assign quota FAILED %v", err)
 }
 
 // GetConsumption -- retrieve the consumption (in bytes) of the directory
@@ -395,7 +396,7 @@ func GetInodes(path string) (*resource.Quantity, error) {
 func ClearQuota(m mount.Interface, path string) error {
 	klog.V(3).Infof("ClearQuota %s", path)
 	if !enabledQuotasForMonitoring() {
-		return fmt.Errorf("ClearQuota called, but quotas disabled")
+		return fmt.Errorf("clearQuota called, but quotas disabled")
 	}
 	quotaLock.Lock()
 	defer quotaLock.Unlock()
@@ -412,7 +413,7 @@ func ClearQuota(m mount.Interface, path string) error {
 	}
 	_, ok = podQuotaMap[poduid]
 	if !ok {
-		return fmt.Errorf("ClearQuota: No quota available for %s", path)
+		return fmt.Errorf("clearQuota: No quota available for %s", path)
 	}
 	projid, err := getQuotaOnDir(m, path)
 	if err != nil {
@@ -421,7 +422,7 @@ func ClearQuota(m mount.Interface, path string) error {
 		klog.V(3).Infof("Attempt to check quota ID %v on dir %s failed: %v", dirQuotaMap[path], path, err)
 	}
 	if projid != dirQuotaMap[path] {
-		return fmt.Errorf("Expected quota ID %v on dir %s does not match actual %v", dirQuotaMap[path], path, projid)
+		return fmt.Errorf("expected quota ID %v on dir %s does not match actual %v", dirQuotaMap[path], path, projid)
 	}
 	count, ok := podDirCountMap[poduid]
 	if count <= 1 || !ok {
@@ -445,7 +446,7 @@ func ClearQuota(m mount.Interface, path string) error {
 	delete(supportsQuotasMap, path)
 	clearApplier(path)
 	if err != nil {
-		return fmt.Errorf("Unable to clear quota for %s: %v", path, err)
+		return fmt.Errorf("unable to clear quota for %s: %v", path, err)
 	}
 	return nil
 }
