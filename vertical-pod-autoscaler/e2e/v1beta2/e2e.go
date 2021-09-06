@@ -42,10 +42,10 @@ import (
 	"k8s.io/component-base/version"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
+	"k8s.io/kubernetes/test/e2e/framework/manifest"
 	e2emetrics "k8s.io/kubernetes/test/e2e/framework/metrics"
 	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
-	"k8s.io/kubernetes/test/e2e/manifest"
 	e2ereporters "k8s.io/kubernetes/test/e2e/reporters"
 	testutils "k8s.io/kubernetes/test/utils"
 	utilnet "k8s.io/utils/net"
@@ -184,9 +184,6 @@ func waitForDaemonSets(c clientset.Interface, ns string, allowedNotReadyNodes in
 		dsList, err := c.AppsV1().DaemonSets(ns).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			framework.Logf("Error getting daemonsets in namespace: '%s': %v", ns, err)
-			if testutils.IsRetryableAPIError(err) {
-				return false, nil
-			}
 			return false, err
 		}
 		var notReadyDaemonSets []string
@@ -217,12 +214,6 @@ func waitForDaemonSets(c clientset.Interface, ns string, allowedNotReadyNodes in
 // accepting the byte array.
 func setupSuite() {
 	// Run only on Ginkgo node 1
-
-	switch framework.TestContext.Provider {
-	case "gce", "gke":
-		framework.LogClusterImageSources()
-	}
-
 	c, err := framework.LoadClientset()
 	if err != nil {
 		klog.Fatal("Error loading client: ", err)
