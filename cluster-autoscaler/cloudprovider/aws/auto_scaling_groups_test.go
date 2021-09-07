@@ -44,6 +44,35 @@ func TestBuildAsg(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestUnregister(t *testing.T) {
+	asgCache := new(asgCache)
+	asgCache.registeredAsgs = []*asg{
+		{AwsRef: AwsRef{Name: "test-asg-1"}},
+		{AwsRef: AwsRef{Name: "test-asg-2"}},
+		{AwsRef: AwsRef{Name: "test-asg-1"}},
+		{AwsRef: AwsRef{Name: "test-asg-3"}},
+	}
+	t.Run("unregister non-existing asg", func(t *testing.T) {
+		n := len(asgCache.registeredAsgs)
+		assert.Nil(t, asgCache.unregister(&asg{AwsRef: AwsRef{Name: "test-asg-404"}}))
+		assert.Len(t, asgCache.registeredAsgs, n)
+		assert.Nil(t, asgCache.unregister(&asg{AwsRef: AwsRef{Name: "non-existing"}}))
+		assert.Len(t, asgCache.registeredAsgs, n)
+	})
+	t.Run("unregister existing asg", func(t *testing.T) {
+		asg1 := &asg{AwsRef: AwsRef{Name: "test-asg-1"}}
+		assert.Equal(t, asg1, asgCache.unregister(asg1))
+		assert.Len(t, asgCache.registeredAsgs, 2)
+		asg3 := &asg{AwsRef: AwsRef{Name: "test-asg-3"}}
+		assert.Equal(t, asg3, asgCache.unregister(asg3))
+		assert.Len(t, asgCache.registeredAsgs, 1)
+		asg2 := &asg{AwsRef: AwsRef{Name: "test-asg-2"}}
+		assert.Equal(t, asg2, asgCache.unregister(asg2))
+		assert.Empty(t, asgCache.registeredAsgs)
+	})
+
+}
+
 func validateAsg(t *testing.T, asg *asg, name string, minSize int, maxSize int) {
 	assert.Equal(t, name, asg.Name)
 	assert.Equal(t, minSize, asg.minSize)

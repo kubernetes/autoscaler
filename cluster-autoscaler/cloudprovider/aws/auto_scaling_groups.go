@@ -115,7 +115,7 @@ func (m *asgCache) register(asg *asg) *asg {
 			klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
 
 			// Explicit registered groups should always use the manually provided min/max
-			// values and the not the ones returned by the API
+			// values and not the ones returned by the API
 			if !m.explicitlyConfigured[asg.AwsRef] {
 				existing.minSize = asg.minSize
 				existing.maxSize = asg.maxSize
@@ -141,17 +141,21 @@ func (m *asgCache) register(asg *asg) *asg {
 
 // Unregister ASG. Returns the unregistered ASG.
 func (m *asgCache) unregister(a *asg) *asg {
-	updated := make([]*asg, 0, len(m.registeredAsgs))
 	var changed *asg
+	var i int
 	for _, existing := range m.registeredAsgs {
 		if existing.AwsRef == a.AwsRef {
 			klog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
 			changed = a
 			continue
 		}
-		updated = append(updated, existing)
+		m.registeredAsgs[i] = existing
+		i++
 	}
-	m.registeredAsgs = updated
+	for j := i; j < len(m.registeredAsgs); j++ {
+		 m.registeredAsgs[j] = nil
+	}
+	m.registeredAsgs = m.registeredAsgs[:i]
 	return changed
 }
 
@@ -346,7 +350,7 @@ func (m *asgCache) regenerate() error {
 	newInstanceToAsgCache := make(map[AwsInstanceRef]*asg)
 	newAsgToInstancesCache := make(map[AwsRef][]AwsInstanceRef)
 
-	// Build list of knowns ASG names
+	// Build list of known ASG names
 	refreshNames, err := m.buildAsgNames()
 	if err != nil {
 		return err
