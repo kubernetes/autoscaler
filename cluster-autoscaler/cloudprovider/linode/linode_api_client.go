@@ -21,9 +21,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/linode/linodego"
 	"golang.org/x/oauth2"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -33,13 +34,13 @@ const (
 // linodeAPIClient is the interface used to call linode API
 type linodeAPIClient interface {
 	ListLKEClusterPools(ctx context.Context, clusterID int, opts *linodego.ListOptions) ([]linodego.LKEClusterPool, error)
-	CreateLKEClusterPool(ctx context.Context, clusterID int, createOpts linodego.LKEClusterPoolCreateOptions) (*linodego.LKEClusterPool, error)
-	DeleteLKEClusterPool(ctx context.Context, clusterID int, id int) error
+	UpdateLKEClusterPool(ctx context.Context, clusterID, id int, updateOpts linodego.LKEClusterPoolUpdateOptions) (*linodego.LKEClusterPool, error)
+	DeleteLKEClusterPoolNode(ctx context.Context, poolID int, id string) error
 }
 
 // buildLinodeAPIClient returns the struct ready to perform calls to linode API
-func buildLinodeAPIClient(linodeToken string) linodeAPIClient {
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: linodeToken})
+func buildLinodeAPIClient(baseURL, apiVersion, token string) linodeAPIClient {
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	oauth2Client := &http.Client{
 		Timeout: 60 * time.Second,
 		Transport: &oauth2.Transport{
@@ -48,5 +49,13 @@ func buildLinodeAPIClient(linodeToken string) linodeAPIClient {
 	}
 	client := linodego.NewClient(oauth2Client)
 	client.SetUserAgent(userAgent)
+	if baseURL != "" {
+		klog.V(4).Infof("using baseURL %q for Linode client", baseURL)
+		client.SetBaseURL(baseURL)
+	}
+	if apiVersion != "" {
+		klog.V(4).Infof("using apiVersion %q for Linode client", apiVersion)
+		client.SetAPIVersion(apiVersion)
+	}
 	return &client
 }

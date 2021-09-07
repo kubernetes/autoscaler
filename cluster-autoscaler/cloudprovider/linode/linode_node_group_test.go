@@ -18,265 +18,227 @@ package linode
 
 import (
 	"context"
-	"fmt"
+	"net/http"
 	"testing"
 
+	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
+func TestNodeGroup_TargetSize(t *testing.T) {
+	client := &linodeClientMock{}
+	clusterID := 123
+	nodes := makeTestNodePoolNodes(123, 125)
+	pool := makeMockNodePool(123, nodes, linodego.LKEClusterPoolAutoscaler{
+		Min:     len(nodes) - 1,
+		Max:     len(nodes) + 1,
+		Enabled: true,
+	})
+	ng := nodeGroupFromPool(client, clusterID, &pool)
+
+	size, err := ng.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, size, len(nodes))
+}
+
 func TestNodeGroup_IncreaseSize(t *testing.T) {
-	client := linodeClientMock{}
+	client := &linodeClientMock{}
 	ctx := context.Background()
-	poolOpts := linodego.LKEClusterPoolCreateOptions{
-		Count: 1,
-		Type:  "g6-standard-1",
-	}
-	ng := NodeGroup{
-		lkePools: map[int]*linodego.LKEClusterPool{
-			1: {ID: 1, Count: 1, Type: "g6-standard-1"},
-			2: {ID: 2, Count: 1, Type: "g6-standard-1"},
-			3: {ID: 3, Count: 1, Type: "g6-standard-1"},
-		},
-		poolOpts:     poolOpts,
-		client:       &client,
-		lkeClusterID: 111,
-		minSize:      1,
-		maxSize:      7,
-		id:           "g6-standard-1",
-	}
-	client.On(
-		"CreateLKEClusterPool", ctx, ng.lkeClusterID, poolOpts,
-	).Return(
-		&linodego.LKEClusterPool{ID: 4, Count: 1, Type: "g6-standard-1"}, nil,
-	).Once().On(
-		"CreateLKEClusterPool", ctx, ng.lkeClusterID, poolOpts,
-	).Return(
-		&linodego.LKEClusterPool{ID: 5, Count: 1, Type: "g6-standard-1"}, nil,
-	).Once().On(
-		"CreateLKEClusterPool", ctx, ng.lkeClusterID, poolOpts,
-	).Return(
-		&linodego.LKEClusterPool{ID: 6, Count: 1, Type: "g6-standard-1"}, nil,
-	).Once().On(
-		"CreateLKEClusterPool", ctx, ng.lkeClusterID, poolOpts,
-	).Return(
-		&linodego.LKEClusterPool{ID: 6, Count: 1, Type: "g6-standard-1"}, fmt.Errorf("error on API call"),
-	).Once()
+	clusterID := 123
+	nodes := makeTestNodePoolNodes(123, 125)
+	pool := makeMockNodePool(123, nodes, linodego.LKEClusterPoolAutoscaler{
+		Enabled: true,
+		Min:     1,
+		Max:     7,
+	})
+	ng := nodeGroupFromPool(client, clusterID, &pool)
 
-	// test error on bad delta value
-	err := ng.IncreaseSize(0)
-	assert.Error(t, err)
+	t.Run("fails with delta of 0", func(t *testing.T) {
+		err := ng.IncreaseSize(0)
+		assert.Error(t, err)
+	})
 
-	// test error on bad delta value
-	err = ng.IncreaseSize(-1)
-	assert.Error(t, err)
+	t.Run("fails with negative delta", func(t *testing.T) {
+		err := ng.IncreaseSize(-1)
+		assert.Error(t, err)
+	})
 
-	// test error on a too large increase of nodes
-	err = ng.IncreaseSize(5)
-	assert.Error(t, err)
+	t.Run("fails when out of bounds", func(t *testing.T) {
+		err := ng.IncreaseSize((ng.MaxSize() - ng.pool.Count) + 1)
+		assert.Error(t, err)
+	})
 
-	// test ok to add a node
-	err = ng.IncreaseSize(1)
-	assert.NoError(t, err)
-	assert.Equal(t, 4, len(ng.lkePools))
+	t.Run("fails on generic UpdateLKEClusterPool API call error", func(t *testing.T) {
+		mockErr := linodego.Error{
+			Code:    http.StatusServiceUnavailable,
+			Message: http.StatusText(http.StatusServiceUnavailable),
+		}
+		client.On("UpdateLKEClusterPool", ctx, clusterID, pool.ID,
+			linodego.LKEClusterPoolUpdateOptions{Count: pool.Count + 1},
+		).Return(&linodego.LKEClusterPool{}, mockErr).Once()
 
-	// test ok to add multiple nodes
-	err = ng.IncreaseSize(2)
-	assert.NoError(t, err)
-	assert.Equal(t, 6, len(ng.lkePools))
+		err := ng.IncreaseSize(1)
+		assert.Error(t, err)
+	})
 
-	// test error on linode API call error
-	err = ng.IncreaseSize(1)
-	assert.Error(t, err, "no error on injected API call error")
+	t.Run("successfully add 1 node", func(t *testing.T) {
+		newCount := ng.pool.Count + 1
+		mockedPool := makeMockNodePool(123,
+			append(ng.pool.Linodes, makeTestNodePoolNode(126)),
+			pool.Autoscaler,
+		)
+		client.On("UpdateLKEClusterPool", ctx, clusterID, pool.ID,
+			linodego.LKEClusterPoolUpdateOptions{Count: pool.Count + 1},
+		).Return(&mockedPool, nil).Once()
+
+		err := ng.IncreaseSize(1)
+		assert.NoError(t, err)
+		assert.Equal(t, newCount, len(ng.pool.Linodes))
+	})
+
+	t.Run("successfully add multiple nodes", func(t *testing.T) {
+		newCount := ng.pool.Count + 2
+		mockedPool := makeMockNodePool(123,
+			append(ng.pool.Linodes, makeTestNodePoolNodes(127, 128)...),
+			pool.Autoscaler,
+		)
+		client.On("UpdateLKEClusterPool", ctx, clusterID, pool.ID,
+			linodego.LKEClusterPoolUpdateOptions{Count: 6},
+		).Return(&mockedPool, nil).Once()
+
+		err := ng.IncreaseSize(2)
+		assert.NoError(t, err)
+		assert.Equal(t, newCount, len(ng.pool.Linodes))
+	})
 }
 
 func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	ng := &NodeGroup{}
 	err := ng.DecreaseTargetSize(-1)
-	assert.Error(t, err)
+	assert.EqualError(t, err, cloudprovider.ErrNotImplemented.Error())
 }
 
 func TestNodeGroup_DeleteNodes(t *testing.T) {
-	client := linodeClientMock{}
+	client := &linodeClientMock{}
 	ctx := context.Background()
-	poolOpts := linodego.LKEClusterPoolCreateOptions{
-		Count: 1,
-		Type:  "g6-standard-1",
-	}
-	ng := NodeGroup{
-		lkePools: map[int]*linodego.LKEClusterPool{
-			1: {ID: 1, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 123}}},
-			2: {ID: 2, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 223}}},
-			3: {ID: 3, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 323}}},
-			4: {ID: 4, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 423}}},
-			5: {ID: 5, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 523}}},
-		},
-		poolOpts:     poolOpts,
-		client:       &client,
-		lkeClusterID: 111,
-		minSize:      1,
-		maxSize:      6,
-		id:           "g6-standard-1",
-	}
-	client.On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 1,
-	).Return(nil).On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 2,
-	).Return(nil).On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 3,
-	).Return(nil).On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 4,
-	).Return(fmt.Errorf("error on API call")).On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 5,
-	).Return(nil)
+	pool := makeMockNodePool(123, makeTestNodePoolNodes(123, 127), linodego.LKEClusterPoolAutoscaler{
+		Min:     3,
+		Max:     10,
+		Enabled: true,
+	})
+	ng := nodeGroupFromPool(client, 123, &pool)
 
-	nodes := []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://123"}},
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://223"}},
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://523"}},
-	}
+	t.Run("fails with malformed providerID", func(t *testing.T) {
+		nodes := []*v1.Node{{Spec: v1.NodeSpec{ProviderID: "linode://aaa"}}}
+		err := ng.DeleteNodes(nodes)
+		assert.Error(t, err)
+	})
 
-	// test of on deleting nodes
-	err := ng.DeleteNodes(nodes)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(ng.lkePools))
-	assert.NotNil(t, ng.lkePools[3])
-	assert.NotNil(t, ng.lkePools[4])
+	t.Run("fails with unrelated node", func(t *testing.T) {
+		nodes := []*v1.Node{{Spec: v1.NodeSpec{ProviderID: "linode://555"}}}
+		err := ng.DeleteNodes(nodes)
+		assert.Error(t, err)
+	})
 
-	// test error on deleting a node with a malformed providerID
-	nodes = []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://aaa"}},
-	}
-	err = ng.DeleteNodes(nodes)
-	assert.Error(t, err)
+	t.Run("fails on generic DeleteLKEClusterPoolNode API call error", func(t *testing.T) {
+		nodes := []*v1.Node{{Spec: v1.NodeSpec{ProviderID: "linode://123"}}}
+		mockErr := linodego.Error{
+			Code:    http.StatusServiceUnavailable,
+			Message: http.StatusText(http.StatusServiceUnavailable),
+		}
+		client.On("DeleteLKEClusterPoolNode", ctx, ng.clusterID, "123").Return(mockErr).Once()
 
-	// test error on deleting a node we are not managing
-	nodes = []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://555"}},
-	}
-	err = ng.DeleteNodes(nodes)
-	assert.Error(t, err)
+		err := ng.DeleteNodes(nodes)
+		assert.Error(t, err)
+	})
 
-	// test error on deleting a node when the linode API call fails
-	nodes = []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: "linode://423"}},
-	}
-	err = ng.DeleteNodes(nodes)
-	assert.Error(t, err)
+	t.Run("sucessfully deletes 1 node", func(t *testing.T) {
+		newSize := len(pool.Linodes) - 1
+		nodes := []*v1.Node{{Spec: v1.NodeSpec{ProviderID: "linode://127"}}}
+		client.On("DeleteLKEClusterPoolNode", ctx, ng.clusterID, "127").Return(nil).Once()
+
+		err := ng.DeleteNodes(nodes)
+		assert.NoError(t, err)
+		assert.Equal(t, newSize, len(pool.Linodes))
+	})
+
+	t.Run("successfully deletes multiple nodes", func(t *testing.T) {
+		newSize := len(pool.Linodes) - 2
+		nodes := []*v1.Node{
+			{Spec: v1.NodeSpec{ProviderID: "linode://123"}},
+			{Spec: v1.NodeSpec{ProviderID: "linode://124"}},
+		}
+		client.On("DeleteLKEClusterPoolNode", ctx, ng.clusterID, "123").Return(nil).Once()
+		client.On("DeleteLKEClusterPoolNode", ctx, ng.clusterID, "124").Return(nil).Once()
+
+		err := ng.DeleteNodes(nodes)
+		assert.NoError(t, err)
+		assert.Equal(t, newSize, len(pool.Linodes))
+	})
 }
 
-func TestNodeGroup_deleteLKEPool(t *testing.T) {
-	client := linodeClientMock{}
-	ctx := context.Background()
-	poolOpts := linodego.LKEClusterPoolCreateOptions{
-		Count: 1,
-		Type:  "g6-standard-1",
-	}
+func TestNodeGroup_Nodes(t *testing.T) {
 	ng := NodeGroup{
-		lkePools: map[int]*linodego.LKEClusterPool{
-			1: {ID: 1, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 123}}},
-			2: {ID: 2, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 223}}},
-			3: {ID: 3, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 323}}},
-			4: {ID: 4, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 423}}},
-			5: {ID: 5, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{InstanceID: 523}}},
-		},
-		poolOpts:     poolOpts,
-		client:       &client,
-		lkeClusterID: 111,
-		minSize:      1,
-		maxSize:      6,
-		id:           "g6-standard-1",
-	}
-	client.On(
-		"DeleteLKEClusterPool", ctx, ng.lkeClusterID, 3,
-	).Return(nil)
-
-	// test ok on deleting a pool from a node group
-	err := ng.deleteLKEPool(3)
-	assert.NoError(t, err)
-	assert.Nil(t, ng.lkePools[3])
-
-	// test error on deleting a pool from a node group that does not contain it
-	err = ng.deleteLKEPool(6)
-	assert.Error(t, err)
-}
-
-func TestNosdeGroup_Nodes(t *testing.T) {
-
-	client := linodeClientMock{}
-	poolOpts := linodego.LKEClusterPoolCreateOptions{
-		Count: 1,
-		Type:  "g6-standard-1",
-	}
-	ng := NodeGroup{
-		lkePools: map[int]*linodego.LKEClusterPool{
-			4: {ID: 4,
-				Count: 1,
-				Type:  "g6-standard-1",
-				Linodes: []linodego.LKEClusterPoolLinode{
-					{InstanceID: 423},
-				},
-			},
-			5: {ID: 5,
-				Count: 2,
-				Type:  "g6-standard-1",
-				Linodes: []linodego.LKEClusterPoolLinode{
-					{InstanceID: 523}, {InstanceID: 623},
-				},
+		pool: &linodego.LKEClusterPool{
+			ID: 123,
+			Linodes: []linodego.LKEClusterPoolLinode{
+				{ID: "123", InstanceID: 123},
+				{ID: "124", InstanceID: 124},
+				{ID: "125", InstanceID: 125},
 			},
 		},
-		poolOpts:     poolOpts,
-		client:       &client,
-		lkeClusterID: 111,
-		minSize:      1,
-		maxSize:      6,
-		id:           "g6-standard-1",
 	}
 
-	// test nodes returned from Nodes() are only the ones we are expecting
 	instancesList, err := ng.Nodes()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(instancesList))
-	assert.Contains(t, instancesList, cloudprovider.Instance{Id: "linode://423"})
-	assert.Contains(t, instancesList, cloudprovider.Instance{Id: "linode://523"})
-	assert.Contains(t, instancesList, cloudprovider.Instance{Id: "linode://623"})
-	assert.NotContains(t, instancesList, cloudprovider.Instance{Id: "423"})
+	assert.Equal(t, instancesList, []cloudprovider.Instance{
+		{Id: "linode://123"}, {Id: "linode://124"}, {Id: "linode://125"},
+	})
 }
 
 func TestNodeGroup_Others(t *testing.T) {
 	client := linodeClientMock{}
-	poolOpts := linodego.LKEClusterPoolCreateOptions{
-		Count: 1,
-		Type:  "g6-standard-1",
-	}
 	ng := NodeGroup{
-		lkePools: map[int]*linodego.LKEClusterPool{
-			1: {ID: 1, Count: 1, Type: "g6-standard-1"},
-			2: {ID: 2, Count: 1, Type: "g6-standard-1"},
-			3: {ID: 3, Count: 1, Type: "g6-standard-1"},
+		client: &client,
+		pool: &linodego.LKEClusterPool{
+			ID: 123,
+			Linodes: []linodego.LKEClusterPoolLinode{
+				{ID: "123", InstanceID: 123},
+				{ID: "124", InstanceID: 124},
+				{ID: "125", InstanceID: 125},
+				{ID: "126", InstanceID: 126},
+			},
+			Autoscaler: linodego.LKEClusterPoolAutoscaler{
+				Min: 1,
+				Max: 5,
+			},
 		},
-		poolOpts:     poolOpts,
-		client:       &client,
-		lkeClusterID: 111,
-		minSize:      1,
-		maxSize:      7,
-		id:           "g6-standard-1",
 	}
+
 	assert.Equal(t, 1, ng.MinSize())
-	assert.Equal(t, 7, ng.MaxSize())
+	assert.Equal(t, 5, ng.MaxSize())
+
 	ts, err := ng.TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 3, ts)
-	assert.Equal(t, "g6-standard-1", ng.Id())
-	assert.Equal(t, "node group ID: g6-standard-1 (min:1 max:7)", ng.Debug())
+	assert.Equal(t, 4, ts)
+	assert.Equal(t, "123", ng.Id())
+	assert.Equal(t, "node group ID: 123 (min:1 max:5)", ng.Debug())
 	assert.Equal(t, true, ng.Exist())
 	assert.Equal(t, false, ng.Autoprovisioned())
+
 	_, err = ng.TemplateNodeInfo()
-	assert.Error(t, err)
+	assert.EqualError(t, err, cloudprovider.ErrNotImplemented.Error())
+
+	_, err = ng.GetOptions(config.NodeGroupAutoscalingOptions{})
+	assert.EqualError(t, err, cloudprovider.ErrNotImplemented.Error())
+
 	_, err = ng.Create()
-	assert.Error(t, err)
+	assert.EqualError(t, err, cloudprovider.ErrNotImplemented.Error())
+
 	err = ng.Delete()
-	assert.Error(t, err)
+	assert.EqualError(t, err, cloudprovider.ErrNotImplemented.Error())
 }

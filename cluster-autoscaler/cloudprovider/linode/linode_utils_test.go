@@ -18,9 +18,12 @@ package linode
 
 import (
 	"context"
+	"errors"
+	"os"
+	"strconv"
 
+	"github.com/linode/linodego"
 	"github.com/stretchr/testify/mock"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
 )
 
 type linodeClientMock struct {
@@ -32,12 +35,51 @@ func (l *linodeClientMock) ListLKEClusterPools(ctx context.Context, clusterID in
 	return args.Get(0).([]linodego.LKEClusterPool), args.Error(1)
 }
 
-func (l *linodeClientMock) CreateLKEClusterPool(ctx context.Context, clusterID int, createOpts linodego.LKEClusterPoolCreateOptions) (*linodego.LKEClusterPool, error) {
-	args := l.Called(ctx, clusterID, createOpts)
+func (l *linodeClientMock) DeleteLKEClusterPoolNode(ctx context.Context, clusterID int, id string) error {
+	args := l.Called(ctx, clusterID, id)
+	return args.Error(0)
+}
+
+func (l *linodeClientMock) UpdateLKEClusterPool(ctx context.Context, clusterID, id int, updateOpts linodego.LKEClusterPoolUpdateOptions) (*linodego.LKEClusterPool, error) {
+	args := l.Called(ctx, clusterID, id, updateOpts)
 	return args.Get(0).(*linodego.LKEClusterPool), args.Error(1)
 }
 
-func (l *linodeClientMock) DeleteLKEClusterPool(ctx context.Context, clusterID int, id int) error {
-	args := l.Called(ctx, clusterID, id)
-	return args.Error(0)
+type readerErrMock struct{}
+
+func (readerErrMock) Read(p []byte) (n int, err error) {
+	return 0, errors.New("mock error")
+}
+
+func makeMockNodePool(id int, linodes []linodego.LKEClusterPoolLinode, autoscaler linodego.LKEClusterPoolAutoscaler) linodego.LKEClusterPool {
+	return linodego.LKEClusterPool{
+		ID:         id,
+		Type:       "g6-standard-1",
+		Count:      len(linodes),
+		Linodes:    linodes,
+		Autoscaler: autoscaler,
+	}
+}
+
+func makeTestNodePoolNode(id int) linodego.LKEClusterPoolLinode {
+	return linodego.LKEClusterPoolLinode{
+		ID:         strconv.Itoa(id),
+		InstanceID: id,
+	}
+}
+
+func makeTestNodePoolNodes(lower, upper int) []linodego.LKEClusterPoolLinode {
+	linodes := make([]linodego.LKEClusterPoolLinode, upper-lower+1)
+	for i := 0; lower+i <= upper; i++ {
+		linodes[i] = makeTestNodePoolNode(lower + i)
+	}
+	return linodes
+}
+
+func testEnvVar(name, value string) func() {
+	originalValue := os.Getenv(name)
+	os.Setenv(name, value)
+	return func() {
+		os.Setenv(name, originalValue)
+	}
 }

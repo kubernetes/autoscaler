@@ -21,12 +21,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+
+	"github.com/linode/linodego"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -45,23 +46,28 @@ const (
 // a LKE pool. To get around this issue, we build a NodeGroup with multiple LKE pools,
 // each with a single linode in them.
 type NodeGroup struct {
-	client       linodeAPIClient
-	lkePools     map[int]*linodego.LKEClusterPool // key: LKEClusterPool.ID
-	poolOpts     linodego.LKEClusterPoolCreateOptions
-	lkeClusterID int
-	minSize      int
-	maxSize      int
-	id           string // this is a LKEClusterPool Type
+	clusterID int
+	client    linodeAPIClient
+
+	pool *linodego.LKEClusterPool // internal cache
+
+	mtx sync.RWMutex
 }
 
 // MaxSize returns maximum size of the node group.
 func (n *NodeGroup) MaxSize() int {
-	return n.maxSize
+	n.mtx.RLock()
+	defer n.mtx.RUnlock()
+
+	return n.pool.Autoscaler.Max
 }
 
 // MinSize returns minimum size of the node group.
 func (n *NodeGroup) MinSize() int {
-	return n.minSize
+	n.mtx.RLock()
+	defer n.mtx.RUnlock()
+
+	return n.pool.Autoscaler.Min
 }
 
 // TargetSize returns the current target size of the node group. It is possible
@@ -70,31 +76,36 @@ func (n *NodeGroup) MinSize() int {
 // registration or removed nodes are deleted completely). Implementation
 // required.
 func (n *NodeGroup) TargetSize() (int, error) {
-	return len(n.lkePools), nil
+	n.mtx.RLock()
+	defer n.mtx.RUnlock()
+
+	return len(n.pool.Linodes), nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
 func (n *NodeGroup) IncreaseSize(delta int) error {
+	n.mtx.Lock()
+	defer n.mtx.Unlock()
+
 	if delta <= 0 {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
-	currentSize := len(n.lkePools)
-	targetSize := currentSize + delta
-	if targetSize > n.MaxSize() {
+	targetSize := n.pool.Count + delta
+	if targetSize > n.pool.Autoscaler.Max {
 		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			currentSize, targetSize, n.MaxSize())
+			n.pool.Count, targetSize, n.pool.Autoscaler.Max)
 	}
 
-	for i := 0; i < delta; i++ {
-		err := n.addNewLKEPool()
-		if err != nil {
-			return err
-		}
+	updateOpts := linodego.LKEClusterPoolUpdateOptions{Count: targetSize}
+	nodePool, err := n.client.UpdateLKEClusterPool(context.Background(), n.clusterID, n.pool.ID, updateOpts)
+	if err != nil {
+		return fmt.Errorf("failed to scale up cluster (%d) pool (%d): %w", n.pool.ID, n.clusterID, err)
 	}
 
+	n.pool = nodePool
 	return nil
 }
 
@@ -103,20 +114,35 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	n.mtx.Lock()
+	defer n.mtx.Unlock()
+
 	for _, node := range nodes {
-		pool, err := n.findLKEPoolForNode(node)
+		instanceID, err := parseProviderID(node.Spec.ProviderID)
 		if err != nil {
 			return err
 		}
-		if pool == nil {
-			return fmt.Errorf("Failed to delete node %q with provider ID %q: cannot find this node in the node group",
-				node.Name, node.Spec.ProviderID)
+
+		var nodeID string
+		var nodeIndex int
+		for i, linode := range n.pool.Linodes {
+			if instanceID == linode.InstanceID {
+				nodeID = linode.ID
+				nodeIndex = i
+				break
+			}
 		}
-		err = n.deleteLKEPool(pool.ID)
-		if err != nil {
-			return fmt.Errorf("Failed to delete node %q with provider ID %q: %v",
-				node.Name, node.Spec.ProviderID, err)
+
+		if nodeID == "" {
+			return fmt.Errorf("failed to delete node: unable to find instance %d in pool %d", n.pool.ID, instanceID)
 		}
+
+		if err := n.client.DeleteLKEClusterPoolNode(context.Background(), n.clusterID, nodeID); err != nil {
+			return fmt.Errorf("failed to delete node %s in pool %d: %v", nodeID, n.pool.ID, err)
+		}
+
+		copy(n.pool.Linodes[nodeIndex:], n.pool.Linodes[nodeIndex+1:])
+		n.pool.Linodes = n.pool.Linodes[:len(n.pool.Linodes)-1]
 	}
 	return nil
 }
@@ -134,7 +160,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 
 // Id returns an unique identifier of the node group.
 func (n *NodeGroup) Id() string {
-	return n.id
+	return strconv.Itoa(n.pool.ID)
 }
 
 // Debug returns a string containing all information regarding this node group.
@@ -142,40 +168,17 @@ func (n *NodeGroup) Debug() string {
 	return fmt.Sprintf("node group ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
 }
 
-// extendendDebug returns a string containing detailed information regarding this node group.
-func (n *NodeGroup) extendedDebug() string {
-	lkePoolsList := make([]string, 0)
-	for _, p := range n.lkePools {
-		linodesList := make([]string, 0)
-		for _, l := range p.Linodes {
-			linode := fmt.Sprintf("ID: %q, instanceID: %d", l.ID, l.InstanceID)
-			linodesList = append(linodesList, linode)
-		}
-		linodes := strings.Join(linodesList, "; ")
-		lkePool := fmt.Sprintf("{ poolID: %d, count: %d, type: %s, associated linodes: [%s] }",
-			p.ID, p.Count, p.Type, linodes)
-		lkePoolsList = append(lkePoolsList, lkePool)
-	}
-	lkePools := strings.Join(lkePoolsList, ", ")
-	return fmt.Sprintf("node group ID %s := min: %d, max: %d, LKEClusterID: %d, poolOpts: %+v, associated LKE pools: %s",
-		n.id, n.minSize, n.maxSize, n.lkeClusterID, n.poolOpts, lkePools)
-}
-
 // Nodes returns a list of all nodes that belong to this node group. It is
 // required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	nodes := make([]cloudprovider.Instance, 0)
-	for _, pool := range n.lkePools {
-		linodesCount := len(pool.Linodes)
-		if linodesCount != 1 {
-			klog.V(2).Infof("Number of linodes in LKE pool %d is not exactly 1 (count: %d)", pool.ID, linodesCount)
-		}
-		for _, linode := range pool.Linodes {
-			instance := cloudprovider.Instance{
-				Id: "linode://" + strconv.Itoa(linode.InstanceID),
-			}
-			nodes = append(nodes, instance)
+	n.mtx.RLock()
+	defer n.mtx.RUnlock()
+
+	nodes := make([]cloudprovider.Instance, len(n.pool.Linodes))
+	for i, linode := range n.pool.Linodes {
+		nodes[i] = cloudprovider.Instance{
+			Id: providerIDPrefix + strconv.Itoa(linode.InstanceID),
 		}
 	}
 	return nodes, nil
@@ -224,49 +227,23 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-// addNewLKEPool creates a new LKE Pool with a single linode in it and add it
-// to the pools of this node group
-func (n *NodeGroup) addNewLKEPool() error {
-	ctx := context.Background()
-	newPool, err := n.client.CreateLKEClusterPool(ctx, n.lkeClusterID, n.poolOpts)
+func parseProviderID(id string) (int, error) {
+	id = strings.TrimPrefix(id, providerIDPrefix)
+	instanceID, err := strconv.Atoi(id)
 	if err != nil {
-		return fmt.Errorf("error on creating new LKE pool for LKE clusterID: %d", n.lkeClusterID)
+		return 0, fmt.Errorf("failed to parse instance ID %q", id)
 	}
-	n.lkePools[newPool.ID] = newPool
-	return nil
+	return instanceID, nil
 }
 
-// deleteLKEPool deletes a pool given its pool id and remove it from the pools
-// of this node group
-func (n *NodeGroup) deleteLKEPool(id int) error {
-	_, ok := n.lkePools[id]
-	if !ok {
-		return fmt.Errorf("cannot delete LKE pool %d, this pool is not one we are managing", id)
+func nodeGroupFromPool(client linodeAPIClient, clusterID int, pool *linodego.LKEClusterPool) *NodeGroup {
+	if !pool.Autoscaler.Enabled {
+		return nil
 	}
-	ctx := context.Background()
-	err := n.client.DeleteLKEClusterPool(ctx, n.lkeClusterID, id)
-	if err != nil {
-		return fmt.Errorf("error on deleting LKE pool %d, Linode API said: %v", id, err)
-	}
-	delete(n.lkePools, id)
-	return nil
-}
 
-// findLKEPoolForNode returns the LKE pool where this node is, nil otherwise
-func (n *NodeGroup) findLKEPoolForNode(node *apiv1.Node) (*linodego.LKEClusterPool, error) {
-	providerID := node.Spec.ProviderID
-	instanceIDStr := strings.TrimPrefix(providerID, providerIDPrefix)
-	instanceID, err := strconv.Atoi(instanceIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot convert ProviderID %q to linode istance id (must be of type %s<integer>)",
-			providerID, providerIDPrefix)
+	return &NodeGroup{
+		clusterID: clusterID,
+		client:    client,
+		pool:      pool,
 	}
-	for _, pool := range n.lkePools {
-		for _, linode := range pool.Linodes {
-			if linode.InstanceID == instanceID {
-				return pool, nil
-			}
-		}
-	}
-	return nil, nil
 }

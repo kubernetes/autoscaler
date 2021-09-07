@@ -17,132 +17,146 @@ limitations under the License.
 package linode
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
 )
 
 func TestManager_newManager(t *testing.T) {
-	cfg := strings.NewReader(`
-[globalxxx]
-linode-token=123123123
-lke-cluster-id=456456
-`)
-	_, err := newManager(cfg)
-	assert.Error(t, err)
+	t.Run("fails on empty buffer", func(t *testing.T) {
+		_, err := newManager(bytes.NewBuffer(nil))
+		assert.Error(t, err)
+	})
 
-	cfg = strings.NewReader(`
-[global]
-linode-token=123123123
-lke-cluster-id=456456
-`)
-	_, err = newManager(cfg)
-	assert.NoError(t, err)
+	t.Run("fails on read error", func(t *testing.T) {
+		_, err := newManager(&readerErrMock{})
+		assert.Error(t, err)
+	})
+
+	t.Run("fails without clusterID", func(t *testing.T) {
+		cfg := strings.NewReader(`{"token": "bogus"}`)
+		_, err := newManager(cfg)
+		assert.Error(t, err)
+	})
+
+	t.Run("fails without token", func(t *testing.T) {
+		cfg := strings.NewReader(`{"clusterID": 123}`)
+		_, err := newManager(cfg)
+		assert.Error(t, err)
+	})
+
+	t.Run("successfully creates manager", func(t *testing.T) {
+		cfg := strings.NewReader(`
+			{"clusterID": 123, "token": "bogus", "apiVersion": "v4beta", "url": "api2.linode.com"}
+		`)
+		_, err := newManager(cfg)
+		assert.NoError(t, err)
+	})
+
+	t.Run("gets token from env if not in config", func(t *testing.T) {
+		token := "bogus"
+		restore := testEnvVar(linodeTokenEnvVar, token)
+		defer restore()
+
+		cfg := strings.NewReader(`{"clusterID": 123}`)
+		m, err := newManager(cfg)
+		assert.NoError(t, err)
+		assert.Equal(t, m.config.Token, token)
+	})
+
+	t.Run("gets clusterID from env if not in config", func(t *testing.T) {
+		clusterID := 123
+		restore := testEnvVar(lkeClusterIDEnvVar, strconv.Itoa(clusterID))
+		defer restore()
+
+		cfg := strings.NewReader(`{"token": "bogus"}`)
+		m, err := newManager(cfg)
+		assert.NoError(t, err)
+		assert.Equal(t, m.config.ClusterID, clusterID)
+	})
+
+	t.Run("sucessfully creates manager without file", func(t *testing.T) {
+		tokenRestore := testEnvVar(linodeTokenEnvVar, "bogus")
+		defer tokenRestore()
+		clusterIDRestore := testEnvVar(lkeClusterIDEnvVar, "123")
+		defer clusterIDRestore()
+
+		m, err := newManager(nil)
+		assert.NoError(t, err)
+		assert.NotNil(t, m)
+	})
 }
 
-func TestManager_refresh(t *testing.T) {
-
-	cfg := strings.NewReader(`
-[global]
-linode-token=123123123
-lke-cluster-id=456456
-defaut-min-size-per-linode-type=2
-defaut-max-size-per-linode-type=10
-do-not-import-pool-id=888
-do-not-import-pool-id=999
-
-[nodegroup "g6-standard-1"]
-min-size=1
-max-size=2
-
-[nodegroup "g6-standard-2"]
-min-size=4
-max-size=5
-`)
+func TestManager_refreshAfterInterval(t *testing.T) {
+	cfg := strings.NewReader(`{
+    "clusterID": 456456,
+    "token": "123123123"
+}`)
 	m, err := newManager(cfg)
 	assert.NoError(t, err)
 
-	client := linodeClientMock{}
-	m.client = &client
+	client := &linodeClientMock{}
+	m.client = client
 	ctx := context.Background()
+	pools := []linodego.LKEClusterPool{
+		makeMockNodePool(123, makeTestNodePoolNodes(1001, 1003), linodego.LKEClusterPoolAutoscaler{
+			Min:     5,
+			Max:     10,
+			Enabled: true,
+		}),
+		makeMockNodePool(124, makeTestNodePoolNodes(1004, 1025), linodego.LKEClusterPoolAutoscaler{
+			Min:     1,
+			Max:     50,
+			Enabled: true,
+		}),
+	}
 
-	// test multiple pools with same type
 	client.On(
-		"ListLKEClusterPools", ctx, 456456, nil,
-	).Return(
-		[]linodego.LKEClusterPool{
-			{ID: 1, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{ID: "aaa", InstanceID: 123}}},
-			{ID: 2, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{ID: "bbb", InstanceID: 345}}},
-			{ID: 3, Count: 1, Type: "g6-standard-1", Linodes: []linodego.LKEClusterPoolLinode{{ID: "ccc", InstanceID: 678}}},
-		},
-		nil,
-	).Once()
-	err = m.refresh()
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(m.nodeGroups))
-	assert.Equal(t, 3, len(m.nodeGroups["g6-standard-1"].lkePools))
+		"ListLKEClusterPools", ctx, m.config.ClusterID, nil,
+	).Return(pools, nil).Once()
 
-	// test skip pools with count > 1
-	client.On(
-		"ListLKEClusterPools", ctx, 456456, nil,
-	).Return(
-		[]linodego.LKEClusterPool{
-			{ID: 1, Count: 1, Type: "g6-standard-1"},
-			{ID: 2, Count: 1, Type: "g6-standard-1"},
-			{ID: 3, Count: 2, Type: "g6-standard-1"},
-		},
-		nil,
-	).Once()
-	err = m.refresh()
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(m.nodeGroups))
-	assert.Equal(t, 2, len(m.nodeGroups["g6-standard-1"].lkePools))
+	t.Run("not ran when lastRefresh was less than 5 minutes ago", func(t *testing.T) {
+		now := time.Now()
+		m.lastRefresh = now.Add(-1 * time.Minute)
 
-	// test multiple pools with different types
-	client.On(
-		"ListLKEClusterPools", ctx, 456456, nil,
-	).Return(
-		[]linodego.LKEClusterPool{
-			{ID: 1, Count: 1, Type: "g6-standard-1"},
-			{ID: 2, Count: 1, Type: "g6-standard-1"},
-			{ID: 3, Count: 1, Type: "g6-standard-2"},
-		},
-		nil,
-	).Once()
-	err = m.refresh()
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(m.nodeGroups))
-	assert.Equal(t, 2, len(m.nodeGroups["g6-standard-1"].lkePools))
-	assert.Equal(t, 1, len(m.nodeGroups["g6-standard-2"].lkePools))
+		err := m.refreshAfterInterval()
+		assert.NoError(t, err)
+		client.AssertNotCalled(t, "ListLKEClusterPools")
+	})
 
-	// test avoid import of specific pools
-	client.On(
-		"ListLKEClusterPools", ctx, 456456, nil,
-	).Return(
-		[]linodego.LKEClusterPool{
-			{ID: 1, Count: 1, Type: "g6-standard-1"},
-			{ID: 888, Count: 1, Type: "g6-standard-1"},
-			{ID: 999, Count: 1, Type: "g6-standard-1"},
-		},
-		nil,
-	).Once()
-	err = m.refresh()
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(m.nodeGroups))
-	assert.Equal(t, 1, len(m.nodeGroups["g6-standard-1"].lkePools))
+	t.Run("successfully refreshes nodepools", func(t *testing.T) {
+		now := time.Now()
+		m.lastRefresh = now.Add(-5 * time.Minute)
 
-	// test api error
+		err := m.refreshAfterInterval()
+		assert.NoError(t, err)
+		assert.Len(t, m.nodeGroups, 2)
+		assert.Equal(t, m.nodeGroups[123], nodeGroupFromPool(client, m.config.ClusterID, &pools[0]))
+		assert.Equal(t, m.nodeGroups[124], nodeGroupFromPool(client, m.config.ClusterID, &pools[1]))
+		assert.True(t, m.lastRefresh.After(now))
+	})
+
 	client.On(
 		"ListLKEClusterPools", ctx, 456456, nil,
 	).Return(
 		[]linodego.LKEClusterPool{},
 		fmt.Errorf("error on API call"),
 	).Once()
-	err = m.refresh()
-	assert.Error(t, err)
 
+	t.Run("fails on generic ListLKEClusterPools error", func(t *testing.T) {
+		now := time.Now()
+		initialLastRefresh := now.Add(-5 * time.Minute)
+		m.lastRefresh = initialLastRefresh
+
+		err := m.refreshAfterInterval()
+		assert.Error(t, err)
+		assert.Equal(t, m.lastRefresh, initialLastRefresh)
+	})
 }

@@ -55,16 +55,11 @@ func (l *linodeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (l *linodeCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	for _, ng := range l.manager.nodeGroups {
-		pool, err := ng.findLKEPoolForNode(node)
-		if err != nil {
-			return nil, err
-		}
-		if pool != nil {
-			return ng, nil
-		}
+	id, err := parseProviderID(node.Spec.ProviderID)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return l.manager.nodeGroupForNode(id), nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
@@ -107,26 +102,24 @@ func (l *linodeCloudProvider) Cleanup() error {
 	return nil
 }
 
-// BuildLinode builds the BuildLinode cloud provider.
+// BuildLinode builds the Linode cloud provider.
 func BuildLinode(
 	opts config.AutoscalingOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {
+	var config io.Reader
+	if opts.CloudConfig != "" {
+		configFile, err := os.Open(opts.CloudConfig)
+		if err != nil {
+			klog.Fatalf("Could not open cloud provider configuration file %q, error: %v", opts.CloudConfig, err)
+		}
+		defer configFile.Close()
 
-	// the cloud provider automatically uses all node pools in linode.
-	// This means we don't use the cloudprovider.NodeGroupDiscoveryOptions
-	// flags (which can be set via '--node-group-auto-discovery' or '-nodes')
+		config = configFile
+	}
 
-	if opts.CloudConfig == "" {
-		klog.Fatalf("No config file provided, please specify it via the --cloud-config flag")
-	}
-	configFile, err := os.Open(opts.CloudConfig)
-	if err != nil {
-		klog.Fatalf("Could not open cloud provider configuration file %q, error: %v", opts.CloudConfig, err)
-	}
-	defer configFile.Close()
-	lcp, err := newLinodeCloudProvider(configFile, rl)
+	lcp, err := newLinodeCloudProvider(config, rl)
 	if err != nil {
 		klog.Fatalf("Could not create linode cloud provider: %v", err)
 	}
@@ -136,7 +129,7 @@ func BuildLinode(
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (l *linodeCloudProvider) Refresh() error {
-	return l.manager.refresh()
+	return l.manager.refreshAfterInterval()
 }
 
 func newLinodeCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
@@ -145,18 +138,8 @@ func newLinodeCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimiter)
 		return nil, fmt.Errorf("could not create linode manager: %v", err)
 	}
 
-	err = m.refresh()
-	if err != nil {
+	if err = m.refresh(); err != nil {
 		klog.V(1).Infof("Error on first import of LKE node pools: %v", err)
-	}
-	klog.V(1).Infof("First import of existing LKE node pools ended")
-	if len(m.nodeGroups) == 0 {
-		klog.V(1).Infof("Could not import any LKE node pool in any node group")
-	} else {
-		klog.V(1).Infof("imported LKE node pools:")
-		for _, ng := range m.nodeGroups {
-			klog.V(1).Infof("%s", ng.extendedDebug())
-		}
 	}
 
 	return &linodeCloudProvider{

@@ -248,6 +248,8 @@ github.com/go-openapi/swag
 # github.com/go-ozzo/ozzo-validation v3.5.0+incompatible
 github.com/go-ozzo/ozzo-validation
 github.com/go-ozzo/ozzo-validation/is
+# github.com/go-resty/resty/v2 v2.1.1-0.20191201195748-d7b97669fe48
+github.com/go-resty/resty/v2
 # github.com/godbus/dbus/v5 v5.0.4
 github.com/godbus/dbus/v5
 # github.com/gofrs/uuid v4.0.0+incompatible
@@ -402,6 +404,11 @@ github.com/libopenstorage/openstorage/api/spec
 github.com/libopenstorage/openstorage/pkg/parser
 github.com/libopenstorage/openstorage/pkg/units
 github.com/libopenstorage/openstorage/volume
+# github.com/linode/linodego v0.32.0
+## explicit
+github.com/linode/linodego
+github.com/linode/linodego/internal/duration
+github.com/linode/linodego/internal/parseabletime
 # github.com/lithammer/dedent v1.1.0
 github.com/lithammer/dedent
 # github.com/mailru/easyjson v0.7.6
@@ -693,6 +700,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
 golang.org/x/net/proxy
+golang.org/x/net/publicsuffix
 golang.org/x/net/trace
 golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
