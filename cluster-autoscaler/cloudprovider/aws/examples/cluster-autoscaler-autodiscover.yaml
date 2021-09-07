@@ -1,3 +1,22 @@
+#     For Autodiscovery to work, add the follwoing policy to nodegroup. 
+# 
+#        {
+#         Effect : "Allow",
+#         Principal : {
+#           Federated : format("arn:aws:iam::${local.aws_account_id}:%s", replace(module.eks.cluster_oidc_issuer_url, "https://", "oidc-provider/"))
+#         },
+#         Action : "sts:AssumeRoleWithWebIdentity",
+#         Condition : {
+#           StringEquals : {
+#             format(
+#               "%s:sub",
+#               trimprefix(module.eks.cluster_oidc_issuer_url, "https://")
+#             ) : "system:serviceaccount:kube-system:cluster-autoscaler"
+#           }
+#         }
+#       }
+
+
 ---
 apiVersion: v1
 kind: ServiceAccount
