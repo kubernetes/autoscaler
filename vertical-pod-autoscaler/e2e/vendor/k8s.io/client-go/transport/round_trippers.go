@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 )
@@ -67,13 +67,13 @@ func HTTPWrappersForConfig(config *Config, rt http.RoundTripper) (http.RoundTrip
 // DebugWrappers wraps a round tripper and logs based on the current log level.
 func DebugWrappers(rt http.RoundTripper) http.RoundTripper {
 	switch {
-	case bool(klog.V(9)):
+	case bool(klog.V(9).Enabled()):
 		rt = newDebuggingRoundTripper(rt, debugCurlCommand, debugURLTiming, debugResponseHeaders)
-	case bool(klog.V(8)):
+	case bool(klog.V(8).Enabled()):
 		rt = newDebuggingRoundTripper(rt, debugJustURL, debugRequestHeaders, debugResponseStatus, debugResponseHeaders)
-	case bool(klog.V(7)):
+	case bool(klog.V(7).Enabled()):
 		rt = newDebuggingRoundTripper(rt, debugJustURL, debugRequestHeaders, debugResponseStatus)
-	case bool(klog.V(6)):
+	case bool(klog.V(6).Enabled()):
 		rt = newDebuggingRoundTripper(rt, debugURLTiming)
 	}
 
@@ -146,6 +146,7 @@ type userAgentRoundTripper struct {
 	rt    http.RoundTripper
 }
 
+// NewUserAgentRoundTripper will add User-Agent header to a request unless it has already been set.
 func NewUserAgentRoundTripper(agent string, rt http.RoundTripper) http.RoundTripper {
 	return &userAgentRoundTripper{agent, rt}
 }
@@ -167,7 +168,7 @@ func (rt *userAgentRoundTripper) WrappedRoundTripper() http.RoundTripper { retur
 
 type basicAuthRoundTripper struct {
 	username string
-	password string
+	password string `datapolicy:"password"`
 	rt       http.RoundTripper
 }
 
@@ -260,7 +261,7 @@ func NewBearerAuthRoundTripper(bearer string, rt http.RoundTripper) http.RoundTr
 	return &bearerAuthRoundTripper{bearer, nil, rt}
 }
 
-// NewBearerAuthRoundTripper adds the provided bearer token to a request
+// NewBearerAuthWithRefreshRoundTripper adds the provided bearer token to a request
 // unless the authorization header has already been set.
 // If tokenFile is non-empty, it is periodically read,
 // and the last successfully read content is used as the bearer token.
@@ -305,7 +306,7 @@ func (rt *bearerAuthRoundTripper) WrappedRoundTripper() http.RoundTripper { retu
 
 // requestInfo keeps track of information about a request/response combination
 type requestInfo struct {
-	RequestHeaders http.Header
+	RequestHeaders http.Header `datapolicy:"token"`
 	RequestVerb    string
 	RequestURL     string
 
@@ -340,6 +341,7 @@ func (r *requestInfo) toCurl() string {
 	headers := ""
 	for key, values := range r.RequestHeaders {
 		for _, value := range values {
+			value = maskValue(key, value)
 			headers += fmt.Sprintf(` -H %q`, fmt.Sprintf("%s: %s", key, value))
 		}
 	}

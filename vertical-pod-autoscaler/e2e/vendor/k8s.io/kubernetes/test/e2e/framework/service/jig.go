@@ -18,6 +18,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"regexp"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/onsi/ginkgo"
 	v1 "k8s.io/api/core/v1"
+	discoveryv1beta1 "k8s.io/api/discovery/v1beta1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,7 +43,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/kubernetes/pkg/registry/core/service/portallocator"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2enetwork "k8s.io/kubernetes/test/e2e/framework/network"
 	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
@@ -53,6 +54,9 @@ import (
 
 // NodePortRange should match whatever the default/configured range is
 var NodePortRange = utilnet.PortRange{Base: 30000, Size: 2768}
+
+// It is copied from "k8s.io/kubernetes/pkg/registry/core/service/portallocator"
+var errAllocated = errors.New("provided port is already allocated")
 
 // TestJig is a test jig to help service testing.
 type TestJig struct {
@@ -257,21 +261,42 @@ func (j *TestJig) CreateLoadBalancerService(timeout time.Duration, tweak func(sv
 // GetEndpointNodes returns a map of nodenames:external-ip on which the
 // endpoints of the Service are running.
 func (j *TestJig) GetEndpointNodes() (map[string][]string, error) {
-	nodes, err := e2enode.GetBoundedReadySchedulableNodes(j.Client, MaxNodesForEndpointsTests)
-	if err != nil {
-		return nil, err
-	}
-	epNodes, err := j.GetEndpointNodeNames()
+	return j.GetEndpointNodesWithIP(v1.NodeExternalIP)
+}
+
+// GetEndpointNodesWithIP returns a map of nodenames:<ip of given type> on which the
+// endpoints of the Service are running.
+func (j *TestJig) GetEndpointNodesWithIP(addressType v1.NodeAddressType) (map[string][]string, error) {
+	nodes, err := j.ListNodesWithEndpoint()
 	if err != nil {
 		return nil, err
 	}
 	nodeMap := map[string][]string{}
-	for _, n := range nodes.Items {
-		if epNodes.Has(n.Name) {
-			nodeMap[n.Name] = e2enode.GetAddresses(&n, v1.NodeExternalIP)
-		}
+	for _, node := range nodes {
+		nodeMap[node.Name] = e2enode.GetAddresses(&node, addressType)
 	}
 	return nodeMap, nil
+}
+
+// ListNodesWithEndpoint returns a list of nodes on which the
+// endpoints of the given Service are running.
+func (j *TestJig) ListNodesWithEndpoint() ([]v1.Node, error) {
+	nodeNames, err := j.GetEndpointNodeNames()
+	if err != nil {
+		return nil, err
+	}
+	ctx := context.TODO()
+	allNodes, err := j.Client.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	epNodes := make([]v1.Node, 0, nodeNames.Len())
+	for _, node := range allNodes.Items {
+		if nodeNames.Has(node.Name) {
+			epNodes = append(epNodes, node)
+		}
+	}
+	return epNodes, nil
 }
 
 // GetEndpointNodeNames returns a string set of node names on which the
@@ -297,7 +322,7 @@ func (j *TestJig) GetEndpointNodeNames() (sets.String, error) {
 
 // WaitForEndpointOnNode waits for a service endpoint on the given node.
 func (j *TestJig) WaitForEndpointOnNode(nodeName string) error {
-	return wait.PollImmediate(framework.Poll, LoadBalancerPropagationTimeoutDefault, func() (bool, error) {
+	return wait.PollImmediate(framework.Poll, KubeProxyLagTimeout, func() (bool, error) {
 		endpoints, err := j.Client.CoreV1().Endpoints(j.Namespace).Get(context.TODO(), j.Name, metav1.GetOptions{})
 		if err != nil {
 			framework.Logf("Get endpoints for service %s/%s failed (%s)", j.Namespace, j.Name, err)
@@ -322,12 +347,14 @@ func (j *TestJig) WaitForEndpointOnNode(nodeName string) error {
 	})
 }
 
-// WaitForAvailableEndpoint waits for at least 1 endpoint to be available till timeout
-func (j *TestJig) WaitForAvailableEndpoint(timeout time.Duration) error {
+// waitForAvailableEndpoint waits for at least 1 endpoint to be available till timeout
+func (j *TestJig) waitForAvailableEndpoint(timeout time.Duration) error {
 	//Wait for endpoints to be created, this may take longer time if service backing pods are taking longer time to run
 	endpointSelector := fields.OneTermEqualSelector("metadata.name", j.Name)
 	stopCh := make(chan struct{})
 	endpointAvailable := false
+	endpointSliceAvailable := false
+
 	var controller cache.Controller
 	_, controller = cache.NewInformer(
 		&cache.ListWatch{
@@ -366,8 +393,54 @@ func (j *TestJig) WaitForAvailableEndpoint(timeout time.Duration) error {
 
 	go controller.Run(stopCh)
 
+	// If EndpointSlice API is enabled, then validate if appropriate EndpointSlice objects were also create/updated/deleted.
+	if _, err := j.Client.Discovery().ServerResourcesForGroupVersion(discoveryv1beta1.SchemeGroupVersion.String()); err == nil {
+		var esController cache.Controller
+		_, esController = cache.NewInformer(
+			&cache.ListWatch{
+				ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+					options.LabelSelector = "kubernetes.io/service-name=" + j.Name
+					obj, err := j.Client.DiscoveryV1beta1().EndpointSlices(j.Namespace).List(context.TODO(), options)
+					return runtime.Object(obj), err
+				},
+				WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+					options.LabelSelector = "kubernetes.io/service-name=" + j.Name
+					return j.Client.DiscoveryV1beta1().EndpointSlices(j.Namespace).Watch(context.TODO(), options)
+				},
+			},
+			&discoveryv1beta1.EndpointSlice{},
+			0,
+			cache.ResourceEventHandlerFuncs{
+				AddFunc: func(obj interface{}) {
+					if es, ok := obj.(*discoveryv1beta1.EndpointSlice); ok {
+						// TODO: currently we only consider addreses in 1 slice, but services with
+						// a large number of endpoints (>1000) may have multiple slices. Some slices
+						// with only a few addresses. We should check the addresses in all slices.
+						if len(es.Endpoints) > 0 && len(es.Endpoints[0].Addresses) > 0 {
+							endpointSliceAvailable = true
+						}
+					}
+				},
+				UpdateFunc: func(old, cur interface{}) {
+					if es, ok := cur.(*discoveryv1beta1.EndpointSlice); ok {
+						// TODO: currently we only consider addreses in 1 slice, but services with
+						// a large number of endpoints (>1000) may have multiple slices. Some slices
+						// with only a few addresses. We should check the addresses in all slices.
+						if len(es.Endpoints) > 0 && len(es.Endpoints[0].Addresses) > 0 {
+							endpointSliceAvailable = true
+						}
+					}
+				},
+			},
+		)
+
+		go esController.Run(stopCh)
+
+	} else {
+		endpointSliceAvailable = true
+	}
 	err := wait.Poll(1*time.Second, timeout, func() (bool, error) {
-		return endpointAvailable, nil
+		return endpointAvailable && endpointSliceAvailable, nil
 	})
 	if err != nil {
 		return fmt.Errorf("no subset of available IP address found for the endpoint %s within timeout %v", j.Name, timeout)
@@ -476,7 +549,7 @@ func (j *TestJig) ChangeServiceNodePort(initial int) (*v1.Service, error) {
 		service, err = j.UpdateService(func(s *v1.Service) {
 			s.Spec.Ports[0].NodePort = int32(newPort)
 		})
-		if err != nil && strings.Contains(err.Error(), portallocator.ErrAllocated.Error()) {
+		if err != nil && strings.Contains(err.Error(), errAllocated.Error()) {
 			framework.Logf("tried nodePort %d, but it is in use, will try another", newPort)
 			continue
 		}
@@ -839,7 +912,7 @@ func (j *TestJig) checkClusterIPServiceReachability(svc *v1.Service, pod *v1.Pod
 	clusterIP := svc.Spec.ClusterIP
 	servicePorts := svc.Spec.Ports
 
-	err := j.WaitForAvailableEndpoint(ServiceEndpointsTimeout)
+	err := j.waitForAvailableEndpoint(ServiceEndpointsTimeout)
 	if err != nil {
 		return err
 	}
@@ -872,7 +945,7 @@ func (j *TestJig) checkNodePortServiceReachability(svc *v1.Service, pod *v1.Pod)
 		return err
 	}
 
-	err = j.WaitForAvailableEndpoint(ServiceEndpointsTimeout)
+	err = j.waitForAvailableEndpoint(ServiceEndpointsTimeout)
 	if err != nil {
 		return err
 	}
@@ -898,10 +971,14 @@ func (j *TestJig) checkNodePortServiceReachability(svc *v1.Service, pod *v1.Pod)
 // checkExternalServiceReachability ensures service of type externalName resolves to IP address and no fake externalName is set
 // FQDN of kubernetes is used as externalName(for air tight platforms).
 func (j *TestJig) checkExternalServiceReachability(svc *v1.Service, pod *v1.Pod) error {
+	// NOTE(claudiub): Windows does not support PQDN.
+	svcName := fmt.Sprintf("%s.%s.svc.%s", svc.Name, svc.Namespace, framework.TestContext.ClusterDNSDomain)
 	// Service must resolve to IP
-	cmd := fmt.Sprintf("nslookup %s", svc.Name)
-	_, err := framework.RunHostCmd(pod.Namespace, pod.Name, cmd)
-	if err != nil {
+	cmd := fmt.Sprintf("nslookup %s", svcName)
+	_, stderr, err := framework.RunHostCmdWithFullOutput(pod.Namespace, pod.Name, cmd)
+	// NOTE(claudiub): nslookup may return 0 on Windows, even though the DNS name was not found. In this case,
+	// we can check stderr for the error.
+	if err != nil || (framework.NodeOSDistroIs("windows") && strings.Contains(stderr, fmt.Sprintf("can't find %s", svcName))) {
 		return fmt.Errorf("ExternalName service %q must resolve to IP", pod.Namespace+"/"+pod.Name)
 	}
 	return nil
@@ -958,4 +1035,19 @@ func (j *TestJig) CreateTCPUDPServicePods(replica int) error {
 		Replicas:     replica,
 	}
 	return e2erc.RunRC(config)
+}
+
+// CreateSCTPServiceWithPort creates a new SCTP Service with given port based on the
+// j's defaults. Callers can provide a function to tweak the Service object before
+// it is created.
+func (j *TestJig) CreateSCTPServiceWithPort(tweak func(svc *v1.Service), port int32) (*v1.Service, error) {
+	svc := j.newServiceTemplate(v1.ProtocolSCTP, port)
+	if tweak != nil {
+		tweak(svc)
+	}
+	result, err := j.Client.CoreV1().Services(j.Namespace).Create(context.TODO(), svc, metav1.CreateOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SCTP Service %q: %v", svc.Name, err)
+	}
+	return j.sanityCheckService(result, svc.Spec.Type)
 }
