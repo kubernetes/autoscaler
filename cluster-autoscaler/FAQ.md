@@ -339,7 +339,7 @@ export ENABLE_POD_PRIORITY=true
 
 For AWS using kops, see [this issue](https://github.com/kubernetes/autoscaler/issues/1410#issuecomment-439840945).
 
-2. Define priority class for overprovisioning pods. Priority -1 will be reserved for
+2. Define priority class for overprovisioning pods. Priority -10 will be reserved for
 overprovisioning pods as it is the lowest priority that triggers scaling clusters. Other pods need
 to use priority 0 or higher in order to be able to preempt overprovisioning pods. You can use
 following definitions.
@@ -351,7 +351,7 @@ apiVersion: scheduling.k8s.io/v1alpha1
 kind: PriorityClass
 metadata:
   name: overprovisioning
-value: -1
+value: -10
 globalDefault: false
 description: "Priority class used by overprovisioning."
 ```
@@ -363,14 +363,14 @@ apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
   name: overprovisioning
-value: -1
+value: -10
 globalDefault: false
 description: "Priority class used by overprovisioning."
 ```
 
 3. Change pod priority cutoff in CA to -10 so pause pods are taken into account during scale down
 and scale up. Set flag ```expendable-pods-priority-cutoff``` to -10. If you already use priority
-preemption then pods with priorities between -10 and -1 won't be best effort anymore.
+preemption then pods with priorities between -10 and -1 won't be best effort anymore. (This is the default since 1.12)
 
 4. Create service account that will be used by Horizontal Cluster Proportional Autoscaler which needs
 specific roles. More details [here](https://github.com/kubernetes-incubator/cluster-proportional-autoscaler/tree/master/examples#rbac-configurations)
