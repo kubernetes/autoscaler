@@ -23,12 +23,14 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // There should be no imports as it is used standalone in e2e tests
 
 const (
+	// KiB - KibiByte size (2^10)
+	KiB = 1024
 	// MiB - MebiByte size (2^20)
 	MiB = 1024 * 1024
 	// GiB - GibiByte size (2^30)
@@ -195,6 +197,75 @@ func parsePercentageToRatio(percentString string) (float64, error) {
 		return 0, err
 	}
 	return percentVal / 100, nil
+}
+
+// ephemeralStorageOnLocalSSDFilesystemOverheadInKiBByOSAndDiskCount was
+// measured by creating 1-node nodepools in a GKE cluster with ephemeral
+// storage on N local SSDs, measuring for each node
+// N * 375GiB - .status.capacity["ephemeral-storage"]
+var ephemeralStorageOnLocalSSDFilesystemOverheadInKiBByOSAndDiskCount = map[OperatingSystemDistribution]map[int64]int64{
+	OperatingSystemDistributionCOS: {
+		1:  7289472,
+		2:  13725224,
+		3:  20031312,
+		4:  26332924,
+		5:  32634536,
+		6:  38946604,
+		7:  45254008,
+		8:  51556096,
+		16: 52837800,
+		24: 78686620,
+	},
+	OperatingSystemDistributionUbuntu: {
+		1:  7219840,
+		2:  13651496,
+		3:  19953488,
+		4:  26255100,
+		5:  32556712,
+		6:  38860588,
+		7:  45163896,
+		8:  51465984,
+		16: 52747688,
+		24: 78601704,
+	},
+}
+
+// EphemeralStorageOnLocalSSDFilesystemOverheadInBytes estimates the difference
+// between the total physical capacity of the local SSDs and the ephemeral
+// storage filesystem capacity. It uses experimental values measured for all
+// possible disk counts in GKE. Custom Kubernetes on GCE may allow intermediate
+// counts, attaching the measured count, but not using it all for ephemeral
+// storage. In that case, the difference in overhead between GKE and custom node
+// images may be higher than the difference in overhead between two disk counts,
+// so interpolating wouldn't make much sense. Instead, we use the next count for
+// which we measured a filesystem overhead, which is a safer approximation
+// (better to reserve more and not scale up than not enough and not schedule).
+func EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(diskCount int64, osDistribution OperatingSystemDistribution) int64 {
+	var measuredCount int64
+	if diskCount <= 8 {
+		measuredCount = diskCount
+	} else if diskCount <= 16 {
+		measuredCount = 16
+	} else {
+		measuredCount = 24 // max attachable
+	}
+
+	// the container runtime doesn't affect filesystem overhead
+	var measuredOS OperatingSystemDistribution
+	if osDistribution == OperatingSystemDistributionCOSContainerd {
+		measuredOS = OperatingSystemDistributionCOS
+	} else if osDistribution == OperatingSystemDistributionUbuntuContainerd {
+		measuredOS = OperatingSystemDistributionUbuntu
+	} else {
+		measuredOS = osDistribution
+	}
+
+	o, ok := ephemeralStorageOnLocalSSDFilesystemOverheadInKiBByOSAndDiskCount[measuredOS]
+	if !ok {
+		klog.Errorf("Ephemeral storage backed by local SSDs is not supported for image family %v", osDistribution)
+		return 0
+	}
+	return o[measuredCount] * KiB
 }
 
 // CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold
