@@ -561,9 +561,6 @@ func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *a
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
 		}
-		if testutils.IsRetryableAPIError(err) {
-			return false, nil
-		}
 		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
 	return testutils.RetryWithExponentialBackOff(createFunc)
@@ -577,9 +574,6 @@ func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, ob
 		_, err := c.AppsV1().StatefulSets(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
-		}
-		if testutils.IsRetryableAPIError(err) {
-			return false, nil
 		}
 		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
