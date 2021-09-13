@@ -21,14 +21,14 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apiserver/pkg/server/mux"
-	"k8s.io/apiserver/pkg/util/flowcontrol/counter"
 	fq "k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing"
+	"k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing/eventclock"
 	fqs "k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing/queueset"
 	"k8s.io/apiserver/pkg/util/flowcontrol/metrics"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/clock"
 
 	flowcontrol "k8s.io/api/flowcontrol/v1beta1"
 	flowcontrolclient "k8s.io/client-go/kubernetes/typed/flowcontrol/v1beta1"
@@ -82,8 +82,7 @@ func New(
 	serverConcurrencyLimit int,
 	requestWaitLimit time.Duration,
 ) Interface {
-	grc := counter.NoOp{}
-	clk := clock.RealClock{}
+	clk := eventclock.Real{}
 	return NewTestable(TestableConfig{
 		Name:                   "Controller",
 		Clock:                  clk,
@@ -94,7 +93,7 @@ func New(
 		ServerConcurrencyLimit: serverConcurrencyLimit,
 		RequestWaitLimit:       requestWaitLimit,
 		ObsPairGenerator:       metrics.PriorityLevelConcurrencyObserverPairGenerator,
-		QueueSetFactory:        fqs.NewQueueSetFactory(clk, grc),
+		QueueSetFactory:        fqs.NewQueueSetFactory(clk),
 	})
 }
 
