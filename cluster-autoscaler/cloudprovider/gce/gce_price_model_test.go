@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64, mem int64, gpuType string, gpuCount int64, isPreemptible bool) *apiv1.Node {
+func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64, mem int64, gpuType string, gpuCount int64, isPreemptible bool, isSpot bool) *apiv1.Node {
 	node := BuildTestNode(nodeName, millicpu, mem)
 	labels, err := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
@@ -42,6 +42,9 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 	assert.NoError(t, err)
 	if isPreemptible {
 		labels[preemptibleLabel] = "true"
+	}
+	if isSpot {
+		labels[spotLabel] = "true"
 	}
 	if gpuCount > 0 {
 		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
@@ -64,93 +67,108 @@ func TestGetNodePrice(t *testing.T) {
 	}{
 		// instance types
 		"e2 is cheaper than n1": {
-			cheaperNode:                testNode(t, "e2", "e2-standard-8", 8000, 32*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "e2", "e2-standard-8", 8000, 32*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1,
 		},
 		"custom nodes are more expensive than n1": {
-			cheaperNode:                testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1,
 		},
 		"custom nodes are not extremely expensive": {
-			cheaperNode:                testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "n1", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.2,
 		},
 		"custom node price scales linearly": {
-			cheaperNode:                testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.0 / 7.9,
 		},
 		"custom node price scales linearly 2": {
-			cheaperNode:                testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 8.1,
 		},
 		// GPUs
 		"accelerators are expensive": {
-			cheaperNode: testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode: testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
 			// #NotFunny
-			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
+			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false, false),
 			priceComparisonCoefficient: 0.5,
 		},
 		"GPUs of unknown type are still expensive": {
-			cheaperNode:                testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "cyclotron", "n1-standard-8", 8000, 30*units.GiB, "", 1, false),
+			cheaperNode:                testNode(t, "no_accelerators", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "cyclotron", "n1-standard-8", 8000, 30*units.GiB, "", 1, false, false),
 			priceComparisonCoefficient: 0.5,
 		},
 		"different GPUs have different prices": {
-			cheaperNode:                testNode(t, "cheap gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-t4", 1, false),
-			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
+			cheaperNode:                testNode(t, "cheap gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-t4", 1, false, false),
+			expensiveNode:              testNode(t, "large hadron collider", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false, false),
 			priceComparisonCoefficient: 0.5,
 		},
 		"more GPUs is more expensive": {
-			cheaperNode:                testNode(t, "1 gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false),
-			expensiveNode:              testNode(t, "2 gpus", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false),
+			cheaperNode:                testNode(t, "1 gpu", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 1, false, false),
+			expensiveNode:              testNode(t, "2 gpus", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false, false),
 			priceComparisonCoefficient: 0.7,
 		},
 		"some instance types have fixed gpu count 1": {
-			cheaperNode:                testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false),
-			expensiveNode:              testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false),
+			cheaperNode:                testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false, false),
+			expensiveNode:              testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
 		"some instance types have fixed gpu count 2": {
-			cheaperNode:                testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false),
-			expensiveNode:              testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false),
+			cheaperNode:                testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false, false),
+			expensiveNode:              testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
 		// Preemptibles
 		"preemtpibles are cheap": {
-			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "", 0, true),
-			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "", 0, true, false),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 0.25,
 		},
 		"custom preemptibles are also cheap": {
-			cheaperNode:                testNode(t, "preempted_i_can_be", "custom-8", 8000, 30*units.GiB, "", 0, true),
-			expensiveNode:              testNode(t, "ondemand", "custom-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "preempted_i_can_be", "custom-8", 8000, 30*units.GiB, "", 0, true, false),
+			expensiveNode:              testNode(t, "ondemand", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 0.25,
 		},
 		"preemtpibles GPUs are (relatively) cheap": {
-			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, true),
-			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false),
+			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, true, false),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false, false),
+			priceComparisonCoefficient: 0.5,
+		},
+		"spot vms are cheap": {
+			cheaperNode:                testNode(t, "spot", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, true),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
+			priceComparisonCoefficient: 0.25,
+		},
+		"custom spot vms are also cheap": {
+			cheaperNode:                testNode(t, "spot", "custom-8", 8000, 30*units.GiB, "", 0, false, true),
+			expensiveNode:              testNode(t, "ondemand", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
+			priceComparisonCoefficient: 0.25,
+		},
+		"spot GPUs are (relatively) cheap": {
+			cheaperNode:                testNode(t, "spot", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false, true),
+			expensiveNode:              testNode(t, "ondemand", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false, false),
 			priceComparisonCoefficient: 0.5,
 		},
 		// Unknown instances
 		"unknown cost is similar to its node family": {
-			cheaperNode:                testNode(t, "unknown", "n1-unknown", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "known", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "unknown", "n1-unknown", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "known", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
 		"unknown cost is similar to its node family 2": {
-			cheaperNode:                testNode(t, "unknown", "n1-standard-8", 8000, 30*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "known", "n1-unknown", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "unknown", "n1-standard-8", 8000, 30*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "known", "n1-unknown", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
 		// Custom instances
 		"big custom from cheap family is cheaper than small custom from expensive family": {
-			cheaperNode:                testNode(t, "unknown", "e2-custom", 9000, 32*units.GiB, "", 0, false),
-			expensiveNode:              testNode(t, "known", "n1-custom", 8000, 30*units.GiB, "", 0, false),
+			cheaperNode:                testNode(t, "unknown", "e2-custom", 9000, 32*units.GiB, "", 0, false, false),
+			expensiveNode:              testNode(t, "known", "n1-custom", 8000, 30*units.GiB, "", 0, false, false),
 			priceComparisonCoefficient: 1.001,
 		},
 	}
