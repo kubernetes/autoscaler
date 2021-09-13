@@ -48,6 +48,8 @@ type AutoscalingProcessors struct {
 	// NodeGroupManager is responsible for creating/deleting node groups.
 	NodeGroupManager nodegroups.NodeGroupManager
 	// NodeInfoProcessor is used to process nodeInfos after they're created.
+	// Deprecated: This field has been DEPRECATED and may be removed in 1.24.
+	// Consider using TemplateNodeInfoProvider instead.
 	NodeInfoProcessor nodeinfos.NodeInfoProcessor
 	// TemplateNodeInfoProvider is used to create the initial nodeInfos set.
 	TemplateNodeInfoProvider nodeinfosprovider.TemplateNodeInfoProvider

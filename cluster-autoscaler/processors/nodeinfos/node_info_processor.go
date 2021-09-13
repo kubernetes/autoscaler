@@ -22,6 +22,11 @@ import (
 )
 
 // NodeInfoProcessor processes nodeInfos after they're created.
+// Deprecated: This interface has been deprecated and may be removed in version 1.24.
+// This interface has been DEPRECATED in favor of TemplateNodeInfoProvider interface.
+// To migrate existing implementation of NodeInfoProcessor consider moving the logic
+// to TemplateNodeInfoProvider that wraps the default MixedTemplateNodeInfoProvider
+// and postprocesses the result.
 type NodeInfoProcessor interface {
 	// Process processes a map of nodeInfos for node groups.
 	Process(ctx *context.AutoscalingContext, nodeInfosForNodeGroups map[string]*schedulerframework.NodeInfo) (map[string]*schedulerframework.NodeInfo, error)
