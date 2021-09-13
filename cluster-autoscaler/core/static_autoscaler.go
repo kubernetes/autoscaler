@@ -277,7 +277,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return typedErr.AddPrefix("Initialize ClusterSnapshot")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(readyNodes, autoscalingContext, daemonsets, a.ignoredTaints)
+	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
