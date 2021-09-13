@@ -55,6 +55,7 @@ this document:
   * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
 * [Developer](#developer)
+  * [How should I implement new features?](#how-should-i-implement-new-features)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
   * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
@@ -897,6 +898,15 @@ From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group af
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
 
 # Developer:
+
+### How should I implement new features?
+
+The preferred way of implementing new features is via [processor
+interfaces](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/processors).
+Before opening a PR with changes (and especially significant changes) to core CA
+logic please check if those changes can instead be encapsulated behind on of the
+existing interfaces. Reviewers may suggest a way to re-implement a feature as a
+processor.
 
 ### How can I run e2e tests?
 
