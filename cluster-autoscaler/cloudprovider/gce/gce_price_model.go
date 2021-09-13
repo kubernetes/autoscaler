@@ -40,6 +40,7 @@ const (
 	gpuPricePerHour         = 0.700
 
 	preemptibleLabel = "cloud.google.com/gke-preemptible"
+	spotLabel        = "cloud.google.com/gke-spot"
 )
 
 var (
@@ -355,14 +356,12 @@ var (
 func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	basePriceFound := false
-	isPreemptible := false
 
 	// Base instance price
 	if node.Labels != nil {
-		isPreemptible = node.Labels[preemptibleLabel] == "true"
 		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
 			priceMapToUse := instancePrices
-			if isPreemptible {
+			if hasPreemptiblePricing(node) {
 				priceMapToUse = preemptiblePrices
 			}
 			if basePricePerHour, found := priceMapToUse[machineType]; found {
@@ -385,7 +384,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		gpuPrice := gpuPricePerHour
 		if node.Labels != nil {
 			priceMapToUse := gpuPrices
-			if isPreemptible {
+			if hasPreemptiblePricing(node) {
 				priceMapToUse = preemptibleGpuPrices
 			}
 			if gpuType, found := node.Labels[GPULabel]; found {
@@ -417,8 +416,20 @@ func isInstanceCustom(instanceType string) bool {
 	return strings.Contains(instanceType, "custom")
 }
 
+// hasPreemptiblePricing returns whether we should use preemptible pricing for a node, based on labels. Spot VMs have
+// dynamic pricing, which is different than the static pricing for Preemptible VMs we use here. However it should be close
+// enough in practice and we really only look at prices in comparison with each other. Spot VMs will always be cheaper
+// than corresponding non-preemptible VMs. So for the purposes of pricing, Spot VMs are treated the same as
+// Preemptible VMs.
+func hasPreemptiblePricing(node *apiv1.Node) bool {
+	if node.Labels == nil {
+		return false
+	}
+	return node.Labels[preemptibleLabel] == "true" || node.Labels[spotLabel] == "true"
+}
+
 func getPreemptibleDiscount(node *apiv1.Node) float64 {
-	if node.Labels[preemptibleLabel] != "true" {
+	if !hasPreemptiblePricing(node) {
 		return 1.0
 	}
 	instanceType, found := getInstanceTypeFromLabels(node.Labels)
