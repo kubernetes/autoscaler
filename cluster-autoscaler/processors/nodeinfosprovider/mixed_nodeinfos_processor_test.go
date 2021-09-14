@@ -76,7 +76,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err := NewMixedTemplateNodeInfoProvider().Process([]*apiv1.Node{unready4, unready3, ready2, ready1}, &ctx, []*appsv1.DaemonSet{}, nil)
+	res, err := NewMixedTemplateNodeInfoProvider().Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	info, found := res["ng1"]
@@ -100,7 +100,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 			ListerRegistry: registry,
 		},
 	}
-	res, err = NewMixedTemplateNodeInfoProvider().Process([]*apiv1.Node{}, &ctx, []*appsv1.DaemonSet{}, nil)
+	res, err = NewMixedTemplateNodeInfoProvider().Process(&ctx, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -159,7 +159,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 		},
 	}
 	niProcessor := NewMixedTemplateNodeInfoProvider()
-	res, err := niProcessor.Process([]*apiv1.Node{unready4, unready3, ready2, ready1}, &ctx, []*appsv1.DaemonSet{}, nil)
+	res, err := niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -193,7 +193,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = niProcessor.Process([]*apiv1.Node{unready4, unready3, ready2, ready1}, &ctx, []*appsv1.DaemonSet{}, nil)
+	res, err = niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -215,7 +215,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	infoNg4Node6 := schedulerframework.NewNodeInfo()
 	infoNg4Node6.SetNode(ready6.DeepCopy())
 	niProcessor.nodeInfoCache = map[string]*schedulerframework.NodeInfo{"ng4": infoNg4Node6}
-	res, err = niProcessor.Process([]*apiv1.Node{unready4, unready3, ready2, ready1}, &ctx, []*appsv1.DaemonSet{}, nil)
+	res, err = niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, nil)
 	// Check if cache was used
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
