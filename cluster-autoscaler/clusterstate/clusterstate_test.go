@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
@@ -481,6 +483,22 @@ func TestUpcomingNodes(t *testing.T) {
 	provider.AddNodeGroup("ng4", 1, 10, 1)
 	provider.AddNode("ng4", ng4_1)
 
+	// One node is already there, for a second node deletion / draining was already started.
+	ng5_1 := BuildTestNode("ng5-1", 1000, 1000)
+	SetNodeReadyState(ng5_1, true, now.Add(-time.Minute))
+	ng5_2 := BuildTestNode("ng5-2", 1000, 1000)
+	SetNodeReadyState(ng5_2, true, now.Add(-time.Minute))
+	ng5_2.Spec.Taints = []apiv1.Taint{
+		{
+			Key:    deletetaint.ToBeDeletedTaint,
+			Value:  fmt.Sprint(time.Now().Unix()),
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+	}
+	provider.AddNodeGroup("ng5", 1, 10, 2)
+	provider.AddNode("ng5", ng5_1)
+	provider.AddNode("ng5", ng5_2)
+
 	assert.NotNil(t, provider)
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
@@ -488,7 +506,7 @@ func TestUpcomingNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff())
-	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1}, nil, now)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1, ng5_1, ng5_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
@@ -497,6 +515,7 @@ func TestUpcomingNodes(t *testing.T) {
 	assert.Equal(t, 1, upcomingNodes["ng2"])
 	assert.Equal(t, 2, upcomingNodes["ng3"])
 	assert.NotContains(t, upcomingNodes, "ng4")
+	assert.NotContains(t, upcomingNodes, "ng5")
 }
 
 func TestIncorrectSize(t *testing.T) {
