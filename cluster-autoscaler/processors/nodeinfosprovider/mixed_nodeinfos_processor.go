@@ -51,7 +51,7 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(nodes []*apiv1.Node, ctx *context.AutoscalingContext, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 	result := make(map[string]*schedulerframework.NodeInfo)
