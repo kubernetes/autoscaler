@@ -50,6 +50,7 @@ import (
 const (
 	refreshInterval              = 1 * time.Minute
 	machinesRefreshInterval      = 1 * time.Hour
+	templatesRefreshInterval     = 30 * time.Minute
 	httpTimeout                  = 30 * time.Second
 	scaleToZeroSupported         = true
 	autoDiscovererTypeMIG        = "mig"
@@ -198,6 +199,10 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	if manager.migAutoDiscoverySpecs, err = parseMIGAutoDiscoverySpecs(discoveryOpts); err != nil {
 		return nil, err
 	}
+
+	go wait.Until(func() {
+		manager.migInstanceTemplatesProvider.Refresh(manager.cache.getMigRefs(), concurrentGceRefreshes)
+	}, templatesRefreshInterval, manager.interrupt)
 
 	if err := manager.forceRefresh(); err != nil {
 		return nil, err

@@ -402,6 +402,15 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
 	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
 }
 
+// SetAllMigInstanceTemplates replace all instance template cache entries
+func (gc *GceCache) SetAllMigInstanceTemplates(gceRefsToTemplates map[GceRef]*gce.InstanceTemplate) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Instance template cache replaced")
+	gc.instanceTemplatesCache = gceRefsToTemplates
+}
+
 // GetMachineFromCache retrieves machine type from cache under lock.
 func (gc *GceCache) GetMachineFromCache(machineType string, zone string) (*gce.MachineType, error) {
 	gc.cacheMutex.Lock()

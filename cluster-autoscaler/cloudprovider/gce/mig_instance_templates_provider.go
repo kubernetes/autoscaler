@@ -17,28 +17,27 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"sync"
-	"time"
 
 	gce "google.golang.org/api/compute/v1"
-)
-
-const (
-	migInstanceCacheRefreshInterval = 30 * time.Minute
+	"k8s.io/client-go/util/workqueue"
+	klog "k8s.io/klog/v2"
 )
 
 // MigInstanceTemplatesProvider allows obtaining instance templates for MIGs
 type MigInstanceTemplatesProvider interface {
 	// GetMigInstanceTemplate returns instance template for MIG with given ref
 	GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error)
+	// Refresh InstanceTemplate cache
+	Refresh(migRefs []GceRef, concurrency int)
 }
 
 // CachingMigInstanceTemplatesProvider is caching implementation of MigInstanceTemplatesProvider
 type CachingMigInstanceTemplatesProvider struct {
-	mutex       sync.Mutex
-	cache       *GceCache
-	lastRefresh time.Time
-	gceClient   AutoscalingGceClient
+	mutex     sync.Mutex
+	cache     *GceCache
+	gceClient AutoscalingGceClient
 }
 
 // NewCachingMigInstanceTemplatesProvider creates an instance of caching MigInstanceTemplatesProvider
@@ -65,14 +64,30 @@ func (p *CachingMigInstanceTemplatesProvider) GetMigInstanceTemplate(migRef GceR
 	return instanceTemplate, nil
 }
 
+// Refresh InstanceTemplate cache
+func (p *CachingMigInstanceTemplatesProvider) Refresh(gceRefs []GceRef, concurrency int) {
+	gceRefsToInstanceTemplates := map[GceRef]*gce.InstanceTemplate{}
+	gceRefsToInstanceTemplatesLock := sync.Mutex{}
+	workqueue.ParallelizeUntil(context.Background(), concurrency, len(gceRefs), func(piece int) {
+		instanceTemplate, err := p.gceClient.FetchMigTemplate(gceRefs[piece])
+		if err != nil {
+			klog.Errorf("Error while regenerating instance template cache for %s: %v",
+				gceRefs[piece], err)
+			return
+		}
+		gceRefsToInstanceTemplatesLock.Lock()
+		gceRefsToInstanceTemplates[gceRefs[piece]] = instanceTemplate
+		gceRefsToInstanceTemplatesLock.Unlock()
+	})
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.cache.SetAllMigInstanceTemplates(gceRefsToInstanceTemplates)
+}
+
 func (p *CachingMigInstanceTemplatesProvider) getMigInstanceTemplateFromCache(migRef GceRef) (*gce.InstanceTemplate, bool) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
-
-	if !p.lastRefresh.Add(migInstanceCacheRefreshInterval).After(time.Now()) {
-		p.cache.InvalidateAllMigInstanceTemplates()
-		p.lastRefresh = time.Now()
-	}
 
 	return p.cache.GetMigInstanceTemplate(migRef)
 }
