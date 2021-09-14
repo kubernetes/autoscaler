@@ -17,31 +17,73 @@ limitations under the License.
 package request
 
 import (
+	"fmt"
 	"net/http"
+	"time"
+
+	apirequest "k8s.io/apiserver/pkg/endpoints/request"
+	"k8s.io/klog/v2"
 )
 
-type Width struct {
+const (
+	// the minimum number of seats a request must occupy
+	minimumSeats = 1
+
+	// the maximum number of seats a request can occupy
+	maximumSeats = 10
+)
+
+type WorkEstimate struct {
 	// Seats represents the number of seats associated with this request
 	Seats uint
+
+	// AdditionalLatency specifies the additional duration the seats allocated
+	// to this request must be reserved after the given request had finished.
+	// AdditionalLatency should not have any impact on the user experience, the
+	// caller must not experience this additional latency.
+	AdditionalLatency time.Duration
 }
 
-// DefaultWidthEstimator returns returns '1' as the "width"
-// of the given request.
-//
-// TODO: when we plumb in actual "width" handling for different
-//  type of request(s) this function will iterate through a chain
-//  of widthEstimator instance(s).
-func DefaultWidthEstimator(_ *http.Request) Width {
-	return Width{
-		Seats: 1,
+// objectCountGetterFunc represents a function that gets the total
+// number of objects for a given resource.
+type objectCountGetterFunc func(string) (int64, error)
+
+// NewWorkEstimator estimates the work that will be done by a given request,
+// if no WorkEstimatorFunc matches the given request then the default
+// work estimate of 1 seat is allocated to the request.
+func NewWorkEstimator(countFn objectCountGetterFunc) WorkEstimatorFunc {
+	estimator := &workEstimator{
+		listWorkEstimator: newListWorkEstimator(countFn),
 	}
+	return estimator.estimate
 }
 
-// WidthEstimatorFunc returns the estimated "width" of a given request.
+// WorkEstimatorFunc returns the estimated work of a given request.
 // This function will be used by the Priority & Fairness filter to
-// estimate the "width" of incoming requests.
-type WidthEstimatorFunc func(*http.Request) Width
+// estimate the work of of incoming requests.
+type WorkEstimatorFunc func(*http.Request) WorkEstimate
 
-func (e WidthEstimatorFunc) EstimateWidth(r *http.Request) Width {
+func (e WorkEstimatorFunc) EstimateWork(r *http.Request) WorkEstimate {
 	return e(r)
+}
+
+type workEstimator struct {
+	// listWorkEstimator estimates work for list request(s)
+	listWorkEstimator WorkEstimatorFunc
+}
+
+func (e *workEstimator) estimate(r *http.Request) WorkEstimate {
+	requestInfo, ok := apirequest.RequestInfoFrom(r.Context())
+	if !ok {
+		klog.ErrorS(fmt.Errorf("no RequestInfo found in context"), "Failed to estimate work for the request", "URI", r.RequestURI)
+		// no RequestInfo should never happen, but to be on the safe side let's return maximumSeats
+		return WorkEstimate{Seats: maximumSeats}
+	}
+
+	switch requestInfo.Verb {
+	case "list":
+		return e.listWorkEstimator.EstimateWork(r)
+	}
+
+	return WorkEstimate{Seats: minimumSeats}
 }
