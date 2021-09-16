@@ -42,6 +42,8 @@ var (
 	}
 )
 
+const testGcPeriod = time.Minute
+
 func addVpa(t *testing.T, cluster *model.ClusterState, vpaID model.VpaID, selector string) *model.Vpa {
 	var apiObject vpa_types.VerticalPodAutoscaler
 	apiObject.Namespace = vpaID.Namespace
@@ -56,7 +58,7 @@ func addVpa(t *testing.T, cluster *model.ClusterState, vpaID model.VpaID, select
 }
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
-	cluster := model.NewClusterState()
+	cluster := model.NewClusterState(testGcPeriod)
 	cluster.AddOrUpdatePod(testPodID1, testLabels, v1.PodRunning)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID1, testRequest))
 	container := cluster.GetContainer(testContainerID1)

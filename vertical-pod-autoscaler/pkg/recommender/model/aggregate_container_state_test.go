@@ -72,7 +72,7 @@ func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryByt
 // container CPU and memory peak histograms, grouping the two containers
 // with the same name ('app-A') together.
 func TestAggregateStateByContainerName(t *testing.T) {
-	cluster := NewClusterState()
+	cluster := NewClusterState(testGcPeriod)
 	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
 	otherLabels := labels.Set{"label-2": "value-2"}
 	cluster.AddOrUpdatePod(testPodID2, otherLabels, apiv1.PodRunning)
