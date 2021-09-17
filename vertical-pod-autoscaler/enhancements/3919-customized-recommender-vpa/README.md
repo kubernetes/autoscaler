@@ -85,9 +85,12 @@ VPA adopts a reactive approach so a more proactive recommender is needed for the
 
 ### Implementation Details
 
-The following describes the details of implementing a first-citizen approach to support the customized 
-recommender. Namely, a dedicated field `recommenders` is added to the VPA crd definition in 
-`deploy/vpa-v1.crd.yaml`.
+The following describes the details of implementing a first-citizen approach to
+support the customized recommender. Namely, a dedicated field `recommenders` is
+added to the VPA crd definition in `deploy/vpa-v1.crd.yaml`. We identify
+recommender to use with a struct containing name of the recommender rather than
+using a plain string to identify the recommender. This will allow us to pass
+parameters to recommenders if we need to do that in the future.
 
 ```yaml
 validation:
@@ -119,7 +122,7 @@ should be updated to include the `recommenders` field.
 ```golang
 
 // VerticalPodAutoscalerRecommenderSelector points to a specificic Vertical Pod Autoscaler recommender
-// in the future it might pass parameters to the er.
+// in the future it might pass parameters to the recommender.
 type VerticalPodAutoscalerRecommenderSelector struct {
   // Name of the recommender responsible for generating recommendation for this object.
   Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
@@ -152,7 +155,10 @@ type VerticalPodAutoscalerSpec struct {
 	// resources for all containers in the pod, without additional constraints.
 	// +optional
 	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
-	// Name of the recommender responsible for generating recommendation for this object.
+	// Recommender responsible for generating recommendation for this object.
+	// List should be empty (then the default recommender will generate the
+	// recommendation) or contain exactly one recommender.
+	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 }
 ```
@@ -208,7 +214,7 @@ func implicitDefaultRecommender(selectors[]*VerticalPodAutoscalerRecommenderSele
 	return len(selectors) == 0
 }
 
-func selectsRecommener(selectors[]*VerticalPodAutoscalerRecommenderSelector, name *string) bool {
+func selectsRecommender(selectors[]*VerticalPodAutoscalerRecommenderSelector, name *string) bool {
 	for _, s := range(selectors) {
 		if s.Name == *name {
 			return true
@@ -229,7 +235,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
   var vpaCRDs []*vpa_types.VerticalPodAutoscaler
   for _, vpaCRD := range allVpaCRDs {
      currentRecommenderName := feeder.clusterState.RecommenderName
-     if (!implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommener(vpaCRD.Spec.Recommenders, currentRecommenderName)) {
+     if (!implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommender(vpaCRD.Spec.Recommenders, currentRecommenderName)) {
         klog.V(6).Infof("Ignoring the vpaCRD as current recommender's name %v doesn't appear among its recommenders", currentRecommenderName)
         continue
      }
