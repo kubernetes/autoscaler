@@ -399,7 +399,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 			pod1: &pod1History,
 		},
 	}
-	clusterState := model.NewClusterState()
+	clusterState := model.NewClusterState(testGcPeriod)
 	feeder := clusterStateFeeder{
 		clusterState: clusterState,
 	}
