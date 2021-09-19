@@ -34,6 +34,7 @@ rules:
     verbs: ["watch", "list", "get", "update"]
   - apiGroups: [""]
     resources:
+      - "namespaces"
       - "pods"
       - "services"
       - "replicationcontrollers"
@@ -50,7 +51,7 @@ rules:
     resources: ["statefulsets", "replicasets", "daemonsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "csinodes"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["batch", "extensions"]
     resources: ["jobs"]
@@ -143,10 +144,10 @@ spec:
           resources:
             limits:
               cpu: 100m
-              memory: 300Mi
+              memory: 600Mi
             requests:
               cpu: 100m
-              memory: 300Mi
+              memory: 600Mi
           command:
             - ./cluster-autoscaler
             - --v=4
@@ -157,7 +158,7 @@ spec:
             - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>
           volumeMounts:
             - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
+              mountPath: /etc/ssl/certs/ca-certificates.crt #/etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes
               readOnly: true
           imagePullPolicy: "Always"
       volumes:

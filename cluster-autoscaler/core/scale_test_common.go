@@ -32,9 +32,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -48,7 +51,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type nodeConfig struct {
@@ -140,6 +143,9 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
+		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(),
+		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
+		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
 	}
 }
 
@@ -151,7 +157,7 @@ func NewScaleTestAutoscalingContext(
 	// Not enough buffer space causes the test to hang without printing any logs.
 	// This is not useful.
 	fakeRecorder := kube_record.NewFakeRecorder(100)
-	fakeLogRecorder, err := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	fakeLogRecorder, err := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false, "my-cool-configmap")
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}

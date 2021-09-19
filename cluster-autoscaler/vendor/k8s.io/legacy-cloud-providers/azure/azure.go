@@ -30,7 +30,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
-
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -73,7 +72,9 @@ import (
 
 const (
 	// CloudProviderName is the value used for the --cloud-provider flag
-	CloudProviderName      = "azure"
+	CloudProviderName = "azure"
+	// AzureStackCloudName is the cloud name of Azure Stack
+	AzureStackCloudName    = "AZURESTACKCLOUD"
 	rateLimitQPSDefault    = 1.0
 	rateLimitBucketDefault = 5
 	backoffRetriesDefault  = 6
@@ -96,8 +97,8 @@ const (
 const (
 	// PreConfiguredBackendPoolLoadBalancerTypesNone means that the load balancers are not pre-configured
 	PreConfiguredBackendPoolLoadBalancerTypesNone = ""
-	// PreConfiguredBackendPoolLoadBalancerTypesInteral means that the `internal` load balancers are pre-configured
-	PreConfiguredBackendPoolLoadBalancerTypesInteral = "internal"
+	// PreConfiguredBackendPoolLoadBalancerTypesInternal means that the `internal` load balancers are pre-configured
+	PreConfiguredBackendPoolLoadBalancerTypesInternal = "internal"
 	// PreConfiguredBackendPoolLoadBalancerTypesExternal means that the `external` load balancers are pre-configured
 	PreConfiguredBackendPoolLoadBalancerTypesExternal = "external"
 	// PreConfiguredBackendPoolLoadBalancerTypesAll means that all load balancers are pre-configured
@@ -197,6 +198,12 @@ type Config struct {
 	//   "external": for external LoadBalancer
 	//   "all": for both internal and external LoadBalancer
 	PreConfiguredBackendPoolLoadBalancerTypes string `json:"preConfiguredBackendPoolLoadBalancerTypes,omitempty" yaml:"preConfiguredBackendPoolLoadBalancerTypes,omitempty"`
+	// EnableMultipleStandardLoadBalancers determines the behavior of the standard load balancer. If set to true
+	// there would be one standard load balancer per VMAS or VMSS, which is similar with the behavior of the basic
+	// load balancer. Users could select the specific standard load balancer for their service by the service
+	// annotation `service.beta.kubernetes.io/azure-load-balancer-mode`, If set to false, the same standard load balancer
+	// would be shared by all services in the cluster. In this case, the mode selection annotation would be ignored.
+	EnableMultipleStandardLoadBalancers bool `json:"enableMultipleStandardLoadBalancers,omitempty" yaml:"enableMultipleStandardLoadBalancers,omitempty"`
 
 	// AvailabilitySetNodesCacheTTLInSeconds sets the Cache TTL for availabilitySetNodesCache
 	// if not set, will use default value
@@ -216,14 +223,21 @@ type Config struct {
 
 	// DisableAvailabilitySetNodes disables VMAS nodes support when "VMType" is set to "vmss".
 	DisableAvailabilitySetNodes bool `json:"disableAvailabilitySetNodes,omitempty" yaml:"disableAvailabilitySetNodes,omitempty"`
+
+	// Tags determines what tags shall be applied to the shared resources managed by controller manager, which
+	// includes load balancer, security group and route table. The supported format is `a=b,c=d,...`. After updated
+	// this config, the old tags would be replaced by the new ones.
+	Tags string `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
-var _ cloudprovider.Interface = (*Cloud)(nil)
-var _ cloudprovider.Instances = (*Cloud)(nil)
-var _ cloudprovider.LoadBalancer = (*Cloud)(nil)
-var _ cloudprovider.Routes = (*Cloud)(nil)
-var _ cloudprovider.Zones = (*Cloud)(nil)
-var _ cloudprovider.PVLabeler = (*Cloud)(nil)
+var (
+	_ cloudprovider.Interface    = (*Cloud)(nil)
+	_ cloudprovider.Instances    = (*Cloud)(nil)
+	_ cloudprovider.LoadBalancer = (*Cloud)(nil)
+	_ cloudprovider.Routes       = (*Cloud)(nil)
+	_ cloudprovider.Zones        = (*Cloud)(nil)
+	_ cloudprovider.PVLabeler    = (*Cloud)(nil)
+)
 
 // Cloud holds the config and clients
 type Cloud struct {
@@ -254,6 +268,8 @@ type Cloud struct {
 	ipv6DualStackEnabled bool
 	// Lock for access to node caches, includes nodeZones, nodeResourceGroups, and unmanagedNodes.
 	nodeCachesLock sync.RWMutex
+	// nodeNames holds current nodes for tracking added nodes in VM caches.
+	nodeNames sets.String
 	// nodeZones is a mapping from Zone to a sets.String of Node's names in the Zone
 	// it is updated by the nodeInformer
 	nodeZones map[string]sets.String
@@ -322,6 +338,7 @@ func NewCloudWithoutFeatureGates(configReader io.Reader) (*Cloud, error) {
 	}
 
 	az := &Cloud{
+		nodeNames:          sets.NewString(),
 		nodeZones:          map[string]sets.String{},
 		nodeResourceGroups: map[string]string{},
 		unmanagedNodes:     sets.NewString(),
@@ -383,7 +400,7 @@ func (az *Cloud) InitializeCloudFromConfig(config *Config, fromSecret bool) erro
 	if err == auth.ErrorNoAuth {
 		// Only controller-manager would lazy-initialize from secret, and credentials are required for such case.
 		if fromSecret {
-			err := fmt.Errorf("No credentials provided for Azure cloud provider")
+			err := fmt.Errorf("no credentials provided for Azure cloud provider")
 			klog.Fatalf("%v", err)
 			return err
 		}
@@ -459,7 +476,7 @@ func (az *Cloud) InitializeCloudFromConfig(config *Config, fromSecret bool) erro
 	az.Config = *config
 	az.Environment = *env
 	az.ResourceRequestBackoff = resourceRequestBackoff
-	az.metadata, err = NewInstanceMetadataService(metadataURL)
+	az.metadata, err = NewInstanceMetadataService(imdsServer)
 	if err != nil {
 		return err
 	}
@@ -603,6 +620,7 @@ func (az *Cloud) configAzureClients(
 
 func (az *Cloud) getAzureClientConfig(servicePrincipalToken *adal.ServicePrincipalToken) *azclients.ClientConfig {
 	azClientConfig := &azclients.ClientConfig{
+		CloudName:               az.Config.Cloud,
 		Location:                az.Config.Location,
 		SubscriptionID:          az.Config.SubscriptionID,
 		ResourceManagerEndpoint: az.Environment.ResourceManagerEndpoint,
@@ -727,8 +745,12 @@ func (az *Cloud) SetInformers(informerFactory informers.SharedInformerFactory) {
 		UpdateFunc: func(prev, obj interface{}) {
 			prevNode := prev.(*v1.Node)
 			newNode := obj.(*v1.Node)
-			if newNode.Labels[v1.LabelZoneFailureDomain] ==
-				prevNode.Labels[v1.LabelZoneFailureDomain] {
+			if newNode.Labels[v1.LabelFailureDomainBetaZone] ==
+				prevNode.Labels[v1.LabelFailureDomainBetaZone] {
+				return
+			}
+			if newNode.Labels[v1.LabelTopologyZone] ==
+				prevNode.Labels[v1.LabelTopologyZone] {
 				return
 			}
 			az.updateNodeCaches(prevNode, newNode)
@@ -761,9 +783,23 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 	defer az.nodeCachesLock.Unlock()
 
 	if prevNode != nil {
-		// Remove from nodeZones cache.
-		prevZone, ok := prevNode.ObjectMeta.Labels[v1.LabelZoneFailureDomain]
+
+		// Remove from nodeNames cache.
+		az.nodeNames.Delete(prevNode.ObjectMeta.Name)
+
+		// Remove from nodeZones cache
+		prevZone, ok := prevNode.ObjectMeta.Labels[v1.LabelTopologyZone]
+
 		if ok && az.isAvailabilityZone(prevZone) {
+			az.nodeZones[prevZone].Delete(prevNode.ObjectMeta.Name)
+			if az.nodeZones[prevZone].Len() == 0 {
+				az.nodeZones[prevZone] = nil
+			}
+		}
+
+		//Remove from nodeZones cache if using depreciated LabelFailureDomainBetaZone
+		prevZoneFailureDomain, ok := prevNode.ObjectMeta.Labels[v1.LabelFailureDomainBetaZone]
+		if ok && az.isAvailabilityZone(prevZoneFailureDomain) {
 			az.nodeZones[prevZone].Delete(prevNode.ObjectMeta.Name)
 			if az.nodeZones[prevZone].Len() == 0 {
 				az.nodeZones[prevZone] = nil
@@ -784,8 +820,11 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 	}
 
 	if newNode != nil {
+		// Add to nodeNames cache.
+		az.nodeNames.Insert(newNode.ObjectMeta.Name)
+
 		// Add to nodeZones cache.
-		newZone, ok := newNode.ObjectMeta.Labels[v1.LabelZoneFailureDomain]
+		newZone, ok := newNode.ObjectMeta.Labels[v1.LabelTopologyZone]
 		if ok && az.isAvailabilityZone(newZone) {
 			if az.nodeZones[newZone] == nil {
 				az.nodeZones[newZone] = sets.NewString()
@@ -810,7 +849,7 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 // GetActiveZones returns all the zones in which k8s nodes are currently running.
 func (az *Cloud) GetActiveZones() (sets.String, error) {
 	if az.nodeInformerSynced == nil {
-		return nil, fmt.Errorf("Azure cloud provider doesn't have informers set")
+		return nil, fmt.Errorf("azure cloud provider doesn't have informers set")
 	}
 
 	az.nodeCachesLock.RLock()
@@ -853,6 +892,22 @@ func (az *Cloud) GetNodeResourceGroup(nodeName string) (string, error) {
 
 	// Return resource group from cloud provider options.
 	return az.ResourceGroup, nil
+}
+
+// GetNodeNames returns a set of all node names in the k8s cluster.
+func (az *Cloud) GetNodeNames() (sets.String, error) {
+	// Kubelet won't set az.nodeInformerSynced, return nil.
+	if az.nodeInformerSynced == nil {
+		return nil, nil
+	}
+
+	az.nodeCachesLock.RLock()
+	defer az.nodeCachesLock.RUnlock()
+	if !az.nodeInformerSynced() {
+		return nil, fmt.Errorf("node informer is not synced when trying to GetNodeNames")
+	}
+
+	return sets.NewString(az.nodeNames.List()...), nil
 }
 
 // GetResourceGroups returns a set of resource groups that all nodes are running on.

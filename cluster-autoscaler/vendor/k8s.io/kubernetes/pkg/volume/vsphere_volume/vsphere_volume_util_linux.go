@@ -22,12 +22,12 @@ package vsphere_volume
 import (
 	"fmt"
 
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 )
 
 func verifyDevicePath(path string) (string, error) {
 	if pathExists, err := mount.PathExists(path); err != nil {
-		return "", fmt.Errorf("Error checking if path exists: %v", err)
+		return "", fmt.Errorf("error checking if path exists: %w", err)
 	} else if pathExists {
 		return path, nil
 	}

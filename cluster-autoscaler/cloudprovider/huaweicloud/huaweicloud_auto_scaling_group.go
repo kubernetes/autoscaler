@@ -17,25 +17,42 @@ limitations under the License.
 package huaweicloud
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // AutoScalingGroup represents a HuaweiCloud's 'Auto Scaling Group' which also can be treated as a node group.
 type AutoScalingGroup struct {
 	cloudServiceManager CloudServiceManager
-
-	groupID           string
-	minInstanceNumber int
-	maxInstanceNumber int
+	groupName           string
+	groupID             string
+	minInstanceNumber   int
+	maxInstanceNumber   int
 }
 
 // Check if our AutoScalingGroup implements necessary interface.
 var _ cloudprovider.NodeGroup = &AutoScalingGroup{}
+
+func newAutoScalingGroup(csm CloudServiceManager, sg huaweicloudsdkasmodel.ScalingGroups) AutoScalingGroup {
+	return AutoScalingGroup{
+		cloudServiceManager: csm,
+		groupName:           *sg.ScalingGroupName,
+		groupID:             *sg.ScalingGroupId,
+		minInstanceNumber:   int(*sg.MinInstanceNumber),
+		maxInstanceNumber:   int(*sg.MaxInstanceNumber),
+	}
+}
 
 // MaxSize returns maximum size of the node group.
 func (asg *AutoScalingGroup) MaxSize() int {
@@ -83,21 +100,41 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	instances, err := asg.cloudServiceManager.GetInstances(asg.groupID)
 	if err != nil {
-		klog.Warningf("failed to get nodes from group: %s, error: %v", asg.groupID, err)
+		klog.Warningf("failed to get instances from group: %s, error: %v", asg.groupID, err)
 		return err
 	}
 
-	// TODO(RainbowMango): Check if all node in this group.
-	//  If one of the node is not belong to this group, just return error.
-
-	servers := make([]string, 0, len(instances))
+	instanceSet := sets.NewString()
 	for _, instance := range instances {
-		servers = append(servers, *instance.InstanceId)
+		instanceSet.Insert(instance.Id)
 	}
 
-	err = asg.cloudServiceManager.DeleteServers(servers)
+	instanceIds := make([]string, 0, len(instances))
+	nodeNames := make([]string, 0, len(instances))
+	for _, node := range nodes {
+		providerID := node.Spec.ProviderID
+
+		// If one of the nodes not belongs to this auto scaling group, means there is something wrong happened,
+		// so, we should reject the whole deleting request.
+		if !instanceSet.Has(providerID) {
+			klog.Errorf("delete node not belongs this node group is not allowed. group: %s, node: %s", asg.groupID, providerID)
+			return fmt.Errorf("node does not belong to this node group")
+		}
+
+		klog.V(1).Infof("going to remove node from scaling group. group: %s, node: %s", asg.groupID, providerID)
+		instanceIds = append(instanceIds, providerID)
+		nodeNames = append(nodeNames, node.Name)
+	}
+
+	err = asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
 	if err != nil {
-		klog.Warningf("failed to delete nodes. error: %v", err)
+		klog.Warningf("failed to delete scaling instances. error: %v", err)
+		return err
+	}
+
+	err = asg.deleteNodesFromCluster(nodeNames)
+	if err != nil {
+		klog.Warningf("failed to delete nodes from cluster. error: %v", err)
 		return err
 	}
 
@@ -134,21 +171,8 @@ func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
 		klog.Warningf("failed to get nodes from group: %s, error: %v", asg.groupID, err)
 		return nil, err
 	}
-	if len(instances) == 0 {
-		return nil, nil
-	}
 
-	// TODO(RainbowMango) Convert AS instances to cloud provider instances. Especially convert status.
-	providerInstances := make([]cloudprovider.Instance, 0, len(instances))
-	for i := range instances {
-		pInstances := cloudprovider.Instance{
-			Id:     *instances[i].InstanceId,
-			Status: nil,
-		}
-
-		providerInstances = append(providerInstances, pInstances)
-	}
-	return nil, nil
+	return instances, nil
 }
 
 // TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
@@ -158,7 +182,17 @@ func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
 func (asg *AutoScalingGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := asg.cloudServiceManager.getAsgTemplate(asg.groupID)
+	if err != nil {
+		return nil, err
+	}
+	node, err := asg.cloudServiceManager.buildNodeFromTemplate(asg.groupName, template)
+	if err != nil {
+		return nil, err
+	}
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.groupName))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
@@ -189,7 +223,44 @@ func (asg *AutoScalingGroup) Autoprovisioned() bool {
 	return false
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (asg *AutoScalingGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // String dumps current groups meta data.
 func (asg *AutoScalingGroup) String() string {
 	return fmt.Sprintf("group: %s min=%d max=%d", asg.groupID, asg.minInstanceNumber, asg.maxInstanceNumber)
+}
+
+func (asg *AutoScalingGroup) deleteNodesFromCluster(nodeNames []string) error {
+	restConfig, err := clientcmd.BuildConfigFromFlags("", "")
+	if err != nil {
+		klog.Warningf("Failed to delete nodes from cluster due to can not get config. error: %v", err)
+		return err
+	}
+
+	kubeClient, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		klog.Warningf("Failed to delete nodes from cluster due to can not get kube-client. error: %v", err)
+		return err
+	}
+
+	var failedNodes []string
+	for _, nodeName := range nodeNames {
+		err := kubeClient.CoreV1().Nodes().Delete(context.TODO(), nodeName, metav1.DeleteOptions{})
+		if err != nil {
+			klog.Warningf("Failed to delete node from cluster. node: %s, error: %s", nodeName, err)
+			failedNodes = append(failedNodes, nodeName)
+			continue
+		}
+		klog.V(1).Infof("deleted one node from cluster. node name: %s", nodeName)
+	}
+
+	if len(failedNodes) != 0 {
+		return fmt.Errorf("failed to delete %d node(s) from cluster", len(failedNodes))
+	}
+
+	return nil
 }

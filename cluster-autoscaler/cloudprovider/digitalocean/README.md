@@ -6,31 +6,24 @@ offering which can be enabled/disable dynamically for an existing cluster.
 
 # Configuration
 
-The `cluster-autoscaler` dynamically runs based on tags associated with node
-pools. These are the current valid tags:
+## Cloud config file
 
-```
-k8s-cluster-autoscaler-enabled:true
-k8s-cluster-autoscaler-min:3
-k8s-cluster-autoscaler-max:10
-```
+The (JSON) configuration file of the DigitalOcean cloud provider supports the
+following values:
 
-The syntax is in form of `key:value`.
+- `cluster_id`: the ID of the cluster (a UUID)
+- `token`: the DigitalOcean access token literally defined
+- `token_file`: a file path containing the DigitalOcean access token
+- `url`: the DigitalOcean URL (optional; defaults to `https://api.digitalocean.com/`)
 
-* If `k8s-cluster-autoscaler-enabled:true` is absent or
-  `k8s-cluster-autoscaler-enabled` is **not** set to `true`, the
-  `cluster-autoscaler` will not process the node pool by default.
-* To set the minimum number of nodes to use `k8s-cluster-autoscaler-min`
-* To set the maximum number of nodes to use `k8s-cluster-autoscaler-max`
+Exactly one of `token` or `token_file` must be provided.
 
+## Behavior
 
-If you don't set the minimum and maximum tags, node pools will have the
-following default limits:
-
-```
-minimum number of nodes: 1
-maximum number of nodes: 200
-```
+Parameters of the autoscaler (such as whether it is on or off, and the
+minimum/maximum values) are configured through the public DOKS API and
+subsequently reflected by the node pool objects. The cloud provider periodically
+picks up the configuration from the API and adjusts the behavior accordingly.
 
 # Development
 

@@ -26,21 +26,21 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// FastGetPodsToMove returns a list of pods that should be moved elsewhere if the node
+// FastGetPodsToMove returns a list of pods that should be moved elsewhere
+// and a list of DaemonSet pods that should be evicted if the node
 // is drained. Raises error if there is an unreplicated pod.
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
-	var pods []*apiv1.Pod
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
+	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		pdbs,
 		skipNodesWithSystemPods,
@@ -48,30 +48,30 @@ func FastGetPodsToMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSyste
 		false,
 		nil,
 		0,
-		time.Now())
+		timestamp)
 
 	if err != nil {
-		return pods, blockingPod, err
+		return pods, daemonSetPods, blockingPod, err
 	}
 	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, pdbBlockingPod, err
+		return []*apiv1.Pod{}, []*apiv1.Pod{}, pdbBlockingPod, err
 	}
 
-	return pods, nil, nil
+	return pods, daemonSetPods, nil, nil
 }
 
-// DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
+// DetailedGetPodsForMove returns a list of pods that should be moved elsewhere
+// and a list of DaemonSet pods that should be evicted if the node
 // is drained. Raises error if there is an unreplicated pod.
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
-	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, *drain.BlockingPod, error) {
-	var pods []*apiv1.Pod
+	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	for _, podInfo := range nodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	pods, blockingPod, err := drain.GetPodsForDeletionOnNodeDrain(
+	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		pdbs,
 		skipNodesWithSystemPods,
@@ -79,15 +79,15 @@ func DetailedGetPodsForMove(nodeInfo *schedulerframework.NodeInfo, skipNodesWith
 		true,
 		listers,
 		minReplicaCount,
-		time.Now())
+		timestamp)
 	if err != nil {
-		return pods, blockingPod, err
+		return pods, daemonSetPods, blockingPod, err
 	}
 	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
-		return []*apiv1.Pod{}, pdbBlockingPod, err
+		return []*apiv1.Pod{}, []*apiv1.Pod{}, pdbBlockingPod, err
 	}
 
-	return pods, nil, nil
+	return pods, daemonSetPods, nil, nil
 }
 
 func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {

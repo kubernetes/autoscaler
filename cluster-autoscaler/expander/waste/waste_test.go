@@ -21,13 +21,14 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type FakeNodeGroup struct {
@@ -54,6 +55,9 @@ func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 }
 func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
 func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
+func (f *FakeNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
 
 func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulerframework.NodeInfo {
 	node := &apiv1.Node{

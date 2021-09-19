@@ -48,7 +48,7 @@ func setUpTest(t *testing.T) *testInfo {
 		configMap: &apiv1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: namespace,
-				Name:      StatusConfigMapName,
+				Name:      "my-cool-configmap",
 			},
 			Data: map[string]string{},
 		},
@@ -61,7 +61,7 @@ func setUpTest(t *testing.T) *testInfo {
 	result.client.Fake.AddReactor("get", "configmaps", func(action core.Action) (bool, runtime.Object, error) {
 		get := action.(core.GetAction)
 		assert.Equal(result.t, namespace, get.GetNamespace())
-		assert.Equal(result.t, StatusConfigMapName, get.GetName())
+		assert.Equal(result.t, "my-cool-configmap", get.GetName())
 		result.getCalled = true
 		if result.getError != nil {
 			return true, nil, result.getError
@@ -78,7 +78,7 @@ func setUpTest(t *testing.T) *testInfo {
 		create := action.(core.CreateAction)
 		assert.Equal(result.t, namespace, create.GetNamespace())
 		configMap := create.GetObject().(*apiv1.ConfigMap)
-		assert.Equal(result.t, StatusConfigMapName, configMap.ObjectMeta.Name)
+		assert.Equal(result.t, "my-cool-configmap", configMap.ObjectMeta.Name)
 		result.createCalled = true
 		return true, configMap, nil
 	})
@@ -87,7 +87,7 @@ func setUpTest(t *testing.T) *testInfo {
 
 func TestWriteStatusConfigMapExisting(t *testing.T) {
 	ti := setUpTest(t)
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
 	assert.Equal(t, ti.configMap, result)
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
@@ -100,7 +100,7 @@ func TestWriteStatusConfigMapExisting(t *testing.T) {
 func TestWriteStatusConfigMapCreate(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = kube_errors.NewNotFound(apiv1.Resource("configmap"), "nope, not found")
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
 	assert.Nil(t, err)
@@ -112,7 +112,7 @@ func TestWriteStatusConfigMapCreate(t *testing.T) {
 func TestWriteStatusConfigMapError(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = errors.New("stuff bad")
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "stuff bad")
 	assert.Nil(t, result)

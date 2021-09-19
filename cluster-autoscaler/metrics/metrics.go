@@ -17,7 +17,10 @@ limitations under the License.
 package metrics
 
 import (
+	"fmt"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -87,6 +90,7 @@ const (
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"
 	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
+	CloudProviderRefresh       FunctionLabel = "cloudProviderRefresh"
 	Main                       FunctionLabel = "main"
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
@@ -133,6 +137,54 @@ var (
 			Name:      "max_nodes_count",
 			Help:      "Maximum number of nodes in all node groups",
 		},
+	)
+
+	cpuCurrentCores = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cluster_cpu_current_cores",
+			Help:      "Current number of cores in the cluster, minus deleting nodes.",
+		},
+	)
+
+	cpuLimitsCores = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cpu_limits_cores",
+			Help:      "Minimum and maximum number of cores in the cluster.",
+		}, []string{"direction"},
+	)
+
+	memoryCurrentBytes = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "cluster_memory_current_bytes",
+			Help:      "Current number of bytes of memory in the cluster, minus deleting nodes.",
+		},
+	)
+
+	memoryLimitsBytes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "memory_limits_bytes",
+			Help:      "Minimum and maximum number of bytes of memory in cluster.",
+		}, []string{"direction"},
+	)
+
+	nodesGroupMinNodes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_min_count",
+			Help:      "Minimum number of nodes in the node group",
+		}, []string{"node_group"},
+	)
+
+	nodesGroupMaxNodes = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_max_count",
+			Help:      "Maximum number of nodes in the node group",
+		}, []string{"node_group"},
 	)
 
 	/**** Metrics related to autoscaler execution ****/
@@ -227,11 +279,28 @@ var (
 		},
 	)
 
+	unremovableNodesCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "unremovable_nodes_count",
+			Help:      "Number of nodes currently considered unremovable by CA.",
+		},
+		[]string{"reason"},
+	)
+
 	scaleDownInCooldown = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "scale_down_in_cooldown",
 			Help:      "Whether or not the scale down is in cooldown. 1 if its, 0 otherwise.",
+		},
+	)
+
+	oldUnregisteredNodesRemovedCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "old_unregistered_nodes_removed_count",
+			Help:      "Number of unregistered nodes removed by CA.",
 		},
 	)
 
@@ -262,12 +331,16 @@ var (
 )
 
 // RegisterAll registers all metrics.
-func RegisterAll() {
+func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(clusterSafeToAutoscale)
 	legacyregistry.MustRegister(nodesCount)
 	legacyregistry.MustRegister(nodeGroupsCount)
 	legacyregistry.MustRegister(unschedulablePodsCount)
 	legacyregistry.MustRegister(maxNodesCount)
+	legacyregistry.MustRegister(cpuCurrentCores)
+	legacyregistry.MustRegister(cpuLimitsCores)
+	legacyregistry.MustRegister(memoryCurrentBytes)
+	legacyregistry.MustRegister(memoryLimitsBytes)
 	legacyregistry.MustRegister(lastActivity)
 	legacyregistry.MustRegister(functionDuration)
 	legacyregistry.MustRegister(functionDurationSummary)
@@ -279,10 +352,17 @@ func RegisterAll() {
 	legacyregistry.MustRegister(gpuScaleDownCount)
 	legacyregistry.MustRegister(evictionsCount)
 	legacyregistry.MustRegister(unneededNodesCount)
+	legacyregistry.MustRegister(unremovableNodesCount)
 	legacyregistry.MustRegister(scaleDownInCooldown)
+	legacyregistry.MustRegister(oldUnregisteredNodesRemovedCount)
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
+
+	if emitPerNodeGroupMetrics {
+		legacyregistry.MustRegister(nodesGroupMinNodes)
+		legacyregistry.MustRegister(nodesGroupMaxNodes)
+	}
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
@@ -342,6 +422,38 @@ func UpdateMaxNodesCount(nodesCount int) {
 	maxNodesCount.Set(float64(nodesCount))
 }
 
+// UpdateClusterCPUCurrentCores records the number of cores in the cluster, minus deleting nodes
+func UpdateClusterCPUCurrentCores(coresCount int64) {
+	cpuCurrentCores.Set(float64(coresCount))
+}
+
+// UpdateCPULimitsCores records the minimum and maximum number of cores in the cluster
+func UpdateCPULimitsCores(minCoresCount int64, maxCoresCount int64) {
+	cpuLimitsCores.WithLabelValues("minimum").Set(float64(minCoresCount))
+	cpuLimitsCores.WithLabelValues("maximum").Set(float64(maxCoresCount))
+}
+
+// UpdateClusterMemoryCurrentBytes records the number of bytes of memory in the cluster, minus deleting nodes
+func UpdateClusterMemoryCurrentBytes(memoryCount int64) {
+	memoryCurrentBytes.Set(float64(memoryCount))
+}
+
+// UpdateMemoryLimitsBytes records the minimum and maximum bytes of memory in the cluster
+func UpdateMemoryLimitsBytes(minMemoryCount int64, maxMemoryCount int64) {
+	memoryLimitsBytes.WithLabelValues("minimum").Set(float64(minMemoryCount))
+	memoryLimitsBytes.WithLabelValues("maximum").Set(float64(maxMemoryCount))
+}
+
+// UpdateNodeGroupMin records the node group minimum allowed number of nodes
+func UpdateNodeGroupMin(nodeGroup string, minNodes int) {
+	nodesGroupMinNodes.WithLabelValues(nodeGroup).Set(float64(minNodes))
+}
+
+// UpdateNodeGroupMax records the node group maximum allowed number of nodes
+func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
+	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
+}
+
 // RegisterError records any errors preventing Cluster Autoscaler from working.
 // No more than one error should be recorded per loop.
 func RegisterError(err errors.AutoscalerError) {
@@ -379,6 +491,13 @@ func UpdateUnneededNodesCount(nodesCount int) {
 	unneededNodesCount.Set(float64(nodesCount))
 }
 
+// UpdateUnremovableNodesCount records number of currently unremovable nodes
+func UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
+	for reason, count := range unremovableReasonCounts {
+		unremovableNodesCount.WithLabelValues(fmt.Sprintf("%v", reason)).Set(float64(count))
+	}
+}
+
 // UpdateNapEnabled records if NodeAutoprovisioning is enabled
 func UpdateNapEnabled(enabled bool) {
 	if enabled {
@@ -406,4 +525,10 @@ func UpdateScaleDownInCooldown(inCooldown bool) {
 	} else {
 		scaleDownInCooldown.Set(0.0)
 	}
+}
+
+// RegisterOldUnregisteredNodesRemoved records number of old unregistered
+// nodes that have been removed by the cluster autoscaler
+func RegisterOldUnregisteredNodesRemoved(nodesCount int) {
+	oldUnregisteredNodesRemovedCount.Add(float64(nodesCount))
 }

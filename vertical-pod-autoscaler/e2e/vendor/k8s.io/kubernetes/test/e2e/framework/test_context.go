@@ -17,9 +17,12 @@ limitations under the License.
 package framework
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"sort"
 	"strings"
@@ -31,12 +34,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	cliflag "k8s.io/component-base/cli/flag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
+
 	kubeletconfig "k8s.io/kubernetes/pkg/kubelet/apis/config"
 )
 
 const (
-	defaultHost = "http://127.0.0.1:8080"
+	defaultHost = "https://127.0.0.1:6443"
 
 	// DefaultNumNodes is the number of nodes. If not specified, then number of nodes is auto-detected
 	DefaultNumNodes = -1
@@ -77,11 +81,15 @@ type TestContextType struct {
 	KubeVolumeDir      string
 	CertDir            string
 	Host               string
+	BearerToken        string `datapolicy:"token"`
 	// TODO: Deprecating this over time... instead just use gobindata_util.go , see #23987.
 	RepoRoot                string
 	DockershimCheckpointDir string
 	// ListImages will list off all images that are used then quit
 	ListImages bool
+
+	// ListConformanceTests will list off all conformance tests that are available then quit
+	ListConformanceTests bool
 
 	// Provider identifies the infrastructure provider (gce, gke, aws)
 	Provider string
@@ -113,6 +121,7 @@ type TestContextType struct {
 	ImageServiceEndpoint     string
 	MasterOSDistro           string
 	NodeOSDistro             string
+	NodeOSArch               string
 	VerifyServiceAccount     bool
 	DeleteNamespace          bool
 	DeleteNamespaceOnFailure bool
@@ -150,9 +159,6 @@ type TestContextType struct {
 	// Node e2e specific test context
 	NodeTestContextType
 
-	// Indicates what path the kubernetes-anywhere is installed on
-	KubernetesAnywherePath string
-
 	// The DNS Domain of the cluster.
 	ClusterDNSDomain string
 
@@ -173,6 +179,9 @@ type TestContextType struct {
 
 	// SpecSummaryOutput is the file to write ginkgo.SpecSummary objects to as tests complete. Useful for debugging and test introspection.
 	SpecSummaryOutput string
+
+	// DockerConfigFile is a file that contains credentials which can be used to pull images from certain private registries, needed for a test.
+	DockerConfigFile string
 }
 
 // NodeKillerConfig describes configuration of NodeKiller -- a utility to
@@ -282,7 +291,7 @@ func RegisterCommonFlags(flags *flag.FlagSet) {
 	flags.BoolVar(&TestContext.DeleteNamespaceOnFailure, "delete-namespace-on-failure", true, "If true, framework will delete test namespace on failure. Used only during test debugging.")
 	flags.IntVar(&TestContext.AllowedNotReadyNodes, "allowed-not-ready-nodes", 0, "If non-zero, framework will allow for that many non-ready nodes when checking for all ready nodes.")
 
-	flags.StringVar(&TestContext.Host, "host", "", fmt.Sprintf("The host, or apiserver, to connect to. Will default to %s if this argument and --kubeconfig are not set", defaultHost))
+	flags.StringVar(&TestContext.Host, "host", "", fmt.Sprintf("The host, or apiserver, to connect to. Will default to %s if this argument and --kubeconfig are not set.", defaultHost))
 	flags.StringVar(&TestContext.ReportPrefix, "report-prefix", "", "Optional prefix for JUnit XML reports. Default is empty, which doesn't prepend anything to the default name.")
 	flags.StringVar(&TestContext.ReportDir, "report-dir", "", "Path to the directory where the JUnit XML reports should be saved. Default is empty, which doesn't generate these reports.")
 	flags.Var(cliflag.NewMapStringBool(&TestContext.FeatureGates), "feature-gates", "A set of key=value pairs that describe feature gates for alpha/experimental features.")
@@ -294,14 +303,15 @@ func RegisterCommonFlags(flags *flag.FlagSet) {
 	flags.BoolVar(&TestContext.DumpSystemdJournal, "dump-systemd-journal", false, "Whether to dump the full systemd journal.")
 	flags.StringVar(&TestContext.ImageServiceEndpoint, "image-service-endpoint", "", "The image service endpoint of cluster VM instances.")
 	flags.StringVar(&TestContext.DockershimCheckpointDir, "dockershim-checkpoint-dir", "/var/lib/dockershim/sandbox", "The directory for dockershim to store sandbox checkpoints.")
-	flags.StringVar(&TestContext.KubernetesAnywherePath, "kubernetes-anywhere-path", "/workspace/k8s.io/kubernetes-anywhere", "Which directory kubernetes-anywhere is installed to.")
 	flags.StringVar(&TestContext.NonblockingTaints, "non-blocking-taints", `node-role.kubernetes.io/master`, "Nodes with taints in this comma-delimited list will not block the test framework from starting tests.")
 
 	flags.BoolVar(&TestContext.ListImages, "list-images", false, "If true, will show list of images used for runnning tests.")
+	flags.BoolVar(&TestContext.ListConformanceTests, "list-conformance-tests", false, "If true, will show list of conformance tests.")
 	flags.StringVar(&TestContext.KubectlPath, "kubectl-path", "kubectl", "The kubectl binary to use. For development, you might use 'cluster/kubectl.sh' here.")
 
 	flags.StringVar(&TestContext.ProgressReportURL, "progress-report-url", "", "The URL to POST progress updates to as the suite runs to assist in aiding integrations. If empty, no messages sent.")
 	flags.StringVar(&TestContext.SpecSummaryOutput, "spec-dump", "", "The file to dump all ginkgo.SpecSummary to after tests run. If empty, no objects are saved/printed.")
+	flags.StringVar(&TestContext.DockerConfigFile, "docker-config-file", "", "A file that contains credentials which can be used to pull images from certain private registries, needed for a test.")
 }
 
 // RegisterClusterFlags registers flags specific to the cluster e2e test suite.
@@ -320,6 +330,7 @@ func RegisterClusterFlags(flags *flag.FlagSet) {
 	flags.StringVar(&TestContext.Prefix, "prefix", "e2e", "A prefix to be added to cloud resources created during testing.")
 	flags.StringVar(&TestContext.MasterOSDistro, "master-os-distro", "debian", "The OS distribution of cluster master (debian, ubuntu, gci, coreos, or custom).")
 	flags.StringVar(&TestContext.NodeOSDistro, "node-os-distro", "debian", "The OS distribution of cluster VM instances (debian, ubuntu, gci, coreos, or custom).")
+	flags.StringVar(&TestContext.NodeOSArch, "node-os-arch", "amd64", "The OS architecture of cluster VM instances (amd64, arm64, or custom).")
 	flags.StringVar(&TestContext.ClusterDNSDomain, "dns-domain", "cluster.local", "The DNS Domain of the cluster.")
 
 	// TODO: Flags per provider?  Rename gce-project/gce-zone?
@@ -396,6 +407,21 @@ func createKubeConfig(clientCfg *restclient.Config) *clientcmdapi.Config {
 	return configCmd
 }
 
+// GenerateSecureToken returns a string of length tokenLen, consisting
+// of random bytes encoded as base64 for use as a Bearer Token during
+// communication with an APIServer
+func GenerateSecureToken(tokenLen int) (string, error) {
+	// Number of bytes to be tokenLen when base64 encoded.
+	tokenSize := math.Ceil(float64(tokenLen) * 6 / 8)
+	rawToken := make([]byte, int(tokenSize))
+	if _, err := rand.Read(rawToken); err != nil {
+		return "", err
+	}
+	encoded := base64.RawURLEncoding.EncodeToString(rawToken)
+	token := encoded[:tokenLen]
+	return token, nil
+}
+
 // AfterReadingAllFlags makes changes to the context after all flags
 // have been read.
 func AfterReadingAllFlags(t *TestContextType) {
@@ -415,6 +441,14 @@ func AfterReadingAllFlags(t *TestContextType) {
 			t.Host = defaultHost
 		}
 	}
+	if len(t.BearerToken) == 0 {
+		var err error
+		t.BearerToken, err = GenerateSecureToken(16)
+		if err != nil {
+			klog.Fatalf("Failed to generate bearer token: %v", err)
+		}
+	}
+
 	// Allow 1% of nodes to be unready (statistically) - relevant for large clusters.
 	if t.AllowedNotReadyNodes == 0 {
 		t.AllowedNotReadyNodes = t.CloudConfig.NumNodes / 100

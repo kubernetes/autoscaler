@@ -29,9 +29,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const createPacketDeviceResponsePool2 = ``
+const deletePacketDeviceResponsePool2 = ``
+
+const createPacketDeviceResponsePool3 = ``
+const deletePacketDeviceResponsePool3 = ``
+
 func TestIncreaseDecreaseSize(t *testing.T) {
 	var m *packetManagerRest
-	server := NewHttpServerMock()
+	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 	assert.Equal(t, true, true)
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
@@ -40,51 +46,108 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	} else {
 		// Set up a mock Packet API
 		m = newTestPacketManagerRest(t, server.URL)
-		server.On("handle", "/projects/"+m.projectID+"/devices").Return(listPacketDevicesResponse).Times(4)
-		server.On("handle", "/projects/"+m.projectID+"/devices").Return(listPacketDevicesResponseAfterCreate).Times(2)
-		server.On("handle", "/projects/"+m.projectID+"/devices").Return(listPacketDevicesResponse)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool3).Times(1)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(2)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool2).Times(1)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool2).Times(3)
+		server.On("handle", "/devices/0f5609af-1c27-451b-8edd-a1283f2c9440").Return("application/json", deletePacketDeviceResponsePool2).Times(1)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(3)
+		server.On("handle", "/devices/8fa90049-e715-4794-ba31-81c1c78cee84").Return("application/json", deletePacketDeviceResponsePool3).Times(1)
+		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
 	}
 	clusterUpdateLock := sync.Mutex{}
-	ng := &packetNodeGroup{
+	ngPool2 := &packetNodeGroup{
 		packetManager:       m,
-		id:                  "pool1",
+		id:                  "pool2",
 		clusterUpdateMutex:  &clusterUpdateLock,
-		minSize:             1,
+		minSize:             0,
 		maxSize:             10,
 		targetSize:          new(int),
 		waitTimeStep:        30 * time.Second,
 		deleteBatchingDelay: 2 * time.Second,
 	}
 
-	n1, err := ng.Nodes()
-	assert.NoError(t, err)
-	assert.Equal(t, int(1), len(n1))
+	ngPool3 := &packetNodeGroup{
+		packetManager:       m,
+		id:                  "pool3",
+		clusterUpdateMutex:  &clusterUpdateLock,
+		minSize:             0,
+		maxSize:             10,
+		targetSize:          new(int),
+		waitTimeStep:        30 * time.Second,
+		deleteBatchingDelay: 2 * time.Second,
+	}
 
-	// Try to increase pool with negative size, this should return an error
-	err = ng.IncreaseSize(-1)
+	n1Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
+	assert.NoError(t, err)
+	assert.Equal(t, int(0), len(n1Pool2))
+
+	n1Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
+	assert.NoError(t, err)
+	assert.Equal(t, int(1), len(n1Pool3))
+
+	existingNodesPool2 := make(map[string]bool)
+	existingNodesPool3 := make(map[string]bool)
+
+	for _, node := range n1Pool2 {
+		existingNodesPool2[node] = true
+	}
+
+	for _, node := range n1Pool3 {
+		existingNodesPool3[node] = true
+	}
+
+	// Try to increase pool3 with negative size, this should return an error
+	err = ngPool3.IncreaseSize(-1)
 	assert.Error(t, err)
 
-	// Now try to increase the pool size by 2, that should work
-	err = ng.IncreaseSize(2)
+	// Now try to increase the pool3 size by 1, that should work
+	err = ngPool3.IncreaseSize(1)
 	assert.NoError(t, err)
 
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
 		// If testing with actual API give it some time until the nodes bootstrap
 		time.Sleep(420 * time.Second)
 	}
-	n2, err := ng.packetManager.getNodeNames(ng.id)
+
+	n2Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
 	assert.NoError(t, err)
-	// Assert that the nodepool size is now 3
-	assert.Equal(t, int(3), len(n2))
+	// Assert that the nodepool3 size is now 2
+	assert.Equal(t, int(2), len(n2Pool3))
+
+	// Now try to increase the pool2 size by 1, that should work
+	err = ngPool2.IncreaseSize(1)
+	assert.NoError(t, err)
+
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+		// If testing with actual API give it some time until the nodes bootstrap
+		time.Sleep(420 * time.Second)
+	}
+
+	n2Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
+	assert.NoError(t, err)
+	// Assert that the nodepool2 size is now 1
+	assert.Equal(t, int(1), len(n2Pool2))
 
 	// Let's try to delete the new nodes
-	nodes := []*apiv1.Node{}
-	for _, node := range n2 {
-		if node != "k8s-worker-1" {
-			nodes = append(nodes, BuildTestNode(node, 1000, 1000))
+	nodesPool2 := []*apiv1.Node{}
+	nodesPool3 := []*apiv1.Node{}
+	for _, node := range n2Pool2 {
+		if _, ok := existingNodesPool2[node]; !ok {
+			nodesPool2 = append(nodesPool2, BuildTestNode(node, 1000, 1000))
 		}
 	}
-	err = ng.DeleteNodes(nodes)
+	for _, node := range n2Pool3 {
+		if _, ok := existingNodesPool3[node]; !ok {
+			nodesPool3 = append(nodesPool3, BuildTestNode(node, 1000, 1000))
+		}
+	}
+
+	err = ngPool2.DeleteNodes(nodesPool2)
+	assert.NoError(t, err)
+
+	err = ngPool3.DeleteNodes(nodesPool3)
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Packet API
@@ -92,9 +155,14 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		time.Sleep(10 * time.Second)
 	}
 
-	// Make sure that there were no errors and the nodepool size is once again 1
-	n3, err := ng.Nodes()
+	// Make sure that there were no errors and the nodepool2 size is once again 0
+	n3Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
 	assert.NoError(t, err)
-	assert.Equal(t, int(1), len(n3))
+	assert.Equal(t, int(0), len(n3Pool2))
+
+	// Make sure that there were no errors and the nodepool3 size is once again 1
+	n3Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
+	assert.NoError(t, err)
+	assert.Equal(t, int(1), len(n3Pool3))
 	mock.AssertExpectationsForObjects(t, server)
 }

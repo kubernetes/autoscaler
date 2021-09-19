@@ -18,26 +18,154 @@ package packet
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"text/template"
 	"time"
 
 	"gopkg.in/gcfg.v1"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type packetManagerRest struct {
+const (
+	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
+	expectedAPIContentTypePrefix = "application/json"
+	packetPrefix                 = "packet://"
+	equinixMetalPrefix           = "equinixmetal://"
+)
+
+type instanceType struct {
+	InstanceName string
+	CPU          int64
+	MemoryMb     int64
+	GPU          int64
+}
+
+// InstanceTypes is a map of packet resources
+var InstanceTypes = map[string]*instanceType{
+	"c1.large.arm": {
+		InstanceName: "c1.large.arm",
+		CPU:          96,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c1.small.x86": {
+		InstanceName: "c1.small.x86",
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"c1.xlarge.x86": {
+		InstanceName: "c1.xlarge.x86",
+		CPU:          16,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c2.large.arm": {
+		InstanceName: "c2.large.arm",
+		CPU:          32,
+		MemoryMb:     131072,
+		GPU:          0,
+	},
+	"c2.medium.x86": {
+		InstanceName: "c2.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.medium.x86": {
+		InstanceName: "c3.medium.x86",
+		CPU:          24,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"c3.small.x86": {
+		InstanceName: "c3.small.x86",
+		CPU:          8,
+		MemoryMb:     32768,
+		GPU:          1,
+	},
+	"g2.large.x86": {
+		InstanceName: "g2.large.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"m1.xlarge.x86": {
+		InstanceName: "m1.xlarge.x86",
+		CPU:          24,
+		MemoryMb:     262144,
+		GPU:          0,
+	},
+	"m2.xlarge.x86": {
+		InstanceName: "m2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"n2.xlarge.x86": {
+		InstanceName: "n2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"s1.large.x86": {
+		InstanceName: "s1.large.x86",
+		CPU:          8,
+		MemoryMb:     65536,
+		GPU:          0,
+	},
+	"s3.xlarge.x86": {
+		InstanceName: "s3.xlarge.x86",
+		CPU:          24,
+		MemoryMb:     196608,
+		GPU:          0,
+	},
+	"t1.small.x86": {
+		InstanceName: "t1.small.x86",
+		CPU:          4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"t3.small.x86": {
+		InstanceName: "t3.small.x86",
+		CPU:          4,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"x1.small.x86": {
+		InstanceName: "x1.small.x86",
+		CPU:          4,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"x2.xlarge.x86": {
+		InstanceName: "x2.xlarge.x86",
+		CPU:          28,
+		MemoryMb:     393216,
+		GPU:          1,
+	},
+}
+
+type packetManagerNodePool struct {
 	baseURL           string
 	clusterName       string
 	projectID         string
@@ -52,8 +180,13 @@ type packetManagerRest struct {
 	waitTimeStep      time.Duration
 }
 
-// ConfigGlobal options only include the project-id for now
-type ConfigGlobal struct {
+type packetManagerRest struct {
+	authToken              string
+	packetManagerNodePools map[string]*packetManagerNodePool
+}
+
+// ConfigNodepool options only include the project-id for now
+type ConfigNodepool struct {
 	ClusterName       string `gcfg:"cluster-name"`
 	ProjectID         string `gcfg:"project-id"`
 	APIServerEndpoint string `gcfg:"api-server-endpoint"`
@@ -68,7 +201,8 @@ type ConfigGlobal struct {
 
 // ConfigFile is used to read and store information from the cloud configuration file
 type ConfigFile struct {
-	Global ConfigGlobal `gcfg:"global"`
+	DefaultNodegroupdef ConfigNodepool             `gcfg:"global"`
+	Nodegroupdef        map[string]*ConfigNodepool `gcfg:"nodegroupdef"`
 }
 
 // Device represents a Packet device
@@ -113,6 +247,7 @@ type CloudInitTemplateData struct {
 	BootstrapTokenID     string
 	BootstrapTokenSecret string
 	APIServerEndpoint    string
+	NodeGroup            string
 }
 
 // HostnameTemplateData represents the template variables used to construct host names for new nodes
@@ -120,6 +255,19 @@ type HostnameTemplateData struct {
 	ClusterName string
 	NodeGroup   string
 	RandString8 string
+}
+
+// ErrorResponse is the http response used on errors
+type ErrorResponse struct {
+	Response    *http.Response
+	Errors      []string `json:"errors"`
+	SingleError string   `json:"error"`
+}
+
+// Error implements the error interface
+func (r *ErrorResponse) Error() string {
+	return fmt.Sprintf("%v %v: %d %v %v",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, strings.Join(r.Errors, ", "), r.SingleError)
 }
 
 // Find returns the smallest index i at which x == a[i],
@@ -146,7 +294,12 @@ func Contains(a []string, x string) bool {
 // createPacketManagerRest sets up the client and returns
 // an packetManagerRest.
 func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*packetManagerRest, error) {
-	var cfg ConfigFile
+	// Initialize ConfigFile instance
+	cfg := ConfigFile{
+		DefaultNodegroupdef: ConfigNodepool{},
+		Nodegroupdef:        map[string]*ConfigNodepool{},
+	}
+
 	if configReader != nil {
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			klog.Errorf("Couldn't read config: %v", err)
@@ -154,63 +307,164 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		}
 	}
 
-	if opts.ClusterName == "" && cfg.Global.ClusterName == "" {
-		klog.Fatalf("The cluster-name parameter must be set")
-	} else if opts.ClusterName != "" && cfg.Global.ClusterName == "" {
-		cfg.Global.ClusterName = opts.ClusterName
+	var manager packetManagerRest
+	manager.packetManagerNodePools = make(map[string]*packetManagerNodePool)
+
+	if _, ok := cfg.Nodegroupdef["default"]; !ok {
+		cfg.Nodegroupdef["default"] = &cfg.DefaultNodegroupdef
 	}
 
-	manager := packetManagerRest{
-		baseURL:           "https://api.packet.net",
-		clusterName:       cfg.Global.ClusterName,
-		projectID:         cfg.Global.ProjectID,
-		apiServerEndpoint: cfg.Global.APIServerEndpoint,
-		facility:          cfg.Global.Facility,
-		plan:              cfg.Global.Plan,
-		os:                cfg.Global.OS,
-		billing:           cfg.Global.Billing,
-		cloudinit:         cfg.Global.CloudInit,
-		reservation:       cfg.Global.Reservation,
-		hostnamePattern:   cfg.Global.HostnamePattern,
+	if *cfg.Nodegroupdef["default"] == (ConfigNodepool{}) {
+		klog.Fatalf("No \"default\" or [Global] nodepool definition was found")
 	}
+
+	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
+	if len(packetAuthToken) == 0 {
+		klog.Fatalf("PACKET_AUTH_TOKEN is required and missing")
+	}
+
+	manager.authToken = packetAuthToken
+
+	for nodepool := range cfg.Nodegroupdef {
+		if opts.ClusterName == "" && cfg.Nodegroupdef[nodepool].ClusterName == "" {
+			klog.Fatalf("The cluster-name parameter must be set")
+		} else if opts.ClusterName != "" && cfg.Nodegroupdef[nodepool].ClusterName == "" {
+			cfg.Nodegroupdef[nodepool].ClusterName = opts.ClusterName
+		}
+
+		manager.packetManagerNodePools[nodepool] = &packetManagerNodePool{
+			baseURL:           "https://api.packet.net",
+			clusterName:       cfg.Nodegroupdef[nodepool].ClusterName,
+			projectID:         cfg.Nodegroupdef["default"].ProjectID,
+			apiServerEndpoint: cfg.Nodegroupdef["default"].APIServerEndpoint,
+			facility:          cfg.Nodegroupdef[nodepool].Facility,
+			plan:              cfg.Nodegroupdef[nodepool].Plan,
+			os:                cfg.Nodegroupdef[nodepool].OS,
+			billing:           cfg.Nodegroupdef[nodepool].Billing,
+			cloudinit:         cfg.Nodegroupdef[nodepool].CloudInit,
+			reservation:       cfg.Nodegroupdef[nodepool].Reservation,
+			hostnamePattern:   cfg.Nodegroupdef[nodepool].HostnamePattern,
+		}
+	}
+
 	return &manager, nil
 }
 
-func (mgr *packetManagerRest) listPacketDevices() (*Devices, error) {
-	var jsonStr = []byte(``)
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	url := mgr.baseURL + "/projects/" + mgr.projectID + "/devices"
-	req, _ := http.NewRequest("GET", url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("X-Auth-Token", packetAuthToken)
+func (mgr *packetManagerRest) request(ctx context.Context, method, url string, jsonData []byte) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("X-Auth-Token", mgr.authToken)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", userAgent)
+
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
-		// klog.Fatalf("Error listing nodes: %v", err)
+		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
-	defer resp.Body.Close()
 
-	klog.Infof("response Status: %s", resp.Status)
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			klog.Errorf("failed to close response body: %v", err)
+		}
+	}()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, expectedAPIContentTypePrefix) {
+		errorResponse := &ErrorResponse{Response: resp}
+		errorResponse.SingleError = fmt.Sprintf("Unexpected Content-Type: %s with status: %s", ct, resp.Status)
+		return nil, errorResponse
+	}
+
+	// If the response is good return early
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return body, nil
+	}
+
+	errorResponse := &ErrorResponse{Response: resp}
+
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, errorResponse); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
+		}
+	}
+
+	return nil, errorResponse
+}
+
+func (mgr *packetManagerRest) listPacketDevices(ctx context.Context) (*Devices, error) {
+	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("projects", mgr.getNodePoolDefinition("default").projectID, "devices")
+	klog.Infof("url: %v", url)
+
+	result, err := mgr.request(ctx, "GET", url, []byte(``))
+	if err != nil {
+		return nil, err
+	}
 
 	var devices Devices
-
-	if "200 OK" == resp.Status {
-		body, _ := ioutil.ReadAll(resp.Body)
-		json.Unmarshal([]byte(body), &devices)
-		return &devices, nil
+	if err := json.Unmarshal(result, &devices); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
-	return &devices, fmt.Errorf(resp.Status, resp.Body)
+	return &devices, nil
+}
+
+func (mgr *packetManagerRest) getPacketDevice(ctx context.Context, id string) (*Device, error) {
+	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("devices", id)
+
+	result, err := mgr.request(ctx, "GET", url, []byte(``))
+	if err != nil {
+		return nil, err
+	}
+
+	var device Device
+	if err := json.Unmarshal(result, &device); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
+	}
+
+	return &device, nil
+}
+
+func (mgr *packetManagerRest) NodeGroupForNode(labels map[string]string, nodeId string) (string, error) {
+	if nodegroup, ok := labels["pool"]; ok {
+		return nodegroup, nil
+	}
+
+	trimmedNodeId := strings.TrimPrefix(nodeId, packetPrefix)
+	trimmedNodeId = strings.TrimPrefix(trimmedNodeId, equinixMetalPrefix)
+
+	device, err := mgr.getPacketDevice(context.TODO(), trimmedNodeId)
+	if err != nil {
+		return "", fmt.Errorf("Could not find group for node: %s %s", nodeId, err)
+	}
+	for _, t := range device.Tags {
+		if strings.HasPrefix(t, "k8s-nodepool-") {
+			return strings.TrimPrefix(t, "k8s-nodepool-"), nil
+		}
+	}
+	return "", fmt.Errorf("Could not find group for node: %s", nodeId)
 }
 
 // nodeGroupSize gets the current size of the nodegroup as reported by packet tags.
 func (mgr *packetManagerRest) nodeGroupSize(nodegroup string) (int, error) {
-	devices, _ := mgr.listPacketDevices()
+	devices, err := mgr.listPacketDevices(context.TODO())
+	if err != nil {
+		return 0, fmt.Errorf("failed to list devices: %w", err)
+	}
+
 	// Get the count of devices tagged as nodegroup members
 	count := 0
 	for _, d := range devices.Devices {
-		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+		if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 			count++
 		}
 	}
@@ -229,186 +483,307 @@ func randString8() string {
 	return string(b)
 }
 
-func (mgr *packetManagerRest) createNode(cloudinit, nodegroup string) {
+func (mgr *packetManagerRest) createNode(ctx context.Context, cloudinit, nodegroup string) error {
 	udvars := CloudInitTemplateData{
 		BootstrapTokenID:     os.Getenv("BOOTSTRAP_TOKEN_ID"),
 		BootstrapTokenSecret: os.Getenv("BOOTSTRAP_TOKEN_SECRET"),
-		APIServerEndpoint:    mgr.apiServerEndpoint,
+		APIServerEndpoint:    mgr.getNodePoolDefinition(nodegroup).apiServerEndpoint,
+		NodeGroup:            nodegroup,
 	}
-	ud := renderTemplate(cloudinit, udvars)
+
+	ud, err := renderTemplate(cloudinit, udvars)
+	if err != nil {
+		return fmt.Errorf("failed to create userdata from template: %w", err)
+	}
+
 	hnvars := HostnameTemplateData{
-		ClusterName: mgr.clusterName,
+		ClusterName: mgr.getNodePoolDefinition(nodegroup).clusterName,
 		NodeGroup:   nodegroup,
 		RandString8: randString8(),
 	}
-	hn := renderTemplate(mgr.hostnamePattern, hnvars)
-
-	reservation := ""
-	if mgr.reservation == "require" || mgr.reservation == "prefer" {
-		reservation = "next-available"
-	}
-
-	cr := DeviceCreateRequest{
-		Hostname:              hn,
-		Facility:              []string{mgr.facility},
-		Plan:                  mgr.plan,
-		OS:                    mgr.os,
-		ProjectID:             mgr.projectID,
-		BillingCycle:          mgr.billing,
-		UserData:              ud,
-		Tags:                  []string{"k8s-cluster-" + mgr.clusterName, "k8s-nodepool-" + nodegroup},
-		HardwareReservationID: reservation,
-	}
-
-	resp, err := createDevice(&cr, mgr.baseURL)
-	if err != nil || resp.StatusCode > 299 {
-		// If reservation is preferred but not available, retry provisioning as on-demand
-		if reservation != "" && mgr.reservation == "prefer" {
-			klog.Infof("Reservation preferred but not available. Provisioning on-demand node.")
-			cr.HardwareReservationID = ""
-			resp, err = createDevice(&cr, mgr.baseURL)
-			if err != nil {
-				klog.Errorf("Failed to create device using Packet API: %v", err)
-				panic(err)
-			} else if resp.StatusCode > 299 {
-				klog.Errorf("Failed to create device using Packet API: %v", resp)
-				panic(resp)
-			}
-		} else if err != nil {
-			klog.Errorf("Failed to create device using Packet API: %v", err)
-			panic(err)
-		} else if resp.StatusCode > 299 {
-			klog.Errorf("Failed to create device using Packet API: %v", resp)
-			panic(resp)
-		}
-	}
-	defer resp.Body.Close()
-
-	rbody, err := ioutil.ReadAll(resp.Body)
-	klog.V(3).Infof("Response body: %v", string(rbody))
+	hn, err := renderTemplate(mgr.getNodePoolDefinition(nodegroup).hostnamePattern, hnvars)
 	if err != nil {
-		klog.Errorf("Failed to read response body: %v", err)
-	} else {
-		klog.Infof("Created new node on Packet.")
+		return fmt.Errorf("failed to create hostname from template: %w", err)
 	}
-	if cr.HardwareReservationID != "" {
-		klog.Infof("Reservation %v", cr.HardwareReservationID)
+
+	if err := mgr.createDevice(ctx, hn, ud, nodegroup); err != nil {
+		return fmt.Errorf("failed to create device %q in node group %q: %w", hn, nodegroup, err)
 	}
+
+	klog.Infof("Created new node on Packet.")
+
+	return nil
 }
 
 // createNodes provisions new nodes on packet and bootstraps them in the cluster.
 func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
-	cloudinit, err := base64.StdEncoding.DecodeString(mgr.cloudinit)
+
+	cloudinit, err := base64.StdEncoding.DecodeString(mgr.getNodePoolDefinition(nodegroup).cloudinit)
 	if err != nil {
-		log.Fatal(err)
-		return fmt.Errorf("Could not decode cloudinit script: %v", err)
+		err = fmt.Errorf("could not decode cloudinit script: %w", err)
+		klog.Fatal(err)
+		return err
 	}
 
+	errList := make([]error, 0, nodes)
 	for i := 0; i < nodes; i++ {
-		mgr.createNode(string(cloudinit), nodegroup)
+		errList = append(errList, mgr.createNode(context.TODO(), string(cloudinit), nodegroup))
+	}
+
+	return utilerrors.NewAggregate(errList)
+}
+
+func (mgr *packetManagerRest) createDevice(ctx context.Context, hostname, userData, nodegroup string) error {
+	reservation := ""
+	if mgr.getNodePoolDefinition(nodegroup).reservation == "require" || mgr.getNodePoolDefinition(nodegroup).reservation == "prefer" {
+		reservation = "next-available"
+	}
+
+	cr := &DeviceCreateRequest{
+		Hostname:              hostname,
+		Facility:              []string{mgr.getNodePoolDefinition(nodegroup).facility},
+		Plan:                  mgr.getNodePoolDefinition(nodegroup).plan,
+		OS:                    mgr.getNodePoolDefinition(nodegroup).os,
+		ProjectID:             mgr.getNodePoolDefinition(nodegroup).projectID,
+		BillingCycle:          mgr.getNodePoolDefinition(nodegroup).billing,
+		UserData:              userData,
+		Tags:                  []string{"k8s-cluster-" + mgr.getNodePoolDefinition(nodegroup).clusterName, "k8s-nodepool-" + nodegroup},
+		HardwareReservationID: reservation,
+	}
+
+	if err := mgr.createDeviceRequest(ctx, cr, nodegroup); err != nil {
+		// If reservation is preferred but not available, retry provisioning as on-demand
+		if reservation != "" && mgr.getNodePoolDefinition(nodegroup).reservation == "prefer" && isNoAvailableReservationsError(err) {
+			klog.Infof("Reservation preferred but not available. Provisioning on-demand node.")
+
+			cr.HardwareReservationID = ""
+			return mgr.createDeviceRequest(ctx, cr, nodegroup)
+		}
+
+		return fmt.Errorf("failed to create device: %w", err)
 	}
 
 	return nil
 }
 
-func createDevice(cr *DeviceCreateRequest, baseURL string) (*http.Response, error) {
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	url := baseURL + "/projects/" + cr.ProjectID + "/devices"
-	jsonValue, _ := json.Marshal(cr)
+// TODO: find a better way than parsing the error messages for this.
+func isNoAvailableReservationsError(err error) bool {
+	return strings.Contains(err.Error(), " no available hardware reservations ")
+}
+
+func (mgr *packetManagerRest) createDeviceRequest(ctx context.Context, cr *DeviceCreateRequest, nodegroup string) error {
+	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("projects", cr.ProjectID, "devices")
+
+	jsonValue, err := json.Marshal(cr)
+	if err != nil {
+		return fmt.Errorf("failed to marshal create request: %w", err)
+	}
+
 	klog.Infof("Creating new node")
 	klog.V(3).Infof("POST %s \n%v", url, string(jsonValue))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-	if err != nil {
-		klog.Errorf("Failed to create device: %v", err)
-		panic(err)
+
+	if _, err := mgr.request(ctx, "POST", url, jsonValue); err != nil {
+		return err
 	}
-	req.Header.Set("X-Auth-Token", packetAuthToken)
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	return resp, err
+
+	return nil
 }
 
 // getNodes should return ProviderIDs for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
 	// Get node ProviderIDs by getting device IDs from Packet
-	devices, err := mgr.listPacketDevices()
+	devices, err := mgr.listPacketDevices(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf("failed to list devices: %w", err)
+	}
+
 	nodes := []string{}
+
+	// This bit of code along with the switch statement, checks if the CCM installed on the cluster is
+	// `packet-ccm` or `cloud-provider-equinix-metal`. The reason its important to check because depending
+	// on the CCM installed, the prefix in providerID of K8s Node spec differs from either `packet://` or
+	// `equinixmetal://`. This is now needed as `packet-ccm` is now deprecated and renamed in favor of
+	// `cloud-provider-equinix-metal`.
+	// This code checks if the INSTALLED_CCM env var is set or not. If set to `cloud-provider-equinix-metal`,
+	// the prefix is set to `equinixmetal://` and any other case the prefix is `packet://`.
+	// At a later point in time, there would be a need to make `equinixmetal://` prefix as the default or do away
+	// with `packet://` prefix entirely. This should happen presumably when the packet code in autoscaler is
+	// renamed from packet to equinixmetal.
+	prefix := packetPrefix
+
+	switch installedCCM := os.Getenv("INSTALLED_CCM"); installedCCM {
+	case "packet-ccm":
+		prefix = packetPrefix
+	case "cloud-provider-equinix-metal":
+		prefix = equinixMetalPrefix
+	default:
+		klog.V(3).Info("Unrecognized value: expected INSTALLED_CCM to be either `packet-ccm` or `cloud-provider-equinix-metal`, using default: `packet-ccm`")
+	}
+
 	for _, d := range devices.Devices {
-		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
-			nodes = append(nodes, d.ID)
+		if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+			nodes = append(nodes, fmt.Sprintf("%s%s", prefix, d.ID))
 		}
 	}
-	return nodes, err
+
+	return nodes, nil
 }
 
 // getNodeNames should return Names for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *packetManagerRest) getNodeNames(nodegroup string) ([]string, error) {
-	devices, err := mgr.listPacketDevices()
+	devices, err := mgr.listPacketDevices(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf("failed to list devices: %w", err)
+	}
+
 	nodes := []string{}
+
 	for _, d := range devices.Devices {
-		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+		if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 			nodes = append(nodes, d.Hostname)
 		}
 	}
-	return nodes, err
+
+	return nodes, nil
+}
+
+func (mgr *packetManagerRest) deleteDevice(ctx context.Context, nodegroup, id string) error {
+	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("devices", id)
+
+	result, err := mgr.request(context.TODO(), "DELETE", url, []byte(""))
+	if err != nil {
+		return err
+	}
+
+	klog.Infof("Deleted device %s: %v", id, result)
+	return nil
+
 }
 
 // deleteNodes deletes nodes by passing a comma separated list of names or IPs
 func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
 	klog.Infof("Deleting nodes %v", nodes)
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	for _, n := range nodes {
-		klog.Infof("Node %s - %s - %s", n.Name, n.MachineID, n.IPs)
-		dl, _ := mgr.listPacketDevices()
-		klog.Infof("%d devices total", len(dl.Devices))
-		// Get the count of devices tagged as nodegroup
-		for _, d := range dl.Devices {
-			klog.Infof("Checking device %v", d)
-			if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
-				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
-				if d.Hostname == n.Name {
-					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
-					req, _ := http.NewRequest("DELETE", mgr.baseURL+"/devices/"+d.ID, bytes.NewBuffer([]byte("")))
-					req.Header.Set("X-Auth-Token", packetAuthToken)
-					req.Header.Set("Content-Type", "application/json")
 
-					client := &http.Client{}
-					resp, err := client.Do(req)
-					if err != nil {
-						klog.Fatalf("Error deleting node: %v", err)
-						panic(err)
-					}
-					defer resp.Body.Close()
-					body, _ := ioutil.ReadAll(resp.Body)
-					klog.Infof("Deleted device %s: %v", d.ID, body)
+	ctx := context.TODO()
+
+	errList := make([]error, 0, len(nodes))
+
+	devices, err := mgr.listPacketDevices(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to list devices: %w", err)
+	}
+	klog.Infof("%d devices total", len(devices.Devices))
+
+	for _, n := range nodes {
+		fakeNode := false
+
+		if n.Name == n.ProviderID {
+			klog.Infof("Fake Node: %s", n.Name)
+			fakeNode = true
+		} else {
+			klog.Infof("Node %s - %s - %s", n.Name, n.MachineID, n.IPs)
+		}
+
+		// Get the count of devices tagged as nodegroup
+		for _, d := range devices.Devices {
+			klog.Infof("Checking device %v", d)
+			if Contains(d.Tags, "k8s-cluster-"+mgr.getNodePoolDefinition(nodegroup).clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
+
+				trimmedName := strings.TrimPrefix(n.Name, packetPrefix)
+				trimmedName = strings.TrimPrefix(trimmedName, equinixMetalPrefix)
+
+				switch {
+				case d.Hostname == n.Name:
+					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
+					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
+				case fakeNode && trimmedName == d.ID:
+					klog.V(1).Infof("Fake Node %s", d.ID)
+					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
 				}
 			}
 		}
 	}
-	return nil
+
+	return utilerrors.NewAggregate(errList)
 }
 
-// templateNodeInfo returns a NodeInfo with a node template based on the VM flavor
-// that is used to created minions in a given node group.
+// BuildGenericLabels builds basic labels for Packet nodes
+func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
+	result := make(map[string]string)
+
+	//result[kubeletapis.LabelArch] = "amd64"
+	//result[kubeletapis.LabelOS] = "linux"
+	result[apiv1.LabelInstanceType] = instanceType
+	//result[apiv1.LabelZoneRegion] = ""
+	//result[apiv1.LabelZoneFailureDomain] = "0"
+	//result[apiv1.LabelHostname] = ""
+	result["pool"] = nodegroup
+
+	return result
+}
+
+// templateNodeInfo returns a NodeInfo with a node template based on the packet plan
+// that is used to create nodes in a given node group.
 func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-asg-%d", nodegroup, rand.Int63())
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+
+	packetPlan := InstanceTypes[mgr.getNodePoolDefinition(nodegroup).plan]
+	if packetPlan == nil {
+		return nil, fmt.Errorf("packet plan %q not supported", mgr.getNodePoolDefinition(nodegroup).plan)
+	}
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(packetPlan.CPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(packetPlan.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(packetPlan.MemoryMb*1024*1024, resource.DecimalSI)
+
+	node.Status.Allocatable = node.Status.Capacity
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	// GenericLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
+
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
+	nodeInfo.SetNode(&node)
+	return nodeInfo, nil
 }
 
-func renderTemplate(str string, vars interface{}) string {
-	tmpl, err := template.New("tmpl").Parse(str)
-
-	if err != nil {
-		panic(err)
+func (mgr *packetManagerRest) getNodePoolDefinition(nodegroup string) *packetManagerNodePool {
+	NodePoolDefinition, ok := mgr.packetManagerNodePools[nodegroup]
+	if !ok {
+		NodePoolDefinition, ok = mgr.packetManagerNodePools["default"]
+		if !ok {
+			klog.Fatalf("No default cloud-config was found")
+		}
+		klog.Infof("No cloud-config was found for %s, using default", nodegroup)
 	}
+
+	return NodePoolDefinition
+}
+
+func renderTemplate(str string, vars interface{}) (string, error) {
+	tmpl, err := template.New("tmpl").Parse(str)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template %q, %w", str, err)
+	}
+
 	var tmplBytes bytes.Buffer
 
-	err = tmpl.Execute(&tmplBytes, vars)
-	if err != nil {
-		panic(err)
+	if err := tmpl.Execute(&tmplBytes, vars); err != nil {
+		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
-	return tmplBytes.String()
+
+	return tmplBytes.String(), nil
 }

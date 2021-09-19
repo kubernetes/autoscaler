@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/klog/v2"
 
+	authenticationv1 "k8s.io/api/authentication/v1"
 	api "k8s.io/api/core/v1"
 	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,6 +43,7 @@ import (
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/csi/nodeinfomanager"
+	volumetypes "k8s.io/kubernetes/pkg/volume/util/types"
 )
 
 const (
@@ -59,17 +61,16 @@ const (
 )
 
 type csiPlugin struct {
-	host                   volume.VolumeHost
-	blockEnabled           bool
-	csiDriverLister        storagelisters.CSIDriverLister
-	volumeAttachmentLister storagelisters.VolumeAttachmentLister
+	host                      volume.VolumeHost
+	csiDriverLister           storagelisters.CSIDriverLister
+	serviceAccountTokenGetter func(namespace, name string, tr *authenticationv1.TokenRequest) (*authenticationv1.TokenRequest, error)
+	volumeAttachmentLister    storagelisters.VolumeAttachmentLister
 }
 
 // ProbeVolumePlugins returns implemented plugins
 func ProbeVolumePlugins() []volume.VolumePlugin {
 	p := &csiPlugin{
-		host:         nil,
-		blockEnabled: utilfeature.DefaultFeatureGate.Enabled(features.CSIBlockVolume),
+		host: nil,
 	}
 	return []volume.VolumePlugin{p}
 }
@@ -205,6 +206,10 @@ func (p *csiPlugin) Init(host volume.VolumeHost) error {
 			if p.csiDriverLister == nil {
 				klog.Error(log("CSIDriverLister not found on KubeletVolumeHost"))
 			}
+			p.serviceAccountTokenGetter = host.GetServiceAccountTokenFunc()
+			if p.serviceAccountTokenGetter == nil {
+				klog.Error(log("ServiceAccountTokenGetter not found on KubeletVolumeHost"))
+			}
 			// We don't run the volumeAttachmentLister in the kubelet context
 			p.volumeAttachmentLister = nil
 		}
@@ -234,8 +239,7 @@ func (p *csiPlugin) Init(host volume.VolumeHost) error {
 	// Initializing the label management channels
 	nim = nodeinfomanager.NewNodeInfoManager(host.GetNodeName(), host, migratedPlugins)
 
-	if utilfeature.DefaultFeatureGate.Enabled(features.CSINodeInfo) &&
-		utilfeature.DefaultFeatureGate.Enabled(features.CSIMigration) {
+	if utilfeature.DefaultFeatureGate.Enabled(features.CSIMigration) {
 		// This function prevents Kubelet from posting Ready status until CSINode
 		// is both installed and initialized
 		if err := initializeCSINode(host); err != nil {
@@ -283,7 +287,7 @@ func initializeCSINode(host volume.VolumeHost) error {
 			klog.V(4).Infof("Initializing migrated drivers on CSINode")
 			err := nim.InitializeCSINodeWithAnnotation()
 			if err != nil {
-				kvh.SetKubeletError(fmt.Errorf("Failed to initialize CSINode: %v", err))
+				kvh.SetKubeletError(fmt.Errorf("failed to initialize CSINode: %v", err))
 				klog.Errorf("Failed to initialize CSINode: %v", err)
 				return false, nil
 			}
@@ -334,8 +338,21 @@ func (p *csiPlugin) CanSupport(spec *volume.Spec) bool {
 	return spec.PersistentVolume != nil && spec.PersistentVolume.Spec.CSI != nil
 }
 
-func (p *csiPlugin) RequiresRemount() bool {
-	return false
+func (p *csiPlugin) RequiresRemount(spec *volume.Spec) bool {
+	if p.csiDriverLister == nil {
+		return false
+	}
+	driverName, err := GetCSIDriverName(spec)
+	if err != nil {
+		klog.V(5).Info(log("Failed to mark %q as republish required, err: %v", spec.Name(), err))
+		return false
+	}
+	csiDriver, err := p.csiDriverLister.Get(driverName)
+	if err != nil {
+		klog.V(5).Info(log("Failed to mark %q as republish required, err: %v", spec.Name(), err))
+		return false
+	}
+	return *csiDriver.Spec.RequiresRepublish
 }
 
 func (p *csiPlugin) NewMounter(
@@ -435,11 +452,23 @@ func (p *csiPlugin) NewMounter(
 	attachID := getAttachmentName(volumeHandle, driverName, node)
 	volData[volDataKey.attachmentID] = attachID
 
-	if err := saveVolumeData(dataDir, volDataFileName, volData); err != nil {
-		if removeErr := os.RemoveAll(dataDir); removeErr != nil {
-			klog.Error(log("failed to remove dir after error [%s]: %v", dataDir, removeErr))
+	err = saveVolumeData(dataDir, volDataFileName, volData)
+	defer func() {
+		// Only if there was an error and volume operation was considered
+		// finished, we should remove the directory.
+		if err != nil && volumetypes.IsOperationFinishedError(err) {
+			// attempt to cleanup volume mount dir.
+			if err = removeMountDir(p, dir); err != nil {
+				klog.Error(log("attacher.MountDevice failed to remove mount dir after error [%s]: %v", dir, err))
+			}
 		}
-		return nil, errors.New(log("failed to save volume info data: %v", err))
+	}()
+
+	if err != nil {
+		errorMsg := log("csi.NewMounter failed to save volume info data: %v", err)
+		klog.Error(errorMsg)
+
+		return nil, errors.New(errorMsg)
 	}
 
 	klog.V(4).Info(log("mounter created successfully"))
@@ -629,10 +658,6 @@ func (p *csiPlugin) GetDeviceMountRefs(deviceMountPath string) ([]string, error)
 var _ volume.BlockVolumePlugin = &csiPlugin{}
 
 func (p *csiPlugin) NewBlockVolumeMapper(spec *volume.Spec, podRef *api.Pod, opts volume.VolumeOptions) (volume.BlockVolumeMapper, error) {
-	if !p.blockEnabled {
-		return nil, errors.New("CSIBlockVolume feature not enabled")
-	}
-
 	pvSource, err := getCSISourceFromSpec(spec)
 	if err != nil {
 		return nil, err
@@ -657,6 +682,7 @@ func (p *csiPlugin) NewBlockVolumeMapper(spec *volume.Spec, podRef *api.Pod, opt
 		readOnly:   readOnly,
 		spec:       spec,
 		specName:   spec.Name(),
+		pod:        podRef,
 		podUID:     podRef.UID,
 	}
 	mapper.csiClientGetter.driverName = csiDriverName(pvSource.Driver)
@@ -669,6 +695,13 @@ func (p *csiPlugin) NewBlockVolumeMapper(spec *volume.Spec, podRef *api.Pod, opt
 	}
 	klog.V(4).Info(log("created path successfully [%s]", dataDir))
 
+	blockPath, err := mapper.GetGlobalMapPath(spec)
+	if err != nil {
+		return nil, errors.New(log("failed to get device path: %v", err))
+	}
+
+	mapper.MetricsProvider = NewMetricsCsi(pvSource.VolumeHandle, blockPath+"/"+string(podRef.UID), csiDriverName(pvSource.Driver))
+
 	// persist volume info data for teardown
 	node := string(p.host.GetNodeName())
 	attachID := getAttachmentName(pvSource.VolumeHandle, pvSource.Driver, node)
@@ -680,21 +713,27 @@ func (p *csiPlugin) NewBlockVolumeMapper(spec *volume.Spec, podRef *api.Pod, opt
 		volDataKey.attachmentID: attachID,
 	}
 
-	if err := saveVolumeData(dataDir, volDataFileName, volData); err != nil {
-		if removeErr := os.RemoveAll(dataDir); removeErr != nil {
-			klog.Error(log("failed to remove dir after error [%s]: %v", dataDir, removeErr))
+	err = saveVolumeData(dataDir, volDataFileName, volData)
+	defer func() {
+		// Only if there was an error and volume operation was considered
+		// finished, we should remove the directory.
+		if err != nil && volumetypes.IsOperationFinishedError(err) {
+			// attempt to cleanup volume mount dir.
+			if err = removeMountDir(p, dataDir); err != nil {
+				klog.Error(log("attacher.MountDevice failed to remove mount dir after error [%s]: %v", dataDir, err))
+			}
 		}
-		return nil, errors.New(log("failed to save volume info data: %v", err))
+	}()
+	if err != nil {
+		errorMsg := log("csi.NewBlockVolumeMapper failed to save volume info data: %v", err)
+		klog.Error(errorMsg)
+		return nil, errors.New(errorMsg)
 	}
 
 	return mapper, nil
 }
 
 func (p *csiPlugin) NewBlockVolumeUnmapper(volName string, podUID types.UID) (volume.BlockVolumeUnmapper, error) {
-	if !p.blockEnabled {
-		return nil, errors.New("CSIBlockVolume feature not enabled")
-	}
-
 	klog.V(4).Infof(log("setting up block unmapper for [Spec=%v, podUID=%v]", volName, podUID))
 	unmapper := &csiBlockMapper{
 		plugin:   p,
@@ -716,10 +755,6 @@ func (p *csiPlugin) NewBlockVolumeUnmapper(volName string, podUID types.UID) (vo
 }
 
 func (p *csiPlugin) ConstructBlockVolumeSpec(podUID types.UID, specVolName, mapPath string) (*volume.Spec, error) {
-	if !p.blockEnabled {
-		return nil, errors.New("CSIBlockVolume feature not enabled")
-	}
-
 	klog.V(4).Infof("plugin.ConstructBlockVolumeSpec [podUID=%s, specVolName=%s, path=%s]", string(podUID), specVolName, mapPath)
 
 	dataDir := getVolumeDeviceDataDir(specVolName, p.host)
@@ -837,7 +872,7 @@ func containsVolumeMode(modes []storage.VolumeLifecycleMode, mode storage.Volume
 // getVolumeLifecycleMode returns the mode for the specified spec: {persistent|ephemeral}.
 // 1) If mode cannot be determined, it will default to "persistent".
 // 2) If Mode cannot be resolved to either {persistent | ephemeral}, an error is returned
-// See https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/20190122-csi-inline-volumes.md
+// See https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/596-csi-inline-volumes/README.md
 func (p *csiPlugin) getVolumeLifecycleMode(spec *volume.Spec) (storage.VolumeLifecycleMode, error) {
 	// 1) if volume.Spec.Volume.CSI != nil -> mode is ephemeral
 	// 2) if volume.Spec.PersistentVolume.Spec.CSI != nil -> persistent
@@ -923,10 +958,38 @@ func (p *csiPlugin) newAttacherDetacher() (*csiAttacher, error) {
 	}
 
 	return &csiAttacher{
-		plugin:        p,
-		k8s:           k8s,
-		waitSleepTime: 1 * time.Second,
+		plugin:       p,
+		k8s:          k8s,
+		watchTimeout: csiTimeout,
 	}, nil
+}
+
+// podInfoEnabled  check CSIDriver enabled pod info flag
+func (p *csiPlugin) podInfoEnabled(driverName string) (bool, error) {
+	kletHost, ok := p.host.(volume.KubeletVolumeHost)
+	if ok {
+		kletHost.WaitForCacheSync()
+	}
+
+	if p.csiDriverLister == nil {
+		return false, fmt.Errorf("CSIDriverLister not found")
+	}
+
+	csiDriver, err := p.csiDriverLister.Get(driverName)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			klog.V(4).Infof(log("CSIDriver %q not found, not adding pod information", driverName))
+			return false, nil
+		}
+		return false, err
+	}
+
+	// if PodInfoOnMount is not set or false we do not set pod attributes
+	if csiDriver.Spec.PodInfoOnMount == nil || *csiDriver.Spec.PodInfoOnMount == false {
+		klog.V(4).Infof(log("CSIDriver %q does not require pod information", driverName))
+		return false, nil
+	}
+	return true, nil
 }
 
 func unregisterDriver(driverName string) error {

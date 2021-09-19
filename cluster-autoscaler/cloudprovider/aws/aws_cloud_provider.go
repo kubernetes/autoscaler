@@ -29,7 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -42,6 +42,7 @@ var (
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
+		"nvidia-tesla-t4":   {},
 	}
 )
 
@@ -215,6 +216,12 @@ func (ng *AwsNodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (ng *AwsNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // IncreaseSize increases Asg size
 func (ng *AwsNodeGroup) IncreaseSize(delta int) error {
 	if delta <= 0 {
@@ -386,5 +393,6 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to create AWS cloud provider: %v", err)
 	}
+	RegisterMetrics()
 	return provider
 }

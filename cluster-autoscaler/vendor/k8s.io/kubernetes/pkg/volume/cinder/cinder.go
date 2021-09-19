@@ -26,8 +26,8 @@ import (
 	"path/filepath"
 
 	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
 	"k8s.io/utils/keymutex"
-	"k8s.io/utils/mount"
 	utilstrings "k8s.io/utils/strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -110,7 +110,7 @@ func (plugin *cinderPlugin) CanSupport(spec *volume.Spec) bool {
 	return (spec.Volume != nil && spec.Volume.Cinder != nil) || (spec.PersistentVolume != nil && spec.PersistentVolume.Spec.Cinder != nil)
 }
 
-func (plugin *cinderPlugin) RequiresRemount() bool {
+func (plugin *cinderPlugin) RequiresRemount(spec *volume.Spec) bool {
 	return false
 }
 
@@ -135,11 +135,11 @@ func (plugin *cinderPlugin) GetVolumeLimits() (map[string]int64, error) {
 	// default values from here will mean, no one can
 	// override them.
 	if cloud == nil {
-		return nil, fmt.Errorf("No cloudprovider present")
+		return nil, fmt.Errorf("no cloudprovider present")
 	}
 
 	if cloud.ProviderName() != openstack.ProviderName {
-		return nil, fmt.Errorf("Expected Openstack cloud, found %s", cloud.ProviderName())
+		return nil, fmt.Errorf("expected Openstack cloud, found %s", cloud.ProviderName())
 	}
 
 	openstackCloud, ok := cloud.(*openstack.OpenStack)
@@ -418,7 +418,7 @@ func (b *cinderVolumeMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs
 	mountOptions := util.JoinMountOptions(options, b.mountOptions)
 	// Perform a bind mount to the full path to allow duplicate mounts of the same PD.
 	klog.V(4).Infof("Attempting to mount cinder volume %s to %s with options %v", b.pdName, dir, mountOptions)
-	err = b.mounter.Mount(globalPDPath, dir, "", options)
+	err = b.mounter.MountSensitiveWithoutSystemd(globalPDPath, dir, "", options, nil)
 	if err != nil {
 		klog.V(4).Infof("Mount failed: %v", err)
 		notmnt, mntErr := b.mounter.IsLikelyNotMountPoint(dir)
@@ -448,7 +448,7 @@ func (b *cinderVolumeMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs
 	}
 
 	if !b.readOnly {
-		volume.SetVolumeOwnership(b, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy)
+		volume.SetVolumeOwnership(b, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy, util.FSGroupCompleteHook(b.plugin, nil))
 	}
 	klog.V(3).Infof("Cinder volume %s mounted to %s", b.pdName, dir)
 
@@ -477,9 +477,9 @@ func (c *cinderVolumeUnmounter) TearDown() error {
 // resource was the last reference to that disk on the kubelet.
 func (c *cinderVolumeUnmounter) TearDownAt(dir string) error {
 	if pathExists, pathErr := mount.PathExists(dir); pathErr != nil {
-		return fmt.Errorf("Error checking if path exists: %v", pathErr)
+		return fmt.Errorf("error checking if path exists: %v", pathErr)
 	} else if !pathExists {
-		klog.Warningf("Warning: Unmount skipped because path does not exist: %v", dir)
+		klog.Warningf("Warning: Unmount skipped because path does not exist: %w", dir)
 		return nil
 	}
 
@@ -561,7 +561,7 @@ type cinderVolumeProvisioner struct {
 var _ volume.Provisioner = &cinderVolumeProvisioner{}
 
 func (c *cinderVolumeProvisioner) Provision(selectedNode *v1.Node, allowedTopologies []v1.TopologySelectorTerm) (*v1.PersistentVolume, error) {
-	if !util.AccessModesContainedInAll(c.plugin.GetAccessModes(), c.options.PVC.Spec.AccessModes) {
+	if !util.ContainsAllAccessModes(c.plugin.GetAccessModes(), c.options.PVC.Spec.AccessModes) {
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", c.options.PVC.Spec.AccessModes, c.plugin.GetAccessModes())
 	}
 

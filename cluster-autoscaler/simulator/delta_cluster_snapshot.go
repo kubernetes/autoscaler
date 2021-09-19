@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaClusterSnapshot is an implementation of ClusterSnapshot optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -143,9 +143,7 @@ func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
 
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
 	nodeInfo := schedulerframework.NewNodeInfo()
-	if err := nodeInfo.SetNode(node); err != nil {
-		return fmt.Errorf("cannot set node in NodeInfo: %v", err)
-	}
+	nodeInfo.SetNode(node)
 	return data.addNodeInfo(nodeInfo)
 }
 

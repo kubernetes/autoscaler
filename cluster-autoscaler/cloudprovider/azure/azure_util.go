@@ -81,6 +81,7 @@ const (
 	nodeLabelTagName     = "k8s.io_cluster-autoscaler_node-template_label_"
 	nodeTaintTagName     = "k8s.io_cluster-autoscaler_node-template_taint_"
 	nodeResourcesTagName = "k8s.io_cluster-autoscaler_node-template_resources_"
+	nodeOptionsTagName   = "k8s.io_cluster-autoscaler_node-template_autoscaling-options_"
 )
 
 var (

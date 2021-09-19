@@ -24,7 +24,13 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+)
+
+const (
+	// EnableDsEvictionKey is the name of annotation controlling whether a
+	// certain DaemonSet pod should be evicted.
+	EnableDsEvictionKey = "cluster-autoscaler.kubernetes.io/enable-ds-eviction"
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
@@ -65,4 +71,18 @@ func newPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
 	newPod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())
 	newPod.Spec.NodeName = nodeName
 	return newPod
+}
+
+// PodsToEvict returns a list of DaemonSet pods that should be evicted during scale down.
+func PodsToEvict(pods []*apiv1.Pod, evictByDefault bool) (evictable []*apiv1.Pod) {
+	for _, pod := range pods {
+		if a, ok := pod.Annotations[EnableDsEvictionKey]; ok {
+			if a == "true" {
+				evictable = append(evictable, pod)
+			}
+		} else if evictByDefault {
+			evictable = append(evictable, pod)
+		}
+	}
+	return
 }

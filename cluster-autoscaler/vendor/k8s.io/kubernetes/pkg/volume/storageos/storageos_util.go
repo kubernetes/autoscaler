@@ -19,6 +19,7 @@ package storageos
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,8 @@ import (
 	storageosapi "github.com/storageos/go-api"
 	storageostypes "github.com/storageos/go-api/types"
 	"k8s.io/klog/v2"
+	proxyutil "k8s.io/kubernetes/pkg/proxy/util"
+	"k8s.io/kubernetes/pkg/volume"
 	utilexec "k8s.io/utils/exec"
 )
 
@@ -76,12 +79,16 @@ type apiImplementer interface {
 
 // storageosUtil is the utility structure to interact with the StorageOS API.
 type storageosUtil struct {
-	api apiImplementer
+	api  apiImplementer
+	host volume.VolumeHost
 }
 
 func (u *storageosUtil) NewAPI(apiCfg *storageosAPIConfig) error {
 	if u.api != nil {
 		return nil
+	}
+	if u.host == nil {
+		return errors.New("host must not be nil")
 	}
 	if apiCfg == nil {
 		apiCfg = &storageosAPIConfig{
@@ -98,6 +105,9 @@ func (u *storageosUtil) NewAPI(apiCfg *storageosAPIConfig) error {
 		return err
 	}
 	api.SetAuth(apiCfg.apiUser, apiCfg.apiPass)
+	if err := api.SetDialContext(proxyutil.NewFilteredDialContext(api.GetDialContext(), nil, u.host.GetFilteredDialOptions())); err != nil {
+		return fmt.Errorf("failed to set DialContext in storageos client: %v", err)
+	}
 	u.api = api
 	return nil
 }
@@ -337,7 +347,7 @@ func pathDeviceType(path string) (deviceType, error) {
 // attachFileDevice takes a path to a regular file and makes it available as an
 // attached block device.
 func attachFileDevice(path string, exec utilexec.Interface) (string, error) {
-	blockDevicePath, err := getLoopDevice(path, exec)
+	blockDevicePath, err := getLoopDevice(path)
 	if err != nil && err.Error() != ErrDeviceNotFound {
 		return "", err
 	}
@@ -354,7 +364,7 @@ func attachFileDevice(path string, exec utilexec.Interface) (string, error) {
 }
 
 // Returns the full path to the loop device associated with the given path.
-func getLoopDevice(path string, exec utilexec.Interface) (string, error) {
+func getLoopDevice(path string) (string, error) {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return "", errors.New(ErrNotAvailable)
@@ -363,23 +373,18 @@ func getLoopDevice(path string, exec utilexec.Interface) (string, error) {
 		return "", fmt.Errorf("not attachable: %v", err)
 	}
 
-	args := []string{"-j", path}
-	out, err := exec.Command(losetupPath, args...).CombinedOutput()
-	if err != nil {
-		klog.V(2).Infof("Failed device discover command for path %s: %v", path, err)
-		return "", err
-	}
-	return parseLosetupOutputForDevice(out)
+	return getLoopDeviceFromSysfs(path)
 }
 
 func makeLoopDevice(path string, exec utilexec.Interface) (string, error) {
-	args := []string{"-f", "-P", "--show", path}
+	args := []string{"-f", "-P", path}
 	out, err := exec.Command(losetupPath, args...).CombinedOutput()
 	if err != nil {
-		klog.V(2).Infof("Failed device create command for path %s: %v", path, err)
+		klog.V(2).Infof("Failed device create command for path %s: %v %s", path, err, out)
 		return "", err
 	}
-	return parseLosetupOutputForDevice(out)
+
+	return getLoopDeviceFromSysfs(path)
 }
 
 func removeLoopDevice(device string, exec utilexec.Interface) error {
@@ -397,16 +402,35 @@ func isLoopDevice(device string) bool {
 	return strings.HasPrefix(device, "/dev/loop")
 }
 
-func parseLosetupOutputForDevice(output []byte) (string, error) {
-	if len(output) == 0 {
+// getLoopDeviceFromSysfs finds the backing file for a loop
+// device from sysfs via "/sys/block/loop*/loop/backing_file".
+func getLoopDeviceFromSysfs(path string) (string, error) {
+	// If the file is a symlink.
+	realPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
 		return "", errors.New(ErrDeviceNotFound)
 	}
 
-	// losetup returns device in the format:
-	// /dev/loop1: [0073]:148662 (/var/lib/storageos/volumes/308f14af-cf0a-08ff-c9c3-b48104318e05)
-	device := strings.TrimSpace(strings.SplitN(string(output), ":", 2)[0])
-	if len(device) == 0 {
+	devices, err := filepath.Glob("/sys/block/loop*")
+	if err != nil {
 		return "", errors.New(ErrDeviceNotFound)
 	}
-	return device, nil
+
+	for _, device := range devices {
+		backingFile := fmt.Sprintf("%s/loop/backing_file", device)
+
+		// The contents of this file is the absolute path of "path".
+		data, err := ioutil.ReadFile(backingFile)
+		if err != nil {
+			continue
+		}
+
+		// Return the first match.
+		backingFilePath := strings.TrimSpace(string(data))
+		if backingFilePath == path || backingFilePath == realPath {
+			return fmt.Sprintf("/dev/%s", filepath.Base(device)), nil
+		}
+	}
+
+	return "", errors.New(ErrDeviceNotFound)
 }

@@ -34,9 +34,12 @@ const (
 	dirMode         = "dir_mode"
 	gid             = "gid"
 	vers            = "vers"
+	actimeo         = "actimeo"
+	mfsymlinks      = "mfsymlinks"
 	defaultFileMode = "0777"
 	defaultDirMode  = "0777"
 	defaultVers     = "3.0"
+	defaultActimeo  = "30"
 )
 
 // Abstract interface to azure file operations.
@@ -51,12 +54,12 @@ func (s *azureSvc) GetAzureCredentials(host volume.VolumeHost, nameSpace, secret
 	var accountKey, accountName string
 	kubeClient := host.GetKubeClient()
 	if kubeClient == nil {
-		return "", "", fmt.Errorf("Cannot get kube client")
+		return "", "", fmt.Errorf("cannot get kube client")
 	}
 
 	keys, err := kubeClient.CoreV1().Secrets(nameSpace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
-		return "", "", fmt.Errorf("Couldn't get secret %v/%v", nameSpace, secretName)
+		return "", "", fmt.Errorf("couldn't get secret %v/%v", nameSpace, secretName)
 	}
 	for name, data := range keys.Data {
 		if name == "azurestorageaccountname" {
@@ -67,7 +70,7 @@ func (s *azureSvc) GetAzureCredentials(host volume.VolumeHost, nameSpace, secret
 		}
 	}
 	if accountName == "" || accountKey == "" {
-		return "", "", fmt.Errorf("Invalid %v/%v, couldn't extract azurestorageaccountname or azurestorageaccountkey", nameSpace, secretName)
+		return "", "", fmt.Errorf("invalid %v/%v, couldn't extract azurestorageaccountname or azurestorageaccountkey", nameSpace, secretName)
 	}
 	accountName = strings.TrimSpace(accountName)
 	return accountName, accountKey, nil
@@ -76,7 +79,7 @@ func (s *azureSvc) GetAzureCredentials(host volume.VolumeHost, nameSpace, secret
 func (s *azureSvc) SetAzureCredentials(host volume.VolumeHost, nameSpace, accountName, accountKey string) (string, error) {
 	kubeClient := host.GetKubeClient()
 	if kubeClient == nil {
-		return "", fmt.Errorf("Cannot get kube client")
+		return "", fmt.Errorf("cannot get kube client")
 	}
 	secretName := "azure-storage-account-" + accountName + "-secret"
 	secret := &v1.Secret{
@@ -95,7 +98,7 @@ func (s *azureSvc) SetAzureCredentials(host volume.VolumeHost, nameSpace, accoun
 		err = nil
 	}
 	if err != nil {
-		return "", fmt.Errorf("Couldn't create secret %v", err)
+		return "", fmt.Errorf("couldn't create secret %v", err)
 	}
 	return secretName, err
 }
@@ -106,6 +109,8 @@ func appendDefaultMountOptions(mountOptions []string, fsGroup *int64) []string {
 	dirModeFlag := false
 	versFlag := false
 	gidFlag := false
+	actimeoFlag := false
+	mfsymlinksFlag := false
 
 	for _, mountOption := range mountOptions {
 		if strings.HasPrefix(mountOption, fileMode) {
@@ -119,6 +124,12 @@ func appendDefaultMountOptions(mountOptions []string, fsGroup *int64) []string {
 		}
 		if strings.HasPrefix(mountOption, gid) {
 			gidFlag = true
+		}
+		if strings.HasPrefix(mountOption, actimeo) {
+			actimeoFlag = true
+		}
+		if strings.HasPrefix(mountOption, mfsymlinks) {
+			mfsymlinksFlag = true
 		}
 	}
 
@@ -137,6 +148,14 @@ func appendDefaultMountOptions(mountOptions []string, fsGroup *int64) []string {
 
 	if !gidFlag && fsGroup != nil {
 		allMountOptions = append(allMountOptions, fmt.Sprintf("%s=%d", gid, *fsGroup))
+	}
+
+	if !actimeoFlag {
+		allMountOptions = append(allMountOptions, fmt.Sprintf("%s=%s", actimeo, defaultActimeo))
+	}
+
+	if !mfsymlinksFlag {
+		allMountOptions = append(allMountOptions, mfsymlinks)
 	}
 	return allMountOptions
 }

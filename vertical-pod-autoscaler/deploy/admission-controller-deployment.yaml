@@ -40,6 +40,8 @@ spec:
               memory: 200Mi
           ports:
             - containerPort: 8000
+            - name: prometheus
+              containerPort: 8944
       volumes:
         - name: tls-certs
           secret:

@@ -17,8 +17,10 @@ limitations under the License.
 package packet
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -35,6 +37,11 @@ const (
 	ProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
+	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
+	// master/controller node.
+	DefaultControllerNodeLabelKey = "node-role.kubernetes.io/master"
+	// ControllerNodeIdentifierEnv is the string for the environment variable.
+	ControllerNodeIdentifierEnv = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
 )
 
 var (
@@ -45,14 +52,14 @@ var (
 
 // packetCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
 type packetCloudProvider struct {
-	packetManager   *packetManager
+	packetManager   packetManager
 	resourceLimiter *cloudprovider.ResourceLimiter
 	nodeGroups      []packetNodeGroup
 }
 
 func buildPacketCloudProvider(packetManager packetManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	pcp := &packetCloudProvider{
-		packetManager:   &packetManager,
+		packetManager:   packetManager,
 		resourceLimiter: resourceLimiter,
 		nodeGroups:      []packetNodeGroup{},
 	}
@@ -77,8 +84,8 @@ func (pcp *packetCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 // NodeGroups returns all node groups managed by this cloud provider.
 func (pcp *packetCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, len(pcp.nodeGroups))
-	for i, group := range pcp.nodeGroups {
-		groups[i] = &group
+	for i := range pcp.nodeGroups {
+		groups[i] = &pcp.nodeGroups[i]
 	}
 	return groups
 }
@@ -92,15 +99,30 @@ func (pcp *packetCloudProvider) AddNodeGroup(group packetNodeGroup) {
 //
 // Since only a single node group is currently supported, the first node group is always returned.
 func (pcp *packetCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]; found {
+	controllerNodeLabel := os.Getenv(ControllerNodeIdentifierEnv)
+	if controllerNodeLabel == "" {
+		klog.V(3).Infof("env %s not set, using default: %s", ControllerNodeIdentifierEnv, DefaultControllerNodeLabelKey)
+		controllerNodeLabel = DefaultControllerNodeLabelKey
+	}
+
+	if _, found := node.ObjectMeta.Labels[controllerNodeLabel]; found {
 		return nil, nil
 	}
-	return &(pcp.nodeGroups[0]), nil
+	nodeGroupId, err := pcp.packetManager.NodeGroupForNode(node.ObjectMeta.Labels, node.Spec.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+	for i, nodeGroup := range pcp.nodeGroups {
+		if nodeGroup.Id() == nodeGroupId {
+			return &(pcp.nodeGroups[i]), nil
+		}
+	}
+	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
 }
 
-// Pricing is not implemented.
+// Pricing returns pricing model for this cloud provider or error if not available.
 func (pcp *packetCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return nil, cloudprovider.ErrNotImplemented
+	return &PacketPriceModel{}, nil
 }
 
 // GetAvailableMachineTypes is not implemented.
@@ -164,9 +186,7 @@ func BuildPacket(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 		klog.Fatalf("Must specify at least one node group with --nodes=<min>:<max>:<name>,...")
 	}
 
-	if len(do.NodeGroupSpecs) > 1 {
-		klog.Fatalf("Packet autoscaler only supports a single nodegroup for now")
-	}
+	validNodepoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
 
 	clusterUpdateLock := sync.Mutex{}
 
@@ -174,6 +194,10 @@ func BuildPacket(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 		spec, err := dynamic.SpecFromString(nodegroupSpec, scaleToZeroSupported)
 		if err != nil {
 			klog.Fatalf("Could not parse node group spec %s: %v", nodegroupSpec, err)
+		}
+
+		if !validNodepoolName.MatchString(spec.Name) || len(spec.Name) > 63 {
+			klog.Fatalf("Invalid nodepool name: %s\nMust be a valid kubernetes label value", spec.Name)
 		}
 
 		ng := packetNodeGroup{

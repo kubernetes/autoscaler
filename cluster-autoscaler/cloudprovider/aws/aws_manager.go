@@ -41,7 +41,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
@@ -49,7 +48,7 @@ const (
 	operationWaitTimeout    = 5 * time.Second
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
-	maxAsgNamesPerDescribe  = 50
+	maxAsgNamesPerDescribe  = 100
 	refreshInterval         = 1 * time.Minute
 	autoDiscovererTypeASG   = "asg"
 	asgAutoDiscovererKeyTag = "tag"
@@ -294,8 +293,9 @@ func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
 	if err := m.asgCache.DeleteInstances(instances); err != nil {
 		return err
 	}
-	klog.V(2).Infof("Some ASG instances might have been deleted, forcing ASG list refresh")
-	return m.forceRefresh()
+	klog.V(2).Infof("DeleteInstances was called: scheduling an ASG list refresh for next main loop evaluation")
+	m.lastRefresh = time.Now().Add(-refreshInterval)
+	return nil
 }
 
 // GetAsgNodes returns Asg nodes.
@@ -312,7 +312,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
-		klog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
+		klog.V(4).Infof("Found multiple availability zones for ASG %q; using %s for %s label\n", asg.Name, az, apiv1.LabelZoneFailureDomain)
 	}
 
 	instanceTypeName, err := m.buildInstanceType(asg)
@@ -376,10 +376,10 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
-	// NodeLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	// NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
 	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
 
@@ -389,14 +389,14 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
-	// TODO: extract it somehow
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelInstanceType] = template.InstanceType.InstanceType
+	result[apiv1.LabelArchStable] = template.InstanceType.Architecture
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelZoneRegion] = template.Region
-	result[apiv1.LabelZoneFailureDomain] = template.Zone
+	result[apiv1.LabelInstanceTypeStable] = template.InstanceType.InstanceType
+
+	result[apiv1.LabelTopologyRegion] = template.Region
+	result[apiv1.LabelTopologyZone] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
 	return result
 }

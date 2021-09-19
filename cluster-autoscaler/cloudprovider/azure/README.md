@@ -47,11 +47,31 @@ You can also use forward slashes in taints by setting them as an underscore in t
 
 #### Resources
 
-When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided presources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
+When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided resources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
 This can be overridden (for instance, to account for system reserved resources) by specifying capacities with VMSS tags, formated as: `k8s.io_cluster-autoscaler_node-template_resources_<resource name>: <resource value>`. For instance:
 ```
 k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
 k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
+```
+
+#### Autoscaling options
+
+Some autoscaling options can be defined per VM Scale Set, with tags.
+Those tags values have the format as the respective cluster-autoscaler flags they override: floats or durations encoded as strings.
+
+Supported options tags (with example values) are:
+```
+# overrides --scale-down-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownutilizationthreshold: "0.5"
+
+# overrides --scale-down-gpu-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledowngpuutilizationthreshold: "0.5"
+
+# overrides --scale-down-unneeded-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunneededtime: "10m0s"
+
+# overrides --scale-down-unready-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunreadytime: "20m0s"
 ```
 
 ## Deployment manifests
@@ -133,7 +153,8 @@ Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 kubectl create -f cluster-autoscaler-vmss.yaml
 ```
 
-To run a cluster autoscaler pod on a master node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-master.yaml](examples/cluster-autoscaler-vmss-master.yaml) in this case.
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+To run a cluster autoscaler pod on a control plane (previously referred to as master) node, the deployment should tolerate the `master` taint, and `nodeSelector` should be used to schedule pods. Use [cluster-autoscaler-vmss-control-plane.yaml](examples/cluster-autoscaler-vmss-control-plane.yaml) in this case.
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](examples/cluster-autoscaler-vmss-msi.yaml) instead.
 
@@ -153,7 +174,7 @@ In addition, cluster-autoscaler exposes a `AZURE_VMSS_CACHE_TTL` environment var
 
 | Config Name | Default | Environment Variable | Cloud Config File |
 | ----------- | ------- | -------------------- | ----------------- |
-| VmssCacheTTL | 15 | AZURE_VMSS_CACHE_TTL | vmssCacheTTL |
+| VmssCacheTTL | 60 | AZURE_VMSS_CACHE_TTL | vmssCacheTTL |
 
 The `AZURE_VMSS_VMS_CACHE_TTL` environment variable affects the `GetScaleSetVms` (VMSS VM List) calls rate. The default value is 300 seconds.
 A configurable jitter (`AZURE_VMSS_VMS_CACHE_JITTER` environment variable, default 0) expresses the maximum number of second that will be subtracted from that initial VMSS cache TTL after a new VMSS is discovered by the cluster-autoscaler: this can prevent a dogpile effect on clusters having many VMSS.
@@ -172,7 +193,7 @@ Prerequisites:
 - Get Azure credentials from the [**Permissions**](#permissions) step above.
 - Get the name of the initial Azure deployment resource for the cluster. You can find this in the [Azure Portal](https://portal.azure.com) or with the `az deployment list` command. If there are multiple deployments, get the name of the first one.
 
-Make a copy of [cluster-autoscaler-standard-master.yaml](examples/cluster-autoscaler-standard-master.yaml). Fill in the placeholder values for the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
+Make a copy of [cluster-autoscaler-standard-control-plane.yaml](examples/cluster-autoscaler-standard-control-plane.yaml). Fill in the placeholder values for the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -208,7 +229,7 @@ kubectl -n kube-system create secret generic cluster-autoscaler-azure-deploy-par
 Then deploy cluster-autoscaler by running:
 
 ```sh
-kubectl create -f cluster-autoscaler-standard-master.yaml
+kubectl create -f cluster-autoscaler-standard-control-plane.yaml
 ```
 
 To run a cluster autoscaler pod with Azure managed service identity (MSI), use [cluster-autoscaler-standard-msi.yaml](examples/cluster-autoscaler-standard-msi.yaml) instead.

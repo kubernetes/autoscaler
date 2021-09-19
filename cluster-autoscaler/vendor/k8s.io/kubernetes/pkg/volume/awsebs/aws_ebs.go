@@ -29,7 +29,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -87,7 +87,7 @@ func (plugin *awsElasticBlockStorePlugin) CanSupport(spec *volume.Spec) bool {
 		(spec.Volume != nil && spec.Volume.AWSElasticBlockStore != nil)
 }
 
-func (plugin *awsElasticBlockStorePlugin) RequiresRemount() bool {
+func (plugin *awsElasticBlockStorePlugin) RequiresRemount(spec *volume.Spec) bool {
 	return false
 }
 
@@ -110,11 +110,11 @@ func (plugin *awsElasticBlockStorePlugin) GetVolumeLimits() (map[string]int64, e
 	// default values from here will mean, no one can
 	// override them.
 	if cloud == nil {
-		return nil, fmt.Errorf("No cloudprovider present")
+		return nil, fmt.Errorf("no cloudprovider present")
 	}
 
 	if cloud.ProviderName() != aws.ProviderName {
-		return nil, fmt.Errorf("Expected aws cloud, found %s", cloud.ProviderName())
+		return nil, fmt.Errorf("expected aws cloud, found %s", cloud.ProviderName())
 	}
 
 	instances, ok := cloud.Instances()
@@ -399,7 +399,7 @@ func (b *awsElasticBlockStoreMounter) SetUpAt(dir string, mounterArgs volume.Mou
 		options = append(options, "ro")
 	}
 	mountOptions := util.JoinMountOptions(options, b.mountOptions)
-	err = b.mounter.Mount(globalPDPath, dir, "", mountOptions)
+	err = b.mounter.MountSensitiveWithoutSystemd(globalPDPath, dir, "", mountOptions, nil)
 	if err != nil {
 		notMnt, mntErr := b.mounter.IsLikelyNotMountPoint(dir)
 		if mntErr != nil {
@@ -428,7 +428,7 @@ func (b *awsElasticBlockStoreMounter) SetUpAt(dir string, mounterArgs volume.Mou
 	}
 
 	if !b.readOnly {
-		volume.SetVolumeOwnership(b, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy)
+		volume.SetVolumeOwnership(b, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy, util.FSGroupCompleteHook(b.plugin, nil))
 	}
 
 	klog.V(4).Infof("Successfully mounted %s", dir)
@@ -485,7 +485,7 @@ type awsElasticBlockStoreProvisioner struct {
 var _ volume.Provisioner = &awsElasticBlockStoreProvisioner{}
 
 func (c *awsElasticBlockStoreProvisioner) Provision(selectedNode *v1.Node, allowedTopologies []v1.TopologySelectorTerm) (*v1.PersistentVolume, error) {
-	if !util.AccessModesContainedInAll(c.plugin.GetAccessModes(), c.options.PVC.Spec.AccessModes) {
+	if !util.ContainsAllAccessModes(c.plugin.GetAccessModes(), c.options.PVC.Spec.AccessModes) {
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", c.options.PVC.Spec.AccessModes, c.plugin.GetAccessModes())
 	}
 

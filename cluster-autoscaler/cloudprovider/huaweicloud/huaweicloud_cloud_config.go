@@ -17,32 +17,103 @@ limitations under the License.
 package huaweicloud
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huawei-cloud-sdk-go/auth/aksk"
+	"fmt"
+	"io"
+	"os"
+
+	"gopkg.in/gcfg.v1"
+	huaweicloudsdkbasic "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
+	huaweicloudsdkconfig "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
+	huaweicloudsdkas "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1"
+	huaweicloudsdkecs "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
 )
 
 // CloudConfig is the cloud config file for huaweicloud.
 type CloudConfig struct {
 	Global struct {
-		IdentityEndpoint string `gcfg:"identity-endpoint"` // example: "https://iam.cn-north-4.myhuaweicloud.com/v3.0"
-		ProjectID        string `gcfg:"project-id"`
-		AccessKey        string `gcfg:"access-key"`
-		SecretKey        string `gcfg:"secret-key"`
-		Cloud            string `gcfg:"cloud"`     // example: "huaweicloud"
-		Region           string `gcfg:"region"`    // example: "cn-north-4"
-		DomainID         string `gcfg:"domain-id"` // The ACCOUNT ID. example: "a0e8ff63c0fb4fd49cc2dbdf1dea14e2"
+		ECSEndpoint string `gcfg:"ecs-endpoint"`
+		ASEndpoint  string `gcfg:"as-endpoint"`
+		ProjectID   string `gcfg:"project-id"`
+		AccessKey   string `gcfg:"access-key"`
+		SecretKey   string `gcfg:"secret-key"`
 	}
 }
 
-// toAKSKOptions creates and returns a new instance of type aksk.AKSKOptions
-func toAKSKOptions(cfg CloudConfig) aksk.AKSKOptions {
-	opts := aksk.AKSKOptions{
-		IdentityEndpoint: cfg.Global.IdentityEndpoint,
-		ProjectID:        cfg.Global.ProjectID,
-		AccessKey:        cfg.Global.AccessKey,
-		SecretKey:        cfg.Global.SecretKey,
-		Cloud:            cfg.Global.Cloud,
-		Region:           cfg.Global.Region,
-		DomainID:         cfg.Global.DomainID,
+func (c *CloudConfig) getECSClient() *huaweicloudsdkecs.EcsClient {
+	// There are two types of services provided by HUAWEI CLOUD according to scope:
+	// - Regional services: most of services belong to this classification, such as ECS.
+	// - Global services: such as IAM, TMS, EPS.
+	// For Regional services' authentication, projectId is required.
+	// For global services' authentication, domainId is required.
+	// More details please refer to:
+	// https://github.com/huaweicloud/huaweicloud-sdk-go-v3/blob/0281b9734f0f95ed5565729e54d96e9820262426/README.md#use-go-sdk
+	credentials := huaweicloudsdkbasic.NewCredentialsBuilder().
+		WithAk(c.Global.AccessKey).
+		WithSk(c.Global.SecretKey).
+		WithProjectId(c.Global.ProjectID).
+		Build()
+
+	client := huaweicloudsdkecs.EcsClientBuilder().
+		WithEndpoint(c.Global.ECSEndpoint).
+		WithCredential(credentials).
+		WithHttpConfig(huaweicloudsdkconfig.DefaultHttpConfig()).
+		Build()
+
+	return huaweicloudsdkecs.NewEcsClient(client)
+}
+
+func (c *CloudConfig) getASClient() *huaweicloudsdkas.AsClient {
+	credentials := huaweicloudsdkbasic.NewCredentialsBuilder().
+		WithAk(c.Global.AccessKey).
+		WithSk(c.Global.SecretKey).
+		WithProjectId(c.Global.ProjectID).
+		Build()
+
+	client := huaweicloudsdkas.AsClientBuilder().
+		WithEndpoint(c.Global.ASEndpoint).
+		WithCredential(credentials).
+		WithHttpConfig(huaweicloudsdkconfig.DefaultHttpConfig()).
+		Build()
+
+	return huaweicloudsdkas.NewAsClient(client)
+}
+
+func (c *CloudConfig) validate() error {
+	if len(c.Global.ECSEndpoint) == 0 {
+		return fmt.Errorf("ECS endpoint missing from cloud configuration")
 	}
-	return opts
+
+	if len(c.Global.ASEndpoint) == 0 {
+		return fmt.Errorf("AS endpoint missing from cloud configuration")
+	}
+
+	if len(c.Global.AccessKey) == 0 {
+		return fmt.Errorf("access key missing from cloud coniguration")
+	}
+
+	if len(c.Global.SecretKey) == 0 {
+		return fmt.Errorf("secret key missing from cloud configuration")
+	}
+
+	if len(c.Global.ProjectID) == 0 {
+		return fmt.Errorf("project id missing from cloud configuration")
+	}
+
+	return nil
+}
+
+func readConf(confFile string) (*CloudConfig, error) {
+	var conf io.ReadCloser
+	conf, err := os.Open(confFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open configuration file: %s, error: %v", confFile, err)
+	}
+	defer conf.Close()
+
+	var cloudConfig CloudConfig
+	if err := gcfg.ReadInto(&cloudConfig, conf); err != nil {
+		return nil, fmt.Errorf("failed to read configuration file: %s, error: %v", confFile, err)
+	}
+
+	return &cloudConfig, nil
 }

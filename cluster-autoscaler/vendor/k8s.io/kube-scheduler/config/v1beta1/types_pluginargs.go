@@ -23,6 +23,28 @@ import (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// DefaultPreemptionArgs holds arguments used to configure the
+// DefaultPreemption plugin.
+type DefaultPreemptionArgs struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// MinCandidateNodesPercentage is the minimum number of candidates to
+	// shortlist when dry running preemption as a percentage of number of nodes.
+	// Must be in the range [0, 100]. Defaults to 10% of the cluster size if
+	// unspecified.
+	MinCandidateNodesPercentage *int32 `json:"minCandidateNodesPercentage,omitempty"`
+	// MinCandidateNodesAbsolute is the absolute minimum number of candidates to
+	// shortlist. The likely number of candidates enumerated for dry running
+	// preemption is given by the formula:
+	// numCandidates = max(numNodes * minCandidateNodesPercentage, minCandidateNodesAbsolute)
+	// We say "likely" because there are other factors such as PDB violations
+	// that play a role in the number of candidates shortlisted. Must be at least
+	// 0 nodes. Defaults to 100 nodes if unspecified.
+	MinCandidateNodesAbsolute *int32 `json:"minCandidateNodesAbsolute,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // InterPodAffinityArgs holds arguments used to configure the InterPodAffinity plugin.
 type InterPodAffinityArgs struct {
 	metav1.TypeMeta `json:",inline"`
@@ -35,6 +57,10 @@ type InterPodAffinityArgs struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // NodeLabelArgs holds arguments used to configure the NodeLabel plugin.
+//
+// This plugin has been deprecated and is only configurable through the
+// scheduler policy API and the v1beta1 component config API. It is recommended
+// to use the NodeAffinity plugin instead.
 type NodeLabelArgs struct {
 	metav1.TypeMeta `json:",inline"`
 
@@ -59,16 +85,31 @@ type NodeResourcesFitArgs struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// IgnoredResources is the list of resources that NodeResources fit filter
-	// should ignore.
+	// should ignore. This doesn't apply to scoring.
 	// +listType=atomic
 	IgnoredResources []string `json:"ignoredResources,omitempty"`
 	// IgnoredResourceGroups defines the list of resource groups that NodeResources fit filter should ignore.
 	// e.g. if group is ["example.com"], it will ignore all resource names that begin
 	// with "example.com", such as "example.com/aaa" and "example.com/bbb".
-	// A resource group name can't contain '/'.
+	// A resource group name can't contain '/'. This doesn't apply to scoring.
 	// +listType=atomic
 	IgnoredResourceGroups []string `json:"ignoredResourceGroups,omitempty"`
+
+	// ScoringStrategy selects the node resource scoring strategy.
+	// The default strategy is LeastAllocated with an equal "cpu" and "memory" weight.
+	ScoringStrategy *ScoringStrategy `json:"scoringStrategy,omitempty"`
 }
+
+// PodTopologySpreadConstraintsDefaulting defines how to set default constraints
+// for the PodTopologySpread plugin.
+type PodTopologySpreadConstraintsDefaulting string
+
+const (
+	// SystemDefaulting instructs to use the kubernetes defined default.
+	SystemDefaulting PodTopologySpreadConstraintsDefaulting = "System"
+	// ListDefaulting instructs to use the config provided default.
+	ListDefaulting PodTopologySpreadConstraintsDefaulting = "List"
+)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -77,14 +118,26 @@ type PodTopologySpreadArgs struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// DefaultConstraints defines topology spread constraints to be applied to
-	// pods that don't define any in `pod.spec.topologySpreadConstraints`.
-	// `topologySpreadConstraint.labelSelectors` must be empty, as they are
-	// deduced the pods' membership to Services, Replication Controllers, Replica
-	// Sets or Stateful Sets.
-	// Empty by default.
+	// Pods that don't define any in `pod.spec.topologySpreadConstraints`.
+	// `.defaultConstraints[*].labelSelectors` must be empty, as they are
+	// deduced from the Pod's membership to Services, ReplicationControllers,
+	// ReplicaSets or StatefulSets.
+	// When not empty, .defaultingType must be "List".
 	// +optional
 	// +listType=atomic
-	DefaultConstraints []corev1.TopologySpreadConstraint `json:"defaultConstraints"`
+	DefaultConstraints []corev1.TopologySpreadConstraint `json:"defaultConstraints,omitempty"`
+
+	// DefaultingType determines how .defaultConstraints are deduced. Can be one
+	// of "System" or "List".
+	//
+	// - "System": Use kubernetes defined constraints that spread Pods among
+	//   Nodes and Zones.
+	// - "List": Use constraints defined in .defaultConstraints.
+	//
+	// Defaults to "List" if feature gate DefaultPodTopologySpread is disabled
+	// and to "System" if enabled.
+	// +optional
+	DefaultingType PodTopologySpreadConstraintsDefaulting `json:"defaultingType,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -127,6 +180,18 @@ type NodeResourcesMostAllocatedArgs struct {
 	Resources []ResourceSpec `json:"resources,omitempty"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// NodeResourcesBalancedAllocationArgs holds arguments used to configure NodeResourcesBalancedAllocation plugin.
+type NodeResourcesBalancedAllocationArgs struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// Resources to be managed, the default is "cpu" and "memory" if not specified.
+	// +listType=map
+	// +listMapKey=name
+	Resources []ResourceSpec `json:"resources,omitempty"`
+}
+
 // UtilizationShapePoint represents single point of priority function shape.
 type UtilizationShapePoint struct {
 	// Utilization (x axis). Valid values are 0 to 100. Fully utilized node maps to 100.
@@ -135,9 +200,9 @@ type UtilizationShapePoint struct {
 	Score int32 `json:"score"`
 }
 
-// ResourceSpec represents single resource and weight for bin packing of priority RequestedToCapacityRatioArguments.
+// ResourceSpec represents a single resource.
 type ResourceSpec struct {
-	// Name of the resource to be managed by RequestedToCapacityRatio function.
+	// Name of the resource.
 	Name string `json:"name"`
 	// Weight of the resource.
 	Weight int64 `json:"weight,omitempty"`
@@ -146,6 +211,10 @@ type ResourceSpec struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServiceAffinityArgs holds arguments used to configure the ServiceAffinity plugin.
+//
+// This plugin has been deprecated and is only configurable through the
+// scheduler policy API and the v1beta1 component config API. It is recommended
+// to use the InterPodAffinity plugin instead.
 type ServiceAffinityArgs struct {
 	metav1.TypeMeta `json:",inline"`
 
@@ -169,4 +238,73 @@ type VolumeBindingArgs struct {
 	// Value must be non-negative integer. The value zero indicates no waiting.
 	// If this value is nil, the default value (600) will be used.
 	BindTimeoutSeconds *int64 `json:"bindTimeoutSeconds,omitempty"`
+
+	// Shape specifies the points defining the score function shape, which is
+	// used to score nodes based on the utilization of statically provisioned
+	// PVs. The utilization is calculated by dividing the total requested
+	// storage of the pod by the total capacity of feasible PVs on each node.
+	// Each point contains utilization (ranges from 0 to 100) and its
+	// associated score (ranges from 0 to 10). You can turn the priority by
+	// specifying different scores for different utilization numbers.
+	// The default shape points are:
+	// 1) 0 for 0 utilization
+	// 2) 10 for 100 utilization
+	// All points must be sorted in increasing order by utilization.
+	// +featureGate=VolumeCapacityPriority
+	// +optional
+	// +listType=atomic
+	Shape []UtilizationShapePoint `json:"shape,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// NodeAffinityArgs holds arguments to configure the NodeAffinity plugin.
+type NodeAffinityArgs struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// AddedAffinity is applied to all Pods additionally to the NodeAffinity
+	// specified in the PodSpec. That is, Nodes need to satisfy AddedAffinity
+	// AND .spec.NodeAffinity. AddedAffinity is empty by default (all Nodes
+	// match).
+	// When AddedAffinity is used, some Pods with affinity requirements that match
+	// a specific Node (such as Daemonset Pods) might remain unschedulable.
+	// +optional
+	AddedAffinity *corev1.NodeAffinity `json:"addedAffinity,omitempty"`
+}
+
+// ScoringStrategyType the type of scoring strategy used in NodeResourcesFit plugin.
+type ScoringStrategyType string
+
+const (
+	// LeastAllocated strategy prioritizes nodes with least allcoated resources.
+	LeastAllocated ScoringStrategyType = "LeastAllocated"
+	// MostAllocated strategy prioritizes nodes with most allcoated resources.
+	MostAllocated ScoringStrategyType = "MostAllocated"
+	// RequestedToCapacityRatio strategy allows specifying a custom shape function
+	// to score nodes based on the request to capacity ratio.
+	RequestedToCapacityRatio ScoringStrategyType = "RequestedToCapacityRatio"
+)
+
+// ScoringStrategy define ScoringStrategyType for node resource plugin
+type ScoringStrategy struct {
+	// Type selects which strategy to run.
+	Type ScoringStrategyType `json:"type,omitempty"`
+
+	// Resources to consider when scoring.
+	// The default resource set includes "cpu" and "memory" with an equal weight.
+	// Allowed weights go from 1 to 100.
+	// Weight defaults to 1 if not specified or explicitly set to 0.
+	// +listType=map
+	// +listMapKey=name
+	Resources []ResourceSpec `json:"resources,omitempty"`
+
+	// Arguments specific to RequestedToCapacityRatio strategy.
+	RequestedToCapacityRatio *RequestedToCapacityRatioParam `json:"requestedToCapacityRatio,omitempty"`
+}
+
+// RequestedToCapacityRatioParam define RequestedToCapacityRatio parameters
+type RequestedToCapacityRatioParam struct {
+	// Shape is a list of points defining the scoring function shape.
+	// +listType=atomic
+	Shape []UtilizationShapePoint `json:"shape,omitempty"`
 }

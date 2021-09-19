@@ -23,7 +23,8 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/names"
 )
 
 // The two thresholds are used as bounds for the image score range. They correspond to a reasonable size range for
@@ -36,13 +37,13 @@ const (
 
 // ImageLocality is a score plugin that favors nodes that already have requested pod container's images.
 type ImageLocality struct {
-	handle framework.FrameworkHandle
+	handle framework.Handle
 }
 
 var _ framework.ScorePlugin = &ImageLocality{}
 
 // Name is the name of the plugin used in the plugin registry and configurations.
-const Name = "ImageLocality"
+const Name = names.ImageLocality
 
 // Name returns name of the plugin. It is used in logs, etc.
 func (pl *ImageLocality) Name() string {
@@ -53,12 +54,12 @@ func (pl *ImageLocality) Name() string {
 func (pl *ImageLocality) Score(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
 	nodeInfo, err := pl.handle.SnapshotSharedLister().NodeInfos().Get(nodeName)
 	if err != nil {
-		return 0, framework.NewStatus(framework.Error, fmt.Sprintf("getting node %q from Snapshot: %v", nodeName, err))
+		return 0, framework.AsStatus(fmt.Errorf("getting node %q from Snapshot: %w", nodeName, err))
 	}
 
 	nodeInfos, err := pl.handle.SnapshotSharedLister().NodeInfos().List()
 	if err != nil {
-		return 0, framework.NewStatus(framework.Error, err.Error())
+		return 0, framework.AsStatus(err)
 	}
 	totalNumNodes := len(nodeInfos)
 
@@ -73,7 +74,7 @@ func (pl *ImageLocality) ScoreExtensions() framework.ScoreExtensions {
 }
 
 // New initializes a new plugin and returns it.
-func New(_ runtime.Object, h framework.FrameworkHandle) (framework.Plugin, error) {
+func New(_ runtime.Object, h framework.Handle) (framework.Plugin, error) {
 	return &ImageLocality{handle: h}, nil
 }
 

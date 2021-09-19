@@ -19,6 +19,7 @@ package input
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
@@ -60,11 +62,12 @@ var (
 )
 
 const (
-	kind       = "dodokind"
-	name1      = "dotaro"
-	name2      = "doseph"
-	namespace  = "testNamespace"
-	apiVersion = "stardust"
+	kind         = "dodokind"
+	name1        = "dotaro"
+	name2        = "doseph"
+	namespace    = "testNamespace"
+	apiVersion   = "stardust"
+	testGcPeriod = time.Minute
 )
 
 func TestLoadPods(t *testing.T) {
@@ -206,7 +209,7 @@ func TestLoadPods(t *testing.T) {
 
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(testGcPeriod)
 
 			clusterStateFeeder := clusterStateFeeder{
 				vpaLister:       vpaLister,
@@ -321,7 +324,7 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
-			clusterState := model.NewClusterState()
+			clusterState := model.NewClusterState(testGcPeriod)
 			for i, selector := range tc.VPALabelSelectors {
 				vpaLabel, err := labels.Parse(selector)
 				assert.NoError(t, err)
@@ -349,4 +352,76 @@ func TestClusterStateFeeder_LoadPods(t *testing.T) {
 			assert.Len(t, feeder.clusterState.Pods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
 		})
 	}
+}
+
+type fakeHistoryProvider struct {
+	history map[model.PodID]*history.PodHistory
+	err     error
+}
+
+func (fhp *fakeHistoryProvider) GetClusterHistory() (map[model.PodID]*history.PodHistory, error) {
+	return fhp.history, fhp.err
+}
+
+func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
+	pod1 := model.PodID{
+		Namespace: "ns",
+		PodName:   "a-pod",
+	}
+	memAmount := model.ResourceAmount(128 * 1024 * 1024)
+	t0 := time.Date(2021, time.August, 30, 10, 21, 0, 0, time.UTC)
+	containerCpu := "containerCpu"
+	containerMem := "containerMem"
+	pod1History := history.PodHistory{
+		LastLabels: map[string]string{},
+		LastSeen:   t0,
+		Samples: map[string][]model.ContainerUsageSample{
+			containerCpu: {
+				{
+					MeasureStart: t0,
+					Usage:        10,
+					Request:      101,
+					Resource:     model.ResourceCPU,
+				},
+			},
+			containerMem: {
+				{
+					MeasureStart: t0,
+					Usage:        memAmount,
+					Request:      1024 * 1024 * 1024,
+					Resource:     model.ResourceMemory,
+				},
+			},
+		},
+	}
+	provider := fakeHistoryProvider{
+		history: map[model.PodID]*history.PodHistory{
+			pod1: &pod1History,
+		},
+	}
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		clusterState: clusterState,
+	}
+	feeder.InitFromHistoryProvider(&provider)
+	if !assert.Contains(t, feeder.clusterState.Pods, pod1) {
+		return
+	}
+	pod1State := feeder.clusterState.Pods[pod1]
+	if !assert.Contains(t, pod1State.Containers, containerCpu) {
+		return
+	}
+	containerState := pod1State.Containers[containerCpu]
+	if !assert.NotNil(t, containerState) {
+		return
+	}
+	assert.Equal(t, t0, containerState.LastCPUSampleStart)
+	if !assert.Contains(t, pod1State.Containers, containerMem) {
+		return
+	}
+	containerState = pod1State.Containers[containerMem]
+	if !assert.NotNil(t, containerState) {
+		return
+	}
+	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
 }

@@ -19,9 +19,10 @@ rules:
     verbs: ["get", "update"]
   - apiGroups: [""]
     resources: ["nodes"]
-    verbs: ["watch", "list", "get", "update"]
+    verbs: ["watch", "list", "get", "update", "delete"]
   - apiGroups: [""]
     resources:
+      - "namespaces"
       - "pods"
       - "services"
       - "replicationcontrollers"

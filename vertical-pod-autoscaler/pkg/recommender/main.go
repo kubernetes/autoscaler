@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
-	"k8s.io/client-go/rest"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog"
 )
@@ -39,6 +38,7 @@ var (
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 	prometheusJobName      = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
+	kubeconfig             = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
@@ -49,10 +49,10 @@ var (
 	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
 	podLabelPrefix      = flag.String("pod-label-prefix", "pod_label_", `Which prefix to look for pod labels in metrics`)
 	podLabelsMetricName = flag.String("metric-for-pod-labels", "up{job=\"kubernetes-pods\"}", `Which metric to look for pod labels in metrics`)
-	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for container names`)
-	podNameLabel        = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for container names`)
-	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container names`)
-	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container names`)
+	podNamespaceLabel   = flag.String("pod-namespace-label", "kubernetes_namespace", `Label name to look for pod namespaces`)
+	podNameLabel        = flag.String("pod-name-label", "kubernetes_pod_name", `Label name to look for pod names`)
+	ctrNamespaceLabel   = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
+	ctrPodNameLabel     = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
 	ctrNameLabel        = flag.String("container-name-label", "name", `Label name to look for container names`)
 	vpaObjectNamespace  = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
 )
@@ -70,7 +70,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
-	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
+	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife))
 
@@ -117,14 +117,4 @@ func main() {
 		recommender.RunOnce()
 		healthCheck.UpdateLastActivity()
 	}
-}
-
-func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		klog.Fatalf("Failed to create config: %v", err)
-	}
-	config.QPS = kubeApiQps
-	config.Burst = kubeApiBurst
-	return config
 }

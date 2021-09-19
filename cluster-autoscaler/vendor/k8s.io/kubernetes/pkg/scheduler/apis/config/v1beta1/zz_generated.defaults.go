@@ -29,10 +29,15 @@ import (
 // Public to allow building arbitrary schemes.
 // All generated defaulters are covering - they call all nested defaulters.
 func RegisterDefaults(scheme *runtime.Scheme) error {
+	scheme.AddTypeDefaultingFunc(&v1beta1.DefaultPreemptionArgs{}, func(obj interface{}) { SetObjectDefaults_DefaultPreemptionArgs(obj.(*v1beta1.DefaultPreemptionArgs)) })
 	scheme.AddTypeDefaultingFunc(&v1beta1.InterPodAffinityArgs{}, func(obj interface{}) { SetObjectDefaults_InterPodAffinityArgs(obj.(*v1beta1.InterPodAffinityArgs)) })
 	scheme.AddTypeDefaultingFunc(&v1beta1.KubeSchedulerConfiguration{}, func(obj interface{}) {
 		SetObjectDefaults_KubeSchedulerConfiguration(obj.(*v1beta1.KubeSchedulerConfiguration))
 	})
+	scheme.AddTypeDefaultingFunc(&v1beta1.NodeResourcesBalancedAllocationArgs{}, func(obj interface{}) {
+		SetObjectDefaults_NodeResourcesBalancedAllocationArgs(obj.(*v1beta1.NodeResourcesBalancedAllocationArgs))
+	})
+	scheme.AddTypeDefaultingFunc(&v1beta1.NodeResourcesFitArgs{}, func(obj interface{}) { SetObjectDefaults_NodeResourcesFitArgs(obj.(*v1beta1.NodeResourcesFitArgs)) })
 	scheme.AddTypeDefaultingFunc(&v1beta1.NodeResourcesLeastAllocatedArgs{}, func(obj interface{}) {
 		SetObjectDefaults_NodeResourcesLeastAllocatedArgs(obj.(*v1beta1.NodeResourcesLeastAllocatedArgs))
 	})
@@ -47,12 +52,24 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 	return nil
 }
 
+func SetObjectDefaults_DefaultPreemptionArgs(in *v1beta1.DefaultPreemptionArgs) {
+	SetDefaults_DefaultPreemptionArgs(in)
+}
+
 func SetObjectDefaults_InterPodAffinityArgs(in *v1beta1.InterPodAffinityArgs) {
 	SetDefaults_InterPodAffinityArgs(in)
 }
 
 func SetObjectDefaults_KubeSchedulerConfiguration(in *v1beta1.KubeSchedulerConfiguration) {
 	SetDefaults_KubeSchedulerConfiguration(in)
+}
+
+func SetObjectDefaults_NodeResourcesBalancedAllocationArgs(in *v1beta1.NodeResourcesBalancedAllocationArgs) {
+	SetDefaults_NodeResourcesBalancedAllocationArgs(in)
+}
+
+func SetObjectDefaults_NodeResourcesFitArgs(in *v1beta1.NodeResourcesFitArgs) {
+	SetDefaults_NodeResourcesFitArgs(in)
 }
 
 func SetObjectDefaults_NodeResourcesLeastAllocatedArgs(in *v1beta1.NodeResourcesLeastAllocatedArgs) {

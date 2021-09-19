@@ -158,6 +158,7 @@ var (
 		"Should CA ignore Mirror pods when calculating resource utilization for scaling down")
 
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
+	statusConfigMapName              = flag.String("status-config-map-name", "cluster-autoscaler-status", "Status configmap name")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
@@ -172,8 +173,15 @@ var (
 	ignoreTaintsFlag                   = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 	balancingIgnoreLabelsFlag          = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	awsUseStaticInstanceList           = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
+	concurrentGceRefreshes             = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
 	enableProfiling                    = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
+	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", false, "Should CA cordon nodes before terminating during downscale process")
+	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
+	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
+	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
+
+	emitPerNodeGroupMetrics = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -194,6 +202,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	return config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
+			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
+			ScaleDownUnneededTime:            *scaleDownUnneededTime,
+			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
+		},
 		CloudConfig:                        *cloudConfig,
 		CloudProviderName:                  *cloudProviderFlag,
 		NodeGroupAutoDiscovery:             *nodeGroupAutoDiscoveryFlag,
@@ -220,14 +234,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
 		ScaleDownEnabled:                   *scaleDownEnabled,
-		ScaleDownUnneededTime:              *scaleDownUnneededTime,
-		ScaleDownUnreadyTime:               *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold:      *scaleDownUtilizationThreshold,
-		ScaleDownGpuUtilizationThreshold:   *scaleDownGpuUtilizationThreshold,
 		ScaleDownNonEmptyCandidatesCount:   *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:       *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:    *scaleDownCandidatesPoolMinCount,
 		WriteStatusConfigMap:               *writeStatusConfigMapFlag,
+		StatusConfigMapName:                *statusConfigMapName,
 		BalanceSimilarNodeGroups:           *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:                    *namespace,
 		ClusterName:                        *clusterName,
@@ -242,7 +253,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		KubeConfigPath:                     *kubeConfigFile,
 		NodeDeletionDelayTimeout:           *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList:           *awsUseStaticInstanceList,
+		ConcurrentGceRefreshes:             *concurrentGceRefreshes,
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
+		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
+		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
+		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
+		UserAgent:                          *userAgent,
 	}
 }
 
@@ -309,6 +325,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
+	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
+		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
@@ -318,13 +336,15 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	// These metrics should be published only once.
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	metrics.UpdateMaxNodesCount(autoscalingOptions.MaxNodesTotal)
+	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
+	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
 	return core.NewAutoscaler(opts)
 }
 
 func run(healthCheck *metrics.HealthCheck) {
-	metrics.RegisterAll()
+	metrics.RegisterAll(*emitPerNodeGroupMetrics)
 
 	autoscaler, err := buildAutoscaler()
 	if err != nil {
@@ -409,7 +429,7 @@ func main() {
 		lock, err := resourcelock.New(
 			leaderElection.ResourceLock,
 			*namespace,
-			"cluster-autoscaler",
+			leaderElection.ResourceName,
 			kubeClient.CoreV1(),
 			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
@@ -422,10 +442,11 @@ func main() {
 		}
 
 		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
-			Lock:          lock,
-			LeaseDuration: leaderElection.LeaseDuration.Duration,
-			RenewDeadline: leaderElection.RenewDeadline.Duration,
-			RetryPeriod:   leaderElection.RetryPeriod.Duration,
+			Lock:            lock,
+			LeaseDuration:   leaderElection.LeaseDuration.Duration,
+			RenewDeadline:   leaderElection.RenewDeadline.Duration,
+			RetryPeriod:     leaderElection.RetryPeriod.Duration,
+			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing
@@ -447,6 +468,7 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.LeasesResourceLock,
+		ResourceName:  "cluster-autoscaler",
 	}
 }
 

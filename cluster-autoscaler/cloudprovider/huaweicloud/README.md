@@ -1,19 +1,10 @@
 # Cluster Autoscaler on Huawei Cloud 
 
 ## Overview
-The cluster autoscaler for [Huawei ServiceStage](https://www.huaweicloud.com/intl/en-us/product/servicestage.html) scales worker nodes within any
-specified container cluster's node pool where the `Autoscaler` label is on. 
+The cluster autoscaler works with self-built Kubernetes cluster on [Huaweicloud ECS](https://www.huaweicloud.com/intl/en-us/product/ecs.html) and
+specified [Huaweicloud Auto Scaling Groups](https://www.huaweicloud.com/intl/en-us/product/as.html) 
 It runs as a Deployment on a worker node in the cluster. This README will go over some of the necessary steps required 
 to get the cluster autoscaler up and running.
-
-Note: 
-
-1. Cluster autoscaler must be run on a version of Huawei container engine 1.15.6 or later.
-2. Node pool attached to the cluster must have the `Autoscaler` flag turned on, and minimum number of nodes and maximum
-number of nodes being set. Node pools can be managed by `Resource Management` from Huawei container engine console.
-3. If warnings about installing `autoscaler addon` are encountered after creating a node pool with `Autoscaler` flag on, 
-just ignore this warning and DO NOT install the addon.
-4. Do not build your image in a Huawei Cloud ECS. Build the image in a machine that has access to the Google Container Registry (GCR).
 
 ## Deployment Steps
 ### Build Image
@@ -76,7 +67,131 @@ The following steps use Huawei SoftWare Repository for Container (SWR) as an exa
    
 5. For the cluster autoscaler to function normally, make sure the `Sharing Type` of the image is `Public`.
     If the cluster has trouble pulling the image, go to SWR console and check whether the `Sharing Type` of the image is 
-    `Private`. If it is, click `Edit` button on top right and set the `Sharing Type` to `Public`.
+    `Private`. If it is, click `Edit` button on top right and set the `Sharing Type` to `Public`.  
+  
+
+## Build Kubernetes Cluster on ECS   
+
+### 1. Install kubelet, kubeadm and kubectl   
+
+Please see installation [here](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
+
+For example:
+- OS: CentOS 8
+- Note: The following example should be run on ECS that has access to the Google Container Registry (GCR)
+    ```bash
+    cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+    [kubernetes]
+    name=Kubernetes
+    baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+    enabled=1
+    gpgcheck=1
+    repo_gpgcheck=1
+    gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/ doc/rpm-package-key.gpg
+    exclude=kubelet kubeadm kubectl
+    EOF
+    ```
+
+    ```
+    sudo setenforce 0
+    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+    sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+    sudo systemctl enable --now kubelet
+    ```
+### 2. Install Docker
+Please see installation [here](https://docs.docker.com/engine/install/)
+
+For example:
+- OS: CentOS 8
+- Note: The following example should be run on ECS that has access to the Google Container Registry (GCR)
+
+    ```bash
+    sudo yum install -y yum-utils
+
+    sudo yum-config-manager \
+        --add-repo \
+        https://download.docker.com/linux/centos/docker-ce.repo
+
+    sudo yum install docker-ce docker-ce-cli containerd.io
+
+    sudo systemctl start docker
+    ```
+
+### 3. Initialize Cluster
+```bash
+kubeadm init
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+### 4. Install Flannel Network
+```bash 
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+### 5. Generate Token
+```bash
+kubeadm token create -ttl 0
+```
+Generate a token that never expires. Remember this token since it will be used later.
+
+Get hash key. Remember the key since it will be used later.
+```
+openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+```
+
+### 6. Create OS Image with K8S Tools
+- Launch a new ECS instance, and install Kubeadm, Kubectl and docker.
+- Create a script to join the new instance into the k8s cluster.
+    ```bash
+    cat <<EOF >/etc/rc.d/init.d/init-k8s.sh
+    #!bin/bash
+    #chkconfig: 2345 80 90
+    setenforce 0
+    swapoff -a
+
+    yum install -y kubelet
+    systemctl start docker
+
+    kubeadm join --token $TOKEN $API_Server_EndPoint --discovery-token-ca-cert-hash $HASHKEY
+    EOF
+    ```
+- Add this script into chkconfig, to let it run automatically after the instance is started.
+    ```
+    chmod +x /etc/rc.d/init.d/init-k8s.sh
+    chkconfig --add /etc/rc.d/init.d/init-k8s.sh
+    chkconfig /etc/rc.d/init.d/init-k8s.sh on
+    ```
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
+- Copy `~/.kube/config` from a control plane (previously referred to as master) node to this ECS `~./kube/config` to setup kubectl on this instance.
+
+- Go to Huawei Cloud `Image Management` Service and click on `Create Image`. Select type `System disk image`, select your ECS instance as `Source`, then give it a name and then create.
+
+- Remember this ECS instance ID since it will be used later.
+
+### 7. Create AS Group
+- Follow the Huawei cloud instruction to create an AS Group.
+- Create an AS Configuration, and select private image which we just created.
+- While creating the `AS Configuration`, add the following script into `Advanced Settings`.
+    ```bash
+    #!bin/bash
+
+    IDS=$(ls /var/lib/cloud/instances/)
+    while true
+    do
+        for ID in $IDS
+        do
+            if [ $ID != $ECS_INSTANCE_ID ]; then
+                /usr/bin/kubectl --kubeconfig ~/.kube/config patch node $HOSTNAME -p "{\"spec\":{\"providerID\":\"$ID\"}}"
+            fi
+        done
+    sleep 30
+    done
+    ```
+ - Bind the AS Group with this AS Configuration
 
 ### Deploy Cluster Autoscaler
 #### Configure credentials
@@ -97,6 +212,24 @@ The following parameters are required in the Secret object yaml file:
     For example, for region `cn-north-4`, fill in the `identity-endpoint` as
     ```
     identity-endpoint=https://iam.cn-north-4.myhuaweicloud.com/v3.0
+    ```
+
+- `as-endpoint`
+
+    Find the as endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?AS), 
+        
+    For example, for region `cn-north-4`, the endpoint is
+    ```
+    as.cn-north-4.myhuaweicloud.com
+    ```
+
+- `ecs-endpoint`
+
+    Find the ecs endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?ECS), 
+        
+    For example, for region `cn-north-4`, the endpoint is 
+    ```
+    ecs.cn-north-4.myhuaweicloud.com
     ```
 
 - `project-id`
@@ -127,8 +260,7 @@ and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0
    ```
    {Minimum number of nodes}:{Maximum number of nodes}:{Node pool name}
    ```
-   The above parameters should match the parameters of the node pool you created. Currently, Huawei ServiceStage only provides 
-   autoscaling against a single node pool.
+   The above parameters should match the parameters of the AS Group you created.
    
    More configuration options can be added to the cluster autoscaler, such as `scale-down-delay-after-add`, `scale-down-unneeded-time`, etc.
    See available configuration options [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca).
@@ -136,10 +268,7 @@ and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0
 #### Deploy cluster autoscaler on the cluster
 1. Log in to a machine which can manage the cluster with `kubectl`.
 
-    Make sure the machine has kubectl access to the cluster. We recommend using a worker node to manage the cluster. Follow
-    the instructions for 
-[Connecting to a Kubernetes Cluster Using kubectl](https://support.huaweicloud.com/intl/en-us/usermanual-cce/cce_01_0107.html)
-to set up kubectl access to the cluster if you cannot execute `kubectl` on your machine.
+    Make sure the machine has kubectl access to the cluster.
 
 2. Create the Service Account:
     ```
@@ -163,25 +292,20 @@ kubectl get pods -n kube-system
 ```
 
 To see whether it functions correctly, deploy a Service to the cluster, and increase and decrease workload to the
-Service. Cluster autoscaler should be able to autoscale the node pool with `Autoscaler` on to accommodate the load.
+Service. Cluster autoscaler should be able to autoscale the AS Group to accommodate the load.
 
 A simple testing method is like this:
 - Create a Service: listening for http request
 
-- Create HPA or AOM policy for pods to be autoscaled
-    * AOM policy: To create an AOM policy, go into the deployment, click `Scaling` tag and click `Add Scaling Policy`
-    button on Huawei Cloud UI.
-    * HPA policy: There're two ways to create an HPA policy.
-        * Follow this instruction to create an HPA policy through UI: 
-        [Scaling a Workload](https://support.huaweicloud.com/intl/en-us/usermanual-cce/cce_01_0208.html)
-        * Install [metrics server](https://github.com/kubernetes-sigs/metrics-server) by yourself and create an HPA policy
-        by executing something like this:
-            ```
-            kubectl autoscale deployment [Deployment name] --cpu-percent=50 --min=1 --max=10
-            ```  
-            The above command creates an HPA policy on the deployment with target average cpu usage of 50%. The number of 
-            pods will grow if average cpu usage is above 50%, and will shrink otherwise. The `min` and `max` parameters set
-            the minimum and maximum number of pods of this deployment.
+- Create HPA policy for pods to be autoscaled
+    * Install [metrics server](https://github.com/kubernetes-sigs/metrics-server) by yourself and create an HPA policy
+    by executing something like this:
+        ```
+        kubectl autoscale deployment [Deployment name] --cpu-percent=50 --min=1 --max=10
+        ```  
+        The above command creates an HPA policy on the deployment with target average cpu usage of 50%. The number of 
+        pods will grow if average cpu usage is above 50%, and will shrink otherwise. The `min` and `max` parameters set
+        the minimum and maximum number of pods of this deployment.
 - Generate load to the above service
 
     Example tools for generating workload to an http service are:
@@ -196,30 +320,18 @@ A simple testing method is like this:
     
     Feel free to use other tools which have a similar function.
     
-- Wait for pods to be added: as load increases, more pods will be added by HPA or AOM
+- Wait for pods to be added: as load increases, more pods will be added by HPA
 
 - Wait for nodes to be added: when there's insufficient resource for additional pods, new nodes will be added to the 
 cluster by the cluster autoscaler
 
 - Stop the load
 
-- Wait for pods to be removed: as load decreases, pods will be removed by HPA or AOM
+- Wait for pods to be removed: as load decreases, pods will be removed by HPA
 
 - Wait for nodes to be removed: as pods being removed from nodes, several nodes will become underutilized or empty, 
 and will be removed by the cluster autoscaler
 
-
-## Notes
-
-1. Huawei ServiceStage does not yet support autoscaling against multiple node pools within a single cluster, but 
-this is currently under development. For now, make sure that there's only one node pool with `Autoscaler` label
-on in the cluster.
-2. If the version of the cluster is v1.15.6 or older, log statements similar to the following may be present in the
-autoscaler pod logs:
-    ```
-    E0402 13:25:05.472999       1 reflector.go:178] k8s.io/client-go/informers/factory.go:135: Failed to list *v1.CSINode: the server could not find the requested resource
-    ```
-    This is normal and will be fixed by a future version of cluster.
     
 ## Support & Contact Info
 

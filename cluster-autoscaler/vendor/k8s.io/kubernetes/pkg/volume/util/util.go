@@ -25,28 +25,30 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-
-	"k8s.io/klog/v2"
-	utilexec "k8s.io/utils/exec"
-	"k8s.io/utils/mount"
-	utilstrings "k8s.io/utils/strings"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	storage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	apiruntime "k8s.io/apimachinery/pkg/runtime"
 	utypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/component-helpers/scheduling/corev1"
+	storagehelpers "k8s.io/component-helpers/storage/volume"
+	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	"k8s.io/kubernetes/pkg/securitycontext"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util/types"
 	"k8s.io/kubernetes/pkg/volume/util/volumepathhandler"
+	"k8s.io/mount-utils"
+	utilexec "k8s.io/utils/exec"
+	"k8s.io/utils/io"
+	utilstrings "k8s.io/utils/strings"
 )
 
 const (
@@ -114,7 +116,7 @@ func SetReady(dir string) {
 func GetSecretForPod(pod *v1.Pod, secretName string, kubeClient clientset.Interface) (map[string]string, error) {
 	secret := make(map[string]string)
 	if kubeClient == nil {
-		return secret, fmt.Errorf("Cannot get kube client")
+		return secret, fmt.Errorf("cannot get kube client")
 	}
 	secrets, err := kubeClient.CoreV1().Secrets(pod.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
@@ -130,14 +132,14 @@ func GetSecretForPod(pod *v1.Pod, secretName string, kubeClient clientset.Interf
 func GetSecretForPV(secretNamespace, secretName, volumePluginName string, kubeClient clientset.Interface) (map[string]string, error) {
 	secret := make(map[string]string)
 	if kubeClient == nil {
-		return secret, fmt.Errorf("Cannot get kube client")
+		return secret, fmt.Errorf("cannot get kube client")
 	}
 	secrets, err := kubeClient.CoreV1().Secrets(secretNamespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return secret, err
 	}
 	if secrets.Type != v1.SecretType(volumePluginName) {
-		return secret, fmt.Errorf("Cannot get secret of type %s", volumePluginName)
+		return secret, fmt.Errorf("cannot get secret of type %s", volumePluginName)
 	}
 	for name, data := range secrets.Data {
 		secret[name] = string(data)
@@ -148,11 +150,11 @@ func GetSecretForPV(secretNamespace, secretName, volumePluginName string, kubeCl
 // GetClassForVolume locates storage class by persistent volume
 func GetClassForVolume(kubeClient clientset.Interface, pv *v1.PersistentVolume) (*storage.StorageClass, error) {
 	if kubeClient == nil {
-		return nil, fmt.Errorf("Cannot get kube client")
+		return nil, fmt.Errorf("cannot get kube client")
 	}
-	className := v1helper.GetPersistentVolumeClass(pv)
+	className := storagehelpers.GetPersistentVolumeClass(pv)
 	if className == "" {
-		return nil, fmt.Errorf("Volume has no storage class")
+		return nil, fmt.Errorf("volume has no storage class")
 	}
 
 	class, err := kubeClient.StorageV1().StorageClasses().Get(context.TODO(), className, metav1.GetOptions{})
@@ -165,19 +167,21 @@ func GetClassForVolume(kubeClient clientset.Interface, pv *v1.PersistentVolume) 
 // CheckNodeAffinity looks at the PV node affinity, and checks if the node has the same corresponding labels
 // This ensures that we don't mount a volume that doesn't belong to this node
 func CheckNodeAffinity(pv *v1.PersistentVolume, nodeLabels map[string]string) error {
-	return checkVolumeNodeAffinity(pv, nodeLabels)
+	return checkVolumeNodeAffinity(pv, &v1.Node{ObjectMeta: metav1.ObjectMeta{Labels: nodeLabels}})
 }
 
-func checkVolumeNodeAffinity(pv *v1.PersistentVolume, nodeLabels map[string]string) error {
+func checkVolumeNodeAffinity(pv *v1.PersistentVolume, node *v1.Node) error {
 	if pv.Spec.NodeAffinity == nil {
 		return nil
 	}
 
 	if pv.Spec.NodeAffinity.Required != nil {
-		terms := pv.Spec.NodeAffinity.Required.NodeSelectorTerms
+		terms := pv.Spec.NodeAffinity.Required
 		klog.V(10).Infof("Match for Required node selector terms %+v", terms)
-		if !v1helper.MatchNodeSelectorTerms(terms, labels.Set(nodeLabels), nil) {
-			return fmt.Errorf("No matching NodeSelectorTerms")
+		if matches, err := corev1.MatchNodeSelectorTerms(node, terms); err != nil {
+			return err
+		} else if !matches {
+			return fmt.Errorf("no matching NodeSelectorTerms")
 		}
 	}
 
@@ -241,7 +245,7 @@ func GenerateVolumeName(clusterName, pvName string, maxLength int) string {
 func GetPath(mounter volume.Mounter) (string, error) {
 	path := mounter.GetPath()
 	if path == "" {
-		return "", fmt.Errorf("Path is empty %s", reflect.TypeOf(mounter).String())
+		return "", fmt.Errorf("path is empty %s", reflect.TypeOf(mounter).String())
 	}
 	return path, nil
 }
@@ -294,8 +298,8 @@ func JoinMountOptions(userOptions []string, systemOptions []string) []string {
 	return allMountOptions.List()
 }
 
-// AccessModesContains returns whether the requested mode is contained by modes
-func AccessModesContains(modes []v1.PersistentVolumeAccessMode, mode v1.PersistentVolumeAccessMode) bool {
+// ContainsAccessMode returns whether the requested mode is contained by modes
+func ContainsAccessMode(modes []v1.PersistentVolumeAccessMode, mode v1.PersistentVolumeAccessMode) bool {
 	for _, m := range modes {
 		if m == mode {
 			return true
@@ -304,10 +308,10 @@ func AccessModesContains(modes []v1.PersistentVolumeAccessMode, mode v1.Persiste
 	return false
 }
 
-// AccessModesContainedInAll returns whether all of the requested modes are contained by modes
-func AccessModesContainedInAll(indexedModes []v1.PersistentVolumeAccessMode, requestedModes []v1.PersistentVolumeAccessMode) bool {
+// ContainsAllAccessModes returns whether all of the requested modes are contained by modes
+func ContainsAllAccessModes(indexedModes []v1.PersistentVolumeAccessMode, requestedModes []v1.PersistentVolumeAccessMode) bool {
 	for _, mode := range requestedModes {
-		if !AccessModesContains(indexedModes, mode) {
+		if !ContainsAccessMode(indexedModes, mode) {
 			return false
 		}
 	}
@@ -377,7 +381,10 @@ func GetUniqueVolumeNameFromSpec(
 
 // IsPodTerminated checks if pod is terminated
 func IsPodTerminated(pod *v1.Pod, podStatus v1.PodStatus) bool {
-	return podStatus.Phase == v1.PodFailed || podStatus.Phase == v1.PodSucceeded || (pod.DeletionTimestamp != nil && notRunning(podStatus.ContainerStatuses))
+	// TODO: the guarantees provided by kubelet status are not sufficient to guarantee it's safe to ignore a deleted pod,
+	// even if everything is notRunning (kubelet does not guarantee that when pod status is waiting that it isn't trying
+	// to start a container).
+	return podStatus.Phase == v1.PodFailed || podStatus.Phase == v1.PodSucceeded || (pod.DeletionTimestamp != nil && notRunning(podStatus.InitContainerStatuses) && notRunning(podStatus.ContainerStatuses) && notRunning(podStatus.EphemeralContainerStatuses))
 }
 
 // notRunning returns true if every status is terminated or waiting, or the status list
@@ -581,10 +588,12 @@ func GetPluginMountDir(host volume.VolumeHost, name string) string {
 
 // IsLocalEphemeralVolume determines whether the argument is a local ephemeral
 // volume vs. some other type
+// Local means the volume is using storage from the local disk that is managed by kubelet.
+// Ephemeral means the lifecycle of the volume is the same as the Pod.
 func IsLocalEphemeralVolume(volume v1.Volume) bool {
 	return volume.GitRepo != nil ||
-		(volume.EmptyDir != nil && volume.EmptyDir.Medium != v1.StorageMediumMemory) ||
-		volume.ConfigMap != nil || volume.DownwardAPI != nil
+		(volume.EmptyDir != nil && volume.EmptyDir.Medium == v1.StorageMediumDefault) ||
+		volume.ConfigMap != nil
 }
 
 // GetPodVolumeNames returns names of volumes that are used in a pod,
@@ -727,4 +736,28 @@ func IsDeviceMountableVolume(volumeSpec *volume.Spec, volumePluginMgr *volume.Vo
 	}
 
 	return false
+}
+
+// GetReliableMountRefs calls mounter.GetMountRefs and retries on IsInconsistentReadError.
+// To be used in volume reconstruction of volume plugins that don't have any protection
+// against mounting a single volume on multiple nodes (such as attach/detach).
+func GetReliableMountRefs(mounter mount.Interface, mountPath string) ([]string, error) {
+	var paths []string
+	var lastErr error
+	err := wait.PollImmediate(10*time.Millisecond, time.Minute, func() (bool, error) {
+		var err error
+		paths, err = mounter.GetMountRefs(mountPath)
+		if io.IsInconsistentReadError(err) {
+			lastErr = err
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	})
+	if err == wait.ErrWaitTimeout {
+		return nil, lastErr
+	}
+	return paths, err
 }

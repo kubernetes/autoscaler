@@ -23,6 +23,7 @@ package v1beta1
 import (
 	unsafe "unsafe"
 
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -105,6 +106,26 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*config.KubeletX509Authentication)(nil), (*v1beta1.KubeletX509Authentication)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_config_KubeletX509Authentication_To_v1beta1_KubeletX509Authentication(a.(*config.KubeletX509Authentication), b.(*v1beta1.KubeletX509Authentication), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta1.MemoryReservation)(nil), (*config.MemoryReservation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_MemoryReservation_To_config_MemoryReservation(a.(*v1beta1.MemoryReservation), b.(*config.MemoryReservation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*config.MemoryReservation)(nil), (*v1beta1.MemoryReservation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_config_MemoryReservation_To_v1beta1_MemoryReservation(a.(*config.MemoryReservation), b.(*v1beta1.MemoryReservation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1beta1.MemorySwapConfiguration)(nil), (*config.MemorySwapConfiguration)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration(a.(*v1beta1.MemorySwapConfiguration), b.(*config.MemorySwapConfiguration), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*config.MemorySwapConfiguration)(nil), (*v1beta1.MemorySwapConfiguration)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration(a.(*config.MemorySwapConfiguration), b.(*v1beta1.MemorySwapConfiguration), scope)
 	}); err != nil {
 		return err
 	}
@@ -273,8 +294,11 @@ func autoConvert_v1beta1_KubeletConfiguration_To_config_KubeletConfiguration(in 
 	}
 	out.CgroupDriver = in.CgroupDriver
 	out.CPUManagerPolicy = in.CPUManagerPolicy
+	out.CPUManagerPolicyOptions = *(*map[string]string)(unsafe.Pointer(&in.CPUManagerPolicyOptions))
 	out.CPUManagerReconcilePeriod = in.CPUManagerReconcilePeriod
+	out.MemoryManagerPolicy = in.MemoryManagerPolicy
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
+	out.TopologyManagerScope = in.TopologyManagerScope
 	out.QOSReserved = *(*map[string]string)(unsafe.Pointer(&in.QOSReserved))
 	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
 	out.HairpinMode = in.HairpinMode
@@ -327,6 +351,9 @@ func autoConvert_v1beta1_KubeletConfiguration_To_config_KubeletConfiguration(in 
 	if err := v1.Convert_Pointer_bool_To_bool(&in.FailSwapOn, &out.FailSwapOn, s); err != nil {
 		return err
 	}
+	if err := Convert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration(&in.MemorySwap, &out.MemorySwap, s); err != nil {
+		return err
+	}
 	out.ContainerLogMaxSize = in.ContainerLogMaxSize
 	if err := v1.Convert_Pointer_int32_To_int32(&in.ContainerLogMaxFiles, &out.ContainerLogMaxFiles, s); err != nil {
 		return err
@@ -349,6 +376,19 @@ func autoConvert_v1beta1_KubeletConfiguration_To_config_KubeletConfiguration(in 
 	if err := v1.Convert_Pointer_bool_To_bool(&in.EnableSystemLogHandler, &out.EnableSystemLogHandler, s); err != nil {
 		return err
 	}
+	out.ShutdownGracePeriod = in.ShutdownGracePeriod
+	out.ShutdownGracePeriodCriticalPods = in.ShutdownGracePeriodCriticalPods
+	out.ReservedMemory = *(*[]config.MemoryReservation)(unsafe.Pointer(&in.ReservedMemory))
+	if err := v1.Convert_Pointer_bool_To_bool(&in.EnableProfilingHandler, &out.EnableProfilingHandler, s); err != nil {
+		return err
+	}
+	if err := v1.Convert_Pointer_bool_To_bool(&in.EnableDebugFlagsHandler, &out.EnableDebugFlagsHandler, s); err != nil {
+		return err
+	}
+	if err := v1.Convert_Pointer_bool_To_bool(&in.SeccompDefault, &out.SeccompDefault, s); err != nil {
+		return err
+	}
+	out.MemoryThrottlingFactor = (*float64)(unsafe.Pointer(in.MemoryThrottlingFactor))
 	return nil
 }
 
@@ -425,8 +465,11 @@ func autoConvert_config_KubeletConfiguration_To_v1beta1_KubeletConfiguration(in 
 	}
 	out.CgroupDriver = in.CgroupDriver
 	out.CPUManagerPolicy = in.CPUManagerPolicy
+	out.CPUManagerPolicyOptions = *(*map[string]string)(unsafe.Pointer(&in.CPUManagerPolicyOptions))
 	out.CPUManagerReconcilePeriod = in.CPUManagerReconcilePeriod
+	out.MemoryManagerPolicy = in.MemoryManagerPolicy
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
+	out.TopologyManagerScope = in.TopologyManagerScope
 	out.QOSReserved = *(*map[string]string)(unsafe.Pointer(&in.QOSReserved))
 	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
 	out.HairpinMode = in.HairpinMode
@@ -479,6 +522,9 @@ func autoConvert_config_KubeletConfiguration_To_v1beta1_KubeletConfiguration(in 
 	if err := v1.Convert_bool_To_Pointer_bool(&in.FailSwapOn, &out.FailSwapOn, s); err != nil {
 		return err
 	}
+	if err := Convert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration(&in.MemorySwap, &out.MemorySwap, s); err != nil {
+		return err
+	}
 	out.ContainerLogMaxSize = in.ContainerLogMaxSize
 	if err := v1.Convert_int32_To_Pointer_int32(&in.ContainerLogMaxFiles, &out.ContainerLogMaxFiles, s); err != nil {
 		return err
@@ -499,6 +545,19 @@ func autoConvert_config_KubeletConfiguration_To_v1beta1_KubeletConfiguration(in 
 	if err := v1.Convert_bool_To_Pointer_bool(&in.EnableSystemLogHandler, &out.EnableSystemLogHandler, s); err != nil {
 		return err
 	}
+	out.ShutdownGracePeriod = in.ShutdownGracePeriod
+	out.ShutdownGracePeriodCriticalPods = in.ShutdownGracePeriodCriticalPods
+	out.ReservedMemory = *(*[]v1beta1.MemoryReservation)(unsafe.Pointer(&in.ReservedMemory))
+	if err := v1.Convert_bool_To_Pointer_bool(&in.EnableProfilingHandler, &out.EnableProfilingHandler, s); err != nil {
+		return err
+	}
+	if err := v1.Convert_bool_To_Pointer_bool(&in.EnableDebugFlagsHandler, &out.EnableDebugFlagsHandler, s); err != nil {
+		return err
+	}
+	if err := v1.Convert_bool_To_Pointer_bool(&in.SeccompDefault, &out.SeccompDefault, s); err != nil {
+		return err
+	}
+	out.MemoryThrottlingFactor = (*float64)(unsafe.Pointer(in.MemoryThrottlingFactor))
 	return nil
 }
 
@@ -573,6 +632,48 @@ func autoConvert_config_KubeletX509Authentication_To_v1beta1_KubeletX509Authenti
 // Convert_config_KubeletX509Authentication_To_v1beta1_KubeletX509Authentication is an autogenerated conversion function.
 func Convert_config_KubeletX509Authentication_To_v1beta1_KubeletX509Authentication(in *config.KubeletX509Authentication, out *v1beta1.KubeletX509Authentication, s conversion.Scope) error {
 	return autoConvert_config_KubeletX509Authentication_To_v1beta1_KubeletX509Authentication(in, out, s)
+}
+
+func autoConvert_v1beta1_MemoryReservation_To_config_MemoryReservation(in *v1beta1.MemoryReservation, out *config.MemoryReservation, s conversion.Scope) error {
+	out.NumaNode = in.NumaNode
+	out.Limits = *(*corev1.ResourceList)(unsafe.Pointer(&in.Limits))
+	return nil
+}
+
+// Convert_v1beta1_MemoryReservation_To_config_MemoryReservation is an autogenerated conversion function.
+func Convert_v1beta1_MemoryReservation_To_config_MemoryReservation(in *v1beta1.MemoryReservation, out *config.MemoryReservation, s conversion.Scope) error {
+	return autoConvert_v1beta1_MemoryReservation_To_config_MemoryReservation(in, out, s)
+}
+
+func autoConvert_config_MemoryReservation_To_v1beta1_MemoryReservation(in *config.MemoryReservation, out *v1beta1.MemoryReservation, s conversion.Scope) error {
+	out.NumaNode = in.NumaNode
+	out.Limits = *(*corev1.ResourceList)(unsafe.Pointer(&in.Limits))
+	return nil
+}
+
+// Convert_config_MemoryReservation_To_v1beta1_MemoryReservation is an autogenerated conversion function.
+func Convert_config_MemoryReservation_To_v1beta1_MemoryReservation(in *config.MemoryReservation, out *v1beta1.MemoryReservation, s conversion.Scope) error {
+	return autoConvert_config_MemoryReservation_To_v1beta1_MemoryReservation(in, out, s)
+}
+
+func autoConvert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration(in *v1beta1.MemorySwapConfiguration, out *config.MemorySwapConfiguration, s conversion.Scope) error {
+	out.SwapBehavior = in.SwapBehavior
+	return nil
+}
+
+// Convert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration is an autogenerated conversion function.
+func Convert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration(in *v1beta1.MemorySwapConfiguration, out *config.MemorySwapConfiguration, s conversion.Scope) error {
+	return autoConvert_v1beta1_MemorySwapConfiguration_To_config_MemorySwapConfiguration(in, out, s)
+}
+
+func autoConvert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration(in *config.MemorySwapConfiguration, out *v1beta1.MemorySwapConfiguration, s conversion.Scope) error {
+	out.SwapBehavior = in.SwapBehavior
+	return nil
+}
+
+// Convert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration is an autogenerated conversion function.
+func Convert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration(in *config.MemorySwapConfiguration, out *v1beta1.MemorySwapConfiguration, s conversion.Scope) error {
+	return autoConvert_config_MemorySwapConfiguration_To_v1beta1_MemorySwapConfiguration(in, out, s)
 }
 
 func autoConvert_v1beta1_SerializedNodeConfigSource_To_config_SerializedNodeConfigSource(in *v1beta1.SerializedNodeConfigSource, out *config.SerializedNodeConfigSource, s conversion.Scope) error {
