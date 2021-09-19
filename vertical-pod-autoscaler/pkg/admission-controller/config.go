@@ -21,7 +21,8 @@ import (
 	"crypto/tls"
 	"time"
 
-	admissionregistration "k8s.io/api/admissionregistration/v1"
+	admissionregistrationV1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationV1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -59,45 +60,46 @@ func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *t
 // by creating MutatingWebhookConfiguration.
 func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
 	time.Sleep(10 * time.Second)
-	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	
+    client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
 		if err2 := client.Delete(context.TODO(), webhookConfigName, metav1.DeleteOptions{}); err2 != nil {
 			klog.Fatal(err2)
 		}
 	}
-	RegisterClientConfig := admissionregistration.WebhookClientConfig{}
+	RegisterClientConfig := admissionregistrationV1beta1.WebhookClientConfig{}
 	if !registerByURL {
-		RegisterClientConfig.Service = &admissionregistration.ServiceReference{
+		RegisterClientConfig.Service = &admissionregistrationV1beta1.ServiceReference{
 			Namespace: namespace,
 			Name:      serviceName,
 		}
 	} else {
 		RegisterClientConfig.URL = &url
 	}
-	sideEffects := admissionregistration.SideEffectClassNone
-	failurePolicy := admissionregistration.Ignore
+	sideEffects := admissionregistrationV1beta1.SideEffectClassNone
+	failurePolicy := admissionregistrationV1beta1.Ignore
 	RegisterClientConfig.CABundle = caCert
-	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
+	webhookConfig := &admissionregistrationV1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
 		},
-		Webhooks: []admissionregistration.MutatingWebhook{
+		Webhooks: []admissionregistrationV1beta1.MutatingWebhook{
 			{
-				Name:                    "vpa.k8s.io",
+				Name: "vpa.k8s.io",
 				AdmissionReviewVersions: []string{"v1beta1"},
-				Rules: []admissionregistration.RuleWithOperations{
+				Rules: []admissionregistrationV1beta1.RuleWithOperations{
 					{
-						Operations: []admissionregistration.OperationType{admissionregistration.Create},
-						Rule: admissionregistration.Rule{
+						Operations: []admissionregistrationV1beta1.OperationType{admissionregistrationV1beta1.Create},
+						Rule: admissionregistrationV1beta1.Rule{
 							APIGroups:   []string{""},
 							APIVersions: []string{"v1"},
 							Resources:   []string{"pods"},
 						},
 					},
 					{
-						Operations: []admissionregistration.OperationType{admissionregistration.Create, admissionregistration.Update},
-						Rule: admissionregistration.Rule{
+						Operations: []admissionregistrationV1beta1.OperationType{admissionregistrationV1beta1.Create, admissionregistrationV1beta1.Update},
+						Rule: admissionregistrationV1beta1.Rule{
 							APIGroups:   []string{"autoscaling.k8s.io"},
 							APIVersions: []string{"*"},
 							Resources:   []string{"verticalpodautoscalers"},
@@ -112,7 +114,63 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		},
 	}
 	if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{}); err != nil {
-		klog.Fatal(err)
+		client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
+		_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
+		if err == nil {
+			if err2 := client.Delete(context.TODO(), webhookConfigName, metav1.DeleteOptions{}); err2 != nil {
+				klog.Fatal(err2)
+			}
+		}
+		RegisterClientConfig := admissionregistrationV1.WebhookClientConfig{}
+		if !registerByURL {
+			RegisterClientConfig.Service = &admissionregistrationV1.ServiceReference{
+				Namespace: namespace,
+				Name:      serviceName,
+			}
+		} else {
+			RegisterClientConfig.URL = &url
+		}
+		sideEffects := admissionregistrationV1.SideEffectClassNone
+		failurePolicy := admissionregistrationV1.Ignore
+		RegisterClientConfig.CABundle = caCert
+		webhookConfig := &admissionregistrationV1.MutatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: webhookConfigName,
+			},
+			Webhooks: []admissionregistrationV1.MutatingWebhook{
+				{
+					Name: "vpa.k8s.io",
+					AdmissionReviewVersions: []string{"v1beta1"},
+					Rules: []admissionregistrationV1.RuleWithOperations{
+						{
+							Operations: []admissionregistrationV1.OperationType{admissionregistrationV1.Create},
+							Rule: admissionregistrationV1.Rule{
+								APIGroups:   []string{""},
+								APIVersions: []string{"v1"},
+								Resources:   []string{"pods"},
+							},
+						},
+						{
+							Operations: []admissionregistrationV1.OperationType{admissionregistrationV1.Create, admissionregistrationV1.Update},
+							Rule: admissionregistrationV1.Rule{
+								APIGroups:   []string{"autoscaling.k8s.io"},
+								APIVersions: []string{"*"},
+								Resources:   []string{"verticalpodautoscalers"},
+							},
+						},
+					},
+					FailurePolicy:  &failurePolicy,
+					ClientConfig:   RegisterClientConfig,
+					SideEffects:    &sideEffects,
+					TimeoutSeconds: &timeoutSeconds,
+				},
+			},
+		}
+		if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{}); err != nil {
+			klog.Fatal(err)
+		} else {
+			klog.V(3).Info("Self registration as MutatingWebhook succeeded.")
+		}
 	} else {
 		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")
 	}

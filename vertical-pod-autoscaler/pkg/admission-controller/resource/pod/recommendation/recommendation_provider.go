@@ -23,6 +23,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+    vpa_resource "k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog"
 )
 
@@ -51,6 +52,8 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
+		resources[i].Requests = container.Resources.Requests
+		resources[i].Limits = container.Resources.Limits
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
 			if !addAll {
@@ -62,6 +65,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		} else {
 			resources[i].Requests = recommendation.Target
 		}
+                klog.V(2).Infof("Recomendation %v", recommendation.Target)
 		defaultLimit := core.ResourceList{}
 		if limitRange != nil {
 			defaultLimit = limitRange.Default
@@ -109,5 +113,34 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		resourcePolicy = vpa.Spec.ResourcePolicy
 	}
 	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
+        for i, containerResource := range containerResources {
+            if containerResource.Requests.Memory != nil {
+				quant := vpa_resource.Quantity(containerResource.Requests["memory"])
+				if quant.IsZero() {
+					containerResource.Requests["memory"] = pod.Spec.Containers[i].Resources.Requests["memory"]
+				}
+			}
+
+			if containerResource.Limits.Memory != nil {
+				quant := vpa_resource.Quantity(containerResource.Limits["memory"])
+				if quant.IsZero() {
+					containerResource.Limits["memory"] = pod.Spec.Containers[i].Resources.Limits["memory"]
+				}
+			}
+
+			if containerResource.Requests.Cpu != nil {
+				quant := vpa_resource.Quantity(containerResource.Requests["cpu"])
+				if quant.IsZero() {
+					containerResource.Requests["cpu"] = pod.Spec.Containers[i].Resources.Requests["cpu"]
+				}
+			}
+
+			if containerResource.Limits.Cpu != nil {
+				quant := vpa_resource.Quantity(containerResource.Limits["cpu"])
+				if quant.IsZero() {
+					containerResource.Limits["cpu"] = pod.Spec.Containers[i].Resources.Limits["cpu"]
+				}
+			}
+        } 
 	return containerResources, annotations, nil
 }
