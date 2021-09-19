@@ -57,7 +57,8 @@ The current default version is Vertical Pod Autoscaler 0.9.2
 | 0.4 to 0.7 | 1.11+ |
 | 0.3.X and lower | 1.7+ |
 
-### This version correction of controlling one resource (cpu) and defition of requests and limits of two resources (cpu,memory)
+### Correction
+**NOTE**: This version correction of controlling one resource (cpu) and defition of requests and limits of two resources (cpu,memory)
 
 ### Notice on removal of v1beta1 version (>=0.5.0)
 
