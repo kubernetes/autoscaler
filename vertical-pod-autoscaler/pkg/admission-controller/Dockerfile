@@ -15,7 +15,7 @@
 FROM gcr.io/distroless/static:latest
 MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
 ARG ARCH
-copy admission-controller-$ARCH /admission-controller
+copy admission-controller* /admission-controller
 
 ENTRYPOINT ["/admission-controller"]
 CMD ["--v=4", "--stderrthreshold=info"]

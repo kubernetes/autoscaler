@@ -19,11 +19,9 @@ spec:
       - containerName: '*'
         minAllowed:
           cpu: 100m
-          memory: 50Mi
         maxAllowed:
           cpu: 1
-          memory: 500Mi
-        controlledResources: ["cpu", "memory"]
+        controlledResources: ["cpu"]
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -48,7 +46,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 50Mi
+              memory: 250Mi
+            limits:
+              cpu: 1
+              memory: 500Mi
           command: ["/bin/sh"]
           args:
             - "-c"
