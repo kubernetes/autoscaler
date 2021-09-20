@@ -93,6 +93,7 @@ var (
 	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
+	podTemplatesProcessor  = flag.Bool("node-infos-processor-podtemplate", true, "Enable PodTemplate NodeInfoProcessor to consider specific PodTemplate as DaemonSet")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -242,6 +243,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MinMemoryTotal:                     minMemoryTotal,
 		GpuTotal:                           parsedGpuTotal,
 		NodeGroups:                         *nodeGroupsFlag,
+		NodeInfosProcessorPodTemplates:     *podTemplatesProcessor,
 		ScaleDownDelayAfterAdd:             *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
