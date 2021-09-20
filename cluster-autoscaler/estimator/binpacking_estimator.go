@@ -22,9 +22,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 )
 
 // podInfo contains Pod and score that corresponds to how important it is to handle the pod first.

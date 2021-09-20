@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
