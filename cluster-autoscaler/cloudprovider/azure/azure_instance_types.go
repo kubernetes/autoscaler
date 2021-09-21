@@ -2380,6 +2380,12 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     688128,
 		GPU:          8,
 	},
+	"Standard_ND96asr_v4": {
+		InstanceType: "Standard_ND96asr_v4",
+		VCPU:         96,
+		MemoryMb:     921600,
+		GPU:          8,
+	},
 	"Standard_NV12": {
 		InstanceType: "Standard_NV12",
 		VCPU:         12,
