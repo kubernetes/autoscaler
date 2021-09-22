@@ -23,6 +23,11 @@ github.com/Azure/go-autorest/autorest/azure
 # github.com/Azure/go-autorest/autorest/adal v0.9.13
 ## explicit
 github.com/Azure/go-autorest/autorest/adal
+# github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
+## explicit
+github.com/Azure/go-autorest/autorest/azure/auth
+# github.com/Azure/go-autorest/autorest/azure/cli v0.4.2
+github.com/Azure/go-autorest/autorest/azure/cli
 # github.com/Azure/go-autorest/autorest/date v0.3.0
 ## explicit
 github.com/Azure/go-autorest/autorest/date
@@ -192,6 +197,8 @@ github.com/davecgh/go-spew/spew
 # github.com/digitalocean/godo v1.27.0 => github.com/digitalocean/godo v1.27.0
 ## explicit
 github.com/digitalocean/godo
+# github.com/dimchansky/utfbom v1.1.1
+github.com/dimchansky/utfbom
 # github.com/docker/distribution v2.7.1+incompatible
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
@@ -416,6 +423,8 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 github.com/mindprince/gonvml
 # github.com/mistifyio/go-zfs v2.1.2-0.20190413222219-f784269be439+incompatible
 github.com/mistifyio/go-zfs
+# github.com/mitchellh/go-homedir v1.1.0
+github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
 # github.com/moby/ipvs v1.0.1
@@ -670,7 +679,7 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
-# golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+# golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 ## explicit
 golang.org/x/crypto/cryptobyte
 golang.org/x/crypto/cryptobyte/asn1
