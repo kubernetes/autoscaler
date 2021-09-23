@@ -92,12 +92,14 @@ func newASGCache(awsService *awsWrapper, explicitSpecs []string, autoDiscoverySp
 }
 
 // Use a function variable for ease of testing
-var getCachedInstanceTypeForAsg = func(m *asgCache, asg *asg) (string, error) {
-	if obj, found, _ := m.asgInstanceTypeCache.GetByKey(asg.AwsRef.Name); found {
+var getInstanceTypeForAsg = func(m *asgCache, group *asg) (string, error) {
+	if obj, found, _ := m.asgInstanceTypeCache.GetByKey(group.AwsRef.Name); found {
 		return obj.(instanceTypeCachedObject).instanceType, nil
+	} else if result, err := m.awsService.getInstanceTypesForAsgs([]*asg{group}); err == nil {
+		return result[group.AwsRef.Name], nil
 	}
 
-	return "", fmt.Errorf("Could not find instance type for %s", asg.AwsRef.Name)
+	return "", fmt.Errorf("Could not find instance type for %s", group.AwsRef.Name)
 }
 
 // Fetch explicitly configured ASGs. These ASGs should never be unregistered
@@ -370,11 +372,6 @@ func (m *asgCache) regenerate() error {
 		return err
 	}
 
-	err = m.asgInstanceTypeCache.populate(groups)
-	if err != nil {
-		klog.Warningf("Failed to fully populate all launchConfigurations: %v", err)
-	}
-
 	// If currently any ASG has more Desired than running Instances, introduce placeholders
 	// for the instances to come up. This is required to track Desired instances that
 	// will never come up, like with Spot Request that can't be fulfilled
@@ -405,6 +402,11 @@ func (m *asgCache) regenerate() error {
 		if !exists[asg.AwsRef] && !m.explicitlyConfigured[asg.AwsRef] {
 			m.unregister(asg)
 		}
+	}
+
+	err = m.asgInstanceTypeCache.populate(m.registeredAsgs)
+	if err != nil {
+		klog.Warningf("Failed to fully populate ASG->instanceType mapping: %v", err)
 	}
 
 	m.asgToInstances = newAsgToInstancesCache
