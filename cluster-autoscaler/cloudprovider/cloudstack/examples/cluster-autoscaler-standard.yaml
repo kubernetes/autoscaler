@@ -139,9 +139,9 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: shapeblue/cloudstack-k8s-autoscaler:v1.0.0
+        - image: apache/cloudstack-kubernetes-autoscaler:latest
           name: cluster-autoscaler
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           resources:
             limits:
               cpu: 100m
