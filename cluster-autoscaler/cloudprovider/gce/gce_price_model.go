@@ -52,6 +52,7 @@ var (
 		"n1":  0.031611,
 		"n2":  0.031611,
 		"n2d": 0.027502,
+		"t2d": 0.027502,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
@@ -61,6 +62,7 @@ var (
 		"n1":  0.004237,
 		"n2":  0.004237,
 		"n2d": 0.003686,
+		"t2d": 0.003686,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
@@ -70,6 +72,7 @@ var (
 		"n1":  0.006655 / 0.031611,
 		"n2":  0.007650 / 0.031611,
 		"n2d": 0.006655 / 0.027502,
+		"t2d": 0.006655 / 0.027502,
 	}
 
 	customCpuPricePerHour = map[string]float64{
@@ -214,6 +217,14 @@ var (
 		"n2d-standard-96":  4.0556,
 		"n2d-standard-128": 5.4075,
 		"n2d-standard-224": 9.4632,
+		"t2d-standard-1":   0.0422,
+		"t2d-standard-2":   0.0845,
+		"t2d-standard-4":   0.1690,
+		"t2d-standard-8":   0.3380,
+		"t2d-standard-16":  0.6759,
+		"t2d-standard-32":  1.3519,
+		"t2d-standard-48":  2.0278,
+		"t2d-standard-60":  2.5348,
 	}
 	preemptiblePrices = map[string]float64{
 		"a2-highgpu-1g":    1.102016,
@@ -332,6 +343,14 @@ var (
 		"n2d-standard-96":  0.9814,
 		"n2d-standard-128": 1.3085,
 		"n2d-standard-224": 2.2900,
+		"t2d-standard-1":   0.0102,
+		"t2d-standard-2":   0.0204,
+		"t2d-standard-4":   0.0409,
+		"t2d-standard-8":   0.0818,
+		"t2d-standard-16":  0.1636,
+		"t2d-standard-32":  0.3271,
+		"t2d-standard-48":  0.4907,
+		"t2d-standard-60":  0.6134,
 	}
 	gpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.35,
