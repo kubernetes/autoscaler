@@ -18,6 +18,7 @@ package aws
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -109,6 +110,102 @@ func TestMoreThen100Groups(t *testing.T) {
 	assert.Equal(t, len(asgs), 2)
 	assert.Equal(t, *asgs[0].AutoScalingGroupName, "asg-1")
 	assert.Equal(t, *asgs[1].AutoScalingGroupName, "asg-2")
+}
+
+func TestGetInstanceTypesForAsgs(t *testing.T) {
+	asgName, ltName, ltVersion, instanceType := "testasg", "launcher", "1", "t2.large"
+	ltSpec := launchTemplate{
+		name:    ltName,
+		version: ltVersion,
+	}
+
+	a := &autoScalingMock{}
+	e := &ec2Mock{}
+	a.On("DescribeLaunchConfigurations", &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{aws.String(ltName)},
+		MaxRecords:               aws.Int64(50),
+	}).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String(ltName),
+				InstanceType:            aws.String(instanceType),
+			},
+		},
+	})
+	e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(ltName),
+		Versions:           []*string{aws.String(ltVersion)},
+	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+			{
+				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+					InstanceType: aws.String(instanceType),
+				},
+			},
+		},
+	})
+
+	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
+
+	awsWrapper := &awsWrapper{
+		autoScalingI: a,
+		ec2I:         e,
+	}
+
+	cases := []struct {
+		name                    string
+		launchConfigurationName string
+		launchTemplate          *launchTemplate
+		mixedInstancesPolicy    *mixedInstancesPolicy
+	}{
+		{
+			"AsgWithLaunchConfiguration",
+			ltName,
+			nil,
+			nil,
+		},
+		{
+			"AsgWithLaunchTemplate",
+			"",
+			&ltSpec,
+			nil,
+		},
+		{
+			"AsgWithLaunchTemplateMixedInstancePolicyOverride",
+			"",
+			nil,
+			&mixedInstancesPolicy{
+				instanceTypesOverrides: []string{instanceType},
+			},
+		},
+		{
+			"AsgWithLaunchTemplateMixedInstancePolicyNoOverride",
+			"",
+			nil,
+			&mixedInstancesPolicy{
+				launchTemplate: &ltSpec,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		results, err := awsWrapper.getInstanceTypesForAsgs([]*asg{
+			{
+				AwsRef:                  AwsRef{Name: asgName},
+				LaunchConfigurationName: tc.launchConfigurationName,
+				LaunchTemplate:          tc.launchTemplate,
+				MixedInstancesPolicy:    tc.mixedInstancesPolicy,
+			},
+		})
+		assert.NoError(t, err)
+
+		foundInstanceType, exists := results[asgName]
+		assert.NoErrorf(t, err, "%s had error %v", tc.name, err)
+		assert.Truef(t, exists, "%s did not find asg", tc.name)
+		assert.Equalf(t, foundInstanceType, instanceType, "%s had %s, expected %s", tc.name, foundInstanceType, instanceType)
+	}
 }
 
 func TestBuildLaunchTemplateFromSpec(t *testing.T) {
