@@ -4,12 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/tools/cache"
-	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -71,9 +68,8 @@ func (c *jitterClock) Since(ts time.Time) time.Duration {
 	return since
 }
 
-func (m instanceTypeExpirationStore) populate(autoscalingGroups []*autoscaling.Group) error {
-	launchConfigsToQuery := map[string]*string{}
-	launchTemplatesToQuery := map[string]*autoscaling.LaunchTemplateSpecification{}
+func (m instanceTypeExpirationStore) populate(autoscalingGroups []*asg) error {
+	asgsToQuery := []*asg{}
 
 	if c, ok := m.jitterClock.(*jitterClock); ok {
 		c.Lock()
@@ -82,30 +78,14 @@ func (m instanceTypeExpirationStore) populate(autoscalingGroups []*autoscaling.G
 	}
 
 	for _, asg := range autoscalingGroups {
-		name := aws.StringValue(asg.AutoScalingGroupName)
-
 		if asg == nil {
 			continue
 		}
-		_, found, _ := m.GetByKey(name)
+		_, found, _ := m.GetByKey(asg.AwsRef.Name)
 		if found {
 			continue
 		}
-
-		if asg.LaunchConfigurationName != nil {
-			launchConfigsToQuery[name] = asg.LaunchConfigurationName
-		} else if asg.LaunchTemplate != nil {
-			launchTemplatesToQuery[name] = asg.LaunchTemplate
-		} else if asg.MixedInstancesPolicy != nil {
-			if len(asg.MixedInstancesPolicy.LaunchTemplate.Overrides) > 0 {
-				m.Add(instanceTypeCachedObject{
-					name:         name,
-					instanceType: aws.StringValue(asg.MixedInstancesPolicy.LaunchTemplate.Overrides[0].InstanceType),
-				})
-			} else {
-				launchTemplatesToQuery[name] = asg.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification
-			}
-		}
+		asgsToQuery = append(asgsToQuery, asg)
 	}
 
 	if c, ok := m.jitterClock.(*jitterClock); ok {
@@ -117,42 +97,16 @@ func (m instanceTypeExpirationStore) populate(autoscalingGroups []*autoscaling.G
 	// List expires old entries
 	_ = m.List()
 
-	klog.V(4).Infof("%d launch configurations to query", len(launchConfigsToQuery))
-	klog.V(4).Infof("%d launch templates to query", len(launchTemplatesToQuery))
-
-	// Query these all at once to minimize AWS API calls
-	launchConfigNames := make([]*string, 0, len(launchConfigsToQuery))
-	for _, cfgName := range launchConfigsToQuery {
-		launchConfigNames = append(launchConfigNames, cfgName)
-	}
-	launchConfigs, err := m.awsService.getInstanceTypeByLaunchConfigNames(launchConfigNames)
+	instanceTypesByAsg, err := m.awsService.getInstanceTypesForAsgs(asgsToQuery)
 	if err != nil {
-		klog.Errorf("Failed to query %d launch configurations", len(launchConfigsToQuery))
 		return err
 	}
 
-	for asgName, cfgName := range launchConfigsToQuery {
-		m.Add(instanceTypeCachedObject{
-			name:         asgName,
-			instanceType: launchConfigs[*cfgName],
-		})
-	}
-	klog.V(4).Infof("Successfully query %d launch configurations", len(launchConfigsToQuery))
-
-	// Have to query LaunchTemplates one-at-a-time, since there's no way to query <lt, version> pairs in bulk
-	for asgName, launchTemplateSpec := range launchTemplatesToQuery {
-		launchTemplate := buildLaunchTemplateFromSpec(launchTemplateSpec)
-		instanceType, err := m.awsService.getInstanceTypeByLaunchTemplate(launchTemplate)
-		if err != nil {
-			klog.Error("Failed to query launch tempate %s", launchTemplate.name)
-			continue
-		}
+	for asgName, instanceType := range instanceTypesByAsg {
 		m.Add(instanceTypeCachedObject{
 			name:         asgName,
 			instanceType: instanceType,
 		})
 	}
-	klog.V(4).Infof("Successfully query %d launch templates", len(launchTemplatesToQuery))
-
 	return nil
 }
