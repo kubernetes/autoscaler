@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	klog "k8s.io/klog/v2"
 )
 
 // autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
@@ -185,6 +186,59 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 	}
 
 	return aws.StringValue(instanceType), nil
+}
+
+func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, error) {
+	results := map[string]string{}
+	launchConfigsToQuery := map[string]string{}
+	launchTemplatesToQuery := map[string]*launchTemplate{}
+
+	for _, asg := range asgs {
+		name := asg.AwsRef.Name
+		if asg.LaunchConfigurationName != "" {
+			launchConfigsToQuery[name] = asg.LaunchConfigurationName
+		} else if asg.LaunchTemplate != nil {
+			launchTemplatesToQuery[name] = asg.LaunchTemplate
+		} else if asg.MixedInstancesPolicy != nil {
+			if len(asg.MixedInstancesPolicy.instanceTypesOverrides) > 0 {
+				results[name] = asg.MixedInstancesPolicy.instanceTypesOverrides[0]
+			} else {
+				launchTemplatesToQuery[name] = asg.MixedInstancesPolicy.launchTemplate
+			}
+		}
+	}
+
+	klog.V(4).Infof("%d launch configurations to query", len(launchConfigsToQuery))
+	klog.V(4).Infof("%d launch templates to query", len(launchTemplatesToQuery))
+
+	// Query these all at once to minimize AWS API calls
+	launchConfigNames := make([]*string, 0, len(launchConfigsToQuery))
+	for _, cfgName := range launchConfigsToQuery {
+		launchConfigNames = append(launchConfigNames, aws.String(cfgName))
+	}
+	launchConfigs, err := m.getInstanceTypeByLaunchConfigNames(launchConfigNames)
+	if err != nil {
+		klog.Errorf("Failed to query %d launch configurations", len(launchConfigsToQuery))
+		return nil, err
+	}
+
+	for asgName, cfgName := range launchConfigsToQuery {
+		results[asgName] = launchConfigs[cfgName]
+	}
+	klog.V(4).Infof("Successfully queried %d launch configurations", len(launchConfigsToQuery))
+
+	// Have to query LaunchTemplates one-at-a-time, since there's no way to query <lt, version> pairs in bulk
+	for asgName, lt := range launchTemplatesToQuery {
+		instanceType, err := m.getInstanceTypeByLaunchTemplate(lt)
+		if err != nil {
+			klog.Errorf("Failed to query launch tempate %s: %v", lt.name, err)
+			continue
+		}
+		results[asgName] = instanceType
+	}
+	klog.V(4).Infof("Successfully queried %d launch templates", len(launchTemplatesToQuery))
+
+	return results, nil
 }
 
 func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification) *launchTemplate {
