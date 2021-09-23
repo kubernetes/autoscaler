@@ -396,9 +396,9 @@ func TestGetASGTemplate(t *testing.T) {
 			do := cloudprovider.NodeGroupDiscoveryOptions{}
 
 			m, err := createAWSManagerInternal(nil, do, &awsWrapper{nil, e}, instanceTypes)
-			origGetInstanceTypeFunc := getCachedInstanceTypeForAsg
-			defer func() { getCachedInstanceTypeForAsg = origGetInstanceTypeFunc }()
-			getCachedInstanceTypeForAsg = func(m *asgCache, asg *asg) (string, error) {
+			origGetInstanceTypeFunc := getInstanceTypeForAsg
+			defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+			getInstanceTypeForAsg = func(m *asgCache, asg *asg) (string, error) {
 				return test.instanceType, nil
 			}
 			assert.NoError(t, err)
