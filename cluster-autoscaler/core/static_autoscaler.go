@@ -604,7 +604,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
 		if unregisteredNode.UnregisteredSince.Add(context.MaxNodeProvisionTime).Before(currentTime) {
-			klog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
+			klog.V(0).Infof("Removing unregistered node %v with status %v", unregisteredNode.Node.Name, unregisteredNode.Status)
 			nodeGroup, err := context.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
 			if err != nil {
 				klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
@@ -619,8 +619,12 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				klog.Warningf("Failed to get node group size; unregisteredNode=%v; nodeGroup=%v; err=%v", unregisteredNode.Node.Name, nodeGroup.Id(), err)
 				continue
 			}
-			if nodeGroup.MinSize() >= size {
-				klog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
+			// If the node is stuck in the `InstanceCreating` state, that might mean that the cloud
+			// provider isn't able to fulfill our request, so we should go ahead and delete this
+			// node even if it would take us under our minimum size; if we don't, we can get stuck
+			// in a state where we never back off this node group even though we will never scale up
+			if nodeGroup.MinSize() >= size && (unregisteredNode.Status == nil || unregisteredNode.Status.State != cloudprovider.InstanceCreating) {
+				klog.Warningf("Failed to remove node %s: node group min size reached and node status is not 'creating', skipping unregistered node removal", unregisteredNode.Node.Name)
 				continue
 			}
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})

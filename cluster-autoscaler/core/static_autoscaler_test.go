@@ -455,7 +455,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 }
 
-func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
+func TestStaticAutoscalerRunOnceWithLongUnregisteredNodes(t *testing.T) {
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
@@ -487,9 +487,14 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	provider.AddNode("ng1", n1)
 
 	// broken node, that will be just hanging out there during
-	// the test (it can't be removed since that would validate group min size)
+	// the test (it can't be removed since that would violate group min size)
 	brokenNode := BuildTestNode("broken", 1000, 1000)
 	provider.AddNode("ng1", brokenNode)
+
+	// This node is stuck in the "instance creating" state, and will be removed
+	// even though min size might be violated
+	stuckCreatingNode := BuildTestNode("stuck_creating", 1000, 1000)
+	provider.AddNodeWithStatus("ng1", stuckCreatingNode, &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating})
 
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
 	assert.NotNil(t, ng1)
@@ -530,7 +535,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	//nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState.UpdateNodes(nodes, nil, now)
 
-	// broken node failed to register in time
+	// broken/stuck nodes failed to register in time
 	clusterState.UpdateNodes(nodes, nil, later)
 
 	processors := NewTestProcessors()
@@ -560,14 +565,15 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
-	// Remove broken node after going over min size
+	// Remove broken/stuck nodes after going over min size
 	provider.AddNode("ng1", n2)
-	ng1.SetTargetSize(3)
+	ng1.SetTargetSize(4)
 
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
-	onScaleDownMock.On("ScaleDown", "ng1", "broken").Return(nil).Once()
+	onScaleDownMock.On("ScaleDown", "ng1", "broken").Return(nil).Once().
+		On("ScaleDown", "ng1", "stuck_creating").Return(nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 
 	err = autoscaler.RunOnce(later.Add(2 * time.Hour))

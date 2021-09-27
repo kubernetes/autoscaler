@@ -34,7 +34,8 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "k8s.amazonaws.com/accelerator"
+	GPULabel                      = "k8s.amazonaws.com/accelerator"
+	placeholderInstanceNamePrefix = "i-placeholder"
 )
 
 var (
@@ -155,6 +156,11 @@ type AwsRef struct {
 type AwsInstanceRef struct {
 	ProviderID string
 	Name       string
+}
+
+// isPlaceholder checks if the given instance is only a placeholder
+func (i *AwsInstanceRef) isPlaceholder() bool {
+	return strings.HasPrefix(i.Name, placeholderInstanceNamePrefix)
 }
 
 var validAwsRefIdRegex = regexp.MustCompile(fmt.Sprintf(`^aws\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*(\/[-0-9a-z\.]*)?$|aws\:\/\/\/[-0-9a-z]*\/%s.*$`, placeholderInstanceNamePrefix))
@@ -316,7 +322,15 @@ func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, len(asgNodes))
 
 	for i, asgNode := range asgNodes {
-		instances[i] = cloudprovider.Instance{Id: asgNode.ProviderID}
+		status := cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+		// Placeholder instances have not been provisioned (created) by AWS yet
+		if asgNode.isPlaceholder() {
+			status.State = cloudprovider.InstanceCreating
+		}
+		instances[i] = cloudprovider.Instance{
+			Id:     asgNode.ProviderID,
+			Status: &status,
+		}
 	}
 	return instances, nil
 }

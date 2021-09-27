@@ -100,13 +100,15 @@ type IncorrectNodeGroupSize struct {
 	FirstObserved time.Time
 }
 
-// UnregisteredNode contains information about nodes that are present on the cluster provider side
+// UnregisteredNode contains information about nodes that are requested on the cluster provider side
 // but failed to register in Kubernetes.
 type UnregisteredNode struct {
 	// Node is a dummy node that contains only the name of the node.
 	Node *apiv1.Node
 	// UnregisteredSince is the time when the node was first spotted.
 	UnregisteredSince time.Time
+	// Status is whether or not the node is still being created by the cloud provider
+	Status *cloudprovider.InstanceStatus
 }
 
 // ScaleUpFailure contains information about a failure of a scale-up.
@@ -651,7 +653,13 @@ func (csr *ClusterStateRegistry) updateUnregisteredNodes(unregisteredNodes []Unr
 	result := make(map[string]UnregisteredNode)
 	for _, unregistered := range unregisteredNodes {
 		if prev, found := csr.unregisteredNodes[unregistered.Node.Name]; found {
-			result[unregistered.Node.Name] = prev
+			// If the state of the unregistered node has changed (i.e. from "creating" to "running")
+			// then we reset the UnregisteredSince time
+			if unregistered.Status != csr.unregisteredNodes[unregistered.Node.Name].Status {
+				result[unregistered.Node.Name] = unregistered
+			} else {
+				result[unregistered.Node.Name] = prev
+			}
 		} else {
 			result[unregistered.Node.Name] = unregistered
 		}
@@ -951,6 +959,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 				notRegistered = append(notRegistered, UnregisteredNode{
 					Node:              fakeNode(instance, cloudprovider.FakeNodeUnregistered),
 					UnregisteredSince: time,
+					Status:            instance.Status,
 				})
 			}
 		}

@@ -240,7 +240,12 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, []cloudprovider.Instance{{Id: "aws:///us-east-1a/test-instance-id"}}, nodes)
+	assert.Equal(t, []cloudprovider.Instance{
+		{
+			Id:     "aws:///us-east-1a/test-instance-id",
+			Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+		},
+	}, nodes)
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
 	// test node in cluster that is not in a group managed by cluster autoscaler

@@ -31,8 +31,7 @@ import (
 )
 
 const (
-	scaleToZeroSupported          = true
-	placeholderInstanceNamePrefix = "i-placeholder"
+	scaleToZeroSupported = true
 )
 
 type asgCache struct {
@@ -264,7 +263,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	for _, instance := range instances {
 		// check if the instance is a placeholder - a requested instance that was never created by the node group
 		// if it is, just decrease the size of the node group, as there's no specific instance we can remove
-		if m.isPlaceholderInstance(instance) {
+		if instance.isPlaceholder() {
 			klog.V(4).Infof("instance %s is detected as a placeholder, decreasing ASG requested size instead "+
 				"of deleting instance", instance.Name)
 			m.decreaseAsgSizeByOneNoLock(commonAsg)
@@ -286,11 +285,6 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 	return nil
-}
-
-// isPlaceholderInstance checks if the given instance is only a placeholder
-func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
-	return strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix)
 }
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if

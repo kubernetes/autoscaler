@@ -41,10 +41,15 @@ type OnNodeGroupCreateFunc func(string) error
 // OnNodeGroupDeleteFunc is a function called when a node group is deleted.
 type OnNodeGroupDeleteFunc func(string) error
 
+type TestNode struct {
+	groupName string
+	status    *cloudprovider.InstanceStatus
+}
+
 // TestCloudProvider is a dummy cloud provider to be used in tests.
 type TestCloudProvider struct {
 	sync.Mutex
-	nodes             map[string]string
+	nodes             map[string]TestNode
 	groups            map[string]cloudprovider.NodeGroup
 	onScaleUp         func(string, int) error
 	onScaleDown       func(string, string) error
@@ -59,7 +64,7 @@ type TestCloudProvider struct {
 // NewTestCloudProvider builds new TestCloudProvider
 func NewTestCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc) *TestCloudProvider {
 	return &TestCloudProvider{
-		nodes:           make(map[string]string),
+		nodes:           make(map[string]TestNode),
 		groups:          make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:       onScaleUp,
 		onScaleDown:     onScaleDown,
@@ -72,7 +77,7 @@ func NewTestAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown O
 	onNodeGroupCreate OnNodeGroupCreateFunc, onNodeGroupDelete OnNodeGroupDeleteFunc,
 	machineTypes []string, machineTemplates map[string]*schedulerframework.NodeInfo) *TestCloudProvider {
 	return &TestCloudProvider{
-		nodes:             make(map[string]string),
+		nodes:             make(map[string]TestNode),
 		groups:            make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:         onScaleUp,
 		onScaleDown:       onScaleDown,
@@ -129,11 +134,11 @@ func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 	tcp.Lock()
 	defer tcp.Unlock()
 
-	groupName, found := tcp.nodes[node.Name]
+	nodeInfo, found := tcp.nodes[node.Name]
 	if !found {
 		return nil, nil
 	}
-	group, found := tcp.groups[groupName]
+	group, found := tcp.groups[nodeInfo.groupName]
 	if !found {
 		return nil, nil
 	}
@@ -245,12 +250,17 @@ func (tcp *TestCloudProvider) DeleteNodeGroup(id string) {
 	delete(tcp.groups, id)
 }
 
-// AddNode adds the given node to the group.
+// AddNode adds the given node to the group
 func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
+	tcp.AddNodeWithStatus(nodeGroupId, node, nil)
+}
+
+// AddNodeWithStatus adds the given node to the group with the specified Status
+func (tcp *TestCloudProvider) AddNodeWithStatus(nodeGroupId string, node *apiv1.Node, status *cloudprovider.InstanceStatus) {
 	tcp.Lock()
 	defer tcp.Unlock()
 
-	tcp.nodes[node.Name] = nodeGroupId
+	tcp.nodes[node.Name] = TestNode{groupName: nodeGroupId, status: status}
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
@@ -429,9 +439,9 @@ func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	defer tng.Unlock()
 
 	instances := make([]cloudprovider.Instance, 0)
-	for node, nodegroup := range tng.cloudProvider.nodes {
-		if nodegroup == tng.id {
-			instances = append(instances, cloudprovider.Instance{Id: node})
+	for node, nodeInfo := range tng.cloudProvider.nodes {
+		if nodeInfo.groupName == tng.id {
+			instances = append(instances, cloudprovider.Instance{Id: node, Status: nodeInfo.status})
 		}
 	}
 	return instances, nil
