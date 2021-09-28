@@ -399,7 +399,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
+func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregisteredNodes bool) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -461,9 +461,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
-	scaleSet.sizeMutex.Lock()
-	scaleSet.curSize -= int64(len(instanceIDs))
-	scaleSet.sizeMutex.Unlock()
+	// only do it for non-unregistered nodes
+	if !hasUnregisteredNodes {
+		scaleSet.sizeMutex.Lock()
+		scaleSet.curSize -= int64(len(instanceIDs))
+		scaleSet.sizeMutex.Unlock()
+	}
 
 	go scaleSet.waitForDeleteInstances(future, requiredIds)
 	return nil
@@ -482,6 +485,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	refs := make([]*azureRef, 0, len(nodes))
+	hasUnregisteredNodes := false
 	for _, node := range nodes {
 		belongs, err := scaleSet.Belongs(node)
 		if err != nil {
@@ -492,13 +496,16 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
 		}
 
+		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
+			hasUnregisteredNodes = true
+		}
 		ref := &azureRef{
 			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
 	}
 
-	return scaleSet.DeleteInstances(refs)
+	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
 }
 
 // Id returns ScaleSet id.
