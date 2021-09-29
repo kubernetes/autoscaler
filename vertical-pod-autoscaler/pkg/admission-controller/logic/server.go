@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
