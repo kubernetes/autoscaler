@@ -100,7 +100,7 @@ func getFilterInstance(t *testing.T, config string) (expander.Filter, *record.Fa
 	lister, err := kubernetes.NewTestConfigMapLister([]*apiv1.ConfigMap{cm})
 	assert.Nil(t, err)
 	r := record.NewFakeRecorder(100)
-	s, err := NewStrategy(lister.ConfigMaps(testNamespace), r)
+	s := NewFilter(lister.ConfigMaps(testNamespace), r)
 	return s, r, cm, err
 }
 
