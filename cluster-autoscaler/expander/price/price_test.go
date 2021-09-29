@@ -130,7 +130,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
@@ -151,7 +151,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, units.GiB),
@@ -188,7 +188,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 
 		&testPreferredNodeProvider{
@@ -210,7 +210,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
@@ -247,7 +247,7 @@ func TestPriceExpander(t *testing.T) {
 	provider.SetPricingModel(pricingModel)
 	// Both node groups are equally expensive. However 2
 	// accept two pods.
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
@@ -261,7 +261,7 @@ func TestPriceExpander(t *testing.T) {
 		nodePrice: map[string]float64{},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Empty(t, NewStrategy(
+	assert.Empty(t, NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
@@ -306,7 +306,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
@@ -328,7 +328,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Equal(t, optionsToDebug(NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
