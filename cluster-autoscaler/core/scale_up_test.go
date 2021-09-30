@@ -496,7 +496,7 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 	}
 
 	podLister := kube_util.NewTestPodLister(pods)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		expandedGroups <- groupSizeChange{groupName: nodeGroup, sizeChange: increase}
@@ -668,7 +668,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	p2.Spec.NodeName = "n2"
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1, p2})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected, but increased %s by %d", nodeGroup, increase)
@@ -709,7 +709,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	p1.Spec.NodeName = "n1"
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{p1})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
 		t.Fatalf("No expansion is expected")
@@ -782,7 +782,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	podLister := kube_util.NewTestPodLister(podList)
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	options := config.AutoscalingOptions{
 		EstimatorName:            estimator.BinpackingEstimatorName,
@@ -850,7 +850,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
 	assert.NoError(t, err)
 
@@ -903,7 +903,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
 	assert.NoError(t, err)
 

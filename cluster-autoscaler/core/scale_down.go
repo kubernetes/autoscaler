@@ -45,12 +45,14 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/component-helpers/scheduling/corev1/helpers"
 	klog "k8s.io/klog/v2"
 )
 
@@ -447,7 +449,41 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 
 	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 
+	// Skip nodes with bounded local PersistentVolumes
+	if sd.checkNodeHasBoundedLocalPersistentVolumes(node) {
+		klog.V(4).Infof("Node %s is not suitable for removal - has bounded local PersistentVolumes", node.Name)
+		return simulator.NotUnneededOtherReason, &utilInfo
+	}
+
 	return simulator.NoReason, &utilInfo
+}
+
+func (sd *ScaleDown) checkNodeHasBoundedLocalPersistentVolumes(node *apiv1.Node) bool {
+	persistentVols, err := sd.context.AutoscalingKubeClients.PersistentVolumeLister().List(labels.Everything())
+	if err != nil {
+		klog.Warningf("Failed to list persistent volumes", err)
+		return false
+	}
+
+	for _, vol := range persistentVols {
+		// Only care about volume if bounded and is a local volume
+		if vol.Status.Phase != apiv1.VolumeBound || vol.Spec.Local == nil {
+			continue
+		}
+		// Make sure the local volume belongs to the node
+		if vol.Spec.NodeAffinity == nil || vol.Spec.NodeAffinity.Required == nil {
+			continue
+		}
+		matches, err := helpers.MatchNodeSelectorTerms(vol.Spec.NodeAffinity.Required, node)
+		if err {
+			klog.Warningf("Failed to MatchNodeSelectorTerms", err)
+			continue
+		}
+		if matches {
+			return true
+		}
+	}
+	return false
 }
 
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,

@@ -64,7 +64,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider2.AddNodeGroup("ng5", 1, 10, 1) // Nodegroup without nodes.
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	assert.NoError(t, err)
@@ -145,7 +145,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	provider1.AddNode("ng4", ready6)
 
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	assert.NoError(t, err)

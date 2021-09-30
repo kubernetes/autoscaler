@@ -190,7 +190,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -381,7 +381,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -516,7 +516,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -663,7 +663,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -791,7 +791,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -887,7 +887,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
-		nil, nil, nil, nil)
+		nil, nil, nil, nil, nil)
 	context.ListerRegistry = listerRegistry
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{

@@ -46,6 +46,7 @@ type ListerRegistry interface {
 	JobLister() v1batchlister.JobLister
 	ReplicaSetLister() v1appslister.ReplicaSetLister
 	StatefulSetLister() v1appslister.StatefulSetLister
+	PersistentVolumeLister() v1lister.PersistentVolumeLister
 }
 
 type listerRegistryImpl struct {
@@ -59,6 +60,7 @@ type listerRegistryImpl struct {
 	jobLister                   v1batchlister.JobLister
 	replicaSetLister            v1appslister.ReplicaSetLister
 	statefulSetLister           v1appslister.StatefulSetLister
+	persistentVolumeLister      v1lister.PersistentVolumeLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
@@ -66,7 +68,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 	unschedulablePod PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
 	daemonSetLister v1appslister.DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
 	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
-	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
+	statefulSetLister v1appslister.StatefulSetLister, persistentVolumeLister v1lister.PersistentVolumeLister) ListerRegistry {
 	return listerRegistryImpl{
 		allNodeLister:               allNode,
 		readyNodeLister:             readyNode,
@@ -78,6 +80,7 @@ func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod Po
 		jobLister:                   jobLister,
 		replicaSetLister:            replicaSetLister,
 		statefulSetLister:           statefulSetLister,
+		persistentVolumeLister:      persistentVolumeLister,
 	}
 }
 
@@ -93,9 +96,10 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	jobLister := NewJobLister(kubeClient, stopChannel)
 	replicaSetLister := NewReplicaSetLister(kubeClient, stopChannel)
 	statefulSetLister := NewStatefulSetLister(kubeClient, stopChannel)
+	persistentVolumeLister := NewPersistentVolumeLister(kubeClient, stopChannel)
 	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
 		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister,
-		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister)
+		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister, persistentVolumeLister)
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -146,6 +150,11 @@ func (r listerRegistryImpl) ReplicaSetLister() v1appslister.ReplicaSetLister {
 // StatefulSetLister returns the statefulSetLister registered to this registry
 func (r listerRegistryImpl) StatefulSetLister() v1appslister.StatefulSetLister {
 	return r.statefulSetLister
+}
+
+// PersistentVolumeLister returns the persistentVolumeLister registered to this registry
+func (r listerRegistryImpl) PersistentVolumeLister() v1lister.PersistentVolumeLister {
+	return r.persistentVolumeLister
 }
 
 // PodLister lists pods.
@@ -365,6 +374,15 @@ func NewConfigMapListerForNamespace(kubeClient client.Interface, stopchannel <-c
 	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "configmaps", namespace, fields.Everything())
 	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(listWatcher, &apiv1.ConfigMap{}, time.Hour)
 	lister := v1lister.NewConfigMapLister(store)
+	go reflector.Run(stopchannel)
+	return lister
+}
+
+// NewPersistentVolumeLister builds a persistentvolume lister.
+func NewPersistentVolumeLister(kubeClient client.Interface, stopchannel <-chan struct{}) v1lister.PersistentVolumeLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "persistentvolumes", apiv1.NamespaceAll, fields.Everything())
+	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(listWatcher, &apiv1.PersistentVolume{}, time.Hour)
+	lister := v1lister.NewPersistentVolumeLister(store)
 	go reflector.Run(stopchannel)
 	return lister
 }

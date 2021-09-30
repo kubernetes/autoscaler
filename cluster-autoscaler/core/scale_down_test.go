@@ -759,7 +759,7 @@ func TestDeleteNode(t *testing.T) {
 			fakeClient.Fake.AddReactor("get", "pods", podNotFoundFunc)
 
 			// build context
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, registry, provider, nil)
 			assert.NoError(t, err)
 
@@ -1144,7 +1144,7 @@ func TestScaleDown(t *testing.T) {
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil, nil)
 
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
@@ -1329,7 +1329,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 1)
 			provider.AddNode("ng1", n1)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 			assert.NoError(t, err)
@@ -1553,7 +1553,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 
 	assert.NotNil(t, provider)
 
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(config.options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
 
@@ -1642,7 +1642,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		},
 		MaxGracefulTerminationSec: 60,
 	}
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
 
@@ -1754,7 +1754,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil, nil)
 
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
@@ -2004,7 +2004,7 @@ func TestSoftTaint(t *testing.T) {
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil, nil)
 
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
@@ -2125,7 +2125,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	}
 	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil, nil)
 
 	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 	assert.NoError(t, err)
