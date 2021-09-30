@@ -1148,14 +1148,6 @@ func TestOverrideDefaultRateLimitConfig(t *testing.T) {
 	assert.Equal(t, &falseCloudProviderRateLimit.RateLimitConfig, newconfig)
 }
 
-func TestGetSubscriptionIdFromInstanceMetadata(t *testing.T) {
-	// metadataURL in azure_manager.go is not available for our tests, expect fail.
-	result, err := getSubscriptionIdFromInstanceMetadata()
-	expected := ""
-	assert.NotNil(t, err.Error())
-	assert.Equal(t, expected, result, "Verify return result failed, expected: %v, actual: %v", expected, result)
-}
-
 func TestManagerRefreshAndCleanup(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
