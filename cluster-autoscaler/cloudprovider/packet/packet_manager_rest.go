@@ -43,8 +43,8 @@ import (
 )
 
 const (
-	packetPrefix                 = "packet://"
-	equinixMetalPrefix           = "equinixmetal://"
+	packetPrefix       = "packet://"
+	equinixMetalPrefix = "equinixmetal://"
 )
 
 type instanceType struct {
