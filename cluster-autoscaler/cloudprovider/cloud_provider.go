@@ -254,6 +254,16 @@ func (c InstanceErrorClass) String() string {
 	}
 }
 
+const (
+	// FakeNodeReasonAnnotation is an annotation added to the fake placeholder nodes CA has created
+	// Note that this don't map to real nodes in k8s and are merely used for error handling
+	FakeNodeReasonAnnotation = "k8s.io/cluster-autoscaler/fake-node-reason"
+	// FakeNodeUnregistered represents a node that is identified by CA as unregistered
+	FakeNodeUnregistered = "unregistered"
+	// FakeNodeCreateError represents a node that is identified by CA as a created node with errors
+	FakeNodeCreateError = "create-error"
+)
+
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {
 	// NodePrice returns a price of running the given node for a given period of time.
