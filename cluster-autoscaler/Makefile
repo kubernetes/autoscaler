@@ -22,6 +22,9 @@ ifdef LDFLAGS
 else
   LDFLAGS_FLAG=
 endif
+IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
+
+export DOCKER_CLI_EXPERIMENTAL := enabled
 
 build: build-arch-$(GOARCH)
 
@@ -47,11 +50,11 @@ make-image: make-image-arch-$(GOARCH)
 make-image-arch-%:
 ifdef BASEIMAGE
 	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
-		-t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}-$* \
+		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile.$* .
 else
 	docker build --pull \
-		-t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}-$* \
+		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile.$* .
 endif
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
@@ -59,12 +62,12 @@ endif
 push-image: push-image-arch-$(GOARCH)
 
 push-image-arch-%:
-	./push_image.sh ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}-$*
+	./push_image.sh ${IMAGE}-$*:${TAG}
 
 push-manifest:
-	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG} \
-		$(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER):$(TAG)-, $(ALL_ARCH))
-	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push --purge ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}
+	docker manifest create ${IMAGE}:${TAG} \
+	    $(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER)-, $(addsuffix :$(TAG), $(ALL_ARCH)))
+	docker manifest push --purge ${IMAGE}:${TAG}
 
 execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-image-arch-,$(ALL_ARCH)) push-manifest
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
