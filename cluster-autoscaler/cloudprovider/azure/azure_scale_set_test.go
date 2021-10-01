@@ -328,7 +328,7 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 
 	manager := newTestAzureManager(t)
 	vmssName := "test-asg"
-	var vmssCapacity int64 = 2
+	var vmssCapacity int64 = 3
 
 	expectedScaleSets := []compute.VirtualMachineScaleSet{
 		{
@@ -338,18 +338,17 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 			},
 		},
 	}
-	expectedVMSSVMs := newTestVMSSVMList(2)
+	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).Times(2)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any()).Return(nil, nil)
 	mockVMSSClient.EXPECT().WaitForAsyncOperationResult(gomock.Any(), gomock.Any()).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-	err := manager.forceRefresh()
-	assert.NoError(t, err)
+	manager.regenerateCache()
 
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
@@ -357,23 +356,21 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 	provider, err := BuildAzureCloudProvider(manager, resourceLimiter)
 	assert.NoError(t, err)
 
-	registered := manager.RegisterNodeGroup(
-		newTestScaleSet(manager, "test-asg"))
-	manager.explicitlyConfigured["test-asg"] = true
+	registered := manager.RegisterAsg(newTestScaleSet(manager, "test-asg"))
 	assert.True(t, registered)
-	err = manager.forceRefresh()
-	assert.NoError(t, err)
+	manager.regenerateCache()
 
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
 
 	targetSize, err := scaleSet.TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, targetSize)
+	assert.Equal(t, 3, targetSize)
 
 	// annotate node with unregistered annotation
 	annotations := make(map[string]string)
 	annotations[cloudprovider.FakeNodeReasonAnnotation] = cloudprovider.FakeNodeUnregistered
+	// Perform the delete operation
 	nodesToDelete := []*apiv1.Node{
 		{
 			ObjectMeta: metav1.ObjectMeta{
@@ -390,12 +387,7 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 	// Ensure the the cached size has NOT been proactively decremented
 	targetSize, err = scaleSet.TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, targetSize)
-
-	// Ensure that the status for the instances is Deleting
-	instance0, found := scaleSet.getInstanceByProviderID("azure://" + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0))
-	assert.True(t, found, true)
-	assert.Equal(t, instance0.Status.State, cloudprovider.InstanceDeleting)
+	assert.Equal(t, 3, targetSize)
 }
 
 func TestDeleteNoConflictRequest(t *testing.T) {
