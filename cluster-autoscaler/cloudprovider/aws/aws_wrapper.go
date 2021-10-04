@@ -26,7 +26,7 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-// autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
+// autoScalingI is the interface abstracting specific API calls of the auto-scaling service provided by AWS SDK for use in CA
 type autoScalingI interface {
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
@@ -35,6 +35,7 @@ type autoScalingI interface {
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
 
+// ec2I is the interface abstracting specific API calls of the EC2 service provided by AWS SDK for use in CA
 type ec2I interface {
 	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
 }

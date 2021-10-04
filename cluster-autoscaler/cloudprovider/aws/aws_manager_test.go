@@ -286,8 +286,8 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 func TestFetchExplicitAsgs(t *testing.T) {
 	min, max, groupname := 1, 10, "coolasg"
 
-	s := &autoScalingMock{}
-	s.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+	a := &autoScalingMock{}
+	a.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{aws.String(groupname)},
 		MaxRecords:            aws.Int64(1),
 	}).Return(&autoscaling.DescribeAutoScalingGroupsOutput{
@@ -296,7 +296,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 		},
 	})
 
-	s.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
@@ -330,7 +330,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &awsWrapper{s, nil}, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil}, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
@@ -432,7 +432,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	min, max := 1, 10
 	groupname, tags := "coolasg", []string{"tag", "anothertag"}
 
-	s := &autoScalingMock{}
+	a := &autoScalingMock{}
 	// Lookup groups associated with tags
 	expectedTagsInput := &autoscaling.DescribeTagsInput{
 		Filters: []*autoscaling.Filter{
@@ -442,7 +442,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
 	}
 	// Use MatchedBy pattern to avoid list order issue https://github.com/kubernetes/autoscaler/issues/1346
-	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
+	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
 		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
@@ -455,7 +455,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 
 	// Describe the group to register it, then again to generate the instance
 	// cache.
-	s.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
@@ -483,7 +483,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &awsWrapper{s, nil}, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil}, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
@@ -491,7 +491,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	validateAsg(t, asgs[0], groupname, min, max)
 
 	// Simulate the previously discovered ASG disappearing
-	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
+	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
 		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)

@@ -160,7 +160,7 @@ func getRegion(cfg ...*aws.Config) string {
 	return region
 }
 
-// createAwsManagerInternal allows for a custom objects to be passed in by tests
+// createAwsManagerInternal allows for custom objects to be passed in by tests
 //
 // #1449 If running tests outside of AWS without AWS_REGION among environment
 // variables, avoid a 5+ second EC2 Metadata lookup timeout in getRegion by
