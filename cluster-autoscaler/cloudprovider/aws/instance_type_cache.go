@@ -68,10 +68,10 @@ func (c *jitterClock) Since(ts time.Time) time.Duration {
 	return since
 }
 
-func (m instanceTypeExpirationStore) populate(autoscalingGroups []*asg) error {
+func (es instanceTypeExpirationStore) populate(autoscalingGroups []*asg) error {
 	asgsToQuery := []*asg{}
 
-	if c, ok := m.jitterClock.(*jitterClock); ok {
+	if c, ok := es.jitterClock.(*jitterClock); ok {
 		c.Lock()
 		c.jitter = true
 		c.Unlock()
@@ -81,29 +81,29 @@ func (m instanceTypeExpirationStore) populate(autoscalingGroups []*asg) error {
 		if asg == nil {
 			continue
 		}
-		_, found, _ := m.GetByKey(asg.AwsRef.Name)
+		_, found, _ := es.GetByKey(asg.AwsRef.Name)
 		if found {
 			continue
 		}
 		asgsToQuery = append(asgsToQuery, asg)
 	}
 
-	if c, ok := m.jitterClock.(*jitterClock); ok {
+	if c, ok := es.jitterClock.(*jitterClock); ok {
 		c.Lock()
 		c.jitter = false
 		c.Unlock()
 	}
 
 	// List expires old entries
-	_ = m.List()
+	_ = es.List()
 
-	instanceTypesByAsg, err := m.awsService.getInstanceTypesForAsgs(asgsToQuery)
+	instanceTypesByAsg, err := es.awsService.getInstanceTypesForAsgs(asgsToQuery)
 	if err != nil {
 		return err
 	}
 
 	for asgName, instanceType := range instanceTypesByAsg {
-		m.Add(instanceTypeCachedObject{
+		es.Add(instanceTypeCachedObject{
 			name:         asgName,
 			instanceType: instanceType,
 		})
