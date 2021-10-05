@@ -383,3 +383,4 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 - If you want to run it on instances with IMDSv1 disabled make sure your
   EC2 launch configuration has the setting `Metadata response hop limit` set to `2`.
   Otherwise, the `/latest/api/token` call will timeout and result in an error. See [AWS docs here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) for further information.
+- If you don't use EKS managed nodegroups, don't add the `eks:nodegroup-name` tag to the ASG as this will lead to extra EKS API calls that could slow down scaling when there are 0 nodes in the nodegroup.
