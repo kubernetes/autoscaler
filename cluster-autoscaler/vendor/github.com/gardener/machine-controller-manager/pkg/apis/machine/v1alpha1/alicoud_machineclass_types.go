@@ -28,6 +28,13 @@ const (
 	AlicloudAccessKeyID string = "alicloudAccessKeyID"
 	// AlicloudAccessKeySecret is a constant for a key name that is part of the Alibaba cloud credentials.
 	AlicloudAccessKeySecret string = "alicloudAccessKeySecret"
+
+	// AlicloudAlternativeAccessKeyID is a constant for a key name of a secret containing the Alibaba cloud
+	// credentials (access key id).
+	AlicloudAlternativeAccessKeyID = "accessKeyID"
+	// AlicloudAlternativeAccessKeySecret is a constant for a key name of a secret containing the Alibaba cloud
+	// credentials (access key secret).
+	AlicloudAlternativeAccessKeySecret = "accessKeySecret"
 )
 
 // +genclient
@@ -84,6 +91,7 @@ type AlicloudMachineClassSpec struct {
 	Tags                    map[string]string       `json:"tags,omitempty"`
 	KeyPairName             string                  `json:"keyPairName"`
 	SecretRef               *corev1.SecretReference `json:"secretRef,omitempty"`
+	CredentialsSecretRef    *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`
 }
 
 type AlicloudDataDisk struct {

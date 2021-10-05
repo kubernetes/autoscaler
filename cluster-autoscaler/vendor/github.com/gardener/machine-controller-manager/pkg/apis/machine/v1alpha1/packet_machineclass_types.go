@@ -71,5 +71,6 @@ type PacketMachineClassSpec struct {
 	SSHKeys      []string `json:"sshKeys,omitempty"`
 	UserData     string   `json:"userdata,omitempty"`
 
-	SecretRef *corev1.SecretReference `json:"secretRef,omitempty"`
+	SecretRef            *corev1.SecretReference `json:"secretRef,omitempty"`
+	CredentialsSecretRef *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`
 }

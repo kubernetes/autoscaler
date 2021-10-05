@@ -26,6 +26,10 @@ import (
 const (
 	// GCPServiceAccountJSON is a constant for a key name that is part of the GCP cloud credentials.
 	GCPServiceAccountJSON string = "serviceAccountJSON"
+
+	// GCPAlternativeServiceAccountJSON is a constant for a key name of a secret containing the GCP credentials (service
+	// account json).
+	GCPAlternativeServiceAccountJSON = "serviceaccount.json"
 )
 
 // +genclient
@@ -64,20 +68,21 @@ type GCPMachineClassList struct {
 
 // GCPMachineClassSpec is the specification of a GCPMachineClass.
 type GCPMachineClassSpec struct {
-	CanIpForward       bool                    `json:"canIpForward"`
-	DeletionProtection bool                    `json:"deletionProtection"`
-	Description        *string                 `json:"description,omitempty"`
-	Disks              []*GCPDisk              `json:"disks,omitempty"`
-	Labels             map[string]string       `json:"labels,omitempty"`
-	MachineType        string                  `json:"machineType"`
-	Metadata           []*GCPMetadata          `json:"metadata,omitempty"`
-	NetworkInterfaces  []*GCPNetworkInterface  `json:"networkInterfaces,omitempty"`
-	Scheduling         GCPScheduling           `json:"scheduling"`
-	SecretRef          *corev1.SecretReference `json:"secretRef,omitempty"`
-	ServiceAccounts    []GCPServiceAccount     `json:"serviceAccounts"`
-	Tags               []string                `json:"tags,omitempty"`
-	Region             string                  `json:"region"`
-	Zone               string                  `json:"zone"`
+	CanIpForward         bool                    `json:"canIpForward"`
+	DeletionProtection   bool                    `json:"deletionProtection"`
+	Description          *string                 `json:"description,omitempty"`
+	Disks                []*GCPDisk              `json:"disks,omitempty"`
+	Labels               map[string]string       `json:"labels,omitempty"`
+	MachineType          string                  `json:"machineType"`
+	Metadata             []*GCPMetadata          `json:"metadata,omitempty"`
+	NetworkInterfaces    []*GCPNetworkInterface  `json:"networkInterfaces,omitempty"`
+	Scheduling           GCPScheduling           `json:"scheduling"`
+	SecretRef            *corev1.SecretReference `json:"secretRef,omitempty"`
+	CredentialsSecretRef *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`
+	ServiceAccounts      []GCPServiceAccount     `json:"serviceAccounts"`
+	Tags                 []string                `json:"tags,omitempty"`
+	Region               string                  `json:"region"`
+	Zone                 string                  `json:"zone"`
 }
 
 // GCPDisk describes disks for GCP.

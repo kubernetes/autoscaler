@@ -32,6 +32,17 @@ const (
 	AzureSubscriptionID string = "azureSubscriptionId"
 	// AzureTenantID is a constant for a key name that is part of the Azure cloud credentials.
 	AzureTenantID string = "azureTenantId"
+
+	// AzureAlternativeClientID is a constant for a key name of a secret containing the Azure credentials (client id).
+	AzureAlternativeClientID = "clientID"
+	// AzureAlternativeClientSecret is a constant for a key name of a secret containing the Azure credentials (client
+	// secret).
+	AzureAlternativeClientSecret = "clientSecret"
+	// AzureAlternativeSubscriptionID is a constant for a key name of a secret containing the Azure credentials
+	// (subscription id).
+	AzureAlternativeSubscriptionID = "subscriptionID"
+	// AzureAlternativeTenantID is a constant for a key name of a secret containing the Azure credentials (tenant id).
+	AzureAlternativeTenantID = "tenantID"
 )
 
 // +genclient
@@ -70,12 +81,13 @@ type AzureMachineClassList struct {
 
 // AzureMachineClassSpec is the specification of a AzureMachineClass.
 type AzureMachineClassSpec struct {
-	Location      string                        `json:"location,omitempty"`
-	Tags          map[string]string             `json:"tags,omitempty"`
-	Properties    AzureVirtualMachineProperties `json:"properties,omitempty"`
-	ResourceGroup string                        `json:"resourceGroup,omitempty"`
-	SubnetInfo    AzureSubnetInfo               `json:"subnetInfo,omitempty"`
-	SecretRef     *corev1.SecretReference       `json:"secretRef,omitempty"`
+	Location             string                        `json:"location,omitempty"`
+	Tags                 map[string]string             `json:"tags,omitempty"`
+	Properties           AzureVirtualMachineProperties `json:"properties,omitempty"`
+	ResourceGroup        string                        `json:"resourceGroup,omitempty"`
+	SubnetInfo           AzureSubnetInfo               `json:"subnetInfo,omitempty"`
+	SecretRef            *corev1.SecretReference       `json:"secretRef,omitempty"`
+	CredentialsSecretRef *corev1.SecretReference       `json:"credentialsSecretRef,omitempty"`
 }
 
 // AzureVirtualMachineProperties is describes the properties of a Virtual Machine.

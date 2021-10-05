@@ -18,9 +18,9 @@ const (
 	V1alpha1 = "mcm.gardener.cloud/v1alpha1"
 
 	// AWSAccessKeyID is a constant for a key name that is part of the AWS cloud credentials.
-	AWSAccessKeyID string = "providerAccessKeyId"
+	AWSAccessKeyID = "providerAccessKeyId"
 	// AWSSecretAccessKey is a constant for a key name that is part of the AWS cloud credentials.
-	AWSSecretAccessKey string = "providerSecretAccessKey"
+	AWSSecretAccessKey = "providerSecretAccessKey"
 
 	// AWSAlternativeAccessKeyID is a constant for a key name of a secret containing the AWS credentials (access key
 	// id).
@@ -28,6 +28,35 @@ const (
 	// AWSAlternativeSecretAccessKey is a constant for a key name of a secret containing the AWS credentials (secret
 	// access key).
 	AWSAlternativeSecretAccessKey = "secretAccessKey"
+
+	// ClusterTagPrefix is a constanst for identifying a tag containing the cluster name
+	ClusterTagPrefix = "kubernetes.io/cluster/"
+	// RoleTagPrefix is a constanst for identifying a tag containing the node role
+	RoleTagPrefix = "kubernetes.io/role/"
+
+	// VolumeTypeGP2 is the constant for volume type of GP2
+	VolumeTypeGP2 = "gp2"
+	// VolumeTypeGP3 is the constant for volume type of GP3
+	VolumeTypeGP3 = "gp3"
+	// VolumeTypeIO1 is the constant for volume type of IO1
+	VolumeTypeIO1 = "io1"
+	// VolumeTypeST1 is the constant for volume type of STR1
+	VolumeTypeST1 = "st1"
+	// VolumeTypeSC1 is the constant for volume type of SC1
+	VolumeTypeSC1 = "sc1"
+	// VolumeTypeStandard is the constant for volume type of standard
+	VolumeTypeStandard = "standard"
+
+	// DataDeviceNameFormat refers to the data device name format specified by AWS
+	// Refer - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
+	DataDeviceNameFormat = `^/dev/(sd[a-z]|xvd[a-c][a-z]?)$`
+	// RootDeviceName is the name used for the root device
+	RootDeviceName = "/root"
+)
+
+var (
+	// ValidVolumeTypes contains the list of valid volumes types that can be attached to a EC2 instance
+	ValidVolumeTypes = []string{VolumeTypeGP2, VolumeTypeGP3, VolumeTypeIO1, VolumeTypeST1, VolumeTypeSC1, VolumeTypeStandard}
 )
 
 //AWSProviderSpec is the spec to be used while parsing the calls.
@@ -40,6 +69,9 @@ type AWSProviderSpec struct {
 
 	// BlockDevices is the list of block devices to be mapped to the instances
 	BlockDevices []AWSBlockDeviceMappingSpec `json:"blockDevices,omitempty"`
+
+	// CapacityReservationTarget is an optional field that allows assigning of machines to an AWS Capacity Reservation
+	CapacityReservationTarget *AWSCapacityReservationTargetSpec `json:"capacityReservation,omitempty"`
 
 	// EbsOptimized specifies that the EBS is optimized
 	EbsOptimized bool `json:"ebsOptimized,omitempty"`
@@ -65,6 +97,9 @@ type AWSProviderSpec struct {
 	// SpotPrice is an optional field that if set specifies to use spot instances
 	// When set to "" there is no maxPrice else, specifies the maxPrice
 	SpotPrice *string `json:"spotPrice,omitempty"`
+
+	// If set to false, source and destination checks are disabled, default is true
+	SrcAndDstChecksEnabled *bool `json:"srcAndDstChecksEnabled,omitempty"`
 
 	// Tags to be specified on the EC2 instances
 	Tags map[string]string `json:"tags,omitempty"`
@@ -94,6 +129,17 @@ type AWSBlockDeviceMappingSpec struct {
 	// we ignore any machine store volumes specified in the block device mapping
 	// for the AMI.
 	VirtualName string `json:"virtualName,omitempty"`
+}
+
+// AWSCapacityReservationTargetSpec allows to target an AWS Capacity Reservation directly or
+// indirectly using an AWS Resource Group
+type AWSCapacityReservationTargetSpec struct {
+
+	// The ID of the Capacity Reservation in which to run the instance.
+	CapacityReservationID *string `json:"capacityReservationId,omitempty"`
+
+	// The ARN of the Capacity Reservation resource group in which to run the instance.
+	CapacityReservationResourceGroupArn *string `json:"capacityReservationResourceGroupArn,omitempty"`
 }
 
 // AWSEbsBlockDeviceSpec describes a block device for an EBS volume.

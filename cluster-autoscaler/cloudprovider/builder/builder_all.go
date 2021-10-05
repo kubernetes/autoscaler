@@ -50,11 +50,8 @@ var AvailableCloudProviders = []string{
 	cloudprovider.ExoscaleProviderName,
 	cloudprovider.HuaweicloudProviderName,
 	clusterapi.ProviderName,
-<<<<<<< HEAD
 	cloudprovider.MCMProviderName,
-=======
 	cloudprovider.IonoscloudProviderName,
->>>>>>> master
 }
 
 // DefaultCloudProvider is GCE.

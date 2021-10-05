@@ -88,21 +88,23 @@ type OpenStackMachineClassList struct {
 
 // OpenStackMachineClassSpec is the specification of a OpenStackMachineClass.
 type OpenStackMachineClassSpec struct {
-	ImageID          string                  `json:"imageID"`
-	ImageName        string                  `json:"imageName"`
-	Region           string                  `json:"region"`
-	AvailabilityZone string                  `json:"availabilityZone"`
-	FlavorName       string                  `json:"flavorName"`
-	KeyName          string                  `json:"keyName"`
-	SecurityGroups   []string                `json:"securityGroups"`
-	Tags             map[string]string       `json:"tags,omitempty"`
-	NetworkID        string                  `json:"networkID"`
-	Networks         []OpenStackNetwork      `json:"networks,omitempty"`
-	SecretRef        *corev1.SecretReference `json:"secretRef,omitempty"`
-	PodNetworkCidr   string                  `json:"podNetworkCidr"`
-	RootDiskSize     int                     `json:"rootDiskSize,omitempty"` // in GB
-	UseConfigDrive   *bool                   `json:"useConfigDrive,omitempty"`
-	ServerGroupID    *string                 `json:"serverGroupID,omitempty"`
+	ImageID              string                  `json:"imageID"`
+	ImageName            string                  `json:"imageName"`
+	Region               string                  `json:"region"`
+	AvailabilityZone     string                  `json:"availabilityZone"`
+	FlavorName           string                  `json:"flavorName"`
+	KeyName              string                  `json:"keyName"`
+	SecurityGroups       []string                `json:"securityGroups"`
+	Tags                 map[string]string       `json:"tags,omitempty"`
+	NetworkID            string                  `json:"networkID"`
+	Networks             []OpenStackNetwork      `json:"networks,omitempty"`
+	SubnetID             *string                 `json:"subnetID,omitempty"`
+	SecretRef            *corev1.SecretReference `json:"secretRef,omitempty"`
+	CredentialsSecretRef *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`
+	PodNetworkCidr       string                  `json:"podNetworkCidr"`
+	RootDiskSize         int                     `json:"rootDiskSize,omitempty"` // in GB
+	UseConfigDrive       *bool                   `json:"useConfigDrive,omitempty"`
+	ServerGroupID        *string                 `json:"serverGroupID,omitempty"`
 }
 
 type OpenStackNetwork struct {

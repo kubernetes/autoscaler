@@ -7,3 +7,4 @@ require (
   github.com/gardener/machine-controller-manager v0.41.0
 	github.com/gardener/machine-controller-manager-provider-aws v0.8.0
 	github.com/gardener/machine-controller-manager-provider-azure v0.5.0
+)

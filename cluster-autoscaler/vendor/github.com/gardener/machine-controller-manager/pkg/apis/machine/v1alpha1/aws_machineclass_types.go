@@ -28,6 +28,13 @@ const (
 	AWSAccessKeyID string = "providerAccessKeyId"
 	// AWSSecretAccessKey is a constant for a key name that is part of the AWS cloud credentials.
 	AWSSecretAccessKey string = "providerSecretAccessKey"
+
+	// AWSAlternativeAccessKeyID is a constant for a key name of a secret containing the AWS credentials (access key
+	// id).
+	AWSAlternativeAccessKeyID = "accessKeyID"
+	// AWSAlternativeAccessKeySecret is a constant for a key name of a secret containing the AWS credentials (access key
+	// secret).
+	AWSAlternativeSecretAccessKey = "secretAccessKey"
 )
 
 // +genclient
@@ -67,18 +74,19 @@ type AWSMachineClassList struct {
 
 // AWSMachineClassSpec is the specification of a AWSMachineClass.
 type AWSMachineClassSpec struct {
-	AMI               string                      `json:"ami,omitempty"`
-	Region            string                      `json:"region,omitempty"`
-	BlockDevices      []AWSBlockDeviceMappingSpec `json:"blockDevices,omitempty"`
-	EbsOptimized      bool                        `json:"ebsOptimized,omitempty"`
-	IAM               AWSIAMProfileSpec           `json:"iam,omitempty"`
-	MachineType       string                      `json:"machineType,omitempty"`
-	KeyName           string                      `json:"keyName,omitempty"`
-	Monitoring        bool                        `json:"monitoring,omitempty"`
-	NetworkInterfaces []AWSNetworkInterfaceSpec   `json:"networkInterfaces,omitempty"`
-	Tags              map[string]string           `json:"tags,omitempty"`
-	SpotPrice         *string                     `json:"spotPrice,omitempty"`
-	SecretRef         *corev1.SecretReference     `json:"secretRef,omitempty"`
+	AMI                  string                      `json:"ami,omitempty"`
+	Region               string                      `json:"region,omitempty"`
+	BlockDevices         []AWSBlockDeviceMappingSpec `json:"blockDevices,omitempty"`
+	EbsOptimized         bool                        `json:"ebsOptimized,omitempty"`
+	IAM                  AWSIAMProfileSpec           `json:"iam,omitempty"`
+	MachineType          string                      `json:"machineType,omitempty"`
+	KeyName              string                      `json:"keyName,omitempty"`
+	Monitoring           bool                        `json:"monitoring,omitempty"`
+	NetworkInterfaces    []AWSNetworkInterfaceSpec   `json:"networkInterfaces,omitempty"`
+	Tags                 map[string]string           `json:"tags,omitempty"`
+	SpotPrice            *string                     `json:"spotPrice,omitempty"`
+	SecretRef            *corev1.SecretReference     `json:"secretRef,omitempty"`
+	CredentialsSecretRef *corev1.SecretReference     `json:"credentialsSecretRef,omitempty"`
 
 	// TODO add more here
 }
