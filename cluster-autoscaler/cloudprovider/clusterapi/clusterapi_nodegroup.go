@@ -21,15 +21,19 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 const (
-	machineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
-	machineAnnotationKey       = "cluster.k8s.io/machine"
-	debugFormat                = "%s (min: %d, max: %d, replicas: %d)"
+	// deprecatedMachineDeleteAnnotationKey should not be removed until minimum cluster-api support is v1alpha3
+	deprecatedMachineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
+	// TODO: determine what currently relies on deprecatedMachineAnnotationKey to determine when it can be removed
+	deprecatedMachineAnnotationKey = "cluster.k8s.io/machine"
+	machineDeleteAnnotationKey     = "cluster.x-k8s.io/delete-machine"
+	machineAnnotationKey           = "cluster.x-k8s.io/machine"
+	debugFormat                    = "%s (min: %d, max: %d, replicas: %d)"
 )
 
 type nodegroup struct {

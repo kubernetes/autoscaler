@@ -44,6 +44,7 @@ var trueVar = true
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
+	f.scaleSubresourceCacheStorage = newControllerCacheStorage(time.Second, time.Minute, 0.1)
 	versioned := map[string][]metav1.APIResource{
 		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
 	}
@@ -107,25 +108,29 @@ func addController(controller *controllerFetcher, obj runtime.Object) {
 
 func TestControllerFetcher(t *testing.T) {
 	type testCase struct {
+		name          string
 		apiVersion    string
 		key           *ControllerKeyWithAPIVersion
 		objects       []runtime.Object
 		expectedKey   *ControllerKeyWithAPIVersion
 		expectedError error
 	}
-	for i, tc := range []testCase{
+	for _, tc := range []testCase{
 		{
+			name:          "nils",
 			key:           nil,
 			expectedKey:   nil,
 			expectedError: nil,
 		},
 		{
+			name: "deployment doesn't exist",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
 			expectedKey:   nil,
 			expectedError: fmt.Errorf("Deployment test-namesapce/test-deployment does not exist"),
 		},
 		{
+			name: "deployment no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.Deployment{
@@ -142,6 +147,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "deployment with parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-rs", Kind: "ReplicaSet", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.Deployment{
@@ -173,6 +179,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "StatefulSet",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-statefulset", Kind: "StatefulSet", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.StatefulSet{
@@ -189,6 +196,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "DaemonSet",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-daemonset", Kind: "DaemonSet", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.DaemonSet{
@@ -205,6 +213,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "CronJob",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-job", Kind: "Job", Namespace: "test-namespace"}},
 			objects: []runtime.Object{&batchv1.Job{
@@ -236,6 +245,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "CronJob no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}},
 			objects: []runtime.Object{&batchv1beta1.CronJob{
@@ -252,6 +262,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "rc no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-rc", Kind: "ReplicationController", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&corev1.ReplicationController{
@@ -268,6 +279,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "deployment cycle in ownership",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.Deployment{
@@ -291,6 +303,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: fmt.Errorf("Cycle detected in ownership chain"),
 		},
 		{
+			name: "deployment, parent with no scale subresource",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.Deployment{
@@ -316,6 +329,7 @@ func TestControllerFetcher(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "deployment, parent not well known with scale subresource",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
 			objects: []runtime.Object{&appsv1.Deployment{
@@ -340,8 +354,33 @@ func TestControllerFetcher(t *testing.T) {
 				Name: "iCanScale", Kind: "Scale", Namespace: "test-namesapce"}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
 			expectedError: nil,
 		},
+		{
+			name: "pod, parent is node",
+			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+			objects: []runtime.Object{&appsv1.Deployment{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "Deployment",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namesapce",
+					// Parent is a node
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "v1",
+							Controller: &trueVar,
+							Kind:       "Node",
+							Name:       "node",
+						},
+					},
+				},
+			}},
+			expectedKey:   nil,
+			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
+		},
 	} {
-		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			f := simpleControllerFetcher()
 			for _, obj := range tc.objects {
 				addController(f, obj)

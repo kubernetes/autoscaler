@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -35,8 +35,12 @@ const (
 	AwsProviderName = "aws"
 	// BaiducloudProviderName gets the provider name of baiducloud
 	BaiducloudProviderName = "baiducloud"
+	// CloudStackProviderName gets the provider name of cloudstack
+	CloudStackProviderName = "cloudstack"
 	// DigitalOceanProviderName gets the provider name of digitalocean
 	DigitalOceanProviderName = "digitalocean"
+	// ExoscaleProviderName gets the provider name of exoscale
+	ExoscaleProviderName = "exoscale"
 	// GceProviderName gets the provider name of gce
 	GceProviderName = "gce"
 	// MagnumProviderName gets the provider name of magnum
@@ -47,6 +51,8 @@ const (
 	HuaweicloudProviderName = "huaweicloud"
 	// MCMProviderName gets teh provider name of machine controller manager
 	MCMProviderName = "mcm"
+	// IonoscloudProviderName gets the provider name of ionoscloud
+	IonoscloudProviderName = "ionoscloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with

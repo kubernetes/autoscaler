@@ -209,12 +209,15 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os Oper
 	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceType] = machineType
+	result[apiv1.LabelInstanceTypeStable] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
 	if ix == -1 {
 		return nil, fmt.Errorf("unexpected zone: %s", ref.Zone)
 	}
 	result[apiv1.LabelZoneRegion] = ref.Zone[:ix]
+	result[apiv1.LabelZoneRegionStable] = ref.Zone[:ix]
 	result[apiv1.LabelZoneFailureDomain] = ref.Zone
+	result[apiv1.LabelZoneFailureDomainStable] = ref.Zone
 	result[gceCSITopologyKeyZone] = ref.Zone
 	result[apiv1.LabelHostname] = nodeName
 	return result, nil
@@ -244,8 +247,10 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
 	labels, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_labels")
-	if !found || err != nil {
-		klog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS, will try NODE_LABELS; found=%v,  err=%v", found, err)
+	if err != nil {
+		klog.Errorf("error while trying to extract node_labels from AUTOSCALER_ENV_VARS: %v", err)
+	}
+	if !found {
 		labels, err = extractFromKubeEnv(kubeEnv, "NODE_LABELS")
 		if err != nil {
 			return nil, err
@@ -259,8 +264,10 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
 	taints, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_taints")
-	if !found || err != nil {
-		klog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS, will try NODE_TAINTS; found=%v, err=%v", found, err)
+	if err != nil {
+		klog.Errorf("error while trying to extract node_taints from AUTOSCALER_ENV_VARS: %v", err)
+	}
+	if !found {
 		taints, err = extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
 		if err != nil {
 			return nil, err
@@ -278,8 +285,10 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
 	kubeReserved, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "kube_reserved")
-	if !found || err != nil {
-		klog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS, will try kube-reserved in KUBELET_TEST_ARGS; found=%v, err=%v", found, err)
+	if err != nil {
+		klog.Errorf("error while trying to extract kube_reserved from AUTOSCALER_ENV_VARS: %v", err)
+	}
+	if !found {
 		kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
 		if err != nil {
 			return "", err
@@ -355,7 +364,7 @@ func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found 
 			return strings.Trim(items[1], " \"'"), true, nil
 		}
 	}
-	klog.Warningf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
+	klog.Infof("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
 	return "", false, nil
 }
 

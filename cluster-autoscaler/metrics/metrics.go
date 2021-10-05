@@ -56,6 +56,8 @@ const (
 	// Unready node was removed
 	Unready NodeScaleDownReason = "unready"
 
+	// CloudProviderError caused scale-up to fail
+	CloudProviderError FailedScaleUpReason = "cloudProviderError"
 	// APIError caused scale-up to fail
 	APIError FailedScaleUpReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up

@@ -31,7 +31,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -53,6 +53,7 @@ type NodeToBeRemoved struct {
 	Node *apiv1.Node
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
+	DaemonSetPods    []*apiv1.Pod
 }
 
 // UnremovableNode represents a node that can't be removed by CA.
@@ -147,6 +148,7 @@ candidateloop:
 		klog.V(2).Infof("%s: %s for removal", evaluationType, nodeName)
 
 		var podsToRemove []*apiv1.Pod
+		var daemonSetPods []*apiv1.Pod
 		var blockingPod *drain.BlockingPod
 
 		if _, found := destinationMap[nodeName]; !found {
@@ -156,10 +158,10 @@ candidateloop:
 		}
 
 		if fastCheck {
-			podsToRemove, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
+			podsToRemove, daemonSetPods, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
 				podDisruptionBudgets)
 		} else {
-			podsToRemove, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
+			podsToRemove, daemonSetPods, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
 				podDisruptionBudgets)
 		}
 
@@ -180,6 +182,7 @@ candidateloop:
 			result = append(result, NodeToBeRemoved{
 				Node:             nodeInfo.Node(),
 				PodsToReschedule: podsToRemove,
+				DaemonSetPods:    daemonSetPods,
 			})
 			klog.V(2).Infof("%s: node %s may be removed", evaluationType, nodeName)
 			if len(result) >= maxCount {
@@ -203,7 +206,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string) []str
 			continue
 		}
 		// Should block on all pods.
-		podsToRemove, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
+		podsToRemove, _, _, err := FastGetPodsToMove(nodeInfo, true, true, nil)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}
@@ -258,9 +261,15 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframewo
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
 	}
 	podsRequest := resource.MustParse("0")
+	daemonSetUtilization := resource.MustParse("0")
 	for _, podInfo := range nodeInfo.Pods {
 		// factor daemonset pods out of the utilization calculations
 		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
+			for _, container := range podInfo.Pod.Spec.Containers {
+				if resourceValue, found := container.Resources.Requests[resourceName]; found {
+					daemonSetUtilization.Add(resourceValue)
+				}
+			}
 			continue
 		}
 		// factor mirror pods out of the utilization calculations
@@ -273,7 +282,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframewo
 			}
 		}
 	}
-	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
+	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()-daemonSetUtilization.MilliValue()), nil
 }
 
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
@@ -292,6 +301,10 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 	podKey := func(pod *apiv1.Pod) string {
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+	}
+
+	isCandidateNode := func(nodeName string) bool {
+		return nodeName != removedNode && nodes[nodeName]
 	}
 
 	pods = tpu.ClearTPURequests(pods)
@@ -314,7 +327,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
-		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && hintedNode != removedNode {
+		if hintedNode, hasHint := oldHints[podKey(pod)]; hasHint && isCandidateNode(hintedNode) {
 			if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
 				if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
@@ -328,7 +341,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 
 		if !foundPlace {
 			newNodeName, err := predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
-				return nodeInfo.Node().Name != removedNode
+				return isCandidateNode(nodeInfo.Node().Name)
 			})
 			if err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)

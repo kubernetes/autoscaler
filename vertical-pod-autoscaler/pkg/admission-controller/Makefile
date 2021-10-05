@@ -8,9 +8,8 @@ ENVVAR=CGO_ENABLED=0 $(TEST_ENVVAR)
 GOOS?=linux
 COMPONENT=admission-controller
 FULL_COMPONENT=vpa-${COMPONENT}
-ARCH?=amd64
 
-ALL_ARCHITECTURES=amd64 arm arm64 ppc64le s390x
+ALL_ARCHITECTURES?=amd64 arm arm64 ppc64le s390x
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 build: clean

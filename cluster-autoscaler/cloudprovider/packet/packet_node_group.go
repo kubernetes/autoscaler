@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // packetNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
@@ -58,7 +58,7 @@ const (
 	waitForStatusTimeStep       = 30 * time.Second
 	waitForUpdateStatusTimeout  = 2 * time.Minute
 	waitForCompleteStatusTimout = 10 * time.Minute
-	scaleToZeroSupported        = false
+	scaleToZeroSupported        = true
 
 	// Time that the goroutine that first acquires clusterUpdateMutex
 	// in deleteNodes should wait for other synchronous calls to deleteNodes.

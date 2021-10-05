@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: updater
-          image: us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-updater:0.8.0
+          image: k8s.gcr.io/autoscaling/vpa-updater:0.9.0
           imagePullPolicy: Always
           resources:
             limits:
@@ -36,4 +36,5 @@ spec:
               cpu: 50m
               memory: 500Mi
           ports:
-            - containerPort: 8080
+            - name: prometheus
+              containerPort: 8943
