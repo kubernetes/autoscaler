@@ -198,7 +198,7 @@ func NewScaleTestAutoscalingContext(
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
-	predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(fakeClient, make(chan struct{}))
+	predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(fakeClient, nil)
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}

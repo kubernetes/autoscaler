@@ -23,5 +23,5 @@ import (
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() (PredicateChecker, error) {
 	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), make(chan struct{}))
+	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), nil)
 }

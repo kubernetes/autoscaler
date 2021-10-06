@@ -42,8 +42,15 @@ type SchedulerBasedPredicateChecker struct {
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
-func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
-	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+// The informer factory is optional. If nil, then this function will create one,
+// start it and wait for cache syncing.
+func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, informerFactory informers.SharedInformerFactory) (*SchedulerBasedPredicateChecker, error) {
+	startInformer := false
+	if informerFactory == nil {
+		informerFactory = informers.NewSharedInformerFactory(kubeClient, 0)
+		startInformer = true
+	}
+
 	config, err := scheduler_config.Default()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
@@ -64,26 +71,21 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
 	}
 
+	if startInformer {
+		stopChannel := make(chan struct{})
+		informerFactory.Start(stopChannel)
+		synced := informerFactory.WaitForCacheSync(stopChannel)
+		for k, v := range synced {
+			if !v {
+				return nil, fmt.Errorf("failed to sync informer %v", k)
+			}
+		}
+	}
+
 	checker := &SchedulerBasedPredicateChecker{
 		framework:              framework,
 		delegatingSharedLister: sharedLister,
 	}
-
-	// this MUST be called after all the informers/listers are acquired via the
-	// informerFactory....Lister()/informerFactory....Informer() methods
-	informerFactory.Start(stop)
-
-	// Also wait for all informers to be up-to-date. This is necessary for
-	// objects that were added when creating the fake client. Without
-	// this wait, those objects won't be visible via the informers when
-	// the test runs.
-	synced := informerFactory.WaitForCacheSync(stop)
-	for k, v := range synced {
-		if !v {
-			return nil, fmt.Errorf("failed to sync informer %v", k)
-		}
-	}
-
 	return checker, nil
 }
 

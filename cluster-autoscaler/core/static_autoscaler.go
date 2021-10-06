@@ -762,6 +762,12 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
 	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.nodeTransformation.IgnoredTaints, allNodes, readyNodes)
+
+	// Filter out nodes that aren't ready because of a missing CSI driver.
+	if a.processors.CSIProcessor != nil {
+		allNodes, readyNodes = a.processors.CSIProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	}
+
 	return allNodes, readyNodes, nil
 }
 

@@ -52,6 +52,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/replace"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -320,16 +321,22 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	autoscalingOptions := createAutoscalingOptions()
 	kubeClient := createKubeClient(getKubeConfig())
 	eventsKubeClient := createKubeClient(getKubeConfig())
+	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+
+	// This isn't particularly useful at the moment. Perhaps we can accept
+	// a context and then our caller can decide about a suitable deadline.
+	stopChannel := make(chan struct{})
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		ClusterSnapshot:      simulator.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
+		InformerFactory:      informerFactory,
 		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
 	}
 
-	opts.Processors = ca_processors.DefaultProcessors()
+	opts.Processors = ca_processors.DefaultProcessors(informerFactory)
 	opts.Processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
 
 	nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
@@ -354,7 +361,27 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
-	return core.NewAutoscaler(opts)
+	autoscaler, err := core.NewAutoscaler(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// this MUST be called after all the informers/listers are acquired via the
+	// informerFactory....Lister()/informerFactory....Informer() methods
+	informerFactory.Start(stopChannel)
+
+	// Also wait for all informers to be up-to-date. This is necessary for
+	// objects that were added when creating the fake client. Without
+	// this wait, those objects won't be visible via the informers when
+	// the test runs.
+	synced := informerFactory.WaitForCacheSync(stopChannel)
+	for k, v := range synced {
+		if !v {
+			return nil, fmt.Errorf("failed to sync informer %v", k)
+		}
+	}
+
+	return autoscaler, err
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {

@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 )
 
@@ -40,6 +41,7 @@ import (
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
+	InformerFactory        informers.SharedInformerFactory
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
@@ -85,14 +87,13 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 // Initialize default options if not provided.
 func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.Processors == nil {
-		opts.Processors = ca_processors.DefaultProcessors()
+		opts.Processors = ca_processors.DefaultProcessors(opts.InformerFactory)
 	}
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
 	}
 	if opts.PredicateChecker == nil {
-		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
+		predicateChecker, err := simulator.NewSchedulerBasedPredicateChecker(opts.KubeClient, opts.InformerFactory)
 		if err != nil {
 			return err
 		}

@@ -18,6 +18,7 @@ package processors
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/csi"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/client-go/informers"
 )
 
 // AutoscalingProcessors are a set of customizable processors used for encapsulating
@@ -60,10 +62,12 @@ type AutoscalingProcessors struct {
 	CustomResourcesProcessor customresources.CustomResourcesProcessor
 	// ActionableClusterProcessor is interface defining whether the cluster is in an actionable state
 	ActionableClusterProcessor actionablecluster.ActionableClusterProcessor
+	// CSIProcessor checks for nodes that are not ready because the CSI driver is still starting up.
+	CSIProcessor csi.CSIProcessor
 }
 
 // DefaultProcessors returns default set of processors.
-func DefaultProcessors() *AutoscalingProcessors {
+func DefaultProcessors(informerFactory informers.SharedInformerFactory) *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:           pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor:     nodegroups.NewDefaultNodeGroupListProcessor(),
@@ -77,6 +81,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
 		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
+		CSIProcessor:               csi.NewDefaultCSIProcessor(informerFactory),
 		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(),
 		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
 	}
@@ -96,6 +101,7 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.NodeInfoProcessor.CleanUp()
 	ap.NodeGroupConfigProcessor.CleanUp()
 	ap.CustomResourcesProcessor.CleanUp()
+	ap.CSIProcessor.CleanUp()
 	ap.TemplateNodeInfoProvider.CleanUp()
 	ap.ActionableClusterProcessor.CleanUp()
 }
