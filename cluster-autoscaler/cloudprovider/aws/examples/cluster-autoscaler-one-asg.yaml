@@ -141,6 +141,7 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
+        fsGroup: 65534
       serviceAccountName: cluster-autoscaler
       containers:
         - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0
