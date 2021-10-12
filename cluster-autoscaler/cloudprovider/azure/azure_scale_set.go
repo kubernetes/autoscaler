@@ -20,26 +20,21 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	cloudvolume "k8s.io/cloud-provider/volume"
 	klog "k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"k8s.io/legacy-cloud-providers/azure/retry"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 var (
@@ -218,6 +213,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		return -1, rerr.Error()
 	}
 
+	// If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
+	if set.VirtualMachineScaleSetProperties != nil && strings.EqualFold(to.String(set.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.ProvisioningStateUpdating)) {
+		klog.V(5).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
+		return scaleSet.curSize, nil
+	}
+
 	vmssSizeMutex.Lock()
 	curSize := *set.Sku.Capacity
 	vmssSizeMutex.Unlock()
@@ -317,7 +318,6 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	scaleSet.lastSizeRefresh = time.Now()
 
 	go scaleSet.updateVMSSCapacity(future)
-
 	return nil
 }
 
@@ -417,7 +417,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		return err
 	}
 
-	instanceIDs := []string{}
+	instancesToDelete := []*azureRef{}
 	for _, instance := range instances {
 		asg, err := scaleSet.manager.GetAsgForInstance(instance)
 		if err != nil {
@@ -432,20 +432,23 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 			klog.V(3).Infof("Skipping deleting instance %s as its current state is deleting", instance.Name)
 			continue
 		}
+		instancesToDelete = append(instancesToDelete, instance)
+	}
 
+	// nothing to delete
+	if len(instancesToDelete) == 0 {
+		klog.V(3).Infof("No new instances eligible for deletion, skipping")
+		return nil
+	}
+
+	instanceIDs := []string{}
+	for _, instance := range instancesToDelete {
 		instanceID, err := getLastSegment(instance.Name)
 		if err != nil {
 			klog.Errorf("getLastSegment failed with error: %v", err)
 			return err
 		}
-
 		instanceIDs = append(instanceIDs, instanceID)
-	}
-
-	// nothing to delete
-	if len(instanceIDs) == 0 {
-		klog.V(3).Infof("No new instances eligible for deletion, skipping")
-		return nil
 	}
 
 	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
@@ -471,7 +474,13 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	scaleSet.curSize -= int64(len(instanceIDs))
 	scaleSet.sizeMutex.Unlock()
 
+	// Proactively set the status of the instances to be deleted in cache
+	for _, instance := range instancesToDelete {
+		scaleSet.setInstanceStatusByProviderID(instance.Name, cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting})
+	}
+
 	go scaleSet.waitForDeleteInstances(future, requiredIds)
+
 	return nil
 }
 
@@ -517,152 +526,6 @@ func (scaleSet *ScaleSet) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(), scaleSet.MaxSize())
 }
 
-func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
-	instanceOS := cloudprovider.DefaultOS
-	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
-		instanceOS = "windows"
-	}
-
-	return instanceOS
-}
-
-func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
-	result := make(map[string]string)
-
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = buildInstanceOS(template)
-	result[apiv1.LabelInstanceType] = *template.Sku.Name
-	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
-
-	if template.Zones != nil && len(*template.Zones) > 0 {
-		failureDomains := make([]string, len(*template.Zones))
-		for k, v := range *template.Zones {
-			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
-		}
-
-		result[apiv1.LabelZoneFailureDomain] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
-	} else {
-		result[apiv1.LabelZoneFailureDomain] = "0"
-	}
-
-	result[apiv1.LabelHostname] = nodeName
-	return result
-}
-
-func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineScaleSet) (*apiv1.Node, error) {
-	node := apiv1.Node{}
-	nodeName := fmt.Sprintf("%s-asg-%d", scaleSet.Name, rand.Int63())
-
-	node.ObjectMeta = metav1.ObjectMeta{
-		Name:     nodeName,
-		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
-		Labels:   map[string]string{},
-	}
-
-	node.Status = apiv1.NodeStatus{
-		Capacity: apiv1.ResourceList{},
-	}
-
-	var vmssType *InstanceType
-	for k := range InstanceTypes {
-		if strings.EqualFold(k, *template.Sku.Name) {
-			vmssType = InstanceTypes[k]
-			break
-		}
-	}
-
-	promoRe := regexp.MustCompile(`(?i)_promo`)
-	if promoRe.MatchString(*template.Sku.Name) {
-		if vmssType == nil {
-			// We didn't find an exact match but this is a promo type, check for matching standard
-			klog.V(1).Infof("No exact match found for %s, checking standard types", *template.Sku.Name)
-			skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
-			for k := range InstanceTypes {
-				if strings.EqualFold(k, skuName) {
-					vmssType = InstanceTypes[k]
-					break
-				}
-			}
-		}
-	}
-
-	if vmssType == nil {
-		return nil, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
-	}
-	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmssType.VCPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmssType.MemoryMb*1024*1024, resource.DecimalSI)
-
-	// TODO: set real allocatable.
-	node.Status.Allocatable = node.Status.Capacity
-
-	// NodeLabels
-	if template.Tags != nil {
-		for k, v := range template.Tags {
-			if v != nil {
-				node.Labels[k] = *v
-			} else {
-				node.Labels[k] = ""
-			}
-
-		}
-	}
-
-	// GenericLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
-	// Labels from the Scale Set's Tags
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
-
-	// Taints from the Scale Set's Tags
-	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
-
-	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-	return &node, nil
-}
-
-func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
-	result := make(map[string]string)
-
-	for tagName, tagValue := range tags {
-		splits := strings.Split(tagName, nodeLabelTagName)
-		if len(splits) > 1 {
-			label := strings.Replace(splits[1], "_", "/", -1)
-			if label != "" {
-				result[label] = *tagValue
-			}
-		}
-	}
-
-	return result
-}
-
-func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
-	taints := make([]apiv1.Taint, 0)
-
-	for tagName, tagValue := range tags {
-		// The tag value must be in the format <tag>:NoSchedule
-		r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
-
-		if r.MatchString(*tagValue) {
-			splits := strings.Split(tagName, nodeTaintTagName)
-			if len(splits) > 1 {
-				values := strings.SplitN(*tagValue, ":", 2)
-				if len(values) > 1 {
-					taintKey := strings.Replace(splits[1], "_", "/", -1)
-					taints = append(taints, apiv1.Taint{
-						Key:    taintKey,
-						Value:  values[0],
-						Effect: apiv1.TaintEffect(values[1]),
-					})
-				}
-			}
-		}
-	}
-
-	return taints
-}
-
 // TemplateNodeInfo returns a node template for this scale set.
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	template, rerr := scaleSet.getVMSSInfo()
@@ -670,7 +533,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 		return nil, rerr.Error()
 	}
 
-	node, err := scaleSet.buildNodeFromTemplate(template)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template)
 	if err != nil {
 		return nil, err
 	}
@@ -699,18 +562,13 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	}
 
 	klog.V(4).Infof("Nodes: starts to get VMSS VMs")
-
-	lastRefresh := time.Now()
-	if scaleSet.lastInstanceRefresh.IsZero() && scaleSet.instancesRefreshJitter > 0 {
-		// new VMSS: spread future refreshs
-		splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
-		lastRefresh = time.Now().Add(-time.Second * time.Duration(splay))
-	}
+	splay := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(scaleSet.instancesRefreshJitter + 1)
+	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
 	vms, rerr := scaleSet.GetScaleSetVms()
 	if rerr != nil {
 		if isAzureRequestsThrottled(rerr) {
-			// Log a warning and update the instance refresh time so that it would retry after next scaleSet.instanceRefreshPeriod.
+			// Log a warning and update the instance refresh time so that it would retry after cache expiration
 			klog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", rerr)
 			scaleSet.lastInstanceRefresh = lastRefresh
 			return scaleSet.instanceCache, nil
@@ -760,6 +618,17 @@ func (scaleSet *ScaleSet) getInstanceByProviderID(providerID string) (cloudprovi
 		}
 	}
 	return cloudprovider.Instance{}, false
+}
+
+func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, status cloudprovider.InstanceStatus) {
+	scaleSet.instanceMutex.Lock()
+	defer scaleSet.instanceMutex.Unlock()
+	for k, instance := range scaleSet.instanceCache {
+		if instance.Id == providerID {
+			klog.V(5).Infof("Setting instance %s status to %v", instance.Id, status)
+			scaleSet.instanceCache[k].Status = &status
+		}
+	}
 }
 
 // instanceStatusFromVM converts the VM provisioning state to cloudprovider.InstanceStatus

@@ -112,6 +112,24 @@ func TestUtilParseScalingBounds(t *testing.T) {
 		},
 		min: 0,
 		max: 1,
+	}, {
+		description: "deprecated min/max annotations still work, result is min 0, max 1",
+		annotations: map[string]string{
+			deprecatedNodeGroupMinSizeAnnotationKey: "0",
+			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
+		},
+		min: 0,
+		max: 1,
+	}, {
+		description: "deprecated min/max annotations do not take precedence over non-deprecated annotations, result is min 1, max 2",
+		annotations: map[string]string{
+			deprecatedNodeGroupMinSizeAnnotationKey: "0",
+			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
+			nodeGroupMinSizeAnnotationKey:           "1",
+			nodeGroupMaxSizeAnnotationKey:           "2",
+		},
+		min: 1,
+		max: 2,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			machineSet := unstructured.Unstructured{

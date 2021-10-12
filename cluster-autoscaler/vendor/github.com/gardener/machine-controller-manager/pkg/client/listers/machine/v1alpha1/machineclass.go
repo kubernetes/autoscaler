@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // MachineClassLister helps list MachineClasses.
+// All objects returned here must be treated as read-only.
 type MachineClassLister interface {
 	// List lists all MachineClasses in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MachineClass, err error)
 	// MachineClasses returns an object that can list and get MachineClasses.
 	MachineClasses(namespace string) MachineClassNamespaceLister
@@ -58,10 +60,13 @@ func (s *machineClassLister) MachineClasses(namespace string) MachineClassNamesp
 }
 
 // MachineClassNamespaceLister helps list and get MachineClasses.
+// All objects returned here must be treated as read-only.
 type MachineClassNamespaceLister interface {
 	// List lists all MachineClasses in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MachineClass, err error)
 	// Get retrieves the MachineClass from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MachineClass, error)
 	MachineClassNamespaceListerExpansion
 }

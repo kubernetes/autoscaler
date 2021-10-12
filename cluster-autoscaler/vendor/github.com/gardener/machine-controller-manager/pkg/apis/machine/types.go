@@ -649,21 +649,23 @@ type OpenStackMachineClassList struct {
 
 // OpenStackMachineClassSpec is the specification of a OpenStackMachineClass.
 type OpenStackMachineClassSpec struct {
-	ImageID          string
-	ImageName        string
-	Region           string
-	AvailabilityZone string
-	FlavorName       string
-	KeyName          string
-	SecurityGroups   []string
-	Tags             map[string]string
-	NetworkID        string
-	Networks         []OpenStackNetwork
-	SecretRef        *corev1.SecretReference
-	PodNetworkCidr   string
-	RootDiskSize     int // in GB
-	UseConfigDrive   *bool
-	ServerGroupID    *string
+	ImageID              string
+	ImageName            string
+	Region               string
+	AvailabilityZone     string
+	FlavorName           string
+	KeyName              string
+	SecurityGroups       []string
+	Tags                 map[string]string
+	NetworkID            string
+	Networks             []OpenStackNetwork
+	SubnetID             *string
+	SecretRef            *corev1.SecretReference
+	CredentialsSecretRef *corev1.SecretReference
+	PodNetworkCidr       string
+	RootDiskSize         int // in GB
+	UseConfigDrive       *bool
+	ServerGroupID        *string
 }
 
 type OpenStackNetwork struct {
@@ -699,18 +701,19 @@ type AWSMachineClassList struct {
 
 // AWSMachineClassSpec is the specification of a AWSMachineClass.
 type AWSMachineClassSpec struct {
-	AMI               string
-	Region            string
-	BlockDevices      []AWSBlockDeviceMappingSpec
-	EbsOptimized      bool
-	IAM               AWSIAMProfileSpec
-	MachineType       string
-	KeyName           string
-	Monitoring        bool
-	NetworkInterfaces []AWSNetworkInterfaceSpec
-	Tags              map[string]string
-	SpotPrice         *string
-	SecretRef         *corev1.SecretReference
+	AMI                  string
+	Region               string
+	BlockDevices         []AWSBlockDeviceMappingSpec
+	EbsOptimized         bool
+	IAM                  AWSIAMProfileSpec
+	MachineType          string
+	KeyName              string
+	Monitoring           bool
+	NetworkInterfaces    []AWSNetworkInterfaceSpec
+	Tags                 map[string]string
+	SpotPrice            *string
+	SecretRef            *corev1.SecretReference
+	CredentialsSecretRef *corev1.SecretReference
 
 	// TODO add more here
 }
@@ -862,12 +865,13 @@ type AzureMachineClassList struct {
 
 // AzureMachineClassSpec is the specification of a AzureMachineClass.
 type AzureMachineClassSpec struct {
-	Location      string
-	Tags          map[string]string
-	Properties    AzureVirtualMachineProperties
-	ResourceGroup string
-	SubnetInfo    AzureSubnetInfo
-	SecretRef     *corev1.SecretReference
+	Location             string
+	Tags                 map[string]string
+	Properties           AzureVirtualMachineProperties
+	ResourceGroup        string
+	SubnetInfo           AzureSubnetInfo
+	SecretRef            *corev1.SecretReference
+	CredentialsSecretRef *corev1.SecretReference
 }
 
 // AzureVirtualMachineProperties is describes the properties of a Virtual Machine.
@@ -1028,20 +1032,21 @@ type GCPMachineClassList struct {
 
 // GCPMachineClassSpec is the specification of a GCPMachineClass.
 type GCPMachineClassSpec struct {
-	CanIpForward       bool
-	DeletionProtection bool
-	Description        *string
-	Disks              []*GCPDisk
-	Labels             map[string]string
-	MachineType        string
-	Metadata           []*GCPMetadata
-	NetworkInterfaces  []*GCPNetworkInterface
-	Scheduling         GCPScheduling
-	SecretRef          *corev1.SecretReference
-	ServiceAccounts    []GCPServiceAccount
-	Tags               []string
-	Region             string
-	Zone               string
+	CanIpForward         bool
+	DeletionProtection   bool
+	Description          *string
+	Disks                []*GCPDisk
+	Labels               map[string]string
+	MachineType          string
+	Metadata             []*GCPMetadata
+	NetworkInterfaces    []*GCPNetworkInterface
+	Scheduling           GCPScheduling
+	SecretRef            *corev1.SecretReference
+	CredentialsSecretRef *corev1.SecretReference
+	ServiceAccounts      []GCPServiceAccount
+	Tags                 []string
+	Region               string
+	Zone                 string
 }
 
 // GCPDisk describes disks for GCP.
@@ -1126,6 +1131,7 @@ type AlicloudMachineClassSpec struct {
 	Tags                    map[string]string
 	KeyPairName             string
 	SecretRef               *corev1.SecretReference
+	CredentialsSecretRef    *corev1.SecretReference
 }
 
 // AlicloudSystemDisk describes SystemDisk for Alicloud.
@@ -1180,7 +1186,8 @@ type PacketMachineClassSpec struct {
 	SSHKeys      []string
 	UserData     string
 
-	SecretRef *corev1.SecretReference
+	SecretRef            *corev1.SecretReference
+	CredentialsSecretRef *corev1.SecretReference
 
 	// TODO add more here
 }
@@ -1197,13 +1204,18 @@ type MachineClass struct {
 	metav1.TypeMeta
 	// +optional
 	metav1.ObjectMeta
-	// Provider-specific configuration to use during node creation.
-	ProviderSpec runtime.RawExtension
-	// SecretRef stores the necessary secrets such as credetials or userdata.
-	SecretRef *corev1.SecretReference
+	// CredentialsSecretRef can optionally store the credentials (in this case the SecretRef does not need to store them).
+	// This might be useful if multiple machine classes with the same credentials but different user-datas are used.
+	CredentialsSecretRef *corev1.SecretReference
+	// ExpectedNodeAttributes contains subfields the track all scale from zero resources
+	ExpectedNodeAttributes *ExpectedNodeAttributes
 	// Provider is the combination of name and location of cloud-specific drivers.
 	// eg. awsdriver//127.0.0.1:8080
 	Provider string
+	// Provider-specific configuration to use during node creation.
+	ProviderSpec runtime.RawExtension
+	// SecretRef stores the necessary secrets such as credentials or userdata.
+	SecretRef *corev1.SecretReference
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -1213,4 +1225,20 @@ type MachineClassList struct {
 	metav1.TypeMeta
 	metav1.ListMeta
 	Items []MachineClass
+}
+
+// ExpectedNodeAttributes contains subfields to track all scale from zero resources
+type ExpectedNodeAttributes struct {
+	// CPU cores of the expected node
+	CPU *int64
+	// GPU cores of the expected node
+	GPU *int64
+	// Instance type of the expected node
+	InstanceType *string
+	// Memory of the expected node
+	Memory *int64
+	// Region of the expected node
+	Region *string
+	// Zone of the expected node
+	Zone *string
 }

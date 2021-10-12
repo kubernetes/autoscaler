@@ -4,9 +4,7 @@ go 1.15
 require (
   github.com/digitalocean/godo v1.27.0
   github.com/rancher/go-rancher v0.1.0
-  github.com/gardener/machine-controller-manager v0.35.0
-)
-
-replace (
-  github.com/gardener/machine-controller-manager => /Users/i341888/Go/src/github.com/gardener/machine-controller-manager
+  github.com/gardener/machine-controller-manager v0.41.0
+	github.com/gardener/machine-controller-manager-provider-aws v0.8.0
+	github.com/gardener/machine-controller-manager-provider-azure v0.5.0
 )

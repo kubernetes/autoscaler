@@ -24,6 +24,7 @@ import (
 
 // MachineTemplateSpec describes the data a machine should have when created from a template
 type MachineTemplateSpec struct {
+	// +kubebuilder:validation:XPreserveUnknownFields
 	// Standard object's metadata.
 	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	// +optional

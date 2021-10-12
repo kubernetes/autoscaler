@@ -25,7 +25,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -240,8 +240,8 @@ func TestClear(t *testing.T) {
 	// Run with -count=1 to avoid caching.
 	localRand := rand.New(rand.NewSource(time.Now().Unix()))
 
-	nodeCount := localRand.Intn(100)
-	podCount := localRand.Intn(1000)
+	nodeCount := localRand.Intn(99) + 1
+	podCount := localRand.Intn(999) + 1
 	extraNodeCount := localRand.Intn(100)
 	extraPodCount := localRand.Intn(1000)
 

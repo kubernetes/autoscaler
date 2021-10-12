@@ -37,12 +37,20 @@ type MachineClass struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// +kubebuilder:validation:XPreserveUnknownFields
+
+	// CredentialsSecretRef can optionally store the credentials (in this case the SecretRef does not need to store them).
+	// This might be useful if multiple machine classes with the same credentials but different user-datas are used.
+	CredentialsSecretRef *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`
+	// ExpectedNodeAttributes contains subfields the track all scale from zero resources
+	// +optional
+	ExpectedNodeAttributes *ExpectedNodeAttributes `json:"expectedNodeAttributes,omitempty"`
 	// Provider-specific configuration to use during node creation.
 	ProviderSpec runtime.RawExtension `json:"providerSpec"`
-	// SecretRef stores the necessary secrets such as credetials or userdata.
-	SecretRef *corev1.SecretReference `json:"secretRef,omitempty"`
 	// Provider is the combination of name and location of cloud-specific drivers.
 	Provider string `json:"provider,omitempty"`
+	// SecretRef stores the necessary secrets such as credentials or userdata.
+	SecretRef *corev1.SecretReference `json:"secretRef,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -53,4 +61,26 @@ type MachineClassList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []MachineClass `json:"items"`
+}
+
+// ExpectedNodeAttributes contains subfields to track all scale from zero resources
+type ExpectedNodeAttributes struct {
+	// CPU cores of the expected node
+	// +optional
+	CPU *int64 `json:"cpu,omitempty"`
+	// GPU cores of the expected node
+	// +optional
+	GPU *int64 `json:"gpu,omitempty"`
+	// Instance type of the expected node
+	// +optional
+	InstanceType *string `json:"instanceType,omitempty"`
+	// Memory of the expected node
+	// +optional
+	Memory *int64 `json:"memory,omitempty"`
+	// Region of the expected node
+	// +optional
+	Region *string `json:"region,omitempty"`
+	// Zone of the expected node
+	// +optional
+	Zone *string `json:"zone,omitempty"`
 }

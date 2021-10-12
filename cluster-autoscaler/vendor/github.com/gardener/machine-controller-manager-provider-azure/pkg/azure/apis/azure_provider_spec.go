@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: 2020 SAP SE or an SAP affiliate company and Gardener con
 SPDX-License-Identifier: Apache-2.0
 */
 
+// Package api defined the schema of the Azure Provider Spec
 package api
 
 const (

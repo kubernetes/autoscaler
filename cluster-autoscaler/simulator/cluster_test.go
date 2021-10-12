@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -59,7 +59,7 @@ func TestUtilization(t *testing.T) {
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, daemonSetPod3)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
@@ -308,10 +308,12 @@ func TestFindNodesToRemove(t *testing.T) {
 	emptyNodeToRemove := NodeToBeRemoved{
 		Node:             emptyNode,
 		PodsToReschedule: []*apiv1.Pod{},
+		DaemonSetPods:    []*apiv1.Pod{},
 	}
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
+		DaemonSetPods:    []*apiv1.Pod{},
 	}
 
 	clusterSnapshot := NewBasicClusterSnapshot()

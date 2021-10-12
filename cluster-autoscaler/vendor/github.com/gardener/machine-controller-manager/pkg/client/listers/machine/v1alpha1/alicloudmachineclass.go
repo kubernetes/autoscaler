@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // AlicloudMachineClassLister helps list AlicloudMachineClasses.
+// All objects returned here must be treated as read-only.
 type AlicloudMachineClassLister interface {
 	// List lists all AlicloudMachineClasses in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.AlicloudMachineClass, err error)
 	// AlicloudMachineClasses returns an object that can list and get AlicloudMachineClasses.
 	AlicloudMachineClasses(namespace string) AlicloudMachineClassNamespaceLister
@@ -58,10 +60,13 @@ func (s *alicloudMachineClassLister) AlicloudMachineClasses(namespace string) Al
 }
 
 // AlicloudMachineClassNamespaceLister helps list and get AlicloudMachineClasses.
+// All objects returned here must be treated as read-only.
 type AlicloudMachineClassNamespaceLister interface {
 	// List lists all AlicloudMachineClasses in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.AlicloudMachineClass, err error)
 	// Get retrieves the AlicloudMachineClass from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.AlicloudMachineClass, error)
 	AlicloudMachineClassNamespaceListerExpansion
 }

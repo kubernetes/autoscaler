@@ -49,7 +49,13 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
-const defaultResyncPeriod time.Duration = 10 * time.Minute
+const (
+	scaleCacheLoopPeriod         time.Duration = 7 * time.Second
+	scaleCacheEntryLifetime      time.Duration = time.Hour
+	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
+	scaleCacheEntryJitterFactor  float64       = 1.
+	defaultResyncPeriod          time.Duration = 10 * time.Minute
+)
 
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
@@ -108,7 +114,8 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient, namespace)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	controllerFetcher.Start(context.TODO(), scaleCacheLoopPeriod)
 	return ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,

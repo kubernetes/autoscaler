@@ -70,7 +70,7 @@ for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh || true)
   fi
-  make --directory ${SCRIPT_ROOT}/pkg/${i} release
+  ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
 kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd.yaml
