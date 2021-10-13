@@ -489,7 +489,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
 			if err != nil {
-				return scaleUpError(&status.ScaleUpStatus{}, err)
+				return scaleUpError(
+					&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}},
+					err)
 			}
 			createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
 			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
@@ -587,7 +589,13 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		for _, info := range scaleUpInfos {
 			typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
 			if typedErr != nil {
-				return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr)
+				return scaleUpError(
+					&status.ScaleUpStatus{
+						CreateNodeGroupResults: createNodeGroupResults,
+						FailedResizeNodeGroups: []cloudprovider.NodeGroup{info.Group},
+					},
+					typedErr,
+				)
 			}
 		}
 
