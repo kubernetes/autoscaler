@@ -30,14 +30,16 @@ import (
 // on if scale-up happened, description of scale-up operation performed and
 // status of pods that took part in the scale-up evaluation.
 type ScaleUpStatus struct {
-	Result                  ScaleUpResult
-	ScaleUpError            *errors.AutoscalerError
-	ScaleUpInfos            []nodegroupset.ScaleUpInfo
-	PodsTriggeredScaleUp    []*apiv1.Pod
-	PodsRemainUnschedulable []NoScaleUpInfo
-	PodsAwaitEvaluation     []*apiv1.Pod
-	CreateNodeGroupResults  []nodegroups.CreateNodeGroupResult
-	ConsideredNodeGroups    []cloudprovider.NodeGroup
+	Result                   ScaleUpResult
+	ScaleUpError             *errors.AutoscalerError
+	ScaleUpInfos             []nodegroupset.ScaleUpInfo
+	PodsTriggeredScaleUp     []*apiv1.Pod
+	PodsRemainUnschedulable  []NoScaleUpInfo
+	PodsAwaitEvaluation      []*apiv1.Pod
+	CreateNodeGroupResults   []nodegroups.CreateNodeGroupResult
+	ConsideredNodeGroups     []cloudprovider.NodeGroup
+	FailedCreationNodeGroups []cloudprovider.NodeGroup
+	FailedResizeNodeGroups   []cloudprovider.NodeGroup
 }
 
 // NoScaleUpInfo contains information about a pod that didn't trigger scale-up.
