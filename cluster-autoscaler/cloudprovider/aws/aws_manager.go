@@ -381,8 +381,8 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// NodeLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
-	if nodegroupName, ok := node.Labels["nodegroup-name"]; ok {
-		klog.V(5).Infof("Nodegroup %s is an EKS managed nodegroup.", nodegroupName)
+	if nodegroupName, clusterName := node.Labels["nodegroup-name"], node.Labels["cluster-name"]; nodegroupName != "" && clusterName != "" {
+		klog.V(5).Infof("Nodegroup %s in cluster %s is an EKS managed nodegroup.", nodegroupName, clusterName)
 		// TODO: Call AWS EKS DescribeNodegroup API, check if keys already exist in Labels and do NOT overwrite
 	}
 
