@@ -34,7 +34,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"sort"
@@ -433,7 +433,7 @@ func TempFile(content []byte, dir, prefix string) (*os.File, error) {
 			return nil, err
 		}
 
-		dir = path.Join(home, "tmp")
+		dir = filepath.Join(home, "tmp")
 	}
 
 	if prefix == "" {
