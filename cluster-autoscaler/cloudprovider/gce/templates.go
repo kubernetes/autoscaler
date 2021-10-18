@@ -40,6 +40,8 @@ import (
 // GceTemplateBuilder builds templates for GCE nodes.
 type GceTemplateBuilder struct{}
 
+// LocalSSDDiskSizeInGiB is the size of each local SSD in GiB
+// (cf. https://cloud.google.com/compute/docs/disks/local-ssd)
 const LocalSSDDiskSizeInGiB = 375
 
 // TODO: This should be imported from sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/pkg/common/constants.go
