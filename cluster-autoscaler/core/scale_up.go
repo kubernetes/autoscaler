@@ -478,9 +478,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			newNodes = context.MaxNodesTotal - len(nodes) - len(upcomingNodes)
 			context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
 			if newNodes < 1 {
-				return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
-					errors.TransientError,
-					"max node total count already reached"))
+				return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
+					errors.NewAutoscalerError(errors.TransientError, "max node total count already reached"))
 			}
 		}
 
@@ -490,7 +489,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
 			if err != nil {
 				return scaleUpError(
-					&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}},
+					&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}, PodsTriggeredScaleUp: bestOption.Pods},
 					err)
 			}
 			createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
@@ -522,7 +521,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 				option, err2 := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
 				if err2 != nil {
-					return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+					return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, errors.ToAutoscalerError(errors.InternalError, err))
 				}
 
 				if len(option.Pods) > 0 && option.NodeCount > 0 {
@@ -541,22 +540,28 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			// This should never happen, as we already should have retrieved
 			// nodeInfo for any considered nodegroup.
 			klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, errors.NewAutoscalerError(
-				errors.CloudProviderError,
-				"No node info for best expansion option!"))
+			return scaleUpError(
+				&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+				errors.NewAutoscalerError(
+					errors.CloudProviderError,
+					"No node info for best expansion option!"))
 		}
 
 		// apply upper limits for CPU and memory
 		newNodes, err = applyScaleUpResourcesLimits(context, processors, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
 		if err != nil {
-			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, err)
+			return scaleUpError(
+				&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+				err)
 		}
 
 		targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
 		if context.BalanceSimilarNodeGroups {
 			similarNodeGroups, typedErr := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, bestOption.NodeGroup, nodeInfos)
 			if typedErr != nil {
-				return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr.AddPrefix("Failed to find matching node groups: "))
+				return scaleUpError(
+					&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+					typedErr.AddPrefix("Failed to find matching node groups: "))
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, expansionOptions)
 			for _, ng := range similarNodeGroups {
@@ -583,7 +588,9 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
 			context, targetNodeGroups, newNodes)
 		if typedErr != nil {
-			return scaleUpError(&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults}, typedErr)
+			return scaleUpError(
+				&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+				typedErr)
 		}
 		klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
@@ -593,6 +600,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 					&status.ScaleUpStatus{
 						CreateNodeGroupResults: createNodeGroupResults,
 						FailedResizeNodeGroups: []cloudprovider.NodeGroup{info.Group},
+						PodsTriggeredScaleUp:   bestOption.Pods,
 					},
 					typedErr,
 				)
