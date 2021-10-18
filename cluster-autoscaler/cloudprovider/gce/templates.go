@@ -30,14 +30,17 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	klog "k8s.io/klog/v2"
 )
 
 // GceTemplateBuilder builds templates for GCE nodes.
 type GceTemplateBuilder struct{}
+
+const LocalSSDDiskSizeInGiB = 375
 
 // TODO: This should be imported from sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/pkg/common/constants.go
 // This key is applicable to both GCE and GKE
@@ -54,7 +57,7 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, pods *int64) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -71,7 +74,12 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	if ephemeralStorage > 0 {
-		storageTotal := ephemeralStorage - CalculateOSReservedEphemeralStorage(ephemeralStorage, osDistribution)
+		var storageTotal int64
+		if ephemeralStorageLocalSSDCount > 0 {
+			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, osDistribution)
+		} else {
+			storageTotal = ephemeralStorage - CalculateOSReservedEphemeralStorage(ephemeralStorage, osDistribution)
+		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
 
@@ -166,15 +174,17 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	}
 
 	var ephemeralStorage int64 = -1
-	if !isEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
-		ephemeralStorage, err = getEphemeralStorageFromInstanceTemplateProperties(template.Properties)
-		if err != nil {
-			klog.Errorf("could not fetch ephemeral storage from instance template. %s", err)
-			return nil, err
-		}
+	ssdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
+	if ssdCount > 0 {
+		ephemeralStorage, err = getLocalSSDEphemeralStorageFromInstanceTemplateProperties(template.Properties, ssdCount)
+	} else if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, pods)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, ssdCount, pods)
 	if err != nil {
 		return nil, err
 	}
@@ -228,10 +238,51 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	return &node, nil
 }
 
-// isEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
+func ephemeralStorageLocalSSDCount(kubeEnvValue string) int64 {
+	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "ephemeral_storage_local_ssd_count")
+	if err != nil {
+		klog.Warningf("cannot extract ephemeral_storage_local_ssd_count from kube-env, default to 0: %v", err)
+		return 0
+	}
+
+	if !found {
+		return 0
+	}
+
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		klog.Warningf("cannot parse ephemeral_storage_local_ssd_count value, default to 0: %v", err)
+		return 0
+	}
+
+	return int64(n)
+}
+
+func getLocalSSDEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties, ssdCount int64) (ephemeralStorage int64, err error) {
+	if instanceProperties.Disks == nil {
+		return 0, fmt.Errorf("instance properties disks is nil")
+	}
+
+	var count int64
+	for _, disk := range instanceProperties.Disks {
+		if disk != nil && disk.InitializeParams != nil {
+			if disk.Type == "SCRATCH" && disk.InitializeParams.DiskType == "local-ssd" {
+				count++
+			}
+		}
+	}
+
+	if count < ssdCount {
+		return 0, fmt.Errorf("actual local SSD count is lower than ephemeral_storage_local_ssd_count")
+	}
+
+	return ssdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
+}
+
+// isBootDiskEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
 // picked up from Instance Template and used as Ephemeral Storage, in case other type of storage are used
 // as ephemeral storage
-func isEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue string) bool {
+func isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue string) bool {
 	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "BLOCK_EPH_STORAGE_BOOT_DISK")
 	if err == nil && found && v == "true" {
 		return true
@@ -239,7 +290,7 @@ func isEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue string) bool {
 	return false
 }
 
-func getEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties) (ephemeralStorage int64, err error) {
+func getBootDiskEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties) (ephemeralStorage int64, err error) {
 	if instanceProperties.Disks == nil {
 		return 0, fmt.Errorf("unable to get ephemeral storage because instance properties disks is nil")
 	}
