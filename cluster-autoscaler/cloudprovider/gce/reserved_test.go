@@ -103,3 +103,50 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 		})
 	}
 }
+
+func TestEphemeralStorageOnLocalSSDFilesystemOverheadInBytes(t *testing.T) {
+	type testCase struct {
+		scenario       string
+		diskCount      int64
+		osDistribution OperatingSystemDistribution
+		expected       int64
+	}
+	testCases := []testCase{
+		{
+			scenario:       "measured disk count and OS (cos)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionCOS,
+			expected:       7289472 * KiB,
+		},
+		{
+			scenario:       "measured disk count but OS with different container runtime (cos_containerd)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionCOSContainerd,
+			expected:       7289472 * KiB, // same as COS
+		},
+		{
+			scenario:       "measured disk count and OS (ubuntu)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionUbuntu,
+			expected:       7219840 * KiB,
+		},
+		{
+			scenario:       "measured disk count but OS with different container runtime (ubuntu_containerd)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionUbuntuContainerd,
+			expected:       7219840 * KiB, // same as Ubuntu
+		},
+		{
+			scenario:       "mapped disk count",
+			diskCount:      10,
+			osDistribution: OperatingSystemDistributionCOS,
+			expected:       52837800 * KiB, // value measured for 16 disks
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.scenario, func(t *testing.T) {
+			actual := EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(tc.diskCount, tc.osDistribution)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
