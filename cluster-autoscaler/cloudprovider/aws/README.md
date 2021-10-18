@@ -19,7 +19,10 @@ the EC2 instance on which the Cluster Autoscaler pod runs.
 
 ### IAM Policy
 
-The following policy provides the minimum privileges necessary for Cluster Autoscaler to run:
+The following policy provides the minimum privileges necessary for Cluster Autoscaler to run. The
+second statement permits changes to only the Auto Scaling Groups you specify.
+
+Modify the `Resource` values in the second statement to match your Auto Scaling Groups.
 
 ```json
 {
@@ -30,11 +33,17 @@ The following policy provides the minimum privileges necessary for Cluster Autos
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeLaunchConfigurations"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup"
       ],
-      "Resource": ["*"]
+      "Resource": ["arn:aws:autoscaling:${YOUR_CLUSTER_AWS_REGION}:${YOUR_AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${YOUR_ASG_NAME}"]
     }
   ]
 }
