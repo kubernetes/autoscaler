@@ -5,11 +5,11 @@ vertically scales the dependent container up and down. Currently the only
 option is to scale it linearly based on the number of nodes, and it only works
 for a singleton.
 
-Currently recommended version is 1.8, on addon-resizer-release-1.8 branch. The latest version and Docker images are 2.1 pushed to:
+Currently recommended version is 1.8, on addon-resizer-release-1.8 branch. The latest version and Docker images are 2.3 pushed to:
 
-* gcr.io/google-containers/addon-resizer-amd64:2.1
-* gcr.io/google-containers/addon-resizer-arm64:2.1
-* gcr.io/google-containers/addon-resizer-arm:2.1
+* gcr.io/google-containers/addon-resizer-amd64:2.3
+* gcr.io/google-containers/addon-resizer-arm64:2.3
+* gcr.io/google-containers/addon-resizer-arm:2.3
 
 ## Nanny program and arguments
 
