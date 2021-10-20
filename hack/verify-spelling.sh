@@ -23,4 +23,4 @@ DIR=$(dirname $0)
 go install ${DIR}/../../../github.com/client9/misspell/cmd/misspell
 
 # Spell checking
-git ls-files --full-name | grep -v -e vendor | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud| grep -v cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3 | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo | grep -v cluster-autoscaler/cloudprovider/hetzner/hcloud-go | grep -v cluster-autoscaler/cloudprovider/bizflycloud/gobizfly | xargs misspell -error -o stderr
+git ls-files --full-name | grep -v -e vendor | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud| grep -v cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3 | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo | grep -v cluster-autoscaler/cloudprovider/hetzner/hcloud-go | grep -v cluster-autoscaler/cloudprovider/bizflycloud/gobizfly | grep -E -v 'cluster-autoscaler/cloudprovider/brightbox/(go-cache|gobrightbox|k8ssdk|linkheader)' | xargs misspell -error -o stderr
