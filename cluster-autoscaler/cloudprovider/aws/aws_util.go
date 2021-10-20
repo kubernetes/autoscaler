@@ -39,7 +39,6 @@ var (
 	ec2MetaDataServiceUrl          = "http://169.254.169.254"
 	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
-	staticListLastUpdateTime       = "2021-10-29"
 	ec2Arm64Processors             = []string{"AWS Graviton Processor", "AWS Graviton2 Processor"}
 )
 
@@ -127,7 +126,7 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 
 // GetStaticEC2InstanceTypes return pregenerated ec2 instance type list
 func GetStaticEC2InstanceTypes() (map[string]*InstanceType, string) {
-	return InstanceTypes, staticListLastUpdateTime
+	return InstanceTypes, StaticListLastUpdateTime
 }
 
 func unmarshalProductsResponse(r io.Reader) (*response, error) {
