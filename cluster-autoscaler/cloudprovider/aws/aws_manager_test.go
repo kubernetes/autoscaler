@@ -207,6 +207,10 @@ func TestExtractLabelsFromAsg(t *testing.T) {
 			Value: aws.String("bar2"),
 		},
 		{
+			Key:   aws.String("eks:cluster-name"),
+			Value: aws.String("bar4"),
+		},
+		{
 			Key:   aws.String("bar"),
 			Value: aws.String("baz"),
 		},
@@ -214,9 +218,10 @@ func TestExtractLabelsFromAsg(t *testing.T) {
 
 	labels := extractLabelsFromAsg(tags)
 
-	assert.Equal(t, 2, len(labels))
+	assert.Equal(t, 3, len(labels))
 	assert.Equal(t, "bar", labels["foo"])
 	assert.Equal(t, "bar2", labels["nodegroup-name"])
+	assert.Equal(t, "bar4", labels["cluster-name"])
 }
 
 func TestExtractTaintsFromAsg(t *testing.T) {
