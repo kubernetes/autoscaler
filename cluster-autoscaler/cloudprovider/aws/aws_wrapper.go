@@ -21,11 +21,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/eks"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
 	klog "k8s.io/klog/v2"
 )
 
@@ -34,7 +34,6 @@ type autoScalingI interface {
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeScalingActivities(*autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error)
-	DescribeTagsPages(input *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error
 	SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
@@ -142,13 +141,12 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 }
 
 func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
+	asgs := make([]*autoscaling.Group, 0)
 	if len(names) == 0 {
-		return nil, nil
+		return asgs, nil
 	}
 
-	asgs := make([]*autoscaling.Group, 0)
-
-	// AWS only accepts up to 50 ASG names as input, describe them in batches
+	// AWS only accepts up to 100 ASG names as input, describe them in batches
 	for i := 0; i < len(names); i += maxAsgNamesPerDescribe {
 		end := i + maxAsgNamesPerDescribe
 
@@ -176,59 +174,44 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling
 	return asgs, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
-	// DescribeTags does an OR query when multiple filters on different tags are
-	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
-	// [t1, t2] when there's only one asg tagged both t1 and t2.
-	filters := []*autoscaling.Filter{}
-	for key, value := range kvs {
-		filter := &autoscaling.Filter{
-			Name:   aws.String("key"),
-			Values: []*string{aws.String(key)},
-		}
-		filters = append(filters, filter)
+func (m *awsWrapper) getAutoscalingGroupsByTags(tags map[string]string) ([]*autoscaling.Group, error) {
+	asgs := make([]*autoscaling.Group, 0)
+	if len(tags) == 0 {
+		return asgs, nil
+	}
+
+	filters := make([]*autoscaling.Filter, 0)
+	for key, value := range tags {
 		if value != "" {
 			filters = append(filters, &autoscaling.Filter{
-				Name:   aws.String("value"),
+				Name:   aws.String(fmt.Sprintf("tag:%s", key)),
 				Values: []*string{aws.String(value)},
+			})
+		} else {
+			filters = append(filters, &autoscaling.Filter{
+				Name:   aws.String("tag-key"),
+				Values: []*string{aws.String(key)},
 			})
 		}
 	}
 
-	tags := []*autoscaling.TagDescription{}
-	input := &autoscaling.DescribeTagsInput{
+	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		Filters:    filters,
 		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
 	}
 	start := time.Now()
-	err := m.DescribeTagsPages(input, func(out *autoscaling.DescribeTagsOutput, _ bool) bool {
-		tags = append(tags, out.Tags...)
+	err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+		asgs = append(asgs, output.AutoScalingGroups...)
 		// We return true while we want to be called with the next page of
 		// results, if any.
 		return true
 	})
-	observeAWSRequest("DescribeTagsPages", err, start)
-
+	observeAWSRequest("DescribeAutoScalingGroupsPages", err, start)
 	if err != nil {
 		return nil, err
 	}
 
-	// According to how DescribeTags API works, the result contains ASGs which
-	// not all but only subset of tags are associated. Explicitly select ASGs to
-	// which all the tags are associated so that we won't end up calling
-	// DescribeAutoScalingGroups API multiple times on an ASG.
-	asgNames := []string{}
-	asgNameOccurrences := make(map[string]int)
-	for _, t := range tags {
-		asgName := aws.StringValue(t.ResourceId)
-		occurrences := asgNameOccurrences[asgName] + 1
-		if occurrences >= len(kvs) {
-			asgNames = append(asgNames, asgName)
-		}
-		asgNameOccurrences[asgName] = occurrences
-	}
-
-	return asgNames, nil
+	return asgs, nil
 }
 
 func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTemplate) (string, error) {
