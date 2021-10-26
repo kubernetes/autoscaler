@@ -19,6 +19,8 @@ package gce
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"path"
 	"sync"
 
 	gce "google.golang.org/api/compute/v1"
@@ -32,6 +34,8 @@ type MigInfoProvider interface {
 	GetMigTargetSize(migRef GceRef) (int64, error)
 	// GetMigBasename returns basename for given MIG ref
 	GetMigBasename(migRef GceRef) (string, error)
+	// GetMigInstanceTemplateName returns instance template name for given MIG ref
+	GetMigInstanceTemplateName(migRef GceRef) (string, error)
 }
 
 type cachingMigInfoProvider struct {
@@ -98,6 +102,30 @@ func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
 	return basename, nil
 }
 
+func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	templateName, found := c.cache.GetMigInstanceTemplateName(migRef)
+	if found {
+		return templateName, nil
+	}
+
+	err := c.fillMigInfoCache()
+	templateName, found = c.cache.GetMigInstanceTemplateName(migRef)
+	if err == nil && found {
+		return templateName, nil
+	}
+
+	// fallback to querying for single mig
+	templateName, err = c.gceClient.FetchMigTemplateName(migRef)
+	if err != nil {
+		return "", err
+	}
+	c.cache.SetMigInstanceTemplateName(migRef, templateName)
+	return templateName, nil
+}
+
 // filMigInfoCache needs to be called with mutex locked
 func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 	var zones []string
@@ -130,6 +158,12 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 			if registeredMigRefs[zoneMigRef] {
 				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
+
+				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
+				if err == nil {
+					_, templateName := path.Split(templateUrl.EscapedPath())
+					c.cache.SetMigInstanceTemplateName(zoneMigRef, templateName)
+				}
 			}
 		}
 	}
