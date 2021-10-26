@@ -36,6 +36,8 @@ type MigInfoProvider interface {
 	GetMigBasename(migRef GceRef) (string, error)
 	// GetMigInstanceTemplateName returns instance template name for given MIG ref
 	GetMigInstanceTemplateName(migRef GceRef) (string, error)
+	// GetMigInstanceTemplate returns instance template for given MIG ref
+	GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error)
 }
 
 type cachingMigInfoProvider struct {
@@ -124,6 +126,29 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (stri
 	}
 	c.cache.SetMigInstanceTemplateName(migRef, templateName)
 	return templateName, nil
+}
+
+func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
+	templateName, err := c.GetMigInstanceTemplateName(migRef)
+	if err != nil {
+		return nil, err
+	}
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	template, found := c.cache.GetMigInstanceTemplate(migRef)
+	if found && template.Name == templateName {
+		return template, nil
+	}
+
+	klog.V(2).Infof("Instance template of mig %v changed to %v", migRef.Name, templateName)
+	template, err = c.gceClient.FetchMigTemplate(migRef, templateName)
+	if err != nil {
+		return nil, err
+	}
+	c.cache.SetMigInstanceTemplate(migRef, template)
+	return template, nil
 }
 
 // filMigInfoCache needs to be called with mutex locked
