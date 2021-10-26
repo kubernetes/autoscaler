@@ -30,6 +30,8 @@ import (
 type MigInfoProvider interface {
 	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
+	// GetMigBasename returns basename for given MIG ref
+	GetMigBasename(migRef GceRef) (string, error)
 }
 
 type cachingMigInfoProvider struct {
@@ -70,6 +72,30 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 	}
 	c.cache.SetMigTargetSize(migRef, targetSize)
 	return targetSize, nil
+}
+
+func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	basename, found := c.cache.GetMigBasename(migRef)
+	if found {
+		return basename, nil
+	}
+
+	err := c.fillMigInfoCache()
+	basename, found = c.cache.GetMigBasename(migRef)
+	if err == nil && found {
+		return basename, nil
+	}
+
+	// fallback to querying for single mig
+	basename, err = c.gceClient.FetchMigBasename(migRef)
+	if err != nil {
+		return "", err
+	}
+	c.cache.SetMigBasename(migRef, basename)
+	return basename, nil
 }
 
 // filMigInfoCache needs to be called with mutex locked
