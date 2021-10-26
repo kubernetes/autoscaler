@@ -22,10 +22,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/eks"
 	"k8s.io/client-go/tools/cache"
 	test_clock "k8s.io/utils/clock/testing"
 )
