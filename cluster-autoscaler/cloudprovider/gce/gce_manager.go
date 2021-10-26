@@ -109,9 +109,8 @@ type gceManagerImpl struct {
 	machinesCacheLastRefresh time.Time
 	concurrentGceRefreshes   int
 
-	GceService                   AutoscalingGceClient
-	migInfoProvider              MigInfoProvider
-	migInstanceTemplatesProvider MigInstanceTemplatesProvider
+	GceService      AutoscalingGceClient
+	migInfoProvider MigInfoProvider
 
 	location              string
 	projectId             string
@@ -179,17 +178,16 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	}
 	cache := NewGceCache(gceService, concurrentGceRefreshes)
 	manager := &gceManagerImpl{
-		cache:                        cache,
-		GceService:                   gceService,
-		migInfoProvider:              NewCachingMigInfoProvider(cache, gceService, projectId),
-		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
-		location:                     location,
-		regional:                     regional,
-		projectId:                    projectId,
-		templates:                    &GceTemplateBuilder{},
-		interrupt:                    make(chan struct{}),
-		explicitlyConfigured:         make(map[GceRef]bool),
-		concurrentGceRefreshes:       concurrentGceRefreshes,
+		cache:                  cache,
+		GceService:             gceService,
+		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId),
+		location:               location,
+		regional:               regional,
+		projectId:              projectId,
+		templates:              &GceTemplateBuilder{},
+		interrupt:              make(chan struct{}),
+		explicitlyConfigured:   make(map[GceRef]bool),
+		concurrentGceRefreshes: concurrentGceRefreshes,
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -331,7 +329,7 @@ func (m *gceManagerImpl) forceRefresh() error {
 
 func (m *gceManagerImpl) refreshAutoscalingOptions() {
 	for _, mig := range m.cache.GetMigs() {
-		template, err := m.migInstanceTemplatesProvider.GetMigInstanceTemplate(mig.GceRef())
+		template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
 		if err != nil {
 			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template", mig.GceRef(), err)
 			continue
@@ -579,7 +577,7 @@ func (m *gceManagerImpl) GetMigOptions(mig Mig, defaults config.NodeGroupAutosca
 
 // GetMigTemplateNode constructs a node from GCE instance template of the given MIG.
 func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
-	template, err := m.migInstanceTemplatesProvider.GetMigInstanceTemplate(mig.GceRef())
+	template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
 
 	if err != nil {
 		return nil, err

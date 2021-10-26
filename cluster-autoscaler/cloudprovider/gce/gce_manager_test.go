@@ -350,15 +350,14 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		concurrentGceRefreshes:    1,
 	}
 	manager := &gceManagerImpl{
-		cache:                        cache,
-		migInfoProvider:              NewCachingMigInfoProvider(cache, gceService, projectId),
-		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
-		GceService:                   gceService,
-		projectId:                    projectId,
-		regional:                     regional,
-		templates:                    &GceTemplateBuilder{},
-		explicitlyConfigured:         make(map[GceRef]bool),
-		concurrentGceRefreshes:       1,
+		cache:                  cache,
+		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId),
+		GceService:             gceService,
+		projectId:              projectId,
+		regional:               regional,
+		templates:              &GceTemplateBuilder{},
+		explicitlyConfigured:   make(map[GceRef]bool),
+		concurrentGceRefreshes: 1,
 	}
 	if regional {
 		manager.location = region
