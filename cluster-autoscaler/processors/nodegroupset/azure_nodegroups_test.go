@@ -41,6 +41,10 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 	n1.ObjectMeta.Labels["agentpool"] = ""
 	n2.ObjectMeta.Labels["agentpool"] = ""
 	checkNodesSimilar(t, n1, n2, comparator, false)
+	// AKS agentpool labels
+	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foo"
+	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "bar"
+	checkNodesSimilar(t, n1, n2, comparator, false)
 	// Only one non empty
 	n1.ObjectMeta.Labels["agentpool"] = ""
 	n2.ObjectMeta.Labels["agentpool"] = "foo"
@@ -109,6 +113,8 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	// Unless we give them nodepool label.
 	n1.ObjectMeta.Labels["agentpool"] = "foobar"
 	n2.ObjectMeta.Labels["agentpool"] = "foobar"
+	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
+	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
 	similar, err = processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng2})
@@ -125,6 +131,9 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n1.ObjectMeta.Labels["agentpool"] = "foobar1"
 	n2.ObjectMeta.Labels["agentpool"] = "foobar2"
 	n3.ObjectMeta.Labels["agentpool"] = "foobar3"
+	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar1"
+	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar2"
+	n3.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar3"
 
 	similar, err = processor.FindSimilarNodeGroups(context, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
