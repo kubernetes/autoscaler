@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,58 +26,56 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-// MigTargetSizesProvider allows obtaining target sizes of MIGs
-type MigTargetSizesProvider interface {
-	// GetMigTargetSize returns targetSize for MIG with given ref
+// MigInfoProvider allows obtaining information about MIGs
+type MigInfoProvider interface {
+	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
 }
 
-type cachingMigTargetSizesProvider struct {
+type cachingMigInfoProvider struct {
 	mutex     sync.Mutex
 	cache     *GceCache
 	gceClient AutoscalingGceClient
 	projectId string
 }
 
-// NewCachingMigTargetSizesProvider creates an instance of caching MigTargetSizesProvider
-func NewCachingMigTargetSizesProvider(cache *GceCache, gceClient AutoscalingGceClient, projectId string) MigTargetSizesProvider {
-	return &cachingMigTargetSizesProvider{
+// NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
+func NewCachingMigInfoProvider(cache *GceCache, gceClient AutoscalingGceClient, projectId string) MigInfoProvider {
+	return &cachingMigInfoProvider{
 		cache:     cache,
 		gceClient: gceClient,
 		projectId: projectId,
 	}
 }
 
-func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, error) {
+func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	targetSize, found := c.cache.GetMigTargetSize(migRef)
-
 	if found {
 		return targetSize, nil
 	}
 
-	newTargetSizes, err := c.fillInMigTargetSizeAndBaseNameCaches()
-
-	size, found := newTargetSizes[migRef]
-	if err != nil || !found {
-		// fallback to querying for single mig
-		targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
-		if err != nil {
-			return 0, err
-		}
-		c.cache.SetMigTargetSize(migRef, targetSize)
+	err := c.fillMigInfoCache()
+	targetSize, found = c.cache.GetMigTargetSize(migRef)
+	if err == nil && found {
 		return targetSize, nil
 	}
 
-	// we are good
-	return size, nil
+	// fallback to querying for single mig
+	targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
+	if err != nil {
+		return 0, err
+	}
+	c.cache.SetMigTargetSize(migRef, targetSize)
+	return targetSize, nil
 }
 
-func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeAndBaseNameCaches() (map[GceRef]int64, error) {
+// filMigInfoCache needs to be called with mutex locked
+func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 	var zones []string
-	for zone := range c.listAllZonesForMigs() {
+	for zone := range c.listAllZonesWithMigs() {
 		zones = append(zones, zone)
 	}
 
@@ -90,14 +88,12 @@ func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeAndBaseNameCaches() (
 	for idx, err := range errors {
 		if err != nil {
 			klog.Errorf("Error listing migs from zone %v; err=%v", zones[idx], err)
-			return nil, fmt.Errorf("%v", errors)
+			return fmt.Errorf("%v", errors)
 		}
 	}
 
-	newMigTargetSizeCache := map[GceRef]int64{}
-	newMigBasenameCache := map[GceRef]string{}
+	registeredMigRefs := c.getRegisteredMigRefs()
 	for idx, zone := range zones {
-		registeredMigRefs := c.getMigRefs()
 		for _, zoneMig := range migs[idx] {
 			zoneMigRef := GceRef{
 				c.projectId,
@@ -106,24 +102,16 @@ func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeAndBaseNameCaches() (
 			}
 
 			if registeredMigRefs[zoneMigRef] {
-				newMigTargetSizeCache[zoneMigRef] = zoneMig.TargetSize
-				newMigBasenameCache[zoneMigRef] = zoneMig.BaseInstanceName
+				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
+				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 			}
 		}
 	}
 
-	for migRef, targetSize := range newMigTargetSizeCache {
-		c.cache.SetMigTargetSize(migRef, targetSize)
-	}
-
-	for migRef, baseName := range newMigBasenameCache {
-		c.cache.SetMigBasename(migRef, baseName)
-	}
-
-	return newMigTargetSizeCache, nil
+	return nil
 }
 
-func (c *cachingMigTargetSizesProvider) getMigRefs() map[GceRef]bool {
+func (c *cachingMigInfoProvider) getRegisteredMigRefs() map[GceRef]bool {
 	migRefs := make(map[GceRef]bool)
 	for _, mig := range c.cache.GetMigs() {
 		migRefs[mig.GceRef()] = true
@@ -131,7 +119,7 @@ func (c *cachingMigTargetSizesProvider) getMigRefs() map[GceRef]bool {
 	return migRefs
 }
 
-func (c *cachingMigTargetSizesProvider) listAllZonesForMigs() map[string]bool {
+func (c *cachingMigInfoProvider) listAllZonesWithMigs() map[string]bool {
 	zones := map[string]bool{}
 	for _, mig := range c.cache.GetMigs() {
 		zones[mig.GceRef().Zone] = true

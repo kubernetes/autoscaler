@@ -110,7 +110,7 @@ type gceManagerImpl struct {
 	concurrentGceRefreshes   int
 
 	GceService                   AutoscalingGceClient
-	migTargetSizesProvider       MigTargetSizesProvider
+	migInfoProvider              MigInfoProvider
 	migInstanceTemplatesProvider MigInstanceTemplatesProvider
 
 	location              string
@@ -181,7 +181,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	manager := &gceManagerImpl{
 		cache:                        cache,
 		GceService:                   gceService,
-		migTargetSizesProvider:       NewCachingMigTargetSizesProvider(cache, gceService, projectId),
+		migInfoProvider:              NewCachingMigInfoProvider(cache, gceService, projectId),
 		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
 		location:                     location,
 		regional:                     regional,
@@ -234,7 +234,7 @@ func (m *gceManagerImpl) registerMig(mig Mig) bool {
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
-	return m.migTargetSizesProvider.GetMigTargetSize(mig.GceRef())
+	return m.migInfoProvider.GetMigTargetSize(mig.GceRef())
 }
 
 // SetMigSize sets MIG size.
