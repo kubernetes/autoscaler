@@ -290,6 +290,7 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]cloudprovider.Instance, error) 
 func (m *gceManagerImpl) Refresh() error {
 	m.cache.InvalidateAllMigTargetSizes()
 	m.cache.InvalidateAllMigBasenames()
+	m.cache.InvalidateAllMigInstanceTemplateNames()
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
