@@ -56,10 +56,15 @@ func (p *CachingMigInstanceTemplatesProvider) GetMigInstanceTemplate(migRef GceR
 		return instanceTemplate, nil
 	}
 
-	instanceTemplate, err := p.gceClient.FetchMigTemplate(migRef)
+	templateName, err := p.gceClient.FetchMigTemplateName(migRef)
 	if err != nil {
 		return nil, err
 	}
+	instanceTemplate, err = p.gceClient.FetchMigTemplate(migRef, templateName)
+	if err != nil {
+		return nil, err
+	}
+
 	p.setMigInstanceTemplateToCache(migRef, instanceTemplate)
 
 	return instanceTemplate, nil
