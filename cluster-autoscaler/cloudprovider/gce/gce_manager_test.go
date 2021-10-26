@@ -350,7 +350,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	}
 	manager := &gceManagerImpl{
 		cache:                        cache,
-		migTargetSizesProvider:       NewCachingMigTargetSizesProvider(cache, gceService, projectId),
+		migInfoProvider:              NewCachingMigInfoProvider(cache, gceService, projectId),
 		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
 		GceService:                   gceService,
 		projectId:                    projectId,
