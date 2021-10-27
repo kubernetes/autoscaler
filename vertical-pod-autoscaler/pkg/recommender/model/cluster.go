@@ -351,18 +351,18 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 
 // GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
 // AggregateCollectionState is obsolete in following situations:
-// 1) It has no samples and there are no more active pods that can contribute,
+// 1) It has no samples and there are no more contributive pods,
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
 	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
-	activeKeys := cluster.getActiveAggregateStateKeys(controllerFetcher)
+	contributiveKeys := cluster.getContributiveAggregateStateKeys(controllerFetcher)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
-		isKeyActive := activeKeys[key]
-		if !isKeyActive && aggregateContainerState.isEmpty() {
+		isKeyContributive := contributiveKeys[key]
+		if !isKeyContributive && aggregateContainerState.isEmpty() {
 			keysToDelete = append(keysToDelete, key)
-			klog.V(1).Infof("Removing empty and inactive AggregateCollectionState for %+v", key)
+			klog.V(1).Infof("Removing empty and not contributive AggregateCollectionState for %+v", key)
 			continue
 		}
 		if aggregateContainerState.isExpired(now) {
@@ -381,7 +381,7 @@ func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Ti
 // RateLimitedGarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
 // It performs clean up only if more than `gcInterval` passed since the last time it performed a clean up.
 // AggregateCollectionState is obsolete in following situations:
-// 1) It has no samples and there are no more active pods that can contribute (pod is active when it's not terminated and its controller is still existing as well),
+// 1) It has no samples and there are no more contributive pods,
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
@@ -392,20 +392,21 @@ func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(
 	cluster.lastAggregateContainerStateGC = now
 }
 
-func (cluster *ClusterState) getActiveAggregateStateKeys(controllerFetcher controllerfetcher.ControllerFetcher) map[AggregateStateKey]bool {
-	activeKeys := map[AggregateStateKey]bool{}
+func (cluster *ClusterState) getContributiveAggregateStateKeys(controllerFetcher controllerfetcher.ControllerFetcher) map[AggregateStateKey]bool {
+	contributiveKeys := map[AggregateStateKey]bool{}
 	for _, pod := range cluster.Pods {
-		// Pods that will not run anymore and their associated controller doesn't exist are considered inactive.
-		podControllerTerminated := cluster.GetControllerForPodUnderVPA(pod, controllerFetcher) == nil
-		podTerminated := pod.Phase == apiv1.PodSucceeded || pod.Phase == apiv1.PodFailed
-		if podControllerTerminated && podTerminated {
-			continue
-		}
-		for container := range pod.Containers {
-			activeKeys[cluster.MakeAggregateStateKey(pod, container)] = true
+		// Pod is considered contributive in any of following situations:
+		// 1) It is in active state - i.e. not PodSucceeded nor PodFailed.
+		// 2) Its associated controller (e.g. Deploymeny) still exists.
+		podControllerExists := cluster.GetControllerForPodUnderVPA(pod, controllerFetcher) != nil
+		podActive := pod.Phase != apiv1.PodSucceeded && pod.Phase != apiv1.PodFailed
+		if podActive || podControllerExists {
+			for container := range pod.Containers {
+				contributiveKeys[cluster.MakeAggregateStateKey(pod, container)] = true
+			}
 		}
 	}
-	return activeKeys
+	return contributiveKeys
 }
 
 // RecordRecommendation marks the state of recommendation in the cluster. We
