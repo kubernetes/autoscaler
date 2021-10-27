@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
 )
@@ -328,10 +329,10 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 // 1) It has no samples and there are no more active pods that can contribute,
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
-func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time) {
+func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
 	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
-	activeKeys := cluster.getActiveAggregateStateKeys()
+	activeKeys := cluster.getActiveAggregateStateKeys(controllerFetcher)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		isKeyActive := activeKeys[key]
 		if !isKeyActive && aggregateContainerState.isEmpty() {
@@ -352,11 +353,13 @@ func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Ti
 	}
 }
 
-func (cluster *ClusterState) getActiveAggregateStateKeys() map[AggregateStateKey]bool {
+func (cluster *ClusterState) getActiveAggregateStateKeys(controllerFetcher controllerfetcher.ControllerFetcher) map[AggregateStateKey]bool {
 	activeKeys := map[AggregateStateKey]bool{}
 	for _, pod := range cluster.Pods {
-		// Pods that will not run anymore are considered inactive.
-		if pod.Phase == apiv1.PodSucceeded || pod.Phase == apiv1.PodFailed {
+		// Pods that will not run anymore and their associated controller doesn't exist are considered inactive.
+		podControllerTerminated := cluster.GetControllerForPod(pod, controllerFetcher) == nil
+		podTerminated := pod.Phase == apiv1.PodSucceeded || pod.Phase == apiv1.PodFailed
+		if podControllerTerminated && podTerminated {
 			continue
 		}
 		for container := range pod.Containers {
@@ -397,6 +400,37 @@ func (cluster *ClusterState) GetMatchingPods(vpa *Vpa) []PodID {
 		}
 	}
 	return matchingPods
+}
+
+// GetControllerForPod returns controller associated with given Pod.
+func (cluster *ClusterState) GetControllerForPod(pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion {
+	controllingVPA := cluster.GetControllingVPA(pod)
+	if controllingVPA != nil {
+		controller := &controllerfetcher.ControllerKeyWithAPIVersion{
+			ControllerKey: controllerfetcher.ControllerKey{
+				Namespace: controllingVPA.ID.Namespace,
+				Kind:      controllingVPA.TargetRef.Kind,
+				Name:      controllingVPA.TargetRef.Name,
+			},
+			ApiVersion: controllingVPA.TargetRef.APIVersion,
+		}
+		topLevelController, err := controllerFetcher.FindTopLevel(controller)
+		if err != nil {
+			return topLevelController
+		}
+	}
+	return nil
+}
+
+// GetControllingVPA returns a VPA object controlling given Pod.
+func (cluster *ClusterState) GetControllingVPA(pod *PodState) *Vpa {
+	for _, vpa := range cluster.Vpas {
+		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey],
+			vpa.ID.Namespace, vpa.PodSelector) {
+			return vpa
+		}
+	}
+	return nil
 }
 
 // Implementation of the AggregateStateKey interface. It can be used as a map key.

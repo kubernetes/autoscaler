@@ -26,17 +26,21 @@ import (
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 )
 
 const (
 	// AggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
-	AggregateContainerStateGCInterval = 1 * time.Hour
+	AggregateContainerStateGCInterval               = 1 * time.Hour
+	defaultResyncPeriod               time.Duration = 10 * time.Minute
 )
 
 var (
@@ -66,6 +70,7 @@ type Recommender interface {
 type recommender struct {
 	clusterState                  *model.ClusterState
 	clusterStateFeeder            input.ClusterStateFeeder
+	controllerFetcher             controllerfetcher.ControllerFetcher
 	checkpointWriter              checkpoint.CheckpointWriter
 	checkpointsGCInterval         time.Duration
 	lastCheckpointGC              time.Time
@@ -167,7 +172,7 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 func (r *recommender) GarbageCollect() {
 	gcTime := time.Now()
 	if gcTime.Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
-		r.clusterState.GarbageCollectAggregateCollectionStates(gcTime)
+		r.clusterState.GarbageCollectAggregateCollectionStates(gcTime, r.controllerFetcher)
 		r.lastAggregateContainerStateGC = gcTime
 	}
 }
@@ -208,6 +213,7 @@ type RecommenderFactory struct {
 	ClusterState *model.ClusterState
 
 	ClusterStateFeeder     input.ClusterStateFeeder
+	ControllerFetcher      controllerfetcher.ControllerFetcher
 	CheckpointWriter       checkpoint.CheckpointWriter
 	PodResourceRecommender logic.PodResourceRecommender
 	VpaClient              vpa_api.VerticalPodAutoscalersGetter
@@ -222,6 +228,7 @@ func (c RecommenderFactory) Make() Recommender {
 	recommender := &recommender{
 		clusterState:                  c.ClusterState,
 		clusterStateFeeder:            c.ClusterStateFeeder,
+		controllerFetcher:             c.ControllerFetcher,
 		checkpointWriter:              c.CheckpointWriter,
 		checkpointsGCInterval:         c.CheckpointsGCInterval,
 		useCheckpoints:                c.UseCheckpoints,
@@ -239,9 +246,12 @@ func (c RecommenderFactory) Make() Recommender {
 // Deprecated; use RecommenderFactory instead.
 func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool) Recommender {
 	clusterState := model.NewClusterState()
+	kubeClient := kube_client.NewForConfigOrDie(config)
+	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver),
+		ControllerFetcher:      controllerfetcher.NewControllerFetcher(config, kubeClient, factory),
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
 		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),
