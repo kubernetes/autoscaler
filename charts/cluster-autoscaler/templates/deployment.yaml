@@ -75,7 +75,13 @@ spec:
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
             {{- if not (kindIs "invalid" $value) }}
+            {{- if (kindIs "slice" $value)}}
+            {{- range $value}}
+            - --{{ $key | mustRegexFind "^[^_]+" }}={{ . }}
+            {{- end }}
+            {{- else }}
             - --{{ $key | mustRegexFind "^[^_]+" }}={{ $value }}
+            {{- end }}
             {{- else }}
             - --{{ $key | mustRegexFind "^[^_]+" }}
             {{- end }}
