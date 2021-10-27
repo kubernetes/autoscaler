@@ -349,7 +349,12 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 	return aggregateContainerState
 }
 
-func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Time) {
+// GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
+// AggregateCollectionState is obsolete in following situations:
+// 1) It has no samples and there are no more active pods that can contribute,
+// 2) The last sample is too old to give meaningful recommendation (>8 days),
+// 3) There are no samples and the aggregate state was created >8 days ago.
+func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
 	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	activeKeys := cluster.getActiveAggregateStateKeys(controllerFetcher)
@@ -376,22 +381,22 @@ func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Ti
 // RateLimitedGarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
 // It performs clean up only if more than `gcInterval` passed since the last time it performed a clean up.
 // AggregateCollectionState is obsolete in following situations:
-// 1) It has no samples and there are no more active pods that can contribute,
+// 1) It has no samples and there are no more active pods that can contribute (pod is active when it's not terminated and its controller is still existing as well),
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
-func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(now time.Time) {
+func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
 	if now.Sub(cluster.lastAggregateContainerStateGC) < cluster.gcInterval {
 		return
 	}
-	cluster.garbageCollectAggregateCollectionStates(now)
+	cluster.garbageCollectAggregateCollectionStates(now, controllerFetcher)
 	cluster.lastAggregateContainerStateGC = now
 }
 
-func (cluster *ClusterState) getActiveAggregateStateKeys() map[AggregateStateKey]bool {
+func (cluster *ClusterState) getActiveAggregateStateKeys(controllerFetcher controllerfetcher.ControllerFetcher) map[AggregateStateKey]bool {
 	activeKeys := map[AggregateStateKey]bool{}
 	for _, pod := range cluster.Pods {
 		// Pods that will not run anymore and their associated controller doesn't exist are considered inactive.
-		podControllerTerminated := cluster.GetControllerForPod(pod, controllerFetcher) == nil
+		podControllerTerminated := cluster.GetControllerForPodUnderVPA(pod, controllerFetcher) == nil
 		podTerminated := pod.Phase == apiv1.PodSucceeded || pod.Phase == apiv1.PodFailed
 		if podControllerTerminated && podTerminated {
 			continue
@@ -436,8 +441,8 @@ func (cluster *ClusterState) GetMatchingPods(vpa *Vpa) []PodID {
 	return matchingPods
 }
 
-// GetControllerForPod returns controller associated with given Pod.
-func (cluster *ClusterState) GetControllerForPod(pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion {
+// GetControllerForPodUnderVPA returns controller associated with given Pod. Returns nil if Pod is not controlled by a VPA object.
+func (cluster *ClusterState) GetControllerForPodUnderVPA(pod *PodState, controllerFetcher controllerfetcher.ControllerFetcher) *controllerfetcher.ControllerKeyWithAPIVersion {
 	controllingVPA := cluster.GetControllingVPA(pod)
 	if controllingVPA != nil {
 		controller := &controllerfetcher.ControllerKeyWithAPIVersion{
@@ -448,10 +453,8 @@ func (cluster *ClusterState) GetControllerForPod(pod *PodState, controllerFetche
 			},
 			ApiVersion: controllingVPA.TargetRef.APIVersion,
 		}
-		topLevelController, err := controllerFetcher.FindTopLevel(controller)
-		if err != nil {
-			return topLevelController
-		}
+		topLevelController, _ := controllerFetcher.FindTopMostWellKnownOrScalable(controller)
+		return topLevelController
 	}
 	return nil
 }

@@ -37,8 +37,14 @@ import (
 	"k8s.io/klog"
 )
 
-// AggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
-const AggregateContainerStateGCInterval = 1 * time.Hour
+const (
+	// AggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
+	AggregateContainerStateGCInterval               = 1 * time.Hour
+	scaleCacheEntryLifetime           time.Duration = time.Hour
+	scaleCacheEntryFreshnessTime      time.Duration = 10 * time.Minute
+	scaleCacheEntryJitterFactor       float64       = 1.
+	defaultResyncPeriod               time.Duration = 10 * time.Minute
+)
 
 var (
 	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
@@ -193,7 +199,7 @@ func (r *recommender) RunOnce() {
 	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now())
+	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now(), r.controllerFetcher)
 	timer.ObserveStep("GarbageCollect")
 	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }
@@ -236,9 +242,13 @@ func (c RecommenderFactory) Make() Recommender {
 // Deprecated; use RecommenderFactory instead.
 func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, namespace string) Recommender {
 	clusterState := model.NewClusterState(AggregateContainerStateGCInterval)
+	kubeClient := kube_client.NewForConfigOrDie(config)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace),
+		ControllerFetcher:      controllerFetcher,
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
 		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),
