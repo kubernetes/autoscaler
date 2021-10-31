@@ -113,34 +113,49 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		resourcePolicy = vpa.Spec.ResourcePolicy
 	}
 	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
+
         for i, containerResource := range containerResources {
-            if containerResource.Requests.Memory != nil {
-				quant := vpa_resource.Quantity(containerResource.Requests["memory"])
-				if quant.IsZero() {
-					containerResource.Requests["memory"] = pod.Spec.Containers[i].Resources.Requests["memory"]
+	        requests := core.ResourceList{}
+	        limits := core.ResourceList{}
+			quant := containerResource.Requests["memory"]
+			if containerResource.Requests.Memory != nil && !quant.IsZero() {
+				requests["memory"] = quant
+			}
+
+			quant = containerResource.Limits["memory"]
+			if containerResource.Limits.Memory != nil && !quant.IsZero() {
+				limits["memory"] = quant
+			} else {
+				if (containerResource.Requests.Memory != nil && pod.Spec.Containers[i].Resources.Limits.Memory != nil) {
+					quant1 := pod.Spec.Containers[i].Resources.Limits["memory"]
+					quant2 := containerResource.Requests["memory"]
+					if (quant1.Cmp(quant2) < 0) {
+						q := int64(quant2.Value() * 5.0)
+						limits["memory"] = *vpa_resource.NewQuantity(q,vpa_resource.BinarySI)
+					}
 				}
 			}
 
-			if containerResource.Limits.Memory != nil {
-				quant := vpa_resource.Quantity(containerResource.Limits["memory"])
-				if quant.IsZero() {
-					containerResource.Limits["memory"] = pod.Spec.Containers[i].Resources.Limits["memory"]
+			quant = containerResource.Requests["cpu"]
+			if containerResource.Requests.Cpu != nil && !quant.IsZero() {
+				requests["cpu"] = quant
+			}
+			
+			quant = containerResource.Limits["cpu"]
+			if containerResource.Limits.Cpu != nil && !quant.IsZero() {
+				limits["cpu"] = quant
+			} else {
+			if (containerResource.Requests.Cpu != nil && pod.Spec.Containers[i].Resources.Limits.Cpu != nil) {
+						quant1 := pod.Spec.Containers[i].Resources.Limits["cpu"]
+				quant2 := containerResource.Requests["cpu"]
+				if (quant1.Cmp(quant2) < 0) {
+					q := int64(quant2.MilliValue() * 5.0)
+					limits["cpu"] = *vpa_resource.NewMilliQuantity(q,vpa_resource.BinarySI)
 				}
 			}
-
-			if containerResource.Requests.Cpu != nil {
-				quant := vpa_resource.Quantity(containerResource.Requests["cpu"])
-				if quant.IsZero() {
-					containerResource.Requests["cpu"] = pod.Spec.Containers[i].Resources.Requests["cpu"]
-				}
-			}
-
-			if containerResource.Limits.Cpu != nil {
-				quant := vpa_resource.Quantity(containerResource.Limits["cpu"])
-				if quant.IsZero() {
-					containerResource.Limits["cpu"] = pod.Spec.Containers[i].Resources.Limits["cpu"]
-				}
-			}
-        } 
+		}
+		containerResource.Requests = requests
+		containerResource.Limits = limits
+    } 
 	return containerResources, annotations, nil
 }
