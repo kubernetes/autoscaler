@@ -158,6 +158,9 @@ extraArgs:
   # skip-nodes-with-system-pods: true
   # balancing-ignore-label_1: first-label-to-ignore
   # balancing-ignore-label_2: second-label-to-ignore
+  # balancing-igonre-label:
+  #   - first-label-to-ignore
+  #   - second-label-to-ignore
 
 # extraEnv -- Additional container environment variables.
 extraEnv: {}
