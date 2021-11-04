@@ -17,10 +17,10 @@ limitations under the License.
 package utils
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"reflect"
 
 	apiv1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 )
@@ -50,7 +50,7 @@ type PodSchedulableMap map[string][]PodSchedulableInfo
 
 // Match tests if given pod matches PodSchedulableInfo
 func (psi *PodSchedulableInfo) Match(pod *apiv1.Pod) bool {
-	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
+	return reflect.DeepEqual(pod.Labels, psi.labels) && utils.PodSpecSemanticallyEqual(pod.Spec, psi.spec)
 }
 
 // Get returns scheduling info for given pod if matching one exists in PodSchedulableMap

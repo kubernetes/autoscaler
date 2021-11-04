@@ -17,9 +17,9 @@ limitations under the License.
 package utils
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -74,10 +74,26 @@ func TestPodSchedulableMap(t *testing.T) {
 	assert.Equal(t, cpuErr, err)
 
 	// Another replica in rc1
-	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
+	podInRc1_2 := BuildTestPod("podInRc1_2", 500, 1000)
 	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	err, found = pMap.Get(podInRc1_2)
 	assert.True(t, found)
+	assert.Nil(t, err)
+
+	// A replica in rc1 with a projected volume
+	podInRc1ProjectedVol := BuildTestPod("podInRc1_ProjectedVol", 500, 1000)
+	podInRc1ProjectedVol.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
+	podInRc1ProjectedVol.Spec.Volumes = []apiv1.Volume{{Name: "kube-api-access-nz94b", VolumeSource: apiv1.VolumeSource{Projected: BuildServiceTokenProjectedVolumeSource("path")}}}
+	err, found = pMap.Get(podInRc1ProjectedVol)
+	assert.True(t, found)
+	assert.Nil(t, err)
+
+	// A replica in rc1 with a non-projected volume
+	podInRc1FlexVol := BuildTestPod("podInRc1_FlexVol", 500, 1000)
+	podInRc1FlexVol.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
+	podInRc1FlexVol.Spec.Volumes = []apiv1.Volume{{Name: "volume-mo25i", VolumeSource: apiv1.VolumeSource{FlexVolume: &apiv1.FlexVolumeSource{Driver: "testDriver"}}}}
+	err, found = pMap.Get(podInRc1FlexVol)
+	assert.False(t, found)
 	assert.Nil(t, err)
 
 	// A pod in rc1, but with different requests
