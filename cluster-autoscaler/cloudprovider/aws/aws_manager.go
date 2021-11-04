@@ -34,6 +34,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/eks"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -194,7 +195,7 @@ func createAWSManagerInternal(
 			return nil, err
 		}
 
-		awsService = &awsWrapper{autoscaling.New(sess), ec2.New(sess)}
+		awsService = &awsWrapper{autoscaling.New(sess), ec2.New(sess), eks.New(sess)}
 	}
 
 	specs, err := parseASGAutoDiscoverySpecs(discoveryOpts)

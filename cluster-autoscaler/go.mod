@@ -41,6 +41,8 @@ require (
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176
 )
 
+replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
+
 replace github.com/digitalocean/godo => github.com/digitalocean/godo v1.27.0
 
 replace github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0

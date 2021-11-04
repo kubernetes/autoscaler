@@ -128,6 +128,7 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/autoscaling
 github.com/aws/aws-sdk-go/service/ec2
 github.com/aws/aws-sdk-go/service/ecr
+github.com/aws/aws-sdk-go/service/eks
 github.com/aws/aws-sdk-go/service/elb
 github.com/aws/aws-sdk-go/service/elbv2
 github.com/aws/aws-sdk-go/service/kms
@@ -1849,6 +1850,7 @@ sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
+# github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
 # github.com/digitalocean/godo => github.com/digitalocean/godo v1.27.0
 # github.com/rancher/go-rancher => github.com/rancher/go-rancher v0.1.0
 # k8s.io/api => k8s.io/api v0.23.0-alpha.1
