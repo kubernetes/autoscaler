@@ -330,7 +330,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil}, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil, nil}, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
@@ -395,7 +395,7 @@ func TestGetASGTemplate(t *testing.T) {
 			instanceTypes, _ := GetStaticEC2InstanceTypes()
 			do := cloudprovider.NodeGroupDiscoveryOptions{}
 
-			m, err := createAWSManagerInternal(nil, do, &awsWrapper{nil, e}, instanceTypes)
+			m, err := createAWSManagerInternal(nil, do, &awsWrapper{nil, e, nil}, instanceTypes)
 			origGetInstanceTypeFunc := getInstanceTypeForAsg
 			defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
 			getInstanceTypeForAsg = func(m *asgCache, asg *asg) (string, error) {
@@ -483,7 +483,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil}, instanceTypes)
+	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil, nil}, instanceTypes)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()

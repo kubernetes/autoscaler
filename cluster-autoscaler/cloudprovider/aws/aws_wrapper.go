@@ -18,11 +18,14 @@ package aws
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/eks"
+	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 )
 
@@ -40,10 +43,73 @@ type ec2I interface {
 	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
 }
 
+// eksI is the interface that represents a specific aspect of EKS (Elastic Kubernetes Service) which is provided by AWS SDK for use in CA
+type eksI interface {
+	DescribeNodegroup(input *eks.DescribeNodegroupInput) (*eks.DescribeNodegroupOutput, error)
+}
+
 // awsWrapper provides several utility methods over the services provided by the AWS SDK
 type awsWrapper struct {
 	autoScalingI
 	ec2I
+	eksI
+}
+
+func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName string) ([]apiv1.Taint, map[string]string, error) {
+	params := &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}
+	start := time.Now()
+	r, err := m.DescribeNodegroup(params)
+	observeAWSRequest("DescribeNodegroup", err, start)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	taints := make([]apiv1.Taint, 0)
+	labels := make(map[string]string)
+
+	// Labels will include diskSize, amiType, capacityType, version
+	if r.Nodegroup.DiskSize != nil {
+		labels["diskSize"] = strconv.FormatInt(*r.Nodegroup.DiskSize, 10)
+	}
+
+	if r.Nodegroup.AmiType != nil && len(*r.Nodegroup.AmiType) > 0 {
+		labels["amiType"] = *r.Nodegroup.AmiType
+	}
+
+	if r.Nodegroup.CapacityType != nil && len(*r.Nodegroup.CapacityType) > 0 {
+		labels["capacityType"] = *r.Nodegroup.CapacityType
+	}
+
+	if r.Nodegroup.Version != nil && len(*r.Nodegroup.Version) > 0 {
+		labels["k8sVersion"] = *r.Nodegroup.Version
+	}
+
+	if r.Nodegroup.Labels != nil && len(r.Nodegroup.Labels) > 0 {
+		labelsMap := r.Nodegroup.Labels
+		for k, v := range labelsMap {
+			if v != nil {
+				labels[k] = *v
+			}
+		}
+	}
+
+	if r.Nodegroup.Taints != nil && len(r.Nodegroup.Taints) > 0 {
+		taintList := r.Nodegroup.Taints
+		for _, taint := range taintList {
+			if taint != nil && taint.Effect != nil && taint.Key != nil && taint.Value != nil {
+				taints = append(taints, apiv1.Taint{
+					Key:    *taint.Key,
+					Value:  *taint.Value,
+					Effect: apiv1.TaintEffect(*taint.Effect),
+				})
+			}
+		}
+	}
+
+	return taints, labels, nil
 }
 
 func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*string) (map[string]string, error) {
