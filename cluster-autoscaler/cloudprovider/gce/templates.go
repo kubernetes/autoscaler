@@ -352,6 +352,15 @@ func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
 	return reservedResources, nil
 }
 
+// GetLabelsFromTemplate returns labels from instance template
+func GetLabelsFromTemplate(template *gce.InstanceTemplate) (map[string]string, error) {
+	kubeEnv, err := getKubeEnvValueFromTemplateMetadata(template)
+	if err != nil {
+		return nil, err
+	}
+	return extractLabelsFromKubeEnv(kubeEnv)
+}
+
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 	// In v1.10+, labels are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
@@ -367,6 +376,15 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 		}
 	}
 	return parseKeyValueListToMap(labels)
+}
+
+// GetTaintsFromTemplate returns labels from instance template
+func GetTaintsFromTemplate(template *gce.InstanceTemplate) ([]apiv1.Taint, error) {
+	kubeEnv, err := getKubeEnvValueFromTemplateMetadata(template)
+	if err != nil {
+		return nil, err
+	}
+	return extractTaintsFromKubeEnv(kubeEnv)
 }
 
 func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
