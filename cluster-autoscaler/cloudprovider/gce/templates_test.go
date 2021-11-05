@@ -708,6 +708,26 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 				return
 			}
 			assert.Equal(t, c.expect, labels)
+
+			template := &gce.InstanceTemplate{
+				Properties: &gce.InstanceProperties{
+					Metadata: &gce.Metadata{
+						Items: []*gce.MetadataItems{
+							{
+								Key:   "kube-env",
+								Value: &c.env,
+							},
+						},
+					},
+				},
+			}
+
+			labels, err = GetLabelsFromTemplate(template)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, labels)
 		})
 	}
 }
@@ -773,6 +793,26 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
 			taints, err := extractTaintsFromKubeEnv(c.env)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, makeTaintSet(taints))
+
+			template := &gce.InstanceTemplate{
+				Properties: &gce.InstanceProperties{
+					Metadata: &gce.Metadata{
+						Items: []*gce.MetadataItems{
+							{
+								Key:   "kube-env",
+								Value: &c.env,
+							},
+						},
+					},
+				},
+			}
+
+			taints, err = GetTaintsFromTemplate(template)
 			assert.Equal(t, c.err, err)
 			if c.err != nil {
 				return
