@@ -64,6 +64,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// PacketProviderName gets the provider name of packet
+	PacketProviderName = "packet"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
