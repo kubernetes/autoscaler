@@ -80,7 +80,7 @@ func (plugin *downwardAPIPlugin) CanSupport(spec *volume.Spec) bool {
 	return spec.Volume != nil && spec.Volume.DownwardAPI != nil
 }
 
-func (plugin *downwardAPIPlugin) RequiresRemount() bool {
+func (plugin *downwardAPIPlugin) RequiresRemount(spec *volume.Spec) bool {
 	return true
 }
 
@@ -227,7 +227,7 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, mounterArgs volume.Mounte
 		return err
 	}
 
-	err = volume.SetVolumeOwnership(b, mounterArgs.FsGroup, nil /*fsGroupChangePolicy*/)
+	err = volume.SetVolumeOwnership(b, mounterArgs.FsGroup, nil /*fsGroupChangePolicy*/, volumeutil.FSGroupCompleteHook(b.plugin, nil))
 	if err != nil {
 		klog.Errorf("Error applying volume ownership settings for group: %v", mounterArgs.FsGroup)
 		return err
@@ -244,7 +244,7 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, mounterArgs volume.Mounte
 // Note: this function is exported so that it can be called from the projection volume driver
 func CollectData(items []v1.DownwardAPIVolumeFile, pod *v1.Pod, host volume.VolumeHost, defaultMode *int32) (map[string]volumeutil.FileProjection, error) {
 	if defaultMode == nil {
-		return nil, fmt.Errorf("No defaultMode used, not even the default value for it")
+		return nil, fmt.Errorf("no defaultMode used, not even the default value for it")
 	}
 
 	errlist := []error{}

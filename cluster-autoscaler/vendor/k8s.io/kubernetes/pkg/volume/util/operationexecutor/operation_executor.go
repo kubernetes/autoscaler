@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -202,6 +202,9 @@ type ActualStateOfWorldMounterUpdater interface {
 
 	// GetVolumeMountState returns mount state of the volume for the Pod
 	GetVolumeMountState(volumName v1.UniqueVolumeName, podName volumetypes.UniquePodName) VolumeMountState
+
+	// IsVolumeMountedElsewhere returns whether the supplied volume is mounted in a Pod other than the supplied one
+	IsVolumeMountedElsewhere(volumeName v1.UniqueVolumeName, podName volumetypes.UniquePodName) bool
 
 	// MarkForInUseExpansionError marks the volume to have in-use error during expansion.
 	// volume expansion must not be retried for this volume
@@ -704,6 +707,7 @@ func (oe *operationExecutor) VerifyVolumesAreAttached(
 	volumeSpecMapByPlugin := make(map[string]map[*volume.Spec]v1.UniqueVolumeName)
 
 	for node, nodeAttachedVolumes := range attachedVolumes {
+		needIndividualVerifyVolumes := []AttachedVolume{}
 		for _, volumeAttached := range nodeAttachedVolumes {
 			if volumeAttached.VolumeSpec == nil {
 				klog.Errorf("VerifyVolumesAreAttached: nil spec for volume %s", volumeAttached.VolumeName)
@@ -757,12 +761,12 @@ func (oe *operationExecutor) VerifyVolumesAreAttached(
 				volumeSpecMapByPlugin[pluginName] = volumeSpecMap
 				continue
 			}
-
 			// If node doesn't support Bulk volume polling it is best to poll individually
-			nodeError := oe.VerifyVolumesAreAttachedPerNode(nodeAttachedVolumes, node, actualStateOfWorld)
-			if nodeError != nil {
-				klog.Errorf("VerifyVolumesAreAttached failed for volumes %v, node %q with error %v", nodeAttachedVolumes, node, nodeError)
-			}
+			needIndividualVerifyVolumes = append(needIndividualVerifyVolumes, volumeAttached)
+		}
+		nodeError := oe.VerifyVolumesAreAttachedPerNode(needIndividualVerifyVolumes, node, actualStateOfWorld)
+		if nodeError != nil {
+			klog.Errorf("VerifyVolumesAreAttached failed for volumes %v, node %q with error %v", needIndividualVerifyVolumes, node, nodeError)
 		}
 	}
 
@@ -985,7 +989,7 @@ func (oe *operationExecutor) CheckVolumeExistenceOperation(
 				return false, fmt.Errorf("mounter was not set for a filesystem volume")
 			}
 			if isNotMount, mountCheckErr = mounter.IsLikelyNotMountPoint(mountPath); mountCheckErr != nil {
-				return false, fmt.Errorf("Could not check whether the volume %q (spec.Name: %q) pod %q (UID: %q) is mounted with: %v",
+				return false, fmt.Errorf("could not check whether the volume %q (spec.Name: %q) pod %q (UID: %q) is mounted with: %v",
 					uniqueVolumeName,
 					volumeName,
 					podName,
@@ -1008,7 +1012,7 @@ func (oe *operationExecutor) CheckVolumeExistenceOperation(
 	var islinkExist bool
 	var checkErr error
 	if islinkExist, checkErr = blkutil.IsSymlinkExist(mountPath); checkErr != nil {
-		return false, fmt.Errorf("Could not check whether the block volume %q (spec.Name: %q) pod %q (UID: %q) is mapped to: %v",
+		return false, fmt.Errorf("could not check whether the block volume %q (spec.Name: %q) pod %q (UID: %q) is mapped to: %v",
 			uniqueVolumeName,
 			volumeName,
 			podName,

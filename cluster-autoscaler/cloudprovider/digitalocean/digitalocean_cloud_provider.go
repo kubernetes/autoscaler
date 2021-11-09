@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 var _ cloudprovider.CloudProvider = (*digitaloceanCloudProvider)(nil)
@@ -45,15 +45,11 @@ type digitaloceanCloudProvider struct {
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
-func newDigitalOceanCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) (*digitaloceanCloudProvider, error) {
-	if err := manager.Refresh(); err != nil {
-		return nil, err
-	}
-
+func newDigitalOceanCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) *digitaloceanCloudProvider {
 	return &digitaloceanCloudProvider{
 		manager:         manager,
 		resourceLimiter: rl,
-	}, nil
+	}
 }
 
 // Name returns name of the cloud provider.
@@ -185,12 +181,7 @@ func BuildDigitalOcean(
 	// the cloud provider automatically uses all node pools in DigitalOcean.
 	// This means we don't use the cloudprovider.NodeGroupDiscoveryOptions
 	// flags (which can be set via '--node-group-auto-discovery' or '-nodes')
-	provider, err := newDigitalOceanCloudProvider(manager, rl)
-	if err != nil {
-		klog.Fatalf("Failed to create DigitalOcean cloud provider: %v", err)
-	}
-
-	return provider
+	return newDigitalOceanCloudProvider(manager, rl)
 }
 
 // toProviderID returns a provider ID from the given node ID.

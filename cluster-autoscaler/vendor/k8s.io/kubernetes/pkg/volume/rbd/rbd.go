@@ -25,8 +25,8 @@ import (
 	dstrings "strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/mount-utils"
 	utilexec "k8s.io/utils/exec"
-	"k8s.io/utils/mount"
 	utilstrings "k8s.io/utils/strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -107,7 +107,7 @@ func (plugin *rbdPlugin) CanSupport(spec *volume.Spec) bool {
 	return (spec.Volume != nil && spec.Volume.RBD != nil) || (spec.PersistentVolume != nil && spec.PersistentVolume.Spec.RBD != nil)
 }
 
-func (plugin *rbdPlugin) RequiresRemount() bool {
+func (plugin *rbdPlugin) RequiresRemount(spec *volume.Spec) bool {
 	return false
 }
 
@@ -524,13 +524,21 @@ func (plugin *rbdPlugin) newBlockVolumeMapperInternal(spec *volume.Spec, podUID 
 		return nil, err
 	}
 
-	return &rbdDiskMapper{
+	mapper := &rbdDiskMapper{
 		rbd:     newRBD(podUID, spec.Name(), img, pool, ro, plugin, manager),
 		mon:     mon,
 		id:      id,
 		keyring: keyring,
 		secret:  secret,
-	}, nil
+	}
+
+	blockPath, err := mapper.GetGlobalMapPath(spec)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get device path: %v", err)
+	}
+	mapper.MetricsProvider = volume.NewMetricsBlock(filepath.Join(blockPath, string(podUID)))
+
+	return mapper, nil
 }
 
 func (plugin *rbdPlugin) NewBlockVolumeUnmapper(volName string, podUID types.UID) (volume.BlockVolumeUnmapper, error) {
@@ -607,7 +615,7 @@ type rbdVolumeProvisioner struct {
 var _ volume.Provisioner = &rbdVolumeProvisioner{}
 
 func (r *rbdVolumeProvisioner) Provision(selectedNode *v1.Node, allowedTopologies []v1.TopologySelectorTerm) (*v1.PersistentVolume, error) {
-	if !volutil.AccessModesContainedInAll(r.plugin.GetAccessModes(), r.options.PVC.Spec.AccessModes) {
+	if !volutil.ContainsAllAccessModes(r.plugin.GetAccessModes(), r.options.PVC.Spec.AccessModes) {
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", r.options.PVC.Spec.AccessModes, r.plugin.GetAccessModes())
 	}
 
@@ -803,9 +811,9 @@ type rbdMounter struct {
 	Mon           []string
 	ID            string
 	Keyring       string
-	Secret        string
+	Secret        string `datapolicy:"token"`
 	fsType        string
-	adminSecret   string
+	adminSecret   string `datapolicy:"token"`
 	adminID       string
 	mountOptions  []string
 	imageFormat   string
@@ -928,6 +936,12 @@ func (rbd *rbd) rbdGlobalMapPath(spec *volume.Spec) (string, error) {
 func (rbd *rbd) rbdPodDeviceMapPath() (string, string) {
 	name := rbdPluginName
 	return rbd.plugin.host.GetPodVolumeDeviceDir(rbd.podUID, utilstrings.EscapeQualifiedName(name)), rbd.volName
+}
+
+// SupportsMetrics returns true for rbdDiskMapper as it initializes the
+// MetricsProvider.
+func (rdm *rbdDiskMapper) SupportsMetrics() bool {
+	return true
 }
 
 type rbdDiskUnmapper struct {

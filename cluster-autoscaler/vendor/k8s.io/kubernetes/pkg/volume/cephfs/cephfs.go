@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 	utilstrings "k8s.io/utils/strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -73,7 +73,7 @@ func (plugin *cephfsPlugin) CanSupport(spec *volume.Spec) bool {
 	return (spec.Volume != nil && spec.Volume.CephFS != nil) || (spec.PersistentVolume != nil && spec.PersistentVolume.Spec.CephFS != nil)
 }
 
-func (plugin *cephfsPlugin) RequiresRemount() bool {
+func (plugin *cephfsPlugin) RequiresRemount(spec *volume.Spec) bool {
 	return false
 }
 
@@ -103,11 +103,11 @@ func (plugin *cephfsPlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, _ volume.
 		// if secret is provideded, retrieve it
 		kubeClient := plugin.host.GetKubeClient()
 		if kubeClient == nil {
-			return nil, fmt.Errorf("Cannot get kube client")
+			return nil, fmt.Errorf("cannot get kube client")
 		}
 		secrets, err := kubeClient.CoreV1().Secrets(secretNs).Get(context.TODO(), secretName, metav1.GetOptions{})
 		if err != nil {
-			err = fmt.Errorf("Couldn't get secret %v/%v err: %v", secretNs, secretName, err)
+			err = fmt.Errorf("couldn't get secret %v/%v err: %w", secretNs, secretName, err)
 			return nil, err
 		}
 		for name, data := range secrets.Data {
@@ -189,7 +189,7 @@ type cephfs struct {
 	mon        []string
 	path       string
 	id         string
-	secret     string
+	secret     string `datapolicy:"token"`
 	secretFile string
 	readonly   bool
 	mounter    mount.Interface

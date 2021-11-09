@@ -21,6 +21,7 @@ go_library(
         "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//staging/src/k8s.io/component-base/config:go_default_library",
     ],
 )
 
@@ -37,6 +38,7 @@ filegroup(
         ":package-srcs",
         "//pkg/kubelet/apis/config/fuzzer:all-srcs",
         "//pkg/kubelet/apis/config/scheme:all-srcs",
+        "//pkg/kubelet/apis/config/v1alpha1:all-srcs",
         "//pkg/kubelet/apis/config/v1beta1:all-srcs",
         "//pkg/kubelet/apis/config/validation:all-srcs",
     ],
@@ -45,10 +47,16 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["helpers_test.go"],
+    srcs = [
+        "helpers_test.go",
+        "register_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
+        "//staging/src/k8s.io/api/core/v1:go_default_library",
+        "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
+        "//staging/src/k8s.io/component-base/config/testing:go_default_library",
     ],
 )

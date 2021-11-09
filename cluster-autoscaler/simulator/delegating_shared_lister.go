@@ -18,7 +18,8 @@ package simulator
 
 import (
 	"fmt"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DelegatingSchedulerSharedLister is an implementation of scheduler.SharedLister which

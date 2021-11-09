@@ -35,7 +35,6 @@ import (
 	huaweicloudsdkecsmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 // ElasticCloudServerService represents the elastic cloud server interfaces.
@@ -62,6 +61,12 @@ type AutoScalingService interface {
 	// IncreaseSizeInstance wait until instance number is updated.
 	IncreaseSizeInstance(groupID string, delta int) error
 
+	// GetAsgForInstance returns auto scaling group for the given instance.
+	GetAsgForInstance(instanceID string) (*AutoScalingGroup, error)
+
+	// RegisterAsg registers auto scaling group to manager
+	RegisterAsg(asg *AutoScalingGroup)
+
 	// DeleteScalingInstances is used to delete instances from auto scaling group by instanceIDs.
 	DeleteScalingInstances(groupID string, instanceIds []string) error
 
@@ -86,6 +91,7 @@ type cloudServiceManager struct {
 	cloudConfig      *CloudConfig
 	getECSClientFunc func() *huaweicloudsdkecs.EcsClient
 	getASClientFunc  func() *huaweicloudsdkas.AsClient
+	asgs             *autoScalingGroupCache
 }
 
 type asgTemplate struct {
@@ -99,11 +105,24 @@ type asgTemplate struct {
 }
 
 func newCloudServiceManager(cloudConfig *CloudConfig) *cloudServiceManager {
-	return &cloudServiceManager{
+	csm := &cloudServiceManager{
 		cloudConfig:      cloudConfig,
 		getECSClientFunc: cloudConfig.getECSClient,
 		getASClientFunc:  cloudConfig.getASClient,
+		asgs:             newAutoScalingGroupCache(),
 	}
+
+	csm.asgs.generateCache(csm)
+
+	return csm
+}
+
+func (csm *cloudServiceManager) GetAsgForInstance(instanceID string) (*AutoScalingGroup, error) {
+	return csm.asgs.FindForInstance(instanceID, csm)
+}
+
+func (csm *cloudServiceManager) RegisterAsg(asg *AutoScalingGroup) {
+	csm.asgs.Register(asg)
 }
 
 // DeleteServers deletes a group of server by ID.
@@ -549,13 +568,13 @@ func (csm *cloudServiceManager) buildNodeFromTemplate(asgName string, template *
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
-	result[apiv1.LabelInstanceType] = template.name
+	result[apiv1.LabelInstanceTypeStable] = template.name
 
-	result[apiv1.LabelZoneRegion] = template.region
-	result[apiv1.LabelZoneFailureDomain] = template.zone
+	result[apiv1.LabelTopologyRegion] = template.region
+	result[apiv1.LabelTopologyZone] = template.zone
 	result[apiv1.LabelHostname] = nodeName
 
 	// append custom node labels

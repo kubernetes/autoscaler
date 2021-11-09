@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,37 +28,125 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 	type testCase struct {
 		physicalMemory int64
 		reservedMemory int64
+		osDistribution OperatingSystemDistribution
 	}
 	testCases := []testCase{
 		{
 			physicalMemory: 256 * MiB,
-			reservedMemory: 4*MiB + kernelReservedMemory,
+			reservedMemory: 4*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 2 * GiB,
-			reservedMemory: 32*MiB + kernelReservedMemory,
+			reservedMemory: 32*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3 * GiB,
-			reservedMemory: 48*MiB + kernelReservedMemory,
+			reservedMemory: 48*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 3.25 * GiB,
-			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 4 * GiB,
-			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory,
+			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			physicalMemory: 128 * GiB,
 			reservedMemory: 2*GiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 256 * MiB,
+			reservedMemory: 4*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 2 * GiB,
+			reservedMemory: 32*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 3 * GiB,
+			reservedMemory: 48*MiB + kernelReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 3.25 * GiB,
+			reservedMemory: 52*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 4 * GiB,
+			reservedMemory: 64*MiB + kernelReservedMemory + swiotlbReservedMemory + lowMemoryOffset,
+			osDistribution: OperatingSystemDistributionUbuntu,
+		},
+		{
+			physicalMemory: 128 * GiB,
+			reservedMemory: 2*GiB + kernelReservedMemory + swiotlbReservedMemory,
+			osDistribution: OperatingSystemDistributionUbuntu,
 		},
 	}
 	for idx, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
-			reserved := CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux)
-			assert.Equal(t, tc.reservedMemory, reserved)
+			reserved := CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux, tc.osDistribution)
+			if tc.osDistribution == OperatingSystemDistributionUbuntu {
+				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)+ubuntuSpecificOffset), reserved)
+			} else if tc.osDistribution == OperatingSystemDistributionCOS {
+				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)), reserved)
+			}
+		})
+	}
+}
+
+func TestEphemeralStorageOnLocalSSDFilesystemOverheadInBytes(t *testing.T) {
+	type testCase struct {
+		scenario       string
+		diskCount      int64
+		osDistribution OperatingSystemDistribution
+		expected       int64
+	}
+	testCases := []testCase{
+		{
+			scenario:       "measured disk count and OS (cos)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionCOS,
+			expected:       7289472 * KiB,
+		},
+		{
+			scenario:       "measured disk count but OS with different container runtime (cos_containerd)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionCOSContainerd,
+			expected:       7289472 * KiB, // same as COS
+		},
+		{
+			scenario:       "measured disk count and OS (ubuntu)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionUbuntu,
+			expected:       7219840 * KiB,
+		},
+		{
+			scenario:       "measured disk count but OS with different container runtime (ubuntu_containerd)",
+			diskCount:      1,
+			osDistribution: OperatingSystemDistributionUbuntuContainerd,
+			expected:       7219840 * KiB, // same as Ubuntu
+		},
+		{
+			scenario:       "mapped disk count",
+			diskCount:      10,
+			osDistribution: OperatingSystemDistributionCOS,
+			expected:       52837800 * KiB, // value measured for 16 disks
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.scenario, func(t *testing.T) {
+			actual := EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(tc.diskCount, tc.osDistribution)
+			assert.Equal(t, tc.expected, actual)
 		})
 	}
 }

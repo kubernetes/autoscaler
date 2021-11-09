@@ -87,7 +87,7 @@ var (
 	}
 )
 
-func getStrategyInstance(t *testing.T, config string) (expander.Strategy, *record.FakeRecorder, *apiv1.ConfigMap, error) {
+func getFilterInstance(t *testing.T, config string) (expander.Filter, *record.FakeRecorder, *apiv1.ConfigMap, error) {
 	cm := &apiv1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: testNamespace,
@@ -100,50 +100,44 @@ func getStrategyInstance(t *testing.T, config string) (expander.Strategy, *recor
 	lister, err := kubernetes.NewTestConfigMapLister([]*apiv1.ConfigMap{cm})
 	assert.Nil(t, err)
 	r := record.NewFakeRecorder(100)
-	s, err := NewStrategy(lister.ConfigMaps(testNamespace), r)
+	s := NewFilter(lister.ConfigMaps(testNamespace), r)
 	return s, r, cm, err
 }
 
-func TestPriorityExpanderCorrecltySelectsSingleMatchingOptionOutOfOne(t *testing.T) {
-	s, _, _, _ := getStrategyInstance(t, config)
-	ret := s.BestOption([]expander.Option{eoT2Large}, nil)
-	assert.Equal(t, *ret, eoT2Large)
+func TestPriorityExpanderCorrecltyFiltersSingleMatchingOptionOutOfOne(t *testing.T) {
+	s, _, _, _ := getFilterInstance(t, config)
+	ret := s.BestOptions([]expander.Option{eoT2Large}, nil)
+	assert.Equal(t, ret, []expander.Option{eoT2Large})
 }
 
-func TestPriorityExpanderCorrecltySelectsSingleMatchingOptionOutOfMany(t *testing.T) {
-	s, _, _, _ := getStrategyInstance(t, config)
-	ret := s.BestOption([]expander.Option{eoT2Large, eoM44XLarge}, nil)
-	assert.Equal(t, *ret, eoM44XLarge)
+func TestPriorityExpanderCorrecltyFiltersSingleMatchingOptionOutOfMany(t *testing.T) {
+	s, _, _, _ := getFilterInstance(t, config)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoM44XLarge}, nil)
+	assert.Equal(t, ret, []expander.Option{eoM44XLarge})
 }
 
-func TestPriorityExpanderDoesNotFallBackToRandomWhenHigherPriorityMatches(t *testing.T) {
-	s, _, _, _ := getStrategyInstance(t, wildcardMatchConfig)
-	for i := 0; i < 10; i++ {
-		ret := s.BestOption([]expander.Option{eoT2Large, eoT2Micro}, nil)
-		assert.Equal(t, *ret, eoT2Large)
-	}
+func TestPriorityExpanderFiltersToHigherPriorityMatch(t *testing.T) {
+	s, _, _, _ := getFilterInstance(t, wildcardMatchConfig)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoT2Micro}, nil)
+	assert.Equal(t, ret, []expander.Option{eoT2Large})
 }
 
-func TestPriorityExpanderCorrecltySelectsOneOfTwoMatchingOptionsOutOfMany(t *testing.T) {
-	s, _, _, _ := getStrategyInstance(t, config)
-	for i := 0; i < 10; i++ {
-		ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoT2Micro}, nil)
-		assert.True(t, ret.NodeGroup.Id() == eoT2Large.NodeGroup.Id() || ret.NodeGroup.Id() == eoT3Large.NodeGroup.Id())
-	}
+func TestPriorityExpanderCorrecltyFiltersTwoMatchingOptionsOutOfMany(t *testing.T) {
+	s, _, _, _ := getFilterInstance(t, config)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoT2Micro}, nil)
+	assert.Equal(t, ret, []expander.Option{eoT2Large, eoT3Large})
 }
 
-func TestPriorityExpanderCorrecltyFallsBackToRandomWhenNoMatches(t *testing.T) {
-	s, _, _, _ := getStrategyInstance(t, config)
-	for i := 0; i < 10; i++ {
-		ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large}, nil)
-		assert.True(t, ret.NodeGroup.Id() == eoT2Large.NodeGroup.Id() || ret.NodeGroup.Id() == eoT3Large.NodeGroup.Id())
-	}
+func TestPriorityExpanderCorrecltyFallsBackToAllWhenNoMatches(t *testing.T) {
+	s, _, _, _ := getFilterInstance(t, config)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large}, nil)
+	assert.Equal(t, ret, []expander.Option{eoT2Large, eoT3Large})
 }
 
 func TestPriorityExpanderCorrecltyHandlesConfigUpdate(t *testing.T) {
-	s, r, cm, _ := getStrategyInstance(t, oneEntryConfig)
-	ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
-	assert.Equal(t, *ret, eoT2Large)
+	s, r, cm, _ := getFilterInstance(t, oneEntryConfig)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
+	assert.Equal(t, ret, []expander.Option{eoT2Large})
 
 	var event string
 	for _, group := range []string{eoT3Large.NodeGroup.Id(), eoM44XLarge.NodeGroup.Id()} {
@@ -152,24 +146,24 @@ func TestPriorityExpanderCorrecltyHandlesConfigUpdate(t *testing.T) {
 	}
 
 	cm.Data[ConfigMapKey] = config
-	ret = s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
+	ret = s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
 
 	priority := s.(*priority)
 	assert.Equal(t, 2, priority.okConfigUpdates)
-	assert.Equal(t, *ret, eoM44XLarge)
+	assert.Equal(t, ret, []expander.Option{eoM44XLarge})
 }
 
 func TestPriorityExpanderCorrecltySkipsBadChangeConfig(t *testing.T) {
-	s, r, cm, _ := getStrategyInstance(t, oneEntryConfig)
+	s, r, cm, _ := getFilterInstance(t, oneEntryConfig)
 	priority := s.(*priority)
 	assert.Equal(t, 0, priority.okConfigUpdates)
 
 	cm.Data[ConfigMapKey] = ""
-	ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
+	ret := s.BestOptions([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
 
 	assert.Equal(t, 1, priority.badConfigUpdates)
 
 	event := <-r.Events
 	assert.EqualValues(t, configWarnConfigMapEmpty, event)
-	assert.Nil(t, ret)
+	assert.Empty(t, ret)
 }

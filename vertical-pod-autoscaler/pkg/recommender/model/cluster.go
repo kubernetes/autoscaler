@@ -24,7 +24,7 @@ import (
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -54,6 +54,9 @@ type ClusterState struct {
 	// Map with all label sets used by the aggregations. It serves as a cache
 	// that allows to quickly access labels.Set corresponding to a labelSetKey.
 	labelSetMap labelSetMap
+
+	lastAggregateContainerStateGC time.Time
+	gcInterval                    time.Duration
 }
 
 // StateMapSize is the number of pods being tracked by the VPA
@@ -92,13 +95,15 @@ type PodState struct {
 }
 
 // NewClusterState returns a new ClusterState with no pods.
-func NewClusterState() *ClusterState {
+func NewClusterState(gcInterval time.Duration) *ClusterState {
 	return &ClusterState{
-		Pods:              make(map[PodID]*PodState),
-		Vpas:              make(map[VpaID]*Vpa),
-		EmptyVPAs:         make(map[VpaID]time.Time),
-		aggregateStateMap: make(aggregateContainerStatesMap),
-		labelSetMap:       make(labelSetMap),
+		Pods:                          make(map[PodID]*PodState),
+		Vpas:                          make(map[VpaID]*Vpa),
+		EmptyVPAs:                     make(map[VpaID]time.Time),
+		aggregateStateMap:             make(aggregateContainerStatesMap),
+		labelSetMap:                   make(labelSetMap),
+		lastAggregateContainerStateGC: time.Unix(0, 0),
+		gcInterval:                    gcInterval,
 	}
 }
 
@@ -343,12 +348,7 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 	return aggregateContainerState
 }
 
-// GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
-// AggregateCollectionState is obsolete in following situations:
-// 1) It has no samples and there are no more active pods that can contribute,
-// 2) The last sample is too old to give meaningful recommendation (>8 days),
-// 3) There are no samples and the aggregate state was created >8 days ago.
-func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time) {
+func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Time) {
 	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	activeKeys := cluster.getActiveAggregateStateKeys()
@@ -370,6 +370,20 @@ func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Ti
 			vpa.DeleteAggregation(key)
 		}
 	}
+}
+
+// RateLimitedGarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
+// It performs clean up only if more than `gcInterval` passed since the last time it performed a clean up.
+// AggregateCollectionState is obsolete in following situations:
+// 1) It has no samples and there are no more active pods that can contribute,
+// 2) The last sample is too old to give meaningful recommendation (>8 days),
+// 3) There are no samples and the aggregate state was created >8 days ago.
+func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(now time.Time) {
+	if now.Sub(cluster.lastAggregateContainerStateGC) < cluster.gcInterval {
+		return
+	}
+	cluster.garbageCollectAggregateCollectionStates(now)
+	cluster.lastAggregateContainerStateGC = now
 }
 
 func (cluster *ClusterState) getActiveAggregateStateKeys() map[AggregateStateKey]bool {

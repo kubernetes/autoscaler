@@ -1,0 +1,46 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+{{ include "cluster-autoscaler.labels" . | indent 4 }}
+  name: {{ template "cluster-autoscaler.fullname" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - list
+      - watch
+{{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - cluster-autoscaler-status
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - cluster-autoscaler-priority-expander
+{{- end }}
+    verbs:
+      - delete
+      - get
+      - update
+{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+      - watch
+{{- end }}
+{{- if  eq (default "" (index .Values.extraArgs "leader-elect-resource-lock")) "configmaps" }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - cluster-autoscaler
+    verbs:
+      - get
+      - update
+{{- end }}
+{{- end -}}

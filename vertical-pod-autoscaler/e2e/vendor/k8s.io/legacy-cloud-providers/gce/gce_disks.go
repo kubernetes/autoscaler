@@ -25,7 +25,7 @@ import (
 	"net/http"
 	"strings"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
@@ -39,7 +39,7 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // DiskType defines a specific type for holding disk types (eg. pd-ssd)
@@ -515,7 +515,7 @@ func (g *Cloud) GetLabelsForVolume(ctx context.Context, pv *v1.PersistentVolume)
 
 	// If the zone is already labeled, honor the hint
 	name := pv.Spec.GCEPersistentDisk.PDName
-	zone := pv.Labels[v1.LabelZoneFailureDomain]
+	zone := pv.Labels[v1.LabelFailureDomainBetaZone]
 
 	disk, err := g.getDiskByNameAndOptionalLabelZones(name, zone)
 	if err != nil {
@@ -809,7 +809,11 @@ func (g *Cloud) ResizeDisk(diskToResize string, oldSize resource.Quantity, newSi
 	}
 
 	// GCE resizes in chunks of GiBs
-	requestGIB := volumehelpers.RoundUpToGiB(newSize)
+	requestGIB, err := volumehelpers.RoundUpToGiB(newSize)
+	if err != nil {
+		return oldSize, err
+	}
+
 	newSizeQuant := resource.MustParse(fmt.Sprintf("%dGi", requestGIB))
 
 	// If disk is already of size equal or greater than requested size, we simply return
@@ -854,16 +858,16 @@ func (g *Cloud) GetAutoLabelsForPD(disk *Disk) (map[string]string, error) {
 			// Unexpected, but sanity-check
 			return nil, fmt.Errorf("PD did not have zone/region information: %v", disk)
 		}
-		labels[v1.LabelZoneFailureDomain] = zoneInfo.zone
-		labels[v1.LabelZoneRegion] = disk.Region
+		labels[v1.LabelFailureDomainBetaZone] = zoneInfo.zone
+		labels[v1.LabelFailureDomainBetaRegion] = disk.Region
 	case multiZone:
 		if zoneInfo.replicaZones == nil || zoneInfo.replicaZones.Len() <= 0 {
 			// Unexpected, but sanity-check
 			return nil, fmt.Errorf("PD is regional but does not have any replicaZones specified: %v", disk)
 		}
-		labels[v1.LabelZoneFailureDomain] =
+		labels[v1.LabelFailureDomainBetaZone] =
 			volumehelpers.ZonesSetToLabelValue(zoneInfo.replicaZones)
-		labels[v1.LabelZoneRegion] = disk.Region
+		labels[v1.LabelFailureDomainBetaRegion] = disk.Region
 	case nil:
 		// Unexpected, but sanity-check
 		return nil, fmt.Errorf("PD did not have ZoneInfo: %v", disk)

@@ -129,7 +129,8 @@ type Cloud struct {
 	unsafeIsLegacyNetwork bool
 	// unsafeSubnetworkURL should be used only via SubnetworkURL() accessor,
 	// to ensure it was properly initialized.
-	unsafeSubnetworkURL      string
+	unsafeSubnetworkURL string
+	// DEPRECATED: Do not rely on this value as it may be incorrect.
 	secondaryRangeName       string
 	networkProjectID         string
 	onXPN                    bool
@@ -165,13 +166,16 @@ type Cloud struct {
 	s *cloud.Service
 
 	metricsCollector loadbalancerMetricsCollector
+
+	// the compute API endpoint with the `projects/` element.
+	projectsBasePath string
 }
 
 // ConfigGlobal is the in memory representation of the gce.conf config data
 // TODO: replace gcfg with json
 type ConfigGlobal struct {
 	TokenURL  string `gcfg:"token-url"`
-	TokenBody string `gcfg:"token-body"`
+	TokenBody string `gcfg:"token-body" datapolicy:"token"`
 	// ProjectID and NetworkProjectID can either be the numeric or string-based
 	// unique identifier that starts with [a-z].
 	ProjectID string `gcfg:"project-id"`
@@ -179,6 +183,7 @@ type ConfigGlobal struct {
 	NetworkProjectID string `gcfg:"network-project-id"`
 	NetworkName      string `gcfg:"network-name"`
 	SubnetworkName   string `gcfg:"subnetwork-name"`
+	// DEPRECATED: Do not rely on this value as it may be incorrect.
 	// SecondaryRangeName is the name of the secondary range to allocate IP
 	// aliases. The secondary range must be present on the subnetwork the
 	// cluster is attached to.
@@ -226,12 +231,13 @@ type CloudConfig struct {
 	NetworkURL           string
 	SubnetworkName       string
 	SubnetworkURL        string
-	SecondaryRangeName   string
-	NodeTags             []string
-	NodeInstancePrefix   string
-	TokenSource          oauth2.TokenSource
-	UseMetadataServer    bool
-	AlphaFeatureGate     *AlphaFeatureGate
+	// DEPRECATED: Do not rely on this value as it may be incorrect.
+	SecondaryRangeName string
+	NodeTags           []string
+	NodeInstancePrefix string
+	TokenSource        oauth2.TokenSource
+	UseMetadataServer  bool
+	AlphaFeatureGate   *AlphaFeatureGate
 }
 
 func init() {
@@ -428,14 +434,16 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 	}
 	serviceAlpha.UserAgent = userAgent
 
-	// Expect override api endpoint to always be v1 api and follows the same pattern as prod.
-	// Generate alpha and beta api endpoints based on override v1 api endpoint.
-	// For example,
-	// staging API endpoint: https://www.googleapis.com/compute/staging_v1/
 	if config.APIEndpoint != "" {
-		service.BasePath = fmt.Sprintf("%sprojects/", config.APIEndpoint)
-		serviceBeta.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.APIEndpoint, "v1", "beta", -1))
-		serviceAlpha.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.APIEndpoint, "v1", "alpha", -1))
+		if strings.HasSuffix(service.BasePath, "/projects/") {
+			service.BasePath = getProjectsBasePath(config.APIEndpoint)
+			serviceBeta.BasePath = getProjectsBasePath(strings.Replace(config.APIEndpoint, "v1", "beta", -1))
+			serviceAlpha.BasePath = getProjectsBasePath(strings.Replace(config.APIEndpoint, "v1", "alpha", -1))
+		} else {
+			service.BasePath = config.APIEndpoint
+			serviceBeta.BasePath = strings.Replace(config.APIEndpoint, "v1", "beta", -1)
+			serviceAlpha.BasePath = strings.Replace(config.APIEndpoint, "v1", "alpha", -1)
+		}
 	}
 
 	containerService, err := container.NewService(context.Background(), option.WithTokenSource(config.TokenSource))
@@ -521,6 +529,7 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 		AlphaFeatureGate:         config.AlphaFeatureGate,
 		nodeZones:                map[string]sets.String{},
 		metricsCollector:         newLoadBalancerMetrics(),
+		projectsBasePath:         getProjectsBasePath(service.BasePath),
 	}
 
 	gce.manager = &gceServiceManager{gce}
@@ -660,9 +669,9 @@ func (g *Cloud) Instances() (cloudprovider.Instances, bool) {
 }
 
 // InstancesV2 returns an implementation of InstancesV2 for Google Compute Engine.
-// TODO: implement ONLY for external cloud provider
+// Implement ONLY for external cloud provider
 func (g *Cloud) InstancesV2() (cloudprovider.InstancesV2, bool) {
-	return nil, false
+	return g, true
 }
 
 // Zones returns an implementation of Zones for Google Compute Engine.
@@ -734,8 +743,8 @@ func (g *Cloud) SetInformers(informerFactory informers.SharedInformerFactory) {
 		UpdateFunc: func(prev, obj interface{}) {
 			prevNode := prev.(*v1.Node)
 			newNode := obj.(*v1.Node)
-			if newNode.Labels[v1.LabelZoneFailureDomain] ==
-				prevNode.Labels[v1.LabelZoneFailureDomain] {
+			if newNode.Labels[v1.LabelFailureDomainBetaZone] ==
+				prevNode.Labels[v1.LabelFailureDomainBetaZone] {
 				return
 			}
 			g.updateNodeZones(prevNode, newNode)
@@ -766,7 +775,7 @@ func (g *Cloud) updateNodeZones(prevNode, newNode *v1.Node) {
 	g.nodeZonesLock.Lock()
 	defer g.nodeZonesLock.Unlock()
 	if prevNode != nil {
-		prevZone, ok := prevNode.ObjectMeta.Labels[v1.LabelZoneFailureDomain]
+		prevZone, ok := prevNode.ObjectMeta.Labels[v1.LabelFailureDomainBetaZone]
 		if ok {
 			g.nodeZones[prevZone].Delete(prevNode.ObjectMeta.Name)
 			if g.nodeZones[prevZone].Len() == 0 {
@@ -775,7 +784,7 @@ func (g *Cloud) updateNodeZones(prevNode, newNode *v1.Node) {
 		}
 	}
 	if newNode != nil {
-		newZone, ok := newNode.ObjectMeta.Labels[v1.LabelZoneFailureDomain]
+		newZone, ok := newNode.ObjectMeta.Labels[v1.LabelFailureDomainBetaZone]
 		if ok {
 			if g.nodeZones[newZone] == nil {
 				g.nodeZones[newZone] = sets.NewString()
@@ -788,6 +797,18 @@ func (g *Cloud) updateNodeZones(prevNode, newNode *v1.Node) {
 // HasClusterID returns true if the cluster has a clusterID
 func (g *Cloud) HasClusterID() bool {
 	return true
+}
+
+// getProjectsBasePath returns the compute API endpoint with the `projects/` element.
+// The suffix must be added when generating compute resource urls.
+func getProjectsBasePath(basePath string) string {
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
+	}
+	if !strings.HasSuffix(basePath, "/projects/") {
+		basePath += "projects/"
+	}
+	return basePath
 }
 
 // Project IDs cannot have a digit for the first characeter. If the id contains a digit,
@@ -870,16 +891,19 @@ func getZonesForRegion(svc *compute.Service, projectID, region string) ([]string
 	// (tested in https://cloud.google.com/compute/docs/reference/latest/zones/list)
 	// listCall = listCall.Filter("region eq " + region)
 
-	res, err := listCall.Do()
+	var zones []string
+	var accumulator = func(response *compute.ZoneList) error {
+		for _, zone := range response.Items {
+			regionName := lastComponent(zone.Region)
+			if regionName == region {
+				zones = append(zones, zone.Name)
+			}
+		}
+		return nil
+	}
+	err := listCall.Pages(context.TODO(), accumulator)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected response listing zones: %v", err)
-	}
-	zones := []string{}
-	for _, zone := range res.Items {
-		regionName := lastComponent(zone.Region)
-		if regionName == region {
-			zones = append(zones, zone.Name)
-		}
 	}
 	return zones, nil
 }
@@ -930,7 +954,7 @@ func newOauthClient(tokenSource oauth2.TokenSource) (*http.Client, error) {
 func (manager *gceServiceManager) getProjectsAPIEndpoint() string {
 	projectsAPIEndpoint := gceComputeAPIEndpoint + "projects/"
 	if manager.gce.service != nil {
-		projectsAPIEndpoint = manager.gce.service.BasePath
+		projectsAPIEndpoint = manager.gce.projectsBasePath
 	}
 
 	return projectsAPIEndpoint

@@ -1,3 +1,4 @@
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 # Cluster Autoscaler for Packet
 
 The cluster autoscaler for [Packet](https://packet.com) worker nodes performs
@@ -78,6 +79,35 @@ affinity:
           - t1.small.x86
 ```
 
+## CCM and Controller node labels
+
+### CCM
+By default, autoscaler assumes that you have an older deprecated version of `packet-ccm` installed in your
+cluster.  If however, that is not the case and you've migrated to the new `cloud-provider-equinix-metal` CCM,
+then this must be told to autoscaler. This can be done via setting an environment variable in the deployment:
+```
+env:
+  - name: INSTALLED_CCM
+    value: cloud-provider-equinix-metal
+```
+**NOTE**: As a prerequisite, ensure that all worker nodes in your cluster have the prefix `equinixmetal://` in
+the Node spec `.spec.providerID`. If there are any existing worker nodes with prefix `packet://`, then drain
+the node, remove the node and restart the kubelet on that worker node to re-register the node in the cluster,
+this would ensure that `cloud-provider-equinix-metal` CCM sets the uuid with prefix `equinixmetal://` to the
+field `.spec.ProviderID`.
+
+### Controller node labels
+
+Autoscaler assumes that control plane nodes in your cluster are identified by the label
+`node-role.kubernetes.io/master`. If for some reason, this assumption is not true in your case, then set the
+envirnment variable in the deployment:
+
+```
+env:
+  - name: PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL
+    value: <label>
+```
+
 ## Notes
 
 The autoscaler will not remove nodes which have non-default kube-system pods.
@@ -86,7 +116,7 @@ If you are deploying the autoscaler into a cluster which already has more than o
 it is best to deploy it onto any node which already has non-default kube-system pods,
 to minimise the number of nodes which cannot be removed when scaling. For this reason in
 the provided example the autoscaler pod has a nodeaffinity which forces it to deploy on
-the master node.
+the control plane (previously referred to as master) node.
 
 ### Changes
 
@@ -98,4 +128,4 @@ the master node.
 
 4. Cloud inits in the examples have pinned versions for Kubernetes in order to minimize potential incompatibilities as a result of nodes provisioned with different Kubernetes versions.
 
-5. In the provided cluster-autoscaler deployment example, the autoscaler pod has a nodeaffinity which forces it to deploy on the master node, so that the cluster-autoscaler can scale down all of the worker nodes. Without this change there was a possibility for the cluster-autoscaler to be deployed on a worker node that could not be downscaled.
+5. In the provided cluster-autoscaler deployment example, the autoscaler pod has a nodeaffinity which forces it to deploy on the control plane (previously referred to as master) node, so that the cluster-autoscaler can scale down all of the worker nodes. Without this change there was a possibility for the cluster-autoscaler to be deployed on a worker node that could not be downscaled.

@@ -34,6 +34,7 @@ import (
 )
 
 func TestDrain(t *testing.T) {
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
 	replicas := int32(5)
 
 	rc := apiv1.ReplicationController{
@@ -175,7 +176,7 @@ func TestDrain(t *testing.T) {
 			Name:              "bar",
 			Namespace:         "default",
 			OwnerReferences:   GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
-			DeletionTimestamp: &metav1.Time{Time: time.Now().Add(-time.Hour)},
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Hour)},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -220,6 +221,41 @@ func TestDrain(t *testing.T) {
 		},
 		Status: apiv1.PodStatus{
 			Phase: apiv1.PodSucceeded,
+		},
+	}
+
+	zeroGracePeriod := int64(0)
+	longTerminatingPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "bar",
+			Namespace:         "default",
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+			OwnerReferences:   GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:                      "node",
+			RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+			TerminationGracePeriodSeconds: &zeroGracePeriod,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodUnknown,
+		},
+	}
+	extendedGracePeriod := int64(6 * 60) // 6 minutes
+	longTerminatingPodWithExtendedGracePeriod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "bar",
+			Namespace:         "default",
+			DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Duration(extendedGracePeriod/2) * time.Second)},
+			OwnerReferences:   GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:                      "node",
+			RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+			TerminationGracePeriodSeconds: &extendedGracePeriod,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodUnknown,
 		},
 	}
 
@@ -363,187 +399,228 @@ func TestDrain(t *testing.T) {
 	}
 
 	tests := []struct {
-		description       string
-		pods              []*apiv1.Pod
-		pdbs              []*policyv1.PodDisruptionBudget
-		rcs               []*apiv1.ReplicationController
-		replicaSets       []*appsv1.ReplicaSet
-		expectFatal       bool
-		expectPods        []*apiv1.Pod
-		expectBlockingPod *BlockingPod
+		description         string
+		pods                []*apiv1.Pod
+		pdbs                []*policyv1.PodDisruptionBudget
+		rcs                 []*apiv1.ReplicationController
+		replicaSets         []*appsv1.ReplicaSet
+		expectFatal         bool
+		expectPods          []*apiv1.Pod
+		expectDaemonSetPods []*apiv1.Pod
+		expectBlockingPod   *BlockingPod
 	}{
 		{
-			description: "RC-managed pod",
-			pods:        []*apiv1.Pod{rcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{rcPod},
+			description:         "RC-managed pod",
+			pods:                []*apiv1.Pod{rcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{rcPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "DS-managed pod",
-			pods:        []*apiv1.Pod{dsPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{},
+			description:         "DS-managed pod",
+			pods:                []*apiv1.Pod{dsPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{},
+			expectDaemonSetPods: []*apiv1.Pod{dsPod},
 		},
 		{
-			description: "DS-managed pod by a custom Daemonset",
-			pods:        []*apiv1.Pod{cdsPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{},
+			description:         "DS-managed pod by a custom Daemonset",
+			pods:                []*apiv1.Pod{cdsPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{},
+			expectDaemonSetPods: []*apiv1.Pod{cdsPod},
 		},
 		{
-			description: "Job-managed pod",
-			pods:        []*apiv1.Pod{jobPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{jobPod},
+			description:         "Job-managed pod",
+			pods:                []*apiv1.Pod{jobPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{jobPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "SS-managed pod",
-			pods:        []*apiv1.Pod{ssPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{ssPod},
+			description:         "SS-managed pod",
+			pods:                []*apiv1.Pod{ssPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{ssPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "RS-managed pod",
-			pods:        []*apiv1.Pod{rsPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			replicaSets: []*appsv1.ReplicaSet{&rs},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{rsPod},
+			description:         "RS-managed pod",
+			pods:                []*apiv1.Pod{rsPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			replicaSets:         []*appsv1.ReplicaSet{&rs},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{rsPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "RS-managed pod that is being deleted",
-			pods:        []*apiv1.Pod{rsPodDeleted},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			replicaSets: []*appsv1.ReplicaSet{&rs},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{},
+			description:         "RS-managed pod that is being deleted",
+			pods:                []*apiv1.Pod{rsPodDeleted},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			replicaSets:         []*appsv1.ReplicaSet{&rs},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "naked pod",
-			pods:              []*apiv1.Pod{nakedPod},
-			pdbs:              []*policyv1.PodDisruptionBudget{},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: nakedPod, Reason: NotReplicated},
+			description:         "naked pod",
+			pods:                []*apiv1.Pod{nakedPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: nakedPod, Reason: NotReplicated},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "pod with EmptyDir",
-			pods:              []*apiv1.Pod{emptydirPod},
-			pdbs:              []*policyv1.PodDisruptionBudget{},
-			rcs:               []*apiv1.ReplicationController{&rc},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: emptydirPod, Reason: LocalStorageRequested},
+			description:         "pod with EmptyDir",
+			pods:                []*apiv1.Pod{emptydirPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: emptydirPod, Reason: LocalStorageRequested},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "failed pod",
-			pods:        []*apiv1.Pod{failedPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{failedPod},
+			description:         "failed pod",
+			pods:                []*apiv1.Pod{failedPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{failedPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "evicted pod",
-			pods:        []*apiv1.Pod{evictedPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{evictedPod},
+			description:         "long terminating pod with 0 grace period",
+			pods:                []*apiv1.Pod{longTerminatingPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "pod in terminal state",
-			pods:        []*apiv1.Pod{terminalPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{terminalPod},
+			description:         "long terminating pod with extended grace period",
+			pods:                []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "pod with PodSafeToEvict annotation",
-			pods:        []*apiv1.Pod{safePod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{safePod},
+			description:         "evicted pod",
+			pods:                []*apiv1.Pod{evictedPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{evictedPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "kube-system pod with PodSafeToEvict annotation",
-			pods:        []*apiv1.Pod{kubeSystemSafePod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{kubeSystemSafePod},
+			description:         "pod in terminal state",
+			pods:                []*apiv1.Pod{terminalPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{terminalPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "pod with EmptyDir and PodSafeToEvict annotation",
-			pods:        []*apiv1.Pod{emptydirSafePod},
-			pdbs:        []*policyv1.PodDisruptionBudget{},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{emptydirSafePod},
+			description:         "pod with PodSafeToEvict annotation",
+			pods:                []*apiv1.Pod{safePod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{safePod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "RC-managed pod with PodSafeToEvict=false annotation",
-			pods:              []*apiv1.Pod{unsafeRcPod},
-			rcs:               []*apiv1.ReplicationController{&rc},
-			pdbs:              []*policyv1.PodDisruptionBudget{},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: unsafeRcPod, Reason: NotSafeToEvictAnnotation},
+			description:         "kube-system pod with PodSafeToEvict annotation",
+			pods:                []*apiv1.Pod{kubeSystemSafePod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{kubeSystemSafePod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "Job-managed pod with PodSafeToEvict=false annotation",
-			pods:              []*apiv1.Pod{unsafeJobPod},
-			pdbs:              []*policyv1.PodDisruptionBudget{},
-			rcs:               []*apiv1.ReplicationController{&rc},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: unsafeJobPod, Reason: NotSafeToEvictAnnotation},
+			description:         "pod with EmptyDir and PodSafeToEvict annotation",
+			pods:                []*apiv1.Pod{emptydirSafePod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{emptydirSafePod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "empty PDB with RC-managed pod",
-			pods:        []*apiv1.Pod{rcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{emptyPDB},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{rcPod},
+			description:         "RC-managed pod with PodSafeToEvict=false annotation",
+			pods:                []*apiv1.Pod{unsafeRcPod},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: unsafeRcPod, Reason: NotSafeToEvictAnnotation},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "kube-system PDB with matching kube-system pod",
-			pods:        []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemPDB},
-			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{kubeSystemRcPod},
+			description:         "Job-managed pod with PodSafeToEvict=false annotation",
+			pods:                []*apiv1.Pod{unsafeJobPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: unsafeJobPod, Reason: NotSafeToEvictAnnotation},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "kube-system PDB with non-matching kube-system pod",
-			pods:              []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:              []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
-			rcs:               []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
+			description:         "empty PDB with RC-managed pod",
+			pods:                []*apiv1.Pod{rcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{emptyPDB},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{rcPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description: "kube-system PDB with default namespace pod",
-			pods:        []*apiv1.Pod{rcPod},
-			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemPDB},
-			rcs:         []*apiv1.ReplicationController{&rc},
-			expectFatal: false,
-			expectPods:  []*apiv1.Pod{rcPod},
+			description:         "kube-system PDB with matching kube-system pod",
+			pods:                []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemPDB},
+			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{kubeSystemRcPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
-			description:       "default namespace PDB with matching labels kube-system pod",
-			pods:              []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:              []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
-			rcs:               []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal:       true,
-			expectPods:        []*apiv1.Pod{},
-			expectBlockingPod: &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
+			description:         "kube-system PDB with non-matching kube-system pod",
+			pods:                []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
+			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "kube-system PDB with default namespace pod",
+			pods:                []*apiv1.Pod{rcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemPDB},
+			rcs:                 []*apiv1.ReplicationController{&rc},
+			expectFatal:         false,
+			expectPods:          []*apiv1.Pod{rcPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
+		},
+		{
+			description:         "default namespace PDB with matching labels kube-system pod",
+			pods:                []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:                []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
+			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
+			expectFatal:         true,
+			expectPods:          []*apiv1.Pod{},
+			expectBlockingPod:   &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
+			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 	}
 
@@ -569,7 +646,7 @@ func TestDrain(t *testing.T) {
 
 		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
+		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, testTime)
 
 		if test.expectFatal {
 			assert.Equal(t, test.expectBlockingPod, blockingPod)
@@ -588,5 +665,112 @@ func TestDrain(t *testing.T) {
 		if len(pods) != len(test.expectPods) {
 			t.Fatalf("Wrong pod list content: %v", test.description)
 		}
+
+		assert.ElementsMatch(t, test.expectDaemonSetPods, daemonSetPods)
+	}
+}
+
+func TestIsPodLongTerminating(t *testing.T) {
+	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
+	twoMinGracePeriod := int64(2 * 60)
+	zeroGracePeriod := int64(0)
+
+	tests := []struct {
+		name string
+		pod  apiv1.Pod
+		want bool
+	}{
+		{
+			name: "No deletion timestamp",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: nil,
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Just deleted no grace period defined",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime}, // default Grace Period is 30s so this pod can still be terminating
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold with no grace period",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-3 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: nil,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Just deleted with grace period defined to 0",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold with grace period defined to 0",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Deleted for longer than PodLongTerminatingExtraThreshold but not longer than grace period (2 min)",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * PodLongTerminatingExtraThreshold)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &twoMinGracePeriod,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Deleted for longer than grace period (2 min) and PodLongTerminatingExtraThreshold",
+			pod: apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2*PodLongTerminatingExtraThreshold - time.Duration(twoMinGracePeriod)*time.Second)},
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &twoMinGracePeriod,
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := IsPodLongTerminating(&tc.pod, testTime); got != tc.want {
+				t.Errorf("IsPodLongTerminating() = %v, want %v", got, tc.want)
+			}
+		})
 	}
 }

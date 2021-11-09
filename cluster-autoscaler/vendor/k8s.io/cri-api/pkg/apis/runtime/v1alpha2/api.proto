@@ -102,6 +102,12 @@ service RuntimeService {
     // ListContainerStats returns stats of all running containers.
     rpc ListContainerStats(ListContainerStatsRequest) returns (ListContainerStatsResponse) {}
 
+    // PodSandboxStats returns stats of the pod sandbox. If the pod sandbox does not
+    // exist, the call returns an error.
+    rpc PodSandboxStats(PodSandboxStatsRequest) returns (PodSandboxStatsResponse) {}
+    // ListPodSandboxStats returns stats of the pod sandboxes matching a filter.
+    rpc ListPodSandboxStats(ListPodSandboxStatsRequest) returns (ListPodSandboxStatsResponse) {}
+
     // UpdateRuntimeConfig updates the runtime configuration based on the given request.
     rpc UpdateRuntimeConfig(UpdateRuntimeConfigRequest) returns (UpdateRuntimeConfigResponse) {}
 
@@ -279,13 +285,37 @@ message LinuxSandboxSecurityContext {
     // This allows a sandbox to take additional security precautions if no
     // privileged containers are expected to be run.
     bool privileged = 6;
+    // Seccomp profile for the sandbox.
+    SecurityProfile seccomp = 9;
+    // AppArmor profile for the sandbox.
+    SecurityProfile apparmor = 10;
     // Seccomp profile for the sandbox, candidate values are:
     // * runtime/default: the default profile for the container runtime
     // * unconfined: unconfined profile, ie, no seccomp sandboxing
     // * localhost/<full-path-to-profile>: the profile installed on the node.
     //   <full-path-to-profile> is the full path of the profile.
     // Default: "", which is identical with unconfined.
-    string seccomp_profile_path = 7;
+    string seccomp_profile_path = 7 [deprecated=true];
+}
+
+// A security profile which can be used for sandboxes and containers.
+message SecurityProfile {
+    // Available profile types.
+    enum ProfileType {
+        // The container runtime default profile should be used.
+        RuntimeDefault = 0;
+        // Disable the feature for the sandbox or the container.
+        Unconfined = 1;
+        // A pre-defined profile on the node should be used.
+        Localhost = 2;
+    }
+    // Indicator which `ProfileType` should be applied.
+    ProfileType profile_type = 1;
+    // Indicates that a pre-defined profile on the node should be used.
+    // Must only be set if `ProfileType` is `Localhost`.
+    // For seccomp, it must be an absolute path to the seccomp profile.
+    // For AppArmor, this field is the AppArmor `<profile name>/`
+    string localhost_ref = 2;
 }
 
 // LinuxPodSandboxConfig holds platform-specific configurations for Linux
@@ -368,6 +398,8 @@ message PodSandboxConfig {
     map<string, string> annotations = 7;
     // Optional configurations specific to Linux hosts.
     LinuxPodSandboxConfig linux = 8;
+    // Optional configurations specific to Windows hosts.
+    WindowsPodSandboxConfig windows = 9;
 }
 
 message RunPodSandboxRequest {
@@ -377,7 +409,7 @@ message RunPodSandboxRequest {
     // If the runtime handler is unknown, this request should be rejected.  An
     // empty string should select the default handler, equivalent to the
     // behavior before this feature was added.
-    // See https://git.k8s.io/enhancements/keps/sig-node/runtime-class.md
+    // See https://git.k8s.io/enhancements/keps/sig-node/585-runtime-class
     string runtime_handler = 2;
 }
 
@@ -523,6 +555,113 @@ message ListPodSandboxResponse {
     repeated PodSandbox items = 1;
 }
 
+message PodSandboxStatsRequest {
+    // ID of the pod sandbox for which to retrieve stats.
+    string pod_sandbox_id = 1;
+}
+
+message PodSandboxStatsResponse {
+    PodSandboxStats stats = 1;
+}
+
+// PodSandboxStatsFilter is used to filter pod sandboxes.
+// All those fields are combined with 'AND'.
+message PodSandboxStatsFilter {
+    // ID of the pod sandbox.
+    string id = 1;
+    // LabelSelector to select matches.
+    // Only api.MatchLabels is supported for now and the requirements
+    // are ANDed. MatchExpressions is not supported yet.
+    map<string, string> label_selector = 2;
+}
+
+message ListPodSandboxStatsRequest {
+    // Filter for the list request.
+    PodSandboxStatsFilter filter = 1;
+}
+
+message ListPodSandboxStatsResponse {
+    // Stats of the pod sandbox.
+    repeated PodSandboxStats stats = 1;
+}
+
+// PodSandboxAttributes provides basic information of the pod sandbox.
+message PodSandboxAttributes {
+    // ID of the pod sandbox.
+    string id = 1;
+    // Metadata of the pod sandbox.
+    PodSandboxMetadata metadata = 2;
+    // Key-value pairs that may be used to scope and select individual resources.
+    map<string,string> labels = 3;
+    // Unstructured key-value map holding arbitrary metadata.
+    // Annotations MUST NOT be altered by the runtime; the value of this field
+    // MUST be identical to that of the corresponding PodSandboxStatus used to
+    // instantiate the PodSandbox this status represents.
+    map<string,string> annotations = 4;
+}
+
+// PodSandboxStats provides the resource usage statistics for a pod.
+// The linux or windows field will be populated depending on the platform.
+message PodSandboxStats {
+    // Information of the pod.
+    PodSandboxAttributes attributes = 1;
+    // Stats from linux.
+    LinuxPodSandboxStats linux = 2;
+    // Stats from windows.
+    WindowsPodSandboxStats windows = 3;
+}
+
+// LinuxPodSandboxStats provides the resource usage statistics for a pod sandbox on linux.
+message LinuxPodSandboxStats {
+    // CPU usage gathered for the pod sandbox.
+    CpuUsage cpu = 1;
+    // Memory usage gathered for the pod sandbox.
+    MemoryUsage memory = 2;
+    // Network usage gathered for the pod sandbox
+    NetworkUsage network = 3;
+    // Stats pertaining to processes in the pod sandbox.
+    ProcessUsage process = 4;
+    // Stats of containers in the measured pod sandbox.
+    repeated ContainerStats containers = 5;
+}
+
+// WindowsPodSandboxStats provides the resource usage statistics for a pod sandbox on windows
+message WindowsPodSandboxStats {
+    // TODO: Add stats relevant to windows.
+}
+
+// NetworkUsage contains data about network resources.
+message NetworkUsage {
+    // The time at which these stats were updated.
+    int64 timestamp = 1;
+    // Stats for the default network interface.
+    NetworkInterfaceUsage default_interface = 2;
+    // Stats for all found network interfaces, excluding the default.
+    repeated NetworkInterfaceUsage interfaces = 3;
+}
+
+// NetworkInterfaceUsage contains resource value data about a network interface.
+message NetworkInterfaceUsage {
+    // The name of the network interface.
+    string name = 1;
+    // Cumulative count of bytes received.
+    UInt64Value rx_bytes = 2;
+    // Cumulative count of receive errors encountered.
+    UInt64Value rx_errors = 3;
+    // Cumulative count of bytes transmitted.
+    UInt64Value tx_bytes = 4;
+    // Cumulative count of transmit errors encountered.
+    UInt64Value tx_errors = 5;
+}
+
+// ProcessUsage are stats pertaining to processes.
+message ProcessUsage {
+    // The time at which these stats were updated.
+    int64 timestamp = 1;
+	// Number of processes.
+    UInt64Value process_count = 2;
+}
+
 // ImageSpec is an internal representation of an image.
 message ImageSpec {
     // Container's Image field (e.g. imageID or imageDigest).
@@ -559,6 +698,12 @@ message LinuxContainerResources {
     string cpuset_mems = 7;
     // List of HugepageLimits to limit the HugeTLB usage of container per page size. Default: nil (not specified).
     repeated HugepageLimit hugepage_limits = 8;
+    // Unified resources for cgroup v2. Default: nil (not specified).
+    // Each key/value in the map refers to the cgroup v2.
+    // e.g. "memory.max": "6937202688" or "io.weight": "default 100".
+    map<string, string> unified = 9;
+    // Memory swap limit in bytes. Default 0 (not specified).
+    int64 memory_swap_limit_in_bytes = 10;
 }
 
 // HugepageLimit corresponds to the file`hugetlb.<hugepagesize>.limit_in_byte` in container level cgroup.
@@ -604,7 +749,7 @@ message LinuxContainerSecurityContext {
     // 1. All capabilities are added.
     // 2. Sensitive paths, such as kernel module paths within sysfs, are not masked.
     // 3. Any sysfs and procfs mounts are mounted RW.
-    // 4. Apparmor confinement is not applied.
+    // 4. AppArmor confinement is not applied.
     // 5. Seccomp restrictions are not applied.
     // 6. The device cgroup does not restrict access to any devices.
     // 7. All devices from the host's /dev are available within the container.
@@ -631,20 +776,6 @@ message LinuxContainerSecurityContext {
     // List of groups applied to the first process run in the container, in
     // addition to the container's primary GID.
     repeated int64 supplemental_groups = 8;
-    // AppArmor profile for the container, candidate values are:
-    // * runtime/default: equivalent to not specifying a profile.
-    // * unconfined: no profiles are loaded
-    // * localhost/<profile_name>: profile loaded on the node
-    //    (localhost) by name. The possible profile names are detailed at
-    //    http://wiki.apparmor.net/index.php/AppArmor_Core_Policy_Reference
-    string apparmor_profile = 9;
-    // Seccomp profile for the container, candidate values are:
-    // * runtime/default: the default profile for the container runtime
-    // * unconfined: unconfined profile, ie, no seccomp sandboxing
-    // * localhost/<full-path-to-profile>: the profile installed on the node.
-    //   <full-path-to-profile> is the full path of the profile.
-    // Default: "", which is identical with unconfined.
-    string seccomp_profile_path = 10;
     // no_new_privs defines if the flag for no_new_privs should be set on the
     // container.
     bool no_new_privs = 11;
@@ -654,6 +785,24 @@ message LinuxContainerSecurityContext {
     // readonly_paths is a slice of paths that should be set as readonly by the
     // container runtime, this can be passed directly to the OCI spec.
     repeated string readonly_paths = 14;
+    // Seccomp profile for the container.
+    SecurityProfile seccomp = 15;
+    // AppArmor profile for the container.
+    SecurityProfile apparmor = 16;
+    // AppArmor profile for the container, candidate values are:
+    // * runtime/default: equivalent to not specifying a profile.
+    // * unconfined: no profiles are loaded
+    // * localhost/<profile_name>: profile loaded on the node
+    //    (localhost) by name. The possible profile names are detailed at
+    //    https://gitlab.com/apparmor/apparmor/-/wikis/AppArmor_Core_Policy_Reference
+    string apparmor_profile = 9 [deprecated=true];
+    // Seccomp profile for the container, candidate values are:
+    // * runtime/default: the default profile for the container runtime
+    // * unconfined: unconfined profile, ie, no seccomp sandboxing
+    // * localhost/<full-path-to-profile>: the profile installed on the node.
+    //   <full-path-to-profile> is the full path of the profile.
+    // Default: "", which is identical with unconfined.
+    string seccomp_profile_path = 10 [deprecated=true];
 }
 
 // LinuxContainerConfig contains platform-specific configuration for
@@ -665,6 +814,29 @@ message LinuxContainerConfig {
     LinuxContainerSecurityContext security_context = 2;
 }
 
+// WindowsSandboxSecurityContext holds platform-specific configurations that will be 
+// applied to a sandbox.
+// These settings will only apply to the sandbox container.
+message WindowsSandboxSecurityContext {
+    // User name to run the container process as. If specified, the user MUST
+    // exist in the container image and be resolved there by the runtime;
+    // otherwise, the runtime MUST return error.
+    string run_as_username = 1;
+
+    // The contents of the GMSA credential spec to use to run this container.
+    string credential_spec = 2;
+
+    // Indicates whether the container be asked to run as a HostProcess container.
+    bool host_process = 3;
+}
+
+// WindowsPodSandboxConfig holds platform-specific configurations for Windows
+// host platforms and Windows-based containers.
+message WindowsPodSandboxConfig {
+    // WindowsSandboxSecurityContext holds sandbox security attributes.
+    WindowsSandboxSecurityContext security_context = 1;
+}
+
 // WindowsContainerSecurityContext holds windows security configuration that will be applied to a container.
 message WindowsContainerSecurityContext {
     // User name to run the container process as. If specified, the user MUST
@@ -674,6 +846,9 @@ message WindowsContainerSecurityContext {
 
     // The contents of the GMSA credential spec to use to run this container.
     string credential_spec = 2;
+
+    // Indicates whether a container is to be run as a HostProcess container.
+    bool host_process = 3;
 }
 
 // WindowsContainerConfig contains platform-specific configuration for
@@ -956,6 +1131,12 @@ message UpdateContainerResourcesRequest {
     string container_id = 1;
     // Resource configuration specific to Linux containers.
     LinuxContainerResources linux = 2;
+    // Resource configuration specific to Windows containers. 
+    WindowsContainerResources windows = 3;
+    // Unstructured key-value map holding arbitrary additional information for 
+    // container resources updating. This can be used for specifying experimental 
+    // resources to update or other options to use when updating the container.
+    map<string, string> annotations = 4;
 }
 
 message UpdateContainerResourcesResponse {}
@@ -1291,6 +1472,9 @@ message CpuUsage {
     int64 timestamp = 1;
     // Cumulative CPU usage (sum across all cores) since object creation.
     UInt64Value usage_core_nano_seconds = 2;
+    // Total CPU usage (sum of all cores) averaged over the sample window.
+    // The "core" unit can be interpreted as CPU core-nanoseconds per second.
+    UInt64Value usage_nano_cores = 3;
 }
 
 // MemoryUsage provides the memory usage information.
@@ -1299,6 +1483,16 @@ message MemoryUsage {
     int64 timestamp = 1;
     // The amount of working set memory in bytes.
     UInt64Value working_set_bytes = 2;
+    // Available memory for use.  This is defined as the memory limit = workingSetBytes.
+    UInt64Value available_bytes = 3;
+    // Total memory in use. This includes all memory regardless of when it was accessed.
+    UInt64Value usage_bytes = 4;
+    // The amount of anonymous and swap cache memory (includes transparent hugepages).
+    UInt64Value rss_bytes = 5;
+    // Cumulative number of minor page faults.
+    UInt64Value page_faults = 6;
+    // Cumulative number of major page faults.
+    UInt64Value major_page_faults = 7;
 }
 
 message ReopenContainerLogRequest {

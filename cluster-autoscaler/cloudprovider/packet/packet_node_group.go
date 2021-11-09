@@ -23,8 +23,9 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // packetNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
@@ -292,4 +293,10 @@ func (ng *packetNodeGroup) MinSize() int {
 // TargetSize returns the target size of the node group.
 func (ng *packetNodeGroup) TargetSize() (int, error) {
 	return *ng.targetSize, nil
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (ng *packetNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }

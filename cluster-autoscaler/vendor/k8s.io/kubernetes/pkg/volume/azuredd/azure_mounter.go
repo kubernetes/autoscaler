@@ -24,7 +24,7 @@ import (
 	"runtime"
 
 	"k8s.io/klog/v2"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/volume"
@@ -102,7 +102,6 @@ func (m *azureDiskMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) e
 			klog.Errorf("azureDisk - Unmount directory %s failed with %v", dir, err)
 			return err
 		}
-		mountPoint = true
 	}
 
 	if runtime.GOOS != "windows" {
@@ -131,7 +130,7 @@ func (m *azureDiskMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) e
 		return err
 	}
 
-	mountErr := mounter.Mount(globalPDPath, dir, *volumeSource.FSType, options)
+	mountErr := mounter.MountSensitiveWithoutSystemd(globalPDPath, dir, *volumeSource.FSType, options, nil)
 	// Everything in the following control flow is meant as an
 	// attempt cleanup a failed setupAt (bind mount)
 	if mountErr != nil {
@@ -164,7 +163,7 @@ func (m *azureDiskMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) e
 	}
 
 	if volumeSource.ReadOnly == nil || !*volumeSource.ReadOnly {
-		volume.SetVolumeOwnership(m, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy)
+		volume.SetVolumeOwnership(m, mounterArgs.FsGroup, mounterArgs.FSGroupChangePolicy, util.FSGroupCompleteHook(m.plugin, m.spec))
 	}
 
 	klog.V(2).Infof("azureDisk - successfully mounted disk %s on %s", diskName, dir)
@@ -177,7 +176,7 @@ func (u *azureDiskUnmounter) TearDown() error {
 
 func (u *azureDiskUnmounter) TearDownAt(dir string) error {
 	if pathExists, pathErr := mount.PathExists(dir); pathErr != nil {
-		return fmt.Errorf("Error checking if path exists: %v", pathErr)
+		return fmt.Errorf("error checking if path exists: %w", pathErr)
 	} else if !pathExists {
 		klog.Warningf("Warning: Unmount skipped because path does not exist: %v", dir)
 		return nil

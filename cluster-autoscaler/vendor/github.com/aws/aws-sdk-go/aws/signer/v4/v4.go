@@ -340,7 +340,7 @@ func (v4 Signer) signWithBody(r *http.Request, body io.ReadSeeker, service, regi
 	}
 
 	var err error
-	ctx.credValues, err = v4.Credentials.Get()
+	ctx.credValues, err = v4.Credentials.GetWithContext(requestContext(r))
 	if err != nil {
 		return http.Header{}, err
 	}
@@ -689,9 +689,12 @@ func (ctx *signingCtx) buildBodyDigest() error {
 	if hash == "" {
 		includeSHA256Header := ctx.unsignedPayload ||
 			ctx.ServiceName == "s3" ||
+			ctx.ServiceName == "s3-object-lambda" ||
 			ctx.ServiceName == "glacier"
 
-		s3Presign := ctx.isPresign && ctx.ServiceName == "s3"
+		s3Presign := ctx.isPresign &&
+			(ctx.ServiceName == "s3" ||
+				ctx.ServiceName == "s3-object-lambda")
 
 		if ctx.unsignedPayload || s3Presign {
 			hash = "UNSIGNED-PAYLOAD"

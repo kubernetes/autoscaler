@@ -22,23 +22,25 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
-	pluginhelper "k8s.io/kubernetes/pkg/scheduler/framework/plugins/helper"
-	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	v1helper "k8s.io/component-helpers/scheduling/corev1"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/helper"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/names"
 )
 
 // TaintToleration is a plugin that checks if a pod tolerates a node's taints.
 type TaintToleration struct {
-	handle framework.FrameworkHandle
+	handle framework.Handle
 }
 
 var _ framework.FilterPlugin = &TaintToleration{}
 var _ framework.PreScorePlugin = &TaintToleration{}
 var _ framework.ScorePlugin = &TaintToleration{}
+var _ framework.EnqueueExtensions = &TaintToleration{}
 
 const (
 	// Name is the name of the plugin used in the plugin registry and configurations.
-	Name = "TaintToleration"
+	Name = names.TaintToleration
 	// preScoreStateKey is the key in CycleState to TaintToleration pre-computed data for Scoring.
 	preScoreStateKey = "PreScore" + Name
 	// ErrReasonNotMatch is the Filter reason status when not matching.
@@ -50,10 +52,18 @@ func (pl *TaintToleration) Name() string {
 	return Name
 }
 
+// EventsToRegister returns the possible events that may make a Pod
+// failed by this plugin schedulable.
+func (f *TaintToleration) EventsToRegister() []framework.ClusterEvent {
+	return []framework.ClusterEvent{
+		{Resource: framework.Node, ActionType: framework.Add | framework.UpdateNodeTaint},
+	}
+}
+
 // Filter invoked at the filter extension point.
 func (pl *TaintToleration) Filter(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
 	if nodeInfo == nil || nodeInfo.Node() == nil {
-		return framework.NewStatus(framework.Error, "invalid nodeInfo")
+		return framework.AsStatus(fmt.Errorf("invalid nodeInfo"))
 	}
 
 	filterPredicate := func(t *v1.Taint) bool {
@@ -109,7 +119,7 @@ func (pl *TaintToleration) PreScore(ctx context.Context, cycleState *framework.C
 func getPreScoreState(cycleState *framework.CycleState) (*preScoreState, error) {
 	c, err := cycleState.Read(preScoreStateKey)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading %q from cycleState: %v", preScoreStateKey, err)
+		return nil, fmt.Errorf("failed to read %q from cycleState: %v", preScoreStateKey, err)
 	}
 
 	s, ok := c.(*preScoreState)
@@ -137,14 +147,14 @@ func countIntolerableTaintsPreferNoSchedule(taints []v1.Taint, tolerations []v1.
 // Score invoked at the Score extension point.
 func (pl *TaintToleration) Score(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
 	nodeInfo, err := pl.handle.SnapshotSharedLister().NodeInfos().Get(nodeName)
-	if err != nil || nodeInfo.Node() == nil {
-		return 0, framework.NewStatus(framework.Error, fmt.Sprintf("getting node %q from Snapshot: %v", nodeName, err))
+	if err != nil {
+		return 0, framework.AsStatus(fmt.Errorf("getting node %q from Snapshot: %w", nodeName, err))
 	}
 	node := nodeInfo.Node()
 
 	s, err := getPreScoreState(state)
 	if err != nil {
-		return 0, framework.NewStatus(framework.Error, err.Error())
+		return 0, framework.AsStatus(err)
 	}
 
 	score := int64(countIntolerableTaintsPreferNoSchedule(node.Spec.Taints, s.tolerationsPreferNoSchedule))
@@ -153,7 +163,7 @@ func (pl *TaintToleration) Score(ctx context.Context, state *framework.CycleStat
 
 // NormalizeScore invoked after scoring all nodes.
 func (pl *TaintToleration) NormalizeScore(ctx context.Context, _ *framework.CycleState, pod *v1.Pod, scores framework.NodeScoreList) *framework.Status {
-	return pluginhelper.DefaultNormalizeScore(framework.MaxNodeScore, true, scores)
+	return helper.DefaultNormalizeScore(framework.MaxNodeScore, true, scores)
 }
 
 // ScoreExtensions of the Score plugin.
@@ -162,6 +172,6 @@ func (pl *TaintToleration) ScoreExtensions() framework.ScoreExtensions {
 }
 
 // New initializes a new plugin and returns it.
-func New(_ runtime.Object, h framework.FrameworkHandle) (framework.Plugin, error) {
+func New(_ runtime.Object, h framework.Handle) (framework.Plugin, error) {
 	return &TaintToleration{handle: h}, nil
 }

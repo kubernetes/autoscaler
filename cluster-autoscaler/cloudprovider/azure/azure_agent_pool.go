@@ -32,23 +32,16 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
-	"k8s.io/legacy-cloud-providers/azure/retry"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
-	vmInstancesRefreshPeriod          = 5 * time.Minute
 	clusterAutoscalerDeploymentPrefix = `cluster-autoscaler-`
 	defaultMaxDeploymentsCount        = 10
 )
-
-var virtualMachinesStatusCache struct {
-	lastRefresh     map[string]time.Time
-	mutex           sync.Mutex
-	virtualMachines map[string][]compute.VirtualMachine
-}
 
 // AgentPool implements NodeGroup interface for agent pools deployed by aks-engine.
 type AgentPool struct {
@@ -127,59 +120,35 @@ func (as *AgentPool) Autoprovisioned() bool {
 	return false
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (as *AgentPool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // MaxSize returns maximum size of the node group.
 func (as *AgentPool) MaxSize() int {
 	return as.maxSize
 }
 
-func (as *AgentPool) getVirtualMachinesFromCache() ([]compute.VirtualMachine, error) {
-	virtualMachinesStatusCache.mutex.Lock()
-	defer virtualMachinesStatusCache.mutex.Unlock()
-	klog.V(4).Infof("getVirtualMachinesFromCache: starts for %+v", as)
-
-	if virtualMachinesStatusCache.virtualMachines == nil {
-		klog.V(4).Infof("getVirtualMachinesFromCache: initialize vm cache")
-		virtualMachinesStatusCache.virtualMachines = make(map[string][]compute.VirtualMachine)
-	}
-	if virtualMachinesStatusCache.lastRefresh == nil {
-		klog.V(4).Infof("getVirtualMachinesFromCache: initialize last refresh time cache")
-		virtualMachinesStatusCache.lastRefresh = make(map[string]time.Time)
-	}
-
-	if virtualMachinesStatusCache.lastRefresh[as.Id()].Add(vmInstancesRefreshPeriod).After(time.Now()) {
-		klog.V(4).Infof("getVirtualMachinesFromCache: get vms from cache")
-		return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
-	}
-	klog.V(4).Infof("getVirtualMachinesFromCache: get vms from API")
-	vms, rerr := as.GetVirtualMachines()
-	klog.V(4).Infof("getVirtualMachinesFromCache: got vms from API, len = %d", len(vms))
-
-	if rerr != nil {
-		if isAzureRequestsThrottled(rerr) {
-			klog.Warningf("getAllVirtualMachines: throttling with message %v, would return the cached vms", rerr)
-			return virtualMachinesStatusCache.virtualMachines[as.Id()], nil
-		}
-
-		return []compute.VirtualMachine{}, rerr.Error()
-	}
-
-	virtualMachinesStatusCache.virtualMachines[as.Id()] = vms
-	virtualMachinesStatusCache.lastRefresh[as.Id()] = time.Now()
-
-	return vms, nil
+// Id returns AgentPool id.
+func (as *AgentPool) Id() string {
+	return as.Name
 }
 
-func invalidateVMCache(agentpoolName string) {
-	virtualMachinesStatusCache.mutex.Lock()
-	virtualMachinesStatusCache.lastRefresh[agentpoolName] = time.Now().Add(-1 * vmInstancesRefreshPeriod)
-	virtualMachinesStatusCache.mutex.Unlock()
+func (as *AgentPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
+	allVMs := as.manager.azureCache.getVirtualMachines()
+	if _, exists := allVMs[as.Name]; !exists {
+		return []compute.VirtualMachine{}, fmt.Errorf("could not find VMs with poolName: %s", as.Name)
+	}
+	return allVMs[as.Name], nil
 }
 
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
 func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 	klog.V(6).Infof("GetVMIndexes: starts for as %v", as)
 
-	instances, err := as.getVirtualMachinesFromCache()
+	instances, err := as.getVMsFromCache()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -222,8 +191,8 @@ func (as *AgentPool) getCurSize() (int64, error) {
 	klog.V(5).Infof("Returning agent pool (%q) size: %d\n", as.Name, len(indexes))
 
 	if as.curSize != int64(len(indexes)) {
-		klog.V(6).Infof("getCurSize:as.curSize(%d) != real size (%d), invalidating vm cache", as.curSize, len(indexes))
-		invalidateVMCache(as.Id())
+		klog.V(6).Infof("getCurSize:as.curSize(%d) != real size (%d), invalidating cache", as.curSize, len(indexes))
+		as.manager.invalidateCache()
 	}
 
 	as.curSize = int64(len(indexes))
@@ -316,8 +285,8 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 		klog.Warningf("IncreaseSize: failed to cleanup outdated deployments with err: %v.", err)
 	}
 
-	klog.V(6).Infof("IncreaseSize: invalidating vm cache")
-	invalidateVMCache(as.Id())
+	klog.V(6).Infof("IncreaseSize: invalidating cache")
+	as.manager.invalidateCache()
 
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
@@ -357,41 +326,13 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 		// Update cache after scale success.
 		as.curSize = int64(expectedSize)
 		as.lastRefresh = time.Now()
-		klog.V(6).Info("IncreaseSize: invalidating vm cache")
-		invalidateVMCache(as.Id())
+		klog.V(6).Info("IncreaseSize: invalidating cache")
+		as.manager.invalidateCache()
 		return nil
 	}
 
 	klog.Errorf("deploymentsClient.CreateOrUpdate for deployment %q failed: %v", newDeploymentName, realError)
 	return realError
-}
-
-// GetVirtualMachines returns list of nodes for the given agent pool.
-func (as *AgentPool) GetVirtualMachines() ([]compute.VirtualMachine, *retry.Error) {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
-	result, rerr := as.manager.azClient.virtualMachinesClient.List(ctx, as.manager.config.ResourceGroup)
-	if rerr != nil {
-		return nil, rerr
-	}
-
-	instances := make([]compute.VirtualMachine, 0)
-	for _, instance := range result {
-		if instance.Tags == nil {
-			continue
-		}
-
-		tags := instance.Tags
-		vmPoolName := tags["poolName"]
-		if vmPoolName == nil || !strings.EqualFold(*vmPoolName, as.Id()) {
-			continue
-		}
-
-		instances = append(instances, instance)
-	}
-
-	return instances, nil
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
@@ -403,7 +344,7 @@ func (as *AgentPool) DecreaseTargetSize(delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
-	nodes, err := as.getVirtualMachinesFromCache()
+	nodes, err := as.getVMsFromCache()
 	if err != nil {
 		return err
 	}
@@ -427,14 +368,14 @@ func (as *AgentPool) Belongs(node *apiv1.Node) (bool, error) {
 		Name: node.Spec.ProviderID,
 	}
 
-	targetAsg, err := as.manager.GetAsgForInstance(ref)
+	targetAsg, err := as.manager.GetNodeGroupForInstance(ref)
 	if err != nil {
 		return false, err
 	}
 	if targetAsg == nil {
 		return false, fmt.Errorf("%s doesn't belong to a known agent pool", node.Name)
 	}
-	if !strings.EqualFold(targetAsg.Id(), as.Id()) {
+	if !strings.EqualFold(targetAsg.Id(), as.Name) {
 		return false, nil
 	}
 	return true, nil
@@ -446,13 +387,13 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 		return nil
 	}
 
-	commonAsg, err := as.manager.GetAsgForInstance(instances[0])
+	commonAsg, err := as.manager.GetNodeGroupForInstance(instances[0])
 	if err != nil {
 		return err
 	}
 
 	for _, instance := range instances {
-		asg, err := as.manager.GetAsgForInstance(instance)
+		asg, err := as.manager.GetNodeGroupForInstance(instance)
 		if err != nil {
 			return err
 		}
@@ -476,8 +417,8 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 		}
 	}
 
-	klog.V(6).Infof("DeleteInstances: invalidating vm cache")
-	invalidateVMCache(as.Id())
+	klog.V(6).Infof("DeleteInstances: invalidating cache")
+	as.manager.invalidateCache()
 	return nil
 }
 
@@ -501,7 +442,7 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 
 		if belongs != true {
-			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Id())
+			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
 		}
 
 		ref := &azureRef{
@@ -518,14 +459,9 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return as.DeleteInstances(refs)
 }
 
-// Id returns AgentPool id.
-func (as *AgentPool) Id() string {
-	return as.Name
-}
-
 // Debug returns a debug string for the agent pool.
 func (as *AgentPool) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", as.Id(), as.MinSize(), as.MaxSize())
+	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(), as.MaxSize())
 }
 
 // TemplateNodeInfo returns a node template for this agent pool.
@@ -535,7 +471,7 @@ func (as *AgentPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
-	instances, err := as.getVirtualMachinesFromCache()
+	instances, err := as.getVMsFromCache()
 	if err != nil {
 		return nil, err
 	}

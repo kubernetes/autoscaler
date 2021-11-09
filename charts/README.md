@@ -17,6 +17,8 @@ The binary for `pre-commit` can be installed via Homebrew:
 $ brew install pre-commit
 ```
 
+For those without Homebrew, Pre-commit has [other installation methods available](https://pre-commit.com/#install).
+
 ### Install git hooks
 
 After the `pre-commit` binary is installed, go to this repository's directory, and run the following command to install the git hook:

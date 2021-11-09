@@ -8,10 +8,10 @@ import (
 	"reflect"
 
 	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/cgroups/devices"
-	"github.com/opencontainers/runc/libcontainer/cgroups/fscommon"
+	cgroupdevices "github.com/opencontainers/runc/libcontainer/cgroups/devices"
 	"github.com/opencontainers/runc/libcontainer/configs"
-	"github.com/opencontainers/runc/libcontainer/system"
+	"github.com/opencontainers/runc/libcontainer/devices"
+	"github.com/opencontainers/runc/libcontainer/userns"
 )
 
 type DevicesGroup struct {
@@ -22,30 +22,29 @@ func (s *DevicesGroup) Name() string {
 	return "devices"
 }
 
-func (s *DevicesGroup) Apply(d *cgroupData) error {
+func (s *DevicesGroup) Apply(path string, d *cgroupData) error {
 	if d.config.SkipDevices {
 		return nil
 	}
-	_, err := d.join("devices")
-	if err != nil {
-		// We will return error even it's `not found` error, devices
-		// cgroup is hard requirement for container's security.
-		return err
+	if path == "" {
+		// Return error here, since devices cgroup
+		// is a hard requirement for container's security.
+		return errSubsystemDoesNotExist
 	}
-	return nil
+	return join(path, d.pid)
 }
 
-func loadEmulator(path string) (*devices.Emulator, error) {
-	list, err := fscommon.ReadFile(path, "devices.list")
+func loadEmulator(path string) (*cgroupdevices.Emulator, error) {
+	list, err := cgroups.ReadFile(path, "devices.list")
 	if err != nil {
 		return nil, err
 	}
-	return devices.EmulatorFromList(bytes.NewBufferString(list))
+	return cgroupdevices.EmulatorFromList(bytes.NewBufferString(list))
 }
 
-func buildEmulator(rules []*configs.DeviceRule) (*devices.Emulator, error) {
+func buildEmulator(rules []*devices.Rule) (*cgroupdevices.Emulator, error) {
 	// This defaults to a white-list -- which is what we want!
-	emu := &devices.Emulator{}
+	emu := &cgroupdevices.Emulator{}
 	for _, rule := range rules {
 		if err := emu.Apply(*rule); err != nil {
 			return nil, err
@@ -54,8 +53,8 @@ func buildEmulator(rules []*configs.DeviceRule) (*devices.Emulator, error) {
 	return emu, nil
 }
 
-func (s *DevicesGroup) Set(path string, cgroup *configs.Cgroup) error {
-	if system.RunningInUserNS() || cgroup.SkipDevices {
+func (s *DevicesGroup) Set(path string, r *configs.Resources) error {
+	if userns.RunningInUserNS() || r.SkipDevices {
 		return nil
 	}
 
@@ -65,7 +64,7 @@ func (s *DevicesGroup) Set(path string, cgroup *configs.Cgroup) error {
 	if err != nil {
 		return err
 	}
-	target, err := buildEmulator(cgroup.Resources.Devices)
+	target, err := buildEmulator(r.Devices)
 	if err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func (s *DevicesGroup) Set(path string, cgroup *configs.Cgroup) error {
 		if rule.Allow {
 			file = "devices.allow"
 		}
-		if err := fscommon.WriteFile(path, file, rule.CgroupString()); err != nil {
+		if err := cgroups.WriteFile(path, file, rule.CgroupString()); err != nil {
 			return err
 		}
 	}
@@ -104,10 +103,6 @@ func (s *DevicesGroup) Set(path string, cgroup *configs.Cgroup) error {
 		}
 	}
 	return nil
-}
-
-func (s *DevicesGroup) Remove(d *cgroupData) error {
-	return removePath(d.path("devices"))
 }
 
 func (s *DevicesGroup) GetStats(path string, stats *cgroups.Stats) error {

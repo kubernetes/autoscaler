@@ -17,17 +17,19 @@ limitations under the License.
 package util
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strconv"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	utilsysctl "k8s.io/kubernetes/pkg/util/sysctl"
 	utilnet "k8s.io/utils/net"
@@ -124,6 +126,16 @@ func IsProxyableHostname(ctx context.Context, resolv Resolver, hostname string) 
 	return nil
 }
 
+// IsAllowedHost checks if the given IP host address is in a network in the denied list.
+func IsAllowedHost(host net.IP, denied []*net.IPNet) error {
+	for _, ipNet := range denied {
+		if ipNet.Contains(host) {
+			return ErrAddressNotAllowed
+		}
+	}
+	return nil
+}
+
 // GetLocalAddrs returns a list of all network addresses on the local system
 func GetLocalAddrs() ([]net.IP, error) {
 	var localAddrs []net.IP
@@ -143,6 +155,21 @@ func GetLocalAddrs() ([]net.IP, error) {
 	}
 
 	return localAddrs, nil
+}
+
+// GetLocalAddrSet return a local IPSet.
+// If failed to get local addr, will assume no local ips.
+func GetLocalAddrSet() utilnet.IPSet {
+	localAddrs, err := GetLocalAddrs()
+	if err != nil {
+		klog.ErrorS(err, "Failed to get local addresses assuming no local IPs")
+	} else if len(localAddrs) == 0 {
+		klog.InfoS("No local addresses were found")
+	}
+
+	localAddrSet := utilnet.IPSet{}
+	localAddrSet.Insert(localAddrs...)
+	return localAddrSet
 }
 
 // ShouldSkipService checks if a given service should skip proxying
@@ -182,9 +209,9 @@ func GetNodeAddresses(cidrs []string, nw NetworkInterfacer) (sets.String, error)
 		}
 	}
 
-	itfs, err := nw.Interfaces()
+	addrs, err := nw.InterfaceAddrs()
 	if err != nil {
-		return nil, fmt.Errorf("error listing all interfaces from host, error: %v", err)
+		return nil, fmt.Errorf("error listing all interfaceAddrs from host, error: %v", err)
 	}
 
 	// Second round of iteration to parse IPs based on cidr.
@@ -194,29 +221,24 @@ func GetNodeAddresses(cidrs []string, nw NetworkInterfacer) (sets.String, error)
 		}
 
 		_, ipNet, _ := net.ParseCIDR(cidr)
-		for _, itf := range itfs {
-			addrs, err := nw.Addrs(&itf)
-			if err != nil {
-				return nil, fmt.Errorf("error getting address from interface %s, error: %v", itf.Name, err)
+		for _, addr := range addrs {
+			var ip net.IP
+			// nw.InterfaceAddrs may return net.IPAddr or net.IPNet on windows, and it will return net.IPNet on linux.
+			switch v := addr.(type) {
+			case *net.IPAddr:
+				ip = v.IP
+			case *net.IPNet:
+				ip = v.IP
+			default:
+				continue
 			}
 
-			for _, addr := range addrs {
-				if addr == nil {
-					continue
+			if ipNet.Contains(ip) {
+				if utilnet.IsIPv6(ip) && !uniqueAddressList.Has(IPv6ZeroCIDR) {
+					uniqueAddressList.Insert(ip.String())
 				}
-
-				ip, _, err := net.ParseCIDR(addr.String())
-				if err != nil {
-					return nil, fmt.Errorf("error parsing CIDR for interface %s, error: %v", itf.Name, err)
-				}
-
-				if ipNet.Contains(ip) {
-					if utilnet.IsIPv6(ip) && !uniqueAddressList.Has(IPv6ZeroCIDR) {
-						uniqueAddressList.Insert(ip.String())
-					}
-					if !utilnet.IsIPv6(ip) && !uniqueAddressList.Has(IPv4ZeroCIDR) {
-						uniqueAddressList.Insert(ip.String())
-					}
+				if !utilnet.IsIPv6(ip) && !uniqueAddressList.Has(IPv4ZeroCIDR) {
+					uniqueAddressList.Insert(ip.String())
 				}
 			}
 		}
@@ -230,7 +252,7 @@ func GetNodeAddresses(cidrs []string, nw NetworkInterfacer) (sets.String, error)
 }
 
 // LogAndEmitIncorrectIPVersionEvent logs and emits incorrect IP version event.
-func LogAndEmitIncorrectIPVersionEvent(recorder record.EventRecorder, fieldName, fieldValue, svcNamespace, svcName string, svcUID types.UID) {
+func LogAndEmitIncorrectIPVersionEvent(recorder events.EventRecorder, fieldName, fieldValue, svcNamespace, svcName string, svcUID types.UID) {
 	errMsg := fmt.Sprintf("%s in %s has incorrect IP version", fieldValue, fieldName)
 	klog.Errorf("%s (service %s/%s).", errMsg, svcNamespace, svcName)
 	if recorder != nil {
@@ -240,30 +262,68 @@ func LogAndEmitIncorrectIPVersionEvent(recorder record.EventRecorder, fieldName,
 				Name:      svcName,
 				Namespace: svcNamespace,
 				UID:       svcUID,
-			}, v1.EventTypeWarning, "KubeProxyIncorrectIPVersion", errMsg)
+			}, nil, v1.EventTypeWarning, "KubeProxyIncorrectIPVersion", "GatherEndpoints", errMsg)
 	}
 }
 
-// FilterIncorrectIPVersion filters out the incorrect IP version case from a slice of IP strings.
-func FilterIncorrectIPVersion(ipStrings []string, isIPv6Mode bool) ([]string, []string) {
-	return filterWithCondition(ipStrings, isIPv6Mode, utilnet.IsIPv6String)
-}
-
-// FilterIncorrectCIDRVersion filters out the incorrect IP version case from a slice of CIDR strings.
-func FilterIncorrectCIDRVersion(ipStrings []string, isIPv6Mode bool) ([]string, []string) {
-	return filterWithCondition(ipStrings, isIPv6Mode, utilnet.IsIPv6CIDRString)
-}
-
-func filterWithCondition(strs []string, expectedCondition bool, conditionFunc func(string) bool) ([]string, []string) {
-	var corrects, incorrects []string
-	for _, str := range strs {
-		if conditionFunc(str) != expectedCondition {
-			incorrects = append(incorrects, str)
+// MapIPsByIPFamily maps a slice of IPs to their respective IP families (v4 or v6)
+func MapIPsByIPFamily(ipStrings []string) map[v1.IPFamily][]string {
+	ipFamilyMap := map[v1.IPFamily][]string{}
+	for _, ip := range ipStrings {
+		// Handle only the valid IPs
+		if ipFamily, err := getIPFamilyFromIP(ip); err == nil {
+			ipFamilyMap[ipFamily] = append(ipFamilyMap[ipFamily], ip)
 		} else {
-			corrects = append(corrects, str)
+			klog.Errorf("Skipping invalid IP: %s", ip)
 		}
 	}
-	return corrects, incorrects
+	return ipFamilyMap
+}
+
+// MapCIDRsByIPFamily maps a slice of IPs to their respective IP families (v4 or v6)
+func MapCIDRsByIPFamily(cidrStrings []string) map[v1.IPFamily][]string {
+	ipFamilyMap := map[v1.IPFamily][]string{}
+	for _, cidr := range cidrStrings {
+		// Handle only the valid CIDRs
+		if ipFamily, err := getIPFamilyFromCIDR(cidr); err == nil {
+			ipFamilyMap[ipFamily] = append(ipFamilyMap[ipFamily], cidr)
+		} else {
+			klog.Errorf("Skipping invalid cidr: %s", cidr)
+		}
+	}
+	return ipFamilyMap
+}
+
+func getIPFamilyFromIP(ipStr string) (v1.IPFamily, error) {
+	netIP := net.ParseIP(ipStr)
+	if netIP == nil {
+		return "", ErrAddressNotAllowed
+	}
+
+	if utilnet.IsIPv6(netIP) {
+		return v1.IPv6Protocol, nil
+	}
+	return v1.IPv4Protocol, nil
+}
+
+func getIPFamilyFromCIDR(cidrStr string) (v1.IPFamily, error) {
+	_, netCIDR, err := net.ParseCIDR(cidrStr)
+	if err != nil {
+		return "", ErrAddressNotAllowed
+	}
+	if utilnet.IsIPv6CIDR(netCIDR) {
+		return v1.IPv6Protocol, nil
+	}
+	return v1.IPv4Protocol, nil
+}
+
+// OtherIPFamily returns the other ip family
+func OtherIPFamily(ipFamily v1.IPFamily) v1.IPFamily {
+	if ipFamily == v1.IPv6Protocol {
+		return v1.IPv4Protocol
+	}
+
+	return v1.IPv6Protocol
 }
 
 // AppendPortIfNeeded appends the given port to IP address unless it is already in
@@ -310,4 +370,139 @@ func EnsureSysctl(sysctl utilsysctl.Interface, name string, newVal int) error {
 		klog.V(1).Infof("Changed sysctl %q: %d -> %d", name, oldVal, newVal)
 	}
 	return nil
+}
+
+// DialContext is a dial function matching the signature of net.Dialer.DialContext.
+type DialContext = func(context.Context, string, string) (net.Conn, error)
+
+// FilteredDialOptions configures how a DialContext is wrapped by NewFilteredDialContext.
+type FilteredDialOptions struct {
+	// DialHostIPDenylist restricts hosts from being dialed.
+	DialHostCIDRDenylist []*net.IPNet
+	// AllowLocalLoopback controls connections to local loopback hosts (as defined by
+	// IsProxyableIP).
+	AllowLocalLoopback bool
+}
+
+// NewFilteredDialContext returns a DialContext function that filters connections based on a FilteredDialOptions.
+func NewFilteredDialContext(wrapped DialContext, resolv Resolver, opts *FilteredDialOptions) DialContext {
+	if wrapped == nil {
+		wrapped = http.DefaultTransport.(*http.Transport).DialContext
+	}
+	if opts == nil {
+		// Do no filtering
+		return wrapped
+	}
+	if resolv == nil {
+		resolv = net.DefaultResolver
+	}
+	if len(opts.DialHostCIDRDenylist) == 0 && opts.AllowLocalLoopback {
+		// Do no filtering.
+		return wrapped
+	}
+	return func(ctx context.Context, network, address string) (net.Conn, error) {
+		// DialContext is given host:port. LookupIPAddress expects host.
+		addressToResolve, _, err := net.SplitHostPort(address)
+		if err != nil {
+			addressToResolve = address
+		}
+
+		resp, err := resolv.LookupIPAddr(ctx, addressToResolve)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(resp) == 0 {
+			return nil, ErrNoAddresses
+		}
+
+		for _, host := range resp {
+			if !opts.AllowLocalLoopback {
+				if err := isProxyableIP(host.IP); err != nil {
+					return nil, err
+				}
+			}
+			if opts.DialHostCIDRDenylist != nil {
+				if err := IsAllowedHost(host.IP, opts.DialHostCIDRDenylist); err != nil {
+					return nil, err
+				}
+			}
+		}
+		return wrapped(ctx, network, address)
+	}
+}
+
+// GetClusterIPByFamily returns a service clusterip by family
+func GetClusterIPByFamily(ipFamily v1.IPFamily, service *v1.Service) string {
+	// allowing skew
+	if len(service.Spec.IPFamilies) == 0 {
+		if len(service.Spec.ClusterIP) == 0 || service.Spec.ClusterIP == v1.ClusterIPNone {
+			return ""
+		}
+
+		IsIPv6Family := (ipFamily == v1.IPv6Protocol)
+		if IsIPv6Family == utilnet.IsIPv6String(service.Spec.ClusterIP) {
+			return service.Spec.ClusterIP
+		}
+
+		return ""
+	}
+
+	for idx, family := range service.Spec.IPFamilies {
+		if family == ipFamily {
+			if idx < len(service.Spec.ClusterIPs) {
+				return service.Spec.ClusterIPs[idx]
+			}
+		}
+	}
+
+	return ""
+}
+
+// WriteLine join all words with spaces, terminate with newline and write to buff.
+func WriteLine(buf *bytes.Buffer, words ...string) {
+	// We avoid strings.Join for performance reasons.
+	for i := range words {
+		buf.WriteString(words[i])
+		if i < len(words)-1 {
+			buf.WriteByte(' ')
+		} else {
+			buf.WriteByte('\n')
+		}
+	}
+}
+
+// WriteRuleLine prepends the strings "-A" and chainName to the buffer and calls
+// WriteLine to join all the words into the buffer and terminate with newline.
+func WriteRuleLine(buf *bytes.Buffer, chainName string, words ...string) {
+	if len(words) == 0 {
+		return
+	}
+	buf.WriteString("-A ")
+	buf.WriteString(chainName)
+	buf.WriteByte(' ')
+	WriteLine(buf, words...)
+}
+
+// WriteBytesLine write bytes to buffer, terminate with newline
+func WriteBytesLine(buf *bytes.Buffer, bytes []byte) {
+	buf.Write(bytes)
+	buf.WriteByte('\n')
+}
+
+// RevertPorts is closing ports in replacementPortsMap but not in originalPortsMap. In other words, it only
+// closes the ports opened in this sync.
+func RevertPorts(replacementPortsMap, originalPortsMap map[utilnet.LocalPort]utilnet.Closeable) {
+	for k, v := range replacementPortsMap {
+		// Only close newly opened local ports - leave ones that were open before this update
+		if originalPortsMap[k] == nil {
+			klog.V(2).Infof("Closing local port %s", k.String())
+			v.Close()
+		}
+	}
+}
+
+// CountBytesLines counts the number of lines in a bytes slice
+func CountBytesLines(b []byte) int {
+	return bytes.Count(b, []byte{'\n'})
 }

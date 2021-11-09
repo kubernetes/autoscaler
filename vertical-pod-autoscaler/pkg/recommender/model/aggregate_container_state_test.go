@@ -72,7 +72,7 @@ func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryByt
 // container CPU and memory peak histograms, grouping the two containers
 // with the same name ('app-A') together.
 func TestAggregateStateByContainerName(t *testing.T) {
-	cluster := NewClusterState()
+	cluster := NewClusterState(testGcPeriod)
 	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
 	otherLabels := labels.Set{"label-2": "value-2"}
 	cluster.AddOrUpdatePod(testPodID2, otherLabels, apiv1.PodRunning)
@@ -141,6 +141,7 @@ func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
 
 	assert.NoError(t, err)
 
+	assert.True(t, time.Now().Sub(checkpoint.LastUpdateTime.Time) < 10*time.Second)
 	assert.Equal(t, t1, checkpoint.FirstSampleStart.Time)
 	assert.Equal(t, t2, checkpoint.LastSampleStart.Time)
 	assert.Equal(t, 10, checkpoint.TotalSamplesCount)
@@ -168,6 +169,7 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 
 	checkpoint := vpa_types.VerticalPodAutoscalerCheckpointStatus{
 		Version:           SupportedCheckpointVersion,
+		LastUpdateTime:    metav1.NewTime(time.Now()),
 		FirstSampleStart:  metav1.NewTime(t1),
 		LastSampleStart:   metav1.NewTime(t2),
 		TotalSamplesCount: 20,

@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/utils/mount"
+	"k8s.io/mount-utils"
 	utilstrings "k8s.io/utils/strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -97,7 +97,7 @@ func (plugin *vsphereVolumePlugin) newBlockVolumeMapperInternal(spec *volume.Spe
 		return nil, err
 	}
 	volPath := volumeSource.VolumePath
-	return &vsphereBlockVolumeMapper{
+	mapper := &vsphereBlockVolumeMapper{
 		vsphereVolume: &vsphereVolume{
 			volName:         spec.Name(),
 			podUID:          podUID,
@@ -107,8 +107,15 @@ func (plugin *vsphereVolumePlugin) newBlockVolumeMapperInternal(spec *volume.Spe
 			plugin:          plugin,
 			MetricsProvider: volume.NewMetricsStatFS(getPath(podUID, spec.Name(), plugin.host)),
 		},
-	}, nil
+	}
 
+	blockPath, err := mapper.GetGlobalMapPath(spec)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get device path: %v", err)
+	}
+	mapper.MetricsProvider = volume.NewMetricsBlock(filepath.Join(blockPath, string(podUID)))
+
+	return mapper, nil
 }
 
 func (plugin *vsphereVolumePlugin) NewBlockVolumeUnmapper(volName string, podUID types.UID) (volume.BlockVolumeUnmapper, error) {
@@ -137,6 +144,7 @@ var _ volume.BlockVolumeUnmapper = &vsphereBlockVolumeUnmapper{}
 
 type vsphereBlockVolumeUnmapper struct {
 	*vsphereVolume
+	volume.MetricsNil
 }
 
 // GetGlobalMapPath returns global map path and error
@@ -151,4 +159,10 @@ func (v *vsphereVolume) GetGlobalMapPath(spec *volume.Spec) (string, error) {
 
 func (v *vsphereVolume) GetPodDeviceMapPath() (string, string) {
 	return v.plugin.host.GetPodVolumeDeviceDir(v.podUID, utilstrings.EscapeQualifiedName(vsphereVolumePluginName)), v.volName
+}
+
+// SupportsMetrics returns true for vsphereBlockVolumeMapper as it initializes the
+// MetricsProvider.
+func (vbvm *vsphereBlockVolumeMapper) SupportsMetrics() bool {
+	return true
 }

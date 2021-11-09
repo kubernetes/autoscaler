@@ -25,7 +25,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -229,6 +230,12 @@ func (n *NodeGroup) Delete() error {
 // autoprovisioned group was created by CA and can be deleted when scaled to 0.
 func (n *NodeGroup) Autoprovisioned() bool {
 	return false
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // toInstances converts a slice of *godo.KubernetesNode to

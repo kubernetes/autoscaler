@@ -61,12 +61,18 @@ const (
 	// BestEffortTopologyManagerPolicy is a mode in which kubelet will favour
 	// pods with NUMA alignment of CPU and device resources.
 	BestEffortTopologyManagerPolicy = "best-effort"
-	// NoneTopologyManager Policy is a mode in which kubelet has no knowledge
+	// NoneTopologyManagerPolicy is a mode in which kubelet has no knowledge
 	// of NUMA alignment of a pod's CPU and device resources.
 	NoneTopologyManagerPolicy = "none"
-	// SingleNumaNodeTopologyManager Policy iis a mode in which kubelet only allows
+	// SingleNumaNodeTopologyManagerPolicy is a mode in which kubelet only allows
 	// pods with a single NUMA alignment of CPU and device resources.
-	SingleNumaNodeTopologyManager = "single-numa-node"
+	SingleNumaNodeTopologyManagerPolicy = "single-numa-node"
+	// ContainerTopologyManagerScope represents that
+	// topology policy is applied on a per-container basis.
+	ContainerTopologyManagerScope = "container"
+	// PodTopologyManagerScope represents that
+	// topology policy is applied on a per-pod basis.
+	PodTopologyManagerScope = "pod"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -215,12 +221,25 @@ type KubeletConfiguration struct {
 	// CPUManagerPolicy is the name of the policy to use.
 	// Requires the CPUManager feature gate to be enabled.
 	CPUManagerPolicy string
+	// CPUManagerPolicyOptions is a set of key=value which 	allows to set extra options
+	// to fine tune the behaviour of the cpu manager policies.
+	// Requires  both the "CPUManager" and "CPUManagerPolicyOptions" feature gates to be enabled.
+	CPUManagerPolicyOptions map[string]string
 	// CPU Manager reconciliation period.
 	// Requires the CPUManager feature gate to be enabled.
 	CPUManagerReconcilePeriod metav1.Duration
+	// MemoryManagerPolicy is the name of the policy to use.
+	// Requires the MemoryManager feature gate to be enabled.
+	MemoryManagerPolicy string
 	// TopologyManagerPolicy is the name of the policy to use.
 	// Policies other than "none" require the TopologyManager feature gate to be enabled.
 	TopologyManagerPolicy string
+	// TopologyManagerScope represents the scope of topology hint generation
+	// that topology manager requests and hint providers generate.
+	// "pod" scope requires the TopologyManager feature gate to be enabled.
+	// Default: "container"
+	// +optional
+	TopologyManagerScope string
 	// Map of QoS resource reservation percentages (memory only for now).
 	// Requires the QOSReserved feature gate to be enabled.
 	QOSReserved map[string]string
@@ -311,13 +330,17 @@ type KubeletConfiguration struct {
 	FeatureGates map[string]bool
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
 	FailSwapOn bool
+	// memorySwap configures swap memory available to container workloads.
+	// +featureGate=NodeSwap
+	// +optional
+	MemorySwap MemorySwapConfiguration
 	// A quantity defines the maximum size of the container log file before it is rotated. For example: "5Mi" or "256Ki".
 	ContainerLogMaxSize string
 	// Maximum number of container log files that can be present for a container.
 	ContainerLogMaxFiles int32
 	// ConfigMapAndSecretChangeDetectionStrategy is a mode in which config map and secret managers are running.
 	ConfigMapAndSecretChangeDetectionStrategy ResourceChangeDetectionStrategy
-	// A comma separated whitelist of unsafe sysctls or sysctl patterns (ending in *).
+	// A comma separated allowlist of unsafe sysctls or sysctl patterns (ending in *).
 	// Unsafe sysctl groups are kernel.shm*, kernel.msg*, kernel.sem, fs.mqueue.*, and net.*.
 	// These sysctls are namespaced but not allowed by default.  For example: "kernel.msg*,net.ipv4.route.min_pmtu"
 	// +optional
@@ -363,6 +386,46 @@ type KubeletConfiguration struct {
 	Logging componentbaseconfig.LoggingConfiguration
 	// EnableSystemLogHandler enables /logs handler.
 	EnableSystemLogHandler bool
+	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown and total grace period for pod termination during a node shutdown.
+	// Defaults to 0 seconds.
+	// +featureGate=GracefulNodeShutdown
+	// +optional
+	ShutdownGracePeriod metav1.Duration
+	// ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown. This should be less than ShutdownGracePeriod.
+	// Defaults to 0 seconds.
+	// For example, if ShutdownGracePeriod=30s, and ShutdownGracePeriodCriticalPods=10s, during a node shutdown the first 20 seconds would be reserved for gracefully terminating normal pods, and the last 10 seconds would be reserved for terminating critical pods.
+	// +featureGate=GracefulNodeShutdown
+	// +optional
+	ShutdownGracePeriodCriticalPods metav1.Duration
+	// ReservedMemory specifies a comma-separated list of memory reservations for NUMA nodes.
+	// The parameter makes sense only in the context of the memory manager feature. The memory manager will not allocate reserved memory for container workloads.
+	// For example, if you have a NUMA0 with 10Gi of memory and the ReservedMemory was specified to reserve 1Gi of memory at NUMA0,
+	// the memory manager will assume that only 9Gi is available for allocation.
+	// You can specify a different amount of NUMA node and memory types.
+	// You can omit this parameter at all, but you should be aware that the amount of reserved memory from all NUMA nodes
+	// should be equal to the amount of memory specified by the node allocatable features(https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable).
+	// If at least one node allocatable parameter has a non-zero value, you will need to specify at least one NUMA node.
+	// Also, avoid specifying:
+	// 1. Duplicates, the same NUMA node, and memory type, but with a different value.
+	// 2. zero limits for any memory type.
+	// 3. NUMAs nodes IDs that do not exist under the machine.
+	// 4. memory types except for memory and hugepages-<size>
+	ReservedMemory []MemoryReservation
+	// EnableProfiling enables /debug/pprof handler.
+	EnableProfilingHandler bool
+	// EnableDebugFlagsHandler enables/debug/flags/v handler.
+	EnableDebugFlagsHandler bool
+	// SeccompDefault enables the use of `RuntimeDefault` as the default seccomp profile for all workloads.
+	SeccompDefault bool
+	// MemoryThrottlingFactor specifies the factor multiplied by the memory limit or node allocatable memory
+	// when setting the cgroupv2 memory.high value to enforce MemoryQoS.
+	// Decreasing this factor will set lower high limit for container cgroups and put heavier reclaim pressure
+	// while increasing will put less reclaim pressure.
+	// See http://kep.k8s.io/2570 for more details.
+	// Default: 0.8
+	// +featureGate=MemoryQoS
+	// +optional
+	MemoryThrottlingFactor *float64
 }
 
 // KubeletAuthorizationMode denotes the authorization mode for the kubelet
@@ -439,4 +502,95 @@ type SerializedNodeConfigSource struct {
 	// Source is the source that we are serializing
 	// +optional
 	Source v1.NodeConfigSource
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// CredentialProviderConfig is the configuration containing information about
+// each exec credential provider. Kubelet reads this configuration from disk and enables
+// each provider as specified by the CredentialProvider type.
+type CredentialProviderConfig struct {
+	metav1.TypeMeta
+
+	// providers is a list of credential provider plugins that will be enabled by the kubelet.
+	// Multiple providers may match against a single image, in which case credentials
+	// from all providers will be returned to the kubelet. If multiple providers are called
+	// for a single image, the results are combined. If providers return overlapping
+	// auth keys, the value from the provider earlier in this list is used.
+	Providers []CredentialProvider
+}
+
+// CredentialProvider represents an exec plugin to be invoked by the kubelet. The plugin is only
+// invoked when an image being pulled matches the images handled by the plugin (see matchImages).
+type CredentialProvider struct {
+	// name is the required name of the credential provider. It must match the name of the
+	// provider executable as seen by the kubelet. The executable must be in the kubelet's
+	// bin directory (set by the --credential-provider-bin-dir flag).
+	Name string
+
+	// matchImages is a required list of strings used to match against images in order to
+	// determine if this provider should be invoked. If one of the strings matches the
+	// requested image from the kubelet, the plugin will be invoked and given a chance
+	// to provide credentials. Images are expected to contain the registry domain
+	// and URL path.
+	//
+	// Each entry in matchImages is a pattern which can optionally contain a port and a path.
+	// Globs can be used in the domain, but not in the port or the path. Globs are supported
+	// as subdomains like '*.k8s.io' or 'k8s.*.io', and top-level-domains such as 'k8s.*'.
+	// Matching partial subdomains like 'app*.k8s.io' is also supported. Each glob can only match
+	// a single subdomain segment, so *.io does not match *.k8s.io.
+	//
+	// A match exists between an image and a matchImage when all of the below are true:
+	// - Both contain the same number of domain parts and each part matches.
+	// - The URL path of an imageMatch must be a prefix of the target image URL path.
+	// - If the imageMatch contains a port, then the port must match in the image as well.
+	//
+	// Example values of matchImages:
+	//   - 123456789.dkr.ecr.us-east-1.amazonaws.com
+	//   - *.azurecr.io
+	//   - gcr.io
+	//   - *.*.registry.io
+	//   - registry.io:8080/path
+	MatchImages []string
+
+	// defaultCacheDuration is the default duration the plugin will cache credentials in-memory
+	// if a cache duration is not provided in the plugin response. This field is required.
+	DefaultCacheDuration *metav1.Duration
+
+	// Required input version of the exec CredentialProviderRequest. The returned CredentialProviderResponse
+	// MUST use the same encoding version as the input. Current supported values are:
+	// - credentialprovider.kubelet.k8s.io/v1alpha1
+	APIVersion string
+
+	// Arguments to pass to the command when executing it.
+	// +optional
+	Args []string
+
+	// Env defines additional environment variables to expose to the process. These
+	// are unioned with the host's environment, as well as variables client-go uses
+	// to pass argument to the plugin.
+	// +optional
+	Env []ExecEnvVar
+}
+
+// ExecEnvVar is used for setting environment variables when executing an exec-based
+// credential plugin.
+type ExecEnvVar struct {
+	Name  string
+	Value string
+}
+
+// MemoryReservation specifies the memory reservation of different types for each NUMA node
+type MemoryReservation struct {
+	NumaNode int32
+	Limits   v1.ResourceList
+}
+
+type MemorySwapConfiguration struct {
+	// swapBehavior configures swap memory available to container workloads. May be one of
+	// "", "LimitedSwap": workload combined memory and swap usage cannot exceed pod memory limit
+	// "UnlimitedSwap": workloads can use unlimited swap, up to the allocatable limit.
+	// +featureGate=NodeSwap
+	// +optional
+	SwapBehavior string
 }

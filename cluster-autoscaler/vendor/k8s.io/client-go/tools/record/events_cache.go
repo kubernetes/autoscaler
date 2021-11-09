@@ -25,7 +25,7 @@ import (
 
 	"github.com/golang/groupcache/lru"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -81,6 +81,9 @@ func getSpamKey(event *v1.Event) string {
 		"")
 }
 
+// EventSpamKeyFunc is a function that returns unique key based on provided event
+type EventSpamKeyFunc func(event *v1.Event) string
+
 // EventFilterFunc is a function that returns true if the event should be skipped
 type EventFilterFunc func(event *v1.Event) bool
 
@@ -100,15 +103,19 @@ type EventSourceObjectSpamFilter struct {
 
 	// clock is used to allow for testing over a time interval
 	clock clock.Clock
+
+	// spamKeyFunc is a func used to create a key based on an event, which is later used to filter spam events.
+	spamKeyFunc EventSpamKeyFunc
 }
 
 // NewEventSourceObjectSpamFilter allows burst events from a source about an object with the specified qps refill.
-func NewEventSourceObjectSpamFilter(lruCacheSize, burst int, qps float32, clock clock.Clock) *EventSourceObjectSpamFilter {
+func NewEventSourceObjectSpamFilter(lruCacheSize, burst int, qps float32, clock clock.Clock, spamKeyFunc EventSpamKeyFunc) *EventSourceObjectSpamFilter {
 	return &EventSourceObjectSpamFilter{
-		cache: lru.New(lruCacheSize),
-		burst: burst,
-		qps:   qps,
-		clock: clock,
+		cache:       lru.New(lruCacheSize),
+		burst:       burst,
+		qps:         qps,
+		clock:       clock,
+		spamKeyFunc: spamKeyFunc,
 	}
 }
 
@@ -122,8 +129,8 @@ type spamRecord struct {
 func (f *EventSourceObjectSpamFilter) Filter(event *v1.Event) bool {
 	var record spamRecord
 
-	// controls our cached information about this event (source+object)
-	eventKey := getSpamKey(event)
+	// controls our cached information about this event
+	eventKey := f.spamKeyFunc(event)
 
 	// do we have a record of similar events in our cache?
 	f.Lock()
@@ -175,7 +182,7 @@ func EventAggregatorByReasonFunc(event *v1.Event) (string, string) {
 // EventAggregatorMessageFunc is responsible for producing an aggregation message
 type EventAggregatorMessageFunc func(event *v1.Event) string
 
-// EventAggregratorByReasonMessageFunc returns an aggregate message by prefixing the incoming message
+// EventAggregatorByReasonMessageFunc returns an aggregate message by prefixing the incoming message
 func EventAggregatorByReasonMessageFunc(event *v1.Event) string {
 	return "(combined from similar events): " + event.Message
 }
@@ -420,7 +427,7 @@ type EventCorrelateResult struct {
 // prior to interacting with the API server to record the event.
 //
 // The default behavior is as follows:
-//   * Aggregation is performed if a similar event is recorded 10 times in a
+//   * Aggregation is performed if a similar event is recorded 10 times
 //     in a 10 minute rolling interval.  A similar event is an event that varies only by
 //     the Event.Message field.  Rather than recording the precise event, aggregation
 //     will create a new event whose message reports that it has combined events with
@@ -431,7 +438,7 @@ type EventCorrelateResult struct {
 //     per object of 1 event every 5 minutes to control long-tail of spam.
 func NewEventCorrelator(clock clock.Clock) *EventCorrelator {
 	cacheSize := maxLruCacheEntries
-	spamFilter := NewEventSourceObjectSpamFilter(cacheSize, defaultSpamBurst, defaultSpamQPS, clock)
+	spamFilter := NewEventSourceObjectSpamFilter(cacheSize, defaultSpamBurst, defaultSpamQPS, clock, getSpamKey)
 	return &EventCorrelator{
 		filterFunc: spamFilter.Filter,
 		aggregator: NewEventAggregator(
@@ -448,8 +455,12 @@ func NewEventCorrelator(clock clock.Clock) *EventCorrelator {
 
 func NewEventCorrelatorWithOptions(options CorrelatorOptions) *EventCorrelator {
 	optionsWithDefaults := populateDefaults(options)
-	spamFilter := NewEventSourceObjectSpamFilter(optionsWithDefaults.LRUCacheSize,
-		optionsWithDefaults.BurstSize, optionsWithDefaults.QPS, optionsWithDefaults.Clock)
+	spamFilter := NewEventSourceObjectSpamFilter(
+		optionsWithDefaults.LRUCacheSize,
+		optionsWithDefaults.BurstSize,
+		optionsWithDefaults.QPS,
+		optionsWithDefaults.Clock,
+		optionsWithDefaults.SpamKeyFunc)
 	return &EventCorrelator{
 		filterFunc: spamFilter.Filter,
 		aggregator: NewEventAggregator(
@@ -488,6 +499,9 @@ func populateDefaults(options CorrelatorOptions) CorrelatorOptions {
 	}
 	if options.Clock == nil {
 		options.Clock = clock.RealClock{}
+	}
+	if options.SpamKeyFunc == nil {
+		options.SpamKeyFunc = getSpamKey
 	}
 	return options
 }
