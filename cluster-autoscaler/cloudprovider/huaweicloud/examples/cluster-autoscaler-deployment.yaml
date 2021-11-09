@@ -31,6 +31,7 @@ spec:
             - --nodes=1:50:crc-nodepool
             - --scale-down-delay-after-add=1m0s
             - --scale-down-unneeded-time=1m0s
+            - --expander=random
           volumeMounts:
             - name: cloud-config
               mountPath: /config
