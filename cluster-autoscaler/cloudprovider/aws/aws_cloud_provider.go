@@ -288,7 +288,7 @@ func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		if belongs != true {
+		if !belongs {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, ng.Id())
 		}
 		awsref, err := AwsRefFromProviderId(node.Spec.ProviderID)
