@@ -121,6 +121,15 @@ some situations, such as testing or prototyping, you may wish to change this
 group variable. For these situations you may use the environment variable
 `CAPI_GROUP` to change the group that the provider will use.
 
+Please note that setting the `CAPI_GROUP` environment variable will also cause the
+annotations for minimum and maximum size to change.
+This behavior will also affect the machine annotation on nodes, the machine deletion annotation,
+and the cluster name label. For example, if `CAPI_GROUP=test.k8s.io`
+then the minimum size annotation key will be `test.k8s.io/cluster-api-autoscaler-node-group-min-size`,
+the machine annotation on nodes will be `test.8s.io/machine`, the machine deletion
+annotation will be `test.k8s.io/delete-machine`, and the cluster name label will be
+`test.k8s.io/cluster-name`.
+
 ## Sample manifest
 
 A sample manifest that will create a deployment running the autoscaler is
