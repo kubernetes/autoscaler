@@ -77,12 +77,12 @@ func (cache *CloudProviderNodeInstancesCache) getCacheEntryLocked(nodeGroup clou
 }
 
 func (cache *CloudProviderNodeInstancesCache) removeEntriesForNonExistingNodeGroupsLocked(nodeGroups []cloudprovider.NodeGroup) {
-	cache.Lock()
-	defer cache.Unlock()
 	nodeGroupExists := map[string]bool{}
 	for _, nodeGroup := range nodeGroups {
 		nodeGroupExists[nodeGroup.Id()] = true
 	}
+	cache.Lock()
+	defer cache.Unlock()
 	for nodeGroupId := range cache.cloudProviderNodeInstances {
 		if !nodeGroupExists[nodeGroupId] {
 			delete(cache.cloudProviderNodeInstances, nodeGroupId)
