@@ -596,12 +596,11 @@ func TestControllerFindMachine(t *testing.T) {
 				for i := range testConfig.machines {
 					n := testConfig.nodes[i]
 					annotations := n.GetAnnotations()
-					val, ok := annotations[machineAnnotationKey]
+					_, ok := annotations[machineAnnotationKey]
 					if !ok {
 						t.Fatal("node did not contain machineAnnotationKey")
 					}
 					delete(annotations, machineAnnotationKey)
-					annotations[deprecatedMachineAnnotationKey] = val
 					n.SetAnnotations(annotations)
 				}
 			}
