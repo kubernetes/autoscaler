@@ -320,9 +320,23 @@ func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, len(asgNodes))
 
 	for i, asgNode := range asgNodes {
+		var status *cloudprovider.InstanceStatus
+		instanceStatusString, err := ng.awsManager.GetInstanceStatus(asgNode)
+		if err != nil {
+			klog.V(4).Infof("Could not get instance status, continuing anyways: %v", err)
+		} else if instanceStatusString != nil && *instanceStatusString == placeholderUnfulfillableStatus {
+			status = &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    placeholderUnfulfillableStatus,
+					ErrorMessage: "AWS cannot provision any more instances for this node group",
+				},
+			}
+		}
 		instances[i] = cloudprovider.Instance{
 			Id:     asgNode.ProviderID,
-			Status: nil,
+			Status: status,
 		}
 	}
 	return instances, nil
