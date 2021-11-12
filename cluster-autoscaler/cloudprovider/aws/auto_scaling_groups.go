@@ -36,7 +36,7 @@ const (
 )
 
 type asgCache struct {
-	registeredAsgs       []*asg
+	registeredAsgs       map[AwsRef]*asg
 	asgToInstances       map[AwsRef][]AwsInstanceRef
 	instanceToAsg        map[AwsInstanceRef]*asg
 	asgInstanceTypeCache *instanceTypeExpirationStore
@@ -75,7 +75,7 @@ type asg struct {
 
 func newASGCache(awsService *awsWrapper, explicitSpecs []string, autoDiscoverySpecs []asgAutoDiscoveryConfig) (*asgCache, error) {
 	registry := &asgCache{
-		registeredAsgs:        make([]*asg, 0),
+		registeredAsgs:        make(map[AwsRef]*asg, 0),
 		awsService:            awsService,
 		asgToInstances:        make(map[AwsRef][]AwsInstanceRef),
 		instanceToAsg:         make(map[AwsInstanceRef]*asg),
@@ -121,53 +121,44 @@ func (m *asgCache) parseExplicitAsgs(specs []string) error {
 
 // Register ASG. Returns the registered ASG.
 func (m *asgCache) register(asg *asg) *asg {
-	for i := range m.registeredAsgs {
-		if existing := m.registeredAsgs[i]; existing.AwsRef == asg.AwsRef {
-			if reflect.DeepEqual(existing, asg) {
-				return existing
-			}
-
-			klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
-
-			// Explicit registered groups should always use the manually provided min/max
-			// values and the not the ones returned by the API
-			if !m.explicitlyConfigured[asg.AwsRef] {
-				existing.minSize = asg.minSize
-				existing.maxSize = asg.maxSize
-			}
-
-			existing.curSize = asg.curSize
-
-			// Those information are mainly required to create templates when scaling
-			// from zero
-			existing.AvailabilityZones = asg.AvailabilityZones
-			existing.LaunchConfigurationName = asg.LaunchConfigurationName
-			existing.LaunchTemplate = asg.LaunchTemplate
-			existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
-			existing.Tags = asg.Tags
-
+	if existing, asgExists := m.registeredAsgs[asg.AwsRef]; asgExists {
+		if reflect.DeepEqual(existing, asg) {
 			return existing
 		}
+
+		klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
+
+		// Explicit registered groups should always use the manually provided min/max
+		// values and the not the ones returned by the API
+		if !m.explicitlyConfigured[asg.AwsRef] {
+			existing.minSize = asg.minSize
+			existing.maxSize = asg.maxSize
+		}
+
+		existing.curSize = asg.curSize
+
+		// Those information are mainly required to create templates when scaling
+		// from zero
+		existing.AvailabilityZones = asg.AvailabilityZones
+		existing.LaunchConfigurationName = asg.LaunchConfigurationName
+		existing.LaunchTemplate = asg.LaunchTemplate
+		existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
+		existing.Tags = asg.Tags
+
+		return existing
 	}
 	klog.V(1).Infof("Registering ASG %s", asg.AwsRef.Name)
-	m.registeredAsgs = append(m.registeredAsgs, asg)
+	m.registeredAsgs[asg.AwsRef] = asg
 	return asg
 }
 
 // Unregister ASG. Returns the unregistered ASG.
 func (m *asgCache) unregister(a *asg) *asg {
-	updated := make([]*asg, 0, len(m.registeredAsgs))
-	var changed *asg
-	for _, existing := range m.registeredAsgs {
-		if existing.AwsRef == a.AwsRef {
-			klog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
-			changed = a
-			continue
-		}
-		updated = append(updated, existing)
+	if _, asgExists := m.registeredAsgs[a.AwsRef]; asgExists {
+		klog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
+		delete(m.registeredAsgs, a.AwsRef)
 	}
-	m.registeredAsgs = updated
-	return changed
+	return a
 }
 
 func (m *asgCache) buildAsgFromSpec(spec string) (*asg, error) {
@@ -184,7 +175,7 @@ func (m *asgCache) buildAsgFromSpec(spec string) (*asg, error) {
 }
 
 // Get returns the currently registered ASGs
-func (m *asgCache) Get() []*asg {
+func (m *asgCache) Get() map[AwsRef]*asg {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 

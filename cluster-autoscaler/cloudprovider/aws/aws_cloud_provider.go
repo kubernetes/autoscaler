@@ -86,12 +86,12 @@ func (aws *awsCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 // NodeGroups returns all node groups configured for this cloud provider.
 func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	asgs := aws.awsManager.getAsgs()
-	ngs := make([]cloudprovider.NodeGroup, len(asgs))
-	for i, asg := range asgs {
-		ngs[i] = &AwsNodeGroup{
+	ngs := make([]cloudprovider.NodeGroup, 0, len(asgs))
+	for _, asg := range asgs {
+		ngs = append(ngs, &AwsNodeGroup{
 			asg:        asg,
 			awsManager: aws.awsManager,
-		}
+		})
 	}
 
 	return ngs
@@ -320,7 +320,10 @@ func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, len(asgNodes))
 
 	for i, asgNode := range asgNodes {
-		instances[i] = cloudprovider.Instance{Id: asgNode.ProviderID}
+		instances[i] = cloudprovider.Instance{
+			Id:     asgNode.ProviderID,
+			Status: nil,
+		}
 	}
 	return instances, nil
 }
