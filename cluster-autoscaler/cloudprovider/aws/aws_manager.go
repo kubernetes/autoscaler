@@ -301,6 +301,10 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 	return m.asgCache.InstancesByAsg(ref)
 }
 
+func (m *AwsManager) GetInstanceStatus(ref AwsInstanceRef) (*string, error) {
+	return m.asgCache.InstanceStatus(ref)
+}
+
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	if len(asg.AvailabilityZones) < 1 {
 		return nil, fmt.Errorf("unable to get first AvailabilityZone for ASG %q", asg.Name)

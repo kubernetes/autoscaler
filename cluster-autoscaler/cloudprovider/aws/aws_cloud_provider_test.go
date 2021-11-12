@@ -463,6 +463,13 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 		expectedInstancesCount = 1
 	}).Return(nil)
 
+	a.On("DescribeScalingActivities",
+		&autoscaling.DescribeScalingActivitiesInput{
+			AutoScalingGroupName: aws.String("test-asg"),
+			MaxRecords:           aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeScalingActivitiesOutput{})
+
 	provider.Refresh()
 
 	initialSize, err := asgs[0].TargetSize()
