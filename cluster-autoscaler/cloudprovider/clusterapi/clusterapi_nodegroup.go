@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	debugFormat                    = "%s (min: %d, max: %d, replicas: %d)"
+	debugFormat = "%s (min: %d, max: %d, replicas: %d)"
 )
 
 type nodegroup struct {
