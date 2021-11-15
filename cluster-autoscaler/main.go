@@ -326,6 +326,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
+	} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
+		nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
