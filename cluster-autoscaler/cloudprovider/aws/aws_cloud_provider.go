@@ -354,7 +354,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	// Generate EC2 list
 	instanceTypes, lastUpdateTime := GetStaticEC2InstanceTypes()
 	if opts.AWSUseStaticInstanceList {
-		klog.Warningf("Use static EC2 Instance Types and list could be outdated. Last update time: %s", lastUpdateTime)
+		klog.Warningf("Using static EC2 Instance Types, this list could be outdated. Last update time: %s", lastUpdateTime)
 	} else {
 		region, err := GetCurrentAwsRegion()
 		if err != nil {

@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	klog "k8s.io/klog/v2"
 	"os"
+	"time"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -55,6 +56,9 @@ type InstanceType struct {
 	Architecture string
 }
 
+// StaticListLastUpdateTime is a string declaring the last time the static list was updated.
+var StaticListLastUpdateTime = "{{ .LastUpdateTime }}"
+
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
 {{- range .InstanceTypes }}
@@ -79,6 +83,7 @@ func main() {
 	if err != nil {
 		klog.Fatal(err)
 	}
+	lastUpdateTime := time.Now().Format("2006-01-02")
 
 	f, err := os.Create("ec2_instance_types.go")
 	if err != nil {
@@ -88,9 +93,11 @@ func main() {
 	defer f.Close()
 
 	err = packageTemplate.Execute(f, struct {
-		InstanceTypes map[string]*aws.InstanceType
+		InstanceTypes  map[string]*aws.InstanceType
+		LastUpdateTime string
 	}{
-		InstanceTypes: instanceTypes,
+		InstanceTypes:  instanceTypes,
+		LastUpdateTime: lastUpdateTime,
 	})
 
 	if err != nil {
