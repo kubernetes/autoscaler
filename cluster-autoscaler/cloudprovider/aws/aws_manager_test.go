@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -38,6 +39,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
@@ -110,6 +112,77 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
 	expectedEphemeralStorage := resource.MustParse("20G")
 	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+}
+
+func TestGetAsgOptions(t *testing.T) {
+	defaultOptions := config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.1,
+		ScaleDownGpuUtilizationThreshold: 0.2,
+		ScaleDownUnneededTime:            time.Second,
+		ScaleDownUnreadyTime:             time.Minute,
+	}
+
+	tests := []struct {
+		description string
+		tags        map[string]string
+		expected    *config.NodeGroupAutoscalingOptions
+	}{
+		{
+			description: "use defaults on unspecified tags",
+			tags:        make(map[string]string),
+			expected:    &defaultOptions,
+		},
+		{
+			description: "keep defaults on invalid tags values",
+			tags: map[string]string{
+				"scaledownutilizationthreshold": "not-a-float",
+				"scaledownunneededtime":         "not-a-duration",
+				"ScaleDownUnreadyTime":          "",
+			},
+			expected: &defaultOptions,
+		},
+		{
+			description: "use provided tags and fill missing with defaults",
+			tags: map[string]string{
+				"scaledownutilizationthreshold": "0.42",
+				"scaledownunneededtime":         "1h",
+			},
+			expected: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.42,
+				ScaleDownGpuUtilizationThreshold: defaultOptions.ScaleDownGpuUtilizationThreshold,
+				ScaleDownUnneededTime:            time.Hour,
+				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
+			},
+		},
+		{
+			description: "ignore unknown tags",
+			tags: map[string]string{
+				"scaledownutilizationthreshold":    "0.6",
+				"scaledowngpuutilizationthreshold": "0.7",
+				"scaledownunneededtime":            "1m",
+				"scaledownunreadytime":             "1h",
+				"notyetspecified":                  "42",
+			},
+			expected: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.6,
+				ScaleDownGpuUtilizationThreshold: 0.7,
+				ScaleDownUnneededTime:            time.Minute,
+				ScaleDownUnreadyTime:             time.Hour,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.description, func(t *testing.T) {
+			testAsg := asg{AwsRef: AwsRef{Name: "testAsg"}}
+			cache, _ := newASGCache(nil, []string{}, []asgAutoDiscoveryConfig{})
+			cache.autoscalingOptions[testAsg.AwsRef] = tt.tags
+			awsManager := &AwsManager{asgCache: cache}
+
+			actual := awsManager.GetAsgOptions(testAsg, defaultOptions)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
 }
 
 func TestBuildNodeFromTemplate(t *testing.T) {
