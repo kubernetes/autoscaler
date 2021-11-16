@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!packet
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -60,6 +60,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.LinodeProviderName,
 	cloudprovider.BizflyCloudProviderName,
 	cloudprovider.BrightboxProviderName,
+	cloudprovider.PacketProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -95,7 +96,7 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return ovhcloud.BuildOVHcloud(opts, do, rl)
 	case cloudprovider.HetznerProviderName:
 		return hetzner.BuildHetzner(opts, do, rl)
-	case packet.ProviderName:
+	case cloudprovider.PacketProviderName:
 		return packet.BuildPacket(opts, do, rl)
 	case cloudprovider.ClusterAPIProviderName:
 		return clusterapi.BuildClusterAPI(opts, do, rl)
