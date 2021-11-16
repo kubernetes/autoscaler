@@ -147,5 +147,9 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
 	}
 
+	if len(vpa.Spec.Recommenders) > 1 {
+		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
+	}
+
 	return nil
 }

@@ -159,7 +159,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			APIVersion: "batch/v1",
 			Kind:       "CronJob",
 			Name:       "hamster-cronjob",
-		})
+		}, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 
 		InstallVPA(f, vpaCRD)
 
@@ -187,7 +187,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD = NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD = NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		InstallVPA(f, vpaCRD)
 
 		vpaClientSet = getVpaClientSet(f)
@@ -304,7 +304,7 @@ func getMilliCpu(resources apiv1.ResourceList) int64 {
 
 // createVpaCRDWithMinMaxAllowed creates vpa object with min and max resources allowed.
 func createVpaCRDWithMinMaxAllowed(f *framework.Framework, minAllowed, maxAllowed apiv1.ResourceList) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 	containerResourcePolicies := []vpa_types.ContainerResourcePolicy{
 		{
 			ContainerName: GetHamsterContainerNameByIndex(0),
@@ -361,7 +361,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 // createVpaCRDWithContainerScalingModes creates vpa object with containers policies
 // having assigned given scaling modes respectively.
 func createVpaCRDWithContainerScalingModes(f *framework.Framework, modes ...vpa_types.ContainerScalingMode) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+	vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 	containerResourcePolicies := make([]vpa_types.ContainerResourcePolicy, len(modes), len(modes))
 	for i := range modes {
 		containerResourcePolicies[i] = vpa_types.ContainerResourcePolicy{

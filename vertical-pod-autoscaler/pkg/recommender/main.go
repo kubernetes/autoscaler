@@ -32,6 +32,9 @@ import (
 	"k8s.io/klog"
 )
 
+// DefaultRecommenderName denotes the current recommender name as the "default" one.
+const DefaultRecommenderName = "default"
+
 var (
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
 	checkpointsGCInterval  = flag.Duration("checkpoints-gc-interval", 10*time.Minute, `How often orphaned checkpoints should be garbage collected`)
@@ -68,7 +71,7 @@ var (
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
-	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
+	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, DefaultRecommenderName)
 
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
