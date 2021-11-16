@@ -102,6 +102,21 @@ func TestValidateVPA(t *testing.T) {
 			expectError: fmt.Errorf("unexpected Mode value bad"),
 		},
 		{
+			name: "more than one recommender",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+						{Name: "test1"},
+						{Name: "test2"},
+					},
+				},
+			},
+			expectError: fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders."),
+		},
+		{
 			name: "bad limits",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
