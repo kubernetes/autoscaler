@@ -51,6 +51,7 @@ func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2
 			interrupt:             make(chan struct{}),
 			asgAutoDiscoverySpecs: autoDiscoverySpecs,
 			awsService:            &awsService,
+			autoscalingOptions:    make(map[AwsRef]map[string]string),
 		},
 	}
 }
