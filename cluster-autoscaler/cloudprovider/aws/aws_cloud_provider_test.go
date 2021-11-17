@@ -468,7 +468,7 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 			AutoScalingGroupName: aws.String("test-asg"),
 			MaxRecords:           aws.Int64(1),
 		},
-	).Return(&autoscaling.DescribeScalingActivitiesOutput{})
+	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
 	provider.Refresh()
 
