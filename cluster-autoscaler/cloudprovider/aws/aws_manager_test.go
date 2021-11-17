@@ -396,7 +396,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 			AutoScalingGroupName: aws.String("coolasg"),
 			MaxRecords:           aws.Int64(1),
 		},
-	).Return(&autoscaling.DescribeScalingActivitiesOutput{})
+	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
 		// Register the same node group twice with different max nodes.
@@ -561,7 +561,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 			AutoScalingGroupName: aws.String("coolasg"),
 			MaxRecords:           aws.Int64(1),
 		},
-	).Return(&autoscaling.DescribeScalingActivitiesOutput{})
+	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},

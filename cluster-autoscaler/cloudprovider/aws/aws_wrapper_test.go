@@ -47,7 +47,7 @@ func (a *autoScalingMock) DescribeLaunchConfigurations(i *autoscaling.DescribeLa
 
 func (a *autoScalingMock) DescribeScalingActivities(i *autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error) {
 	args := a.Called(i)
-	return args.Get(0).(*autoscaling.DescribeScalingActivitiesOutput), nil
+	return args.Get(0).(*autoscaling.DescribeScalingActivitiesOutput), args.Error(1)
 }
 
 func (a *autoScalingMock) DescribeTagsPages(i *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error {
