@@ -690,7 +690,7 @@ groupsloop:
 func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, info nodegroupset.ScaleUpInfo, gpuType string, now time.Time) errors.AutoscalerError {
 	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
-		"Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
+		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
@@ -704,7 +704,7 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 		time.Now())
 	metrics.RegisterScaleUp(increase, gpuType)
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
-		"Scale-up: group %s size set to %d", info.Group.Id(), info.NewSize)
+		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil
 }
 
