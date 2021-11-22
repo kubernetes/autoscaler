@@ -119,7 +119,7 @@ Since version 1.0.0 we consider CA as GA. It means that:
  * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc). The cases handled can however vary from cloudprovider to cloudprovider.
  * CA developers are committed to maintaining and supporting CA in the foreseeable future.
 
-All of the previous versions (earlier that 1.0.0) are considered beta.
+All of the previous versions (earlier than 1.0.0) are considered beta.
 
 ### What are the Service Level Objectives for Cluster Autoscaler?
 
