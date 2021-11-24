@@ -23,8 +23,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -501,81 +499,6 @@ func TestGetASGTemplate(t *testing.T) {
 	}
 }
 
-func TestFetchAutoAsgs(t *testing.T) {
-	min, max := 1, 10
-	groupname, tags := "coolasg", []string{"tag", "anothertag"}
-
-	a := &autoScalingMock{}
-	// Lookup groups associated with tags
-	expectedTagsInput := &autoscaling.DescribeTagsInput{
-		Filters: []*autoscaling.Filter{
-			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[0]})},
-			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[1]})},
-		},
-		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
-	}
-	// Use MatchedBy pattern to avoid list order issue https://github.com/kubernetes/autoscaler/issues/1346
-	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
-		fn(&autoscaling.DescribeTagsOutput{
-			Tags: []*autoscaling.TagDescription{
-				{ResourceId: aws.String(groupname)},
-				{ResourceId: aws.String(groupname)},
-			}}, false)
-	}).Return(nil).Once()
-
-	// Describe the group to register it, then again to generate the instance
-	// cache.
-	a.On("DescribeAutoScalingGroupsPages",
-		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
-		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		zone := "test-1a"
-		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
-			AutoScalingGroups: []*autoscaling.Group{{
-				AvailabilityZones:    []*string{&zone},
-				AutoScalingGroupName: aws.String(groupname),
-				MinSize:              aws.Int64(int64(min)),
-				MaxSize:              aws.Int64(int64(max)),
-				DesiredCapacity:      aws.Int64(int64(min)),
-			}}}, false)
-	}).Return(nil).Twice()
-
-	do := cloudprovider.NodeGroupDiscoveryOptions{
-		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},
-	}
-
-	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
-	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-	os.Setenv("AWS_REGION", "fanghorn")
-	// fetchAutoASGs is called at manager creation time, via forceRefresh
-	instanceTypes, _ := GetStaticEC2InstanceTypes()
-	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil, nil}, instanceTypes)
-	assert.NoError(t, err)
-
-	asgs := m.asgCache.Get()
-	assert.Equal(t, 1, len(asgs))
-	validateAsg(t, asgs[0], groupname, min, max)
-
-	// Simulate the previously discovered ASG disappearing
-	a.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
-		fn(&autoscaling.DescribeTagsOutput{Tags: []*autoscaling.TagDescription{}}, false)
-	}).Return(nil).Once()
-
-	err = m.asgCache.regenerate()
-	assert.NoError(t, err)
-	assert.Empty(t, m.asgCache.Get())
-}
-
 type ServiceDescriptor struct {
 	name                         string
 	region                       string
@@ -846,25 +769,6 @@ func TestOverridesActiveConfig(t *testing.T) {
 			}
 		}
 	}
-}
-
-func tagsMatcher(expected *autoscaling.DescribeTagsInput) func(*autoscaling.DescribeTagsInput) bool {
-	return func(actual *autoscaling.DescribeTagsInput) bool {
-		expectedTags := flatTagSlice(expected.Filters)
-		actualTags := flatTagSlice(actual.Filters)
-
-		return *expected.MaxRecords == *actual.MaxRecords && reflect.DeepEqual(expectedTags, actualTags)
-	}
-}
-
-func flatTagSlice(filters []*autoscaling.Filter) []string {
-	tags := []string{}
-	for _, filter := range filters {
-		tags = append(tags, aws.StringValueSlice(filter.Values)...)
-	}
-	// Sort slice for compare
-	sort.Strings(tags)
-	return tags
 }
 
 func TestParseASGAutoDiscoverySpecs(t *testing.T) {

@@ -128,30 +128,15 @@ func TestAutoDiscoveredNodeGroups(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAutoAsgs(t, a, nil, []string{}, []asgAutoDiscoveryConfig{
 		{
-			Tags: map[string]string{"test": ""},
+			Tags: map[string]string{"testKey": ""},
 		},
 	}))
 
-	a.On("DescribeTagsPages",
-		&autoscaling.DescribeTagsInput{
-			Filters: []*autoscaling.Filter{
-				{Name: aws.String("key"), Values: aws.StringSlice([]string{"test"})},
-			},
-			MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
-		},
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
-		fn(&autoscaling.DescribeTagsOutput{
-			Tags: []*autoscaling.TagDescription{
-				{ResourceId: aws.String("auto-asg")},
-			}}, false)
-	}).Return(nil).Once()
-
 	a.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{"auto-asg"}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			Filters: []*autoscaling.Filter{
+				{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{"testKey"})},
+			}, MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
 		},
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {

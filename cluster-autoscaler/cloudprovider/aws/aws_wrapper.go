@@ -138,10 +138,12 @@ func (m *awsWrapper) getInstanceTypeByLaunchConfigNames(launchConfigToQuery []*s
 	return launchConfigurationsToInstanceType, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
+func (m *awsWrapper) getAutoScalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
 	if len(names) == 0 {
 		return nil, nil
 	}
+
+	klog.V(4).Infof("Regenerating instance-to-ASG map for explicitly-named ASGs: %v", names)
 
 	asgs := make([]*autoscaling.Group, 0)
 
@@ -173,59 +175,50 @@ func (m *awsWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling
 	return asgs, nil
 }
 
-func (m *awsWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
-	// DescribeTags does an OR query when multiple filters on different tags are
-	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
-	// [t1, t2] when there's only one asg tagged both t1 and t2.
-	filters := []*autoscaling.Filter{}
-	for key, value := range kvs {
-		filter := &autoscaling.Filter{
-			Name:   aws.String("key"),
-			Values: []*string{aws.String(key)},
-		}
-		filters = append(filters, filter)
-		if value != "" {
-			filters = append(filters, &autoscaling.Filter{
-				Name:   aws.String("value"),
-				Values: []*string{aws.String(value)},
-			})
-		}
+func (m *awsWrapper) getAutoScalingGroupsByTags(configs []asgAutoDiscoveryConfig) ([]*autoscaling.Group, error) {
+	if len(configs) == 0 {
+		return nil, nil
 	}
 
-	tags := []*autoscaling.TagDescription{}
-	input := &autoscaling.DescribeTagsInput{
+	filters := []*autoscaling.Filter{}
+	tagNames := []string{}
+	for _, config := range configs {
+		for key, value := range config.Tags {
+			filter := &autoscaling.Filter{
+				Name:   aws.String("tag-key"),
+				Values: []*string{aws.String(key)},
+			}
+			filters = append(filters, filter)
+			if value != "" {
+				filters = append(filters, &autoscaling.Filter{
+					Name:   aws.String("tag-value"),
+					Values: []*string{aws.String(value)},
+				})
+			}
+			tagNames = append(tagNames, key)
+		}
+	}
+	klog.V(4).Infof("Regenerating instance-to-ASG map for auto-discovery tags: %v", tagNames)
+
+	asgs := make([]*autoscaling.Group, 0)
+
+	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		Filters:    filters,
 		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
 	}
 	start := time.Now()
-	err := m.DescribeTagsPages(input, func(out *autoscaling.DescribeTagsOutput, _ bool) bool {
-		tags = append(tags, out.Tags...)
+	err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+		asgs = append(asgs, output.AutoScalingGroups...)
 		// We return true while we want to be called with the next page of
 		// results, if any.
 		return true
 	})
-	observeAWSRequest("DescribeTagsPages", err, start)
-
+	observeAWSRequest("DescribeAutoScalingGroupsPages", err, start)
 	if err != nil {
 		return nil, err
 	}
 
-	// According to how DescribeTags API works, the result contains ASGs which
-	// not all but only subset of tags are associated. Explicitly select ASGs to
-	// which all the tags are associated so that we won't end up calling
-	// DescribeAutoScalingGroups API multiple times on an ASG.
-	asgNames := []string{}
-	asgNameOccurrences := make(map[string]int)
-	for _, t := range tags {
-		asgName := aws.StringValue(t.ResourceId)
-		occurrences := asgNameOccurrences[asgName] + 1
-		if occurrences >= len(kvs) {
-			asgNames = append(asgNames, asgName)
-		}
-		asgNameOccurrences[asgName] = occurrences
-	}
-
-	return asgNames, nil
+	return asgs, nil
 }
 
 func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTemplate) (string, error) {

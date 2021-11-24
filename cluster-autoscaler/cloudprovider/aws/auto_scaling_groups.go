@@ -101,7 +101,7 @@ var getInstanceTypeForAsg = func(m *asgCache, group *asg) (string, error) {
 		return result[group.AwsRef.Name], nil
 	}
 
-	return "", fmt.Errorf("Could not find instance type for %s", group.AwsRef.Name)
+	return "", fmt.Errorf("could not find instance type for %s", group.AwsRef.Name)
 }
 
 // Fetch explicitly configured ASGs. These ASGs should never be unregistered
@@ -315,49 +315,14 @@ func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
 	return strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix)
 }
 
-// Fetch automatically discovered ASGs. These ASGs should be unregistered if
-// they no longer exist in AWS.
-func (m *asgCache) fetchAutoAsgNames() ([]string, error) {
-	groupNames := make([]string, 0)
-
-	for _, spec := range m.asgAutoDiscoverySpecs {
-		names, err := m.awsService.getAutoscalingGroupNamesByTags(spec.Tags)
-		if err != nil {
-			return nil, fmt.Errorf("cannot autodiscover ASGs: %s", err)
-		}
-
-		groupNames = append(groupNames, names...)
-	}
-
-	return groupNames, nil
-}
-
-func (m *asgCache) buildAsgNames() ([]string, error) {
-	// Collect explicitly specified names
-	refreshNames := make([]string, len(m.explicitlyConfigured))
+func (m *asgCache) getConfiguredAsgNames() ([]string, error) {
+	asgNames := make([]string, len(m.explicitlyConfigured))
 	i := 0
 	for k := range m.explicitlyConfigured {
-		refreshNames[i] = k.Name
+		asgNames[i] = k.Name
 		i++
 	}
-
-	// Append auto-discovered names
-	autoDiscoveredNames, err := m.fetchAutoAsgNames()
-	if err != nil {
-		return nil, err
-	}
-	for _, name := range autoDiscoveredNames {
-		autoRef := AwsRef{Name: name}
-
-		if m.explicitlyConfigured[autoRef] {
-			// This ASG was already explicitly configured, we only need to fetch it once
-			continue
-		}
-
-		refreshNames = append(refreshNames, name)
-	}
-
-	return refreshNames, nil
+	return asgNames, nil
 }
 
 // regenerate the cached view of explicitly configured and auto-discovered ASGs
@@ -369,17 +334,22 @@ func (m *asgCache) regenerate() error {
 	newAsgToInstancesCache := make(map[AwsRef][]AwsInstanceRef)
 
 	// Build list of known ASG names
-	refreshNames, err := m.buildAsgNames()
+	configuredAsgNames, err := m.getConfiguredAsgNames()
 	if err != nil {
 		return err
 	}
 
 	// Fetch details of all ASGs
-	klog.V(4).Infof("Regenerating instance to ASG map for ASGs: %v", refreshNames)
-	groups, err := m.awsService.getAutoscalingGroupsByNames(refreshNames)
+	namedGroups, err := m.awsService.getAutoScalingGroupsByNames(configuredAsgNames)
 	if err != nil {
 		return err
 	}
+	taggedGroups, err := m.awsService.getAutoScalingGroupsByTags(m.asgAutoDiscoverySpecs)
+	if err != nil {
+		return err
+	}
+
+	groups := append(namedGroups, taggedGroups...)
 
 	// If currently any ASG has more Desired than running Instances, introduce placeholders
 	// for the instances to come up. This is required to track Desired instances that

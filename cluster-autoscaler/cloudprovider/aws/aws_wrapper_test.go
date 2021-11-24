@@ -235,7 +235,7 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 }
 
-func TestMoreThen100Groups(t *testing.T) {
+func TestMoreThan100Groups(t *testing.T) {
 	a := &autoScalingMock{}
 	awsWrapper := &awsWrapper{
 		autoScalingI: a,
@@ -273,7 +273,7 @@ func TestMoreThen100Groups(t *testing.T) {
 		fn(testNamedDescribeAutoScalingGroupsOutput("asg-2", 1, "test-instance-id"), false)
 	}).Return(nil)
 
-	asgs, err := awsWrapper.getAutoscalingGroupsByNames(names)
+	asgs, err := awsWrapper.getAutoScalingGroupsByNames(names)
 	assert.Nil(t, err)
 	assert.Equal(t, len(asgs), 2)
 	assert.Equal(t, *asgs[0].AutoScalingGroupName, "asg-1")
@@ -313,7 +313,7 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 		},
 	})
 
-	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
+	// #1449 Without AWS_REGION, getRegion() lookup runs until timeout during tests.
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
 	os.Setenv("AWS_REGION", "fanghorn")
 
