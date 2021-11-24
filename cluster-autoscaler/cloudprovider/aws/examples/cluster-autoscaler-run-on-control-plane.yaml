@@ -172,6 +172,12 @@ spec:
               mountPath: /etc/ssl/certs/ca-certificates.crt #/etc/ssl/certs/ca-bundle.crt for Amazon Linux Worker Nodes
               readOnly: true
           imagePullPolicy: "Always"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
       volumes:
         - name: ssl-certs
           hostPath:
