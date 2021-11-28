@@ -366,7 +366,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 
 		generatedInstanceTypes, err := GenerateEC2InstanceTypes(region)
 		if err != nil {
-			klog.Fatalf("Failed to generate AWS EC2 Instance Types: %v", err)
+			klog.Warningf("Failed to generate AWS EC2 Instance Types: %v, falling back to using static Instance Types. Last update time: %s", err, lastUpdateTime)
 		}
 		// fallback on the static list if we miss any instance types in the generated output
 		// credits to: https://github.com/lyft/cni-ipvlan-vpc-k8s/pull/80
@@ -385,7 +385,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 			keys = append(keys, key)
 		}
 
-		klog.Infof("Successfully load %d EC2 Instance Types %s", len(keys), keys)
+		klog.Infof("Successfully loaded %d EC2 Instance Types %s", len(keys), keys)
 	}
 
 	manager, err := CreateAwsManager(config, do, instanceTypes)
