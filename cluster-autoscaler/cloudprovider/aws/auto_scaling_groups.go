@@ -33,7 +33,7 @@ import (
 const (
 	scaleToZeroSupported           = true
 	placeholderInstanceNamePrefix  = "i-placeholder"
-	placeholderUnfulfillableStatus = "placeholder-cannot-be-fullfilled"
+	placeholderUnfulfillableStatus = "placeholder-cannot-be-fulfilled"
 )
 
 type asgCache struct {

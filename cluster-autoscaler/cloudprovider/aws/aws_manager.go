@@ -301,6 +301,7 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 	return m.asgCache.InstancesByAsg(ref)
 }
 
+// GetInstanceStatus returns the status of ASG nodes
 func (m *AwsManager) GetInstanceStatus(ref AwsInstanceRef) (*string, error) {
 	return m.asgCache.InstanceStatus(ref)
 }
