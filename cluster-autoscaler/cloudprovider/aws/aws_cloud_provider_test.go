@@ -38,8 +38,8 @@ var testAwsManager = &AwsManager{
 	awsService: testAwsService,
 }
 
-func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2I, autoDiscoverySpecs []asgAutoDiscoveryConfig) *AwsManager {
-	awsService := awsWrapper{mockAutoScaling, mockEC2}
+func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2I, mockEKS eksI, autoDiscoverySpecs []asgAutoDiscoveryConfig) *AwsManager {
+	awsService := awsWrapper{mockAutoScaling, mockEC2, mockEKS}
 	return &AwsManager{
 		awsService: awsService,
 		asgCache: &asgCache{
@@ -57,13 +57,13 @@ func newTestAwsManagerWithMockServices(mockAutoScaling autoScalingI, mockEC2 ec2
 }
 
 func newTestAwsManagerWithAsgs(t *testing.T, mockAutoScaling autoScalingI, mockEC2 ec2I, specs []string) *AwsManager {
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil)
 	m.asgCache.parseExplicitAsgs(specs)
 	return m
 }
 
 func newTestAwsManagerWithAutoAsgs(t *testing.T, mockAutoScaling autoScalingI, mockEC2 ec2I, specs []string, autoDiscoverySpecs []asgAutoDiscoveryConfig) *AwsManager {
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, autoDiscoverySpecs)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, autoDiscoverySpecs)
 	m.asgCache.parseExplicitAsgs(specs)
 	return m
 }
@@ -525,7 +525,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 func TestGetResourceLimiter(t *testing.T) {
 	mockAutoScaling := &autoScalingMock{}
 	mockEC2 := &ec2Mock{}
-	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil)
+	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil)
 
 	provider := testProvider(t, m)
 	_, err := provider.GetResourceLimiter()

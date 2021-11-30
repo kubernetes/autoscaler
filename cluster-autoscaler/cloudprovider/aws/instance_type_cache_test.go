@@ -76,7 +76,7 @@ func TestLTVersionChange(t *testing.T) {
 		},
 		fakeClock,
 	)
-	m := newAsgInstanceTypeCacheWithClock(&awsWrapper{a, e}, fakeClock, fakeStore)
+	m := newAsgInstanceTypeCacheWithClock(&awsWrapper{a, e, nil}, fakeClock, fakeStore)
 
 	for i := 0; i < 2; i++ {
 		err := m.populate([]*asg{
