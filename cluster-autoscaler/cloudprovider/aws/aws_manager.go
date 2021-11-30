@@ -270,7 +270,7 @@ func (m *AwsManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AwsManager) getAsgs() []*asg {
+func (m *AwsManager) getAsgs() map[AwsRef]*asg {
 	return m.asgCache.Get()
 }
 
@@ -291,6 +291,11 @@ func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
 // GetAsgNodes returns Asg nodes.
 func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 	return m.asgCache.InstancesByAsg(ref)
+}
+
+// GetInstanceStatus returns the status of ASG nodes
+func (m *AwsManager) GetInstanceStatus(ref AwsInstanceRef) (*string, error) {
+	return m.asgCache.InstanceStatus(ref)
 }
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {

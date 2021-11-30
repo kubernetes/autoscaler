@@ -79,9 +79,10 @@ func TestLTVersionChange(t *testing.T) {
 	m := newAsgInstanceTypeCacheWithClock(&awsWrapper{a, e}, fakeClock, fakeStore)
 
 	for i := 0; i < 2; i++ {
-		err := m.populate([]*asg{
-			{
-				AwsRef: AwsRef{Name: asgName},
+		asgRef := AwsRef{Name: asgName}
+		err := m.populate(map[AwsRef]*asg{
+			asgRef: {
+				AwsRef: asgRef,
 				LaunchTemplate: &launchTemplate{
 					name:    ltName,
 					version: aws.StringValue(ltVersions[i]),
