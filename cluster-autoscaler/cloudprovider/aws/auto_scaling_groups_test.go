@@ -141,7 +141,7 @@ func TestCreatePlaceholders(t *testing.T) {
 					ec2I:         nil,
 				},
 				registeredAsgs: map[AwsRef]*asg{
-					registeredAsgRef: &asg{
+					registeredAsgRef: {
 						AwsRef:         registeredAsgRef,
 						lastUpdateTime: tc.groupLastUpdateTime,
 					},
