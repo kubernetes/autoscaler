@@ -607,7 +607,7 @@ func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found 
 			return strings.Trim(items[1], " \"'"), true, nil
 		}
 	}
-	klog.Infof("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
+	klog.V(5).Infof("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
 	return "", false, nil
 }
 
