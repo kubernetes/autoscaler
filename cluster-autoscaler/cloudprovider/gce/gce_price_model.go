@@ -74,7 +74,7 @@ var (
 		"m1":  0.00733 / 0.0348,
 		"n1":  0.006655 / 0.031611,
 		"n2":  0.007650 / 0.031611,
-		"n2d": 0.006655 / 0.027502,
+		"n2d": 0.002773 / 0.027502,
 		"t2d": 0.006655 / 0.027502,
 	}
 
@@ -94,7 +94,7 @@ var (
 		"e2":  0.006867 / 0.022890,
 		"n1":  0.00698 / 0.033174,
 		"n2":  0.00802 / 0.033174,
-		"n2d": 0.006980 / 0.028877,
+		"n2d": 0.002908 / 0.028877,
 	}
 
 	// e2-micro and e2-small have allocatable set too high resulting in
@@ -410,7 +410,7 @@ var (
 		"nvidia-tesla-p4":   0.216,
 		"nvidia-tesla-v100": 0.74,
 		"nvidia-tesla-p100": 0.43,
-		"nvidia-tesla-k80":  0.135,
+		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 	}
 )
