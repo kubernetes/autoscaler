@@ -315,14 +315,14 @@ func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
 	return strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix)
 }
 
-func (m *asgCache) getConfiguredAsgNames() ([]string, error) {
+func (m *asgCache) getConfiguredAsgNames() []string {
 	asgNames := make([]string, len(m.explicitlyConfigured))
 	i := 0
 	for k := range m.explicitlyConfigured {
 		asgNames[i] = k.Name
 		i++
 	}
-	return asgNames, nil
+	return asgNames
 }
 
 // regenerate the cached view of explicitly configured and auto-discovered ASGs
@@ -334,10 +334,7 @@ func (m *asgCache) regenerate() error {
 	newAsgToInstancesCache := make(map[AwsRef][]AwsInstanceRef)
 
 	// Build list of known ASG names
-	configuredAsgNames, err := m.getConfiguredAsgNames()
-	if err != nil {
-		return err
-	}
+	configuredAsgNames := m.getConfiguredAsgNames()
 
 	// Fetch details of all ASGs
 	namedGroups, err := m.awsService.getAutoScalingGroupsByNames(configuredAsgNames)
@@ -349,16 +346,25 @@ func (m *asgCache) regenerate() error {
 		return err
 	}
 
-	groups := append(namedGroups, taggedGroups...)
+	// Merge explicitly-named and auto-discovered groups
+	knownGroups := namedGroups
+	for _, group := range taggedGroups {
+		awsRef := AwsRef{Name: *group.AutoScalingGroupName}
+		if m.explicitlyConfigured[awsRef] {
+			// This ASG was already explicitly configured, we only need to fetch it once
+			continue
+		}
+		knownGroups = append(knownGroups, group)
+	}
 
 	// If currently any ASG has more Desired than running Instances, introduce placeholders
 	// for the instances to come up. This is required to track Desired instances that
 	// will never come up, like with Spot Request that can't be fulfilled
-	groups = m.createPlaceholdersForDesiredNonStartedInstances(groups)
+	knownGroups = m.createPlaceholdersForDesiredNonStartedInstances(knownGroups)
 
 	// Register or update ASGs
 	exists := make(map[AwsRef]bool)
-	for _, group := range groups {
+	for _, group := range knownGroups {
 		asg, err := m.buildAsgFromAWS(group)
 		if err != nil {
 			return err

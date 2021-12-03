@@ -33,7 +33,6 @@ import (
 type autoScalingI interface {
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
-	DescribeTagsPages(input *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error
 	SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
@@ -184,11 +183,10 @@ func (m *awsWrapper) getAutoScalingGroupsByTags(configs []asgAutoDiscoveryConfig
 	tagNames := []string{}
 	for _, config := range configs {
 		for key, value := range config.Tags {
-			filter := &autoscaling.Filter{
+			filters = append(filters, &autoscaling.Filter{
 				Name:   aws.String("tag-key"),
 				Values: []*string{aws.String(key)},
-			}
-			filters = append(filters, filter)
+			})
 			if value != "" {
 				filters = append(filters, &autoscaling.Filter{
 					Name:   aws.String("tag-value"),
@@ -200,7 +198,7 @@ func (m *awsWrapper) getAutoScalingGroupsByTags(configs []asgAutoDiscoveryConfig
 	}
 	klog.V(4).Infof("Regenerating instance-to-ASG map for auto-discovery tags: %v", tagNames)
 
-	asgs := make([]*autoscaling.Group, 0)
+	asgs := []*autoscaling.Group{}
 
 	input := &autoscaling.DescribeAutoScalingGroupsInput{
 		Filters:    filters,
