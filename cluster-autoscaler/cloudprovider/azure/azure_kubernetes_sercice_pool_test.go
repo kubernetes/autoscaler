@@ -22,17 +22,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient/mockcontainerserviceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient/mockinterfaceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmclient/mockvmclient"
-	"k8s.io/legacy-cloud-providers/azure/retry"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient/mockinterfaceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -41,7 +41,7 @@ const (
 
 var (
 	errInternal    = &retry.Error{HTTPStatusCode: http.StatusInternalServerError}
-	errInternalRaw = fmt.Errorf("Retriable: false, RetryAfter: 0s, HTTPStatusCode: 500, RawError: <nil>")
+	errInternalRaw = fmt.Errorf("Retriable: false, RetryAfter: 0s, HTTPStatusCode: 500, RawError: %w", nil)
 )
 
 func getTestAKSPool(manager *AzureManager, name string) *AKSAgentPool {
