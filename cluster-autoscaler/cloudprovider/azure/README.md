@@ -333,4 +333,4 @@ The new version of [Azure client][] supports rate limit and back-off retries whe
 [Releases]: ../../README.md#releases
 [service principal]: https://docs.microsoft.com/azure/active-directory/develop/app-objects-and-service-principals
 [helm installation tutorial]: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler#azure-aks
-[Azure client]: https://github.com/kubernetes/kubernetes/tree/master/staging/src/k8s.io/legacy-cloud-providers/azure/clients
+[Azure client]: https://github.com/kubernetes-sigs/cloud-provider-azure/tree/master/pkg/azureclients

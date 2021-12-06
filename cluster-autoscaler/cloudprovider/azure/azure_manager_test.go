@@ -18,14 +18,14 @@ package azure
 
 import (
 	"fmt"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmclient/mockvmclient"
 	"os"
 	"reflect"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -33,9 +33,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	azclients "k8s.io/legacy-cloud-providers/azure/clients"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient/mockvmssclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient/mockvmssvmclient"
+	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 )
 
 const validAzureCfg = `{
