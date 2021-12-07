@@ -12,7 +12,7 @@ rules:
       - configmaps
     verbs:
       - create
-{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+{{- if contains "priority" (default "" .Values.extraArgs.expander) }}
       - list
       - watch
 {{- end }}
@@ -22,14 +22,14 @@ rules:
       - configmaps
     resourceNames:
       - cluster-autoscaler-status
-{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+{{- if contains "priority" (default "" .Values.extraArgs.expander) }}
       - cluster-autoscaler-priority-expander
 {{- end }}
     verbs:
       - delete
       - get
       - update
-{{- if eq (default "" .Values.extraArgs.expander) "priority" }}
+{{- if contains "priority" (default "" .Values.extraArgs.expander) }}
       - watch
 {{- end }}
 {{- if  eq (default "" (index .Values.extraArgs "leader-elect-resource-lock")) "configmaps" }}
