@@ -428,7 +428,6 @@ k8s.io/component-base/metrics/legacyregistry
 k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/version
 # k8s.io/klog v1.0.0
-## explicit
 k8s.io/klog
 # k8s.io/klog/v2 v2.9.0
 ## explicit
