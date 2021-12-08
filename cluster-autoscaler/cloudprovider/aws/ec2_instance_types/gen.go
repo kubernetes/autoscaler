@@ -1,7 +1,7 @@
 // +build ignore
 
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ package main
 import (
 	"flag"
 	"html/template"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	klog "k8s.io/klog/v2"
 	"os"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
+	klog "k8s.io/klog/v2"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -73,6 +74,8 @@ var InstanceTypes = map[string]*InstanceType{
 }
 `))
 
+// Please note that the IAM user running the static instance types generator must be
+// a non-anonymous user with privileges to call the DescribeInstanceTypes EC2 API.
 func main() {
 	var region = flag.String("region", "", "aws region you'd like to generate instances from."+
 		"It will populate list from all regions if region is not specified.")
