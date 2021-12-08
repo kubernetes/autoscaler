@@ -62,6 +62,28 @@ const operationDoneResponse = `{
   "endTime": "2017-09-18T09:54:35.124878859Z"
 }`
 
+const operationDoneResponseError = `{
+  "endTime": "2021-12-08T11:42:45.071-08:00",
+  "error": {
+    "errors": [
+    {
+		"code": "CONDITION_NOT_MET",
+		"message": "CreateInstances cannot be used when UpdatePolicy type is set to PROACTIVE and replacementMethod to SUBSTITUTE. Set replacementMethod to RECREATE or disable rolling update by setting type to OPPORTUNISTIC."
+	}
+	]
+},
+"httpErrorMessage": "PRECONDITION FAILED",
+"httpErrorStatusCode": 412,
+"name": "operation-1505728466148-d16f5197",
+"operationType": "compute.instanceGroupManagers.createInstances",
+"progress": 100,
+"selfLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/operations/operation-1505728466148-d16f5197",
+"startTime": "2021-12-08T11:42:41.543-08:00",
+"status": "DONE",
+"targetLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/instanceGroupManagers/workspace-ws-us21-pool",
+"zone": "us-central1-a"
+}`
+
 func TestWaitForOp(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
@@ -78,6 +100,19 @@ func TestWaitForOp(t *testing.T) {
 	err := g.waitForOp(operation, projectId, zoneB, false)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestWaitForOpError(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponseError).Once()
+
+	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
+
+	err := g.waitForOp(operation, projectId, zoneB, false)
+	assert.Error(t, err)
 }
 
 func TestWaitForOpTimeout(t *testing.T) {
