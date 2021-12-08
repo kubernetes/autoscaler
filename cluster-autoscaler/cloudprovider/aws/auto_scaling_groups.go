@@ -101,7 +101,7 @@ var getInstanceTypeForAsg = func(m *asgCache, group *asg) (string, error) {
 		return result[group.AwsRef.Name], nil
 	}
 
-	return "", fmt.Errorf("Could not find instance type for %s", group.AwsRef.Name)
+	return "", fmt.Errorf("could not find instance type for %s", group.AwsRef.Name)
 }
 
 // Fetch explicitly configured ASGs. These ASGs should never be unregistered
