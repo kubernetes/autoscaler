@@ -24,20 +24,21 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	klog "k8s.io/klog/v2"
-	"k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/diskclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient"
 )
 
 // DeploymentsClient defines needed functions for azure network.DeploymentsClient.

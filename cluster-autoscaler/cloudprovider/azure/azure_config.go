@@ -30,9 +30,8 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/klog/v2"
-	providerazure "k8s.io/legacy-cloud-providers/azure"
-	azclients "k8s.io/legacy-cloud-providers/azure/clients"
-	"k8s.io/legacy-cloud-providers/azure/retry"
+	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -147,6 +146,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
+		cfg.SubscriptionID = os.Getenv("ARM_SUBSCRIPTION_ID")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
@@ -156,12 +156,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
 		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
-
-		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
-		if err != nil {
-			return nil, err
-		}
-		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -474,23 +468,4 @@ func (cfg *Config) validate() error {
 	}
 
 	return nil
-}
-
-// getSubscriptionId reads the Subscription ID from the instance metadata.
-func getSubscriptionIdFromInstanceMetadata() (string, error) {
-	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
-	if !present {
-		metadataService, err := providerazure.NewInstanceMetadataService(metadataURL)
-		if err != nil {
-			return "", err
-		}
-
-		metadata, err := metadataService.GetMetadata(0)
-		if err != nil {
-			return "", err
-		}
-
-		return metadata.Compute.SubscriptionID, nil
-	}
-	return subscriptionID, nil
 }

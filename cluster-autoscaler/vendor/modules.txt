@@ -1,14 +1,17 @@
 # cloud.google.com/go v0.81.0
 ## explicit
 cloud.google.com/go/compute/metadata
-# github.com/Azure/azure-sdk-for-go v55.0.0+incompatible
+# github.com/Azure/azure-sdk-for-go v55.8.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute
+github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute
 github.com/Azure/azure-sdk-for-go/services/containerregistry/mgmt/2019-05-01/containerregistry
 github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network
+github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network
 github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources
 github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage
+github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage
 github.com/Azure/azure-sdk-for-go/storage
 github.com/Azure/azure-sdk-for-go/version
 # github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1
@@ -16,11 +19,11 @@ github.com/Azure/go-ansiterm
 github.com/Azure/go-ansiterm/winterm
 # github.com/Azure/go-autorest v14.2.0+incompatible
 github.com/Azure/go-autorest
-# github.com/Azure/go-autorest/autorest v0.11.18
+# github.com/Azure/go-autorest/autorest v0.11.19
 ## explicit
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/azure
-# github.com/Azure/go-autorest/autorest/adal v0.9.13
+# github.com/Azure/go-autorest/autorest/adal v0.9.14
 ## explicit
 github.com/Azure/go-autorest/autorest/adal
 # github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
@@ -270,7 +273,7 @@ github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/types
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 github.com/golang/groupcache/lru
-# github.com/golang/mock v1.5.0
+# github.com/golang/mock v1.6.0
 ## explicit
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.5.2
@@ -426,7 +429,7 @@ github.com/mindprince/gonvml
 github.com/mistifyio/go-zfs
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/mapstructure v1.1.2
+# github.com/mitchellh/mapstructure v1.4.1
 github.com/mitchellh/mapstructure
 # github.com/moby/ipvs v1.0.1
 github.com/moby/ipvs
@@ -522,7 +525,7 @@ github.com/satori/go.uuid
 github.com/seccomp/libseccomp-golang
 # github.com/sirupsen/logrus v1.8.1
 github.com/sirupsen/logrus
-# github.com/spf13/cobra v1.1.3
+# github.com/spf13/cobra v1.2.1
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
@@ -1445,7 +1448,7 @@ k8s.io/cri-api/pkg/apis/runtime/v1alpha2
 # k8s.io/csi-translation-lib v0.23.0-alpha.1 => k8s.io/csi-translation-lib v0.23.0-alpha.1
 k8s.io/csi-translation-lib
 k8s.io/csi-translation-lib/plugins
-# k8s.io/klog/v2 v2.9.0
+# k8s.io/klog/v2 v2.10.0
 ## explicit
 k8s.io/klog/v2
 # k8s.io/kube-openapi v0.0.0-20210817084001-7fbd8d59e5b8
@@ -1779,7 +1782,6 @@ k8s.io/legacy-cloud-providers/azure/cache
 k8s.io/legacy-cloud-providers/azure/clients
 k8s.io/legacy-cloud-providers/azure/clients/armclient
 k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient
-k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient/mockcontainerserviceclient
 k8s.io/legacy-cloud-providers/azure/clients/deploymentclient
 k8s.io/legacy-cloud-providers/azure/clients/diskclient
 k8s.io/legacy-cloud-providers/azure/clients/diskclient/mockdiskclient
@@ -1798,7 +1800,6 @@ k8s.io/legacy-cloud-providers/azure/clients/securitygroupclient
 k8s.io/legacy-cloud-providers/azure/clients/securitygroupclient/mocksecuritygroupclient
 k8s.io/legacy-cloud-providers/azure/clients/snapshotclient
 k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient
-k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient/mockstorageaccountclient
 k8s.io/legacy-cloud-providers/azure/clients/subnetclient
 k8s.io/legacy-cloud-providers/azure/clients/subnetclient/mocksubnetclient
 k8s.io/legacy-cloud-providers/azure/clients/vmclient
@@ -1842,6 +1843,28 @@ k8s.io/utils/trace
 # sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.22
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
+# sigs.k8s.io/cloud-provider-azure v1.1.3
+## explicit
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient/mockinterfaceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient/mockstorageaccountclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient
+sigs.k8s.io/cloud-provider-azure/pkg/consts
+sigs.k8s.io/cloud-provider-azure/pkg/metrics
+sigs.k8s.io/cloud-provider-azure/pkg/retry
+sigs.k8s.io/cloud-provider-azure/pkg/version
 # sigs.k8s.io/structured-merge-diff/v4 v4.1.2
 sigs.k8s.io/structured-merge-diff/v4/fieldpath
 sigs.k8s.io/structured-merge-diff/v4/merge
