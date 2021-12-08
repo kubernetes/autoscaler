@@ -32,7 +32,8 @@ The following policy provides the minimum privileges necessary for Cluster Autos
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup"
+        "autoscaling:TerminateInstanceInAutoScalingGroup",
+        "ec2:DescribeInstanceTypes"
       ],
       "Resource": ["*"]
     }
