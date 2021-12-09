@@ -80,9 +80,12 @@ type EvictionHard struct {
 	EphemeralStorageEvictionRatio float64
 }
 
+// GceReserved implement Reserved interface
+type GceReserved struct{}
+
 // CalculateKernelReserved computes how much memory Linux kernel will reserve.
 // TODO(jkaniuk): account for crashkernel reservation on RHEL / CentOS
-func CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution) int64 {
+func (r *GceReserved) CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution, nodeVersion string) int64 {
 	switch os {
 	case OperatingSystemLinux:
 		// Account for memory reserved by kernel
@@ -269,7 +272,7 @@ func EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(diskCount int64, osDist
 }
 
 // CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold
-func CalculateOSReservedEphemeralStorage(diskSize int64, osDistribution OperatingSystemDistribution) int64 {
+func (r *GceReserved) CalculateOSReservedEphemeralStorage(diskSize int64, os OperatingSystem, osDistribution OperatingSystemDistribution, nodeVersion string) int64 {
 	switch osDistribution {
 	case OperatingSystemDistributionCOS, OperatingSystemDistributionCOSContainerd:
 		storage := int64(math.Ceil(0.015635*float64(diskSize))) + int64(math.Ceil(4.148*GiB)) // os partition estimation
