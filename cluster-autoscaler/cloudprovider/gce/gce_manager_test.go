@@ -255,7 +255,7 @@ const listInstanceGroupManagerResponsePartTemplate = `
     }
    ],
    "instanceGroup": "https://www.googleapis.com/compute/v1/projects/lukaszos-gke-dev2/zones/%v/instanceGroups/%v",
-   "baseInstanceName": "gke-blah-default-pool-67b773a0",
+   "baseInstanceName": "%s",
    "fingerprint": "ASJwTpesjDI=",
    "currentActions": {
     "none": 1,
@@ -313,7 +313,7 @@ func buildOneRunningInstanceManagedInstancesResponse(zone string, instanceGroup 
 }
 
 func buildListInstanceGroupManagersResponsePart(name, zone string, targetSize uint64) string {
-	return fmt.Sprintf(listInstanceGroupManagerResponsePartTemplate, name, zone, zone, name, targetSize)
+	return fmt.Sprintf(listInstanceGroupManagerResponsePartTemplate, name, zone, zone, name, name, targetSize)
 }
 
 func buildListInstanceGroupManagersResponse(listInstanceGroupManagerResponseParts ...string) string {
@@ -333,11 +333,10 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	gceService.operationPollInterval = 1 * time.Millisecond
 
 	cache := &GceCache{
-		migs:                     make(map[GceRef]Mig),
-		GceService:               gceService,
-		instanceRefToMigRef:      make(map[GceRef]GceRef),
-		instancesFromUnknownMigs: make(map[GceRef]struct{}),
-		autoscalingOptionsCache:  map[GceRef]map[string]string{},
+		migs:                    make(map[GceRef]Mig),
+		instancesToMig:          make(map[GceRef]GceRef),
+		instancesFromUnknownMig: make(map[GceRef]bool),
+		autoscalingOptionsCache: map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]machinesCacheValue{
 			{"us-central1-b", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
 			{"us-central1-c", "n1-standard-1"}: {&gce.MachineType{GuestCpus: 1, MemoryMb: 1}, nil},
@@ -347,11 +346,10 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instanceTemplateNameCache: map[GceRef]string{},
 		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
 		migBaseNameCache:          map[GceRef]string{},
-		concurrentGceRefreshes:    1,
 	}
 	manager := &gceManagerImpl{
 		cache:                  cache,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId, 1),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,
@@ -684,7 +682,11 @@ func TestGetMigForInstance(t *testing.T) {
 	setupTestDefaultPool(g, false)
 	g.cache.InvalidateAllMigBasenames()
 
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
+		buildListInstanceGroupManagersResponse(
+			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
+			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
+		)).Once()
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Twice()
 	gceRef1 := GceRef{
 		Project: projectId,
@@ -705,7 +707,7 @@ func TestGetMigForInstance(t *testing.T) {
 	mig, err = g.GetMigForInstance(gceRef2)
 	assert.NoError(t, err)
 	assert.Nil(t, mig)
-	_, found := g.cache.instancesFromUnknownMigs[gceRef2]
+	_, found := g.cache.instancesFromUnknownMig[gceRef2]
 	assert.True(t, found)
 
 	mock.AssertExpectationsForObjects(t, server)
