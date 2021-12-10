@@ -18,6 +18,7 @@ package gce
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -28,18 +29,18 @@ import (
 
 var (
 	errFetchMig             = errors.New("fetch migs error")
+	errFetchMigInstances    = errors.New("fetch mig instances error")
 	errFetchMigTargetSize   = errors.New("fetch mig target size error")
 	errFetchMigBaseName     = errors.New("fetch mig basename error")
 	errFetchMigTemplateName = errors.New("fetch mig template name error")
 	errFetchMigTemplate     = errors.New("fetch mig template error")
 
-	gceRef = GceRef{
-		Project: "project",
-		Zone:    "us-test1",
-		Name:    "mig",
-	}
 	mig = &gceMig{
-		gceRef: gceRef,
+		gceRef: GceRef{
+			Project: "project",
+			Zone:    "us-test1",
+			Name:    "mig",
+		},
 	}
 )
 
@@ -47,6 +48,7 @@ type mockAutoscalingGceClient struct {
 	fetchMigs            func(string) ([]*gce.InstanceGroupManager, error)
 	fetchMigTargetSize   func(GceRef) (int64, error)
 	fetchMigBasename     func(GceRef) (string, error)
+	fetchMigInstances    func(GceRef) ([]cloudprovider.Instance, error)
 	fetchMigTemplateName func(GceRef) (string, error)
 	fetchMigTemplate     func(GceRef, string) (*gce.InstanceTemplate, error)
 }
@@ -71,8 +73,8 @@ func (client *mockAutoscalingGceClient) FetchMigBasename(migRef GceRef) (string,
 	return client.fetchMigBasename(migRef)
 }
 
-func (client *mockAutoscalingGceClient) FetchMigInstances(_ GceRef) ([]cloudprovider.Instance, error) {
-	return nil, nil
+func (client *mockAutoscalingGceClient) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+	return client.fetchMigInstances(migRef)
 }
 
 func (client *mockAutoscalingGceClient) FetchMigTemplateName(migRef GceRef) (string, error) {
@@ -107,11 +109,284 @@ func (client *mockAutoscalingGceClient) CreateInstances(_ GceRef, _ string, _ in
 	return nil
 }
 
+func TestMigInfoProviderGetMigForInstance(t *testing.T) {
+	instance := cloudprovider.Instance{
+		Id: "gce://project/us-test1/base-instance-name-abcd",
+	}
+	instanceRef, err := GceRefFromProviderId(instance.Id)
+	assert.Nil(t, err)
+
+	testCases := []struct {
+		name                     string
+		instanceRef              GceRef
+		cache                    *GceCache
+		fetchMigInstances        func(GceRef) ([]cloudprovider.Instance, error)
+		fetchMigBasename         func(GceRef) (string, error)
+		expectedMig              Mig
+		expectedErr              error
+		expectedCachedMigRef     GceRef
+		expectedCached           bool
+		expectedCachedMigUnknown bool
+	}{
+		{
+			name: "instance mig ref and mig in cache",
+			cache: &GceCache{
+				migs:           map[GceRef]Mig{mig.GceRef(): mig},
+				instancesToMig: map[GceRef]GceRef{instanceRef: mig.GceRef()},
+			},
+			expectedMig:          mig,
+			expectedCachedMigRef: mig.GceRef(),
+			expectedCached:       true,
+		},
+		{
+			name: "only instance mig ref in cache",
+			cache: &GceCache{
+				instancesToMig: map[GceRef]GceRef{instanceRef: mig.GceRef()},
+			},
+			expectedMig:          nil,
+			expectedErr:          fmt.Errorf("instance %v belongs to unregistered mig %v", instanceRef, mig.GceRef()),
+			expectedCachedMigRef: mig.GceRef(),
+			expectedCached:       true,
+		},
+		{
+			name: "instance mig unknown in cache",
+			cache: &GceCache{
+				instancesFromUnknownMig: map[GceRef]bool{instanceRef: true},
+			},
+			expectedCachedMigUnknown: true,
+		},
+		{
+			name: "mig from cache fill",
+			cache: &GceCache{
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{mig.GceRef(): "base-instance-name"},
+				instancesToMig:   map[GceRef]GceRef{},
+			},
+			fetchMigInstances:    fetchMigInstancesConst([]cloudprovider.Instance{instance}),
+			expectedMig:          mig,
+			expectedCachedMigRef: mig.GceRef(),
+			expectedCached:       true,
+		},
+		{
+			name: "mig and basename from cache fill",
+			cache: &GceCache{
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{},
+				instancesToMig:   map[GceRef]GceRef{},
+			},
+			fetchMigInstances:    fetchMigInstancesConst([]cloudprovider.Instance{instance}),
+			fetchMigBasename:     fetchMigBasenameConst("base-instance-name"),
+			expectedMig:          mig,
+			expectedCachedMigRef: mig.GceRef(),
+			expectedCached:       true,
+		},
+		{
+			name: "unknown mig from cache fill",
+			cache: &GceCache{
+				migs:                    map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache:        map[GceRef]string{mig.GceRef(): "base-instance-name"},
+				instancesFromUnknownMig: map[GceRef]bool{},
+			},
+			fetchMigInstances:        fetchMigInstancesConst([]cloudprovider.Instance{}),
+			expectedCachedMigUnknown: true,
+		},
+		{
+			name: "no candidate mig during cache fill",
+			cache: &GceCache{
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{mig.GceRef(): "different-base-instance-name"},
+				instancesToMig:   map[GceRef]GceRef{},
+			},
+			fetchMigInstances: fetchMigInstancesConst([]cloudprovider.Instance{instance}),
+		},
+		{
+			name: "fetch instances error during cache fill",
+			cache: &GceCache{
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{mig.GceRef(): "base-instance-name"},
+				instancesToMig:   map[GceRef]GceRef{},
+			},
+			fetchMigInstances: fetchMigInstancesFail,
+			expectedErr:       errFetchMigInstances,
+		},
+		{
+			name: "fetch basename error during cache fill",
+			cache: &GceCache{
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{},
+				instancesToMig:   map[GceRef]GceRef{},
+			},
+			fetchMigBasename: fetchMigBasenameFail,
+			expectedErr:      nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMigBasename:  tc.fetchMigBasename,
+				fetchMigInstances: tc.fetchMigInstances,
+				fetchMigs:         fetchMigsConst(nil),
+			}
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+
+			mig, err := provider.GetMigForInstance(instanceRef)
+
+			cachedMigRef, cached := tc.cache.GetMigForInstance(instanceRef)
+			cachedMigUnknown := tc.cache.IsMigUnknownForInstance(instanceRef)
+
+			assert.Equal(t, tc.expectedMig, mig)
+			assert.Equal(t, tc.expectedErr, err)
+
+			assert.Equal(t, tc.expectedCachedMigRef, cachedMigRef)
+			assert.Equal(t, tc.expectedCached, cached)
+			assert.Equal(t, tc.expectedCachedMigUnknown, cachedMigUnknown)
+		})
+	}
+}
+
+func TestRegenerateMigInstancesCache(t *testing.T) {
+	otherMig := &gceMig{
+		gceRef: GceRef{
+			Project: "project",
+			Zone:    "us-test1",
+			Name:    "other-mig",
+		},
+	}
+
+	instances := []cloudprovider.Instance{
+		{Id: "gce://project/us-test1/base-instance-name-abcd"},
+		{Id: "gce://project/us-test1/base-instance-name-efgh"},
+	}
+	otherInstances := []cloudprovider.Instance{
+		{Id: "gce://project/us-test1/other-base-instance-name-abcd"},
+		{Id: "gce://project/us-test1/other-base-instance-name-efgh"},
+	}
+
+	var instancesRefs, otherInstancesRefs []GceRef
+	for _, instance := range instances {
+		instanceRef, err := GceRefFromProviderId(instance.Id)
+		assert.Nil(t, err)
+		instancesRefs = append(instancesRefs, instanceRef)
+	}
+	for _, instance := range otherInstances {
+		instanceRef, err := GceRefFromProviderId(instance.Id)
+		assert.Nil(t, err)
+		otherInstancesRefs = append(otherInstancesRefs, instanceRef)
+	}
+
+	testCases := []struct {
+		name                   string
+		cache                  *GceCache
+		fetchMigInstances      func(GceRef) ([]cloudprovider.Instance, error)
+		expectedErr            error
+		expectedInstancesToMig map[GceRef]GceRef
+	}{
+		{
+			name: "fill empty cache for one mig",
+			cache: &GceCache{
+				migs:           map[GceRef]Mig{mig.GceRef(): mig},
+				instancesToMig: map[GceRef]GceRef{},
+			},
+			fetchMigInstances: fetchMigInstancesConst(instances),
+			expectedInstancesToMig: map[GceRef]GceRef{
+				instancesRefs[0]: mig.GceRef(),
+				instancesRefs[1]: mig.GceRef(),
+			},
+		},
+		{
+			name: "fill empty cache for two migs",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig.GceRef():      mig,
+					otherMig.GceRef(): otherMig,
+				},
+				instancesToMig: map[GceRef]GceRef{},
+			},
+			fetchMigInstances: fetchMigInstancesMapping(map[GceRef][]cloudprovider.Instance{
+				mig.GceRef():      instances,
+				otherMig.GceRef(): otherInstances,
+			}),
+			expectedInstancesToMig: map[GceRef]GceRef{
+				instancesRefs[0]:      mig.GceRef(),
+				instancesRefs[1]:      mig.GceRef(),
+				otherInstancesRefs[0]: otherMig.GceRef(),
+				otherInstancesRefs[1]: otherMig.GceRef(),
+			},
+		},
+		{
+			name: "clear cache for removed mig",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig.GceRef(): mig,
+				},
+				instancesToMig: map[GceRef]GceRef{
+					instancesRefs[0]:      mig.GceRef(),
+					instancesRefs[1]:      mig.GceRef(),
+					otherInstancesRefs[0]: otherMig.GceRef(),
+					otherInstancesRefs[1]: otherMig.GceRef(),
+				},
+			},
+			fetchMigInstances: fetchMigInstancesMapping(map[GceRef][]cloudprovider.Instance{
+				mig.GceRef():      instances,
+				otherMig.GceRef(): otherInstances,
+			}),
+			expectedInstancesToMig: map[GceRef]GceRef{
+				instancesRefs[0]: mig.GceRef(),
+				instancesRefs[1]: mig.GceRef(),
+			},
+		},
+		{
+			name: "override cache for changed instances",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig.GceRef(): mig,
+				},
+				instancesToMig: map[GceRef]GceRef{
+					instancesRefs[0]: mig.GceRef(),
+					instancesRefs[1]: mig.GceRef(),
+				},
+			},
+			fetchMigInstances: fetchMigInstancesConst(otherInstances),
+			expectedInstancesToMig: map[GceRef]GceRef{
+				otherInstancesRefs[0]: mig.GceRef(),
+				otherInstancesRefs[1]: mig.GceRef(),
+			},
+		},
+		{
+			name: "refill mig instances error",
+			cache: &GceCache{
+				migs: map[GceRef]Mig{
+					mig.GceRef(): mig,
+				},
+				instancesToMig: map[GceRef]GceRef{},
+			},
+			fetchMigInstances: fetchMigInstancesFail,
+			expectedErr:       errFetchMigInstances,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMigInstances: tc.fetchMigInstances,
+			}
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			err := provider.RegenerateMigInstancesCache()
+
+			assert.Equal(t, tc.expectedErr, err)
+			if tc.expectedErr == nil {
+				assert.Equal(t, tc.expectedInstancesToMig, tc.cache.instancesToMig)
+			}
+		})
+	}
+}
+
 func TestGetMigTargetSize(t *testing.T) {
 	targetSize := int64(42)
 	instanceGroupManager := &gce.InstanceGroupManager{
-		Zone:       gceRef.Zone,
-		Name:       gceRef.Name,
+		Zone:       mig.GceRef().Zone,
+		Name:       mig.GceRef().Name,
 		TargetSize: targetSize,
 	}
 
@@ -126,8 +401,8 @@ func TestGetMigTargetSize(t *testing.T) {
 		{
 			name: "target size in cache",
 			cache: &GceCache{
-				migs:               map[GceRef]Mig{gceRef: mig},
-				migTargetSizeCache: map[GceRef]int64{gceRef: targetSize},
+				migs:               map[GceRef]Mig{mig.GceRef(): mig},
+				migTargetSizeCache: map[GceRef]int64{mig.GceRef(): targetSize},
 			},
 			expectedTargetSize: targetSize,
 		},
@@ -173,10 +448,10 @@ func TestGetMigTargetSize(t *testing.T) {
 				fetchMigs:          tc.fetchMigs,
 				fetchMigTargetSize: tc.fetchMigTargetSize,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, gceRef.Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
 
-			targetSize, err := provider.GetMigTargetSize(gceRef)
-			cachedTargetSize, found := tc.cache.GetMigTargetSize(gceRef)
+			targetSize, err := provider.GetMigTargetSize(mig.GceRef())
+			cachedTargetSize, found := tc.cache.GetMigTargetSize(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedErr == nil, found)
@@ -191,8 +466,8 @@ func TestGetMigTargetSize(t *testing.T) {
 func TestGetMigBasename(t *testing.T) {
 	basename := "base-instance-name"
 	instanceGroupManager := &gce.InstanceGroupManager{
-		Zone:             gceRef.Zone,
-		Name:             gceRef.Name,
+		Zone:             mig.GceRef().Zone,
+		Name:             mig.GceRef().Name,
 		BaseInstanceName: basename,
 	}
 
@@ -207,8 +482,8 @@ func TestGetMigBasename(t *testing.T) {
 		{
 			name: "basename in cache",
 			cache: &GceCache{
-				migs:             map[GceRef]Mig{gceRef: mig},
-				migBaseNameCache: map[GceRef]string{gceRef: basename},
+				migs:             map[GceRef]Mig{mig.GceRef(): mig},
+				migBaseNameCache: map[GceRef]string{mig.GceRef(): basename},
 			},
 			expectedBasename: basename,
 		},
@@ -254,10 +529,10 @@ func TestGetMigBasename(t *testing.T) {
 				fetchMigs:        tc.fetchMigs,
 				fetchMigBasename: tc.fetchMigBasename,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, gceRef.Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
 
-			basename, err := provider.GetMigBasename(gceRef)
-			cachedBasename, found := tc.cache.GetMigBasename(gceRef)
+			basename, err := provider.GetMigBasename(mig.GceRef())
+			cachedBasename, found := tc.cache.GetMigBasename(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedErr == nil, found)
@@ -272,8 +547,8 @@ func TestGetMigBasename(t *testing.T) {
 func TestGetMigInstanceTemplateName(t *testing.T) {
 	templateName := "template-name"
 	instanceGroupManager := &gce.InstanceGroupManager{
-		Zone:             gceRef.Zone,
-		Name:             gceRef.Name,
+		Zone:             mig.GceRef().Zone,
+		Name:             mig.GceRef().Name,
 		InstanceTemplate: templateName,
 	}
 
@@ -288,8 +563,8 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 		{
 			name: "template name in cache",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
 			},
 			expectedTemplateName: templateName,
 		},
@@ -335,10 +610,10 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 				fetchMigs:            tc.fetchMigs,
 				fetchMigTemplateName: tc.fetchMigTemplateName,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, gceRef.Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
 
-			templateName, err := provider.GetMigInstanceTemplateName(gceRef)
-			cachedTemplateName, found := tc.cache.GetMigInstanceTemplateName(gceRef)
+			templateName, err := provider.GetMigInstanceTemplateName(mig.GceRef())
+			cachedTemplateName, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedErr == nil, found)
@@ -374,9 +649,9 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		{
 			name: "template in cache",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
-				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{gceRef: template},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
 			},
 			expectedTemplate:       template,
 			expectedCachedTemplate: template,
@@ -384,8 +659,8 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		{
 			name: "cache without template, fetch success",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
@@ -395,9 +670,9 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		{
 			name: "cache with old template, fetch success",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
-				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{gceRef: oldTemplate},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
 			expectedTemplate:       template,
@@ -406,8 +681,8 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		{
 			name: "cache without template, fetch failure",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate: fetchMigTemplateFail,
@@ -416,9 +691,9 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		{
 			name: "cache with old template, fetch failure",
 			cache: &GceCache{
-				migs:                      map[GceRef]Mig{gceRef: mig},
-				instanceTemplateNameCache: map[GceRef]string{gceRef: templateName},
-				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{gceRef: oldTemplate},
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateFail,
 			expectedCachedTemplate: oldTemplate,
@@ -440,10 +715,10 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 				fetchMigTemplateName: tc.fetchMigTemplateName,
 				fetchMigTemplate:     tc.fetchMigTemplate,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, gceRef.Project, 1)
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
 
-			template, err := provider.GetMigInstanceTemplate(gceRef)
-			cachedTemplate, found := tc.cache.GetMigInstanceTemplate(gceRef)
+			template, err := provider.GetMigInstanceTemplate(mig.GceRef())
+			cachedTemplate, found := tc.cache.GetMigInstanceTemplate(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expectedErr == nil {
@@ -460,7 +735,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 
 func emptyCache() *GceCache {
 	return &GceCache{
-		migs:                      map[GceRef]Mig{gceRef: mig},
+		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
 		migTargetSizeCache:        make(map[GceRef]int64),
 		migBaseNameCache:          make(map[GceRef]string),
 		instanceTemplateNameCache: make(map[GceRef]string),
@@ -475,6 +750,22 @@ func fetchMigsFail(_ string) ([]*gce.InstanceGroupManager, error) {
 func fetchMigsConst(migs []*gce.InstanceGroupManager) func(string) ([]*gce.InstanceGroupManager, error) {
 	return func(string) ([]*gce.InstanceGroupManager, error) {
 		return migs, nil
+	}
+}
+
+func fetchMigInstancesFail(_ GceRef) ([]cloudprovider.Instance, error) {
+	return nil, errFetchMigInstances
+}
+
+func fetchMigInstancesConst(instances []cloudprovider.Instance) func(GceRef) ([]cloudprovider.Instance, error) {
+	return func(GceRef) ([]cloudprovider.Instance, error) {
+		return instances, nil
+	}
+}
+
+func fetchMigInstancesMapping(instancesMapping map[GceRef][]cloudprovider.Instance) func(GceRef) ([]cloudprovider.Instance, error) {
+	return func(migRef GceRef) ([]cloudprovider.Instance, error) {
+		return instancesMapping[migRef], nil
 	}
 }
 
