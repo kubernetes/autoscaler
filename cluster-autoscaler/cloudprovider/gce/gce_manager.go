@@ -119,6 +119,7 @@ type gceManagerImpl struct {
 	regional              bool
 	explicitlyConfigured  map[GceRef]bool
 	migAutoDiscoverySpecs []migAutoDiscoveryConfig
+	reserved              *GceReserved
 }
 
 // CreateGceManager constructs GceManager object.
@@ -188,6 +189,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		interrupt:              make(chan struct{}),
 		explicitlyConfigured:   make(map[GceRef]bool),
 		concurrentGceRefreshes: concurrentGceRefreshes,
+		reserved:               &GceReserved{},
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -586,7 +588,7 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem, nil)
+	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem, nil, m.reserved)
 }
 
 func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
