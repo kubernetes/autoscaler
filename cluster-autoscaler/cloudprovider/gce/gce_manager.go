@@ -283,11 +283,12 @@ func (m *gceManagerImpl) GetMigForInstance(instance GceRef) (Mig, error) {
 
 // GetMigNodes returns mig nodes.
 func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]cloudprovider.Instance, error) {
-	return m.GceService.FetchMigInstances(mig.GceRef())
+	return m.migInfoProvider.GetMigInstances(mig.GceRef())
 }
 
 // Refresh triggers refresh of cached resources.
 func (m *gceManagerImpl) Refresh() error {
+	m.cache.InvalidateAllMigInstances()
 	m.cache.InvalidateAllMigTargetSizes()
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllMigInstanceTemplateNames()
