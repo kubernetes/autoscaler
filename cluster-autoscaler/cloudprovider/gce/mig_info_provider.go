@@ -25,12 +25,15 @@ import (
 	"sync"
 
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/util/workqueue"
 	klog "k8s.io/klog/v2"
 )
 
 // MigInfoProvider allows obtaining information about MIGs
 type MigInfoProvider interface {
+	// GetMigInstances returns instances for a given MIG ref
+	GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, error)
 	// GetMigForInstance returns MIG ref for a given instance
 	GetMigForInstance(instanceRef GceRef) (Mig, error)
 	// RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
@@ -61,6 +64,21 @@ func NewCachingMigInfoProvider(cache *GceCache, gceClient AutoscalingGceClient, 
 		projectId:              projectId,
 		concurrentGceRefreshes: concurrentGceRefreshes,
 	}
+}
+
+// GetMigInstances returns instances for a given MIG ref
+func (c *cachingMigInfoProvider) GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+	instances, found := c.cache.GetMigInstances(migRef)
+	if found {
+		return instances, nil
+	}
+
+	err := c.fillMigInstances(migRef)
+	if err != nil {
+		return nil, err
+	}
+	instances, _ = c.cache.GetMigInstances(migRef)
+	return instances, nil
 }
 
 // GetMigForInstance returns MIG ref for a given instance
@@ -102,6 +120,7 @@ func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mi
 
 // RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
 func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
+	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
 	migs := c.cache.GetMigs()
 	errors := make([]error, len(migs))
