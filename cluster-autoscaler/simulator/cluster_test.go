@@ -21,10 +21,12 @@ import (
 	"testing"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -299,6 +301,23 @@ func TestFindNodesToRemove(t *testing.T) {
 	SetNodeReadyState(nonDrainableNode, true, time.Time{})
 	SetNodeReadyState(fullNode, true, time.Time{})
 
+	replicas := int32(5)
+	replicaSets := []*appsv1.ReplicaSet{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "rs",
+				Namespace: "default",
+				SelfLink:  "api/v1/namespaces/default/replicasets/rs",
+			},
+			Spec: appsv1.ReplicaSetSpec{
+				Replicas: &replicas,
+			},
+		},
+	}
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	ownerRefs := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 
 	pod1 := BuildTestPod("p1", 100, 100000)
@@ -391,8 +410,8 @@ func TestFindNodesToRemove(t *testing.T) {
 			}
 			InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			toRemove, unremovable, _, err := FindNodesToRemove(
-				test.candidates, destinations, nil,
-				clusterSnapshot, predicateChecker, len(test.allNodes), true, map[string]string{},
+				test.candidates, destinations, registry,
+				clusterSnapshot, predicateChecker, map[string]string{},
 				tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
 			assert.NoError(t, err)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
