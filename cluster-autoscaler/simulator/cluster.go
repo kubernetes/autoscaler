@@ -75,6 +75,8 @@ const (
 	NotUnneededLongEnough
 	// NotUnreadyLongEnough - node can't be removed because it wasn't unready for long enough.
 	NotUnreadyLongEnough
+	// UnreadyScaleDownDisabled - node can't be removed because it is unready and scale down is disabled for unready nodes.
+	UnreadyScaleDownDisabled
 	// NodeGroupMinSizeReached - node can't be removed because its node group is at its minimal size already.
 	NodeGroupMinSizeReached
 	// MinimalResourceLimitExceeded - node can't be removed because it would violate cluster-wide minimal resource limits.

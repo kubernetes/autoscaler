@@ -102,7 +102,7 @@ var (
 	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
 		"How long a node should be unneeded before it is eligible for scale down")
 	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
-		"How long an unready node should be unneeded before it is eligible for scale down")
+		"How long an unready node should be unneeded before it is eligible for scale down. To disable scale down of unready nodes, set to a negative number.")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Sum of cpu or memory of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down")
 	scaleDownGpuUtilizationThreshold = flag.Float64("scale-down-gpu-utilization-threshold", 0.5,

@@ -772,6 +772,13 @@ func (sd *ScaleDown) TryToScaleDown(
 				klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 				continue
 			}
+
+			// Negative unreadyTime indicates that scale down is disabled for unready nodes of the nodegroup.
+			if unreadyTime < 0 {
+				sd.addUnremovableNodeReason(node, simulator.UnreadyScaleDownDisabled)
+				continue
+			}
+
 			if !unneededSince.Add(unreadyTime).Before(currentTime) {
 				sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
 				continue

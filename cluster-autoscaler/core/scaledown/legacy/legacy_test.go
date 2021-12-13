@@ -1740,6 +1740,40 @@ func TestNoScaleDownUnready(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
 	assert.Equal(t, n1.Name, utils.GetStringFromChan(deletedNodes))
+
+	provider = testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		t.Fatalf("Unexpected deletion of %s", node)
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+
+	options = config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnreadyTime:          -1 * time.Hour,
+		},
+		MaxGracefulTerminationSec: 60,
+	}
+	context, err = NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
+	assert.NoError(t, err)
+
+	// Negative ScaleDownUnreadyTime, do not remove unready node "n1".
+	context.CloudProvider = provider
+	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Hour))
+	scaleDown = newScaleDownForTesting(&context, clusterStateRegistry)
+	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, []*apiv1.Pod{p2})
+	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-2*time.Hour), nil)
+	assert.NoError(t, autoscalererr)
+	scaleDownStatus, err = scaleDown.TryToScaleDown(time.Now(), nil)
+	waitForDeleteToFinish(t, scaleDown)
+
+	assert.NoError(t, err)
+	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
+	// Ensure that the reason node "n1" was not removed is UnreadyScaleDownDisabled.
+	assert.Equal(t, scaleDown.unremovableNodeReasons["n1"].Reason, simulator.UnreadyScaleDownDisabled)
 }
 
 func TestScaleDownNoMove(t *testing.T) {
