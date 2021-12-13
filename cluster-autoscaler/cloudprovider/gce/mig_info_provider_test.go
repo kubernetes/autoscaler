@@ -248,6 +248,73 @@ func TestMigInfoProviderGetMigForInstance(t *testing.T) {
 	}
 }
 
+func TestGetMigInstances(t *testing.T) {
+	instances := []cloudprovider.Instance{
+		{Id: "gce://project/us-test1/base-instance-name-abcd"},
+		{Id: "gce://project/us-test1/base-instance-name-efgh"},
+	}
+
+	testCases := []struct {
+		name                    string
+		cache                   *GceCache
+		fetchMigInstances       func(GceRef) ([]cloudprovider.Instance, error)
+		expectedInstances       []cloudprovider.Instance
+		expectedErr             error
+		expectedCachedInstances []cloudprovider.Instance
+		expectedCached          bool
+	}{
+		{
+			name: "instances in cache",
+			cache: &GceCache{
+				migs:      map[GceRef]Mig{mig.GceRef(): mig},
+				instances: map[GceRef][]cloudprovider.Instance{mig.GceRef(): instances},
+			},
+			expectedInstances:       instances,
+			expectedCachedInstances: instances,
+			expectedCached:          true,
+		},
+		{
+			name: "instances cache fill",
+			cache: &GceCache{
+				migs:           map[GceRef]Mig{mig.GceRef(): mig},
+				instances:      map[GceRef][]cloudprovider.Instance{},
+				instancesToMig: map[GceRef]GceRef{},
+			},
+			fetchMigInstances:       fetchMigInstancesConst(instances),
+			expectedInstances:       instances,
+			expectedCachedInstances: instances,
+			expectedCached:          true,
+		},
+		{
+			name: "error during instances cache fill",
+			cache: &GceCache{
+				migs:      map[GceRef]Mig{mig.GceRef(): mig},
+				instances: map[GceRef][]cloudprovider.Instance{},
+			},
+			fetchMigInstances:       fetchMigInstancesFail,
+			expectedErr:             errFetchMigInstances,
+			expectedCachedInstances: []cloudprovider.Instance{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMigInstances: tc.fetchMigInstances,
+			}
+			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			instances, err := provider.GetMigInstances(mig.GceRef())
+			cachedInstances, cached := tc.cache.GetMigInstances(mig.GceRef())
+
+			assert.Equal(t, tc.expectedInstances, instances)
+			assert.Equal(t, tc.expectedErr, err)
+
+			assert.Equal(t, tc.expectedCachedInstances, cachedInstances)
+			assert.Equal(t, tc.expectedCached, cached)
+		})
+	}
+}
+
 func TestRegenerateMigInstancesCache(t *testing.T) {
 	otherMig := &gceMig{
 		gceRef: GceRef{
@@ -283,15 +350,20 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 		cache                  *GceCache
 		fetchMigInstances      func(GceRef) ([]cloudprovider.Instance, error)
 		expectedErr            error
+		expectedMigInstances   map[GceRef][]cloudprovider.Instance
 		expectedInstancesToMig map[GceRef]GceRef
 	}{
 		{
 			name: "fill empty cache for one mig",
 			cache: &GceCache{
 				migs:           map[GceRef]Mig{mig.GceRef(): mig},
+				instances:      map[GceRef][]cloudprovider.Instance{},
 				instancesToMig: map[GceRef]GceRef{},
 			},
 			fetchMigInstances: fetchMigInstancesConst(instances),
+			expectedMigInstances: map[GceRef][]cloudprovider.Instance{
+				mig.GceRef(): instances,
+			},
 			expectedInstancesToMig: map[GceRef]GceRef{
 				instancesRefs[0]: mig.GceRef(),
 				instancesRefs[1]: mig.GceRef(),
@@ -304,12 +376,17 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 					mig.GceRef():      mig,
 					otherMig.GceRef(): otherMig,
 				},
+				instances:      map[GceRef][]cloudprovider.Instance{},
 				instancesToMig: map[GceRef]GceRef{},
 			},
 			fetchMigInstances: fetchMigInstancesMapping(map[GceRef][]cloudprovider.Instance{
 				mig.GceRef():      instances,
 				otherMig.GceRef(): otherInstances,
 			}),
+			expectedMigInstances: map[GceRef][]cloudprovider.Instance{
+				mig.GceRef():      instances,
+				otherMig.GceRef(): otherInstances,
+			},
 			expectedInstancesToMig: map[GceRef]GceRef{
 				instancesRefs[0]:      mig.GceRef(),
 				instancesRefs[1]:      mig.GceRef(),
@@ -323,6 +400,10 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migs: map[GceRef]Mig{
 					mig.GceRef(): mig,
 				},
+				instances: map[GceRef][]cloudprovider.Instance{
+					mig.GceRef():      instances,
+					otherMig.GceRef(): otherInstances,
+				},
 				instancesToMig: map[GceRef]GceRef{
 					instancesRefs[0]:      mig.GceRef(),
 					instancesRefs[1]:      mig.GceRef(),
@@ -334,6 +415,9 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				mig.GceRef():      instances,
 				otherMig.GceRef(): otherInstances,
 			}),
+			expectedMigInstances: map[GceRef][]cloudprovider.Instance{
+				mig.GceRef(): instances,
+			},
 			expectedInstancesToMig: map[GceRef]GceRef{
 				instancesRefs[0]: mig.GceRef(),
 				instancesRefs[1]: mig.GceRef(),
@@ -345,12 +429,18 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migs: map[GceRef]Mig{
 					mig.GceRef(): mig,
 				},
+				instances: map[GceRef][]cloudprovider.Instance{
+					mig.GceRef(): instances,
+				},
 				instancesToMig: map[GceRef]GceRef{
 					instancesRefs[0]: mig.GceRef(),
 					instancesRefs[1]: mig.GceRef(),
 				},
 			},
 			fetchMigInstances: fetchMigInstancesConst(otherInstances),
+			expectedMigInstances: map[GceRef][]cloudprovider.Instance{
+				mig.GceRef(): otherInstances,
+			},
 			expectedInstancesToMig: map[GceRef]GceRef{
 				otherInstancesRefs[0]: mig.GceRef(),
 				otherInstancesRefs[1]: mig.GceRef(),
@@ -362,6 +452,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migs: map[GceRef]Mig{
 					mig.GceRef(): mig,
 				},
+				instances:      map[GceRef][]cloudprovider.Instance{},
 				instancesToMig: map[GceRef]GceRef{},
 			},
 			fetchMigInstances: fetchMigInstancesFail,
@@ -379,6 +470,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expectedErr == nil {
+				assert.Equal(t, tc.expectedMigInstances, tc.cache.instances)
 				assert.Equal(t, tc.expectedInstancesToMig, tc.cache.instancesToMig)
 			}
 		})
