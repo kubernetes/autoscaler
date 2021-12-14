@@ -12,6 +12,10 @@ metadata:
   {{- end }}
 data:
   priorities: |-
+{{- if kindIs "string" .Values.expanderPriorities }}
 {{ .Values.expanderPriorities | indent 4 }}
+{{- else }}
+{{ toYaml .Values.expanderPriorities | indent 4 }}
+{{- end -}}
 {{- end -}}
 {{- end -}}
