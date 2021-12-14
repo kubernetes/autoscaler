@@ -239,7 +239,7 @@ podLabels: {}
 additionalLabels: {}
 
 # priorityClassName -- priorityClassName
-priorityClassName: ""
+priorityClassName: "system-cluster-critical"
 
 rbac:
   # rbac.create -- If `true`, create and use RBAC resources.
