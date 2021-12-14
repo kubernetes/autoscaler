@@ -231,7 +231,8 @@ func TestMigInfoProviderGetMigForInstance(t *testing.T) {
 				fetchMigInstances: tc.fetchMigInstances,
 				fetchMigs:         fetchMigsConst(nil),
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 
 			mig, err := provider.GetMigForInstance(instanceRef)
 
@@ -302,7 +303,8 @@ func TestGetMigInstances(t *testing.T) {
 			client := &mockAutoscalingGceClient{
 				fetchMigInstances: tc.fetchMigInstances,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 			instances, err := provider.GetMigInstances(mig.GceRef())
 			cachedInstances, cached := tc.cache.GetMigInstances(mig.GceRef())
 
@@ -465,7 +467,8 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 			client := &mockAutoscalingGceClient{
 				fetchMigInstances: tc.fetchMigInstances,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 			err := provider.RegenerateMigInstancesCache()
 
 			assert.Equal(t, tc.expectedErr, err)
@@ -543,7 +546,8 @@ func TestGetMigTargetSize(t *testing.T) {
 				fetchMigs:          tc.fetchMigs,
 				fetchMigTargetSize: tc.fetchMigTargetSize,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 
 			targetSize, err := provider.GetMigTargetSize(mig.GceRef())
 			cachedTargetSize, found := tc.cache.GetMigTargetSize(mig.GceRef())
@@ -624,7 +628,8 @@ func TestGetMigBasename(t *testing.T) {
 				fetchMigs:        tc.fetchMigs,
 				fetchMigBasename: tc.fetchMigBasename,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 
 			basename, err := provider.GetMigBasename(mig.GceRef())
 			cachedBasename, found := tc.cache.GetMigBasename(mig.GceRef())
@@ -705,7 +710,8 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 				fetchMigs:            tc.fetchMigs,
 				fetchMigTemplateName: tc.fetchMigTemplateName,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 
 			templateName, err := provider.GetMigInstanceTemplateName(mig.GceRef())
 			cachedTemplateName, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
@@ -810,7 +816,8 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 				fetchMigTemplateName: tc.fetchMigTemplateName,
 				fetchMigTemplate:     tc.fetchMigTemplate,
 			}
-			provider := NewCachingMigInfoProvider(tc.cache, client, mig.GceRef().Project, 1)
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1)
 
 			template, err := provider.GetMigInstanceTemplate(mig.GceRef())
 			cachedTemplate, found := tc.cache.GetMigInstanceTemplate(mig.GceRef())
