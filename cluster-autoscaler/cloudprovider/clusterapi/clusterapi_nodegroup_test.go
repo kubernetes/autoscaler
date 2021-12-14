@@ -19,6 +19,7 @@ package clusterapi
 import (
 	"context"
 	"fmt"
+	"k8s.io/client-go/tools/cache"
 	"path"
 	"sort"
 	"strings"
@@ -425,6 +426,63 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
+		ch := make(chan error)
+		checkDone := func(obj interface{}) (bool, error) {
+			u, ok := obj.(*unstructured.Unstructured)
+			if !ok {
+				return false, nil
+			}
+			if u.GetResourceVersion() != scalableResource.GetResourceVersion() {
+				return false, nil
+			}
+			ng, err := newNodeGroupFromScalableResource(controller, u)
+			if err != nil {
+				return true, fmt.Errorf("unexpected error: %v", err)
+			}
+			if ng == nil {
+				return false, nil
+			}
+			currReplicas, err := ng.TargetSize()
+			if err != nil {
+				return true, fmt.Errorf("unexpected error: %v", err)
+			}
+
+			if currReplicas != int(tc.initial)+int(tc.targetSizeIncrement) {
+				return true, fmt.Errorf("expected %v, got %v", tc.initial+tc.targetSizeIncrement, currReplicas)
+			}
+
+			if err := ng.DecreaseTargetSize(tc.delta); (err != nil) != tc.expectedError {
+				return true, fmt.Errorf("expected error: %v, got: %v", tc.expectedError, err)
+			}
+
+			scalableResource, err := controller.managementScaleClient.Scales(testConfig.spec.namespace).
+				Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+			if err != nil {
+				return true, fmt.Errorf("unexpected error: %v", err)
+			}
+
+			if scalableResource.Spec.Replicas != tc.expected {
+				return true, fmt.Errorf("expected %v, got %v", tc.expected, scalableResource.Spec.Replicas)
+			}
+			return true, nil
+		}
+		handler := cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				match, err := checkDone(obj)
+				if match {
+					ch <- err
+				}
+			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				match, err := checkDone(newObj)
+				if match {
+					ch <- err
+				}
+			},
+		}
+		controller.machineSetInformer.Informer().AddEventHandler(handler)
+		controller.machineDeploymentInformer.Informer().AddEventHandler(handler)
+
 		scalableResource.Spec.Replicas += tc.targetSizeIncrement
 
 		_, err = ng.machineController.managementScaleClient.Scales(ng.scalableResource.Namespace()).
@@ -433,34 +491,14 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// A nodegroup is immutable; get a fresh copy after adding targetSizeIncrement.
-		nodegroups, err = controller.nodeGroups()
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		ng = nodegroups[0]
-
-		currReplicas, err := ng.TargetSize()
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		if currReplicas != int(tc.initial)+int(tc.targetSizeIncrement) {
-			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
-		}
-
-		if err := ng.DecreaseTargetSize(tc.delta); (err != nil) != tc.expectedError {
-			t.Fatalf("expected error: %v, got: %v", tc.expectedError, err)
-		}
-
-		scalableResource, err = controller.managementScaleClient.Scales(testConfig.spec.namespace).
-			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		if scalableResource.Spec.Replicas != tc.expected {
-			t.Errorf("expected %v, got %v", tc.expected, scalableResource.Spec.Replicas)
+		lastErr := fmt.Errorf("no updates received yet")
+		for lastErr != nil {
+			select {
+			case err = <-ch:
+				lastErr = err
+			case <-time.After(1 * time.Second):
+				t.Fatal(fmt.Errorf("timeout while waiting for update. Last error was: %v", lastErr))
+			}
 		}
 	}
 
