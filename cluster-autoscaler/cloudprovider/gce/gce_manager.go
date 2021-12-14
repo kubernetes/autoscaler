@@ -111,6 +111,7 @@ type gceManagerImpl struct {
 
 	GceService      AutoscalingGceClient
 	migInfoProvider MigInfoProvider
+	migLister       MigLister
 
 	location              string
 	projectId             string
@@ -178,10 +179,12 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		return nil, err
 	}
 	cache := NewGceCache()
+	migLister := NewMigLister(cache)
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		GceService:             gceService,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId, concurrentGceRefreshes),
+		migLister:              migLister,
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes),
 		location:               location,
 		regional:               regional,
 		projectId:              projectId,
@@ -273,7 +276,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 
 // GetMigs returns list of registered MIGs.
 func (m *gceManagerImpl) GetMigs() []Mig {
-	return m.cache.GetMigs()
+	return m.migLister.GetMigs()
 }
 
 // GetMigForInstance returns MIG to which the given instance belongs.
@@ -331,7 +334,7 @@ func (m *gceManagerImpl) forceRefresh() error {
 }
 
 func (m *gceManagerImpl) refreshAutoscalingOptions() {
-	for _, mig := range m.cache.GetMigs() {
+	for _, mig := range m.migLister.GetMigs() {
 		template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
 		if err != nil {
 			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template", mig.GceRef(), err)
