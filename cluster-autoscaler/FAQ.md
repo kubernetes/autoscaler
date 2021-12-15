@@ -758,6 +758,8 @@ CA doesn't remove underutilized nodes if they are running pods [that it shouldn'
 
 * using large custom value for `--scale-down-delay-after-delete` or `--scan-interval`, which delays CA action.
 
+* make sure `--scale-down-enabled` parameter in command is not set to false
+
 ### How to set PDBs to enable CA to move kube-system pods?
 
 By default, kube-system pods prevent CA from removing nodes on which they are running. Users can manually add PDBs for the kube-system pods that can be safely rescheduled elsewhere:
