@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -1217,33 +1218,35 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 		dsEvictionTimeout     time.Duration
 		evictionSuccess       bool
 		err                   error
+		evictByDefault        bool
+		extraAnnotationValue  map[string]string
+		expectNotEvicted      map[string]struct{}
 	}{
 		{
-			name:                  "Successful attempt to evict DaemonSet pods",
-			dsPods:                []string{"d1", "d2"},
-			nodeInfoSuccess:       true,
-			evictionTimeoutExceed: false,
-			dsEvictionTimeout:     5000 * time.Millisecond,
-			evictionSuccess:       true,
-			err:                   nil,
+			name:              "Successful attempt to evict DaemonSet pods",
+			dsPods:            []string{"d1", "d2"},
+			nodeInfoSuccess:   true,
+			dsEvictionTimeout: 5000 * time.Millisecond,
+			evictionSuccess:   true,
+			evictByDefault:    true,
 		},
 		{
-			name:                  "Failed to get node info",
-			dsPods:                []string{"d1", "d2"},
-			nodeInfoSuccess:       false,
-			evictionTimeoutExceed: false,
-			dsEvictionTimeout:     5000 * time.Millisecond,
-			evictionSuccess:       true,
-			err:                   fmt.Errorf("failed to get node info"),
+			name:              "Failed to get node info",
+			dsPods:            []string{"d1", "d2"},
+			nodeInfoSuccess:   false,
+			dsEvictionTimeout: 5000 * time.Millisecond,
+			evictionSuccess:   true,
+			err:               fmt.Errorf("failed to get node info"),
+			evictByDefault:    true,
 		},
 		{
-			name:                  "Failed to create DaemonSet eviction",
-			dsPods:                []string{"d1", "d2"},
-			nodeInfoSuccess:       true,
-			evictionTimeoutExceed: false,
-			dsEvictionTimeout:     5000 * time.Millisecond,
-			evictionSuccess:       false,
-			err:                   fmt.Errorf("following DaemonSet pod failed to evict on the"),
+			name:              "Failed to create DaemonSet eviction",
+			dsPods:            []string{"d1", "d2"},
+			nodeInfoSuccess:   true,
+			dsEvictionTimeout: 5000 * time.Millisecond,
+			evictionSuccess:   false,
+			err:               fmt.Errorf("following DaemonSet pod failed to evict on the"),
+			evictByDefault:    true,
 		},
 		{
 			name:                  "Eviction timeout exceed",
@@ -1253,11 +1256,33 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsEvictionTimeout:     100 * time.Millisecond,
 			evictionSuccess:       true,
 			err:                   fmt.Errorf("failed to create DaemonSet eviction for"),
+			evictByDefault:        true,
+		},
+		{
+			name:                 "Evict single pod due to annotation",
+			dsPods:               []string{"d1", "d2"},
+			nodeInfoSuccess:      true,
+			dsEvictionTimeout:    5000 * time.Millisecond,
+			evictionSuccess:      true,
+			extraAnnotationValue: map[string]string{"d1": "true"},
+			expectNotEvicted:     map[string]struct{}{"d2": {}},
+		},
+		{
+			name:                 "Don't evict single pod due to annotation",
+			dsPods:               []string{"d1", "d2"},
+			nodeInfoSuccess:      true,
+			dsEvictionTimeout:    5000 * time.Millisecond,
+			evictionSuccess:      true,
+			evictByDefault:       true,
+			extraAnnotationValue: map[string]string{"d1": "false"},
+			expectNotEvicted:     map[string]struct{}{"d1": {}},
 		},
 	}
 
 	for _, scenario := range testScenarios {
+		scenario := scenario
 		t.Run(scenario.name, func(t *testing.T) {
+			t.Parallel()
 			options := config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUtilizationThreshold: 0.5,
@@ -1277,6 +1302,9 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				ds := BuildTestPod(dsName, 100, 0)
 				ds.Spec.NodeName = "n1"
 				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "", "")
+				if v, ok := scenario.extraAnnotationValue[dsName]; ok {
+					ds.Annotations[daemonset.EnableDsEvictionKey] = v
+				}
 				dsPods[i] = ds
 			}
 
@@ -1312,18 +1340,25 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{}, []*apiv1.Pod{})
 			}
 
-			err = evictDaemonSetPods(context.ClusterSnapshot, n1, fakeClient, options.MaxGracefulTerminationSec, timeNow, scenario.dsEvictionTimeout, waitBetweenRetries, kube_util.CreateEventRecorder(fakeClient))
+			err = evictDaemonSetPods(context.ClusterSnapshot, n1, fakeClient, options.MaxGracefulTerminationSec, timeNow, scenario.dsEvictionTimeout, waitBetweenRetries, kube_util.CreateEventRecorder(fakeClient), scenario.evictByDefault)
 			if scenario.err != nil {
 				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), scenario.err.Error())
 				return
 			}
 			assert.Nil(t, err)
-			deleted := make([]string, len(scenario.dsPods))
-			for i := 0; i < len(scenario.dsPods); i++ {
+			var expectEvicted []string
+			for _, p := range scenario.dsPods {
+				if _, found := scenario.expectNotEvicted[p]; found {
+					continue
+				}
+				expectEvicted = append(expectEvicted, p)
+			}
+			deleted := make([]string, len(expectEvicted))
+			for i := 0; i < len(expectEvicted); i++ {
 				deleted[i] = utils.GetStringFromChan(deletedPods)
 			}
-			assert.ElementsMatch(t, deleted, scenario.dsPods)
+			assert.ElementsMatch(t, deleted, expectEvicted)
 		})
 	}
 }
@@ -1797,8 +1832,7 @@ func TestFilterOutMasters(t *testing.T) {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodeInfo := schedulerframework.NewNodeInfo()
-		err := nodeInfo.SetNode(node)
-		assert.NoError(t, err)
+		nodeInfo.SetNode(node)
 		nodes[i] = nodeInfo
 		nodeMap[n.name] = nodeInfo
 	}

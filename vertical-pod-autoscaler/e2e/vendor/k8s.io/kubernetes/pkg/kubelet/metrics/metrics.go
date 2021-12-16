@@ -27,9 +27,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/features"
-	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 )
 
 // This const block defines the metric names for the kubelet metrics.
@@ -61,6 +60,8 @@ const (
 	// Metrics keys of device plugin operations
 	DevicePluginRegistrationCountKey  = "device_plugin_registration_total"
 	DevicePluginAllocationDurationKey = "device_plugin_alloc_duration_seconds"
+	// Metrics keys of pod resources operations
+	PodResourcesEndpointRequestsTotalKey = "pod_resources_endpoint_requests_total"
 
 	// Metric keys for node config
 	AssignedConfigKey             = "node_config_assigned"
@@ -203,7 +204,7 @@ var (
 			Subsystem:      KubeletSubsystem,
 			Name:           RuntimeOperationsDurationKey,
 			Help:           "Duration in seconds of runtime operations. Broken down by operation type.",
-			Buckets:        metrics.DefBuckets,
+			Buckets:        metrics.ExponentialBuckets(.005, 2.5, 14),
 			StabilityLevel: metrics.ALPHA,
 		},
 		[]string{"operation_type"},
@@ -278,6 +279,18 @@ var (
 		[]string{"resource_name"},
 	)
 
+	// PodResourcesEndpointRequestsTotalCount is a Counter that tracks the cumulative number of requests to the PodResource endpoints.
+	// Broken down by server API version.
+	PodResourcesEndpointRequestsTotalCount = metrics.NewCounterVec(
+		&metrics.CounterOpts{
+			Subsystem:      KubeletSubsystem,
+			Name:           PodResourcesEndpointRequestsTotalKey,
+			Help:           "Cumulative number of requests to the PodResource endpoint. Broken down by server api version.",
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"server_api_version"},
+	)
+
 	// Metrics for node config
 
 	// AssignedConfig is a Gauge that is set 1 if the Kubelet has a NodeConfig assigned.
@@ -349,7 +362,7 @@ var (
 	RunningPodCount = metrics.NewGauge(
 		&metrics.GaugeOpts{
 			Subsystem:      KubeletSubsystem,
-			Name:           "running_pod_count",
+			Name:           "running_pods",
 			Help:           "Number of pods currently running",
 			StabilityLevel: metrics.ALPHA,
 		},
@@ -358,7 +371,7 @@ var (
 	RunningContainerCount = metrics.NewGaugeVec(
 		&metrics.GaugeOpts{
 			Subsystem:      KubeletSubsystem,
-			Name:           "running_container_count",
+			Name:           "running_containers",
 			Help:           "Number of containers currently running",
 			StabilityLevel: metrics.ALPHA,
 		},
@@ -369,7 +382,7 @@ var (
 var registerMetrics sync.Once
 
 // Register registers all metrics.
-func Register(containerCache kubecontainer.RuntimeCache, collectors ...metrics.StableCollector) {
+func Register(collectors ...metrics.StableCollector) {
 	// Register the metrics.
 	registerMetrics.Do(func() {
 		legacyregistry.MustRegister(NodeName)

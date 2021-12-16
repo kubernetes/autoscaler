@@ -18,7 +18,7 @@ package azure
 
 import (
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,10 +26,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog/v2"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
@@ -44,14 +45,10 @@ func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
 	result := make(map[string]string)
 
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-
-	result[kubeletapis.LabelOS] = buildInstanceOS(template)
 	result[apiv1.LabelOSStable] = buildInstanceOS(template)
 
-	result[apiv1.LabelInstanceType] = *template.Sku.Name
-	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
+	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
 	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
@@ -60,10 +57,8 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
 		}
 
-		result[apiv1.LabelZoneFailureDomain] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
-		result[apiv1.LabelZoneFailureDomain] = "0"
 		result[apiv1.LabelTopologyZone] = "0"
 	}
 
@@ -188,6 +183,53 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 	}
 
 	return taints
+}
+
+func extractAutoscalingOptionsFromScaleSetTags(tags map[string]*string) map[string]string {
+	options := make(map[string]string)
+	for tagName, tagValue := range tags {
+		if !strings.HasPrefix(tagName, nodeOptionsTagName) {
+			continue
+		}
+		resourceName := strings.Split(tagName, nodeOptionsTagName)
+		if len(resourceName) < 2 || resourceName[1] == "" || tagValue == nil {
+			continue
+		}
+		options[resourceName[1]] = strings.ToLower(*tagValue)
+	}
+	return options
+}
+
+func getFloat64Option(options map[string]string, vmssName, name string) (float64, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to float: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func getDurationOption(options map[string]string, vmssName, name string) (time.Duration, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := time.ParseDuration(raw)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to duration: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
 }
 
 func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string]*resource.Quantity {

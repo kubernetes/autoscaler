@@ -126,15 +126,6 @@ func createCgroupManager(name string) (cgroups.Manager, error) {
 			Memory:      int64(memoryLimit),
 			MemorySwap:  -1,
 			SkipDevices: true,
-			Devices: []*configs.DeviceRule{
-				{
-					Minor:       configs.Wildcard,
-					Major:       configs.Wildcard,
-					Type:        'a',
-					Permissions: "rwm",
-					Allow:       true,
-				},
-			},
 		},
 	}
 	return cgroupfs.NewManager(cg, nil, false), nil

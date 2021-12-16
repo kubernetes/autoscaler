@@ -31,6 +31,7 @@ const DefaultExpirationTime = 23 * time.Hour
 type OpenStackProvider struct {
 	provider *gophercloud.ProviderClient
 
+	AuthUrl             string
 	Token               string
 	tokenExpirationTime time.Time
 }
@@ -51,6 +52,7 @@ func NewOpenStackProvider(authUrl string, username string, password string, doma
 
 	return &OpenStackProvider{
 		provider:            provider,
+		AuthUrl:             authUrl,
 		Token:               provider.Token(),
 		tokenExpirationTime: time.Now().Add(DefaultExpirationTime),
 	}, nil

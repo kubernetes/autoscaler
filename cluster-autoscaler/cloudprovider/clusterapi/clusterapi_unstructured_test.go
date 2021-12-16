@@ -18,9 +18,12 @@ package clusterapi
 
 import (
 	"context"
-	"testing"
-
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/tools/cache"
+	"testing"
+	"time"
 )
 
 func TestSetSize(t *testing.T) {
@@ -125,19 +128,57 @@ func TestReplicas(t *testing.T) {
 
 		s.Spec.Replicas = int32(updatedReplicas)
 
+		ch := make(chan error)
+		checkDone := func(obj interface{}) (bool, error) {
+			u, ok := obj.(*unstructured.Unstructured)
+			if !ok {
+				return false, nil
+			}
+			sr, err := newUnstructuredScalableResource(controller, u)
+			if err != nil {
+				return true, err
+			}
+			i, err := sr.Replicas()
+			if err != nil {
+				return true, err
+			}
+			if i != updatedReplicas {
+				return true, fmt.Errorf("expected %v, got: %v", updatedReplicas, i)
+			}
+			return true, nil
+		}
+		handler := cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				match, err := checkDone(obj)
+				if match {
+					ch <- err
+				}
+			},
+			UpdateFunc: func(oldObj, newObj interface{}) {
+				match, err := checkDone(newObj)
+				if match {
+					ch <- err
+				}
+			},
+		}
+
+		controller.machineSetInformer.Informer().AddEventHandler(handler)
+		controller.machineDeploymentInformer.Informer().AddEventHandler(handler)
+
 		_, err = sr.controller.managementScaleClient.Scales(testResource.GetNamespace()).
 			Update(context.TODO(), gvr.GroupResource(), s, metav1.UpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		i, err = sr.Replicas()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if i != updatedReplicas {
-			t.Errorf("expected %v, got: %v", updatedReplicas, i)
+		lastErr := fmt.Errorf("no updates received yet")
+		for lastErr != nil {
+			select {
+			case err = <-ch:
+				lastErr = err
+			case <-time.After(1 * time.Second):
+				t.Fatal(fmt.Errorf("timeout while waiting for update. Last error was: %v", lastErr))
+			}
 		}
 	}
 

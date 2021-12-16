@@ -19,8 +19,8 @@ package azure
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	azclients "k8s.io/legacy-cloud-providers/azure/clients"
 	"os"
+	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"testing"
 )
 

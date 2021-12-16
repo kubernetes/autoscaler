@@ -28,13 +28,7 @@ import (
 )
 
 const (
-	// deprecatedMachineDeleteAnnotationKey should not be removed until minimum cluster-api support is v1alpha3
-	deprecatedMachineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
-	// TODO: determine what currently relies on deprecatedMachineAnnotationKey to determine when it can be removed
-	deprecatedMachineAnnotationKey = "cluster.k8s.io/machine"
-	machineDeleteAnnotationKey     = "cluster.x-k8s.io/delete-machine"
-	machineAnnotationKey           = "cluster.x-k8s.io/machine"
-	debugFormat                    = "%s (min: %d, max: %d, replicas: %d)"
+	debugFormat = "%s (min: %d, max: %d, replicas: %d)"
 )
 
 type nodegroup struct {

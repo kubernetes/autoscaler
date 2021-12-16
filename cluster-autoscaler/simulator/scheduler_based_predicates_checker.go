@@ -25,13 +25,10 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
-	scheduler_apis_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
-
-	// We need to import provider to initialize default scheduler.
-	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 )
 
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
@@ -47,17 +44,18 @@ type SchedulerBasedPredicateChecker struct {
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
 func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*SchedulerBasedPredicateChecker, error) {
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	providerRegistry := algorithmprovider.NewRegistry()
-	plugins := providerRegistry[scheduler_apis_config.SchedulerDefaultProviderName]
-	sharedLister := NewDelegatingSchedulerSharedLister()
-	kubeSchedulerProfile := &scheduler_apis_config.KubeSchedulerProfile{
-		Plugins:      plugins,
-		PluginConfig: nil, // This is fine
+	config, err := scheduler_config.Default()
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
 	}
+	if len(config.Profiles) != 1 || config.Profiles[0].SchedulerName != apiv1.DefaultSchedulerName {
+		return nil, fmt.Errorf("unexpected scheduler config: expected default scheduler profile only (found %d profiles)", len(config.Profiles))
+	}
+	sharedLister := NewDelegatingSchedulerSharedLister()
 
 	framework, err := schedulerframeworkruntime.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
-		kubeSchedulerProfile,
+		&config.Profiles[0],
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)

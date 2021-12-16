@@ -22,15 +22,16 @@ rules:
     verbs: ["watch", "list", "get", "update", "delete"]
   - apiGroups: [""]
     resources:
+      - "namespaces"
       - "pods"
       - "services"
       - "replicationcontrollers"
       - "persistentvolumeclaims"
       - "persistentvolumes"
     verbs: ["watch", "list", "get"]
-  - apiGroups: ["batch"]
+  - apiGroups: ["batch", "extensions"]
     resources: ["jobs"]
-    verbs: ["watch", "list", "get"]
+    verbs: ["watch", "list", "get", "patch"]
   - apiGroups: ["policy"]
     resources: ["poddisruptionbudgets"]
     verbs: ["watch", "list"]
@@ -38,7 +39,7 @@ rules:
     resources: ["daemonsets", "replicasets", "statefulsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "csinodes"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
     verbs: ["watch", "list", "get"]
   - apiGroups: [""]
     resources: ["configmaps"]
@@ -50,6 +51,9 @@ rules:
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["watch", "list", "get", "create", "update", "patch", "delete", "deletecollection"]
+  - apiGroups: ["extensions"]
+    resources: ["replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

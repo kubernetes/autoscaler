@@ -29,9 +29,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	"k8s.io/legacy-cloud-providers/azure/retry"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
 )
@@ -116,7 +116,11 @@ func (scaleSet *ScaleSet) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return nil, err.Error()
+	}
+	return scaleSet.manager.GetScaleSetOptions(*template.Name, defaults), nil
 }
 
 // MaxSize returns maximum size of the node group.
@@ -179,14 +183,14 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v)", requiredIds.InstanceIds)
-	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(%v) for %s", requiredIds.InstanceIds, scaleSet.Name)
+	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(ctx, future, scaleSet.manager.config.ResourceGroup)
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances(%v) success", requiredIds.InstanceIds)
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(%v) for %s success", requiredIds.InstanceIds, scaleSet.Name)
 		return
 	}
-	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - DeleteInstances for instances %v failed with error: %v", requiredIds.InstanceIds, err)
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForDeleteInstancesResult - DeleteInstances for instances %v for %s failed with error: %v", requiredIds.InstanceIds, scaleSet.Name, err)
 }
 
 // updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
@@ -204,17 +208,17 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(future *azure.Future) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity(%s)", scaleSet.Name)
-	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForAsyncOperationResult(ctx, future)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(%s)", scaleSet.Name)
+	httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(ctx, future, scaleSet.manager.config.ResourceGroup)
 
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity(%s) success", scaleSet.Name)
+		klog.V(3).Infof("virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(%s) success", scaleSet.Name)
 		scaleSet.invalidateInstanceCache()
 		return
 	}
 
-	klog.Errorf("virtualMachineScaleSetsClient.WaitForAsyncOperationResult - updateVMSSCapacity for scale set %q failed: %v", scaleSet.Name, err)
+	klog.Errorf("virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult - updateVMSSCapacity for scale set %q failed: %v", scaleSet.Name, err)
 }
 
 // SetScaleSetSize sets ScaleSet size.
@@ -340,7 +344,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
+func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregisteredNodes bool) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -405,9 +409,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 
 	// Proactively decrement scale set size so that we don't
 	// go below minimum node count if cache data is stale
-	scaleSet.sizeMutex.Lock()
-	scaleSet.curSize -= int64(len(instanceIDs))
-	scaleSet.sizeMutex.Unlock()
+	// only do it for non-unregistered nodes
+	if !hasUnregisteredNodes {
+		scaleSet.sizeMutex.Lock()
+		scaleSet.curSize -= int64(len(instanceIDs))
+		scaleSet.sizeMutex.Unlock()
+	}
 
 	// Proactively set the status of the instances to be deleted in cache
 	for _, instance := range instancesToDelete {
@@ -432,6 +439,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	refs := make([]*azureRef, 0, len(nodes))
+	hasUnregisteredNodes := false
 	for _, node := range nodes {
 		belongs, err := scaleSet.Belongs(node)
 		if err != nil {
@@ -442,13 +450,16 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
 		}
 
+		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
+			hasUnregisteredNodes = true
+		}
 		ref := &azureRef{
 			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
 	}
 
-	return scaleSet.DeleteInstances(refs)
+	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
 }
 
 // Id returns ScaleSet id.

@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -145,6 +145,10 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 	if isCreate && vpa.Spec.TargetRef == nil {
 		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
+	}
+
+	if len(vpa.Spec.Recommenders) > 1 {
+		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
 	}
 
 	return nil

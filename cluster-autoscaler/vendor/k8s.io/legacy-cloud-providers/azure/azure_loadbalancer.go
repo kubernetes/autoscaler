@@ -99,11 +99,6 @@ const (
 	// to enable the high availability ports on the standard internal load balancer.
 	ServiceAnnotationLoadBalancerEnableHighAvailabilityPorts = "service.beta.kubernetes.io/azure-load-balancer-enable-high-availability-ports"
 
-	// ServiceAnnotationLoadBalancerDisableTCPReset is the annotation used on the service
-	// to set enableTcpReset to false in load balancer rule. This only works for Azure standard load balancer backed service.
-	// TODO(feiskyer): disable-tcp-reset annotations has been depracated since v1.18, it would removed on v1.20.
-	ServiceAnnotationLoadBalancerDisableTCPReset = "service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset"
-
 	// ServiceAnnotationLoadBalancerHealthProbeProtocol determines the network protocol that the load balancer health probe use.
 	// If not set, the local service would use the HTTP and the cluster service would use the TCP by default.
 	ServiceAnnotationLoadBalancerHealthProbeProtocol = "service.beta.kubernetes.io/azure-load-balancer-health-probe-protocol"
@@ -650,11 +645,19 @@ func (az *Cloud) ensurePublicIPExists(service *v1.Service, pipName string, domai
 
 	serviceName := getServiceName(service)
 
+	var changed bool
 	if existsPip {
-		// ensure that the service tag is good
-		changed, err := bindServicesToPIP(&pip, []string{serviceName}, false)
-		if err != nil {
-			return nil, err
+		// ensure that the service tag is good for managed pips
+		owns, isUserAssignedPIP := serviceOwnsPublicIP(service, &pip, clusterName)
+		if owns && !isUserAssignedPIP {
+			changed, err = bindServicesToPIP(&pip, []string{serviceName}, false)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if pip.Tags == nil {
+			pip.Tags = make(map[string]*string)
 		}
 
 		// return if pip exist and dns label is the same
@@ -1250,13 +1253,6 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 			// construct FrontendIPConfigurationPropertiesFormat
 			var fipConfigurationProperties *network.FrontendIPConfigurationPropertiesFormat
 			if isInternal {
-				// azure does not support ILB for IPv6 yet.
-				// TODO: remove this check when ILB supports IPv6 *and* the SDK
-				// have been rev'ed to 2019* version
-				if utilnet.IsIPv6String(service.Spec.ClusterIP) {
-					return nil, fmt.Errorf("ensure(%s): lb(%s) - internal load balancers does not support IPv6", serviceName, lbName)
-				}
-
 				subnetName := subnet(service)
 				if subnetName == nil {
 					subnetName = &az.SubnetName
@@ -1272,6 +1268,10 @@ func (az *Cloud) reconcileLoadBalancer(clusterName string, service *v1.Service, 
 
 				configProperties := network.FrontendIPConfigurationPropertiesFormat{
 					Subnet: &subnet,
+				}
+
+				if utilnet.IsIPv6String(service.Spec.ClusterIP) {
+					configProperties.PrivateIPAddressVersion = network.IPv6
 				}
 
 				loadBalancerIP := service.Spec.LoadBalancerIP
@@ -1619,14 +1619,17 @@ func (az *Cloud) reconcileLoadBalancerRule(
 	var enableTCPReset *bool
 	if az.useStandardLoadBalancer() {
 		enableTCPReset = to.BoolPtr(true)
-		if _, ok := service.Annotations[ServiceAnnotationLoadBalancerDisableTCPReset]; ok {
-			klog.Warning("annotation service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset has been removed as of Kubernetes 1.20. TCP Resets are always enabled on Standard SKU load balancers.")
-		}
 	}
 
 	var expectedProbes []network.Probe
 	var expectedRules []network.LoadBalancingRule
+	highAvailabilityPortsEnabled := false
 	for _, port := range ports {
+		if highAvailabilityPortsEnabled {
+			// Since the port is always 0 when enabling HA, only one rule should be configured.
+			break
+		}
+
 		lbRuleName := az.getLoadBalancerRuleName(service, port.Protocol, port.Port)
 		klog.V(2).Infof("reconcileLoadBalancerRule lb name (%s) rule name (%s)", lbName, lbRuleName)
 
@@ -1714,6 +1717,7 @@ func (az *Cloud) reconcileLoadBalancerRule(
 			expectedRule.FrontendPort = to.Int32Ptr(0)
 			expectedRule.BackendPort = to.Int32Ptr(0)
 			expectedRule.Protocol = network.TransportProtocolAll
+			highAvailabilityPortsEnabled = true
 		}
 
 		// we didn't construct the probe objects for UDP or SCTP because they're not allowed on Azure.
@@ -1854,18 +1858,18 @@ func (az *Cloud) reconcileSecurityGroup(clusterName string, service *v1.Service,
 				sharedRuleName := az.getSecurityRuleName(service, port, sourceAddressPrefix)
 				sharedIndex, sharedRule, sharedRuleFound := findSecurityRuleByName(updatedRules, sharedRuleName)
 				if !sharedRuleFound {
-					klog.V(4).Infof("Expected to find shared rule %s for service %s being deleted, but did not", sharedRuleName, service.Name)
-					return nil, fmt.Errorf("expected to find shared rule %s for service %s being deleted, but did not", sharedRuleName, service.Name)
+					klog.V(4).Infof("Didn't find shared rule %s for service %s", sharedRuleName, service.Name)
+					continue
 				}
 				if sharedRule.DestinationAddressPrefixes == nil {
-					klog.V(4).Infof("Expected to have array of destinations in shared rule for service %s being deleted, but did not", service.Name)
-					return nil, fmt.Errorf("expected to have array of destinations in shared rule for service %s being deleted, but did not", service.Name)
+					klog.V(4).Infof("Didn't find DestinationAddressPrefixes in shared rule for service %s", service.Name)
+					continue
 				}
 				existingPrefixes := *sharedRule.DestinationAddressPrefixes
 				addressIndex, found := findIndex(existingPrefixes, destinationIPAddress)
 				if !found {
-					klog.V(4).Infof("Expected to find destination address %s in shared rule %s for service %s being deleted, but did not", destinationIPAddress, sharedRuleName, service.Name)
-					return nil, fmt.Errorf("expected to find destination address %s in shared rule %s for service %s being deleted, but did not", destinationIPAddress, sharedRuleName, service.Name)
+					klog.V(4).Infof("Didn't find destination address %v in shared rule %s for service %s", destinationIPAddress, sharedRuleName, service.Name)
+					continue
 				}
 				if len(existingPrefixes) == 1 {
 					updatedRules = append(updatedRules[:sharedIndex], updatedRules[sharedIndex+1:]...)
@@ -2084,7 +2088,12 @@ func deduplicate(collection *[]string) *[]string {
 }
 
 // Determine if we should release existing owned public IPs
-func shouldReleaseExistingOwnedPublicIP(existingPip *network.PublicIPAddress, lbShouldExist, lbIsInternal bool, desiredPipName, svcName string, ipTagRequest serviceIPTagRequest) bool {
+func shouldReleaseExistingOwnedPublicIP(existingPip *network.PublicIPAddress, lbShouldExist, lbIsInternal, isUserAssignedPIP bool, desiredPipName string, ipTagRequest serviceIPTagRequest) bool {
+	// skip deleting user created pip
+	if isUserAssignedPIP {
+		return false
+	}
+
 	// Latch some variables for readability purposes.
 	pipName := *(*existingPip).Name
 
@@ -2207,9 +2216,10 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 
 		// Now, let's perform additional analysis to determine if we should release the public ips we have found.
 		// We can only let them go if (a) they are owned by this service and (b) they meet the criteria for deletion.
-		if serviceOwnsPublicIP(&pip, clusterName, serviceName) {
+		owns, isUserAssignedPIP := serviceOwnsPublicIP(service, &pip, clusterName)
+		if owns {
 			var dirtyPIP, toBeDeleted bool
-			if !wantLb {
+			if !wantLb && !isUserAssignedPIP {
 				klog.V(2).Infof("reconcilePublicIP for service(%s): unbinding the service from pip %s", serviceName, *pip.Name)
 				err = unbindServiceFromPIP(&pip, serviceName)
 				if err != nil {
@@ -2217,11 +2227,13 @@ func (az *Cloud) reconcilePublicIP(clusterName string, service *v1.Service, lbNa
 				}
 				dirtyPIP = true
 			}
-			changed := az.ensurePIPTagged(service, &pip)
-			if changed {
-				dirtyPIP = true
+			if !isUserAssignedPIP {
+				changed := az.ensurePIPTagged(service, &pip)
+				if changed {
+					dirtyPIP = true
+				}
 			}
-			if shouldReleaseExistingOwnedPublicIP(&pip, wantLb, isInternal, desiredPipName, serviceName, serviceIPTagRequest) {
+			if shouldReleaseExistingOwnedPublicIP(&pip, wantLb, isInternal, isUserAssignedPIP, desiredPipName, serviceIPTagRequest) {
 				// Then, release the public ip
 				pipsToBeDeleted = append(pipsToBeDeleted, &pip)
 
@@ -2414,7 +2426,7 @@ func findSecurityRule(rules []network.SecurityRule, rule network.SecurityRule) b
 		if !strings.EqualFold(to.String(existingRule.Name), to.String(rule.Name)) {
 			continue
 		}
-		if existingRule.Protocol != rule.Protocol {
+		if !strings.EqualFold(string(existingRule.Protocol), string(rule.Protocol)) {
 			continue
 		}
 		if !strings.EqualFold(to.String(existingRule.SourcePortRange), to.String(rule.SourcePortRange)) {
@@ -2431,10 +2443,10 @@ func findSecurityRule(rules []network.SecurityRule, rule network.SecurityRule) b
 				continue
 			}
 		}
-		if existingRule.Access != rule.Access {
+		if !strings.EqualFold(string(existingRule.Access), string(rule.Access)) {
 			continue
 		}
-		if existingRule.Direction != rule.Direction {
+		if !strings.EqualFold(string(existingRule.Direction), string(rule.Direction)) {
 			continue
 		}
 		return true
@@ -2542,26 +2554,55 @@ func getServiceTags(service *v1.Service) []string {
 	return nil
 }
 
-func serviceOwnsPublicIP(pip *network.PublicIPAddress, clusterName, serviceName string) bool {
-	if pip != nil && pip.Tags != nil {
+// serviceOwnsPublicIP checks if the service owns the pip and if the pip is user-created.
+// The pip is user-created if and only if there is no service tags.
+// The service owns the pip if:
+// 1. The serviceName is included in the service tags of a system-created pip.
+// 2. The service.Spec.LoadBalancerIP matches the IP address of a user-created pip.
+func serviceOwnsPublicIP(service *v1.Service, pip *network.PublicIPAddress, clusterName string) (bool, bool) {
+	if service == nil || pip == nil {
+		klog.Warningf("serviceOwnsPublicIP: nil service or public IP")
+		return false, false
+	}
+
+	if pip.PublicIPAddressPropertiesFormat == nil || to.String(pip.IPAddress) == "" {
+		klog.Warningf("serviceOwnsPublicIP: empty pip.IPAddress")
+		return false, false
+	}
+
+	serviceName := getServiceName(service)
+
+	if pip.Tags != nil {
 		serviceTag := pip.Tags[serviceTagKey]
 		clusterTag := pip.Tags[clusterNameKey]
 
-		if serviceTag != nil && isSVCNameInPIPTag(*serviceTag, serviceName) {
-			// Backward compatible for clusters upgraded from old releases.
-			// In such case, only "service" tag is set.
-			if clusterTag == nil {
-				return true
-			}
+		// if there is no service tag on the pip, it is user-created pip
+		if to.String(serviceTag) == "" {
+			return strings.EqualFold(to.String(pip.IPAddress), service.Spec.LoadBalancerIP), true
+		}
 
-			// If cluster name tag is set, then return true if it matches.
-			if *clusterTag == clusterName {
-				return true
+		if serviceTag != nil {
+			// if there is service tag on the pip, it is system-created pip
+			if isSVCNameInPIPTag(*serviceTag, serviceName) {
+				// Backward compatible for clusters upgraded from old releases.
+				// In such case, only "service" tag is set.
+				if clusterTag == nil {
+					return true, false
+				}
+
+				// If cluster name tag is set, then return true if it matches.
+				if *clusterTag == clusterName {
+					return true, false
+				}
+			} else {
+				// if the service is not included in te tags of the system-created pip, check the ip address
+				// this could happen for secondary services
+				return strings.EqualFold(to.String(pip.IPAddress), service.Spec.LoadBalancerIP), false
 			}
 		}
 	}
 
-	return false
+	return false, false
 }
 
 func isSVCNameInPIPTag(tag, svcName string) bool {

@@ -21,14 +21,14 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apiserver/pkg/server/mux"
-	"k8s.io/apiserver/pkg/util/flowcontrol/counter"
 	fq "k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing"
+	"k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing/eventclock"
 	fqs "k8s.io/apiserver/pkg/util/flowcontrol/fairqueuing/queueset"
 	"k8s.io/apiserver/pkg/util/flowcontrol/metrics"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/clock"
 
 	flowcontrol "k8s.io/api/flowcontrol/v1beta1"
 	flowcontrolclient "k8s.io/client-go/kubernetes/typed/flowcontrol/v1beta1"
@@ -49,6 +49,8 @@ type Interface interface {
 	// that the request should be executed then `execute()` will be
 	// invoked once to execute the request; otherwise `execute()` will
 	// not be invoked.
+	// Handle() should never return while execute() is running, even if
+	// ctx is cancelled or times out.
 	Handle(ctx context.Context,
 		requestDigest RequestDigest,
 		noteFn func(fs *flowcontrol.FlowSchema, pl *flowcontrol.PriorityLevelConfiguration),
@@ -66,6 +68,9 @@ type Interface interface {
 
 	// Install installs debugging endpoints to the web-server.
 	Install(c *mux.PathRecorderMux)
+
+	// WatchTracker provides the WatchTracker interface.
+	WatchTracker
 }
 
 // This request filter implements https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/1040-priority-and-fairness/README.md
@@ -77,19 +82,43 @@ func New(
 	serverConcurrencyLimit int,
 	requestWaitLimit time.Duration,
 ) Interface {
-	grc := counter.NoOp{}
+	clk := eventclock.Real{}
 	return NewTestable(TestableConfig{
+		Name:                   "Controller",
+		Clock:                  clk,
+		AsFieldManager:         ConfigConsumerAsFieldManager,
+		FoundToDangling:        func(found bool) bool { return !found },
 		InformerFactory:        informerFactory,
 		FlowcontrolClient:      flowcontrolClient,
 		ServerConcurrencyLimit: serverConcurrencyLimit,
 		RequestWaitLimit:       requestWaitLimit,
 		ObsPairGenerator:       metrics.PriorityLevelConcurrencyObserverPairGenerator,
-		QueueSetFactory:        fqs.NewQueueSetFactory(&clock.RealClock{}, grc),
+		QueueSetFactory:        fqs.NewQueueSetFactory(clk),
 	})
 }
 
 // TestableConfig carries the parameters to an implementation that is testable
 type TestableConfig struct {
+	// Name of the controller
+	Name string
+
+	// Clock to use in timing deliberate delays
+	Clock clock.PassiveClock
+
+	// AsFieldManager is the string to use in the metadata for
+	// server-side apply.  Normally this is
+	// `ConfigConsumerAsFieldManager`.  This is exposed as a parameter
+	// so that a test of competing controllers can supply different
+	// values.
+	AsFieldManager string
+
+	// FoundToDangling maps the boolean indicating whether a
+	// FlowSchema's referenced PLC exists to the boolean indicating
+	// that FlowSchema's status should indicate a dangling reference.
+	// This is a parameter so that we can write tests of what happens
+	// when servers disagree on that bit of Status.
+	FoundToDangling func(bool) bool
+
 	// InformerFactory to use in building the controller
 	InformerFactory kubeinformers.SharedInformerFactory
 

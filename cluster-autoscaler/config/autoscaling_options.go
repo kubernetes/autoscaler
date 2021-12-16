@@ -69,8 +69,8 @@ type AutoscalingOptions struct {
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
 	EstimatorName string
-	// ExpanderName sets the type of node group expander to be used in scale up
-	ExpanderName string
+	// ExpanderNames sets the chain of node group expanders to be used in scale up
+	ExpanderNames string
 	// IgnoreDaemonSetsUtilization is whether CA will ignore DaemonSet pods when calculating resource utilization for scaling down
 	IgnoreDaemonSetsUtilization bool
 	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
@@ -161,6 +161,8 @@ type AutoscalingOptions struct {
 	CordonNodeBeforeTerminate bool
 	// DaemonSetEvictionForEmptyNodes is whether CA will gracefully terminate DaemonSet pods from empty nodes.
 	DaemonSetEvictionForEmptyNodes bool
+	// DaemonSetEvictionForOccupiedNodes is whether CA will gracefully terminate DaemonSet pods from non-empty nodes.
+	DaemonSetEvictionForOccupiedNodes bool
 	// User agent to use for HTTP calls.
 	UserAgent string
 }

@@ -30,7 +30,6 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	auditinternal "k8s.io/apiserver/pkg/apis/audit"
 	"k8s.io/apiserver/pkg/audit"
-	"k8s.io/apiserver/pkg/audit/policy"
 	"k8s.io/apiserver/pkg/endpoints/handlers/responsewriters"
 	"k8s.io/apiserver/pkg/endpoints/request"
 )
@@ -39,7 +38,7 @@ import (
 // requests coming to the server. Audit level is decided according to requests'
 // attributes and audit policy. Logs are emitted to the audit sink to
 // process events. If sink or audit policy is nil, no decoration takes place.
-func WithAudit(handler http.Handler, sink audit.Sink, policy policy.Checker, longRunningCheck request.LongRunningRequestCheck) http.Handler {
+func WithAudit(handler http.Handler, sink audit.Sink, policy audit.PolicyRuleEvaluator, longRunningCheck request.LongRunningRequestCheck) http.Handler {
 	if sink == nil || policy == nil {
 		return handler
 	}
@@ -117,7 +116,7 @@ func WithAudit(handler http.Handler, sink audit.Sink, policy policy.Checker, lon
 // - context with audit event attached to it
 // - created audit event
 // - error if anything bad happened
-func createAuditEventAndAttachToContext(req *http.Request, policy policy.Checker) (*http.Request, *auditinternal.Event, []auditinternal.Stage, error) {
+func createAuditEventAndAttachToContext(req *http.Request, policy audit.PolicyRuleEvaluator) (*http.Request, *auditinternal.Event, []auditinternal.Stage, error) {
 	ctx := req.Context()
 
 	attribs, err := GetAuthorizerAttributes(ctx)
@@ -173,6 +172,7 @@ func decorateResponseWriter(ctx context.Context, responseWriter http.ResponseWri
 
 	// check if the ResponseWriter we're wrapping is the fancy one we need
 	// or if the basic is sufficient
+	//lint:file-ignore SA1019 Keep supporting deprecated http.CloseNotifier
 	_, cn := responseWriter.(http.CloseNotifier)
 	_, fl := responseWriter.(http.Flusher)
 	_, hj := responseWriter.(http.Hijacker)
@@ -195,10 +195,6 @@ type auditResponseWriter struct {
 	omitStages []auditinternal.Stage
 }
 
-func (a *auditResponseWriter) setHttpHeader() {
-	a.ResponseWriter.Header().Set(auditinternal.HeaderAuditID, string(a.event.AuditID))
-}
-
 func (a *auditResponseWriter) processCode(code int) {
 	a.once.Do(func() {
 		if a.event.ResponseStatus == nil {
@@ -216,13 +212,11 @@ func (a *auditResponseWriter) processCode(code int) {
 func (a *auditResponseWriter) Write(bs []byte) (int, error) {
 	// the Go library calls WriteHeader internally if no code was written yet. But this will go unnoticed for us
 	a.processCode(http.StatusOK)
-	a.setHttpHeader()
 	return a.ResponseWriter.Write(bs)
 }
 
 func (a *auditResponseWriter) WriteHeader(code int) {
 	a.processCode(code)
-	a.setHttpHeader()
 	a.ResponseWriter.WriteHeader(code)
 }
 
@@ -244,12 +238,6 @@ func (f *fancyResponseWriterDelegator) Flush() {
 func (f *fancyResponseWriterDelegator) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	// fake a response status before protocol switch happens
 	f.processCode(http.StatusSwitchingProtocols)
-
-	// This will be ignored if WriteHeader() function has already been called.
-	// It's not guaranteed Audit-ID http header is sent for all requests.
-	// For example, when user run "kubectl exec", apiserver uses a proxy handler
-	// to deal with the request, users can only get http headers returned by kubelet node.
-	f.setHttpHeader()
 
 	return f.ResponseWriter.(http.Hijacker).Hijack()
 }

@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -130,8 +131,15 @@ func NewDefaultClient() (*Client, error) {
 
 // NewDefaultClientWithToken will load all it's parameter from environment
 // or configuration files using an OpenStack keystone token
-func NewDefaultClientWithToken(token string) (*Client, error) {
-	client, err := NewClient(OvhEU, "none", "none", "none")
+func NewDefaultClientWithToken(authUrl, token string) (*Client, error) {
+	// Find endpoint given the keystone auth url
+	endpoint := OvhEU
+	if strings.Contains(authUrl, "ovh.us") {
+		endpoint = OvhUS
+	}
+
+	// Create OVH api client
+	client, err := NewClient(endpoint, "none", "none", "none")
 	if err != nil {
 		return nil, err
 	}

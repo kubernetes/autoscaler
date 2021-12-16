@@ -149,8 +149,7 @@ var (
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
 
-	expanderFlag = flag.String("expander", expander.RandomExpanderName,
-		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
+	expanderFlag = flag.String("expander", expander.RandomExpanderName, "Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly.")
 
 	ignoreDaemonSetsUtilization = flag.Bool("ignore-daemonsets-utilization", false,
 		"Should CA ignore DaemonSet pods when calculating resource utilization for scaling down")
@@ -178,7 +177,10 @@ var (
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
 	cordonNodeBeforeTerminate          = flag.Bool("cordon-node-before-terminating", false, "Should CA cordon nodes before terminating during downscale process")
 	daemonSetEvictionForEmptyNodes     = flag.Bool("daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")
+	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
+
+	emitPerNodeGroupMetrics = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -212,7 +214,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:                *okTotalUnreadyCount,
 		ScaleUpFromZero:                    *scaleUpFromZero,
 		EstimatorName:                      *estimatorFlag,
-		ExpanderName:                       *expanderFlag,
+		ExpanderNames:                      *expanderFlag,
 		IgnoreDaemonSetsUtilization:        *ignoreDaemonSetsUtilization,
 		IgnoreMirrorPodsUtilization:        *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:              *maxBulkSoftTaintCount,
@@ -254,6 +256,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
 		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
+		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
 		UserAgent:                          *userAgent,
 	}
 }
@@ -323,6 +326,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
+	} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
+		nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
@@ -340,7 +345,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 }
 
 func run(healthCheck *metrics.HealthCheck) {
-	metrics.RegisterAll()
+	metrics.RegisterAll(*emitPerNodeGroupMetrics)
 
 	autoscaler, err := buildAutoscaler()
 	if err != nil {

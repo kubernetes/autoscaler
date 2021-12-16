@@ -38,6 +38,8 @@ const (
 	BaiducloudProviderName = "baiducloud"
 	// BizflyCloudProviderName gets the provider name of bizflycloud
 	BizflyCloudProviderName = "bizflycloud"
+	// BrightboxProviderName gets the provider name of brightbox
+	BrightboxProviderName = "brightbox"
 	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
 	// ClusterAPIProviderName gets the provider name of clusterapi
@@ -62,6 +64,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// PacketProviderName gets the provider name of packet
+	PacketProviderName = "packet"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
@@ -255,6 +259,16 @@ func (c InstanceErrorClass) String() string {
 		return fmt.Sprintf("%d", c)
 	}
 }
+
+const (
+	// FakeNodeReasonAnnotation is an annotation added to the fake placeholder nodes CA has created
+	// Note that this don't map to real nodes in k8s and are merely used for error handling
+	FakeNodeReasonAnnotation = "k8s.io/cluster-autoscaler/fake-node-reason"
+	// FakeNodeUnregistered represents a node that is identified by CA as unregistered
+	FakeNodeUnregistered = "unregistered"
+	// FakeNodeCreateError represents a node that is identified by CA as a created node with errors
+	FakeNodeCreateError = "create-error"
+)
 
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {

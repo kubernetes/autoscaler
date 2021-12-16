@@ -43,6 +43,7 @@ var (
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
 		"nvidia-tesla-t4":   {},
+		"nvidia-tesla-a100": {},
 	}
 )
 
@@ -219,7 +220,10 @@ func (ng *AwsNodeGroup) Delete() error {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (ng *AwsNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	if ng.asg == nil || ng.asg.Tags == nil || len(ng.asg.Tags) == 0 {
+		return &defaults, nil
+	}
+	return ng.awsManager.GetAsgOptions(*ng.asg, defaults), nil
 }
 
 // IncreaseSize increases Asg size
@@ -284,7 +288,7 @@ func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		if belongs != true {
+		if !belongs {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, ng.Id())
 		}
 		awsref, err := AwsRefFromProviderId(node.Spec.ProviderID)
@@ -353,7 +357,7 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	// Generate EC2 list
 	instanceTypes, lastUpdateTime := GetStaticEC2InstanceTypes()
 	if opts.AWSUseStaticInstanceList {
-		klog.Warningf("Use static EC2 Instance Types and list could be outdated. Last update time: %s", lastUpdateTime)
+		klog.Warningf("Using static EC2 Instance Types, this list could be outdated. Last update time: %s", lastUpdateTime)
 	} else {
 		region, err := GetCurrentAwsRegion()
 		if err != nil {
@@ -393,5 +397,6 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to create AWS cloud provider: %v", err)
 	}
+	RegisterMetrics()
 	return provider
 }

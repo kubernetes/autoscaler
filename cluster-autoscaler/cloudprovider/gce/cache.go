@@ -65,15 +65,17 @@ type GceCache struct {
 	cacheMutex sync.Mutex
 
 	// Cache content.
-	migs                     map[GceRef]Mig
-	instanceRefToMigRef      map[GceRef]GceRef
-	instancesFromUnknownMigs map[GceRef]struct{}
-	resourceLimiter          *cloudprovider.ResourceLimiter
-	machinesCache            map[MachineTypeKey]machinesCacheValue
-	migTargetSizeCache       map[GceRef]int64
-	migBaseNameCache         map[GceRef]string
-	instanceTemplatesCache   map[GceRef]*gce.InstanceTemplate
-	concurrentGceRefreshes   int
+	migs                      map[GceRef]Mig
+	instanceRefToMigRef       map[GceRef]GceRef
+	instancesFromUnknownMigs  map[GceRef]struct{}
+	resourceLimiter           *cloudprovider.ResourceLimiter
+	autoscalingOptionsCache   map[GceRef]map[string]string
+	machinesCache             map[MachineTypeKey]machinesCacheValue
+	migTargetSizeCache        map[GceRef]int64
+	migBaseNameCache          map[GceRef]string
+	instanceTemplateNameCache map[GceRef]string
+	instanceTemplatesCache    map[GceRef]*gce.InstanceTemplate
+	concurrentGceRefreshes    int
 
 	// Service used to refresh cache.
 	GceService AutoscalingGceClient
@@ -82,15 +84,17 @@ type GceCache struct {
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient, concurrentGceRefreshes int) *GceCache {
 	return &GceCache{
-		migs:                     map[GceRef]Mig{},
-		instanceRefToMigRef:      map[GceRef]GceRef{},
-		instancesFromUnknownMigs: map[GceRef]struct{}{},
-		machinesCache:            map[MachineTypeKey]machinesCacheValue{},
-		migTargetSizeCache:       map[GceRef]int64{},
-		migBaseNameCache:         map[GceRef]string{},
-		instanceTemplatesCache:   map[GceRef]*gce.InstanceTemplate{},
-		GceService:               gceService,
-		concurrentGceRefreshes:   concurrentGceRefreshes,
+		migs:                      map[GceRef]Mig{},
+		instanceRefToMigRef:       map[GceRef]GceRef{},
+		instancesFromUnknownMigs:  map[GceRef]struct{}{},
+		autoscalingOptionsCache:   map[GceRef]map[string]string{},
+		machinesCache:             map[MachineTypeKey]machinesCacheValue{},
+		migTargetSizeCache:        map[GceRef]int64{},
+		migBaseNameCache:          map[GceRef]string{},
+		instanceTemplateNameCache: map[GceRef]string{},
+		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
+		GceService:                gceService,
+		concurrentGceRefreshes:    concurrentGceRefreshes,
 	}
 }
 
@@ -290,6 +294,20 @@ func (gc *GceCache) RegenerateInstancesCache() error {
 	return nil
 }
 
+// SetAutoscalingOptions stores autoscaling options strings obtained from IT.
+func (gc *GceCache) SetAutoscalingOptions(ref GceRef, options map[string]string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.autoscalingOptionsCache[ref] = options
+}
+
+// GetAutoscalingOptions return autoscaling options strings obtained from IT.
+func (gc *GceCache) GetAutoscalingOptions(ref GceRef) map[string]string {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	return gc.autoscalingOptionsCache[ref]
+}
+
 // SetResourceLimiter sets resource limiter.
 func (gc *GceCache) SetResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
 	gc.cacheMutex.Lock()
@@ -344,6 +362,46 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 
 	klog.V(5).Infof("Target size cache invalidated")
 	gc.migTargetSizeCache = map[GceRef]int64{}
+}
+
+// GetMigInstanceTemplateName returns the cached instance template ref for a mig GceRef
+func (gc *GceCache) GetMigInstanceTemplateName(ref GceRef) (string, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	templateName, found := gc.instanceTemplateNameCache[ref]
+	if found {
+		klog.V(5).Infof("Instance template names cache hit for %s", ref)
+	}
+	return templateName, found
+}
+
+// SetMigInstanceTemplateName sets instance template ref for a mig GceRef
+func (gc *GceCache) SetMigInstanceTemplateName(ref GceRef, templateName string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.instanceTemplateNameCache[ref] = templateName
+}
+
+// InvalidateMigInstanceTemplateName clears the instance template ref cache for a mig GceRef
+func (gc *GceCache) InvalidateMigInstanceTemplateName(ref GceRef) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	if _, found := gc.instanceTemplateNameCache[ref]; found {
+		klog.V(5).Infof("Instance template names cache invalidated for %s", ref)
+		delete(gc.instanceTemplateNameCache, ref)
+	}
+}
+
+// InvalidateAllMigInstanceTemplateNames clears the instance template ref cache
+func (gc *GceCache) InvalidateAllMigInstanceTemplateNames() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Instance template names cache invalidated")
+	gc.instanceTemplateNameCache = map[GceRef]string{}
 }
 
 // GetMigInstanceTemplate returns the cached gce.InstanceTemplate for a mig GceRef

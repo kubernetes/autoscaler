@@ -81,10 +81,16 @@ Auto-discovery finds ASGs tags as below and automatically manages them based on 
 - Verify the [IAM Permissions](#aws---iam)
 - Set `autoDiscovery.clusterName=<YOUR CLUSTER NAME>`
 - Set `awsRegion=<YOUR AWS REGION>`
-- Set `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
+- Set (option) `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME>
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION>
+```
+
+Alternatively with your own AWS credentials
+
+```console
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION> --set awsAccessKeyID=<YOUR AWS KEY ID> --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
 ```
 
 #### Specifying groups manually
@@ -356,7 +362,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
 | envFromSecret | string | `""` | Secret name to use as envFrom. |
 | expanderPriorities | object | `{}` | The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities. If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities. See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md |
-| extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. |
+| extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. Everything after the first _ will be ignored allowing the use of multi-string arguments. |
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
@@ -367,7 +373,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"k8s.gcr.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.20.0"` | Image tag |
+| image.tag | string | `"v1.21.1"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
@@ -377,6 +383,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
 | podLabels | object | `{}` | Labels to add to each pod. |
 | priorityClassName | string | `""` | priorityClassName |
+| priorityConfigMapAnnotations | object | `{}` | Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap. |
 | prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
 | prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
 | prometheusRule.interval | string | `nil` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). |

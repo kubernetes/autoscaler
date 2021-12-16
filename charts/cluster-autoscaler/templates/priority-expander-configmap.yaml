@@ -6,8 +6,16 @@ metadata:
   name: cluster-autoscaler-priority-expander
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
+  {{- if .Values.priorityConfigMapAnnotations }}
+  annotations:
+{{ toYaml .Values.priorityConfigMapAnnotations | indent 4 }}
+  {{- end }}
 data:
   priorities: |-
+{{- if kindIs "string" .Values.expanderPriorities }}
 {{ .Values.expanderPriorities | indent 4 }}
+{{- else }}
+{{ toYaml .Values.expanderPriorities | indent 4 }}
+{{- end -}}
 {{- end -}}
 {{- end -}}

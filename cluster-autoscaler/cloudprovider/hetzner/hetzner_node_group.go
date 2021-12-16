@@ -18,6 +18,10 @@ package hetzner
 
 import (
 	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,10 +30,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	"math/rand"
-	"strconv"
-	"sync"
-	"time"
 )
 
 // hetznerNodeGroup implements cloudprovider.NodeGroup interface. hetznerNodeGroup contains
@@ -230,10 +230,7 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
-	err = nodeInfo.SetNode(&node)
-	if err != nil {
-		return nil, fmt.Errorf("could not create node info for node group %s error: %v", n.id, err)
-	}
+	nodeInfo.SetNode(&node)
 
 	return nodeInfo, nil
 }
@@ -356,7 +353,7 @@ func createServer(n *hetznerNodeGroup) error {
 		UserData:         n.manager.cloudInit,
 		Location:         &hcloud.Location{Name: n.region},
 		ServerType:       &hcloud.ServerType{Name: n.instanceType},
-		Image:            &hcloud.Image{Name: n.manager.image},
+		Image:            n.manager.image,
 		StartAfterCreate: &StartAfterCreate,
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
@@ -368,14 +365,15 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.network != nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
-	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
 
+	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
 	if err != nil {
 		return fmt.Errorf("could not create server type %s in region %s: %v", n.instanceType, n.region, err)
 	}
 
+	action := serverCreateResult.Action
 	server := serverCreateResult.Server
-	err = waitForServerStatus(n.manager, server, hcloud.ServerStatusRunning)
+	err = waitForServerAction(n.manager, server.Name, action)
 	if err != nil {
 		_ = n.manager.deleteServer(server)
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
@@ -384,32 +382,39 @@ func createServer(n *hetznerNodeGroup) error {
 	return nil
 }
 
-func waitForServerStatus(m *hetznerManager, server *hcloud.Server, status hcloud.ServerStatus) error {
-	errorResult := make(chan error)
-
-	go func() {
-		for {
-			serverResponse, _, err := m.client.Server.Get(m.apiCallContext, strconv.Itoa(server.ID))
-			if err != nil {
-				errorResult <- fmt.Errorf("failed to get server %s status error: %v", server.Name, err)
-				return
-			}
-
-			if serverResponse.Status == status {
-				errorResult <- nil
-				return
-			}
-
-			time.Sleep(1 * time.Second)
-		}
-	}()
-
+func waitForServerAction(m *hetznerManager, serverName string, action *hcloud.Action) error {
+	// The implementation of the Hetzner Cloud action client's WatchProgress
+	// method may be a little puzzling. The following comment thus explains how
+	// waitForServerAction works.
+	//
+	// WatchProgress returns two channels. The first channel is used to send a
+	// ballpark estimate for the action progress, the second to send any error
+	// that may occur.
+	//
+	// WatchProgress is implemented in such a way, that the first channel can
+	// be ignored. It is not necessary to consume it to avoid a deadlock in
+	// WatchProgress. Any write to this channel is wrapped in a select.
+	// Progress updates are simply not sent if nothing reads from the other
+	// side.
+	//
+	// Once the action completes successfully nil is send through the second
+	// channel. Then both channels are closed.
+	//
+	// The following code therefore only watches the second channel. If it
+	// reads an error from the channel the action is failed. Otherwise the
+	// action is successful.
+	_, errChan := m.client.Action.WatchProgress(m.apiCallContext, action)
 	select {
-	case res := <-errorResult:
-		return res
+	case err := <-errChan:
+		if err != nil {
+			return fmt.Errorf("error while waiting for server action: %s: %v", serverName, err)
+		}
+		return nil
 	case <-time.After(serverCreateTimeout):
-		return fmt.Errorf("waiting for server %s status %s timeout", server.Name, status)
+		return fmt.Errorf("timeout waiting for server %s", serverName)
 	}
+
+	return nil
 }
 
 func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {

@@ -18,6 +18,7 @@ package price
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -58,6 +59,18 @@ type testPreferredNodeProvider struct {
 
 func (tpnp *testPreferredNodeProvider) Node() (*apiv1.Node, error) {
 	return tpnp.preferred, nil
+}
+
+func optionsToDebug(options []expander.Option) []string {
+	var ret []string
+	for _, option := range options {
+		s := strings.Split(option.Debug, " ")
+		if len(s) == 0 {
+			s = append(s, "")
+		}
+		ret = append(ret, s[0])
+	}
+	return ret
 }
 
 func TestPriceExpander(t *testing.T) {
@@ -117,13 +130,13 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
+	).BestOptions(options, nodeInfosForGroups)), []string{"ng1"})
 
 	// First node group is cheaper, however, the second one is preferred.
 	pricingModel = &testPricingModel{
@@ -138,13 +151,13 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
+	).BestOptions(options, nodeInfosForGroups)), []string{"ng2"})
 
 	// All node groups accept the same set of pods. Lots of nodes.
 	options1b := []expander.Option{
@@ -175,14 +188,14 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
+	).BestOptions(options1b, nodeInfosForGroups)), []string{"ng1"})
 
 	// Second node group is cheaper
 	pricingModel = &testPricingModel{
@@ -197,13 +210,13 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
+	).BestOptions(options, nodeInfosForGroups)), []string{"ng2"})
 
 	// First group accept 1 pod and second accepts 2.
 	options2 := []expander.Option{
@@ -234,13 +247,13 @@ func TestPriceExpander(t *testing.T) {
 	provider.SetPricingModel(pricingModel)
 	// Both node groups are equally expensive. However 2
 	// accept two pods.
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
+	).BestOptions(options2, nodeInfosForGroups)), []string{"ng2"})
 
 	// Errors are expected
 	pricingModel = &testPricingModel{
@@ -248,13 +261,13 @@ func TestPriceExpander(t *testing.T) {
 		nodePrice: map[string]float64{},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Nil(t, NewStrategy(
+	assert.Empty(t, NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options2, nodeInfosForGroups))
+	).BestOptions(options2, nodeInfosForGroups))
 
 	// Add node info for autoprovisioned group.
 	nodeInfosForGroups["autoprovisioned-MT1"] = ni3
@@ -293,13 +306,13 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options3, nodeInfosForGroups).Debug, "ng2")
+	).BestOptions(options3, nodeInfosForGroups)), []string{"ng2"})
 
 	// Choose non-existing group when non-existing is cheaper.
 	pricingModel = &testPricingModel{
@@ -315,11 +328,11 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 	provider.SetPricingModel(pricingModel)
-	assert.Contains(t, NewStrategy(
+	assert.Equal(t, optionsToDebug(NewFilter(
 		provider,
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOption(options3, nodeInfosForGroups).Debug, "ng3")
+	).BestOptions(options3, nodeInfosForGroups)), []string{"ng3"})
 }

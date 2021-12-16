@@ -40,7 +40,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -67,7 +67,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -111,7 +111,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithGuaranteedResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -142,7 +142,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -173,7 +173,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("500m") /*cpu limit*/, ParseQuantityOrDie("500Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -216,7 +216,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f, startCpuRequest, startMemRequest, startCpuLimit, startMemLimit)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -269,7 +269,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -311,7 +311,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 				{
@@ -361,7 +361,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 				{
@@ -409,7 +409,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -446,7 +446,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
@@ -483,7 +483,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")
@@ -500,7 +500,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		d := NewHamsterDeployment(f)
 
 		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		InstallVPA(f, vpaCRD)
 
 		ginkgo.By("Setting up a hamster deployment")

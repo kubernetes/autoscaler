@@ -1,7 +1,7 @@
 // +build ignore
 
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ package main
 import (
 	"flag"
 	"html/template"
+	"os"
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	klog "k8s.io/klog/v2"
-	"os"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -52,7 +54,11 @@ type InstanceType struct {
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
+	Architecture string
 }
+
+// StaticListLastUpdateTime is a string declaring the last time the static list was updated.
+var StaticListLastUpdateTime = "{{ .LastUpdateTime }}"
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
@@ -62,11 +68,14 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
+		Architecture: "{{ .Architecture }}",
 	},
 {{- end }}
 }
 `))
 
+// Please note that the IAM user running the static instance types generator must be
+// a non-anonymous user with privileges to call the DescribeInstanceTypes EC2 API.
 func main() {
 	var region = flag.String("region", "", "aws region you'd like to generate instances from."+
 		"It will populate list from all regions if region is not specified.")
@@ -77,6 +86,7 @@ func main() {
 	if err != nil {
 		klog.Fatal(err)
 	}
+	lastUpdateTime := time.Now().Format("2006-01-02")
 
 	f, err := os.Create("ec2_instance_types.go")
 	if err != nil {
@@ -86,9 +96,11 @@ func main() {
 	defer f.Close()
 
 	err = packageTemplate.Execute(f, struct {
-		InstanceTypes map[string]*aws.InstanceType
+		InstanceTypes  map[string]*aws.InstanceType
+		LastUpdateTime string
 	}{
-		InstanceTypes: instanceTypes,
+		InstanceTypes:  instanceTypes,
+		LastUpdateTime: lastUpdateTime,
 	})
 
 	if err != nil {

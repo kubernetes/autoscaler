@@ -80,19 +80,14 @@ func (r unstructuredScalableResource) ProviderIDs() ([]string, error) {
 }
 
 func (r unstructuredScalableResource) Replicas() (int, error) {
-	gvr, err := r.GroupVersionResource()
+	replicas, found, err := unstructured.NestedInt64(r.unstructured.UnstructuredContent(), "spec", "replicas")
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "error getting replica count")
 	}
-
-	s, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(context.TODO(), gvr.GroupResource(), r.Name(), metav1.GetOptions{})
-	if err != nil {
-		return 0, err
+	if !found {
+		replicas = 0
 	}
-	if s == nil {
-		return 0, fmt.Errorf("unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
-	}
-	return int(s.Spec.Replicas), nil
+	return int(replicas), nil
 }
 
 func (r unstructuredScalableResource) SetSize(nreplicas int) error {
@@ -119,6 +114,11 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 
 	s.Spec.Replicas = int32(nreplicas)
 	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Update(context.TODO(), gvr.GroupResource(), s, metav1.UpdateOptions{})
+
+	if updateErr == nil {
+		updateErr = unstructured.SetNestedField(r.unstructured.UnstructuredContent(), int64(nreplicas), "spec", "replicas")
+	}
+
 	return updateErr
 }
 
@@ -130,7 +130,6 @@ func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstruct
 
 	annotations := u.GetAnnotations()
 	delete(annotations, machineDeleteAnnotationKey)
-	delete(annotations, deprecatedMachineDeleteAnnotationKey)
 	u.SetAnnotations(annotations)
 	_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
 
@@ -151,7 +150,6 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 	}
 
 	annotations[machineDeleteAnnotationKey] = time.Now().String()
-	annotations[deprecatedMachineDeleteAnnotationKey] = time.Now().String()
 	u.SetAnnotations(annotations)
 
 	_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})

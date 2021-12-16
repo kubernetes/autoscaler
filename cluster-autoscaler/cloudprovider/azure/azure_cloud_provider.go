@@ -35,6 +35,7 @@ const (
 
 var (
 	availableGPUTypes = map[string]struct{}{
+		"nvidia-tesla-a100": {},
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
