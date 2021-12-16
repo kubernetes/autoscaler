@@ -176,6 +176,7 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
+	Version() string
 }
 
 type gceMig struct {
@@ -184,6 +185,11 @@ type gceMig struct {
 	gceManager GceManager
 	minSize    int
 	maxSize    int
+}
+
+// Version return the Mig version.
+func (mig *gceMig) Version() string {
+	return ""
 }
 
 // GceRef returns Mig's GceRef

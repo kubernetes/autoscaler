@@ -59,7 +59,7 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, r OsReservedCalculator) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -186,7 +186,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, ssdCount, pods, reserved)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
 	if err != nil {
 		return nil, err
 	}
