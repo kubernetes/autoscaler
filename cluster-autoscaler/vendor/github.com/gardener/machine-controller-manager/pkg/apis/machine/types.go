@@ -1202,18 +1202,25 @@ type PacketMachineClassSpec struct {
 // +resource:path=machineclasses
 type MachineClass struct {
 	metav1.TypeMeta
+
 	// +optional
 	metav1.ObjectMeta
+
+	// +optional
+	// NodeTemplate contains subfields to track all node resources and other node info required to scale nodegroup from zero
+	NodeTemplate *NodeTemplate
+
 	// CredentialsSecretRef can optionally store the credentials (in this case the SecretRef does not need to store them).
 	// This might be useful if multiple machine classes with the same credentials but different user-datas are used.
 	CredentialsSecretRef *corev1.SecretReference
-	// ExpectedNodeAttributes contains subfields the track all scale from zero resources
-	ExpectedNodeAttributes *ExpectedNodeAttributes
+
 	// Provider is the combination of name and location of cloud-specific drivers.
 	// eg. awsdriver//127.0.0.1:8080
 	Provider string
+
 	// Provider-specific configuration to use during node creation.
 	ProviderSpec runtime.RawExtension
+
 	// SecretRef stores the necessary secrets such as credentials or userdata.
 	SecretRef *corev1.SecretReference
 }
@@ -1227,18 +1234,18 @@ type MachineClassList struct {
 	Items []MachineClass
 }
 
-// ExpectedNodeAttributes contains subfields to track all scale from zero resources
-type ExpectedNodeAttributes struct {
-	// CPU cores of the expected node
-	CPU *int64
-	// GPU cores of the expected node
-	GPU *int64
-	// Instance type of the expected node
-	InstanceType *string
-	// Memory of the expected node
-	Memory *int64
-	// Region of the expected node
-	Region *string
-	// Zone of the expected node
-	Zone *string
+// NodeTemplate contains subfields to track all node resources and other node info required to scale nodegroup from zero
+type NodeTemplate struct {
+
+	// Capacity contains subfields to track all node resources required to scale nodegroup from zero
+	Capacity corev1.ResourceList
+
+	// Instance type of the node belonging to nodeGroup
+	InstanceType string
+
+	// Region of the node belonging to nodeGroup
+	Region string
+
+	// Zone of the node belonging to nodeGroup
+	Zone string
 }

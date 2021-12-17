@@ -40,6 +40,7 @@ import (
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions"
 	machinelisters "github.com/gardener/machine-controller-manager/pkg/client/listers/machine/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,8 +49,6 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	aws "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	azure "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/discovery"
@@ -58,7 +57,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -71,10 +70,6 @@ const (
 	minResyncPeriodDefault  = 1 * time.Hour
 	// machinePriorityAnnotation is the annotation to set machine priority while deletion
 	machinePriorityAnnotation = "machinepriority.machine.sapcloud.io"
-	// kindAWSMachineClass is the kind for machine class used by In-tree AWS provider
-	kindAWSMachineClass = "AWSMachineClass"
-	// kindAzureMachineClass is the kind for machine class used by In-tree Azure provider
-	kindAzureMachineClass = "AzureMachineClass"
 	// kindMachineClass is the kind for generic machine class used by the OOT providers
 	kindMachineClass = "MachineClass"
 	// providerAWS is the provider type for AWS machine class objects
@@ -94,8 +89,6 @@ var (
 	targetQPS       *float64
 	minResyncPeriod *time.Duration
 
-	awsMachineClassGVR   = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "awsmachineclasses"}
-	azureMachineClassGVR = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "azuremachineclasses"}
 	machineClassGVR      = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machineclasses"}
 	machineGVR           = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machines"}
 	machineSetGVR        = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinesets"}
@@ -112,16 +105,14 @@ type McmManager struct {
 	machineSetLister        machinelisters.MachineSetLister
 	machineLister           machinelisters.MachineLister
 	machineClassLister      machinelisters.MachineClassLister
-	azureMachineClassLister machinelisters.AzureMachineClassLister
-	awsMachineClassLister   machinelisters.AWSMachineClassLister
 	nodeLister              corelisters.NodeLister
 }
 
 type instanceType struct {
 	InstanceType string
-	VCPU         int64
-	MemoryMb     int64
-	GPU          int64
+	VCPU         resource.Quantity
+	Memory       resource.Quantity
+	GPU          resource.Quantity
 }
 
 type nodeTemplate struct {
@@ -164,10 +155,8 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 
 	if availableResources[machineGVR] && availableResources[machineSetGVR] && availableResources[machineDeploymentGVR] {
 		var (
-			awsMachineClassLister   machinelisters.AWSMachineClassLister
-			azureMachineClassLister machinelisters.AzureMachineClassLister
-			machineClassLister      machinelisters.MachineClassLister
-			syncFuncs               []cache.InformerSynced
+			machineClassLister machinelisters.MachineClassLister
+			syncFuncs          []cache.InformerSynced
 		)
 
 		// Initialize control kubeconfig informer factory
@@ -192,16 +181,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		machineDeploymentInformer := machineSharedInformers.MachineDeployments().Informer()
 
 		// Initialize optional control cluster informers
-		if availableResources[awsMachineClassGVR] {
-			awsMachineClassInformer := machineSharedInformers.AWSMachineClasses().Informer()
-			awsMachineClassLister = machineSharedInformers.AWSMachineClasses().Lister()
-			syncFuncs = append(syncFuncs, awsMachineClassInformer.HasSynced)
-		}
-		if availableResources[azureMachineClassGVR] {
-			azureMachineClassInformer := machineSharedInformers.AzureMachineClasses().Informer()
-			azureMachineClassLister = machineSharedInformers.AzureMachineClasses().Lister()
-			syncFuncs = append(syncFuncs, azureMachineClassInformer.HasSynced)
-		}
+
 		if availableResources[machineClassGVR] {
 			machineClassInformer := machineSharedInformers.MachineClasses().Informer()
 			machineClassLister = machineSharedInformers.MachineClasses().Lister()
@@ -234,8 +214,6 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 			namespace:               namespace,
 			interrupt:               make(chan struct{}),
 			machineClient:           controlMachineClient,
-			awsMachineClassLister:   awsMachineClassLister,
-			azureMachineClassLister: azureMachineClassLister,
 			machineClassLister:      machineClassLister,
 			machineLister:           machineSharedInformers.Machines().Lister(),
 			machineSetLister:        machineSharedInformers.MachineSets().Lister(),
@@ -605,6 +583,34 @@ func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeploym
 	return nodes, nil
 }
 
+// validateNodeTemplate function validates the NodeTemplate object of the MachineClass
+func validateNodeTemplate(nodeTemplateAttributes *v1alpha1.NodeTemplate) error {
+	var allErrs []error
+
+	capacityAttributes := []v1.ResourceName{"cpu", "gpu", "memory"}
+
+	for _, attribute := range capacityAttributes {
+		if _, ok := nodeTemplateAttributes.Capacity[attribute]; !ok {
+			errMessage := fmt.Errorf("CPU, GPU and memory fields are mandatory")
+			klog.Warning(errMessage)
+			allErrs = append(allErrs, errMessage)
+			break
+		}
+	}
+
+	if nodeTemplateAttributes.Region == "" || nodeTemplateAttributes.InstanceType == "" || nodeTemplateAttributes.Zone == "" {
+		errMessage := fmt.Errorf("InstanceType, Region and Zone attributes are mandatory")
+		klog.Warning(errMessage)
+		allErrs = append(allErrs, errMessage)
+	}
+
+	if allErrs != nil {
+		return fmt.Errorf("%s", allErrs)
+	}
+
+	return nil
+}
+
 // GetMachineDeploymentNodeTemplate returns the NodeTemplate which belongs to the MachineDeployment.
 func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *MachineDeployment) (*nodeTemplate, error) {
 
@@ -623,47 +629,31 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 	)
 
 	switch machineClass.Kind {
-	case kindAWSMachineClass:
-		mc, err := m.awsMachineClassLister.AWSMachineClasses(m.namespace).Get(machineClass.Name)
-		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch AWSMachineClass object %s, Error: %v", machineClass.Name, err)
-		}
-		awsInstance, exists := aws.InstanceTypes[mc.Spec.MachineType]
-		if !exists {
-			return nil, fmt.Errorf("Unable to fetch details for VM type %s", mc.Spec.MachineType)
-		}
-		instance = instanceType{
-			InstanceType: awsInstance.InstanceType,
-			VCPU:         awsInstance.VCPU,
-			MemoryMb:     awsInstance.MemoryMb,
-			GPU:          awsInstance.GPU,
-		}
-		region = mc.Spec.Region
-		zone = getZoneValueFromMCLabels(mc.Labels)
-	case kindAzureMachineClass:
-		mc, err := m.azureMachineClassLister.AzureMachineClasses(m.namespace).Get(machineClass.Name)
-		if err != nil {
-			return nil, fmt.Errorf("Unable to fetch AzureMachineClass object %s, Error: %v", machineClass.Name, err)
-		}
-		azureInstance, exists := azure.InstanceTypes[mc.Spec.Properties.HardwareProfile.VMSize]
-		if !exists {
-			return nil, fmt.Errorf("Unable to fetch details for VM type %s", mc.Spec.Properties.HardwareProfile.VMSize)
-		}
-		instance = instanceType{
-			InstanceType: azureInstance.InstanceType,
-			VCPU:         azureInstance.VCPU,
-			MemoryMb:     azureInstance.MemoryMb,
-			GPU:          azureInstance.GPU,
-		}
-		region = mc.Spec.Location
-		if mc.Spec.Properties.Zone != nil {
-			zone = mc.Spec.Location + "-" + strconv.Itoa(*mc.Spec.Properties.Zone)
-		}
 	case kindMachineClass:
 		mc, err := m.machineClassLister.MachineClasses(m.namespace).Get(machineClass.Name)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch %s for %s, Error: %v", kindMachineClass, machineClass.Name, err)
 		}
+
+		if nodeTemplateAttributes := mc.NodeTemplate; nodeTemplateAttributes != nil {
+
+			err := validateNodeTemplate(nodeTemplateAttributes)
+			if err != nil {
+				return nil, fmt.Errorf("NodeTemplate validation error in MachineClass %s : %s", mc.Name, err)
+			}
+
+			klog.V(1).Infof("Generating node template using nodeTemplate from MachineClass %s", machineClass.Name)
+			instance = instanceType{
+				InstanceType: nodeTemplateAttributes.InstanceType,
+				VCPU:         nodeTemplateAttributes.Capacity["cpu"],
+				Memory:       nodeTemplateAttributes.Capacity["memory"],
+				GPU:          nodeTemplateAttributes.Capacity["gpu"],
+			}
+			region = nodeTemplateAttributes.Region
+			zone = nodeTemplateAttributes.Zone
+			break
+		}
+
 		switch mc.Provider {
 		case providerAWS:
 			var providerSpec *awsapis.AWSProviderSpec
@@ -672,14 +662,14 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAWS, machinedeployment.Name, err)
 			}
 
-			awsInstance, exists := aws.InstanceTypes[providerSpec.MachineType]
+			awsInstance, exists := AWSInstanceTypes[providerSpec.MachineType]
 			if !exists {
 				return nil, fmt.Errorf("Unable to fetch details for VM type %s", providerSpec.MachineType)
 			}
 			instance = instanceType{
 				InstanceType: awsInstance.InstanceType,
 				VCPU:         awsInstance.VCPU,
-				MemoryMb:     awsInstance.MemoryMb,
+				Memory:       awsInstance.Memory,
 				GPU:          awsInstance.GPU,
 			}
 			region = providerSpec.Region
@@ -690,14 +680,14 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			if err != nil {
 				return nil, fmt.Errorf("Unable to convert from %s to %s for %s, Error: %v", kindMachineClass, providerAzure, machinedeployment.Name, err)
 			}
-			azureInstance, exists := azure.InstanceTypes[providerSpec.Properties.HardwareProfile.VMSize]
+			azureInstance, exists := AzureInstanceTypes[providerSpec.Properties.HardwareProfile.VMSize]
 			if !exists {
 				return nil, fmt.Errorf("Unable to fetch details for VM type %s", providerSpec.Properties.HardwareProfile.VMSize)
 			}
 			instance = instanceType{
 				InstanceType: azureInstance.InstanceType,
 				VCPU:         azureInstance.VCPU,
-				MemoryMb:     azureInstance.MemoryMb,
+				Memory:       azureInstance.Memory,
 				GPU:          azureInstance.GPU,
 			}
 			region = providerSpec.Location
@@ -764,9 +754,9 @@ func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) 
 
 	// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 100
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(100, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = template.InstanceType.VCPU
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = template.InstanceType.GPU
+	node.Status.Capacity[apiv1.ResourceMemory] = template.InstanceType.Memory
 
 	node.Status.Allocatable = node.Status.Capacity
 
