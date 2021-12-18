@@ -19,7 +19,7 @@ limitations under the License.
 
 syntax = 'proto2';
 
-package k8s.io.api.admission.v1beta1;
+package k8s.io.api.admission.v1;
 
 import "k8s.io/api/authentication/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
@@ -27,7 +27,7 @@ import "k8s.io/apimachinery/pkg/runtime/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
 
 // Package-wide variables from generator "generated".
-option go_package = "v1beta1";
+option go_package = "v1";
 
 // AdmissionRequest describes the admission.Attributes for the admission request.
 message AdmissionRequest {
@@ -120,7 +120,7 @@ message AdmissionRequest {
 // AdmissionResponse describes an admission response.
 message AdmissionResponse {
   // UID is an identifier for the individual request/response.
-  // This should be copied over from the corresponding AdmissionRequest.
+  // This must be copied over from the corresponding AdmissionRequest.
   optional string uid = 1;
 
   // Allowed indicates whether or not the admission request was permitted.

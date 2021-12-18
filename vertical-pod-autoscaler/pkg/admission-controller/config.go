@@ -85,7 +85,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
 				Name:                    "vpa.k8s.io",
-				AdmissionReviewVersions: []string{"v1beta1"},
+				AdmissionReviewVersions: []string{"v1"},
 				Rules: []admissionregistration.RuleWithOperations{
 					{
 						Operations: []admissionregistration.OperationType{admissionregistration.Create},
