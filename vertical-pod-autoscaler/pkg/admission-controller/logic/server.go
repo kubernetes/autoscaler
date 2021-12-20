@@ -67,6 +67,8 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		return &response, metrics_admission.Error, metrics_admission.Unknown
 	}
 
+	response.UID = ar.Request.UID
+
 	var patches []resource.PatchRecord
 	var err error
 	resource := metrics_admission.Unknown
