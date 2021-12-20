@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strings"
 	"sync"
 
 	gce "google.golang.org/api/compute/v1"
@@ -30,6 +31,10 @@ import (
 
 // MigInfoProvider allows obtaining information about MIGs
 type MigInfoProvider interface {
+	// GetMigForInstance returns MIG ref for a given instance
+	GetMigForInstance(instanceRef GceRef) (Mig, error)
+	// RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
+	RegenerateMigInstancesCache() error
 	// GetMigTargetSize returns target size for given MIG ref
 	GetMigTargetSize(migRef GceRef) (int64, error)
 	// GetMigBasename returns basename for given MIG ref
@@ -41,19 +46,95 @@ type MigInfoProvider interface {
 }
 
 type cachingMigInfoProvider struct {
-	mutex     sync.Mutex
-	cache     *GceCache
-	gceClient AutoscalingGceClient
-	projectId string
+	mutex                  sync.Mutex
+	cache                  *GceCache
+	gceClient              AutoscalingGceClient
+	projectId              string
+	concurrentGceRefreshes int
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, gceClient AutoscalingGceClient, projectId string) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int) MigInfoProvider {
 	return &cachingMigInfoProvider{
-		cache:     cache,
-		gceClient: gceClient,
-		projectId: projectId,
+		cache:                  cache,
+		gceClient:              gceClient,
+		projectId:              projectId,
+		concurrentGceRefreshes: concurrentGceRefreshes,
 	}
+}
+
+// GetMigForInstance returns MIG ref for a given instance
+func (c *cachingMigInfoProvider) GetMigForInstance(instanceRef GceRef) (Mig, error) {
+	mig, found, err := c.getCachedMigForInstance(instanceRef)
+	if found {
+		return mig, err
+	}
+
+	mig = c.findMigWithMatchingBasename(instanceRef)
+	if mig == nil {
+		return nil, nil
+	}
+
+	err = c.fillMigInstances(mig.GceRef())
+	if err != nil {
+		return nil, err
+	}
+
+	mig, found, err = c.getCachedMigForInstance(instanceRef)
+	if !found {
+		c.cache.MarkInstanceMigUnknown(instanceRef)
+	}
+	return mig, err
+}
+
+func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mig, bool, error) {
+	if migRef, found := c.cache.GetMigForInstance(instanceRef); found {
+		mig, found := c.cache.GetMig(migRef)
+		if !found {
+			return nil, true, fmt.Errorf("instance %v belongs to unregistered mig %v", instanceRef, migRef)
+		}
+		return mig, true, nil
+	} else if c.cache.IsMigUnknownForInstance(instanceRef) {
+		return nil, true, nil
+	}
+	return nil, false, nil
+}
+
+// RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
+func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
+	c.cache.InvalidateAllInstancesToMig()
+	migs := c.cache.GetMigs()
+	errors := make([]error, len(migs))
+	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
+		errors[piece] = c.fillMigInstances(migs[piece].GceRef())
+	}, workqueue.WithChunkSize(c.concurrentGceRefreshes))
+
+	for _, err := range errors {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef) Mig {
+	for _, mig := range c.cache.GetMigs() {
+		migRef := mig.GceRef()
+		basename, err := c.GetMigBasename(migRef)
+		if err == nil && migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone && strings.HasPrefix(instanceRef.Name, basename) {
+			return mig
+		}
+	}
+	return nil
+}
+
+func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
+	klog.V(4).Infof("Regenerating MIG instances cache for %s", migRef.String())
+	instances, err := c.gceClient.FetchMigInstances(migRef)
+	if err != nil {
+		return err
+	}
+	return c.cache.SetMigInstances(migRef, instances)
 }
 
 func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) {

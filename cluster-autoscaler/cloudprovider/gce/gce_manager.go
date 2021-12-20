@@ -177,11 +177,11 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	if err != nil {
 		return nil, err
 	}
-	cache := NewGceCache(gceService, concurrentGceRefreshes)
+	cache := NewGceCache()
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		GceService:             gceService,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId, concurrentGceRefreshes),
 		location:               location,
 		regional:               regional,
 		projectId:              projectId,
@@ -204,7 +204,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	}
 
 	go wait.Until(func() {
-		if err := manager.cache.RegenerateInstancesCache(); err != nil {
+		if err := manager.migInfoProvider.RegenerateMigInstancesCache(); err != nil {
 			klog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
@@ -278,7 +278,7 @@ func (m *gceManagerImpl) GetMigs() []Mig {
 
 // GetMigForInstance returns MIG to which the given instance belongs.
 func (m *gceManagerImpl) GetMigForInstance(instance GceRef) (Mig, error) {
-	return m.cache.GetMigForInstance(instance)
+	return m.migInfoProvider.GetMigForInstance(instance)
 }
 
 // GetMigNodes returns mig nodes.
@@ -373,7 +373,7 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 	}
 
 	if changed {
-		return m.cache.RegenerateInstancesCache()
+		return m.migInfoProvider.RegenerateMigInstancesCache()
 	}
 	return nil
 }
@@ -463,7 +463,7 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 	}
 
 	if atomic.LoadInt32(&changed) > 0 {
-		return m.cache.RegenerateInstancesCache()
+		return m.migInfoProvider.RegenerateMigInstancesCache()
 	}
 
 	return nil
