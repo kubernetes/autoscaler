@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package v1
 
 // This file contains a collection of methods that can be used from go-restful to
 // generate Swagger API documentation for its models. Please read this PR for more
@@ -52,7 +52,7 @@ func (AdmissionRequest) SwaggerDoc() map[string]string {
 
 var map_AdmissionResponse = map[string]string{
 	"":                 "AdmissionResponse describes an admission response.",
-	"uid":              "UID is an identifier for the individual request/response. This should be copied over from the corresponding AdmissionRequest.",
+	"uid":              "UID is an identifier for the individual request/response. This must be copied over from the corresponding AdmissionRequest.",
 	"allowed":          "Allowed indicates whether or not the admission request was permitted.",
 	"status":           "Result contains extra details into why an admission request was denied. This field IS NOT consulted in any way if \"Allowed\" is \"true\".",
 	"patch":            "The patch body. Currently we only support \"JSONPatch\" which implements RFC 6902.",

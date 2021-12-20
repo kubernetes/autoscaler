@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -176,7 +176,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := &fakePodPreProcessor{tc.podPreProcessorError}
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
-			patches, err := h.GetPatches(&v1beta1.AdmissionRequest{
+			patches, err := h.GetPatches(&admissionv1.AdmissionRequest{
 				Resource: v1.GroupVersionResource{
 					Version: "v1",
 				},
