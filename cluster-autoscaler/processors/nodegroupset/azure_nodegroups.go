@@ -26,6 +26,9 @@ const AzureNodepoolLegacyLabel = "agentpool"
 // AzureNodepoolLabel is an AKS label specifying which nodepool a particular node belongs to
 const AzureNodepoolLabel = "kubernetes.azure.com/agentpool"
 
+// AzureDiskTopologyKey is the topology key of Azure Disk CSI driver
+const AzureDiskTopologyKey = "topology.disk.csi.azure.com/zone"
+
 func nodesFromSameAzureNodePool(n1, n2 *schedulerframework.NodeInfo) bool {
 	n1AzureNodePool := n1.Node().Labels[AzureNodepoolLabel]
 	n2AzureNodePool := n2.Node().Labels[AzureNodepoolLabel]
@@ -48,6 +51,7 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparat
 	}
 	azureIgnoredLabels[AzureNodepoolLegacyLabel] = true
 	azureIgnoredLabels[AzureNodepoolLabel] = true
+	azureIgnoredLabels[AzureDiskTopologyKey] = true
 	for _, k := range extraIgnoredLabels {
 		azureIgnoredLabels[k] = true
 	}
