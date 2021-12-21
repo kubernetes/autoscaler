@@ -348,9 +348,11 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
 		migBaseNameCache:          map[GceRef]string{},
 	}
+	migLister := NewMigLister(cache)
 	manager := &gceManagerImpl{
 		cache:                  cache,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, gceService, projectId, 1),
+		migLister:              migLister,
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,

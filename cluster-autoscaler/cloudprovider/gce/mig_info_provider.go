@@ -51,15 +51,17 @@ type MigInfoProvider interface {
 type cachingMigInfoProvider struct {
 	mutex                  sync.Mutex
 	cache                  *GceCache
+	migLister              MigLister
 	gceClient              AutoscalingGceClient
 	projectId              string
 	concurrentGceRefreshes int
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int) MigInfoProvider {
 	return &cachingMigInfoProvider{
 		cache:                  cache,
+		migLister:              migLister,
 		gceClient:              gceClient,
 		projectId:              projectId,
 		concurrentGceRefreshes: concurrentGceRefreshes,
@@ -122,7 +124,7 @@ func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mi
 func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
-	migs := c.cache.GetMigs()
+	migs := c.migLister.GetMigs()
 	errors := make([]error, len(migs))
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
 		errors[piece] = c.fillMigInstances(migs[piece].GceRef())
@@ -137,7 +139,7 @@ func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 }
 
 func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef) Mig {
-	for _, mig := range c.cache.GetMigs() {
+	for _, mig := range c.migLister.GetMigs() {
 		migRef := mig.GceRef()
 		basename, err := c.GetMigBasename(migRef)
 		if err == nil && migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone && strings.HasPrefix(instanceRef.Name, basename) {
@@ -151,6 +153,7 @@ func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
 	klog.V(4).Infof("Regenerating MIG instances cache for %s", migRef.String())
 	instances, err := c.gceClient.FetchMigInstances(migRef)
 	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
 		return err
 	}
 	return c.cache.SetMigInstances(migRef, instances)
@@ -174,6 +177,7 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 	// fallback to querying for single mig
 	targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
 	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
 		return 0, err
 	}
 	c.cache.SetMigTargetSize(migRef, targetSize)
@@ -198,6 +202,7 @@ func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
 	// fallback to querying for single mig
 	basename, err = c.gceClient.FetchMigBasename(migRef)
 	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
 		return "", err
 	}
 	c.cache.SetMigBasename(migRef, basename)
@@ -222,6 +227,7 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (stri
 	// fallback to querying for single mig
 	templateName, err = c.gceClient.FetchMigTemplateName(migRef)
 	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
 		return "", err
 	}
 	c.cache.SetMigInstanceTemplateName(migRef, templateName)
@@ -298,7 +304,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 
 func (c *cachingMigInfoProvider) getRegisteredMigRefs() map[GceRef]bool {
 	migRefs := make(map[GceRef]bool)
-	for _, mig := range c.cache.GetMigs() {
+	for _, mig := range c.migLister.GetMigs() {
 		migRefs[mig.GceRef()] = true
 	}
 	return migRefs
@@ -306,7 +312,7 @@ func (c *cachingMigInfoProvider) getRegisteredMigRefs() map[GceRef]bool {
 
 func (c *cachingMigInfoProvider) listAllZonesWithMigs() map[string]bool {
 	zones := map[string]bool{}
-	for _, mig := range c.cache.GetMigs() {
+	for _, mig := range c.migLister.GetMigs() {
 		zones[mig.GceRef().Zone] = true
 	}
 	return zones
