@@ -18,15 +18,13 @@ package azure
 
 import (
 	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
-	"time"
-
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"net/http"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
+	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -138,12 +136,9 @@ func TestIncreaseSize(t *testing.T) {
 	err := provider.azureManager.forceRefresh()
 	assert.NoError(t, err)
 
-	ss := newTestScaleSet(provider.azureManager, "test-asg")
-	ss.lastSizeRefresh = time.Now()
-	ss.sizeRefreshPeriod = 1 * time.Minute
-	ss.curSize = -1
+	ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
 	err = ss.IncreaseSize(100)
-	expectedErr := fmt.Errorf("the scale set test-asg is under initialization, skipping IncreaseSize")
+	expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
 	assert.Equal(t, expectedErr, err)
 
 	registered := provider.azureManager.RegisterNodeGroup(
