@@ -41,6 +41,7 @@ type machinesCacheValue struct {
 //
 // It is needed to:
 // - keep track of MIGs in the cluster,
+// - keep track of instances in the cluster,
 // - keep track of MIGs to instances mapping,
 // - keep track of MIGs configuration such as target size and basename,
 // - keep track of resource limiters and machine types,
@@ -49,11 +50,18 @@ type machinesCacheValue struct {
 // Cache keeps these values and gives access to getters, setters and
 // invalidators all guarded with mutex. Cache does not refresh the data by
 // itself - it just provides an interface enabling access to this data.
+//
+// The caches maintained here differ in terms of expected lifetime. Mig instance,
+// basename, target size and instance template name caches need to be refreshed
+// each loop to guarantee their freshness. Other values like Migs and instance
+// templates are cached for longer periods of time and are refreshed either
+// periodically or in response to detecting cluster state changes.
 type GceCache struct {
 	cacheMutex sync.Mutex
 
 	// Cache content.
 	migs                      map[GceRef]Mig
+	instances                 map[GceRef][]cloudprovider.Instance
 	instancesToMig            map[GceRef]GceRef
 	instancesFromUnknownMig   map[GceRef]bool
 	resourceLimiter           *cloudprovider.ResourceLimiter
@@ -69,6 +77,7 @@ type GceCache struct {
 func NewGceCache() *GceCache {
 	return &GceCache{
 		migs:                      map[GceRef]Mig{},
+		instances:                 map[GceRef][]cloudprovider.Instance{},
 		instancesToMig:            map[GceRef]GceRef{},
 		instancesFromUnknownMig:   map[GceRef]bool{},
 		autoscalingOptionsCache:   map[GceRef]map[string]string{},
@@ -136,6 +145,18 @@ func (gc *GceCache) GetMigs() []Mig {
 	return migs
 }
 
+// GetMigInstances returns the cached instances for a given MIG GceRef
+func (gc *GceCache) GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	instances, found := gc.instances[migRef]
+	if found {
+		klog.V(5).Infof("Instances cache hit for %s", migRef)
+	}
+	return append([]cloudprovider.Instance{}, instances...), found
+}
+
 // GetMigForInstance returns the cached MIG for instance GceRef
 func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (GceRef, bool) {
 	gc.cacheMutex.Lock()
@@ -167,6 +188,7 @@ func (gc *GceCache) SetMigInstances(migRef GceRef, instances []cloudprovider.Ins
 	defer gc.cacheMutex.Unlock()
 
 	gc.removeMigInstances(migRef)
+	gc.instances[migRef] = append([]cloudprovider.Instance{}, instances...)
 	for _, instance := range instances {
 		instanceRef, err := GceRefFromProviderId(instance.Id)
 		if err != nil {
@@ -187,12 +209,21 @@ func (gc *GceCache) MarkInstanceMigUnknown(instanceRef GceRef) {
 	gc.instancesFromUnknownMig[instanceRef] = true
 }
 
+// InvalidateAllMigInstances clears the mig instances cache
+func (gc *GceCache) InvalidateAllMigInstances() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Mig instances cache invalidated")
+	gc.instances = make(map[GceRef][]cloudprovider.Instance)
+}
+
 // InvalidateInstancesToMig clears the instance to mig mapping for a GceRef
 func (gc *GceCache) InvalidateInstancesToMig(migRef GceRef) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	klog.V(5).Infof("Mig instances cache invalidated for %s", migRef)
+	klog.V(5).Infof("Instances to mig cache invalidated for %s", migRef)
 	gc.removeMigInstances(migRef)
 }
 
