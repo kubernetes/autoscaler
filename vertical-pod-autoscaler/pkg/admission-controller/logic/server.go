@@ -73,7 +73,6 @@ func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_adm
 	var err error
 	resource := metrics_admission.Unknown
 
-	response.UID = ar.Request.UID
 	admittedGroupResource := metav1.GroupResource{
 		Group:    ar.Request.Resource.Group,
 		Resource: ar.Request.Resource.Resource,
@@ -148,6 +147,10 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	reviewResponse, status, resource := s.admit(body)
 	ar := v1.AdmissionReview{
 		Response: reviewResponse,
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AdmissionReview",
+			APIVersion: "admission.k8s.io/v1",
+		},
 	}
 
 	resp, err := json.Marshal(ar)
