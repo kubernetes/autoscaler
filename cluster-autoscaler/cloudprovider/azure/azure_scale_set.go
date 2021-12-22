@@ -148,7 +148,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 
 	// If VMSS state is updating, return the currentSize which would've been proactively incremented or decremented by CA
 	if set.VirtualMachineScaleSetProperties != nil && strings.EqualFold(to.String(set.VirtualMachineScaleSetProperties.ProvisioningState), string(compute.ProvisioningStateUpdating)) {
-		klog.V(3).Infof("VMSS % is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
+		klog.V(3).Infof("VMSS %q is in updating state, returning cached size: %d", scaleSet.Name, scaleSet.curSize)
 		return scaleSet.curSize, nil
 	}
 
