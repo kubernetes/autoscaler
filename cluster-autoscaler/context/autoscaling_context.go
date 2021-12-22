@@ -20,6 +20,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
@@ -50,6 +51,8 @@ type AutoscalingContext struct {
 	EstimatorBuilder estimator.EstimatorBuilder
 	// ProcessorCallbacks is interface defining extra callback methods which can be called by processors used in extension points.
 	ProcessorCallbacks processor_callbacks.ProcessorCallbacks
+	// DebuggingSnapshotter is the interface for capturing the debugging snapshot
+	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -93,7 +96,8 @@ func NewAutoscalingContext(
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
-	processorCallbacks processor_callbacks.ProcessorCallbacks) *AutoscalingContext {
+	processorCallbacks processor_callbacks.ProcessorCallbacks,
+	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
@@ -103,6 +107,7 @@ func NewAutoscalingContext(
 		ExpanderStrategy:       expanderStrategy,
 		EstimatorBuilder:       estimatorBuilder,
 		ProcessorCallbacks:     processorCallbacks,
+		DebuggingSnapshotter:   debuggingSnapshotter,
 	}
 }
 
