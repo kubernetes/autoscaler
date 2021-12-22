@@ -382,7 +382,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | podAnnotations | object | `{}` | Annotations to add to each pod. |
 | podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
 | podLabels | object | `{}` | Labels to add to each pod. |
-| priorityClassName | string | `""` | priorityClassName |
+| priorityClassName | string | `"system-cluster-critical"` | priorityClassName |
 | priorityConfigMapAnnotations | object | `{}` | Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap. |
 | prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
 | prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
