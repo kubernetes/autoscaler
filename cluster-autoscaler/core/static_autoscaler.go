@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -119,7 +120,8 @@ func NewStaticAutoscaler(
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
-	backoff backoff.Backoff) *StaticAutoscaler {
+	backoff backoff.Backoff,
+	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) *StaticAutoscaler {
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
@@ -130,7 +132,8 @@ func NewStaticAutoscaler(
 		cloudProvider,
 		expanderStrategy,
 		estimatorBuilder,
-		processorCallbacks)
+		processorCallbacks,
+		debuggingSnapshotter)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -220,6 +223,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
 	a.clusterStateRegistry.PeriodicCleanup()
+	a.DebuggingSnapshotter.StartDataCollection()
+	defer a.DebuggingSnapshotter.Flush()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
@@ -407,6 +412,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Node().Name, err)
 			return errors.ToAutoscalerError(errors.InternalError, err)
 		}
+	}
+
+	l, err := a.ClusterSnapshot.NodeInfos().List()
+	if err != nil {
+		klog.Errorf("Unable to fetch NodeInfo List for Debugging Snapshot, %v", err)
+	} else {
+		a.AutoscalingContext.DebuggingSnapshotter.SetNodeGroupInfo(l)
 	}
 
 	unschedulablePodsToHelp, _ := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
@@ -715,6 +727,7 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 // ExitCleanUp performs all necessary clean-ups when the autoscaler's exiting.
 func (a *StaticAutoscaler) ExitCleanUp() {
 	a.processors.CleanUp()
+	a.DebuggingSnapshotter.Cleanup()
 
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return

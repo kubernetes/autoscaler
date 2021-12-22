@@ -136,7 +136,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		},
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -252,7 +252,7 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 		},
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -359,7 +359,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 	}
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, nil, provider, nil)
+			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, nil, provider, nil, nil)
 			assert.NoError(t, err)
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 			sd := NewScaleDown(&context, NewTestProcessors(), clusterStateRegistry)
@@ -434,7 +434,7 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -491,7 +491,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -566,7 +566,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1.0,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -616,7 +616,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     0.1,
 		ScaleDownCandidatesPoolMinCount:  10,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -760,7 +760,7 @@ func TestDeleteNode(t *testing.T) {
 
 			// build context
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, registry, provider, nil)
+			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -1146,7 +1146,7 @@ func TestScaleDown(t *testing.T) {
 	assert.NoError(t, err)
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
 
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 	nodes := []*apiv1.Node{n1, n2}
 
@@ -1331,7 +1331,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			provider.AddNode("ng1", n1)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
-			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
 			if scenario.nodeInfoSuccess {
@@ -1554,7 +1554,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	assert.NotNil(t, provider)
 
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	context, err := NewScaleTestAutoscalingContext(config.options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(config.options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -1643,7 +1643,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		MaxGracefulTerminationSec: 60,
 	}
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
@@ -1756,7 +1756,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.NoError(t, err)
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
 
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
@@ -2006,7 +2006,7 @@ func TestSoftTaint(t *testing.T) {
 	assert.NoError(t, err)
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
 
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -2127,7 +2127,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	assert.NoError(t, err)
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
 
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())

@@ -518,7 +518,7 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 	assert.NotNil(t, provider)
 
 	// Create context with non-random expander strategy.
-	context, err := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	expander := reportingStrategy{
@@ -684,7 +684,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
@@ -724,7 +724,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1}
@@ -790,7 +790,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		MaxCoresTotal:            config.DefaultMaxClusterCores,
 		MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider().Process(&context, nodes, []*appsv1.DaemonSet{}, nil)
@@ -851,7 +851,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -904,7 +904,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	}
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
-	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
+	context, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -980,7 +980,7 @@ func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
 
 func TestAuthError(t *testing.T) {
 	metrics.RegisterAll(false)
-	context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	nodeGroup := &mockprovider.NodeGroup{}
