@@ -22,7 +22,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
@@ -42,6 +44,7 @@ type hetznerManager struct {
 	image          *hcloud.Image
 	sshKey         *hcloud.SSHKey
 	network        *hcloud.Network
+	createTimeout  time.Duration
 }
 
 func newManager() (*hetznerManager, error) {
@@ -112,6 +115,12 @@ func newManager() (*hetznerManager, error) {
 
 	}
 
+	createTimeout := serverCreateTimeoutDefault
+	v, err := strconv.Atoi(os.Getenv("HCLOUD_SERVER_CREATION_TIMEOUT"))
+	if err == nil && v != 0 {
+		createTimeout = time.Duration(v) * time.Minute
+	}
+
 	m := &hetznerManager{
 		client:         client,
 		nodeGroups:     make(map[string]*hetznerNodeGroup),
@@ -119,6 +128,7 @@ func newManager() (*hetznerManager, error) {
 		image:          image,
 		sshKey:         sshKey,
 		network:        network,
+		createTimeout:  createTimeout,
 		apiCallContext: ctx,
 	}
 
