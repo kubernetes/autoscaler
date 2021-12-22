@@ -61,12 +61,12 @@ const (
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
-	// TODO(jbartosik): put the image in a VPA project
-	stressImage = "gcr.io/jbartosik-gke-dev/stress:0.10"
+	stressImage                     = "gcr.io/google-containers/stress:v1"
 )
 
 var (
 	resourceConsumerImage = imageutils.GetE2EImage(imageutils.ResourceConsumer)
+	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "8000"}
 )
 
 var (
@@ -437,6 +437,7 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 	rcConfig := testutils.RCConfig{
 		Client:      c,
 		Image:       stressImage,
+		Command:     stressCommand,
 		Name:        name,
 		Namespace:   ns,
 		Timeout:     timeoutRC,
