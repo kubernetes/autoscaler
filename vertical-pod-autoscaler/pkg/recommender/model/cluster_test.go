@@ -22,10 +22,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/klog/v2"
 )
@@ -40,7 +42,33 @@ var (
 	testLabels      = map[string]string{"label-1": "value-1"}
 	emptyLabels     = map[string]string{}
 	testSelectorStr = "label-1 = value-1"
+	testTargetRef   = &autoscaling.CrossVersionObjectReference{
+		Kind:       "kind-1",
+		Name:       "name-1",
+		APIVersion: "apiVersion-1",
+	}
+	testControllerKey = &controllerfetcher.ControllerKeyWithAPIVersion{
+		ControllerKey: controllerfetcher.ControllerKey{
+			Kind:      "kind-1",
+			Name:      "name-1",
+			Namespace: "namespace-1",
+		},
+		ApiVersion: "apiVersion-1",
+	}
+	testControllerFetcher = &fakeControllerFetcher{
+		key: testControllerKey,
+		err: nil,
+	}
 )
+
+type fakeControllerFetcher struct {
+	key *controllerfetcher.ControllerKeyWithAPIVersion
+	err error
+}
+
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+	return f.key, f.err
+}
 
 const testGcPeriod = time.Minute
 
@@ -83,7 +111,7 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9 * 24 * time.Hour))
+	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9*24*time.Hour), testControllerFetcher)
 
 	// AggegateContainerState should be deleted from both cluster and vpa
 	assert.Empty(t, cluster.aggregateStateMap)
@@ -109,23 +137,28 @@ func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 	}
 
 	// Verify empty aggregate states are not removed right away.
-	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(1 * time.Minute)) // AggegateContainerState should be deleted from both cluster and vpa
+	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(1*time.Minute), testControllerFetcher) // AggegateContainerState should be deleted from both cluster and vpa
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since creation
-	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(9 * 24 * time.Hour))
+	cluster.garbageCollectAggregateCollectionStates(creationTime.Add(9*24*time.Hour), testControllerFetcher)
 
 	// AggegateContainerState should be deleted from both cluster and vpa
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, vpa.aggregateContainerStates)
 }
 
-func TestClusterGCAggregateContainerStateDeletesEmptyInactive(t *testing.T) {
+func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
 	pod := addTestPod(cluster)
+	// Controller Fetcher returns nil, meaning that there is no corresponding controller alive.
+	controller := &fakeControllerFetcher{
+		key: nil,
+		err: nil,
+	}
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
 	// No usage samples added.
@@ -133,19 +166,47 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactive(t *testing.T) {
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp)
+	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
 
 	// AggegateContainerState should not be deleted as the pod is still active.
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
-	cluster.garbageCollectAggregateCollectionStates(testTimestamp)
+	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
 
-	// AggegateContainerState should be empty as the pod is no longer active and
-	// there are no usage samples.
+	// AggegateContainerState should be empty as the pod is no longer active, controller is not alive
+	// and there are no usage samples.
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, vpa.aggregateContainerStates)
+}
+
+func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	pod := addTestPod(cluster)
+	// Controller Fetcher returns existing controller, meaning that there is a corresponding controller alive.
+	controller := testControllerFetcher
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	// No usage samples added.
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+
+	// AggegateContainerState should not be deleted as the pod is still active.
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
+	cluster.garbageCollectAggregateCollectionStates(testTimestamp, controller)
+
+	// AggegateContainerState should not be delated as the controller is still alive.
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
 }
 
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
@@ -164,7 +225,7 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7 * 24 * time.Hour))
+	cluster.garbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7*24*time.Hour), testControllerFetcher)
 
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
@@ -191,7 +252,7 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 
 	// AggegateContainerState are invalid after 8 days since last sample
 	gcTimestamp := usageSample.MeasureStart.Add(10 * 24 * time.Hour)
-	cluster.garbageCollectAggregateCollectionStates(gcTimestamp)
+	cluster.garbageCollectAggregateCollectionStates(gcTimestamp, testControllerFetcher)
 
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, vpa.aggregateContainerStates)
@@ -216,7 +277,7 @@ func TestClusterGCRateLimiting(t *testing.T) {
 	sampleExpireTime := usageSample.MeasureStart.Add(9 * 24 * time.Hour)
 	// AggegateContainerState are valid for 8 days since last sample but this run
 	// doesn't remove the sample, because we didn't add it yet.
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime)
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime, testControllerFetcher)
 	vpa := addTestVpa(cluster)
 	addTestPod(cluster)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
@@ -228,12 +289,12 @@ func TestClusterGCRateLimiting(t *testing.T) {
 
 	// Sample is expired but this run doesn't remove it yet, because less than testGcPeriod
 	// elapsed since the previous run.
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(testGcPeriod / 2))
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(testGcPeriod/2), testControllerFetcher)
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState should be deleted from both cluster and vpa
-	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(2 * testGcPeriod))
+	cluster.RateLimitedGarbageCollectAggregateCollectionStates(sampleExpireTime.Add(2*testGcPeriod), testControllerFetcher)
 	assert.Empty(t, cluster.aggregateStateMap)
 	assert.Empty(t, vpa.aggregateContainerStates)
 }
@@ -266,9 +327,9 @@ func TestMissingKeys(t *testing.T) {
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 }
 
-func addVpa(cluster *ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string) *Vpa {
+func addVpa(cluster *ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string, targetRef *autoscaling.CrossVersionObjectReference) *Vpa {
 	apiObject := test.VerticalPodAutoscaler().WithNamespace(id.Namespace).
-		WithName(id.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(annotations).Get()
+		WithName(id.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(annotations).WithTargetRef(targetRef).Get()
 	return addVpaObject(cluster, id, apiObject, selector)
 }
 
@@ -283,7 +344,7 @@ func addVpaObject(cluster *ClusterState, id VpaID, vpa *vpa_types.VerticalPodAut
 }
 
 func addTestVpa(cluster *ClusterState) *Vpa {
-	return addVpa(cluster, testVpaID, testAnnotations, testSelectorStr)
+	return addVpa(cluster, testVpaID, testAnnotations, testSelectorStr, testTargetRef)
 }
 
 func addTestPod(cluster *ClusterState) *PodState {
@@ -343,11 +404,11 @@ func TestUpdateAnnotations(t *testing.T) {
 	assert.Equal(t, vpa.Annotations, testAnnotations)
 	// Update the annotations (non-empty).
 	annotations := vpaAnnotationsMap{"key-2": "value-2"}
-	vpa = addVpa(cluster, testVpaID, annotations, testSelectorStr)
+	vpa = addVpa(cluster, testVpaID, annotations, testSelectorStr, testTargetRef)
 	assert.Equal(t, vpa.Annotations, annotations)
 	// Update the annotations (empty).
 	annotations = vpaAnnotationsMap{}
-	vpa = addVpa(cluster, testVpaID, annotations, testSelectorStr)
+	vpa = addVpa(cluster, testVpaID, annotations, testSelectorStr, testTargetRef)
 	assert.Equal(t, vpa.Annotations, annotations)
 }
 
@@ -362,15 +423,15 @@ func TestUpdatePodSelector(t *testing.T) {
 	addTestContainer(cluster)
 
 	// Update the VPA selector such that it still matches the Pod.
-	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 in (value-1,value-2)")
+	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 in (value-1,value-2)", testTargetRef)
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 
 	// Update the VPA selector to no longer match the Pod.
-	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 = value-2")
+	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 = value-2", testTargetRef)
 	assert.NotContains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 
 	// Update the VPA selector to match the Pod again.
-	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 = value-1")
+	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 = value-1", testTargetRef)
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 }
 
@@ -566,7 +627,7 @@ func TestTwoPodsWithDifferentNamespaces(t *testing.T) {
 func TestEmptySelector(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	// Create a VPA with an empty selector (matching all pods).
-	vpa := addVpa(cluster, testVpaID, testAnnotations, "")
+	vpa := addVpa(cluster, testVpaID, testAnnotations, "", testTargetRef)
 	// Create a pod with labels. Add a container.
 	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
 	containerID1 := ContainerID{testPodID, "foo"}
@@ -635,7 +696,7 @@ func TestRecordRecommendation(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
-			vpa := addVpa(cluster, testVpaID, testAnnotations, testSelectorStr)
+			vpa := addVpa(cluster, testVpaID, testAnnotations, testSelectorStr, testTargetRef)
 			cluster.Vpas[testVpaID].Recommendation = tc.recommendation
 			if !tc.lastLogged.IsZero() {
 				cluster.EmptyVPAs[testVpaID] = tc.lastLogged
@@ -718,7 +779,7 @@ func TestGetActiveMatchingPods(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
-			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
+			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector, testTargetRef)
 			for _, pod := range tc.pods {
 				cluster.AddOrUpdatePod(pod.id, pod.labels, pod.phase)
 			}
@@ -792,7 +853,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name+", VPA first", func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
-			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
+			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector, testTargetRef)
 			for _, podDesc := range tc.pods {
 				cluster.AddOrUpdatePod(podDesc.id, podDesc.labels, podDesc.phase)
 				containerID := ContainerID{testPodID, "foo"}
@@ -810,7 +871,7 @@ func TestVPAWithMatchingPods(t *testing.T) {
 				containerID := ContainerID{testPodID, "foo"}
 				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
 			}
-			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector)
+			vpa := addVpa(cluster, testVpaID, testAnnotations, tc.vpaSelector, testTargetRef)
 			assert.Equal(t, tc.expectedMatch, cluster.Vpas[vpa.ID].PodCount)
 		})
 	}
