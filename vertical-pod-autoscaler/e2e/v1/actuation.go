@@ -115,53 +115,65 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(foundUpdated).To(gomega.Equal(1))
 	})
 
-	ginkgo.It("evicts pods in a Deployment", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-			Name:       "hamster-deployment",
+	perControllerTests := []struct {
+		apiVersion string
+		kind       string
+		name       string
+	}{
+		{
+			apiVersion: "apps/v1",
+			kind:       "Deployment",
+			name:       "hamster-deployment",
+		},
+		{
+			apiVersion: "v1",
+			kind:       "ReplicationController",
+			name:       "hamster-rc",
+		},
+		{
+			apiVersion: "batch/v1",
+			kind:       "Job",
+			name:       "hamster-job",
+		},
+		{
+			apiVersion: "batch/v1",
+			kind:       "CronJob",
+			name:       "hamster-cronjob",
+		},
+		{
+			apiVersion: "apps/v1",
+			kind:       "ReplicaSet",
+			name:       "hamster-rs",
+		},
+		{
+			apiVersion: "apps/v1",
+			kind:       "StatefulSet",
+			name:       "hamster-stateful",
+		},
+	}
+	for _, tc := range perControllerTests {
+		ginkgo.It("evicts pods in a multiple-replica "+tc.kind, func() {
+			testEvictsReplicatedPods(f, &autoscaling.CrossVersionObjectReference{
+				APIVersion: tc.apiVersion,
+				Kind:       tc.kind,
+				Name:       tc.name,
+			})
 		})
-	})
-
-	ginkgo.It("evicts pods in a Replication Controller", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "v1",
-			Kind:       "ReplicationController",
-			Name:       "hamster-rc",
+		ginkgo.It("by default does not evict pods in a 1-Pod "+tc.kind, func() {
+			testDoesNotEvictSingletonPodByDefault(f, &autoscaling.CrossVersionObjectReference{
+				APIVersion: tc.apiVersion,
+				Kind:       tc.kind,
+				Name:       tc.name,
+			})
 		})
-	})
-
-	ginkgo.It("evicts pods in a Job", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "batch/v1",
-			Kind:       "Job",
-			Name:       "hamster-job",
+		ginkgo.It("when configured, evicts pods in a 1-Pod "+tc.kind, func() {
+			testEvictsSingletonPodWhenConfigured(f, &autoscaling.CrossVersionObjectReference{
+				APIVersion: tc.apiVersion,
+				Kind:       tc.kind,
+				Name:       tc.name,
+			})
 		})
-	})
-
-	ginkgo.It("evicts pods in a CronJob", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "batch/v1",
-			Kind:       "CronJob",
-			Name:       "hamster-cronjob",
-		})
-	})
-
-	ginkgo.It("evicts pods in a ReplicaSet", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "ReplicaSet",
-			Name:       "hamster-rs",
-		})
-	})
-
-	ginkgo.It("evicts pods in a StatefulSet", func() {
-		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "StatefulSet",
-			Name:       "hamster-stateful",
-		})
-	})
+	}
 
 	ginkgo.It("observes pod disruption budget", func() {
 
@@ -431,7 +443,7 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 	return nil
 }
 
-func testEvictsPods(f *framework.Framework, controller *autoscaling.CrossVersionObjectReference) {
+func testEvictsReplicatedPods(f *framework.Framework, controller *autoscaling.CrossVersionObjectReference) {
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
 	setupHamsterController(f, controller.Kind, "100m", "100Mi", defaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
@@ -439,6 +451,36 @@ func testEvictsPods(f *framework.Framework, controller *autoscaling.CrossVersion
 
 	ginkgo.By("Setting up a VPA CRD")
 	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller)
+
+	ginkgo.By("Waiting for pods to be evicted")
+	err = WaitForPodsEvicted(f, podList)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+}
+
+func testDoesNotEvictSingletonPodByDefault(f *framework.Framework, controller *autoscaling.CrossVersionObjectReference) {
+	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
+	setupHamsterController(f, controller.Kind, "100m", "100Mi", 1 /*replicas*/)
+	podList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	ginkgo.By("Setting up a VPA CRD")
+	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller)
+
+	// No eviction is expected with the default settings of VPA object
+	ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+	CheckNoPodsEvicted(f, MakePodSet(podList))
+}
+
+func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *autoscaling.CrossVersionObjectReference) {
+	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
+	setupHamsterController(f, controller.Kind, "100m", "100Mi", 1 /*replicas*/)
+	podList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	// Prepare the VPA to allow single-Pod eviction.
+	ginkgo.By("Setting up a VPA CRD")
+	minReplicas := int32(1)
+	SetupVPAForNHamstersWithMinReplicas(f, 1, "200m", vpa_types.UpdateModeAuto, controller, &minReplicas)
 
 	ginkgo.By("Waiting for pods to be evicted")
 	err = WaitForPodsEvicted(f, podList)

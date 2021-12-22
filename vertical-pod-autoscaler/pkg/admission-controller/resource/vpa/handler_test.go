@@ -34,6 +34,8 @@ const (
 func TestValidateVPA(t *testing.T) {
 	badUpdateMode := vpa_types.UpdateMode("bad")
 	validUpdateMode := vpa_types.UpdateModeOff
+	badMinReplicas := int32(0)
+	validMinReplicas := int32(1)
 	badScalingMode := vpa_types.ContainerScalingMode("bad")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
@@ -73,6 +75,18 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("unexpected UpdateMode value bad"),
+		},
+		{
+			name: "zero minReplicas",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						MinReplicas: &badMinReplicas,
+						UpdateMode:  &validUpdateMode,
+					},
+				},
+			},
+			expectError: fmt.Errorf("MinReplicas has to be positive, got 0"),
 		},
 		{
 			name: "no policy name",
@@ -173,7 +187,8 @@ func TestValidateVPA(t *testing.T) {
 						},
 					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &validUpdateMode,
+						UpdateMode:  &validUpdateMode,
+						MinReplicas: &validMinReplicas,
 					},
 				},
 			},
