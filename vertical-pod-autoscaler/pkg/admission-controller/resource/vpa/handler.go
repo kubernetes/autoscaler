@@ -115,6 +115,10 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		if _, found := possibleUpdateModes[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
 		}
+
+		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
+			return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
+		}
 	}
 
 	if vpa.Spec.ResourcePolicy != nil {
