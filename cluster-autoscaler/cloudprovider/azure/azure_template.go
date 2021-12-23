@@ -33,6 +33,8 @@ import (
 	"time"
 )
 
+const azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
+
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 	instanceOS := cloudprovider.DefaultOS
 	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
@@ -58,8 +60,10 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 		}
 
 		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
+		result[azureDiskTopologyKey] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
 		result[apiv1.LabelTopologyZone] = "0"
+		result[azureDiskTopologyKey] = ""
 	}
 
 	result[apiv1.LabelHostname] = nodeName
