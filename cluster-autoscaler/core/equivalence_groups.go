@@ -17,10 +17,10 @@ limitations under the License.
 package core
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"reflect"
 
 	apiv1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -67,7 +67,7 @@ func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][
 
 		matchingFound := false
 		for _, g := range equivalenceGroupsByController[controllerRef.UID] {
-			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && apiequality.Semantic.DeepEqual(pod.Spec, g.representant.Spec) {
+			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && utils.PodSpecSemanticallyEqual(pod.Spec, g.representant.Spec) {
 				matchingFound = true
 				podEquivalenceGroups[g.id] = append(podEquivalenceGroups[g.id], pod)
 				break
