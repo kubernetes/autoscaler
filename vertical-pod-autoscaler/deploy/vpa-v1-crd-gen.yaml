@@ -36,7 +36,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
             properties:
               containerName:
                 description: Name of the checkpointed container.
@@ -129,7 +129,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
             properties:
               containerName:
                 description: Name of the checkpointed container.
@@ -266,7 +266,7 @@ spec:
             type: object
           spec:
             description: 'Specification of the behavior of the autoscaler. More info:
-              https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+              https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
             properties:
               recommenders:
                 description: Recommender responsible for generating recommendation
@@ -532,7 +532,7 @@ spec:
             type: object
           spec:
             description: 'Specification of the behavior of the autoscaler. More info:
-              https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+              https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.'
             properties:
               resourcePolicy:
                 description: Controls how the autoscaler computes recommended resources.

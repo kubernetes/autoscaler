@@ -48,7 +48,7 @@ message Initializer {
 
 // InitializerConfiguration describes the configuration of initializers.
 message InitializerConfiguration {
-  // Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata.
+  // Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
@@ -67,7 +67,7 @@ message InitializerConfiguration {
 // InitializerConfigurationList is a list of InitializerConfiguration.
 message InitializerConfigurationList {
   // Standard list metadata.
-  // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+  // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
 
@@ -89,7 +89,7 @@ message Rule {
   repeated string apiVersions = 2;
 
   // Resources is a list of resources this rule applies to.
-  // 
+  //
   // For example:
   // 'pods' means pods.
   // 'pods/log' means the log subresource of pods.
@@ -97,10 +97,10 @@ message Rule {
   // 'pods/*' means all subresources of pods.
   // '*/scale' means all scale subresources.
   // '*/*' means all resources and their subresources.
-  // 
+  //
   // If wildcard is present, the validation rule will ensure resources do not
   // overlap with each other.
-  // 
+  //
   // Depending on the enclosing object, subresources might not be allowed.
   // Required.
   repeated string resources = 3;

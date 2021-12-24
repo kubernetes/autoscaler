@@ -42,7 +42,7 @@ message AllowedHostPath {
   // pathPrefix is the path prefix that the host volume must match.
   // It does not support `*`.
   // Trailing slashes are trimmed when validating the path prefix with a host path.
-  // 
+  //
   // Examples:
   // `/foo` would allow `/foo`, `/foo/` and `/foo/bar`
   // `/foo` would not allow `/food` or `/etc/foo`
@@ -170,7 +170,7 @@ message PodDisruptionBudgetStatus {
 // that will be applied to a pod and container.
 message PodSecurityPolicy {
   // Standard object's metadata.
-  // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+  // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
@@ -182,7 +182,7 @@ message PodSecurityPolicy {
 // PodSecurityPolicyList is a list of PodSecurityPolicy objects.
 message PodSecurityPolicyList {
   // Standard list metadata.
-  // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+  // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
 
@@ -280,7 +280,7 @@ message PodSecurityPolicySpec {
   // Each entry is either a plain sysctl name or ends in "*" in which case it is considered
   // as a prefix of allowed sysctls. Single * means all unsafe sysctls are allowed.
   // Kubelet has to whitelist all allowed unsafe sysctls explicitly to avoid rejection.
-  // 
+  //
   // Examples:
   // e.g. "foo/*" allows "foo/bar", "foo/baz", etc.
   // e.g. "foo.*" allows "foo.bar", "foo.baz", etc.
@@ -290,7 +290,7 @@ message PodSecurityPolicySpec {
   // forbiddenSysctls is a list of explicitly forbidden sysctls, defaults to none.
   // Each entry is either a plain sysctl name or ends in "*" in which case it is considered
   // as a prefix of forbidden sysctls. Single * means all sysctls are forbidden.
-  // 
+  //
   // Examples:
   // e.g. "foo/*" forbids "foo/bar", "foo/baz", etc.
   // e.g. "foo.*" forbids "foo.bar", "foo.baz", etc.
