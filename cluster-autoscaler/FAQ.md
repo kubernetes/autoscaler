@@ -1038,7 +1038,7 @@ go run main.go --kubeconfig=kubeconfig.yaml --cloud-provider=mcm --nodes=0:3:ca-
 ```
 
 
-### How do I get the latest changes from master onto the fork of autoscaler on Gardener? 
+### How do I sync gardener autoscaler with an upstream autoscaler minor release?
 
 This is helpful in order to offer Gardener CA with latest or recent K8s version. Note that this may also demand a need to upgrade K8s version used by Machine Controller Manager.
 
@@ -1062,6 +1062,17 @@ git pull origin machine-controller-manager-provider
 
 #### Step 2:
 
+Merge master onto the `machine-controller-manager-provider` branch:
+```
+git merge master
+```
+
+Resolve the rebase-conflicts by appropriately accepting the incoming changes or the current changes.
+
+#### Step 3:
+
+<u> <b> For syncing with kubernetes/autoscaler < v1.21.0 </u> </b>
+
 This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
 
 Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
@@ -1081,23 +1092,14 @@ Populate the `K8S_REV` variable in the script with the commit-hash you saved abo
 --VERIFY_COMMAND=${VERIFY_COMMAND:-"go test -mod=vendor ./..."}
 ++VERIFY_COMMAND=true
 
---GO_VERSION_OVERRIDE=false
-++GO_VERSION_OVERRIDE=true
+--OVERRIDE_GO_VERSION=false
+++OVERRIDE_GO_VERSION=true
 ```
 
 ```
 # give appropriate commit message
 git commit -m "Manually updated K8s version" 
 ```
-
-#### Step 3:
-
-Merge master onto the `machine-controller-manager-provider` branch:
-```
-git merge master
-```
-
-Resolve the rebase-conflicts by appropriately accepting the incoming changes or the current changes.
 
 Once all the rebase-conflicts are resolved, execute following script:
 
@@ -1112,8 +1114,18 @@ The script shall create a directory under the `/tmp`, and logs of the execution-
 Once script is successfully executed, execute following commands to confirm the correctness.
 ```
 # You must see a new commit created by the script containing the commit-hash.
-git status 
 
+git status 
+```
+<u><b> For syncing with kubernetes/autoscaler >= v1.21.0 </u> </b>
+
+With kuberenets/autoscaler v1.21.0 the `update_vendor.sh` has been updated. We just need to provide the version of k8s dependencies which we want to vendor in , as an argument to the script. For ex, if we want to vendor in `k8s v1.21.0`
+
+```
+ ./update-vendor.sh v1.21.0 
+```
+Once the script runs successfully
+```
 # Try following steps to confirm the correctness.
 go test $(go list ../cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
 go test $(go list ../cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
@@ -1135,7 +1147,11 @@ Please follow below steps to vendor new version of MCM:
 Vendor compatible `k8s.io` depedency into the MCM. 
 
 
-_Please make sure to vendor same `k8s.io` version into MCM, as the one already vendored in the autoscaler. As vendoring lower version of `k8s.io` into MCM, and later into the autoscaler may force entire autoscaler to use such low version of `k8s.io`. This can cause runtime issues if not build-issues._
+_Please make sure to vendor same `k8s.io` version into MCM, as the one already vendored in the autoscaler. As vendoring lower version of `k8s.io` into MCM, <b>and later into the autoscaler</b> may force entire autoscaler to use such low version of `k8s.io`. This can cause runtime issues if not build-issues._
+
+In case of not updating version of k8s used by MCM:
+
+_The go vendoring algorithm selects maximal version between the dependencies, so if MCM requries k8s v1.18.0 and CA on requires k8s v1.20.0 then k8s v1.20.0 will be used._
 
 Update the `go.mod` file in the MCM to reflect expected versions of `k8s.io`. Then execute following:
 ```
