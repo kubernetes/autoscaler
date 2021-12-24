@@ -18,6 +18,7 @@ package utils
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	klog "k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -53,4 +54,41 @@ func FilterOutNodes(nodes []*apiv1.Node, nodesToFilterOut []*apiv1.Node) []*apiv
 	}
 
 	return filtered
+}
+
+// PodSpecSemanticallyEqual returns true if two pod specs are similar after dropping
+// the fields we don't care about
+// Due to the generated suffixes, a strict DeepEquals check will fail and generate
+// an equivalence group per pod which is undesirable.
+// Projected volumes do not impact scheduling so we should ignore them
+func PodSpecSemanticallyEqual(p1 apiv1.PodSpec, p2 apiv1.PodSpec) bool {
+	p1Spec := sanitizeProjectedVolumesAndMounts(p1)
+	p2Spec := sanitizeProjectedVolumesAndMounts(p2)
+	return apiequality.Semantic.DeepEqual(p1Spec, p2Spec)
+}
+
+// sanitizeProjectedVolumesAndMounts returns a pod spec with projected volumes
+// and their mounts removed
+func sanitizeProjectedVolumesAndMounts(podSpec apiv1.PodSpec) apiv1.PodSpec {
+	projectedVolumeNames := map[string]bool{}
+	var volumes []apiv1.Volume
+	for _, v := range podSpec.Volumes {
+		if v.Projected == nil {
+			volumes = append(volumes, v)
+		} else {
+			projectedVolumeNames[v.Name] = true
+		}
+	}
+	podSpec.Volumes = volumes
+
+	for i := range podSpec.Containers {
+		var volumeMounts []apiv1.VolumeMount
+		for _, mount := range podSpec.Containers[i].VolumeMounts {
+			if ok := projectedVolumeNames[mount.Name]; !ok {
+				volumeMounts = append(volumeMounts, mount)
+			}
+		}
+		podSpec.Containers[i].VolumeMounts = volumeMounts
+	}
+	return podSpec
 }
