@@ -114,6 +114,11 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: {{ template "cluster-autoscaler.fullname" . }}
+            - name: AZURE_CLUSTER_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: ClusterName
+                  name: {{ template "cluster-autoscaler.fullname" . }}
             {{- if .Values.azureUseManagedIdentityExtension }}
             - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
               value: "true"
@@ -132,11 +137,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: ClientSecret
-                  name: {{ template "cluster-autoscaler.fullname" . }}
-            - name: AZURE_CLUSTER_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: ClusterName
                   name: {{ template "cluster-autoscaler.fullname" . }}
             - name: AZURE_NODE_RESOURCE_GROUP
               valueFrom:
