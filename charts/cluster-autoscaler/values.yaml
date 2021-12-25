@@ -89,7 +89,7 @@ azureClusterName: ""
 # Required if `cloudProvider=azure`
 azureNodeResourceGroup: ""
 
-# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID and resource group are set.
+# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set.
 azureUseManagedIdentityExtension: false
 
 # magnumClusterName -- Cluster name or ID in Magnum.
