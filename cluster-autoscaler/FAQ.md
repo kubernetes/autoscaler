@@ -59,6 +59,7 @@ this document:
 
 * [In the context of Gardener](#in-the-context-of-gardener)
   * [How do I rebase this fork of autoscaler with upstream?](#how-do-i-rebase-this-fork-of-autoscaler-with-upstream)
+  * [How do I sync gardener autoscaler with an upstream autoscaler minor release?](#how-do-i-sync-gardener-autoscaler-with-an-upstream-autoscaler-minor-release)
   * [How do I revendor a different version of MCM in autoscaler?](#how-do-i-revendor-a-different-version-of-mcm-in-autoscaler)
 <!--- TOC END -->
 
@@ -1067,7 +1068,7 @@ Merge master onto the `machine-controller-manager-provider` branch:
 git merge master
 ```
 
-Resolve the rebase-conflicts by appropriately accepting the incoming changes or the current changes.
+Resolve the merge-conflicts by appropriately accepting the incoming changes or the current changes.
 
 #### Step 3:
 
@@ -1101,7 +1102,7 @@ Populate the `K8S_REV` variable in the script with the commit-hash you saved abo
 git commit -m "Manually updated K8s version" 
 ```
 
-Once all the rebase-conflicts are resolved, execute following script:
+Once all the merge-conflicts are resolved, execute following script:
 
 ```
 VERIFY_COMMAND=true ./hack/update-vendor.sh
