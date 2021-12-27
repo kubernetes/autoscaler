@@ -28,8 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/klog/v2"
-
 	kube_client "k8s.io/client-go/kubernetes"
 )
 
@@ -71,7 +69,6 @@ func ExpanderStrategyFromStrings(expanderFlags []string, cloudProvider cloudprov
 			lister := kubernetes.NewConfigMapListerForNamespace(kubeClient, stopChannel, configNamespace)
 			filters = append(filters, priority.NewFilter(lister.ConfigMaps(configNamespace), autoscalingKubeClients.Recorder))
 		case expander.GRPCExpanderName:
-			klog.V(1).Info("GRPC expander chosen")
 			filters = append(filters, grpcplugin.NewFilter(GRPCExpanderCert, GRPCExpanderURL))
 		default:
 			return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)

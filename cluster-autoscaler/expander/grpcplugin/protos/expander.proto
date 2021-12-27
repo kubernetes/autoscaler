@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package grpcplugin;
 import "k8s.io/api/core/v1/generated.proto";
-//import "google/protobuf/struct.proto";
 option go_package = "cluster-autoscaler/expander/grpcplugin/protos";
 
 
@@ -17,7 +16,7 @@ service Expander {
 message BestOptionsRequest {
   repeated Option options = 1;
   // key is node id from options
-  map<string, k8s.io.api.core.v1.Node> nodeInfoMap = 2;
+  map<string, k8s.io.api.core.v1.Node> nodeMap = 2;
 }
 message BestOptionsResponse {
   repeated Option options = 1;
