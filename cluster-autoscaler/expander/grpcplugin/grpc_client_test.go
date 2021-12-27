@@ -87,20 +87,41 @@ var (
 )
 
 func TestPopulateOptionsForGrpc(t *testing.T) {
-	nodeGroupIDOptionMap := make(map[string]expander.Option)
-	grpcOptionsSlice := []*protos.Option{}
-	populateOptionsForGRPC(options, nodeGroupIDOptionMap, &grpcOptionsSlice)
-
-	expectedOptionsSlice := []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge}
-	assert.Equal(t, expectedOptionsSlice, grpcOptionsSlice)
-
-	expectedNodeGroupIDOptionMap := map[string]expander.Option{
-		eoT2Micro.NodeGroup.Id():   eoT2Micro,
-		eoT2Large.NodeGroup.Id():   eoT2Large,
-		eoT3Large.NodeGroup.Id():   eoT3Large,
-		eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+	testCases := []struct {
+		desc         string
+		opts         []expander.Option
+		expectedOpts []*protos.Option
+		expectedMap  map[string]expander.Option
+	}{
+		{
+			desc:         "empty options",
+			opts:         []expander.Option{},
+			expectedOpts: []*protos.Option{},
+			expectedMap:  map[string]expander.Option{},
+		},
+		{
+			desc:         "one option",
+			opts:         []expander.Option{eoT2Micro},
+			expectedOpts: []*protos.Option{&grpcEoT2Micro},
+			expectedMap:  map[string]expander.Option{eoT2Micro.NodeGroup.Id(): eoT2Micro},
+		},
+		{
+			desc:         "many options",
+			opts:         options,
+			expectedOpts: []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+			expectedMap: map[string]expander.Option{
+				eoT2Micro.NodeGroup.Id():   eoT2Micro,
+				eoT2Large.NodeGroup.Id():   eoT2Large,
+				eoT3Large.NodeGroup.Id():   eoT3Large,
+				eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+			},
+		},
 	}
-	assert.Equal(t, expectedNodeGroupIDOptionMap, nodeGroupIDOptionMap)
+	for _, tc := range testCases {
+		grpcOptionsSlice, nodeGroupIDOptionMap := populateOptionsForGRPC(tc.opts)
+		assert.Equal(t, tc.expectedOpts, grpcOptionsSlice)
+		assert.Equal(t, tc.expectedMap, nodeGroupIDOptionMap)
+	}
 }
 
 func makeFakeNodeInfos() map[string]*schedulerframework.NodeInfo {
@@ -114,9 +135,8 @@ func makeFakeNodeInfos() map[string]*schedulerframework.NodeInfo {
 }
 
 func TestPopulateNodeInfoForGRPC(t *testing.T) {
-	grpcNodeInfoMap := make(map[string]*v1.Node)
 	nodeInfos := makeFakeNodeInfos()
-	populateNodeInfoForGRPC(nodeInfos, grpcNodeInfoMap)
+	grpcNodeInfoMap := populateNodeInfoForGRPC(nodeInfos)
 
 	expectedGrpcNodeInfoMap := make(map[string]*v1.Node)
 	for i, opt := range options {
@@ -140,7 +160,7 @@ func TestValidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
 	assert.Equal(t, expectedOptions, ret)
 }
 
-func TestInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
+func TestAnInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
 	responseOptionsSlice := []*protos.Option{&grpcEoT2Micro, &grpcEoT3Large, &grpcEoM44XLarge}
 	nodeGroupIDOptionMap := map[string]expander.Option{
 		eoT2Micro.NodeGroup.Id(): eoT2Micro,
@@ -149,7 +169,7 @@ func TestInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
 	}
 
 	ret := transformAndSanitizeOptionsFromGRPC(responseOptionsSlice, nodeGroupIDOptionMap)
-	assert.Equal(t, []expander.Option(nil), ret)
+	assert.Equal(t, []expander.Option{eoT2Micro, eoT3Large}, ret)
 }
 
 func TestBestOptionsValid(t *testing.T) {
@@ -164,8 +184,8 @@ func TestBestOptionsValid(t *testing.T) {
 		grpcNodeInfoMap[opt.NodeGroup.Id()] = nodes[i]
 	}
 	expectedBestOptionsReq := &protos.BestOptionsRequest{
-		Options:     []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
-		NodeInfoMap: grpcNodeInfoMap,
+		Options: []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+		NodeMap: grpcNodeInfoMap,
 	}
 
 	mockClient.EXPECT().BestOptions(
@@ -242,13 +262,12 @@ func TestBestOptionsErrors(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		grpcNodeInfoMap := make(map[string]*v1.Node)
-		populateNodeInfoForGRPC(tc.nodeInfo, grpcNodeInfoMap)
+		grpcNodeInfoMap := populateNodeInfoForGRPC(tc.nodeInfo)
 		mockClient.EXPECT().BestOptions(
 			gomock.Any(), gomock.Eq(
 				&protos.BestOptionsRequest{
-					Options:     []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
-					NodeInfoMap: grpcNodeInfoMap,
+					Options: []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+					NodeMap: grpcNodeInfoMap,
 				})).Return(&tc.mockResponse, tc.errResponse)
 		resp := g.BestOptions(options, tc.nodeInfo)
 
