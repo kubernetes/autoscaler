@@ -90,6 +90,10 @@ const (
 	StartedContainersTotalKey       = "started_containers_total"
 	StartedContainersErrorsTotalKey = "started_containers_errors_total"
 
+	// Metrics to track HostProcess container usage by this kubelet
+	StartedHostProcessContainersTotalKey       = "started_host_process_containers_total"
+	StartedHostProcessContainersErrorsTotalKey = "started_host_process_containers_errors_total"
+
 	// Metrics to track ephemeral container usage by this kubelet
 	ManagedEphemeralContainersKey = "managed_ephemeral_containers"
 
@@ -367,7 +371,7 @@ var (
 			Subsystem:         KubeletSubsystem,
 			Name:              AssignedConfigKey,
 			Help:              "The node's understanding of intended config. The count is always 1.",
-			DeprecatedVersion: "1.23.0",
+			DeprecatedVersion: "1.22.0",
 			StabilityLevel:    metrics.ALPHA,
 		},
 		[]string{ConfigSourceLabelKey, ConfigUIDLabelKey, ConfigResourceVersionLabelKey, KubeletConfigKeyLabelKey},
@@ -378,7 +382,7 @@ var (
 			Subsystem:         KubeletSubsystem,
 			Name:              ActiveConfigKey,
 			Help:              "The config source the node is actively using. The count is always 1.",
-			DeprecatedVersion: "1.23.0",
+			DeprecatedVersion: "1.22.0",
 			StabilityLevel:    metrics.ALPHA,
 		},
 		[]string{ConfigSourceLabelKey, ConfigUIDLabelKey, ConfigResourceVersionLabelKey, KubeletConfigKeyLabelKey},
@@ -390,7 +394,7 @@ var (
 			Subsystem:         KubeletSubsystem,
 			Name:              LastKnownGoodConfigKey,
 			Help:              "The config source the node will fall back to when it encounters certain errors. The count is always 1.",
-			DeprecatedVersion: "1.23.0",
+			DeprecatedVersion: "1.22.0",
 			StabilityLevel:    metrics.ALPHA,
 		},
 		[]string{ConfigSourceLabelKey, ConfigUIDLabelKey, ConfigResourceVersionLabelKey, KubeletConfigKeyLabelKey},
@@ -401,7 +405,7 @@ var (
 			Subsystem:         KubeletSubsystem,
 			Name:              ConfigErrorKey,
 			Help:              "This metric is true (1) if the node is experiencing a configuration-related error, false (0) otherwise.",
-			DeprecatedVersion: "1.23.0",
+			DeprecatedVersion: "1.22.0",
 			StabilityLevel:    metrics.ALPHA,
 		},
 	)
@@ -460,14 +464,13 @@ var (
 		},
 	)
 	// StartedPodsErrorsTotal is a counter that tracks the number of errors creating pod sandboxes
-	StartedPodsErrorsTotal = metrics.NewCounterVec(
+	StartedPodsErrorsTotal = metrics.NewCounter(
 		&metrics.CounterOpts{
 			Subsystem:      KubeletSubsystem,
 			Name:           StartedPodsErrorsTotalKey,
 			Help:           "Cumulative number of errors when starting pods",
 			StabilityLevel: metrics.ALPHA,
 		},
-		[]string{"message"},
 	)
 	// StartedContainersTotal is a counter that tracks the number of container creation operations
 	StartedContainersTotal = metrics.NewCounterVec(
@@ -485,6 +488,26 @@ var (
 			Subsystem:      KubeletSubsystem,
 			Name:           StartedContainersErrorsTotalKey,
 			Help:           "Cumulative number of errors when starting containers",
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"container_type", "code"},
+	)
+	// StartedHostProcessContainersTotal is a counter that tracks the number of hostprocess container creation operations
+	StartedHostProcessContainersTotal = metrics.NewCounterVec(
+		&metrics.CounterOpts{
+			Subsystem:      KubeletSubsystem,
+			Name:           StartedHostProcessContainersTotalKey,
+			Help:           "Cumulative number of hostprocess containers started. This metric will only be collected on Windows and requires WindowsHostProcessContainers feature gate to be enabled.",
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"container_type"},
+	)
+	// StartedHostProcessContainersErrorsTotal is a counter that tracks the number of errors creating hostprocess containers
+	StartedHostProcessContainersErrorsTotal = metrics.NewCounterVec(
+		&metrics.CounterOpts{
+			Subsystem:      KubeletSubsystem,
+			Name:           StartedHostProcessContainersErrorsTotalKey,
+			Help:           "Cumulative number of errors when starting hostprocess containers. This metric will only be collected on Windows and requires WindowsHostProcessContainers feature gate to be enabled.",
 			StabilityLevel: metrics.ALPHA,
 		},
 		[]string{"container_type", "code"},
@@ -531,6 +554,10 @@ func Register(collectors ...metrics.StableCollector) {
 		legacyregistry.MustRegister(StartedPodsErrorsTotal)
 		legacyregistry.MustRegister(StartedContainersTotal)
 		legacyregistry.MustRegister(StartedContainersErrorsTotal)
+		if utilfeature.DefaultFeatureGate.Enabled(features.WindowsHostProcessContainers) {
+			legacyregistry.MustRegister(StartedHostProcessContainersTotal)
+			legacyregistry.MustRegister(StartedHostProcessContainersErrorsTotal)
+		}
 		legacyregistry.MustRegister(RunPodSandboxDuration)
 		legacyregistry.MustRegister(RunPodSandboxErrors)
 		if utilfeature.DefaultFeatureGate.Enabled(features.DynamicKubeletConfig) {
