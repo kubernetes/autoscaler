@@ -1,3 +1,4 @@
+//go:build hetzner
 // +build hetzner
 
 /*

@@ -1,3 +1,4 @@
+//go:build alicloud
 // +build alicloud
 
 /*
