@@ -1,3 +1,4 @@
+//go:build brightbox
 // +build brightbox
 
 /*
