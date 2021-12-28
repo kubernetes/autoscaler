@@ -20,6 +20,7 @@ package app
 
 import (
 	"errors"
+	goflag "flag"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -86,7 +87,7 @@ import (
 	utilipvs "k8s.io/kubernetes/pkg/util/ipvs"
 	"k8s.io/kubernetes/pkg/util/oom"
 	"k8s.io/utils/exec"
-	utilsnet "k8s.io/utils/net"
+	netutils "k8s.io/utils/net"
 	utilpointer "k8s.io/utils/pointer"
 )
 
@@ -164,9 +165,9 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 
 	fs.BoolVar(&o.CleanupAndExit, "cleanup", o.CleanupAndExit, "If true cleanup iptables and ipvs rules and exit.")
 
-	fs.Var(utilflag.IPVar{Val: &o.config.BindAddress}, "bind-address", "The IP address for the proxy server to serve on (set to '0.0.0.0' for all IPv4 interfaces and '::' for all IPv6 interfaces)")
-	fs.Var(utilflag.IPPortVar{Val: &o.config.HealthzBindAddress}, "healthz-bind-address", "The IP address with port for the health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable.")
-	fs.Var(utilflag.IPPortVar{Val: &o.config.MetricsBindAddress}, "metrics-bind-address", "The IP address with port for the metrics server to serve on (set to '0.0.0.0:10249' for all IPv4 interfaces and '[::]:10249' for all IPv6 interfaces). Set empty to disable.")
+	fs.Var(&utilflag.IPVar{Val: &o.config.BindAddress}, "bind-address", "The IP address for the proxy server to serve on (set to '0.0.0.0' for all IPv4 interfaces and '::' for all IPv6 interfaces)")
+	fs.Var(&utilflag.IPPortVar{Val: &o.config.HealthzBindAddress}, "healthz-bind-address", "The IP address with port for the health check server to serve on (set to '0.0.0.0:10256' for all IPv4 interfaces and '[::]:10256' for all IPv6 interfaces). Set empty to disable.")
+	fs.Var(&utilflag.IPPortVar{Val: &o.config.MetricsBindAddress}, "metrics-bind-address", "The IP address with port for the metrics server to serve on (set to '0.0.0.0:10249' for all IPv4 interfaces and '[::]:10249' for all IPv6 interfaces). Set empty to disable.")
 	fs.BoolVar(&o.config.BindAddressHardFail, "bind-address-hard-fail", o.config.BindAddressHardFail, "If true kube-proxy will treat failure to bind to a port as fatal and exit")
 	fs.Var(utilflag.PortRangeVar{Val: &o.config.PortRange}, "proxy-port-range", "Range of host ports (beginPort-endPort, single port or beginPort+offset, inclusive) that may be consumed in order to proxy service traffic. If (unspecified, 0, or 0-0) then ports will be randomly chosen.")
 	fs.Var(&o.config.Mode, "proxy-mode", "Which proxy mode to use: 'userspace' (older) or 'iptables' (faster) or 'ipvs' or 'kernelspace' (windows). If blank, use the best-available proxy (currently iptables). If the iptables proxy is selected, regardless of how, but the system's kernel or iptables versions are insufficient, this always falls back to the userspace proxy.")
@@ -221,7 +222,7 @@ func NewOptions() *Options {
 // Complete completes all the required options.
 func (o *Options) Complete() error {
 	if len(o.ConfigFile) == 0 && len(o.WriteConfigTo) == 0 {
-		klog.InfoS("WARNING: all flags other than --config, --write-config-to, and --cleanup are deprecated. Please begin using a config file ASAP")
+		klog.InfoS("Warning, all flags other than --config, --write-config-to, and --cleanup are deprecated, please begin using a config file ASAP")
 		o.config.HealthzBindAddress = addressFromDeprecatedFlags(o.config.HealthzBindAddress, o.healthzPort)
 		o.config.MetricsBindAddress = addressFromDeprecatedFlags(o.config.MetricsBindAddress, o.metricsPort)
 	}
@@ -474,31 +475,28 @@ Service cluster IPs and ports are currently found through Docker-links-compatibl
 environment variables specifying ports opened by the service proxy. There is an optional
 addon that provides cluster DNS for these cluster IPs. The user must create a service
 with the apiserver API to configure the proxy.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			verflag.PrintAndExitIfRequested()
 			cliflag.PrintFlags(cmd.Flags())
 
 			if err := initForOS(opts.WindowsService); err != nil {
-				klog.ErrorS(err, "Failed OS init")
-				// ACTION REQUIRED: Exit code changed from 255 to 1
-				os.Exit(1)
+				return fmt.Errorf("failed os init: %w", err)
 			}
 
 			if err := opts.Complete(); err != nil {
-				klog.ErrorS(err, "Failed complete")
-				// ACTION REQUIRED: Exit code changed from 255 to 1
-				os.Exit(1)
+				return fmt.Errorf("failed complete: %w", err)
 			}
 
 			if err := opts.Validate(); err != nil {
-				klog.ErrorS(err, "Failed validate")
-				// ACTION REQUIRED: Exit code changed from 255 to 1
-				os.Exit(1)
+				return fmt.Errorf("failed validate: %w", err)
 			}
 
 			if err := opts.Run(); err != nil {
-				klog.Exit(err)
+				klog.ErrorS(err, "Error running ProxyServer")
+				return err
 			}
+
+			return nil
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			for _, arg := range args {
@@ -518,10 +516,11 @@ with the apiserver API to configure the proxy.`,
 		os.Exit(1)
 	}
 
-	opts.AddFlags(cmd.Flags())
+	fs := cmd.Flags()
+	opts.AddFlags(fs)
+	fs.AddGoFlagSet(goflag.CommandLine) // for --boot-id-file and --machine-id-file
 
-	// TODO handle error
-	cmd.MarkFlagFilename("config", "yaml", "yml", "json")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml", "json")
 
 	return cmd
 }
@@ -558,7 +557,7 @@ func createClients(config componentbaseconfig.ClientConnectionConfiguration, mas
 	var err error
 
 	if len(config.Kubeconfig) == 0 && len(masterOverride) == 0 {
-		klog.InfoS("Neither kubeconfig file nor master URL was specified. Falling back to in-cluster config")
+		klog.InfoS("Neither kubeconfig file nor master URL was specified, falling back to in-cluster config")
 		kubeConfig, err = rest.InClusterConfig()
 	} else {
 		// This creates a client, first loading any specified kubeconfig
@@ -624,7 +623,7 @@ func serveMetrics(bindAddress, proxyMode string, enableProfiling bool, errCh cha
 		fmt.Fprintf(w, "%s", proxyMode)
 	})
 
-	//lint:ignore SA1019 See the Metrics Stability Migration KEP
+	//nolint:staticcheck // SA1019 See the Metrics Stability Migration KEP
 	proxyMux.Handle("/metrics", legacyregistry.Handler())
 
 	if enableProfiling {
@@ -751,14 +750,14 @@ func (s *ProxyServer) Run() error {
 	serviceConfig.RegisterEventHandler(s.Proxier)
 	go serviceConfig.Run(wait.NeverStop)
 
-	if s.UseEndpointSlices {
+	if endpointsHandler, ok := s.Proxier.(config.EndpointsHandler); ok && !s.UseEndpointSlices {
+		endpointsConfig := config.NewEndpointsConfig(informerFactory.Core().V1().Endpoints(), s.ConfigSyncPeriod)
+		endpointsConfig.RegisterEventHandler(endpointsHandler)
+		go endpointsConfig.Run(wait.NeverStop)
+	} else {
 		endpointSliceConfig := config.NewEndpointSliceConfig(informerFactory.Discovery().V1().EndpointSlices(), s.ConfigSyncPeriod)
 		endpointSliceConfig.RegisterEventHandler(s.Proxier)
 		go endpointSliceConfig.Run(wait.NeverStop)
-	} else {
-		endpointsConfig := config.NewEndpointsConfig(informerFactory.Core().V1().Endpoints(), s.ConfigSyncPeriod)
-		endpointsConfig.RegisterEventHandler(s.Proxier)
-		go endpointsConfig.Run(wait.NeverStop)
 	}
 
 	// This has to start after the calls to NewServiceConfig and NewEndpointsConfig because those
@@ -836,13 +835,13 @@ func (s *ProxyServer) CleanupAndExit() error {
 // 2. the primary IP from the Node object, if set
 // 3. if no IP is found it defaults to 127.0.0.1 and IPv4
 func detectNodeIP(client clientset.Interface, hostname, bindAddress string) net.IP {
-	nodeIP := net.ParseIP(bindAddress)
+	nodeIP := netutils.ParseIPSloppy(bindAddress)
 	if nodeIP.IsUnspecified() {
 		nodeIP = utilnode.GetNodeIP(client, hostname)
 	}
 	if nodeIP == nil {
-		klog.V(0).Infof("can't determine this node's IP, assuming 127.0.0.1; if this is incorrect, please set the --bind-address flag")
-		nodeIP = net.ParseIP("127.0.0.1")
+		klog.V(0).InfoS("Can't determine this node's IP, assuming 127.0.0.1; if this is incorrect, please set the --bind-address flag")
+		nodeIP = netutils.ParseIPSloppy("127.0.0.1")
 	}
 	return nodeIP
 }
@@ -853,8 +852,8 @@ func detectNodeIP(client clientset.Interface, hostname, bindAddress string) net.
 func nodeIPTuple(bindAddress string) [2]net.IP {
 	nodes := [2]net.IP{net.IPv4zero, net.IPv6zero}
 
-	adr := net.ParseIP(bindAddress)
-	if utilsnet.IsIPv6(adr) {
+	adr := netutils.ParseIPSloppy(bindAddress)
+	if netutils.IsIPv6(adr) {
 		nodes[1] = adr
 	} else {
 		nodes[0] = adr

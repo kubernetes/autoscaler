@@ -1,3 +1,4 @@
+//go:build gce
 // +build gce
 
 /*
