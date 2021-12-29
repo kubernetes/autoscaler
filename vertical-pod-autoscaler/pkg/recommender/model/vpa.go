@@ -110,6 +110,8 @@ type Vpa struct {
 	TargetRef *autoscaling.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
+	// TargetCPUPercentile is the CPU percentile to consider when computing recommendations.
+	TargetCPUPercentile float64
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the

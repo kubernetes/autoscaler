@@ -95,9 +95,13 @@ func (e *constEstimator) GetResourceEstimation(s *model.AggregateContainerState)
 
 // Returns specific percentiles of CPU and memory peaks distributions.
 func (e *percentileEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
+	cpuPercentile := e.cpuPercentile
+	if s.TargetCPUPercentile != nil {
+		cpuPercentile = *s.TargetCPUPercentile
+	}
 	return model.Resources{
 		model.ResourceCPU: model.CPUAmountFromCores(
-			s.AggregateCPUUsage.Percentile(e.cpuPercentile)),
+			s.AggregateCPUUsage.Percentile(cpuPercentile)),
 		model.ResourceMemory: model.MemoryAmountFromBytes(
 			s.AggregateMemoryPeaks.Percentile(e.memoryPercentile)),
 	}

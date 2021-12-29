@@ -110,6 +110,7 @@ type AggregateContainerState struct {
 	UpdateMode          *vpa_types.UpdateMode
 	ScalingMode         *vpa_types.ContainerScalingMode
 	ControlledResources *[]ResourceName
+	TargetCPUPercentile *float64
 }
 
 // GetLastRecommendation returns last recorded recommendation.

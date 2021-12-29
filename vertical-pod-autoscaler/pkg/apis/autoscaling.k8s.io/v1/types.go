@@ -103,6 +103,11 @@ type VerticalPodAutoscalerSpec struct {
 	// recommendation) or contain exactly one recommender.
 	// +optional
 	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+
+	// Specifies the target CPU percentile to consider when computing recommendations.
+	// The default is 0.9
+	// *optional
+	TargetCPUPercentile float64 `json:"targetCPUPercentile,omitempty" protobuf:"bytes,5,rep,name=targetCPUPercentile"`
 }
 
 // PodUpdatePolicy describes the rules on how changes are applied to the pods.

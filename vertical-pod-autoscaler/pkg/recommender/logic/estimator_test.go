@@ -51,6 +51,7 @@ func TestPercentileEstimator(t *testing.T) {
 	CPUPercentile := 0.2
 	MemoryPercentile := 0.5
 	estimator := NewPercentileEstimator(CPUPercentile, MemoryPercentile)
+	dotNinety := 0.9
 
 	resourceEstimation := estimator.GetResourceEstimation(
 		&model.AggregateContainerState{
@@ -60,6 +61,14 @@ func TestPercentileEstimator(t *testing.T) {
 	maxRelativeError := 0.05 // Allow 5% relative error to account for histogram rounding.
 	assert.InEpsilon(t, 1.0, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]), maxRelativeError)
 	assert.InEpsilon(t, 2e9, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]), maxRelativeError)
+	// test overriding CPUPercentile via aggregator
+	resourceEstimation = estimator.GetResourceEstimation(
+		&model.AggregateContainerState{
+			AggregateCPUUsage:    cpuHistogram,
+			AggregateMemoryPeaks: memoryPeaksHistogram,
+			TargetCPUPercentile:  &dotNinety,
+		})
+	assert.InEpsilon(t, 3, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]), maxRelativeError)
 }
 
 // Verifies that the confidenceMultiplier calculates the internal
