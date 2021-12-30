@@ -78,6 +78,12 @@ func (p *filterOutSchedulablePodListProcessor) Process(
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		klog.V(2).Info("Schedulable pods present")
 		context.ProcessorCallbacks.DisableScaleDownForLoop()
+
+		if context.DebuggingSnapshotter.IsDataCollectionAllowed() {
+			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
+			context.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
+		}
+
 	} else {
 		klog.V(4).Info("No schedulable pods")
 	}
@@ -178,4 +184,18 @@ func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
 	p1 := corev1helpers.PodPriority(pod1)
 	p2 := corev1helpers.PodPriority(pod2)
 	return p1 > p2
+}
+
+func findSchedulablePods(allUnschedulablePods, podsStillUnschedulable []*apiv1.Pod) []*apiv1.Pod {
+	podsStillUnschedulableMap := make(map[*apiv1.Pod]struct{}, len(podsStillUnschedulable))
+	for _, x := range podsStillUnschedulable {
+		podsStillUnschedulableMap[x] = struct{}{}
+	}
+	var schedulablePods []*apiv1.Pod
+	for _, x := range allUnschedulablePods {
+		if _, found := podsStillUnschedulableMap[x]; !found {
+			schedulablePods = append(schedulablePods, x)
+		}
+	}
+	return schedulablePods
 }
