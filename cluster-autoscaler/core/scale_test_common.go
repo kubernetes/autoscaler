@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testcloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -155,7 +157,7 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 func NewScaleTestAutoscalingContext(
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
-	processorCallbacks processor_callbacks.ProcessorCallbacks) (context.AutoscalingContext, error) {
+	processorCallbacks processor_callbacks.ProcessorCallbacks, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (context.AutoscalingContext, error) {
 	// Not enough buffer space causes the test to hang without printing any logs.
 	// This is not useful.
 	fakeRecorder := kube_record.NewFakeRecorder(100)
@@ -170,6 +172,9 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
+	if debuggingSnapshotter == nil {
+		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
+	}
 	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
@@ -179,12 +184,13 @@ func NewScaleTestAutoscalingContext(
 			LogRecorder:    fakeLogRecorder,
 			ListerRegistry: listers,
 		},
-		CloudProvider:      provider,
-		PredicateChecker:   predicateChecker,
-		ClusterSnapshot:    clusterSnapshot,
-		ExpanderStrategy:   random.NewStrategy(),
-		EstimatorBuilder:   estimatorBuilder,
-		ProcessorCallbacks: processorCallbacks,
+		CloudProvider:        provider,
+		PredicateChecker:     predicateChecker,
+		ClusterSnapshot:      clusterSnapshot,
+		ExpanderStrategy:     random.NewStrategy(),
+		EstimatorBuilder:     estimatorBuilder,
+		ProcessorCallbacks:   processorCallbacks,
+		DebuggingSnapshotter: debuggingSnapshotter,
 	}, nil
 }
 
