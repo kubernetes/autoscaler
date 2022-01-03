@@ -1123,7 +1123,7 @@ git status
 With kubernetes/autoscaler v1.21.0 the `update_vendor.sh` has been updated. We just need to provide the version of k8s dependencies which we want to vendor in as a command line argument to the script. For ex, if we want to vendor in `k8s v1.21.0` then
 
 ```
- ./update-vendor.sh v1.21.0 
+ ./update-vendor.sh 1.21.0 
 ```
 Once the script runs successfully
 ```
