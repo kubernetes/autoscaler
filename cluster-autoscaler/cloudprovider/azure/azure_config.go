@@ -381,12 +381,16 @@ func overrideDefaultRateLimitConfig(defaults, config *azclients.RateLimitConfig)
 }
 
 func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azure.Environment) *azclients.ClientConfig {
+	pollingDelay := 30 * time.Second
 	azClientConfig := &azclients.ClientConfig{
 		Location:                cfg.Location,
 		SubscriptionID:          cfg.SubscriptionID,
 		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
 		Authorizer:              authorizer,
 		Backoff:                 &retry.Backoff{Steps: 1},
+		RestClientConfig: azclients.RestClientConfig{
+			PollingDelay: &pollingDelay,
+		},
 	}
 
 	if cfg.CloudProviderBackoff {
