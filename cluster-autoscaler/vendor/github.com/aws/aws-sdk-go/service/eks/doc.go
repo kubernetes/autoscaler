@@ -4,10 +4,10 @@
 // requests to Amazon Elastic Kubernetes Service.
 //
 // Amazon Elastic Kubernetes Service (Amazon EKS) is a managed service that
-// makes it easy for you to run Kubernetes on AWS without needing to stand up
-// or maintain your own Kubernetes control plane. Kubernetes is an open-source
-// system for automating the deployment, scaling, and management of containerized
-// applications.
+// makes it easy for you to run Kubernetes on Amazon Web Services without needing
+// to stand up or maintain your own Kubernetes control plane. Kubernetes is
+// an open-source system for automating the deployment, scaling, and management
+// of containerized applications.
 //
 // Amazon EKS runs up-to-date versions of the open-source Kubernetes software,
 // so you can use all the existing plugins and tooling from the Kubernetes community.
