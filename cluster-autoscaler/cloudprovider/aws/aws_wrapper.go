@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -40,7 +41,9 @@ type autoScalingI interface {
 
 // ec2I is the interface abstracting specific API calls of the EC2 service provided by AWS SDK for use in CA
 type ec2I interface {
+	DescribeImages(input *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error)
 	DescribeLaunchTemplateVersions(input *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error)
+	GetInstanceTypesFromInstanceRequirementsPages(input *ec2.GetInstanceTypesFromInstanceRequirementsInput, fn func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool) error
 }
 
 // eksI is the interface that represents a specific aspect of EKS (Elastic Kubernetes Service) which is provided by AWS SDK for use in CA
@@ -255,10 +258,84 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 	return aws.StringValue(instanceType), nil
 }
 
+func (m *awsWrapper) getInstanceTypesFromInstanceRequirements(policy *mixedInstancesPolicy) ([]string, error) {
+	requirementsRequest, err := m.getInstanceRequirementsRequestInput(policy.instanceRequirementsOverrides)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get build instance requirements request")
+	}
+
+	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(policy.launchTemplate.name),
+		Versions:           []*string{aws.String(policy.launchTemplate.version)},
+	}
+
+	start := time.Now()
+	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
+	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	if len(describeData.LaunchTemplateVersions) == 0 {
+		return nil, fmt.Errorf("unable to find template versions")
+	}
+
+	describeImagesInput := &ec2.DescribeImagesInput{
+		ImageIds: []*string{describeData.LaunchTemplateVersions[0].LaunchTemplateData.ImageId},
+	}
+
+	start = time.Now()
+	describeImagesOutput, err := m.DescribeImages(describeImagesInput)
+	observeAWSRequest("DescribeImages", err, start)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find get image details")
+	}
+
+	imageArchitectures := []*string{}
+	imageVirtualizationTypes := []*string{}
+	for _, image := range describeImagesOutput.Images {
+		imageArchitectures = append(imageArchitectures, image.Architecture)
+		imageVirtualizationTypes = append(imageVirtualizationTypes, image.VirtualizationType)
+	}
+
+	requirementsInput := &ec2.GetInstanceTypesFromInstanceRequirementsInput{
+		ArchitectureTypes:    imageArchitectures,
+		InstanceRequirements: requirementsRequest,
+		VirtualizationTypes:  imageVirtualizationTypes,
+	}
+
+	start = time.Now()
+	instanceTypes := []string{}
+	err = m.GetInstanceTypesFromInstanceRequirementsPages(requirementsInput, func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, isLastPage bool) bool {
+		for _, instanceType := range page.InstanceTypes {
+			instanceTypes = append(instanceTypes, *instanceType.InstanceType)
+		}
+		return !isLastPage
+	})
+	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get instance types from requirements")
+	}
+
+	return instanceTypes, nil
+}
+
+func (m *awsWrapper) getInstanceRequirementsRequestInput(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
+	requirementsJson, err := json.Marshal(*requirements)
+	if err != nil {
+		return nil, err
+	}
+
+	var requirementsRequest *ec2.InstanceRequirementsRequest
+	err = json.Unmarshal(requirementsJson, &requirementsRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return requirementsRequest, nil
+}
+
 func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, error) {
 	results := map[string]string{}
 	launchConfigsToQuery := map[string]string{}
 	launchTemplatesToQuery := map[string]*launchTemplate{}
+	mixedInstancesPoliciesToQuery := map[string]*mixedInstancesPolicy{}
 
 	for _, asg := range asgs {
 		name := asg.AwsRef.Name
@@ -269,6 +346,8 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 		} else if asg.MixedInstancesPolicy != nil {
 			if len(asg.MixedInstancesPolicy.instanceTypesOverrides) > 0 {
 				results[name] = asg.MixedInstancesPolicy.instanceTypesOverrides[0]
+			} else if asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
+				mixedInstancesPoliciesToQuery[name] = asg.MixedInstancesPolicy
 			} else {
 				launchTemplatesToQuery[name] = asg.MixedInstancesPolicy.launchTemplate
 			}
@@ -304,6 +383,17 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 		results[asgName] = instanceType
 	}
 	klog.V(4).Infof("Successfully queried %d launch templates", len(launchTemplatesToQuery))
+
+	// Have to match Instance Requirements one-at-a-time, since they are configured per asg and can't be queried in bulk
+	for asgName, policy := range mixedInstancesPoliciesToQuery {
+		instanceTypes, err := m.getInstanceTypesFromInstanceRequirements(policy)
+		if err != nil {
+			klog.Errorf("Failed to query instance requirements for ASG %s: %v", asgName, err)
+			continue
+		}
+		results[asgName] = instanceTypes[0]
+	}
+	klog.V(4).Infof("Successfully queried instance requirements for %d ASGs", len(mixedInstancesPoliciesToQuery))
 
 	return results, nil
 }

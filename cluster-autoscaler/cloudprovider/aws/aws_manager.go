@@ -326,6 +326,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 			Tags:         asg.Tags,
 		}, nil
 	}
+
 	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
 }
 
@@ -394,6 +395,33 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
+
+	if asg.MixedInstancesPolicy != nil && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
+		instanceReqirements := asg.MixedInstancesPolicy.instanceRequirementsOverrides
+
+		if instanceReqirements.VCpuCount != nil {
+			if instanceReqirements.VCpuCount.Min != nil {
+				node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceReqirements.VCpuCount.Min, resource.DecimalSI)
+			}
+		}
+
+		for _, manufacturer := range instanceReqirements.AcceleratorManufacturers {
+			if *manufacturer == autoscaling.AcceleratorManufacturerNvidia {
+				for _, acceleratorType := range instanceReqirements.AcceleratorTypes {
+					if *acceleratorType == autoscaling.AcceleratorTypeGpu {
+						node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceReqirements.AcceleratorCount.Min, resource.DecimalSI)
+					}
+				}
+			}
+		}
+
+		if instanceReqirements.MemoryMiB != nil {
+			if instanceReqirements.MemoryMiB.Min != nil {
+				node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceReqirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
+			}
+		}
+
+	}
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	for resourceName, val := range resourcesFromTags {

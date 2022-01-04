@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
@@ -267,6 +268,37 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	observedTaints := observedNode.Spec.Taints
 	assert.Equal(t, 1, len(observedTaints))
 	assert.Equal(t, gpuTaint, observedTaints[0])
+
+	// Node with instance requirements
+	asg.MixedInstancesPolicy = &mixedInstancesPolicy{
+		instanceRequirementsOverrides: &autoscaling.InstanceRequirements{
+			VCpuCount: &autoscaling.VCpuCountRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+			MemoryMiB: &autoscaling.MemoryMiBRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+			AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
+			AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
+			AcceleratorCount: &autoscaling.AcceleratorCountRequest{
+				Min: aws.Int64(4),
+				Max: aws.Int64(8),
+			},
+		},
+	}
+	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+	})
+
+	assert.NoError(t, observedErr)
+	observedMemoryRequirement := observedNode.Status.Capacity[apiv1.ResourceMemory]
+	assert.Equal(t, int64(4*1024*1024), observedMemoryRequirement.Value())
+	observedVCpuRequirement := observedNode.Status.Capacity[apiv1.ResourceCPU]
+	assert.Equal(t, int64(4), observedVCpuRequirement.Value())
+	observedGpuRequirement := observedNode.Status.Capacity[gpu.ResourceNvidiaGPU]
+	assert.Equal(t, int64(4), observedGpuRequirement.Value())
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {

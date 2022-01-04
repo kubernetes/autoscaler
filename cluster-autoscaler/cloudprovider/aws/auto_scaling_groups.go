@@ -55,8 +55,9 @@ type launchTemplate struct {
 }
 
 type mixedInstancesPolicy struct {
-	launchTemplate         *launchTemplate
-	instanceTypesOverrides []string
+	launchTemplate                *launchTemplate
+	instanceTypesOverrides        []string
+	instanceRequirementsOverrides *autoscaling.InstanceRequirements
 }
 
 type asg struct {
@@ -483,17 +484,27 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 	}
 
 	if g.MixedInstancesPolicy != nil {
-		getInstanceTypes := func(data []*autoscaling.LaunchTemplateOverrides) []string {
-			res := make([]string, len(data))
-			for i := 0; i < len(data); i++ {
-				res[i] = aws.StringValue(data[i].InstanceType)
+		getInstanceTypes := func(overrides []*autoscaling.LaunchTemplateOverrides) []string {
+			res := []string{}
+			for _, override := range overrides {
+				if override.InstanceType != nil {
+					res = append(res, *override.InstanceType)
+				}
 			}
 			return res
 		}
 
+		getInstanceTypeRequirements := func(overrides []*autoscaling.LaunchTemplateOverrides) *autoscaling.InstanceRequirements {
+			if len(overrides) == 1 && overrides[0].InstanceRequirements != nil {
+				return overrides[0].InstanceRequirements
+			}
+			return nil
+		}
+
 		asg.MixedInstancesPolicy = &mixedInstancesPolicy{
-			launchTemplate:         buildLaunchTemplateFromSpec(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification),
-			instanceTypesOverrides: getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+			launchTemplate:                buildLaunchTemplateFromSpec(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification),
+			instanceTypesOverrides:        getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 		}
 	}
 
