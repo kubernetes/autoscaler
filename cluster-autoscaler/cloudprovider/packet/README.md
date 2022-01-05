@@ -5,6 +5,8 @@ The cluster autoscaler for [Equinix Metal](https://metal.equinix.com) worker nod
 autoscaling within any specified nodepools. It will run as a `Deployment` in
 your cluster. The nodepools are specified using tags on Equinix Metal.
 
+Note: Packet was acquired by Equinix in 2020 and renamed to Equinix Metal.
+
 This README will go over some of the necessary steps required to get
 the cluster autoscaler up and running.
 
