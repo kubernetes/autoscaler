@@ -24,8 +24,8 @@ In the above file you can modify the following fields:
 | cluster-autoscaler-packet       | authtoken               | Your Equinix Metal API token. It must be base64 encoded.                                                                                 |
 | cluster-autoscaler-cloud-config | Global/project-id       | Your Equinix Metal project id                                                                                                             |
 | cluster-autoscaler-cloud-config | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
-| cluster-autoscaler-cloud-config | Global/facility         | The Equinix Metal facility for the devices in your nodepool (eg: ams1)                                                                    |
-| cluster-autoscaler-cloud-config | Global/plan             | The Equinix Metal plan (aka size/flavor) for new nodes in the nodepool (eg: t1.small.x86)                                                 |
+| cluster-autoscaler-cloud-config | Global/facility         | The Equinix Metal facility for the devices in your nodepool (eg: sv15)                                                                    |
+| cluster-autoscaler-cloud-config | Global/plan             | The Equinix Metal plan (aka size/flavor) for new nodes in the nodepool (eg: c3.small.x86)                                                 |
 | cluster-autoscaler-cloud-config | Global/billing          | The billing interval for new nodes (default: hourly)                                                                               |
 | cluster-autoscaler-cloud-config | Global/os               | The OS image to use for new nodes (default: ubuntu_18_04). If you change this also update cloudinit.                               |
 | cluster-autoscaler-cloud-config | Global/cloudinit        | The base64 encoded [user data](https://metal.equinix.com/developers/docs/servers/user-data/) submitted when provisioning devices. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly|
@@ -76,7 +76,7 @@ affinity:
         - key: beta.kubernetes.io/instance-type
           operator: In
           values:
-          - t1.small.x86
+          - c3.small.x86
 ```
 
 ## CCM and Controller node labels
