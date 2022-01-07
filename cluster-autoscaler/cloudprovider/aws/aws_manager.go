@@ -541,7 +541,7 @@ func parseASGAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]as
 func parseASGAutoDiscoverySpec(spec string) (asgAutoDiscoveryConfig, error) {
 	cfg := asgAutoDiscoveryConfig{}
 
-	tokens := strings.Split(spec, ":")
+	tokens := strings.SplitN(spec, ":", 2)
 	if len(tokens) != 2 {
 		return cfg, fmt.Errorf("invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
 	}
