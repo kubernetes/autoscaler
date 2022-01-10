@@ -45,6 +45,23 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
 
+# Releases (Gardener/Autoscaler)
+
+Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match Kubernetes and upstream Autoscaler minor releases exactly. Note that there is a jump of major version as well.
+
+| Kubernetes Version  | CA Version   |  Gardener CA Version | 
+|--------|--------|---------|
+| 1.20.X | 1.20.X  | 1.20.X  |
+| 1.20.X | 1.20.X  | 0.19.X  |
+| 1.19.X | 1.19.X  | 0.18.X  |
+| 1.19.X | 1.19.X  | 0.17.X  |
+| 1.19.X | 1.19.X  | 0.16.X  |
+| 1.19.X | 1.19.X  |  0.15.X |
+| 1.19.X | 1.19.X  |  0.14.X |
+| 1.19.X | 1.19.X  |  0.13.X |
+| 1.19.X | 1.19.X  |  0.12.X |
+| 1.19.X | 1.19.X  |  0.11.X |
+| 1.12.X | 1.12.X  | 0.10.X  |
 # Notable changes
 
 For CA 1.1.2 and later, please check [release
