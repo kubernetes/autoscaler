@@ -34,9 +34,11 @@ import (
 )
 
 const (
-	testAccountName            = "account"
-	storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
-		"header is formed correctly including the signature"
+	testAccountName = "account"
+	// TODO(nilo19): verify the client err message used in DeleteBlob unit test
+	// storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
+	//	 "header is formed correctly including the signature"
+	storageAccountClientErrMsg = "The specified account is disabled"
 )
 
 func GetTestAzureUtil(t *testing.T) *AzUtil {
