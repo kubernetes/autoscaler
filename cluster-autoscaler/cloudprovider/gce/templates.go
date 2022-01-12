@@ -484,10 +484,12 @@ const (
 	OperatingSystemDistributionWindowsSAC OperatingSystemDistribution = "windows_sac"
 	// OperatingSystemDistributionCOS is used if operating distribution system is COS
 	OperatingSystemDistributionCOS OperatingSystemDistribution = "cos"
+	// DEPRECATED
 	// OperatingSystemDistributionCOSContainerd is used if operating distribution system is COS Containerd
-	OperatingSystemDistributionCOSContainerd OperatingSystemDistribution = "cos_containerd"
+	operatingSystemDistributionCOSContainerd OperatingSystemDistribution = "cos_containerd"
+	// DEPRECATED
 	// OperatingSystemDistributionUbuntuContainerd is used if operating distribution system is Ubuntu Containerd
-	OperatingSystemDistributionUbuntuContainerd OperatingSystemDistribution = "ubuntu_containerd"
+	operatingSystemDistributionUbuntuContainerd OperatingSystemDistribution = "ubuntu_containerd"
 
 	// OperatingSystemDistributionDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
 	OperatingSystemDistributionDefault = OperatingSystemDistributionCOS
@@ -515,10 +517,10 @@ func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSyst
 		return OperatingSystemDistributionWindowsSAC
 	case string(OperatingSystemDistributionCOS):
 		return OperatingSystemDistributionCOS
-	case string(OperatingSystemDistributionCOSContainerd):
-		return OperatingSystemDistributionCOSContainerd
-	case string(OperatingSystemDistributionUbuntuContainerd):
-		return OperatingSystemDistributionUbuntuContainerd
+	case string(operatingSystemDistributionCOSContainerd):
+		return OperatingSystemDistributionCOS
+	case string(operatingSystemDistributionUbuntuContainerd):
+		return OperatingSystemDistributionUbuntu
 	default:
 		klog.Errorf("unexpected os-distribution=%v passed via AUTOSCALER_ENV_VARS", osDistributionValue)
 		return OperatingSystemDistributionUnknown
