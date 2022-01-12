@@ -120,22 +120,10 @@ func TestEphemeralStorageOnLocalSSDFilesystemOverheadInBytes(t *testing.T) {
 			expected:       7289472 * KiB,
 		},
 		{
-			scenario:       "measured disk count but OS with different container runtime (cos_containerd)",
-			diskCount:      1,
-			osDistribution: OperatingSystemDistributionCOSContainerd,
-			expected:       7289472 * KiB, // same as COS
-		},
-		{
 			scenario:       "measured disk count and OS (ubuntu)",
 			diskCount:      1,
 			osDistribution: OperatingSystemDistributionUbuntu,
 			expected:       7219840 * KiB,
-		},
-		{
-			scenario:       "measured disk count but OS with different container runtime (ubuntu_containerd)",
-			diskCount:      1,
-			osDistribution: OperatingSystemDistributionUbuntuContainerd,
-			expected:       7219840 * KiB, // same as Ubuntu
 		},
 		{
 			scenario:       "mapped disk count",
