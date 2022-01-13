@@ -38,7 +38,7 @@ const (
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
 
-	metadataURL = "http://169.254.169.254/metadata/instance"
+	metadataURL = "http://169.254.169.254"
 
 	// backoff
 	backoffRetriesDefault  = 6

@@ -305,26 +305,6 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 	}
 }
 
-func TestDeleteBlob(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	azUtil := GetTestAzureUtil(t)
-	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
-	mockSAClient.EXPECT().ListKeys(
-		gomock.Any(),
-		azUtil.manager.config.ResourceGroup,
-		testAccountName).Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	azUtil.manager.azClient.storageAccountsClient = mockSAClient
-
-	err := azUtil.DeleteBlob(testAccountName, "vhd", "blob")
-	assert.True(t, strings.Contains(err.Error(), storageAccountClientErrMsg))
-}
-
 func TestDeleteVirtualMachine(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
