@@ -27,6 +27,7 @@ import (
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -64,6 +65,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 
 	p2 := BuildTestPod("p2", 300, 0)
 	p2.Spec.NodeName = "n2"
@@ -130,13 +132,17 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n8)
 	provider.AddNode("ng1", n9)
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -205,6 +211,7 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 
 	p1 := BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
@@ -245,6 +252,10 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 	provider.AddNode("ng1", n2)
 	provider.AddNode("ng1", n3)
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
@@ -252,7 +263,7 @@ func TestFindUnneededGPUNodes(t *testing.T) {
 		},
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -276,6 +287,7 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "apps/v1", "")
+	replicaSets := generateReplicaSets()
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 
@@ -359,7 +371,11 @@ func TestFindUnneededWithPerNodeGroupThresholds(t *testing.T) {
 	}
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, nil, provider, nil, nil)
+			rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+			assert.NoError(t, err)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
+			context, err := NewScaleTestAutoscalingContext(globalOptions, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 			sd := NewScaleDown(&context, NewTestProcessors(), clusterStateRegistry)
@@ -387,6 +403,7 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 	var priority100 int32 = 100
 
 	p1 := BuildTestPod("p1", 600, 0)
@@ -429,12 +446,16 @@ func TestPodsWithPreemptionsFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -472,6 +493,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
@@ -483,6 +505,10 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	numCandidates := 30
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
@@ -491,7 +517,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -547,6 +573,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes-numEmpty; i++ {
@@ -558,6 +585,10 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	numCandidates := 30
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
@@ -566,7 +597,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1.0,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -597,6 +628,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	replicaSets := generateReplicaSets()
 
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
@@ -608,6 +640,10 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	numCandidates := 30
 
+	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
@@ -616,7 +652,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     0.1,
 		ScaleDownCandidatesPoolMinCount:  10,
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -2237,5 +2273,21 @@ func TestWaitForDelayDeletion(t *testing.T) {
 			}
 			assert.NoError(t, err)
 		})
+	}
+}
+
+func generateReplicaSets() []*appsv1.ReplicaSet {
+	replicas := int32(5)
+	return []*appsv1.ReplicaSet{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "rs",
+				Namespace: "default",
+				SelfLink:  "api/v1/namespaces/default/replicasets/rs",
+			},
+			Spec: appsv1.ReplicaSetSpec{
+				Replicas: &replicas,
+			},
+		},
 	}
 }
