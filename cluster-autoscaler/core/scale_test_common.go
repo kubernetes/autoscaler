@@ -41,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -140,6 +141,7 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 		PodListProcessor:       NewFilterOutSchedulablePodListProcessor(),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
+		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
 		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
 		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
