@@ -54,6 +54,7 @@ this document:
   * [CA doesn’t work, but it used to work yesterday. Why?](#ca-doesnt-work-but-it-used-to-work-yesterday-why)
   * [How can I check what is going on in CA ?](#how-can-i-check-what-is-going-on-in-ca-)
   * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
+  * [My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?](#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
 * [Developer](#developer)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
@@ -669,7 +670,7 @@ after scale-up. This is useful when you have different classes of nodes, for exa
 
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details
-[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE, GKE and Packet (patches welcome.)
+[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE, GKE and Equinix Metal (patches welcome.)
 
 * `priority` - selects the node group that has the highest priority assigned by the user. It's configuration is described in more details [here](expander/priority/readme.md)
 
