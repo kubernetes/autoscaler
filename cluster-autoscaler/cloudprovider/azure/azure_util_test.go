@@ -19,7 +19,6 @@ package azure
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -321,7 +320,7 @@ func TestDeleteBlob(t *testing.T) {
 	azUtil.manager.azClient.storageAccountsClient = mockSAClient
 
 	err := azUtil.DeleteBlob(testAccountName, "vhd", "blob")
-	assert.True(t, strings.Contains(err.Error(), storageAccountClientErrMsg))
+	assert.Contains(t, err.Error(), storageAccountClientErrMsg)
 }
 
 func TestNormalizeMasterResourcesForScaling(t *testing.T) {
