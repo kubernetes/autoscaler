@@ -27,11 +27,11 @@ var (
 type UserManagementApiService service
 
 type ApiUmGroupsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -62,8 +62,8 @@ func (r ApiUmGroupsDeleteRequest) Execute() (map[string]interface{}, *APIRespons
 func (a *UserManagementApiService) UmGroupsDelete(ctx _context.Context, groupId string) ApiUmGroupsDeleteRequest {
 	return ApiUmGroupsDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -140,11 +140,11 @@ func (a *UserManagementApiService) UmGroupsDeleteExecute(r ApiUmGroupsDeleteRequ
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsDelete",
+		Operation:  "UmGroupsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *UserManagementApiService) UmGroupsDeleteExecute(r ApiUmGroupsDeleteRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,11 +186,11 @@ func (a *UserManagementApiService) UmGroupsDeleteExecute(r ApiUmGroupsDeleteRequ
 }
 
 type ApiUmGroupsFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -221,8 +221,8 @@ func (r ApiUmGroupsFindByIdRequest) Execute() (Group, *APIResponse, error) {
 func (a *UserManagementApiService) UmGroupsFindById(ctx _context.Context, groupId string) ApiUmGroupsFindByIdRequest {
 	return ApiUmGroupsFindByIdRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -299,11 +299,11 @@ func (a *UserManagementApiService) UmGroupsFindByIdExecute(r ApiUmGroupsFindById
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsFindById",
+		Operation:  "UmGroupsFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -322,13 +322,13 @@ func (a *UserManagementApiService) UmGroupsFindByIdExecute(r ApiUmGroupsFindById
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -345,10 +345,10 @@ func (a *UserManagementApiService) UmGroupsFindByIdExecute(r ApiUmGroupsFindById
 }
 
 type ApiUmGroupsGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -378,7 +378,7 @@ func (r ApiUmGroupsGetRequest) Execute() (Groups, *APIResponse, error) {
 func (a *UserManagementApiService) UmGroupsGet(ctx _context.Context) ApiUmGroupsGetRequest {
 	return ApiUmGroupsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -454,11 +454,11 @@ func (a *UserManagementApiService) UmGroupsGetExecute(r ApiUmGroupsGetRequest) (
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsGet",
+		Operation:  "UmGroupsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -477,13 +477,13 @@ func (a *UserManagementApiService) UmGroupsGetExecute(r ApiUmGroupsGetRequest) (
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -500,11 +500,11 @@ func (a *UserManagementApiService) UmGroupsGetExecute(r ApiUmGroupsGetRequest) (
 }
 
 type ApiUmGroupsPostRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	group *Group
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	group           *Group
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -538,7 +538,7 @@ func (r ApiUmGroupsPostRequest) Execute() (Group, *APIResponse, error) {
 func (a *UserManagementApiService) UmGroupsPost(ctx _context.Context) ApiUmGroupsPostRequest {
 	return ApiUmGroupsPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -619,11 +619,11 @@ func (a *UserManagementApiService) UmGroupsPostExecute(r ApiUmGroupsPostRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsPost",
+		Operation:  "UmGroupsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -642,13 +642,13 @@ func (a *UserManagementApiService) UmGroupsPostExecute(r ApiUmGroupsPostRequest)
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -665,12 +665,12 @@ func (a *UserManagementApiService) UmGroupsPostExecute(r ApiUmGroupsPostRequest)
 }
 
 type ApiUmGroupsPutRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	group *Group
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	group           *Group
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -705,8 +705,8 @@ func (r ApiUmGroupsPutRequest) Execute() (Group, *APIResponse, error) {
 func (a *UserManagementApiService) UmGroupsPut(ctx _context.Context, groupId string) ApiUmGroupsPutRequest {
 	return ApiUmGroupsPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -788,11 +788,11 @@ func (a *UserManagementApiService) UmGroupsPutExecute(r ApiUmGroupsPutRequest) (
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsPut",
+		Operation:  "UmGroupsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -811,13 +811,13 @@ func (a *UserManagementApiService) UmGroupsPutExecute(r ApiUmGroupsPutRequest) (
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -834,11 +834,11 @@ func (a *UserManagementApiService) UmGroupsPutExecute(r ApiUmGroupsPutRequest) (
 }
 
 type ApiUmGroupsResourcesGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -868,8 +868,8 @@ func (r ApiUmGroupsResourcesGetRequest) Execute() (ResourceGroups, *APIResponse,
 func (a *UserManagementApiService) UmGroupsResourcesGet(ctx _context.Context, groupId string) ApiUmGroupsResourcesGetRequest {
 	return ApiUmGroupsResourcesGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -946,11 +946,11 @@ func (a *UserManagementApiService) UmGroupsResourcesGetExecute(r ApiUmGroupsReso
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsResourcesGet",
+		Operation:  "UmGroupsResourcesGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -969,13 +969,13 @@ func (a *UserManagementApiService) UmGroupsResourcesGetExecute(r ApiUmGroupsReso
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -992,12 +992,12 @@ func (a *UserManagementApiService) UmGroupsResourcesGetExecute(r ApiUmGroupsReso
 }
 
 type ApiUmGroupsSharesDeleteRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	resourceId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	resourceId      string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1029,8 +1029,8 @@ func (r ApiUmGroupsSharesDeleteRequest) Execute() (map[string]interface{}, *APIR
 func (a *UserManagementApiService) UmGroupsSharesDelete(ctx _context.Context, groupId string, resourceId string) ApiUmGroupsSharesDeleteRequest {
 	return ApiUmGroupsSharesDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 		resourceId: resourceId,
 	}
 }
@@ -1109,11 +1109,11 @@ func (a *UserManagementApiService) UmGroupsSharesDeleteExecute(r ApiUmGroupsShar
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsSharesDelete",
+		Operation:  "UmGroupsSharesDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1132,13 +1132,13 @@ func (a *UserManagementApiService) UmGroupsSharesDeleteExecute(r ApiUmGroupsShar
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1155,12 +1155,12 @@ func (a *UserManagementApiService) UmGroupsSharesDeleteExecute(r ApiUmGroupsShar
 }
 
 type ApiUmGroupsSharesFindByResourceRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	resourceId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	resourceId      string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1192,8 +1192,8 @@ func (r ApiUmGroupsSharesFindByResourceRequest) Execute() (GroupShare, *APIRespo
 func (a *UserManagementApiService) UmGroupsSharesFindByResource(ctx _context.Context, groupId string, resourceId string) ApiUmGroupsSharesFindByResourceRequest {
 	return ApiUmGroupsSharesFindByResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 		resourceId: resourceId,
 	}
 }
@@ -1272,11 +1272,11 @@ func (a *UserManagementApiService) UmGroupsSharesFindByResourceExecute(r ApiUmGr
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsSharesFindByResource",
+		Operation:  "UmGroupsSharesFindByResource",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1295,13 +1295,13 @@ func (a *UserManagementApiService) UmGroupsSharesFindByResourceExecute(r ApiUmGr
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1318,11 +1318,11 @@ func (a *UserManagementApiService) UmGroupsSharesFindByResourceExecute(r ApiUmGr
 }
 
 type ApiUmGroupsSharesGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1344,7 +1344,7 @@ func (r ApiUmGroupsSharesGetRequest) Execute() (GroupShares, *APIResponse, error
 }
 
 /*
- * UmGroupsSharesGet List Group Shares 
+ * UmGroupsSharesGet List Group Shares
  * You can retrieve a list of all resources along with their permissions of the group
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param groupId
@@ -1353,8 +1353,8 @@ func (r ApiUmGroupsSharesGetRequest) Execute() (GroupShares, *APIResponse, error
 func (a *UserManagementApiService) UmGroupsSharesGet(ctx _context.Context, groupId string) ApiUmGroupsSharesGetRequest {
 	return ApiUmGroupsSharesGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -1431,11 +1431,11 @@ func (a *UserManagementApiService) UmGroupsSharesGetExecute(r ApiUmGroupsSharesG
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsSharesGet",
+		Operation:  "UmGroupsSharesGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1454,13 +1454,13 @@ func (a *UserManagementApiService) UmGroupsSharesGetExecute(r ApiUmGroupsSharesG
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1477,13 +1477,13 @@ func (a *UserManagementApiService) UmGroupsSharesGetExecute(r ApiUmGroupsSharesG
 }
 
 type ApiUmGroupsSharesPostRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	resourceId string
-	resource *GroupShare
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	resourceId      string
+	resource        *GroupShare
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1510,7 +1510,7 @@ func (r ApiUmGroupsSharesPostRequest) Execute() (GroupShare, *APIResponse, error
 
 /*
  * UmGroupsSharesPost Add a resource to a group
- * This will add a resource to the group. 
+ * This will add a resource to the group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param groupId
  * @param resourceId
@@ -1519,8 +1519,8 @@ func (r ApiUmGroupsSharesPostRequest) Execute() (GroupShare, *APIResponse, error
 func (a *UserManagementApiService) UmGroupsSharesPost(ctx _context.Context, groupId string, resourceId string) ApiUmGroupsSharesPostRequest {
 	return ApiUmGroupsSharesPostRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 		resourceId: resourceId,
 	}
 }
@@ -1604,11 +1604,11 @@ func (a *UserManagementApiService) UmGroupsSharesPostExecute(r ApiUmGroupsShares
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsSharesPost",
+		Operation:  "UmGroupsSharesPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1627,13 +1627,13 @@ func (a *UserManagementApiService) UmGroupsSharesPostExecute(r ApiUmGroupsShares
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1650,13 +1650,13 @@ func (a *UserManagementApiService) UmGroupsSharesPostExecute(r ApiUmGroupsShares
 }
 
 type ApiUmGroupsSharesPutRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	resourceId string
-	resource *GroupShare
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	resourceId      string
+	resource        *GroupShare
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1692,8 +1692,8 @@ func (r ApiUmGroupsSharesPutRequest) Execute() (GroupShare, *APIResponse, error)
 func (a *UserManagementApiService) UmGroupsSharesPut(ctx _context.Context, groupId string, resourceId string) ApiUmGroupsSharesPutRequest {
 	return ApiUmGroupsSharesPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 		resourceId: resourceId,
 	}
 }
@@ -1777,11 +1777,11 @@ func (a *UserManagementApiService) UmGroupsSharesPutExecute(r ApiUmGroupsSharesP
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsSharesPut",
+		Operation:  "UmGroupsSharesPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1800,13 +1800,13 @@ func (a *UserManagementApiService) UmGroupsSharesPutExecute(r ApiUmGroupsSharesP
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1823,12 +1823,12 @@ func (a *UserManagementApiService) UmGroupsSharesPutExecute(r ApiUmGroupsSharesP
 }
 
 type ApiUmGroupsUsersDeleteRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1860,9 +1860,9 @@ func (r ApiUmGroupsUsersDeleteRequest) Execute() (map[string]interface{}, *APIRe
 func (a *UserManagementApiService) UmGroupsUsersDelete(ctx _context.Context, groupId string, userId string) ApiUmGroupsUsersDeleteRequest {
 	return ApiUmGroupsUsersDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
-		userId: userId,
+		ctx:        ctx,
+		groupId:    groupId,
+		userId:     userId,
 	}
 }
 
@@ -1940,11 +1940,11 @@ func (a *UserManagementApiService) UmGroupsUsersDeleteExecute(r ApiUmGroupsUsers
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsUsersDelete",
+		Operation:  "UmGroupsUsersDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1963,13 +1963,13 @@ func (a *UserManagementApiService) UmGroupsUsersDeleteExecute(r ApiUmGroupsUsers
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1986,11 +1986,11 @@ func (a *UserManagementApiService) UmGroupsUsersDeleteExecute(r ApiUmGroupsUsers
 }
 
 type ApiUmGroupsUsersGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2012,7 +2012,7 @@ func (r ApiUmGroupsUsersGetRequest) Execute() (GroupMembers, *APIResponse, error
 }
 
 /*
- * UmGroupsUsersGet List Group Members 
+ * UmGroupsUsersGet List Group Members
  * You can retrieve a list of users who are members of the group
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param groupId
@@ -2021,8 +2021,8 @@ func (r ApiUmGroupsUsersGetRequest) Execute() (GroupMembers, *APIResponse, error
 func (a *UserManagementApiService) UmGroupsUsersGet(ctx _context.Context, groupId string) ApiUmGroupsUsersGetRequest {
 	return ApiUmGroupsUsersGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -2099,11 +2099,11 @@ func (a *UserManagementApiService) UmGroupsUsersGetExecute(r ApiUmGroupsUsersGet
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsUsersGet",
+		Operation:  "UmGroupsUsersGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2122,13 +2122,13 @@ func (a *UserManagementApiService) UmGroupsUsersGetExecute(r ApiUmGroupsUsersGet
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2145,12 +2145,12 @@ func (a *UserManagementApiService) UmGroupsUsersGetExecute(r ApiUmGroupsUsersGet
 }
 
 type ApiUmGroupsUsersPostRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	groupId string
-	user *User
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	groupId         string
+	user            *User
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2177,7 +2177,7 @@ func (r ApiUmGroupsUsersPostRequest) Execute() (User, *APIResponse, error) {
 
 /*
  * UmGroupsUsersPost Add a user to a group
- * This will attach a pre-existing user to a group. 
+ * This will attach a pre-existing user to a group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param groupId
  * @return ApiUmGroupsUsersPostRequest
@@ -2185,8 +2185,8 @@ func (r ApiUmGroupsUsersPostRequest) Execute() (User, *APIResponse, error) {
 func (a *UserManagementApiService) UmGroupsUsersPost(ctx _context.Context, groupId string) ApiUmGroupsUsersPostRequest {
 	return ApiUmGroupsUsersPostRequest{
 		ApiService: a,
-		ctx: ctx,
-		groupId: groupId,
+		ctx:        ctx,
+		groupId:    groupId,
 	}
 }
 
@@ -2268,11 +2268,11 @@ func (a *UserManagementApiService) UmGroupsUsersPostExecute(r ApiUmGroupsUsersPo
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmGroupsUsersPost",
+		Operation:  "UmGroupsUsersPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2291,13 +2291,13 @@ func (a *UserManagementApiService) UmGroupsUsersPostExecute(r ApiUmGroupsUsersPo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2314,11 +2314,11 @@ func (a *UserManagementApiService) UmGroupsUsersPostExecute(r ApiUmGroupsUsersPo
 }
 
 type ApiUmResourcesFindByTypeRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	resourceType string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	resourceType    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2348,8 +2348,8 @@ func (r ApiUmResourcesFindByTypeRequest) Execute() (Resources, *APIResponse, err
  */
 func (a *UserManagementApiService) UmResourcesFindByType(ctx _context.Context, resourceType string) ApiUmResourcesFindByTypeRequest {
 	return ApiUmResourcesFindByTypeRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		resourceType: resourceType,
 	}
 }
@@ -2427,11 +2427,11 @@ func (a *UserManagementApiService) UmResourcesFindByTypeExecute(r ApiUmResources
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmResourcesFindByType",
+		Operation:  "UmResourcesFindByType",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2450,13 +2450,13 @@ func (a *UserManagementApiService) UmResourcesFindByTypeExecute(r ApiUmResources
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2473,12 +2473,12 @@ func (a *UserManagementApiService) UmResourcesFindByTypeExecute(r ApiUmResources
 }
 
 type ApiUmResourcesFindByTypeAndIdRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	resourceType string
-	resourceId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	resourceType    string
+	resourceId      string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2509,10 +2509,10 @@ func (r ApiUmResourcesFindByTypeAndIdRequest) Execute() (Resource, *APIResponse,
  */
 func (a *UserManagementApiService) UmResourcesFindByTypeAndId(ctx _context.Context, resourceType string, resourceId string) ApiUmResourcesFindByTypeAndIdRequest {
 	return ApiUmResourcesFindByTypeAndIdRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		resourceType: resourceType,
-		resourceId: resourceId,
+		resourceId:   resourceId,
 	}
 }
 
@@ -2590,11 +2590,11 @@ func (a *UserManagementApiService) UmResourcesFindByTypeAndIdExecute(r ApiUmReso
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmResourcesFindByTypeAndId",
+		Operation:  "UmResourcesFindByTypeAndId",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2613,13 +2613,13 @@ func (a *UserManagementApiService) UmResourcesFindByTypeAndIdExecute(r ApiUmReso
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2636,10 +2636,10 @@ func (a *UserManagementApiService) UmResourcesFindByTypeAndIdExecute(r ApiUmReso
 }
 
 type ApiUmResourcesGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2669,7 +2669,7 @@ func (r ApiUmResourcesGetRequest) Execute() (Resources, *APIResponse, error) {
 func (a *UserManagementApiService) UmResourcesGet(ctx _context.Context) ApiUmResourcesGetRequest {
 	return ApiUmResourcesGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -2745,11 +2745,11 @@ func (a *UserManagementApiService) UmResourcesGetExecute(r ApiUmResourcesGetRequ
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmResourcesGet",
+		Operation:  "UmResourcesGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2768,13 +2768,13 @@ func (a *UserManagementApiService) UmResourcesGetExecute(r ApiUmResourcesGetRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2791,11 +2791,11 @@ func (a *UserManagementApiService) UmResourcesGetExecute(r ApiUmResourcesGetRequ
 }
 
 type ApiUmUsersDeleteRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2826,8 +2826,8 @@ func (r ApiUmUsersDeleteRequest) Execute() (map[string]interface{}, *APIResponse
 func (a *UserManagementApiService) UmUsersDelete(ctx _context.Context, userId string) ApiUmUsersDeleteRequest {
 	return ApiUmUsersDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -2904,11 +2904,11 @@ func (a *UserManagementApiService) UmUsersDeleteExecute(r ApiUmUsersDeleteReques
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersDelete",
+		Operation:  "UmUsersDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2927,13 +2927,13 @@ func (a *UserManagementApiService) UmUsersDeleteExecute(r ApiUmUsersDeleteReques
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2950,11 +2950,11 @@ func (a *UserManagementApiService) UmUsersDeleteExecute(r ApiUmUsersDeleteReques
 }
 
 type ApiUmUsersFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2985,8 +2985,8 @@ func (r ApiUmUsersFindByIdRequest) Execute() (User, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersFindById(ctx _context.Context, userId string) ApiUmUsersFindByIdRequest {
 	return ApiUmUsersFindByIdRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -3063,11 +3063,11 @@ func (a *UserManagementApiService) UmUsersFindByIdExecute(r ApiUmUsersFindByIdRe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersFindById",
+		Operation:  "UmUsersFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3086,13 +3086,13 @@ func (a *UserManagementApiService) UmUsersFindByIdExecute(r ApiUmUsersFindByIdRe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3109,10 +3109,10 @@ func (a *UserManagementApiService) UmUsersFindByIdExecute(r ApiUmUsersFindByIdRe
 }
 
 type ApiUmUsersGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3134,7 +3134,7 @@ func (r ApiUmUsersGetRequest) Execute() (Users, *APIResponse, error) {
 }
 
 /*
- * UmUsersGet List all Users 
+ * UmUsersGet List all Users
  * You can retrieve a complete list of users under your account
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiUmUsersGetRequest
@@ -3142,7 +3142,7 @@ func (r ApiUmUsersGetRequest) Execute() (Users, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersGet(ctx _context.Context) ApiUmUsersGetRequest {
 	return ApiUmUsersGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -3218,11 +3218,11 @@ func (a *UserManagementApiService) UmUsersGetExecute(r ApiUmUsersGetRequest) (Us
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersGet",
+		Operation:  "UmUsersGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3241,13 +3241,13 @@ func (a *UserManagementApiService) UmUsersGetExecute(r ApiUmUsersGetRequest) (Us
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3264,11 +3264,11 @@ func (a *UserManagementApiService) UmUsersGetExecute(r ApiUmUsersGetRequest) (Us
 }
 
 type ApiUmUsersGroupsGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3299,8 +3299,8 @@ func (r ApiUmUsersGroupsGetRequest) Execute() (ResourceGroups, *APIResponse, err
 func (a *UserManagementApiService) UmUsersGroupsGet(ctx _context.Context, userId string) ApiUmUsersGroupsGetRequest {
 	return ApiUmUsersGroupsGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -3377,11 +3377,11 @@ func (a *UserManagementApiService) UmUsersGroupsGetExecute(r ApiUmUsersGroupsGet
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersGroupsGet",
+		Operation:  "UmUsersGroupsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3400,13 +3400,13 @@ func (a *UserManagementApiService) UmUsersGroupsGetExecute(r ApiUmUsersGroupsGet
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3423,11 +3423,11 @@ func (a *UserManagementApiService) UmUsersGroupsGetExecute(r ApiUmUsersGroupsGet
 }
 
 type ApiUmUsersOwnsGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3458,8 +3458,8 @@ func (r ApiUmUsersOwnsGetRequest) Execute() (ResourcesUsers, *APIResponse, error
 func (a *UserManagementApiService) UmUsersOwnsGet(ctx _context.Context, userId string) ApiUmUsersOwnsGetRequest {
 	return ApiUmUsersOwnsGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -3536,11 +3536,11 @@ func (a *UserManagementApiService) UmUsersOwnsGetExecute(r ApiUmUsersOwnsGetRequ
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersOwnsGet",
+		Operation:  "UmUsersOwnsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3559,13 +3559,13 @@ func (a *UserManagementApiService) UmUsersOwnsGetExecute(r ApiUmUsersOwnsGetRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3582,11 +3582,11 @@ func (a *UserManagementApiService) UmUsersOwnsGetExecute(r ApiUmUsersOwnsGetRequ
 }
 
 type ApiUmUsersPostRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	user *User
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	user            *User
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3620,7 +3620,7 @@ func (r ApiUmUsersPostRequest) Execute() (User, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersPost(ctx _context.Context) ApiUmUsersPostRequest {
 	return ApiUmUsersPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -3701,11 +3701,11 @@ func (a *UserManagementApiService) UmUsersPostExecute(r ApiUmUsersPostRequest) (
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersPost",
+		Operation:  "UmUsersPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3724,13 +3724,13 @@ func (a *UserManagementApiService) UmUsersPostExecute(r ApiUmUsersPostRequest) (
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3747,12 +3747,12 @@ func (a *UserManagementApiService) UmUsersPostExecute(r ApiUmUsersPostRequest) (
 }
 
 type ApiUmUsersPutRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	user *User
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	user            *User
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3787,8 +3787,8 @@ func (r ApiUmUsersPutRequest) Execute() (User, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersPut(ctx _context.Context, userId string) ApiUmUsersPutRequest {
 	return ApiUmUsersPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -3870,11 +3870,11 @@ func (a *UserManagementApiService) UmUsersPutExecute(r ApiUmUsersPutRequest) (Us
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersPut",
+		Operation:  "UmUsersPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3893,13 +3893,13 @@ func (a *UserManagementApiService) UmUsersPutExecute(r ApiUmUsersPutRequest) (Us
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3916,12 +3916,12 @@ func (a *UserManagementApiService) UmUsersPutExecute(r ApiUmUsersPutRequest) (Us
 }
 
 type ApiUmUsersS3keysDeleteRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	keyId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	keyId           string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3953,9 +3953,9 @@ func (r ApiUmUsersS3keysDeleteRequest) Execute() (map[string]interface{}, *APIRe
 func (a *UserManagementApiService) UmUsersS3keysDelete(ctx _context.Context, userId string, keyId string) ApiUmUsersS3keysDeleteRequest {
 	return ApiUmUsersS3keysDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
-		keyId: keyId,
+		ctx:        ctx,
+		userId:     userId,
+		keyId:      keyId,
 	}
 }
 
@@ -4033,11 +4033,11 @@ func (a *UserManagementApiService) UmUsersS3keysDeleteExecute(r ApiUmUsersS3keys
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3keysDelete",
+		Operation:  "UmUsersS3keysDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4056,13 +4056,13 @@ func (a *UserManagementApiService) UmUsersS3keysDeleteExecute(r ApiUmUsersS3keys
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4079,12 +4079,12 @@ func (a *UserManagementApiService) UmUsersS3keysDeleteExecute(r ApiUmUsersS3keys
 }
 
 type ApiUmUsersS3keysFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	keyId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	keyId           string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4116,9 +4116,9 @@ func (r ApiUmUsersS3keysFindByKeyRequest) Execute() (S3Key, *APIResponse, error)
 func (a *UserManagementApiService) UmUsersS3keysFindByKey(ctx _context.Context, userId string, keyId string) ApiUmUsersS3keysFindByKeyRequest {
 	return ApiUmUsersS3keysFindByKeyRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
-		keyId: keyId,
+		ctx:        ctx,
+		userId:     userId,
+		keyId:      keyId,
 	}
 }
 
@@ -4196,11 +4196,11 @@ func (a *UserManagementApiService) UmUsersS3keysFindByKeyExecute(r ApiUmUsersS3k
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3keysFindByKey",
+		Operation:  "UmUsersS3keysFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4219,13 +4219,13 @@ func (a *UserManagementApiService) UmUsersS3keysFindByKeyExecute(r ApiUmUsersS3k
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4242,11 +4242,11 @@ func (a *UserManagementApiService) UmUsersS3keysFindByKeyExecute(r ApiUmUsersS3k
 }
 
 type ApiUmUsersS3keysGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4277,8 +4277,8 @@ func (r ApiUmUsersS3keysGetRequest) Execute() (S3Keys, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersS3keysGet(ctx _context.Context, userId string) ApiUmUsersS3keysGetRequest {
 	return ApiUmUsersS3keysGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -4355,11 +4355,11 @@ func (a *UserManagementApiService) UmUsersS3keysGetExecute(r ApiUmUsersS3keysGet
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3keysGet",
+		Operation:  "UmUsersS3keysGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4378,13 +4378,13 @@ func (a *UserManagementApiService) UmUsersS3keysGetExecute(r ApiUmUsersS3keysGet
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4401,11 +4401,11 @@ func (a *UserManagementApiService) UmUsersS3keysGetExecute(r ApiUmUsersS3keysGet
 }
 
 type ApiUmUsersS3keysPostRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4436,8 +4436,8 @@ func (r ApiUmUsersS3keysPostRequest) Execute() (S3Key, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersS3keysPost(ctx _context.Context, userId string) ApiUmUsersS3keysPostRequest {
 	return ApiUmUsersS3keysPostRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -4514,11 +4514,11 @@ func (a *UserManagementApiService) UmUsersS3keysPostExecute(r ApiUmUsersS3keysPo
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3keysPost",
+		Operation:  "UmUsersS3keysPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4537,13 +4537,13 @@ func (a *UserManagementApiService) UmUsersS3keysPostExecute(r ApiUmUsersS3keysPo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4560,13 +4560,13 @@ func (a *UserManagementApiService) UmUsersS3keysPostExecute(r ApiUmUsersS3keysPo
 }
 
 type ApiUmUsersS3keysPutRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	keyId string
-	s3Key *S3Key
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	keyId           string
+	s3Key           *S3Key
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4602,9 +4602,9 @@ func (r ApiUmUsersS3keysPutRequest) Execute() (S3Key, *APIResponse, error) {
 func (a *UserManagementApiService) UmUsersS3keysPut(ctx _context.Context, userId string, keyId string) ApiUmUsersS3keysPutRequest {
 	return ApiUmUsersS3keysPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
-		keyId: keyId,
+		ctx:        ctx,
+		userId:     userId,
+		keyId:      keyId,
 	}
 }
 
@@ -4687,11 +4687,11 @@ func (a *UserManagementApiService) UmUsersS3keysPutExecute(r ApiUmUsersS3keysPut
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3keysPut",
+		Operation:  "UmUsersS3keysPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4710,13 +4710,13 @@ func (a *UserManagementApiService) UmUsersS3keysPutExecute(r ApiUmUsersS3keysPut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4733,10 +4733,10 @@ func (a *UserManagementApiService) UmUsersS3keysPutExecute(r ApiUmUsersS3keysPut
 }
 
 type ApiUmUsersS3ssourlGetRequest struct {
-	ctx _context.Context
-	ApiService *UserManagementApiService
-	userId string
-	pretty *bool
+	ctx             _context.Context
+	ApiService      *UserManagementApiService
+	userId          string
+	pretty          *bool
 	xContractNumber *int32
 }
 
@@ -4763,8 +4763,8 @@ func (r ApiUmUsersS3ssourlGetRequest) Execute() (S3ObjectStorageSSO, *APIRespons
 func (a *UserManagementApiService) UmUsersS3ssourlGet(ctx _context.Context, userId string) ApiUmUsersS3ssourlGetRequest {
 	return ApiUmUsersS3ssourlGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		userId: userId,
+		ctx:        ctx,
+		userId:     userId,
 	}
 }
 
@@ -4838,11 +4838,11 @@ func (a *UserManagementApiService) UmUsersS3ssourlGetExecute(r ApiUmUsersS3ssour
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "UmUsersS3ssourlGet",
+		Operation:  "UmUsersS3ssourlGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4861,13 +4861,13 @@ func (a *UserManagementApiService) UmUsersS3ssourlGetExecute(r ApiUmUsersS3ssour
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

@@ -19,11 +19,9 @@ type KubernetesClusterProperties struct {
 	// A Kubernetes Cluster Name. Valid Kubernetes Cluster name must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between.
 	Name *string `json:"name"`
 	// The kubernetes version in which a cluster is running. This imposes restrictions on what kubernetes versions can be run in a cluster's nodepools. Additionally, not all kubernetes versions are viable upgrade targets for all prior versions.
-	K8sVersion *string `json:"k8sVersion,omitempty"`
+	K8sVersion        *string                      `json:"k8sVersion,omitempty"`
 	MaintenanceWindow *KubernetesMaintenanceWindow `json:"maintenanceWindow,omitempty"`
 }
-
-
 
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -59,8 +57,6 @@ func (o *KubernetesClusterProperties) HasName() bool {
 	return false
 }
 
-
-
 // GetK8sVersion returns the K8sVersion field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesClusterProperties) GetK8sVersion() *string {
@@ -94,8 +90,6 @@ func (o *KubernetesClusterProperties) HasK8sVersion() bool {
 
 	return false
 }
-
-
 
 // GetMaintenanceWindow returns the MaintenanceWindow field value
 // If the value is explicit nil, the zero value for KubernetesMaintenanceWindow will be returned
@@ -131,24 +125,21 @@ func (o *KubernetesClusterProperties) HasMaintenanceWindow() bool {
 	return false
 }
 
-
 func (o KubernetesClusterProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.K8sVersion != nil {
 		toSerialize["k8sVersion"] = o.K8sVersion
 	}
-	
 
 	if o.MaintenanceWindow != nil {
 		toSerialize["maintenanceWindow"] = o.MaintenanceWindow
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -187,5 +178,3 @@ func (v *NullableKubernetesClusterProperties) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

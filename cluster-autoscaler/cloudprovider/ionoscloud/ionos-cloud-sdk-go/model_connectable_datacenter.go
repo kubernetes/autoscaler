@@ -16,12 +16,10 @@ import (
 
 // ConnectableDatacenter struct for ConnectableDatacenter
 type ConnectableDatacenter struct {
-	Id *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Id       *string `json:"id,omitempty"`
+	Name     *string `json:"name,omitempty"`
 	Location *string `json:"location,omitempty"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -57,8 +55,6 @@ func (o *ConnectableDatacenter) HasId() bool {
 	return false
 }
 
-
-
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *ConnectableDatacenter) GetName() *string {
@@ -92,8 +88,6 @@ func (o *ConnectableDatacenter) HasName() bool {
 
 	return false
 }
-
-
 
 // GetLocation returns the Location field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -129,24 +123,21 @@ func (o *ConnectableDatacenter) HasLocation() bool {
 	return false
 }
 
-
 func (o ConnectableDatacenter) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.Location != nil {
 		toSerialize["location"] = o.Location
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -185,5 +176,3 @@ func (v *NullableConnectableDatacenter) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -26,10 +26,10 @@ var (
 type ContractApiService service
 
 type ApiContractsGetRequest struct {
-	ctx _context.Context
-	ApiService *ContractApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *ContractApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -59,7 +59,7 @@ func (r ApiContractsGetRequest) Execute() (Contract, *APIResponse, error) {
 func (a *ContractApiService) ContractsGet(ctx _context.Context) ApiContractsGetRequest {
 	return ApiContractsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -135,11 +135,11 @@ func (a *ContractApiService) ContractsGetExecute(r ApiContractsGetRequest) (Cont
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "ContractsGet",
+		Operation:  "ContractsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -158,13 +158,13 @@ func (a *ContractApiService) ContractsGetExecute(r ApiContractsGetRequest) (Cont
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

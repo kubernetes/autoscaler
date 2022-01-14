@@ -23,6 +23,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
+	"io/ioutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/def"
@@ -30,8 +32,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/response"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/sdkerr"
-	jsoniter "github.com/json-iterator/go"
-	"io/ioutil"
 	"reflect"
 	"strings"
 )

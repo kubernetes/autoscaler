@@ -16,11 +16,9 @@ import (
 
 // GroupEntities struct for GroupEntities
 type GroupEntities struct {
-	Users *GroupMembers `json:"users,omitempty"`
+	Users     *GroupMembers   `json:"users,omitempty"`
 	Resources *ResourceGroups `json:"resources,omitempty"`
 }
-
-
 
 // GetUsers returns the Users field value
 // If the value is explicit nil, the zero value for GroupMembers will be returned
@@ -56,8 +54,6 @@ func (o *GroupEntities) HasUsers() bool {
 	return false
 }
 
-
-
 // GetResources returns the Resources field value
 // If the value is explicit nil, the zero value for ResourceGroups will be returned
 func (o *GroupEntities) GetResources() *ResourceGroups {
@@ -92,19 +88,17 @@ func (o *GroupEntities) HasResources() bool {
 	return false
 }
 
-
 func (o GroupEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Users != nil {
 		toSerialize["users"] = o.Users
 	}
-	
 
 	if o.Resources != nil {
 		toSerialize["resources"] = o.Resources
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -143,5 +137,3 @@ func (v *NullableGroupEntities) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

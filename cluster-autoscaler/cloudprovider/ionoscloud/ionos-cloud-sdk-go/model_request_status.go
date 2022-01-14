@@ -21,11 +21,9 @@ type RequestStatus struct {
 	// The type of object that has been created
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
+	Href     *string                `json:"href,omitempty"`
 	Metadata *RequestStatusMetadata `json:"metadata,omitempty"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -61,8 +59,6 @@ func (o *RequestStatus) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *RequestStatus) GetType() *Type {
@@ -96,8 +92,6 @@ func (o *RequestStatus) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -133,8 +127,6 @@ func (o *RequestStatus) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for RequestStatusMetadata will be returned
 func (o *RequestStatus) GetMetadata() *RequestStatusMetadata {
@@ -169,29 +161,25 @@ func (o *RequestStatus) HasMetadata() bool {
 	return false
 }
 
-
 func (o RequestStatus) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -230,5 +218,3 @@ func (v *NullableRequestStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

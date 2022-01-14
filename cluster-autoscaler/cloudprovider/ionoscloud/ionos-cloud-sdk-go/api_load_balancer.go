@@ -27,13 +27,13 @@ var (
 type LoadBalancerApiService service
 
 type ApiDatacentersLoadbalancersBalancednicsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	nicId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	nicId           string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -65,11 +65,11 @@ func (r ApiDatacentersLoadbalancersBalancednicsDeleteRequest) Execute() (map[str
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsDelete(ctx _context.Context, datacenterId string, loadbalancerId string, nicId string) ApiDatacentersLoadbalancersBalancednicsDeleteRequest {
 	return ApiDatacentersLoadbalancersBalancednicsDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
-		nicId: nicId,
+		nicId:          nicId,
 	}
 }
 
@@ -148,11 +148,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsDeleteExecu
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersBalancednicsDelete",
+		Operation:  "DatacentersLoadbalancersBalancednicsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -171,13 +171,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsDeleteExecu
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -194,13 +194,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsDeleteExecu
 }
 
 type ApiDatacentersLoadbalancersBalancednicsFindByNicRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	nicId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	nicId           string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -232,11 +232,11 @@ func (r ApiDatacentersLoadbalancersBalancednicsFindByNicRequest) Execute() (Nic,
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsFindByNic(ctx _context.Context, datacenterId string, loadbalancerId string, nicId string) ApiDatacentersLoadbalancersBalancednicsFindByNicRequest {
 	return ApiDatacentersLoadbalancersBalancednicsFindByNicRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
-		nicId: nicId,
+		nicId:          nicId,
 	}
 }
 
@@ -315,11 +315,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsFindByNicEx
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersBalancednicsFindByNic",
+		Operation:  "DatacentersLoadbalancersBalancednicsFindByNic",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -338,13 +338,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsFindByNicEx
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -361,12 +361,12 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsFindByNicEx
 }
 
 type ApiDatacentersLoadbalancersBalancednicsGetRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -388,7 +388,7 @@ func (r ApiDatacentersLoadbalancersBalancednicsGetRequest) Execute() (BalancedNi
 }
 
 /*
- * DatacentersLoadbalancersBalancednicsGet List Load Balancer Members 
+ * DatacentersLoadbalancersBalancednicsGet List Load Balancer Members
  * You can retrieve a list of nics attached to a Load Balancer
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param datacenterId The unique ID of the datacenter
@@ -397,9 +397,9 @@ func (r ApiDatacentersLoadbalancersBalancednicsGetRequest) Execute() (BalancedNi
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsGet(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersBalancednicsGetRequest {
 	return ApiDatacentersLoadbalancersBalancednicsGetRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -478,11 +478,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsGetExecute(
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersBalancednicsGet",
+		Operation:  "DatacentersLoadbalancersBalancednicsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -501,13 +501,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsGetExecute(
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -524,13 +524,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsGetExecute(
 }
 
 type ApiDatacentersLoadbalancersBalancednicsPostRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	nic *Nic
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	nic             *Nic
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -557,7 +557,7 @@ func (r ApiDatacentersLoadbalancersBalancednicsPostRequest) Execute() (Nic, *API
 
 /*
  * DatacentersLoadbalancersBalancednicsPost Attach a nic to Load Balancer
- * This will attach a pre-existing nic to a Load Balancer. 
+ * This will attach a pre-existing nic to a Load Balancer.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param datacenterId The unique ID of the datacenter
  * @param loadbalancerId The unique ID of the Load Balancer
@@ -565,9 +565,9 @@ func (r ApiDatacentersLoadbalancersBalancednicsPostRequest) Execute() (Nic, *API
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsPost(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersBalancednicsPostRequest {
 	return ApiDatacentersLoadbalancersBalancednicsPostRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -651,11 +651,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsPostExecute
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersBalancednicsPost",
+		Operation:  "DatacentersLoadbalancersBalancednicsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -674,13 +674,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsPostExecute
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -697,12 +697,12 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersBalancednicsPostExecute
 }
 
 type ApiDatacentersLoadbalancersDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -733,9 +733,9 @@ func (r ApiDatacentersLoadbalancersDeleteRequest) Execute() (map[string]interfac
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersDelete(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersDeleteRequest {
 	return ApiDatacentersLoadbalancersDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -814,11 +814,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersDeleteExecute(r ApiData
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersDelete",
+		Operation:  "DatacentersLoadbalancersDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -837,13 +837,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersDeleteExecute(r ApiData
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -860,12 +860,12 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersDeleteExecute(r ApiData
 }
 
 type ApiDatacentersLoadbalancersFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -896,9 +896,9 @@ func (r ApiDatacentersLoadbalancersFindByIdRequest) Execute() (Loadbalancer, *AP
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersFindById(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersFindByIdRequest {
 	return ApiDatacentersLoadbalancersFindByIdRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -977,11 +977,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersFindByIdExecute(r ApiDa
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersFindById",
+		Operation:  "DatacentersLoadbalancersFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1000,13 +1000,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersFindByIdExecute(r ApiDa
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1023,11 +1023,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersFindByIdExecute(r ApiDa
 }
 
 type ApiDatacentersLoadbalancersGetRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1057,8 +1057,8 @@ func (r ApiDatacentersLoadbalancersGetRequest) Execute() (Loadbalancers, *APIRes
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersGet(ctx _context.Context, datacenterId string) ApiDatacentersLoadbalancersGetRequest {
 	return ApiDatacentersLoadbalancersGetRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -1136,11 +1136,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersGetExecute(r ApiDatacen
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersGet",
+		Operation:  "DatacentersLoadbalancersGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1159,13 +1159,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersGetExecute(r ApiDatacen
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1182,13 +1182,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersGetExecute(r ApiDatacen
 }
 
 type ApiDatacentersLoadbalancersPatchRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	loadbalancer *LoadbalancerProperties
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	loadbalancer    *LoadbalancerProperties
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1223,9 +1223,9 @@ func (r ApiDatacentersLoadbalancersPatchRequest) Execute() (Loadbalancer, *APIRe
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersPatch(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersPatchRequest {
 	return ApiDatacentersLoadbalancersPatchRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -1309,11 +1309,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPatchExecute(r ApiDatac
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersPatch",
+		Operation:  "DatacentersLoadbalancersPatch",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1332,13 +1332,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPatchExecute(r ApiDatac
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1355,12 +1355,12 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPatchExecute(r ApiDatac
 }
 
 type ApiDatacentersLoadbalancersPostRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancer *Loadbalancer
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancer    *Loadbalancer
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1394,8 +1394,8 @@ func (r ApiDatacentersLoadbalancersPostRequest) Execute() (Loadbalancer, *APIRes
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersPost(ctx _context.Context, datacenterId string) ApiDatacentersLoadbalancersPostRequest {
 	return ApiDatacentersLoadbalancersPostRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -1478,11 +1478,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPostExecute(r ApiDatace
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersPost",
+		Operation:  "DatacentersLoadbalancersPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1501,13 +1501,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPostExecute(r ApiDatace
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1524,13 +1524,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPostExecute(r ApiDatace
 }
 
 type ApiDatacentersLoadbalancersPutRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
-	datacenterId string
-	loadbalancerId string
-	loadbalancer *Loadbalancer
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LoadBalancerApiService
+	datacenterId    string
+	loadbalancerId  string
+	loadbalancer    *Loadbalancer
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1565,9 +1565,9 @@ func (r ApiDatacentersLoadbalancersPutRequest) Execute() (Loadbalancer, *APIResp
  */
 func (a *LoadBalancerApiService) DatacentersLoadbalancersPut(ctx _context.Context, datacenterId string, loadbalancerId string) ApiDatacentersLoadbalancersPutRequest {
 	return ApiDatacentersLoadbalancersPutRequest{
-		ApiService: a,
-		ctx: ctx,
-		datacenterId: datacenterId,
+		ApiService:     a,
+		ctx:            ctx,
+		datacenterId:   datacenterId,
 		loadbalancerId: loadbalancerId,
 	}
 }
@@ -1651,11 +1651,11 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPutExecute(r ApiDatacen
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLoadbalancersPut",
+		Operation:  "DatacentersLoadbalancersPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1674,13 +1674,13 @@ func (a *LoadBalancerApiService) DatacentersLoadbalancersPutExecute(r ApiDatacen
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

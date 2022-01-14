@@ -27,11 +27,11 @@ var (
 type RequestApiService service
 
 type ApiRequestsFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *RequestApiService
-	requestId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *RequestApiService
+	requestId       string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -62,8 +62,8 @@ func (r ApiRequestsFindByIdRequest) Execute() (Request, *APIResponse, error) {
 func (a *RequestApiService) RequestsFindById(ctx _context.Context, requestId string) ApiRequestsFindByIdRequest {
 	return ApiRequestsFindByIdRequest{
 		ApiService: a,
-		ctx: ctx,
-		requestId: requestId,
+		ctx:        ctx,
+		requestId:  requestId,
 	}
 }
 
@@ -140,11 +140,11 @@ func (a *RequestApiService) RequestsFindByIdExecute(r ApiRequestsFindByIdRequest
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "RequestsFindById",
+		Operation:  "RequestsFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *RequestApiService) RequestsFindByIdExecute(r ApiRequestsFindByIdRequest
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,18 +186,18 @@ func (a *RequestApiService) RequestsFindByIdExecute(r ApiRequestsFindByIdRequest
 }
 
 type ApiRequestsGetRequest struct {
-	ctx _context.Context
-	ApiService *RequestApiService
-	pretty *bool
-	depth *int32
-	xContractNumber *int32
-	filterStatus *string
-	filterCreatedAfter *string
+	ctx                 _context.Context
+	ApiService          *RequestApiService
+	pretty              *bool
+	depth               *int32
+	xContractNumber     *int32
+	filterStatus        *string
+	filterCreatedAfter  *string
 	filterCreatedBefore *string
-	filterUrl *string
-	filterCreatedDate *string
-	filterMethod *string
-	filterBody *string
+	filterUrl           *string
+	filterCreatedDate   *string
+	filterMethod        *string
+	filterBody          *string
 }
 
 func (r ApiRequestsGetRequest) Pretty(pretty bool) ApiRequestsGetRequest {
@@ -254,7 +254,7 @@ func (r ApiRequestsGetRequest) Execute() (Requests, *APIResponse, error) {
 func (a *RequestApiService) RequestsGet(ctx _context.Context) ApiRequestsGetRequest {
 	return ApiRequestsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -351,11 +351,11 @@ func (a *RequestApiService) RequestsGetExecute(r ApiRequestsGetRequest) (Request
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "RequestsGet",
+		Operation:  "RequestsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -374,13 +374,13 @@ func (a *RequestApiService) RequestsGetExecute(r ApiRequestsGetRequest) (Request
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -397,11 +397,11 @@ func (a *RequestApiService) RequestsGetExecute(r ApiRequestsGetRequest) (Request
 }
 
 type ApiRequestsStatusGetRequest struct {
-	ctx _context.Context
-	ApiService *RequestApiService
-	requestId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *RequestApiService
+	requestId       string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -432,8 +432,8 @@ func (r ApiRequestsStatusGetRequest) Execute() (RequestStatus, *APIResponse, err
 func (a *RequestApiService) RequestsStatusGet(ctx _context.Context, requestId string) ApiRequestsStatusGetRequest {
 	return ApiRequestsStatusGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		requestId: requestId,
+		ctx:        ctx,
+		requestId:  requestId,
 	}
 }
 
@@ -510,11 +510,11 @@ func (a *RequestApiService) RequestsStatusGetExecute(r ApiRequestsStatusGetReque
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "RequestsStatusGet",
+		Operation:  "RequestsStatusGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -533,13 +533,13 @@ func (a *RequestApiService) RequestsStatusGetExecute(r ApiRequestsStatusGetReque
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

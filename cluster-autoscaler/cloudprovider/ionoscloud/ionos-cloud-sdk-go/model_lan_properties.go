@@ -26,8 +26,6 @@ type LanProperties struct {
 	Public *bool `json:"public,omitempty"`
 }
 
-
-
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *LanProperties) GetName() *string {
@@ -61,8 +59,6 @@ func (o *LanProperties) HasName() bool {
 
 	return false
 }
-
-
 
 // GetIpFailover returns the IpFailover field value
 // If the value is explicit nil, the zero value for []IPFailover will be returned
@@ -98,8 +94,6 @@ func (o *LanProperties) HasIpFailover() bool {
 	return false
 }
 
-
-
 // GetPcc returns the Pcc field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *LanProperties) GetPcc() *string {
@@ -133,8 +127,6 @@ func (o *LanProperties) HasPcc() bool {
 
 	return false
 }
-
-
 
 // GetPublic returns the Public field value
 // If the value is explicit nil, the zero value for bool will be returned
@@ -170,29 +162,25 @@ func (o *LanProperties) HasPublic() bool {
 	return false
 }
 
-
 func (o LanProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.IpFailover != nil {
 		toSerialize["ipFailover"] = o.IpFailover
 	}
-	
 
 	if o.Pcc != nil {
 		toSerialize["pcc"] = o.Pcc
 	}
-	
 
 	if o.Public != nil {
 		toSerialize["public"] = o.Public
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -231,5 +219,3 @@ func (v *NullableLanProperties) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

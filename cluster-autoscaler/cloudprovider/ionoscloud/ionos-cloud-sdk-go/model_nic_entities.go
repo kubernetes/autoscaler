@@ -19,8 +19,6 @@ type NicEntities struct {
 	Firewallrules *FirewallRules `json:"firewallrules,omitempty"`
 }
 
-
-
 // GetFirewallrules returns the Firewallrules field value
 // If the value is explicit nil, the zero value for FirewallRules will be returned
 func (o *NicEntities) GetFirewallrules() *FirewallRules {
@@ -55,14 +53,13 @@ func (o *NicEntities) HasFirewallrules() bool {
 	return false
 }
 
-
 func (o NicEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Firewallrules != nil {
 		toSerialize["firewallrules"] = o.Firewallrules
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -101,5 +98,3 @@ func (v *NullableNicEntities) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

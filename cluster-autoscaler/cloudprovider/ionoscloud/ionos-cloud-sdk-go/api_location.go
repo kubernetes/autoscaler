@@ -27,11 +27,11 @@ var (
 type LocationApiService service
 
 type ApiLocationsFindByRegionRequest struct {
-	ctx _context.Context
-	ApiService *LocationApiService
-	regionId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LocationApiService
+	regionId        string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -62,8 +62,8 @@ func (r ApiLocationsFindByRegionRequest) Execute() (Locations, *APIResponse, err
 func (a *LocationApiService) LocationsFindByRegion(ctx _context.Context, regionId string) ApiLocationsFindByRegionRequest {
 	return ApiLocationsFindByRegionRequest{
 		ApiService: a,
-		ctx: ctx,
-		regionId: regionId,
+		ctx:        ctx,
+		regionId:   regionId,
 	}
 }
 
@@ -140,11 +140,11 @@ func (a *LocationApiService) LocationsFindByRegionExecute(r ApiLocationsFindByRe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "LocationsFindByRegion",
+		Operation:  "LocationsFindByRegion",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *LocationApiService) LocationsFindByRegionExecute(r ApiLocationsFindByRe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,12 +186,12 @@ func (a *LocationApiService) LocationsFindByRegionExecute(r ApiLocationsFindByRe
 }
 
 type ApiLocationsFindByRegionAndIdRequest struct {
-	ctx _context.Context
-	ApiService *LocationApiService
-	regionId string
-	locationId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LocationApiService
+	regionId        string
+	locationId      string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -223,8 +223,8 @@ func (r ApiLocationsFindByRegionAndIdRequest) Execute() (Location, *APIResponse,
 func (a *LocationApiService) LocationsFindByRegionAndId(ctx _context.Context, regionId string, locationId string) ApiLocationsFindByRegionAndIdRequest {
 	return ApiLocationsFindByRegionAndIdRequest{
 		ApiService: a,
-		ctx: ctx,
-		regionId: regionId,
+		ctx:        ctx,
+		regionId:   regionId,
 		locationId: locationId,
 	}
 }
@@ -303,11 +303,11 @@ func (a *LocationApiService) LocationsFindByRegionAndIdExecute(r ApiLocationsFin
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "LocationsFindByRegionAndId",
+		Operation:  "LocationsFindByRegionAndId",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -326,13 +326,13 @@ func (a *LocationApiService) LocationsFindByRegionAndIdExecute(r ApiLocationsFin
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -349,10 +349,10 @@ func (a *LocationApiService) LocationsFindByRegionAndIdExecute(r ApiLocationsFin
 }
 
 type ApiLocationsGetRequest struct {
-	ctx _context.Context
-	ApiService *LocationApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LocationApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -382,7 +382,7 @@ func (r ApiLocationsGetRequest) Execute() (Locations, *APIResponse, error) {
 func (a *LocationApiService) LocationsGet(ctx _context.Context) ApiLocationsGetRequest {
 	return ApiLocationsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -458,11 +458,11 @@ func (a *LocationApiService) LocationsGetExecute(r ApiLocationsGetRequest) (Loca
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "LocationsGet",
+		Operation:  "LocationsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -481,13 +481,13 @@ func (a *LocationApiService) LocationsGetExecute(r ApiLocationsGetRequest) (Loca
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

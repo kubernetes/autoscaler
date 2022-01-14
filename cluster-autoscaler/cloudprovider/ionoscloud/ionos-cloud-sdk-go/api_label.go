@@ -27,12 +27,12 @@ var (
 type LabelApiService service
 
 type ApiDatacentersLabelsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -63,10 +63,10 @@ func (r ApiDatacentersLabelsDeleteRequest) Execute() (map[string]interface{}, *A
  */
 func (a *LabelApiService) DatacentersLabelsDelete(ctx _context.Context, datacenterId string, key string) ApiDatacentersLabelsDeleteRequest {
 	return ApiDatacentersLabelsDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		key: key,
+		key:          key,
 	}
 }
 
@@ -144,11 +144,11 @@ func (a *LabelApiService) DatacentersLabelsDeleteExecute(r ApiDatacentersLabelsD
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLabelsDelete",
+		Operation:  "DatacentersLabelsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -167,13 +167,13 @@ func (a *LabelApiService) DatacentersLabelsDeleteExecute(r ApiDatacentersLabelsD
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -190,12 +190,12 @@ func (a *LabelApiService) DatacentersLabelsDeleteExecute(r ApiDatacentersLabelsD
 }
 
 type ApiDatacentersLabelsFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -226,10 +226,10 @@ func (r ApiDatacentersLabelsFindByKeyRequest) Execute() (LabelResource, *APIResp
  */
 func (a *LabelApiService) DatacentersLabelsFindByKey(ctx _context.Context, datacenterId string, key string) ApiDatacentersLabelsFindByKeyRequest {
 	return ApiDatacentersLabelsFindByKeyRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		key: key,
+		key:          key,
 	}
 }
 
@@ -307,11 +307,11 @@ func (a *LabelApiService) DatacentersLabelsFindByKeyExecute(r ApiDatacentersLabe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLabelsFindByKey",
+		Operation:  "DatacentersLabelsFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -330,13 +330,13 @@ func (a *LabelApiService) DatacentersLabelsFindByKeyExecute(r ApiDatacentersLabe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -353,11 +353,11 @@ func (a *LabelApiService) DatacentersLabelsFindByKeyExecute(r ApiDatacentersLabe
 }
 
 type ApiDatacentersLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -387,8 +387,8 @@ func (r ApiDatacentersLabelsGetRequest) Execute() (LabelResources, *APIResponse,
  */
 func (a *LabelApiService) DatacentersLabelsGet(ctx _context.Context, datacenterId string) ApiDatacentersLabelsGetRequest {
 	return ApiDatacentersLabelsGetRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -466,11 +466,11 @@ func (a *LabelApiService) DatacentersLabelsGetExecute(r ApiDatacentersLabelsGetR
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLabelsGet",
+		Operation:  "DatacentersLabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -489,13 +489,13 @@ func (a *LabelApiService) DatacentersLabelsGetExecute(r ApiDatacentersLabelsGetR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -512,12 +512,12 @@ func (a *LabelApiService) DatacentersLabelsGetExecute(r ApiDatacentersLabelsGetR
 }
 
 type ApiDatacentersLabelsPostRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -551,8 +551,8 @@ func (r ApiDatacentersLabelsPostRequest) Execute() (LabelResource, *APIResponse,
  */
 func (a *LabelApiService) DatacentersLabelsPost(ctx _context.Context, datacenterId string) ApiDatacentersLabelsPostRequest {
 	return ApiDatacentersLabelsPostRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -635,11 +635,11 @@ func (a *LabelApiService) DatacentersLabelsPostExecute(r ApiDatacentersLabelsPos
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLabelsPost",
+		Operation:  "DatacentersLabelsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -658,13 +658,13 @@ func (a *LabelApiService) DatacentersLabelsPostExecute(r ApiDatacentersLabelsPos
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -681,13 +681,13 @@ func (a *LabelApiService) DatacentersLabelsPostExecute(r ApiDatacentersLabelsPos
 }
 
 type ApiDatacentersLabelsPutRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	key string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	key             string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -722,10 +722,10 @@ func (r ApiDatacentersLabelsPutRequest) Execute() (LabelResource, *APIResponse, 
  */
 func (a *LabelApiService) DatacentersLabelsPut(ctx _context.Context, datacenterId string, key string) ApiDatacentersLabelsPutRequest {
 	return ApiDatacentersLabelsPutRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		key: key,
+		key:          key,
 	}
 }
 
@@ -808,11 +808,11 @@ func (a *LabelApiService) DatacentersLabelsPutExecute(r ApiDatacentersLabelsPutR
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersLabelsPut",
+		Operation:  "DatacentersLabelsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -831,13 +831,13 @@ func (a *LabelApiService) DatacentersLabelsPutExecute(r ApiDatacentersLabelsPutR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -854,13 +854,13 @@ func (a *LabelApiService) DatacentersLabelsPutExecute(r ApiDatacentersLabelsPutR
 }
 
 type ApiDatacentersServersLabelsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	serverId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	serverId        string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -892,11 +892,11 @@ func (r ApiDatacentersServersLabelsDeleteRequest) Execute() (map[string]interfac
  */
 func (a *LabelApiService) DatacentersServersLabelsDelete(ctx _context.Context, datacenterId string, serverId string, key string) ApiDatacentersServersLabelsDeleteRequest {
 	return ApiDatacentersServersLabelsDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		serverId: serverId,
-		key: key,
+		serverId:     serverId,
+		key:          key,
 	}
 }
 
@@ -975,11 +975,11 @@ func (a *LabelApiService) DatacentersServersLabelsDeleteExecute(r ApiDatacenters
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersServersLabelsDelete",
+		Operation:  "DatacentersServersLabelsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -998,13 +998,13 @@ func (a *LabelApiService) DatacentersServersLabelsDeleteExecute(r ApiDatacenters
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1021,13 +1021,13 @@ func (a *LabelApiService) DatacentersServersLabelsDeleteExecute(r ApiDatacenters
 }
 
 type ApiDatacentersServersLabelsFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	serverId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	serverId        string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1059,11 +1059,11 @@ func (r ApiDatacentersServersLabelsFindByKeyRequest) Execute() (LabelResource, *
  */
 func (a *LabelApiService) DatacentersServersLabelsFindByKey(ctx _context.Context, datacenterId string, serverId string, key string) ApiDatacentersServersLabelsFindByKeyRequest {
 	return ApiDatacentersServersLabelsFindByKeyRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		serverId: serverId,
-		key: key,
+		serverId:     serverId,
+		key:          key,
 	}
 }
 
@@ -1142,11 +1142,11 @@ func (a *LabelApiService) DatacentersServersLabelsFindByKeyExecute(r ApiDatacent
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersServersLabelsFindByKey",
+		Operation:  "DatacentersServersLabelsFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1165,13 +1165,13 @@ func (a *LabelApiService) DatacentersServersLabelsFindByKeyExecute(r ApiDatacent
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1188,12 +1188,12 @@ func (a *LabelApiService) DatacentersServersLabelsFindByKeyExecute(r ApiDatacent
 }
 
 type ApiDatacentersServersLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	serverId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	serverId        string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1224,10 +1224,10 @@ func (r ApiDatacentersServersLabelsGetRequest) Execute() (LabelResources, *APIRe
  */
 func (a *LabelApiService) DatacentersServersLabelsGet(ctx _context.Context, datacenterId string, serverId string) ApiDatacentersServersLabelsGetRequest {
 	return ApiDatacentersServersLabelsGetRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		serverId: serverId,
+		serverId:     serverId,
 	}
 }
 
@@ -1305,11 +1305,11 @@ func (a *LabelApiService) DatacentersServersLabelsGetExecute(r ApiDatacentersSer
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersServersLabelsGet",
+		Operation:  "DatacentersServersLabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1328,13 +1328,13 @@ func (a *LabelApiService) DatacentersServersLabelsGetExecute(r ApiDatacentersSer
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1351,13 +1351,13 @@ func (a *LabelApiService) DatacentersServersLabelsGetExecute(r ApiDatacentersSer
 }
 
 type ApiDatacentersServersLabelsPostRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	serverId string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	serverId        string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1392,10 +1392,10 @@ func (r ApiDatacentersServersLabelsPostRequest) Execute() (LabelResource, *APIRe
  */
 func (a *LabelApiService) DatacentersServersLabelsPost(ctx _context.Context, datacenterId string, serverId string) ApiDatacentersServersLabelsPostRequest {
 	return ApiDatacentersServersLabelsPostRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		serverId: serverId,
+		serverId:     serverId,
 	}
 }
 
@@ -1478,11 +1478,11 @@ func (a *LabelApiService) DatacentersServersLabelsPostExecute(r ApiDatacentersSe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersServersLabelsPost",
+		Operation:  "DatacentersServersLabelsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1501,13 +1501,13 @@ func (a *LabelApiService) DatacentersServersLabelsPostExecute(r ApiDatacentersSe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1524,14 +1524,14 @@ func (a *LabelApiService) DatacentersServersLabelsPostExecute(r ApiDatacentersSe
 }
 
 type ApiDatacentersServersLabelsPutRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	serverId string
-	key string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	serverId        string
+	key             string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1567,11 +1567,11 @@ func (r ApiDatacentersServersLabelsPutRequest) Execute() (LabelResource, *APIRes
  */
 func (a *LabelApiService) DatacentersServersLabelsPut(ctx _context.Context, datacenterId string, serverId string, key string) ApiDatacentersServersLabelsPutRequest {
 	return ApiDatacentersServersLabelsPutRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		serverId: serverId,
-		key: key,
+		serverId:     serverId,
+		key:          key,
 	}
 }
 
@@ -1655,11 +1655,11 @@ func (a *LabelApiService) DatacentersServersLabelsPutExecute(r ApiDatacentersSer
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersServersLabelsPut",
+		Operation:  "DatacentersServersLabelsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1678,13 +1678,13 @@ func (a *LabelApiService) DatacentersServersLabelsPutExecute(r ApiDatacentersSer
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1701,13 +1701,13 @@ func (a *LabelApiService) DatacentersServersLabelsPutExecute(r ApiDatacentersSer
 }
 
 type ApiDatacentersVolumesLabelsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	volumeId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	volumeId        string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1739,11 +1739,11 @@ func (r ApiDatacentersVolumesLabelsDeleteRequest) Execute() (map[string]interfac
  */
 func (a *LabelApiService) DatacentersVolumesLabelsDelete(ctx _context.Context, datacenterId string, volumeId string, key string) ApiDatacentersVolumesLabelsDeleteRequest {
 	return ApiDatacentersVolumesLabelsDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		volumeId: volumeId,
-		key: key,
+		volumeId:     volumeId,
+		key:          key,
 	}
 }
 
@@ -1822,11 +1822,11 @@ func (a *LabelApiService) DatacentersVolumesLabelsDeleteExecute(r ApiDatacenters
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersVolumesLabelsDelete",
+		Operation:  "DatacentersVolumesLabelsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1845,13 +1845,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsDeleteExecute(r ApiDatacenters
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1868,13 +1868,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsDeleteExecute(r ApiDatacenters
 }
 
 type ApiDatacentersVolumesLabelsFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	volumeId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	volumeId        string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -1906,11 +1906,11 @@ func (r ApiDatacentersVolumesLabelsFindByKeyRequest) Execute() (LabelResource, *
  */
 func (a *LabelApiService) DatacentersVolumesLabelsFindByKey(ctx _context.Context, datacenterId string, volumeId string, key string) ApiDatacentersVolumesLabelsFindByKeyRequest {
 	return ApiDatacentersVolumesLabelsFindByKeyRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		volumeId: volumeId,
-		key: key,
+		volumeId:     volumeId,
+		key:          key,
 	}
 }
 
@@ -1989,11 +1989,11 @@ func (a *LabelApiService) DatacentersVolumesLabelsFindByKeyExecute(r ApiDatacent
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersVolumesLabelsFindByKey",
+		Operation:  "DatacentersVolumesLabelsFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2012,13 +2012,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsFindByKeyExecute(r ApiDatacent
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2035,12 +2035,12 @@ func (a *LabelApiService) DatacentersVolumesLabelsFindByKeyExecute(r ApiDatacent
 }
 
 type ApiDatacentersVolumesLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	volumeId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	volumeId        string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2071,10 +2071,10 @@ func (r ApiDatacentersVolumesLabelsGetRequest) Execute() (LabelResources, *APIRe
  */
 func (a *LabelApiService) DatacentersVolumesLabelsGet(ctx _context.Context, datacenterId string, volumeId string) ApiDatacentersVolumesLabelsGetRequest {
 	return ApiDatacentersVolumesLabelsGetRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		volumeId: volumeId,
+		volumeId:     volumeId,
 	}
 }
 
@@ -2152,11 +2152,11 @@ func (a *LabelApiService) DatacentersVolumesLabelsGetExecute(r ApiDatacentersVol
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersVolumesLabelsGet",
+		Operation:  "DatacentersVolumesLabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2175,13 +2175,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsGetExecute(r ApiDatacentersVol
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2198,13 +2198,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsGetExecute(r ApiDatacentersVol
 }
 
 type ApiDatacentersVolumesLabelsPostRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	volumeId string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	volumeId        string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2239,10 +2239,10 @@ func (r ApiDatacentersVolumesLabelsPostRequest) Execute() (LabelResource, *APIRe
  */
 func (a *LabelApiService) DatacentersVolumesLabelsPost(ctx _context.Context, datacenterId string, volumeId string) ApiDatacentersVolumesLabelsPostRequest {
 	return ApiDatacentersVolumesLabelsPostRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		volumeId: volumeId,
+		volumeId:     volumeId,
 	}
 }
 
@@ -2325,11 +2325,11 @@ func (a *LabelApiService) DatacentersVolumesLabelsPostExecute(r ApiDatacentersVo
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersVolumesLabelsPost",
+		Operation:  "DatacentersVolumesLabelsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2348,13 +2348,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsPostExecute(r ApiDatacentersVo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2371,14 +2371,14 @@ func (a *LabelApiService) DatacentersVolumesLabelsPostExecute(r ApiDatacentersVo
 }
 
 type ApiDatacentersVolumesLabelsPutRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	datacenterId string
-	volumeId string
-	key string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	datacenterId    string
+	volumeId        string
+	key             string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2414,11 +2414,11 @@ func (r ApiDatacentersVolumesLabelsPutRequest) Execute() (LabelResource, *APIRes
  */
 func (a *LabelApiService) DatacentersVolumesLabelsPut(ctx _context.Context, datacenterId string, volumeId string, key string) ApiDatacentersVolumesLabelsPutRequest {
 	return ApiDatacentersVolumesLabelsPutRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
-		volumeId: volumeId,
-		key: key,
+		volumeId:     volumeId,
+		key:          key,
 	}
 }
 
@@ -2502,11 +2502,11 @@ func (a *LabelApiService) DatacentersVolumesLabelsPutExecute(r ApiDatacentersVol
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersVolumesLabelsPut",
+		Operation:  "DatacentersVolumesLabelsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2525,13 +2525,13 @@ func (a *LabelApiService) DatacentersVolumesLabelsPutExecute(r ApiDatacentersVol
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2548,12 +2548,12 @@ func (a *LabelApiService) DatacentersVolumesLabelsPutExecute(r ApiDatacentersVol
 }
 
 type ApiIpblocksLabelsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	ipblockId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	ipblockId       string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2585,9 +2585,9 @@ func (r ApiIpblocksLabelsDeleteRequest) Execute() (map[string]interface{}, *APIR
 func (a *LabelApiService) IpblocksLabelsDelete(ctx _context.Context, ipblockId string, key string) ApiIpblocksLabelsDeleteRequest {
 	return ApiIpblocksLabelsDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
-		key: key,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
+		key:        key,
 	}
 }
 
@@ -2665,11 +2665,11 @@ func (a *LabelApiService) IpblocksLabelsDeleteExecute(r ApiIpblocksLabelsDeleteR
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksLabelsDelete",
+		Operation:  "IpblocksLabelsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2688,13 +2688,13 @@ func (a *LabelApiService) IpblocksLabelsDeleteExecute(r ApiIpblocksLabelsDeleteR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2711,12 +2711,12 @@ func (a *LabelApiService) IpblocksLabelsDeleteExecute(r ApiIpblocksLabelsDeleteR
 }
 
 type ApiIpblocksLabelsFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	ipblockId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	ipblockId       string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2748,9 +2748,9 @@ func (r ApiIpblocksLabelsFindByKeyRequest) Execute() (LabelResource, *APIRespons
 func (a *LabelApiService) IpblocksLabelsFindByKey(ctx _context.Context, ipblockId string, key string) ApiIpblocksLabelsFindByKeyRequest {
 	return ApiIpblocksLabelsFindByKeyRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
-		key: key,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
+		key:        key,
 	}
 }
 
@@ -2828,11 +2828,11 @@ func (a *LabelApiService) IpblocksLabelsFindByKeyExecute(r ApiIpblocksLabelsFind
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksLabelsFindByKey",
+		Operation:  "IpblocksLabelsFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -2851,13 +2851,13 @@ func (a *LabelApiService) IpblocksLabelsFindByKeyExecute(r ApiIpblocksLabelsFind
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -2874,11 +2874,11 @@ func (a *LabelApiService) IpblocksLabelsFindByKeyExecute(r ApiIpblocksLabelsFind
 }
 
 type ApiIpblocksLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	ipblockId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	ipblockId       string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -2909,8 +2909,8 @@ func (r ApiIpblocksLabelsGetRequest) Execute() (LabelResources, *APIResponse, er
 func (a *LabelApiService) IpblocksLabelsGet(ctx _context.Context, ipblockId string) ApiIpblocksLabelsGetRequest {
 	return ApiIpblocksLabelsGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -2987,11 +2987,11 @@ func (a *LabelApiService) IpblocksLabelsGetExecute(r ApiIpblocksLabelsGetRequest
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksLabelsGet",
+		Operation:  "IpblocksLabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3010,13 +3010,13 @@ func (a *LabelApiService) IpblocksLabelsGetExecute(r ApiIpblocksLabelsGetRequest
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3033,12 +3033,12 @@ func (a *LabelApiService) IpblocksLabelsGetExecute(r ApiIpblocksLabelsGetRequest
 }
 
 type ApiIpblocksLabelsPostRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	ipblockId string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	ipblockId       string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3073,8 +3073,8 @@ func (r ApiIpblocksLabelsPostRequest) Execute() (LabelResource, *APIResponse, er
 func (a *LabelApiService) IpblocksLabelsPost(ctx _context.Context, ipblockId string) ApiIpblocksLabelsPostRequest {
 	return ApiIpblocksLabelsPostRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -3156,11 +3156,11 @@ func (a *LabelApiService) IpblocksLabelsPostExecute(r ApiIpblocksLabelsPostReque
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksLabelsPost",
+		Operation:  "IpblocksLabelsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3179,13 +3179,13 @@ func (a *LabelApiService) IpblocksLabelsPostExecute(r ApiIpblocksLabelsPostReque
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3202,13 +3202,13 @@ func (a *LabelApiService) IpblocksLabelsPostExecute(r ApiIpblocksLabelsPostReque
 }
 
 type ApiIpblocksLabelsPutRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	ipblockId string
-	key string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	ipblockId       string
+	key             string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3244,9 +3244,9 @@ func (r ApiIpblocksLabelsPutRequest) Execute() (LabelResource, *APIResponse, err
 func (a *LabelApiService) IpblocksLabelsPut(ctx _context.Context, ipblockId string, key string) ApiIpblocksLabelsPutRequest {
 	return ApiIpblocksLabelsPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
-		key: key,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
+		key:        key,
 	}
 }
 
@@ -3329,11 +3329,11 @@ func (a *LabelApiService) IpblocksLabelsPutExecute(r ApiIpblocksLabelsPutRequest
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksLabelsPut",
+		Operation:  "IpblocksLabelsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3352,13 +3352,13 @@ func (a *LabelApiService) IpblocksLabelsPutExecute(r ApiIpblocksLabelsPutRequest
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3375,11 +3375,11 @@ func (a *LabelApiService) IpblocksLabelsPutExecute(r ApiIpblocksLabelsPutRequest
 }
 
 type ApiLabelsFindByLabelurnRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	labelurn string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	labelurn        string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3410,8 +3410,8 @@ func (r ApiLabelsFindByLabelurnRequest) Execute() (Label, *APIResponse, error) {
 func (a *LabelApiService) LabelsFindByLabelurn(ctx _context.Context, labelurn string) ApiLabelsFindByLabelurnRequest {
 	return ApiLabelsFindByLabelurnRequest{
 		ApiService: a,
-		ctx: ctx,
-		labelurn: labelurn,
+		ctx:        ctx,
+		labelurn:   labelurn,
 	}
 }
 
@@ -3488,11 +3488,11 @@ func (a *LabelApiService) LabelsFindByLabelurnExecute(r ApiLabelsFindByLabelurnR
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "LabelsFindByLabelurn",
+		Operation:  "LabelsFindByLabelurn",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3511,13 +3511,13 @@ func (a *LabelApiService) LabelsFindByLabelurnExecute(r ApiLabelsFindByLabelurnR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3534,10 +3534,10 @@ func (a *LabelApiService) LabelsFindByLabelurnExecute(r ApiLabelsFindByLabelurnR
 }
 
 type ApiLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3559,7 +3559,7 @@ func (r ApiLabelsGetRequest) Execute() (Labels, *APIResponse, error) {
 }
 
 /*
- * LabelsGet List Labels 
+ * LabelsGet List Labels
  * You can retrieve a complete list of labels that you have access to.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiLabelsGetRequest
@@ -3567,7 +3567,7 @@ func (r ApiLabelsGetRequest) Execute() (Labels, *APIResponse, error) {
 func (a *LabelApiService) LabelsGet(ctx _context.Context) ApiLabelsGetRequest {
 	return ApiLabelsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -3643,11 +3643,11 @@ func (a *LabelApiService) LabelsGetExecute(r ApiLabelsGetRequest) (Labels, *APIR
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "LabelsGet",
+		Operation:  "LabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3666,13 +3666,13 @@ func (a *LabelApiService) LabelsGetExecute(r ApiLabelsGetRequest) (Labels, *APIR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3689,12 +3689,12 @@ func (a *LabelApiService) LabelsGetExecute(r ApiLabelsGetRequest) (Labels, *APIR
 }
 
 type ApiSnapshotsLabelsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	snapshotId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	snapshotId      string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3726,9 +3726,9 @@ func (r ApiSnapshotsLabelsDeleteRequest) Execute() (map[string]interface{}, *API
 func (a *LabelApiService) SnapshotsLabelsDelete(ctx _context.Context, snapshotId string, key string) ApiSnapshotsLabelsDeleteRequest {
 	return ApiSnapshotsLabelsDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 		snapshotId: snapshotId,
-		key: key,
+		key:        key,
 	}
 }
 
@@ -3806,11 +3806,11 @@ func (a *LabelApiService) SnapshotsLabelsDeleteExecute(r ApiSnapshotsLabelsDelet
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "SnapshotsLabelsDelete",
+		Operation:  "SnapshotsLabelsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3829,13 +3829,13 @@ func (a *LabelApiService) SnapshotsLabelsDeleteExecute(r ApiSnapshotsLabelsDelet
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -3852,12 +3852,12 @@ func (a *LabelApiService) SnapshotsLabelsDeleteExecute(r ApiSnapshotsLabelsDelet
 }
 
 type ApiSnapshotsLabelsFindByKeyRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	snapshotId string
-	key string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	snapshotId      string
+	key             string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -3889,9 +3889,9 @@ func (r ApiSnapshotsLabelsFindByKeyRequest) Execute() (LabelResource, *APIRespon
 func (a *LabelApiService) SnapshotsLabelsFindByKey(ctx _context.Context, snapshotId string, key string) ApiSnapshotsLabelsFindByKeyRequest {
 	return ApiSnapshotsLabelsFindByKeyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 		snapshotId: snapshotId,
-		key: key,
+		key:        key,
 	}
 }
 
@@ -3969,11 +3969,11 @@ func (a *LabelApiService) SnapshotsLabelsFindByKeyExecute(r ApiSnapshotsLabelsFi
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "SnapshotsLabelsFindByKey",
+		Operation:  "SnapshotsLabelsFindByKey",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -3992,13 +3992,13 @@ func (a *LabelApiService) SnapshotsLabelsFindByKeyExecute(r ApiSnapshotsLabelsFi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4015,11 +4015,11 @@ func (a *LabelApiService) SnapshotsLabelsFindByKeyExecute(r ApiSnapshotsLabelsFi
 }
 
 type ApiSnapshotsLabelsGetRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	snapshotId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	snapshotId      string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4050,7 +4050,7 @@ func (r ApiSnapshotsLabelsGetRequest) Execute() (LabelResources, *APIResponse, e
 func (a *LabelApiService) SnapshotsLabelsGet(ctx _context.Context, snapshotId string) ApiSnapshotsLabelsGetRequest {
 	return ApiSnapshotsLabelsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 		snapshotId: snapshotId,
 	}
 }
@@ -4128,11 +4128,11 @@ func (a *LabelApiService) SnapshotsLabelsGetExecute(r ApiSnapshotsLabelsGetReque
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "SnapshotsLabelsGet",
+		Operation:  "SnapshotsLabelsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4151,13 +4151,13 @@ func (a *LabelApiService) SnapshotsLabelsGetExecute(r ApiSnapshotsLabelsGetReque
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4174,12 +4174,12 @@ func (a *LabelApiService) SnapshotsLabelsGetExecute(r ApiSnapshotsLabelsGetReque
 }
 
 type ApiSnapshotsLabelsPostRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	snapshotId string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	snapshotId      string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4214,7 +4214,7 @@ func (r ApiSnapshotsLabelsPostRequest) Execute() (LabelResource, *APIResponse, e
 func (a *LabelApiService) SnapshotsLabelsPost(ctx _context.Context, snapshotId string) ApiSnapshotsLabelsPostRequest {
 	return ApiSnapshotsLabelsPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 		snapshotId: snapshotId,
 	}
 }
@@ -4297,11 +4297,11 @@ func (a *LabelApiService) SnapshotsLabelsPostExecute(r ApiSnapshotsLabelsPostReq
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "SnapshotsLabelsPost",
+		Operation:  "SnapshotsLabelsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4320,13 +4320,13 @@ func (a *LabelApiService) SnapshotsLabelsPostExecute(r ApiSnapshotsLabelsPostReq
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -4343,13 +4343,13 @@ func (a *LabelApiService) SnapshotsLabelsPostExecute(r ApiSnapshotsLabelsPostReq
 }
 
 type ApiSnapshotsLabelsPutRequest struct {
-	ctx _context.Context
-	ApiService *LabelApiService
-	snapshotId string
-	key string
-	label *LabelResource
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *LabelApiService
+	snapshotId      string
+	key             string
+	label           *LabelResource
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -4385,9 +4385,9 @@ func (r ApiSnapshotsLabelsPutRequest) Execute() (LabelResource, *APIResponse, er
 func (a *LabelApiService) SnapshotsLabelsPut(ctx _context.Context, snapshotId string, key string) ApiSnapshotsLabelsPutRequest {
 	return ApiSnapshotsLabelsPutRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 		snapshotId: snapshotId,
-		key: key,
+		key:        key,
 	}
 }
 
@@ -4470,11 +4470,11 @@ func (a *LabelApiService) SnapshotsLabelsPutExecute(r ApiSnapshotsLabelsPutReque
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "SnapshotsLabelsPut",
+		Operation:  "SnapshotsLabelsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -4493,13 +4493,13 @@ func (a *LabelApiService) SnapshotsLabelsPutExecute(r ApiSnapshotsLabelsPutReque
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

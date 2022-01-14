@@ -21,13 +21,11 @@ type Loadbalancer struct {
 	// The type of object that has been created
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
-	Metadata *DatacenterElementMetadata `json:"metadata,omitempty"`
-	Properties *LoadbalancerProperties `json:"properties"`
-	Entities *LoadbalancerEntities `json:"entities,omitempty"`
+	Href       *string                    `json:"href,omitempty"`
+	Metadata   *DatacenterElementMetadata `json:"metadata,omitempty"`
+	Properties *LoadbalancerProperties    `json:"properties"`
+	Entities   *LoadbalancerEntities      `json:"entities,omitempty"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -63,8 +61,6 @@ func (o *Loadbalancer) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *Loadbalancer) GetType() *Type {
@@ -98,8 +94,6 @@ func (o *Loadbalancer) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -135,8 +129,6 @@ func (o *Loadbalancer) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for DatacenterElementMetadata will be returned
 func (o *Loadbalancer) GetMetadata() *DatacenterElementMetadata {
@@ -170,8 +162,6 @@ func (o *Loadbalancer) HasMetadata() bool {
 
 	return false
 }
-
-
 
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for LoadbalancerProperties will be returned
@@ -207,8 +197,6 @@ func (o *Loadbalancer) HasProperties() bool {
 	return false
 }
 
-
-
 // GetEntities returns the Entities field value
 // If the value is explicit nil, the zero value for LoadbalancerEntities will be returned
 func (o *Loadbalancer) GetEntities() *LoadbalancerEntities {
@@ -243,39 +231,33 @@ func (o *Loadbalancer) HasEntities() bool {
 	return false
 }
 
-
 func (o Loadbalancer) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
 
 	if o.Entities != nil {
 		toSerialize["entities"] = o.Entities
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -314,5 +296,3 @@ func (v *NullableLoadbalancer) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

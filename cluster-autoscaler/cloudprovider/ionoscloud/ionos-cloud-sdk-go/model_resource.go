@@ -21,13 +21,11 @@ type Resource struct {
 	// The type of the resource
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
-	Metadata *DatacenterElementMetadata `json:"metadata,omitempty"`
-	Properties *ResourceProperties `json:"properties,omitempty"`
-	Entities *ResourceEntities `json:"entities,omitempty"`
+	Href       *string                    `json:"href,omitempty"`
+	Metadata   *DatacenterElementMetadata `json:"metadata,omitempty"`
+	Properties *ResourceProperties        `json:"properties,omitempty"`
+	Entities   *ResourceEntities          `json:"entities,omitempty"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -63,8 +61,6 @@ func (o *Resource) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *Resource) GetType() *Type {
@@ -98,8 +94,6 @@ func (o *Resource) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -135,8 +129,6 @@ func (o *Resource) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for DatacenterElementMetadata will be returned
 func (o *Resource) GetMetadata() *DatacenterElementMetadata {
@@ -170,8 +162,6 @@ func (o *Resource) HasMetadata() bool {
 
 	return false
 }
-
-
 
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for ResourceProperties will be returned
@@ -207,8 +197,6 @@ func (o *Resource) HasProperties() bool {
 	return false
 }
 
-
-
 // GetEntities returns the Entities field value
 // If the value is explicit nil, the zero value for ResourceEntities will be returned
 func (o *Resource) GetEntities() *ResourceEntities {
@@ -243,39 +231,33 @@ func (o *Resource) HasEntities() bool {
 	return false
 }
 
-
 func (o Resource) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
 
 	if o.Entities != nil {
 		toSerialize["entities"] = o.Entities
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -314,5 +296,3 @@ func (v *NullableResource) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

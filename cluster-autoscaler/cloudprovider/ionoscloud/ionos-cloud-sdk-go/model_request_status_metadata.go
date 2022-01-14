@@ -16,14 +16,12 @@ import (
 
 // RequestStatusMetadata struct for RequestStatusMetadata
 type RequestStatusMetadata struct {
-	Status *string `json:"status,omitempty"`
+	Status  *string `json:"status,omitempty"`
 	Message *string `json:"message,omitempty"`
-	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11 . Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter. 
-	Etag *string `json:"etag,omitempty"`
+	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11 . Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter.
+	Etag    *string          `json:"etag,omitempty"`
 	Targets *[]RequestTarget `json:"targets,omitempty"`
 }
-
-
 
 // GetStatus returns the Status field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -59,8 +57,6 @@ func (o *RequestStatusMetadata) HasStatus() bool {
 	return false
 }
 
-
-
 // GetMessage returns the Message field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *RequestStatusMetadata) GetMessage() *string {
@@ -94,8 +90,6 @@ func (o *RequestStatusMetadata) HasMessage() bool {
 
 	return false
 }
-
-
 
 // GetEtag returns the Etag field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -131,8 +125,6 @@ func (o *RequestStatusMetadata) HasEtag() bool {
 	return false
 }
 
-
-
 // GetTargets returns the Targets field value
 // If the value is explicit nil, the zero value for []RequestTarget will be returned
 func (o *RequestStatusMetadata) GetTargets() *[]RequestTarget {
@@ -167,29 +159,25 @@ func (o *RequestStatusMetadata) HasTargets() bool {
 	return false
 }
 
-
 func (o RequestStatusMetadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Status != nil {
 		toSerialize["status"] = o.Status
 	}
-	
 
 	if o.Message != nil {
 		toSerialize["message"] = o.Message
 	}
-	
 
 	if o.Etag != nil {
 		toSerialize["etag"] = o.Etag
 	}
-	
 
 	if o.Targets != nil {
 		toSerialize["targets"] = o.Targets
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -228,5 +216,3 @@ func (v *NullableRequestStatusMetadata) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

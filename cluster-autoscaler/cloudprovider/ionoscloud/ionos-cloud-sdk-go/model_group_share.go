@@ -21,11 +21,9 @@ type GroupShare struct {
 	// resource as generic type
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
+	Href       *string               `json:"href,omitempty"`
 	Properties *GroupShareProperties `json:"properties"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -61,8 +59,6 @@ func (o *GroupShare) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *GroupShare) GetType() *Type {
@@ -96,8 +92,6 @@ func (o *GroupShare) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -133,8 +127,6 @@ func (o *GroupShare) HasHref() bool {
 	return false
 }
 
-
-
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for GroupShareProperties will be returned
 func (o *GroupShare) GetProperties() *GroupShareProperties {
@@ -169,29 +161,25 @@ func (o *GroupShare) HasProperties() bool {
 	return false
 }
 
-
 func (o GroupShare) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -230,5 +218,3 @@ func (v *NullableGroupShare) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

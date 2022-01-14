@@ -21,12 +21,10 @@ type Image struct {
 	// The type of object that has been created
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
-	Metadata *DatacenterElementMetadata `json:"metadata,omitempty"`
-	Properties *ImageProperties `json:"properties"`
+	Href       *string                    `json:"href,omitempty"`
+	Metadata   *DatacenterElementMetadata `json:"metadata,omitempty"`
+	Properties *ImageProperties           `json:"properties"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -62,8 +60,6 @@ func (o *Image) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *Image) GetType() *Type {
@@ -97,8 +93,6 @@ func (o *Image) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -134,8 +128,6 @@ func (o *Image) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for DatacenterElementMetadata will be returned
 func (o *Image) GetMetadata() *DatacenterElementMetadata {
@@ -169,8 +161,6 @@ func (o *Image) HasMetadata() bool {
 
 	return false
 }
-
-
 
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for ImageProperties will be returned
@@ -206,34 +196,29 @@ func (o *Image) HasProperties() bool {
 	return false
 }
 
-
 func (o Image) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -272,5 +257,3 @@ func (v *NullableImage) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

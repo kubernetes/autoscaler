@@ -21,12 +21,10 @@ type Label struct {
 	// The type of object that has been created
 	Type *string `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
-	Metadata *NoStateMetaData `json:"metadata,omitempty"`
+	Href       *string          `json:"href,omitempty"`
+	Metadata   *NoStateMetaData `json:"metadata,omitempty"`
 	Properties *LabelProperties `json:"properties"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -62,8 +60,6 @@ func (o *Label) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *Label) GetType() *string {
@@ -97,8 +93,6 @@ func (o *Label) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -134,8 +128,6 @@ func (o *Label) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for NoStateMetaData will be returned
 func (o *Label) GetMetadata() *NoStateMetaData {
@@ -169,8 +161,6 @@ func (o *Label) HasMetadata() bool {
 
 	return false
 }
-
-
 
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for LabelProperties will be returned
@@ -206,34 +196,29 @@ func (o *Label) HasProperties() bool {
 	return false
 }
 
-
 func (o Label) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -272,5 +257,3 @@ func (v *NullableLabel) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

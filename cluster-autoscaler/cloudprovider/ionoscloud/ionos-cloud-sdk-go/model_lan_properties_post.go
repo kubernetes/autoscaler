@@ -22,8 +22,6 @@ type LanPropertiesPost struct {
 	Public *bool `json:"public,omitempty"`
 }
 
-
-
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *LanPropertiesPost) GetName() *string {
@@ -57,8 +55,6 @@ func (o *LanPropertiesPost) HasName() bool {
 
 	return false
 }
-
-
 
 // GetPublic returns the Public field value
 // If the value is explicit nil, the zero value for bool will be returned
@@ -94,19 +90,17 @@ func (o *LanPropertiesPost) HasPublic() bool {
 	return false
 }
 
-
 func (o LanPropertiesPost) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.Public != nil {
 		toSerialize["public"] = o.Public
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -145,5 +139,3 @@ func (v *NullableLanPropertiesPost) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
