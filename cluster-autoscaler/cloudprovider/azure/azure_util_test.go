@@ -19,7 +19,6 @@ package azure
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -35,10 +34,10 @@ import (
 
 const (
 	testAccountName = "account"
-	// TODO(nilo19): verify the client err message used in DeleteBlob unit test
+	// TODO(nilo19): verify if DeleteBlob unit test needs to check error string, and which message is expected. We saw both:
 	// storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
 	//	 "header is formed correctly including the signature"
-	storageAccountClientErrMsg = "The specified account is disabled"
+	// storageAccountClientErrMsg = "The specified account is disabled"
 )
 
 func GetTestAzureUtil(t *testing.T) *AzUtil {
@@ -321,7 +320,7 @@ func TestDeleteBlob(t *testing.T) {
 	azUtil.manager.azClient.storageAccountsClient = mockSAClient
 
 	err := azUtil.DeleteBlob(testAccountName, "vhd", "blob")
-	assert.True(t, strings.Contains(err.Error(), storageAccountClientErrMsg))
+	assert.Error(t, err)
 }
 
 func TestNormalizeMasterResourcesForScaling(t *testing.T) {
