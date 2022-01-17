@@ -38,7 +38,7 @@ type ScaleDownNodeProcessor interface {
 // ScaleDownSetProcessor contains a method to select nodes for deletion
 type ScaleDownSetProcessor interface {
 	// GetNodesToRemove selects up to maxCount nodes for deletion
-	GetNodesToRemove(candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved
+	GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved
 	// CleanUp is called at CA termination
 	CleanUp()
 }
