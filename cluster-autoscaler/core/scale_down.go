@@ -923,7 +923,7 @@ func (sd *ScaleDown) TryToScaleDown(
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
 	emptyNodesToRemove := sd.getEmptyNodesToRemove(candidateNames, scaleDownResourcesLeft, currentTime)
-	emptyNodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(emptyNodesToRemove, sd.context.MaxEmptyBulkDelete)
+	emptyNodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, emptyNodesToRemove, sd.context.MaxEmptyBulkDelete)
 	if len(emptyNodesToRemove) > 0 {
 		nodeDeletionStart := time.Now()
 		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodesToRemove, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
@@ -965,7 +965,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		scaleDownStatus.Result = status.ScaleDownError
 		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
 	}
-	nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(nodesToRemove, 1)
+	nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, nodesToRemove, 1)
 	if len(nodesToRemove) == 0 {
 		klog.V(1).Infof("No node to remove")
 		scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
