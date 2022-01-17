@@ -57,6 +57,7 @@ this document:
   * [My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?](#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
 * [Developer](#developer)
+  * [What go version should be used to compile CA?](#what-go-version-should-be-used-to-compile-ca)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
   * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
@@ -919,6 +920,21 @@ From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group af
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
 
 # Developer:
+
+### What go version should be used to compile CA?
+
+Cluster Autoscaler generally tries to use the same go version that is used by embedded Kubernetes code.
+For example CA 1.21 will use the same go version as Kubernetes 1.21. Only the officially used go
+version is supported and CA may not compile using other versions.
+
+The source of truth for the used go version is builder/Dockerfile.
+
+Warning: do NOT rely on go version specified in go.mod file. It is only meant to control go mod
+behavior and is not indicative of the go version actually used by CA. In particular go 1.17 changes go mod
+behavior in a way that is incompatible with existing Kubernetes tooling.
+Following [Kubernetes example](https://github.com/kubernetes/kubernetes/pull/105563#issuecomment-960915506)
+we have decided to pin version specified in go.mod to 1.16 for now (even though both Kubernetes
+and CA no longer compile using go 1.16).
 
 ### How can I run e2e tests?
 
