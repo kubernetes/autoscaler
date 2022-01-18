@@ -196,7 +196,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
 		controlledPodsCounter.Add(vpaSize, vpaSize)
-		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
+		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods, vpa)
 		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 		evictablePodsCounter.Add(vpaSize, len(podsForUpdate))
 
