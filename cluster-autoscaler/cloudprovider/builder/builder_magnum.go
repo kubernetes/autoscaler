@@ -1,3 +1,4 @@
+//go:build magnum
 // +build magnum
 
 /*
