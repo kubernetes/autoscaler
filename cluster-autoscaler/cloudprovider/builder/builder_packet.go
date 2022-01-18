@@ -1,3 +1,4 @@
+//go:build packet
 // +build packet
 
 /*
