@@ -62,8 +62,8 @@ type VerticalPodAutoscaler struct {
 	Status VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
-// VerticalPodAutoscalerRecommenderSelector points to a specific Vertical Pod Autoscaler recommender
-// in the future it might pass parameters to the recommender.
+// VerticalPodAutoscalerRecommenderSelector points to a specific Vertical Pod Autoscaler recommender.
+// In the future it might pass parameters to the recommender.
 type VerticalPodAutoscalerRecommenderSelector struct {
 	// Name of the recommender responsible for generating recommendation for this object.
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
@@ -111,6 +111,12 @@ type PodUpdatePolicy struct {
 	// The default is 'Auto'.
 	// +optional
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
+
+	// Minimal number of replicas which need to be alive for Updater to attempt
+	// pod eviction (pending other checks like PDB). Only positive values are
+	// allowed. Overrides global '--min-replicas' flag.
+	// +optional
+	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resoures.
