@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
@@ -25,7 +26,7 @@ type PostFilteringScaleDownNodeProcessor struct {
 }
 
 // GetNodesToRemove selects up to maxCount nodes for deletion, by selecting a first maxCount candidates
-func (n *PostFilteringScaleDownNodeProcessor) GetNodesToRemove(candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
+func (n *PostFilteringScaleDownNodeProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
 	end := len(candidates)
 	if len(candidates) > maxCount {
 		end = maxCount
