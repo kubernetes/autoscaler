@@ -158,6 +158,7 @@ var (
 		"m1-ultramem-160":  25.2156,
 		"m2-ultramem-208":  42.186,
 		"m2-ultramem-416":  84.371,
+		"m2-megamem-416":   50.372,
 		"n1-highcpu-2":     0.0709,
 		"n1-highcpu-4":     0.1418,
 		"n1-highcpu-8":     0.2836,
