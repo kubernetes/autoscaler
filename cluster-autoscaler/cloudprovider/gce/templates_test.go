@@ -1002,7 +1002,7 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 				"kube_reserved=cpu=1000m,memory=300000Mi;" +
 				"os_distribution=cos_containerd\n" +
 				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
-			expectedOperatingSystemDistribution: OperatingSystemDistributionCOSContainerd,
+			expectedOperatingSystemDistribution: OperatingSystemDistributionCOS,
 		},
 		{
 			name: "ubuntu containerd",
@@ -1013,7 +1013,7 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 				"kube_reserved=cpu=1000m,memory=300000Mi;" +
 				"os_distribution=ubuntu_containerd\n" +
 				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
-			expectedOperatingSystemDistribution: OperatingSystemDistributionUbuntuContainerd,
+			expectedOperatingSystemDistribution: OperatingSystemDistributionUbuntu,
 		},
 		{
 			name: "ubuntu",

@@ -470,6 +470,33 @@ func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
 	}
 }
 
+// OperatingSystemImage denotes  image of the operating system used by nodes coming from node group
+type OperatingSystemImage string
+
+const (
+	// OperatingSystemImageUnknown is used if operating distribution system is unknown
+	OperatingSystemImageUnknown OperatingSystemImage = ""
+	// OperatingSystemImageUbuntu is used if operating distribution system is Ubuntu
+	OperatingSystemImageUbuntu OperatingSystemImage = "ubuntu"
+	// OperatingSystemImageWindowsLTSC is used if operating distribution system is Windows LTSC
+	OperatingSystemImageWindowsLTSC OperatingSystemImage = "windows_ltsc"
+	// OperatingSystemImageWindowsSAC is used if operating distribution system is Windows SAC
+	OperatingSystemImageWindowsSAC OperatingSystemImage = "windows_sac"
+	// OperatingSystemImageCOS is used if operating distribution system is COS
+	OperatingSystemImageCOS OperatingSystemImage = "cos"
+	// OperatingSystemImageCOSContainerd is used if operating distribution system is COS Containerd
+	OperatingSystemImageCOSContainerd OperatingSystemImage = "cos_containerd"
+	// OperatingSystemImageUbuntuContainerd is used if operating distribution system is Ubuntu Containerd
+	OperatingSystemImageUbuntuContainerd OperatingSystemImage = "ubuntu_containerd"
+	// OperatingSystemImageWindowsLTSCContainerd is used if operating distribution system is Windows LTSC Containerd
+	OperatingSystemImageWindowsLTSCContainerd OperatingSystemImage = "windows_ltsc_containerd"
+	// OperatingSystemImageWindowsSACContainerd is used if operating distribution system is Windows SAC Containerd
+	OperatingSystemImageWindowsSACContainerd OperatingSystemImage = "windows_sac_containerd"
+
+	// OperatingSystemImageDefault defines which operating system will be assumed as default.
+	OperatingSystemImageDefault = OperatingSystemImageCOSContainerd
+)
+
 // OperatingSystemDistribution denotes  distribution of the operating system used by nodes coming from node group
 type OperatingSystemDistribution string
 
@@ -484,14 +511,25 @@ const (
 	OperatingSystemDistributionWindowsSAC OperatingSystemDistribution = "windows_sac"
 	// OperatingSystemDistributionCOS is used if operating distribution system is COS
 	OperatingSystemDistributionCOS OperatingSystemDistribution = "cos"
-	// OperatingSystemDistributionCOSContainerd is used if operating distribution system is COS Containerd
-	OperatingSystemDistributionCOSContainerd OperatingSystemDistribution = "cos_containerd"
-	// OperatingSystemDistributionUbuntuContainerd is used if operating distribution system is Ubuntu Containerd
-	OperatingSystemDistributionUbuntuContainerd OperatingSystemDistribution = "ubuntu_containerd"
 
 	// OperatingSystemDistributionDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
 	OperatingSystemDistributionDefault = OperatingSystemDistributionCOS
 )
+
+func extractOperatingSystemDistributionFromImageType(imageType string) OperatingSystemDistribution {
+	switch imageType {
+	case string(OperatingSystemImageUbuntu), string(OperatingSystemImageUbuntuContainerd):
+		return OperatingSystemDistributionUbuntu
+	case string(OperatingSystemImageWindowsLTSC), string(OperatingSystemImageWindowsLTSCContainerd):
+		return OperatingSystemDistributionWindowsLTSC
+	case string(OperatingSystemImageWindowsSAC), string(OperatingSystemImageWindowsSACContainerd):
+		return OperatingSystemDistributionWindowsSAC
+	case string(OperatingSystemImageCOS), string(OperatingSystemImageCOSContainerd):
+		return OperatingSystemDistributionCOS
+	default:
+		return OperatingSystemDistributionUnknown
+	}
+}
 
 func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSystemDistribution {
 	osDistributionValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os_distribution")
@@ -515,10 +553,14 @@ func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSyst
 		return OperatingSystemDistributionWindowsSAC
 	case string(OperatingSystemDistributionCOS):
 		return OperatingSystemDistributionCOS
-	case string(OperatingSystemDistributionCOSContainerd):
-		return OperatingSystemDistributionCOSContainerd
-	case string(OperatingSystemDistributionUbuntuContainerd):
-		return OperatingSystemDistributionUbuntuContainerd
+	// Deprecated
+	case "cos_containerd":
+		klog.Warning("cos_containerd os distribution is deprecated")
+		return OperatingSystemDistributionCOS
+	// Deprecated
+	case "ubuntu_containerd":
+		klog.Warning("ubuntu_containerd os distribution is deprecated")
+		return OperatingSystemDistributionUbuntu
 	default:
 		klog.Errorf("unexpected os-distribution=%v passed via AUTOSCALER_ENV_VARS", osDistributionValue)
 		return OperatingSystemDistributionUnknown
