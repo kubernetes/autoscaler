@@ -864,6 +864,24 @@ var AWSInstanceTypes = map[string]*AWSInstanceType{
 		GPU:          resource.MustParse("0"),
 		Memory:       resource.MustParse("999424Mi"),
 	},
+	"x2idn.16xlarge": {
+		InstanceType: "x2idn.16xlarge",
+		VCPU:         resource.MustParse("64"),
+		GPU:          resource.MustParse("0"),
+		Memory:       resource.MustParse("1048576Mi"),
+	},
+	"x2idn.32xlarge": {
+		InstanceType: "x2idn.32xlarge",
+		VCPU:         resource.MustParse("128"),
+		GPU:          resource.MustParse("0"),
+		Memory:       resource.MustParse("2097152Mi"),
+	},
+	"x2iedn.32xlarge": {
+		InstanceType: "x2iedn.32xlarge",
+		VCPU:         resource.MustParse("128"),
+		GPU:          resource.MustParse("0"),
+		Memory:       resource.MustParse("4194304Mi"),
+	},
 	"m5n.2xlarge": {
 		InstanceType: "m5n.2xlarge",
 		VCPU:         resource.MustParse("8"),
