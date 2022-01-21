@@ -18,6 +18,7 @@ package nodeinfosprovider
 
 import (
 	"reflect"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -32,6 +33,8 @@ import (
 
 	klog "k8s.io/klog/v2"
 )
+
+const stabilizationDelay = 1 * time.Minute
 
 // MixedTemplateNodeInfoProvider build nodeInfos from the cluster's nodes and node groups.
 type MixedTemplateNodeInfoProvider struct {
@@ -51,7 +54,7 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, now time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 	result := make(map[string]*schedulerframework.NodeInfo)
@@ -90,7 +93,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 	for _, node := range nodes {
 		// Broken nodes might have some stuff missing. Skipping.
-		if !kube_util.IsNodeReadyAndSchedulable(node) {
+		if !isNodeGoodTemplateCandidate(node, now) {
 			continue
 		}
 		added, id, typedErr := processNode(node)
@@ -144,19 +147,20 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 	// Last resort - unready/unschedulable nodes.
 	for _, node := range nodes {
 		// Allowing broken nodes
-		if !kube_util.IsNodeReadyAndSchedulable(node) {
-			added, _, typedErr := processNode(node)
-			if typedErr != nil {
-				return map[string]*schedulerframework.NodeInfo{}, typedErr
-			}
-			nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
-			if err != nil {
-				return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(
-					errors.CloudProviderError, err)
-			}
-			if added {
-				klog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
-			}
+		if isNodeGoodTemplateCandidate(node, now) {
+			continue
+		}
+		added, _, typedErr := processNode(node)
+		if typedErr != nil {
+			return map[string]*schedulerframework.NodeInfo{}, typedErr
+		}
+		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(
+				errors.CloudProviderError, err)
+		}
+		if added {
+			klog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
 		}
 	}
 
@@ -173,4 +177,11 @@ func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod,
 		podsForNodes[p.Spec.NodeName] = append(podsForNodes[p.Spec.NodeName], p)
 	}
 	return podsForNodes, nil
+}
+
+func isNodeGoodTemplateCandidate(node *apiv1.Node, now time.Time) bool {
+	ready, lastTransitionTime, _ := kube_util.GetReadinessState(node)
+	stable := lastTransitionTime.Add(stabilizationDelay).Before(now)
+	schedulable := !node.Spec.Unschedulable
+	return ready && stable && schedulable
 }
