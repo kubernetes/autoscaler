@@ -36,12 +36,6 @@ import (
 	"k8s.io/legacy-cloud-providers/azure/retry"
 )
 
-const (
-	testAccountName            = "account"
-	storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
-		"header is formed correctly including the signature"
-)
-
 func GetTestAzureUtil(t *testing.T) *AzUtil {
 	return &AzUtil{manager: newTestAzureManager(t)}
 }
