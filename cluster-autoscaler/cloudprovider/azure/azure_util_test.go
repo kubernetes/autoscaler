@@ -36,12 +36,6 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
-const (
-	testAccountName            = "account"
-	storageAccountClientErrMsg = "Server failed to authenticate the request. Make sure the value of Authorization " +
-		"header is formed correctly including the signature"
-)
-
 func GetTestAzureUtil(t *testing.T) *AzUtil {
 	return &AzUtil{manager: newTestAzureManager(t)}
 }
@@ -303,26 +297,6 @@ func TestIsAzureRequestsThrottled(t *testing.T) {
 		real := isAzureRequestsThrottled(test.rerr)
 		assert.Equal(t, test.expected, real, test.desc)
 	}
-}
-
-func TestDeleteBlob(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	azUtil := GetTestAzureUtil(t)
-	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
-	mockSAClient.EXPECT().ListKeys(
-		gomock.Any(),
-		azUtil.manager.config.ResourceGroup,
-		testAccountName).Return(storage.AccountListKeysResult{
-		Keys: &[]storage.AccountKey{
-			{Value: to.StringPtr("dmFsdWUK")},
-		},
-	}, nil)
-	azUtil.manager.azClient.storageAccountsClient = mockSAClient
-
-	err := azUtil.DeleteBlob(testAccountName, "vhd", "blob")
-	assert.True(t, strings.Contains(err.Error(), storageAccountClientErrMsg))
 }
 
 func TestDeleteVirtualMachine(t *testing.T) {
