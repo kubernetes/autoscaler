@@ -80,14 +80,20 @@ func (r unstructuredScalableResource) ProviderIDs() ([]string, error) {
 }
 
 func (r unstructuredScalableResource) Replicas() (int, error) {
-	replicas, found, err := unstructured.NestedInt64(r.unstructured.UnstructuredContent(), "spec", "replicas")
+	gvr, err := r.GroupVersionResource()
 	if err != nil {
-		return 0, errors.Wrap(err, "error getting replica count")
+		return 0, err
 	}
-	if !found {
-		replicas = 0
+
+	s, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(context.TODO(), gvr.GroupResource(), r.Name(), metav1.GetOptions{})
+	if err != nil {
+		return 0, err
 	}
-	return int(replicas), nil
+
+	if s == nil {
+		return 0, fmt.Errorf("failed to fetch resource scale: unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
+	}
+	return int(s.Spec.Replicas), nil
 }
 
 func (r unstructuredScalableResource) SetSize(nreplicas int) error {
