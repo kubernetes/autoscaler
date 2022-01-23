@@ -70,6 +70,8 @@ const (
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
+	// TencentcloudProviderName gets the provider name of tencentcloud
+	TencentcloudProviderName = "tencentcloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
