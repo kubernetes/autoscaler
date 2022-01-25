@@ -106,9 +106,9 @@ Auto-Discovery Setup is the preferred method to configure Cluster Autoscaler.
 
 To enable this, provide the `--node-group-auto-discovery` flag as an argument
 whose value is a list of tag keys that should be looked for. For example,
-`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>`
-will find the ASGs where those tag keys _exist_. It does not matter what value
-the tags have.
+`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>,my-custom-tag=custom-value`
+will find the ASGs that have the given tags. Optionally, a value can be provided
+for each tag as well.
 
 Example deployment:
 
