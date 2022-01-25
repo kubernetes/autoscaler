@@ -389,6 +389,8 @@ kind: Deployment
 metadata:
   name: overprovisioning
   namespace: default
+  labels:
+    run: overprovisioning
 spec:
   replicas: 1
   selector:
@@ -425,7 +427,7 @@ spec:
         app: overprovisioning-autoscaler
     spec:
       containers:
-        - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.2
+        - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.7.1
           name: autoscaler
           command:
             - ./cluster-proportional-autoscaler
