@@ -112,7 +112,11 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 	}
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmssType.VCPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
+	// isNPSeries returns if a SKU is an NP-series SKU
+	// SKU API reports GPUs for NP-series but it's actually FPGAs
+	if !isNPSeries(*template.Sku.Name) {
+		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
+	}
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmssType.MemoryMb*1024*1024, resource.DecimalSI)
 
 	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
@@ -254,4 +258,10 @@ func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string
 	}
 
 	return resources
+}
+
+// isNPSeries returns if a SKU is an NP-series SKU
+// SKU API reports GPUs for NP-series but it's actually FPGAs
+func isNPSeries(name string) bool {
+	return strings.HasPrefix(strings.ToLower(name), "standard_np")
 }
