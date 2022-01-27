@@ -74,7 +74,7 @@ func TestBasicSnapshotRequest(t *testing.T) {
 	for !snapshotter.IsDataCollectionAllowed() {
 		snapshotter.StartDataCollection()
 	}
-	snapshotter.SetNodeGroupInfo(nodeGroups)
+	snapshotter.SetClusterNodes(nodeGroups)
 	snapshotter.Flush()
 
 	wg.Wait()
@@ -152,7 +152,7 @@ func TestRejectParallelRequest(t *testing.T) {
 	snapshotter.ResponseHandler(w1, req1)
 	assert.Equal(t, http.StatusTooManyRequests, w1.Code)
 
-	snapshotter.SetNodeGroupInfo(nil)
+	snapshotter.SetClusterNodes(nil)
 	snapshotter.Flush()
 	wg.Wait()
 

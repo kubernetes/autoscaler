@@ -25,20 +25,23 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// NodeInfo captures a single entity of nodeInfo. i.e. Node specs and all the pods on that node.
-type NodeInfo struct {
-	Node *v1.Node             `json:"Node"`
-	Pods []*framework.PodInfo `json:"Pods"`
+// ClusterNode captures a single entity of nodeInfo. i.e. Node specs and all the pods on that node.
+type ClusterNode struct {
+	Node *v1.Node  `json:"Node"`
+	Pods []*v1.Pod `json:"Pods"`
 }
 
 // DebuggingSnapshot is the interface used to define any debugging snapshot
 // implementation, incl. any custom impl. to be used by DebuggingSnapshotter
 type DebuggingSnapshot interface {
-	// SetNodeGroupInfo is a setter to capture all the NodeInfo
-	SetNodeGroupInfo([]*framework.NodeInfo)
-	// SetUnscheduledPodsCanBeScheduled is a setter for all pods which are unscheduled
+	// SetClusterNodes is a setter to capture all the ClusterNode
+	SetClusterNodes([]*framework.NodeInfo)
+	// SetUnscheduledPodsCanBeScheduled is a setter for all pods which are unscheduled,
 	// but they can be scheduled. i.e. pods which aren't triggering scale-up
 	SetUnscheduledPodsCanBeScheduled([]*v1.Pod)
+	// SetTemplateNodes is a setter for all the TemplateNodes present in the cluster
+	// incl. templates for which there are no nodes
+	SetTemplateNodes(map[string]*framework.NodeInfo)
 	// SetErrorMessage sets the error message in the snapshot
 	SetErrorMessage(string)
 	// SetEndTimestamp sets the timestamp in the snapshot,
@@ -58,11 +61,12 @@ type DebuggingSnapshot interface {
 // Please add all new output fields in this struct. This is to make the data
 // encoding/decoding easier as the single object going into the decoder
 type DebuggingSnapshotImpl struct {
-	NodeInfo                      []*NodeInfo `json:"NodeList"`
-	UnscheduledPodsCanBeScheduled []*v1.Pod   `json:"UnscheduledPodsCanBeScheduled"`
-	Error                         string      `json:"Error,omitempty"`
-	StartTimestamp                time.Time   `json:"StartTimestamp"`
-	EndTimestamp                  time.Time   `json:"EndTimestamp"`
+	NodeList                      []*ClusterNode          `json:"NodeList"`
+	UnscheduledPodsCanBeScheduled []*v1.Pod               `json:"UnscheduledPodsCanBeScheduled"`
+	Error                         string                  `json:"Error,omitempty"`
+	StartTimestamp                time.Time               `json:"StartTimestamp"`
+	EndTimestamp                  time.Time               `json:"EndTimestamp"`
+	TemplateNodes                 map[string]*ClusterNode `json:"TemplateNodes"`
 }
 
 // SetUnscheduledPodsCanBeScheduled is the setter for UnscheduledPodsCanBeScheduled
@@ -73,31 +77,48 @@ func (s *DebuggingSnapshotImpl) SetUnscheduledPodsCanBeScheduled(podList []*v1.P
 
 	s.UnscheduledPodsCanBeScheduled = nil
 	for _, pod := range podList {
-		s.UnscheduledPodsCanBeScheduled = append(s.UnscheduledPodsCanBeScheduled, pod)
+		s.UnscheduledPodsCanBeScheduled = append(s.UnscheduledPodsCanBeScheduled, pod.DeepCopy())
 	}
 }
 
-// SetNodeGroupInfo is the setter for Node Group Info
+// SetTemplateNodes is the setter for TemplateNodes
+func (s *DebuggingSnapshotImpl) SetTemplateNodes(templates map[string]*framework.NodeInfo) {
+	if templates == nil {
+		return
+	}
+
+	s.TemplateNodes = make(map[string]*ClusterNode)
+	for ng, template := range templates {
+		s.TemplateNodes[ng] = GetClusterNodeCopy(template)
+	}
+}
+
+// GetClusterNodeCopy is an util func to copy template node and filter values
+func GetClusterNodeCopy(template *framework.NodeInfo) *ClusterNode {
+	cNode := &ClusterNode{}
+	cNode.Node = template.Node().DeepCopy()
+	var pods []*v1.Pod
+	for _, p := range template.Pods {
+		pods = append(pods, p.Pod.DeepCopy())
+	}
+	cNode.Pods = pods
+	return cNode
+}
+
+// SetClusterNodes is the setter for Node Group Info
 // All filtering/prettifying of data should be done here.
-func (s *DebuggingSnapshotImpl) SetNodeGroupInfo(nodeInfos []*framework.NodeInfo) {
+func (s *DebuggingSnapshotImpl) SetClusterNodes(nodeInfos []*framework.NodeInfo) {
 	if nodeInfos == nil {
 		return
 	}
 
-	var NodeInfoList []*NodeInfo
+	var NodeInfoList []*ClusterNode
 
 	for _, n := range nodeInfos {
-		nClone := n.Clone()
-		node := nClone.Node()
-
-		nodeInfo := &NodeInfo{
-			Node: node,
-			Pods: nClone.Pods,
-		}
-
-		NodeInfoList = append(NodeInfoList, nodeInfo)
+		clusterNode := GetClusterNodeCopy(n)
+		NodeInfoList = append(NodeInfoList, clusterNode)
 	}
-	s.NodeInfo = NodeInfoList
+	s.NodeList = NodeInfoList
 }
 
 // SetEndTimestamp is the setter for end timestamp
