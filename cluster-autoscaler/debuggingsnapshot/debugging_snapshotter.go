@@ -172,6 +172,13 @@ func (d *DebuggingSnapshotterImpl) ResponseHandler(w http.ResponseWriter, r *htt
 func (d *DebuggingSnapshotterImpl) IsDataCollectionAllowed() bool {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
+	return d.IsDataCollectionAllowedNoLock()
+}
+
+// IsDataCollectionAllowedNoLock encapsulated the check to know if data collection is currently active
+// The need for NoLock implementation is for cases when the caller funcs have procured the lock
+// for a single transactional execution
+func (d *DebuggingSnapshotterImpl) IsDataCollectionAllowedNoLock() bool {
 	return *d.State == DATA_COLLECTED || *d.State == START_DATA_COLLECTION
 }
 
@@ -211,11 +218,11 @@ func (d *DebuggingSnapshotterImpl) Flush() {
 // SetClusterNodes is the setter for Node Group Info
 // All filtering/prettifying of data should be done here.
 func (d *DebuggingSnapshotterImpl) SetClusterNodes(nodeInfos []*framework.NodeInfo) {
-	if !d.IsDataCollectionAllowed() {
-		return
-	}
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
+	if !d.IsDataCollectionAllowedNoLock() {
+		return
+	}
 	klog.V(4).Infof("NodeGroupInfo is being set for the debugging snapshot")
 	d.DebuggingSnapshot.SetClusterNodes(nodeInfos)
 	*d.State = DATA_COLLECTED
@@ -223,11 +230,11 @@ func (d *DebuggingSnapshotterImpl) SetClusterNodes(nodeInfos []*framework.NodeIn
 
 // SetUnscheduledPodsCanBeScheduled is the setter for UnscheduledPodsCanBeScheduled
 func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(podList []*v1.Pod) {
-	if !d.IsDataCollectionAllowed() {
-		return
-	}
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
+	if !d.IsDataCollectionAllowedNoLock() {
+		return
+	}
 	klog.V(4).Infof("UnscheduledPodsCanBeScheduled is being set for the debugging snapshot")
 	d.DebuggingSnapshot.SetUnscheduledPodsCanBeScheduled(podList)
 	*d.State = DATA_COLLECTED
@@ -235,12 +242,12 @@ func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(podList []*v
 
 // SetTemplateNodes is the setter for TemplateNodes
 func (d *DebuggingSnapshotterImpl) SetTemplateNodes(templates map[string]*framework.NodeInfo) {
-	if !d.IsDataCollectionAllowed() {
+	d.Mutex.Lock()
+	defer d.Mutex.Unlock()
+	if !d.IsDataCollectionAllowedNoLock() {
 		return
 	}
 	klog.V(4).Infof("TemplateNodes is being set for the debugging snapshot")
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
 	d.DebuggingSnapshot.SetTemplateNodes(templates)
 }
 
