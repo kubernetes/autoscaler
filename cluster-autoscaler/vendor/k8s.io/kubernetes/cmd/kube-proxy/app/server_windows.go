@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 /*
@@ -23,7 +24,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"net"
 	goruntime "runtime"
 
 	// Enable pprof HTTP handlers.
@@ -45,6 +45,7 @@ import (
 	utilnetsh "k8s.io/kubernetes/pkg/util/netsh"
 	utilnode "k8s.io/kubernetes/pkg/util/node"
 	"k8s.io/utils/exec"
+	netutils "k8s.io/utils/net"
 )
 
 // NewProxyServer returns a new ProxyServer.
@@ -142,13 +143,14 @@ func newProxyServer(config *proxyconfigapi.KubeProxyConfiguration, cleanupAndExi
 		}
 	} else {
 		klog.V(0).InfoS("Using userspace Proxier.")
+		klog.V(0).InfoS("The userspace proxier is now deprecated and will be removed in a future release, please use 'kernelspace' instead")
 		execer := exec.New()
 		var netshInterface utilnetsh.Interface
 		netshInterface = utilnetsh.New(execer)
 
 		proxier, err = winuserspace.NewProxier(
 			winuserspace.NewLoadBalancerRR(),
-			net.ParseIP(config.BindAddress),
+			netutils.ParseIPSloppy(config.BindAddress),
 			netshInterface,
 			*utilnet.ParsePortRangeOrDie(config.PortRange),
 			// TODO @pires replace below with default values, if applicable
