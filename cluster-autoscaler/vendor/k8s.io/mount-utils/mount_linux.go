@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 /*
@@ -436,6 +437,11 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 			args = []string{
 				"-F",  // Force flag
 				"-m0", // Zero blocks reserved for super-user
+				source,
+			}
+		} else if fstype == "xfs" {
+			args = []string{
+				"-f", // force flag
 				source,
 			}
 		}
