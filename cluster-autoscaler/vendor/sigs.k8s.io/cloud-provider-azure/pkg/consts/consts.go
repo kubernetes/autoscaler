@@ -83,6 +83,8 @@ const (
 
 	// NodeLabelRole specifies the role of a node
 	NodeLabelRole = "kubernetes.io/role"
+	// NodeLabelHostName specifies the host name of a node
+	NodeLabelHostName = "kubernetes.io/hostname"
 	// MasterNodeRoleLabel specifies is the master node label for a node
 	MasterNodeRoleLabel = "node-role.kubernetes.io/master"
 	// ControlPlaneNodeRoleLabel specifies is the control-plane node label for a node
@@ -93,6 +95,8 @@ const (
 
 	// StorageAccountNameMaxLength is the max length of a storage name
 	StorageAccountNameMaxLength = 24
+
+	CannotFindDiskLUN = "cannot find Lun"
 
 	// DefaultStorageAccountType is the default storage account type
 	DefaultStorageAccountType = string(storage.SkuNameStandardLRS)
@@ -271,11 +275,14 @@ const (
 	ServiceAnnotationAdditionalPublicIPs = "service.beta.kubernetes.io/azure-additional-public-ips"
 
 	// ServiceTagKey is the service key applied for public IP tags.
-	ServiceTagKey = "service"
+	ServiceTagKey       = "k8s-azure-service"
+	LegacyServiceTagKey = "service"
 	// ClusterNameKey is the cluster name key applied for public IP tags.
-	ClusterNameKey = "kubernetes-cluster-name"
+	ClusterNameKey       = "k8s-azure-cluster-name"
+	LegacyClusterNameKey = "kubernetes-cluster-name"
 	// ServiceUsingDNSKey is the service name consuming the DNS label on the public IP
-	ServiceUsingDNSKey = "kubernetes-dns-label-service"
+	ServiceUsingDNSKey       = "k8s-azure-dns-label-service"
+	LegacyServiceUsingDNSKey = "kubernetes-dns-label-service"
 
 	// DefaultLoadBalancerSourceRanges is the default value of the load balancer source ranges
 	DefaultLoadBalancerSourceRanges = "0.0.0.0/0"
@@ -302,6 +309,14 @@ const (
 	FrontendIPConfigNameMaxLength = 80
 	// LoadBalancerRuleNameMaxLength is the max length of the load balancing rule
 	LoadBalancerRuleNameMaxLength = 80
+
+	// LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration is the lb backend pool config type node IP configuration
+	LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration = "nodeIPConfiguration"
+	// LoadBalancerBackendPoolConfigurationTypeNodeIP is the lb backend pool config type node ip
+	LoadBalancerBackendPoolConfigurationTypeNodeIP = "nodeIP"
+	// LoadBalancerBackendPoolConfigurationTypePODIP is the lb backend pool config type pod ip
+	// TODO (nilo19): support pod IP in the future
+	LoadBalancerBackendPoolConfigurationTypePODIP = "podIP"
 )
 
 // error messages
@@ -355,3 +370,6 @@ const (
 
 // RateLimited error string
 const RateLimited = "rate limited"
+
+// CreatedByTag tag key for CSI drivers
+const CreatedByTag = "k8s-azure-created-by"

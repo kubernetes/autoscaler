@@ -22,11 +22,13 @@ import (
 	"net/http"
 	"runtime"
 	"sync/atomic"
+	"time"
 
-	flowcontrol "k8s.io/api/flowcontrol/v1beta1"
+	flowcontrol "k8s.io/api/flowcontrol/v1beta2"
 	apitypes "k8s.io/apimachinery/pkg/types"
 	epmetrics "k8s.io/apiserver/pkg/endpoints/metrics"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
+	"k8s.io/apiserver/pkg/server/httplog"
 	utilflowcontrol "k8s.io/apiserver/pkg/util/flowcontrol"
 	fcmetrics "k8s.io/apiserver/pkg/util/flowcontrol/metrics"
 	flowcontrolrequest "k8s.io/apiserver/pkg/util/flowcontrol/request"
@@ -54,6 +56,15 @@ var atomicMutatingWaiting, atomicReadOnlyWaiting int32
 
 // newInitializationSignal is defined for testing purposes.
 var newInitializationSignal = utilflowcontrol.NewInitializationSignal
+
+func truncateLogField(s string) string {
+	const maxFieldLogLength = 64
+
+	if len(s) > maxFieldLogLength {
+		s = s[0:maxFieldLogLength]
+	}
+	return s
+}
 
 // WithPriorityAndFairness limits the number of in-flight
 // requests in a fine-grained way.
@@ -90,12 +101,17 @@ func WithPriorityAndFairness(
 		}
 
 		var classification *PriorityAndFairnessClassification
-		note := func(fs *flowcontrol.FlowSchema, pl *flowcontrol.PriorityLevelConfiguration) {
+		estimateWork := func(fs *flowcontrol.FlowSchema, pl *flowcontrol.PriorityLevelConfiguration, flowDistinguisher string) flowcontrolrequest.WorkEstimate {
 			classification = &PriorityAndFairnessClassification{
 				FlowSchemaName:    fs.Name,
 				FlowSchemaUID:     fs.UID,
 				PriorityLevelName: pl.Name,
 				PriorityLevelUID:  pl.UID}
+
+			httplog.AddKeyValue(ctx, "apf_pl", truncateLogField(pl.Name))
+			httplog.AddKeyValue(ctx, "apf_fs", truncateLogField(fs.Name))
+			httplog.AddKeyValue(ctx, "apf_fd", truncateLogField(flowDistinguisher))
+			return workEstimator(r, fs.Name, pl.Name)
 		}
 
 		var served bool
@@ -122,13 +138,9 @@ func WithPriorityAndFairness(
 			}
 		}
 
-		// find the estimated amount of work of the request
-		// TODO: Estimate cost should also take fcIfc.GetWatchCount(requestInfo) as a parameter.
-		workEstimate := workEstimator.EstimateWork(r)
 		digest := utilflowcontrol.RequestDigest{
-			RequestInfo:  requestInfo,
-			User:         user,
-			WorkEstimate: workEstimate,
+			RequestInfo: requestInfo,
+			User:        user,
 		}
 
 		if isWatchRequest {
@@ -162,12 +174,16 @@ func WithPriorityAndFairness(
 			}()
 
 			execute := func() {
+				startedAt := time.Now()
+				defer func() {
+					httplog.AddKeyValue(ctx, "apf_init_latency", time.Since(startedAt))
+				}()
 				noteExecutingDelta(1)
 				defer noteExecutingDelta(-1)
 				served = true
 				setResponseHeaders(classification, w)
 
-				forgetWatch = fcIfc.RegisterWatch(requestInfo)
+				forgetWatch = fcIfc.RegisterWatch(r)
 
 				// Notify the main thread that we're ready to start the watch.
 				close(shouldStartWatchCh)
@@ -219,7 +235,7 @@ func WithPriorityAndFairness(
 				// Note that Handle will return irrespective of whether the request
 				// executes or is rejected. In the latter case, the function will return
 				// without calling the passed `execute` function.
-				fcIfc.Handle(handleCtx, digest, note, queueNote, execute)
+				fcIfc.Handle(handleCtx, digest, estimateWork, queueNote, execute)
 			}()
 
 			select {
@@ -250,7 +266,7 @@ func WithPriorityAndFairness(
 				handler.ServeHTTP(w, r)
 			}
 
-			fcIfc.Handle(ctx, digest, note, queueNote, execute)
+			fcIfc.Handle(ctx, digest, estimateWork, queueNote, execute)
 		}
 
 		if !served {
