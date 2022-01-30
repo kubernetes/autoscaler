@@ -1,0 +1,371 @@
+/*
+Copyright 2022 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+syntax = "proto3";
+
+package clusterautoscaler.cloudprovider.v1.externalgrpc;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/any.proto";
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "k8s.io/api/core/v1/generated.proto";
+
+option go_package = "cluster-autoscaler/cloudprovider/externalgrpc/protos";
+
+service CloudProvider {
+  // CloudProvider specific RPC functions
+
+  // NodeGroups returns all node groups configured for this cloud provider.
+  rpc NodeGroups(NodeGroupsRequest)
+    returns (NodeGroupsResponse) {}
+
+  // NodeGroupForNode returns the node group for the given node.
+  // The node group id is an empty string if the node should not
+  // be processed by cluster autoscaler.
+  rpc NodeGroupForNode(NodeGroupForNodeRequest)
+    returns (NodeGroupForNodeResponse) {}
+
+  // PricingNodePrice returns a theoretical minimum price of running a node for
+  // a given period of time on a perfectly matching machine.
+  // Implementation optional.
+  rpc PricingNodePrice(PricingNodePriceRequest)
+    returns (PricingNodePriceResponse) {}
+
+  // PricingPodPrice returns a theoretical minimum price of running a pod for a given
+  // period of time on a perfectly matching machine.
+  // Implementation optional.
+  rpc PricingPodPrice(PricingPodPriceRequest)
+    returns (PricingPodPriceResponse) {}
+
+  // GPULabel returns the label added to nodes with GPU resource.
+  rpc GPULabel(GPULabelRequest)
+    returns (GPULabelResponse) {}
+
+  // GetAvailableGPUTypes return all available GPU types cloud provider supports.
+  rpc GetAvailableGPUTypes(GetAvailableGPUTypesRequest)
+    returns (GetAvailableGPUTypesResponse) {}
+
+  // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+  rpc Cleanup(CleanupRequest)
+    returns (CleanupResponse) {}
+
+  // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+  rpc Refresh(RefreshRequest)
+    returns (RefreshResponse) {}
+
+  // NodeGroup specific RPC functions
+
+  // NodeGroupTargetSize returns the current target size of the node group. It is possible
+  // that the number of nodes in Kubernetes is different at the moment but should be equal
+  // to the size of a node group once everything stabilizes (new nodes finish startup and
+  // registration or removed nodes are deleted completely).
+  rpc NodeGroupTargetSize(NodeGroupTargetSizeRequest)
+    returns (NodeGroupTargetSizeResponse) {}
+
+  // NodeGroupIncreaseSize increases the size of the node group. To delete a node you need
+  // to explicitly name it and use NodeGroupDeleteNodes. This function should wait until
+  // node group size is updated.
+  rpc NodeGroupIncreaseSize(NodeGroupIncreaseSizeRequest)
+    returns (NodeGroupIncreaseSizeResponse) {}
+
+  // NodeGroupDeleteNodes deletes nodes from this node group (and also decreasing the size
+  // of the node group with that). Error is returned either on failure or if the given node
+  // doesn't belong to this node group. This function should wait until node group size is updated.
+  rpc NodeGroupDeleteNodes(NodeGroupDeleteNodesRequest)
+    returns (NodeGroupDeleteNodesResponse) {}
+
+  // NodeGroupDecreaseTargetSize decreases the target size of the node group. This function
+  // doesn't permit to delete any existing node and can be used only to reduce the request
+  // for new nodes that have not been yet fulfilled. Delta should be negative. It is assumed
+  // that cloud provider will not delete the existing nodes if the size when there is an option
+  // to just decrease the target.
+  rpc NodeGroupDecreaseTargetSize(NodeGroupDecreaseTargetSizeRequest)
+    returns (NodeGroupDecreaseTargetSizeResponse) {}
+
+  // NodeGroupNodes returns a list of all nodes that belong to this node group.
+  rpc NodeGroupNodes(NodeGroupNodesRequest)
+    returns (NodeGroupNodesResponse) {}
+
+  // NodeGroupTemplateNodeInfo returns a structure of an empty (as if just started) node,
+  // with all of the labels, capacity and allocatable information. This will be used in
+  // scale-up simulations to predict what would a new node look like if a node group was expanded.
+  // Implementation optional.
+  rpc NodeGroupTemplateNodeInfo(NodeGroupTemplateNodeInfoRequest)
+    returns (NodeGroupTemplateNodeInfoResponse) {}
+
+  // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+  // NodeGroup. Returning a grpc error will result in using default options.
+  // Implementation optional.
+  rpc NodeGroupGetOptions(NodeGroupAutoscalingOptionsRequest)
+    returns (NodeGroupAutoscalingOptionsResponse) {}
+}
+
+message NodeGroup {
+  // ID of the node group on the cloud provider.
+  string id = 1;
+
+  // MinSize of the node group on the cloud provider.
+  int32 minSize = 2;
+
+  // MaxSize of the node group on the cloud provider.
+  int32 maxSize = 3;
+
+  // Debug returns a string containing all information regarding this node group.
+  string debug = 4;
+}
+
+message ExternalGrpcNode{
+  // ID of the node assigned by the cloud provider in the format: <ProviderName>://<ProviderSpecificNodeID>.
+  string providerID = 1;
+
+  // Name of the node assigned by the cloud provider.
+  string name = 2;
+
+  // labels is a map of {key,value} pairs with the node's labels.
+  map<string, string> labels = 3;
+
+  // If specified, the node's annotations.
+  map<string, string> annotations = 4;
+}
+
+message NodeGroupsRequest {
+  // Intentionally empty.
+}
+
+message NodeGroupsResponse {
+  // All the node groups that the cloud provider service supports.
+  repeated NodeGroup nodeGroups = 1;
+}
+
+message NodeGroupForNodeRequest {
+  // Node for which the request is performed.
+  ExternalGrpcNode node = 1;
+}
+
+message NodeGroupForNodeResponse {
+  // Node group for the given node. nodeGroup with id = "" means no node group.
+  NodeGroup nodeGroup = 1;
+}
+
+message PricingNodePriceRequest {
+  // Node for which the request is performed.
+  ExternalGrpcNode node = 1;
+
+  // Start time for the request period.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Time startTime = 2;
+
+  // End time for the request period.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Time endTime = 3;
+}
+
+message PricingNodePriceResponse {
+  // Theoretical minimum price of running a node for a given period.
+  double price = 1;
+}
+
+message PricingPodPriceRequest {
+  // Pod for which the request is performed.
+  k8s.io.api.core.v1.Pod pod = 1;
+
+  // Start time for the request period.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Time startTime = 2;
+
+  // End time for the request period.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Time endTime = 3;
+}
+
+message PricingPodPriceResponse {
+  // Theoretical minimum price of running a pod for a given period.
+  double price = 1;
+}
+
+message GPULabelRequest {
+  // Intentionally empty.
+}
+
+message GPULabelResponse {
+  // Label added to nodes with a GPU resource.
+  string label = 1;
+}
+
+message GetAvailableGPUTypesRequest {
+  // Intentionally empty.
+}
+
+message GetAvailableGPUTypesResponse {
+  // GPU types passed in as opaque key-value pairs.
+  map<string, google.protobuf.Any> gpuTypes = 1;
+}
+
+message CleanupRequest {
+  // Intentionally empty.
+}
+
+message CleanupResponse {
+  // Intentionally empty.
+}
+
+message RefreshRequest {
+  // Intentionally empty.
+}
+
+message RefreshResponse {
+  // Intentionally empty.
+}
+
+message NodeGroupTargetSizeRequest {
+  // ID of the node group for the request.
+  string id = 1;
+}
+
+message NodeGroupTargetSizeResponse {
+  // Current target size of the node group.
+  int32 targetSize = 1;
+}
+
+message NodeGroupIncreaseSizeRequest {
+  // Number of nodes to add.
+  int32 delta = 1;
+
+  // ID of the node group for the request.
+  string id = 2;
+}
+
+message NodeGroupIncreaseSizeResponse {
+  // Intentionally empty.
+}
+
+message NodeGroupDeleteNodesRequest {
+  // List of nodes to delete.
+  repeated ExternalGrpcNode nodes = 1;
+
+  // ID of the node group for the request.
+  string id = 2;
+}
+
+message NodeGroupDeleteNodesResponse {
+  // Intentionally empty.
+ }
+
+message NodeGroupDecreaseTargetSizeRequest {
+  // Number of nodes to delete.
+  int32 delta = 1;
+
+  // ID of the node group for the request.
+  string id = 2;
+}
+
+message NodeGroupDecreaseTargetSizeResponse {
+  // Intentionally empty.
+}
+
+message NodeGroupNodesRequest {
+  // ID of the node group for the request.
+  string id = 1;
+}
+
+message NodeGroupNodesResponse {
+  // list of cloud provider instances in a node group.
+  repeated Instance instances = 1;
+}
+
+message Instance {
+  // Id of the instance.
+  string id = 1;
+
+  // Status of the node.
+  InstanceStatus status = 2;
+}
+
+// InstanceStatus represents the instance status.
+message InstanceStatus {
+  enum InstanceState {
+    // an Unspecified instanceState means the actual instance status is undefined (nil).
+    unspecified = 0;
+
+    // InstanceRunning means instance is running.
+    instanceRunning = 1;
+
+    // InstanceCreating means instance is being created.
+    instanceCreating = 2;
+
+    // InstanceDeleting means instance is being deleted.
+    instanceDeleting = 3;
+  }
+
+  // InstanceState tells if the instance is running, being created or being deleted.
+  InstanceState instanceState = 1;
+
+  // ErrorInfo provides information about the error status.
+  // If there is no error condition related to instance, then errorInfo.errorCode should be an empty string.
+  InstanceErrorInfo errorInfo = 2;
+}
+
+// InstanceErrorInfo provides information about error condition on instance.
+message InstanceErrorInfo {
+  // ErrorCode is cloud-provider specific error code for error condition.
+  // An empty string for errorCode means there is no errorInfo for the instance (nil).
+  string errorCode = 1;
+
+  // ErrorMessage is the human readable description of error condition.
+  string errorMessage = 2;
+
+  // InstanceErrorClass defines the class of error condition.
+  int32 instanceErrorClass = 3;
+}
+
+message NodeGroupTemplateNodeInfoRequest {
+  // ID of the node group for the request.
+  string id = 1;
+}
+
+message NodeGroupTemplateNodeInfoResponse {
+  // nodeInfo is the extracted data from the cloud provider, as a primitive Kubernetes Node type.
+  k8s.io.api.core.v1.Node nodeInfo = 1;
+}
+
+message NodeGroupAutoscalingOptions {
+  // ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down
+  // if cpu or memory utilization is over threshold.
+  double scaleDownUtilizationThreshold = 1;
+
+  // ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be 
+  // considered for scale down if gpu utilization is over threshold.
+  double scaleDownGpuUtilizationThreshold = 2;
+
+  // ScaleDownUnneededTime sets the duration CA expects a node to be
+  // unneeded/eligible for removal before scaling down the node.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Duration scaleDownUnneededTime = 3;
+
+  // ScaleDownUnreadyTime represents how long an unready node should be
+  // unneeded before it is eligible for scale down.
+  k8s.io.apimachinery.pkg.apis.meta.v1.Duration scaleDownUnreadyTime = 4;
+}
+
+message NodeGroupAutoscalingOptionsRequest {
+  // ID of the node group for the request.
+  string id = 1;
+
+  // default node group autoscaling options.
+  NodeGroupAutoscalingOptions defaults = 2;
+}
+
+message NodeGroupAutoscalingOptionsResponse {
+  // autoscaling options for the requested node.
+  NodeGroupAutoscalingOptions nodeGroupAutoscalingOptions = 1;
+}
+
