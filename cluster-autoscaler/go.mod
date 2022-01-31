@@ -5,8 +5,8 @@ go 1.16
 require (
 	cloud.google.com/go v0.81.0
 	github.com/Azure/azure-sdk-for-go v55.8.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.19
-	github.com/Azure/go-autorest/autorest/adal v0.9.14
+	github.com/Azure/go-autorest/autorest v0.11.22
+	github.com/Azure/go-autorest/autorest/adal v0.9.17
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -22,7 +22,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	google.golang.org/api v0.46.0
 	gopkg.in/gcfg.v1 v1.2.0
@@ -35,11 +35,11 @@ require (
 	k8s.io/component-base v0.23.0
 	k8s.io/component-helpers v0.23.0
 	k8s.io/klog/v2 v2.30.0
-	k8s.io/kubelet v0.0.0
+	k8s.io/kubelet v0.23.0
 	k8s.io/kubernetes v1.23.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b
-	sigs.k8s.io/cloud-provider-azure v1.1.3
+	sigs.k8s.io/cloud-provider-azure v1.23.2
 )
 
 replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
