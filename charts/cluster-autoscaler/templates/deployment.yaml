@@ -218,6 +218,10 @@ spec:
       serviceAccountName: {{ template "cluster-autoscaler.serviceAccountName" . }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
+    {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml .Values.topologySpreadConstraints | indent 8 }}
+    {{- end }}
       {{- if .Values.securityContext }}
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
