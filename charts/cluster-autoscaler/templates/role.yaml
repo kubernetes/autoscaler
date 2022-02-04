@@ -12,7 +12,7 @@ rules:
       - configmaps
     verbs:
       - create
-{{- if (include "cluster-autoscaler.priorityExpanderEnabled" . ) }}
+{{- if (include "cluster-autoscaler.priorityExpanderEnabled" .) }}
       - list
       - watch
 {{- end }}
@@ -22,14 +22,14 @@ rules:
       - configmaps
     resourceNames:
       - cluster-autoscaler-status
-{{- if (include "cluster-autoscaler.priorityExpanderEnabled" . ) }}
+{{- if (include "cluster-autoscaler.priorityExpanderEnabled" .) }}
       - cluster-autoscaler-priority-expander
 {{- end }}
     verbs:
       - delete
       - get
       - update
-{{- if (include "cluster-autoscaler.priorityExpanderEnabled" . ) }}
+{{- if (include "cluster-autoscaler.priorityExpanderEnabled" .) }}
       - watch
 {{- end }}
 {{- if  eq (default "" (index .Values.extraArgs "leader-elect-resource-lock")) "configmaps" }}
