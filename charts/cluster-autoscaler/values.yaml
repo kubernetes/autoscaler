@@ -120,8 +120,8 @@ containerSecurityContext: {}
 dnsPolicy: ClusterFirst
 
 ## Priorities Expander
-# expanderPriorities -- The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities.
-# If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities.
+# expanderPriorities -- The expanderPriorities is used if `extraArgs.expander` contains `priority` and expanderPriorities is also set with the priorities.
+# If `extraArgs.expander` contains `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities.
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
 
