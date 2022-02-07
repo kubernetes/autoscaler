@@ -62,7 +62,7 @@ func New(config *azclients.ClientConfig) *Client {
 	if strings.EqualFold(config.CloudName, AzureStackCloudName) && !config.DisableAzureStackCloud {
 		apiVersion = AzureStackCloudAPIVersion
 	}
-	armClient := armclient.New(authorizer, baseURI, config.UserAgent, apiVersion, config.Location, config.Backoff)
+	armClient := armclient.New(authorizer, *config, baseURI, apiVersion)
 	rateLimiterReader, rateLimiterWriter := azclients.NewRateLimiter(config.RateLimitConfig)
 
 	if azclients.RateLimitEnabled(config.RateLimitConfig) {
@@ -472,7 +472,7 @@ func (c *Client) DeleteInstances(ctx context.Context, resourceGroupName string, 
 }
 
 // DeleteInstancesAsync sends the delete request to ARM client and DOEST NOT wait on the future
-func (c *Client) DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (*azure.Future, *retry.Error) {
+func (c *Client) DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, forceDelete bool) (*azure.Future, *retry.Error) {
 	mc := metrics.NewMetricContext("vmss", "delete_instances_async", resourceGroupName, c.subscriptionID, "")
 
 	// Report errors if the client is rate limited.
@@ -495,7 +495,13 @@ func (c *Client) DeleteInstancesAsync(ctx context.Context, resourceGroupName str
 		vmScaleSetName,
 	)
 
-	response, rerr := c.armClient.PostResource(ctx, resourceID, "delete", vmInstanceIDs)
+	var queryParameters map[string]interface{}
+	if forceDelete {
+		queryParameters = map[string]interface{}{
+			"forceDeletion": true,
+		}
+	}
+	response, rerr := c.armClient.PostResource(ctx, resourceID, "delete", vmInstanceIDs, queryParameters)
 	defer c.armClient.CloseResponse(ctx, response)
 
 	if rerr != nil {
@@ -544,7 +550,7 @@ func (c *Client) DeallocateInstancesAsync(ctx context.Context, resourceGroupName
 		vmScaleSetName,
 	)
 
-	response, rerr := c.armClient.PostResource(ctx, resourceID, "deallocate", vmInstanceIDs)
+	response, rerr := c.armClient.PostResource(ctx, resourceID, "deallocate", vmInstanceIDs, map[string]interface{}{})
 	defer c.armClient.CloseResponse(ctx, response)
 
 	if rerr != nil {
@@ -593,7 +599,7 @@ func (c *Client) StartInstancesAsync(ctx context.Context, resourceGroupName stri
 		vmScaleSetName,
 	)
 
-	response, rerr := c.armClient.PostResource(ctx, resourceID, "start", vmInstanceIDs)
+	response, rerr := c.armClient.PostResource(ctx, resourceID, "start", vmInstanceIDs, map[string]interface{}{})
 	defer c.armClient.CloseResponse(ctx, response)
 
 	if rerr != nil {
@@ -626,7 +632,7 @@ func (c *Client) deleteVMSSInstances(ctx context.Context, resourceGroupName stri
 		"Microsoft.Compute/virtualMachineScaleSets",
 		vmScaleSetName,
 	)
-	response, rerr := c.armClient.PostResource(ctx, resourceID, "delete", vmInstanceIDs)
+	response, rerr := c.armClient.PostResource(ctx, resourceID, "delete", vmInstanceIDs, map[string]interface{}{})
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmss.deletevms.request", resourceID, rerr.Error())

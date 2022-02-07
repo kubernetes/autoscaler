@@ -60,6 +60,8 @@ const (
 	HuaweicloudProviderName = "huaweicloud"
 	// IonoscloudProviderName gets the provider name of ionoscloud
 	IonoscloudProviderName = "ionoscloud"
+	// OracleCloudProviderName gets the provider name of oci
+	OracleCloudProviderName = "oci"
 	// OVHcloudProviderName gets the provider name of ovhcloud
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode

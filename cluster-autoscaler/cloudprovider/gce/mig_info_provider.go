@@ -49,12 +49,13 @@ type MigInfoProvider interface {
 }
 
 type cachingMigInfoProvider struct {
-	mutex                  sync.Mutex
+	migInfoMutex           sync.Mutex
 	cache                  *GceCache
 	migLister              MigLister
 	gceClient              AutoscalingGceClient
 	projectId              string
 	concurrentGceRefreshes int
+	migInstanceMutex       sync.Mutex
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
@@ -85,6 +86,9 @@ func (c *cachingMigInfoProvider) GetMigInstances(migRef GceRef) ([]cloudprovider
 
 // GetMigForInstance returns MIG ref for a given instance
 func (c *cachingMigInfoProvider) GetMigForInstance(instanceRef GceRef) (Mig, error) {
+	c.migInstanceMutex.Lock()
+	defer c.migInstanceMutex.Unlock()
+
 	mig, found, err := c.getCachedMigForInstance(instanceRef)
 	if found {
 		return mig, err
@@ -160,8 +164,8 @@ func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
 }
 
 func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
 
 	targetSize, found := c.cache.GetMigTargetSize(migRef)
 	if found {
@@ -185,8 +189,8 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 }
 
 func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
 
 	basename, found := c.cache.GetMigBasename(migRef)
 	if found {
@@ -210,8 +214,8 @@ func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
 }
 
 func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
 
 	templateName, found := c.cache.GetMigInstanceTemplateName(migRef)
 	if found {
@@ -240,8 +244,8 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.Ins
 		return nil, err
 	}
 
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
 
 	template, found := c.cache.GetMigInstanceTemplate(migRef)
 	if found && template.Name == templateName {
@@ -257,7 +261,7 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.Ins
 	return template, nil
 }
 
-// filMigInfoCache needs to be called with mutex locked
+// filMigInfoCache needs to be called with migInfoMutex locked
 func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 	var zones []string
 	for zone := range c.listAllZonesWithMigs() {
