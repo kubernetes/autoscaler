@@ -28,6 +28,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [OracleCloud](./cloudprovider/oci/README.md)
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
 * [BizflyCloud](./cloudprovider/bizflycloud/README.md)
+* [Vultr](./cloudprovider/vultr/README.md)
 
 # Releases
 
@@ -169,3 +170,4 @@ Supported cloud providers:
 * OCI https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/oci/README.md
 * Hetzner https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md
 * Cluster API https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
+* Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
