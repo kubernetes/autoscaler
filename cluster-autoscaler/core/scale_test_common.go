@@ -148,7 +148,7 @@ func NewTestProcessors() *processors.AutoscalingProcessors {
 		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
-		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(),
+		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
 		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
 		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
 		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
