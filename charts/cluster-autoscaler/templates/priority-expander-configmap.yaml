@@ -1,5 +1,5 @@
 {{- if hasKey .Values.extraArgs "expander" }}
-{{- if and (.Values.expanderPriorities) (eq .Values.extraArgs.expander "priority") -}}
+{{- if and (.Values.expanderPriorities) (include "cluster-autoscaler.priorityExpanderEnabled" .) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

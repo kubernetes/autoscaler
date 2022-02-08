@@ -85,3 +85,13 @@ Return the service account name used by the pod.
     {{ default "default" .Values.rbac.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return true if the priority expander is enabled
+*/}}
+{{- define "cluster-autoscaler.priorityExpanderEnabled" -}}
+{{- $expanders := splitList "," (default "" .Values.extraArgs.expander) -}}
+{{- if has "priority" $expanders -}}
+{{- true -}}
+{{- end -}}
+{{- end -}}
