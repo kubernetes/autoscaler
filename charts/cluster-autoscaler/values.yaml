@@ -330,12 +330,12 @@ tolerations: []
 
 # topologySpreadConstraints -- You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19).
 topologySpreadConstraints: []
-#  - labelSelector:
-#      matchLabels:
-#        app.kubernetes.io/name: aws-cluster-autoscaler
-#    maxSkew: 1
-#    topologyKey: topology.kubernetes.io/zone
-#    whenUnsatisfiable: DoNotSchedule
+  # - maxSkew: 1
+  #   topologyKey: topology.kubernetes.io/zone
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app.kubernetes.io/instance: cluster-autoscaler
 
 # updateStrategy -- [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
 updateStrategy: {}
