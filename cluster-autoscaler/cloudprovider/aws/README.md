@@ -19,7 +19,69 @@ the EC2 instance on which the Cluster Autoscaler pod runs.
 
 ### IAM Policy
 
-The following policy provides the minimum privileges necessary for Cluster Autoscaler to run:
+There are a number of ways to run the autoscaler in AWS, which can significantly
+impact the range of IAM permissions required for the Cluster Autoscaler to function
+properly. Two options are provided below, one which will allow use of all of the
+features of the Cluster Autoscaler, the second with a more limited range of IAM
+actions enabled, which enforces using certain configuration options in the
+Cluster Autoscaler binary.
+
+It is strongly recommended to restrict the target resources for the autoscaling actions
+by either [specifying Auto Scaling Group ARNs](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources) in the `Resource` list of the policy or
+[using tag based conditionals](https://docs.aws.amazon.com/autoscaling/ec2/userguide/control-access-using-iam.html#security_iam_service-with-iam-tags). The [minimal policy](#minimal-iam-permissions-policy)
+includes an example of restricting by ASG ARN.
+
+#### Full Cluster Autoscaler Features Policy (Recommended)
+
+Permissions required when using [ASG Autodiscovery](#Auto-discovery-setup) and
+Dynamic EC2 List Generation (the default behaviour). In this example, only the second block of actions
+should be updated to restrict the resources/add conditionals:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeTags",
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeLaunchTemplateVersions"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
+      ],
+      "Resource": ["*"]
+    }
+  ]
+}
+```
+
+#### Minimal IAM Permissions Policy
+
+*NOTE:* The below policies/arguments to the Cluster Autoscaler need to be modified as appropriate
+for the names of your ASGs, as well as account ID and AWS region before being used.
+
+The following policy provides the minimum privileges necessary for Cluster Autoscaler to run.
+When using this policy, you cannot use autodiscovery of ASGs. In addition, it restricts the
+IAM permissions to the node groups the Cluster Autoscaler is configured to scale.
+
+This in turn means that you must pass the following arguments to the Cluster Autoscaler
+binary, replacing min and max node counts and the ASG:
+
+```bash
+--aws-use-static-instance-list=false
+--nodes=1:100:exampleASG1
+--nodes=1:100:exampleASG2
+```
 
 ```json
 {
@@ -32,26 +94,13 @@ The following policy provides the minimum privileges necessary for Cluster Autos
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "ec2:DescribeInstanceTypes"
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
       ],
-      "Resource": ["*"]
+      "Resource": ["arn:aws:autoscaling:${YOUR_CLUSTER_AWS_REGION}:${YOUR_AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${YOUR_ASG_NAME}"]
     }
   ]
 }
 ```
-
-If you'd like Cluster Autoscaler to [automatically
-discover](#auto-discovery-setup) EC2 Auto Scaling Groups **(recommended)**, add
-`autoscaling:DescribeTags` to the `Action` list. Also add
-`autoscaling:DescribeLaunchConfigurations` (if you created your ASG using a
-Launch Configuration) and/or `ec2:DescribeLaunchTemplateVersions` (if you
-created your ASG using a Launch Template) to the `Action` list.
-
-If you prefer, you can restrict the target resources for the autoscaling actions
-by specifying Auto Scaling Group ARNs in the `Resource` list of the policy. More
-information can be found
-[here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
 
 ### Using OIDC Federated Authentication
 
