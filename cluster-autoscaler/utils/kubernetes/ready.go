@@ -23,6 +23,24 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
+// NodeNotReadyReason reprents a reason for node to be unready. While it is
+// simply a string on the node object, custom type ensures no one accidentally
+// performs any string operation on variables of this type and allows them to
+// be treated as enums.
+type NodeNotReadyReason string
+
+const (
+	// ResourceUnready is a fake identifier used internally by Cluster Autoscaler
+	// to indicate nodes that appear Ready in the API, but are treated as
+	// still upcoming due to a missing resource (e.g. GPU).
+	ResourceUnready NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/resource-not-ready"
+
+	// IgnoreTaint is a fake identifier used internally by Cluster Autoscaler
+	// to indicate nodes that appear Ready in the API, but are treated as
+	// still upcoming due to applied ignore taint.
+	IgnoreTaint NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/ignore-taint"
+)
+
 // IsNodeReadyAndSchedulable returns true if the node is ready and schedulable.
 func IsNodeReadyAndSchedulable(node *apiv1.Node) bool {
 	ready, _, _ := GetReadinessState(node)
@@ -36,10 +54,29 @@ func IsNodeReadyAndSchedulable(node *apiv1.Node) bool {
 	return true
 }
 
+// NodeReadiness represents the last known node readiness.
+type NodeReadiness struct {
+	// Is the node ready or not.
+	Ready bool
+	// Time of the last state transition related to readiness.
+	LastTransitionTime time.Time
+	// Reason for the node to be unready. Defined only when Ready is false.
+	Reason NodeNotReadyReason
+}
+
 // GetReadinessState gets readiness state for the node
+//
+// Deprecated: Use GetNodeReadiness instead.
 func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime time.Time, err error) {
+	nr, err := GetNodeReadiness(node)
+	return nr.Ready, nr.LastTransitionTime, err
+}
+
+// GetNodeReadiness gets readiness for the node
+func GetNodeReadiness(node *apiv1.Node) (NodeReadiness, error) {
 	canNodeBeReady, readyFound := true, false
-	lastTransitionTime = time.Time{}
+	lastTransitionTime := time.Time{}
+	var reason NodeNotReadyReason
 
 	for _, cond := range node.Status.Conditions {
 		switch cond.Type {
@@ -47,6 +84,7 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 			readyFound = true
 			if cond.Status == apiv1.ConditionFalse || cond.Status == apiv1.ConditionUnknown {
 				canNodeBeReady = false
+				reason = NodeNotReadyReason(cond.Reason)
 			}
 			if lastTransitionTime.Before(cond.LastTransitionTime.Time) {
 				lastTransitionTime = cond.LastTransitionTime.Time
@@ -83,18 +121,23 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 	}
 
 	if !readyFound {
-		return false, time.Time{}, fmt.Errorf("readiness information not found")
+		return NodeReadiness{}, fmt.Errorf("readiness information not found")
 	}
-	return canNodeBeReady, lastTransitionTime, nil
+	return NodeReadiness{
+		Ready:              canNodeBeReady,
+		LastTransitionTime: lastTransitionTime,
+		Reason:             reason,
+	}, nil
 }
 
 // GetUnreadyNodeCopy create a copy of the given node and override its NodeReady condition to False
-func GetUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
+func GetUnreadyNodeCopy(node *apiv1.Node, reason NodeNotReadyReason) *apiv1.Node {
 	newNode := node.DeepCopy()
 	newReadyCondition := apiv1.NodeCondition{
 		Type:               apiv1.NodeReady,
 		Status:             apiv1.ConditionFalse,
 		LastTransitionTime: node.CreationTimestamp,
+		Reason:             string(reason),
 	}
 	newNodeConditions := []apiv1.NodeCondition{newReadyCondition}
 	for _, condition := range newNode.Status.Conditions {
