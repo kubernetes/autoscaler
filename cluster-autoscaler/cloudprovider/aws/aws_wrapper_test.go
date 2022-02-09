@@ -456,7 +456,7 @@ func TestGetInstanceTypesFromInstanceRequirements(t *testing.T) {
 		},
 	})
 
-	requirements, err := awsWrapper.getInstanceRequirementsRequestInput(mixedInstancesPolicy.instanceRequirementsOverrides)
+	requirements, err := awsWrapper.getRequirementsRequestFromAutoscaling(mixedInstancesPolicy.instanceRequirementsOverrides)
 	assert.NoError(t, err)
 	e.On("GetInstanceTypesFromInstanceRequirementsPages",
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
@@ -476,7 +476,7 @@ func TestGetInstanceTypesFromInstanceRequirements(t *testing.T) {
 		}, false)
 	}).Return(nil)
 
-	results, err := awsWrapper.getInstanceTypesFromInstanceRequirements(mixedInstancesPolicy)
+	results, err := awsWrapper.getInstanceTypeFromInstanceRequirements(mixedInstancesPolicy)
 	assert.NoError(t, err)
 	assert.Equal(t, len(results), 1)
 	assert.Equal(t, results[0], "g4dn.xlarge")
