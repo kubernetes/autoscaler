@@ -396,31 +396,33 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
-	if asg.MixedInstancesPolicy != nil && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
-		instanceReqirements := asg.MixedInstancesPolicy.instanceRequirementsOverrides
+	if asg.MixedInstancesPolicy != nil {
+		instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
+		if err != nil {
+			klog.Error("error while building node template using instance requirements: (%s)", err)
+		}
 
-		if instanceReqirements.VCpuCount != nil {
-			if instanceReqirements.VCpuCount.Min != nil {
-				node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceReqirements.VCpuCount.Min, resource.DecimalSI)
+		if instanceRequirements.VCpuCount != nil {
+			if instanceRequirements.VCpuCount.Min != nil {
+				node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceRequirements.VCpuCount.Min, resource.DecimalSI)
 			}
 		}
 
-		for _, manufacturer := range instanceReqirements.AcceleratorManufacturers {
+		for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
 			if *manufacturer == autoscaling.AcceleratorManufacturerNvidia {
-				for _, acceleratorType := range instanceReqirements.AcceleratorTypes {
+				for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
 					if *acceleratorType == autoscaling.AcceleratorTypeGpu {
-						node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceReqirements.AcceleratorCount.Min, resource.DecimalSI)
+						node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceRequirements.AcceleratorCount.Min, resource.DecimalSI)
 					}
 				}
 			}
 		}
 
-		if instanceReqirements.MemoryMiB != nil {
-			if instanceReqirements.MemoryMiB.Min != nil {
-				node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceReqirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
+		if instanceRequirements.MemoryMiB != nil {
+			if instanceRequirements.MemoryMiB.Min != nil {
+				node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceRequirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
 			}
 		}
-
 	}
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
@@ -445,6 +447,55 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]string, mngLabels map[string]string) map[string]string {
+	result := make(map[string]string)
+
+	// Copy Generic Labels and Labels from ASG
+	for k, v := range extractedLabels {
+		result[k] = v
+	}
+
+	// Copy Labels from EKS DescribeNodegroup API call
+	// If the there is a duplicate key, this will overwrite the ASG Tag specified values with the EKS DescribeNodegroup API values
+	// We are overwriting them because it seems like EKS isn't sending the ASG Tags to Kubernetes itself
+	//     so scale ups based on the ASG Tag aren't working
+	for k, v := range mngLabels {
+		result[k] = v
+	}
+
+	return result
+}
+
+func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
+	instanceRequirements := &ec2.InstanceRequirements{}
+	if policy.launchTemplate != nil {
+		params := &ec2.DescribeLaunchTemplateVersionsInput{
+			LaunchTemplateName: aws.String(policy.launchTemplate.name),
+			Versions:           []*string{aws.String(policy.launchTemplate.version)},
+		}
+
+		start := time.Now()
+		describeData, err := m.awsService.DescribeLaunchTemplateVersions(params)
+		observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+		if err != nil {
+			return nil, err
+		}
+		if len(describeData.LaunchTemplateVersions) == 0 {
+			return nil, fmt.Errorf("unable to find template versions")
+		}
+
+		lt := describeData.LaunchTemplateVersions[0]
+		instanceRequirements = lt.LaunchTemplateData.InstanceRequirements
+	} else if policy.instanceRequirementsOverrides != nil {
+		var err error
+		instanceRequirements, err = m.awsService.getRequirementsRequestFromAutoscalingToEC2(policy.instanceRequirementsOverrides)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return instanceRequirements, nil
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
