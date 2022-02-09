@@ -387,7 +387,7 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 	}
 }
 
-func TestGetInstanceTypesFromInstanceRequirements(t *testing.T) {
+func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 	mixedInstancesPolicy := &mixedInstancesPolicy{
 		launchTemplate: &launchTemplate{
 			name:    "launchTemplateName",
@@ -462,10 +462,89 @@ func TestGetInstanceTypesFromInstanceRequirements(t *testing.T) {
 		}, false)
 	}).Return(nil)
 
-	results, err := awsWrapper.getInstanceTypeFromInstanceRequirements(mixedInstancesPolicy)
+	result, err := awsWrapper.getInstanceTypeFromRequirementsOverrides(mixedInstancesPolicy)
 	assert.NoError(t, err)
-	assert.Equal(t, len(results), 1)
-	assert.Equal(t, results[0], "g4dn.xlarge")
+	assert.Equal(t, "g4dn.xlarge", result)
+}
+
+func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) {
+	launchTemplate := &launchTemplate{
+		name:    "launchTemplateName",
+		version: "1",
+	}
+
+	e := &ec2Mock{}
+	awsWrapper := &awsWrapper{
+		autoScalingI: nil,
+		ec2I:         e,
+		eksI:         nil,
+	}
+
+	instanceRequirements := &ec2.InstanceRequirements{
+		VCpuCount: &ec2.VCpuCountRange{
+			Min: aws.Int64(4),
+			Max: aws.Int64(8),
+		},
+		MemoryMiB: &ec2.MemoryMiB{
+			Min: aws.Int64(4),
+			Max: aws.Int64(8),
+		},
+		AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
+		AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
+		AcceleratorCount: &ec2.AcceleratorCount{
+			Min: aws.Int64(4),
+			Max: aws.Int64(8),
+		},
+	}
+
+	e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String("launchTemplateName"),
+		Versions:           []*string{aws.String("1")},
+	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+			{
+				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+					ImageId:              aws.String("123"),
+					InstanceRequirements: instanceRequirements,
+				},
+			},
+		},
+	})
+
+	e.On("DescribeImages", &ec2.DescribeImagesInput{
+		ImageIds: []*string{aws.String("123")},
+	}).Return(&ec2.DescribeImagesOutput{
+		Images: []*ec2.Image{
+			{
+				Architecture:       aws.String("x86_64"),
+				VirtualizationType: aws.String("xen"),
+			},
+		},
+	})
+
+	requirements, err := awsWrapper.getRequirementsRequestFromEC2(instanceRequirements)
+	assert.NoError(t, err)
+	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
+			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			InstanceRequirements: requirements,
+			VirtualizationTypes:  []*string{aws.String("xen")},
+		},
+		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
+		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{
+				{
+					InstanceType: aws.String("g4dn.xlarge"),
+				},
+			},
+		}, false)
+	}).Return(nil)
+
+	result, err := awsWrapper.getInstanceTypeByLaunchTemplate(launchTemplate)
+	assert.NoError(t, err)
+	assert.Equal(t, "g4dn.xlarge", result)
 }
 
 func TestBuildLaunchTemplateFromSpec(t *testing.T) {
