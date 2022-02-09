@@ -58,8 +58,11 @@ should be updated to restrict the resources/add conditionals:
       "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
+        "ec2:DescribeImages",
         "ec2:DescribeInstanceTypes",
+        "ec2:GetInstanceTypesFromInstanceRequirementsPages",
         "eks:DescribeNodegroup"
+
       ],
       "Resource": ["*"]
     }
