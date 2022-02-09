@@ -222,34 +222,32 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 		LaunchTemplateName: aws.String(launchTemplate.name),
 		Versions:           []*string{aws.String(launchTemplate.version)},
 	}
-
 	start := time.Now()
 	describeData, err := m.DescribeLaunchTemplateVersions(params)
 	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
 	if err != nil {
 		return "", err
 	}
-
 	if len(describeData.LaunchTemplateVersions) == 0 {
 		return "", fmt.Errorf("unable to find template versions")
 	}
-
 	lt := describeData.LaunchTemplateVersions[0]
-	instanceType := lt.LaunchTemplateData.InstanceType
-
-	if instanceType == nil {
-		return "", fmt.Errorf("unable to find instance type within launch template")
+	instanceType := ""
+	if lt.LaunchTemplateData.InstanceType != nil {
+		instanceType = *lt.LaunchTemplateData.InstanceType
+	} else if lt.LaunchTemplateData.InstanceRequirements != nil {
+		instanceType, err = m.getInstanceTypeFromLaunchTemplateVersion(describeData.LaunchTemplateVersions[0])
+		if err != nil {
+			return "", err
+		}
 	}
-
-	return aws.StringValue(instanceType), nil
+	if len(instanceType) == 0 {
+		return "", fmt.Errorf("unable to find instance type using launch template")
+	}
+	return instanceType, nil
 }
 
-func (m *awsWrapper) getInstanceTypesFromInstanceRequirements(policy *mixedInstancesPolicy) ([]string, error) {
-	requirementsRequest, err := m.getInstanceRequirementsRequestInput(policy.instanceRequirementsOverrides)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get build instance requirements request")
-	}
-
+func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(policy *mixedInstancesPolicy) (string, error) {
 	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
 		LaunchTemplateName: aws.String(policy.launchTemplate.name),
 		Versions:           []*string{aws.String(policy.launchTemplate.version)},
@@ -258,19 +256,35 @@ func (m *awsWrapper) getInstanceTypesFromInstanceRequirements(policy *mixedInsta
 	start := time.Now()
 	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
 	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	if err != nil {
+		return "", err
+	}
 	if len(describeData.LaunchTemplateVersions) == 0 {
-		return nil, fmt.Errorf("unable to find template versions")
+		return "", fmt.Errorf("unable to find template versions")
+	}
+	instanceType, err := m.getInstanceTypeFromLaunchTemplateVersion(describeData.LaunchTemplateVersions[0])
+	if err != nil {
+		return "", err
+	}
+
+	return instanceType, nil
+}
+
+func (m *awsWrapper) getInstanceTypeFromLaunchTemplateVersion(lt *ec2.LaunchTemplateVersion) (string, error) {
+	requirementsRequest, err := m.getRequirementsRequestFromEC2(lt.LaunchTemplateData.InstanceRequirements)
+	if err != nil {
+		return "", fmt.Errorf("unable to get instance requirements request")
 	}
 
 	describeImagesInput := &ec2.DescribeImagesInput{
-		ImageIds: []*string{describeData.LaunchTemplateVersions[0].LaunchTemplateData.ImageId},
+		ImageIds: []*string{lt.LaunchTemplateData.ImageId},
 	}
 
-	start = time.Now()
+	start := time.Now()
 	describeImagesOutput, err := m.DescribeImages(describeImagesInput)
 	observeAWSRequest("DescribeImages", err, start)
 	if err != nil {
-		return nil, fmt.Errorf("unable to find get image details")
+		return "", err
 	}
 
 	imageArchitectures := []*string{}
@@ -296,21 +310,48 @@ func (m *awsWrapper) getInstanceTypesFromInstanceRequirements(policy *mixedInsta
 	})
 	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get instance types from requirements")
+		return "", fmt.Errorf("unable to get instance types from requirements")
 	}
 
-	return instanceTypes, nil
+	return instanceTypes[0], nil
 }
 
-func (m *awsWrapper) getInstanceRequirementsRequestInput(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
+func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
 	requirementsJson, err := json.Marshal(*requirements)
 	if err != nil {
 		return nil, err
 	}
 
 	var requirementsRequest *ec2.InstanceRequirementsRequest
-	err = json.Unmarshal(requirementsJson, &requirementsRequest)
+	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
+		return nil, err
+	}
+
+	return requirementsRequest, nil
+}
+
+func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
+	requirementsJson, err := json.Marshal(*requirements)
 	if err != nil {
+		return nil, err
+	}
+
+	var requirementsRequest *ec2.InstanceRequirementsRequest
+	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
+		return nil, err
+	}
+
+	return requirementsRequest, nil
+}
+
+func (m *awsWrapper) getRequirementsRequestFromAutoscalingToEC2(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirements, error) {
+	requirementsJson, err := json.Marshal(*requirements)
+	if err != nil {
+		return nil, err
+	}
+
+	var requirementsRequest *ec2.InstanceRequirements
+	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
 		return nil, err
 	}
 
@@ -360,24 +401,26 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 	klog.V(4).Infof("Successfully queried %d launch configurations", len(launchConfigsToQuery))
 
 	// Have to query LaunchTemplates one-at-a-time, since there's no way to query <lt, version> pairs in bulk
+	klog.Info("templates to query")
 	for asgName, lt := range launchTemplatesToQuery {
 		instanceType, err := m.getInstanceTypeByLaunchTemplate(lt)
 		if err != nil {
 			klog.Errorf("Failed to query launch tempate %s: %v", lt.name, err)
 			continue
 		}
+		klog.Info(instanceType)
 		results[asgName] = instanceType
 	}
 	klog.V(4).Infof("Successfully queried %d launch templates", len(launchTemplatesToQuery))
 
 	// Have to match Instance Requirements one-at-a-time, since they are configured per asg and can't be queried in bulk
 	for asgName, policy := range mixedInstancesPoliciesToQuery {
-		instanceTypes, err := m.getInstanceTypesFromInstanceRequirements(policy)
+		instanceType, err := m.getInstanceTypeFromInstanceRequirements(policy)
 		if err != nil {
 			klog.Errorf("Failed to query instance requirements for ASG %s: %v", asgName, err)
 			continue
 		}
-		results[asgName] = instanceTypes[0]
+		results[asgName] = instanceType
 	}
 	klog.V(4).Infof("Successfully queried instance requirements for %d ASGs", len(mixedInstancesPoliciesToQuery))
 
