@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	goruntime "runtime"
 	"time"
 
 	cadvisorapi "github.com/google/cadvisor/info/v1"
@@ -133,9 +132,6 @@ type kubeGenericRuntimeManager struct {
 	// Internal lifecycle event handlers for container resource management.
 	internalLifecycle cm.InternalContainerLifecycle
 
-	// A shim to legacy functions for backward compatibility.
-	legacyLogProvider LegacyLogProvider
-
 	// Manage container logs.
 	logManager logs.ContainerLogManager
 
@@ -168,12 +164,6 @@ type KubeGenericRuntime interface {
 	kubecontainer.CommandRunner
 }
 
-// LegacyLogProvider gives the ability to use unsupported docker log drivers (e.g. journald)
-type LegacyLogProvider interface {
-	// GetContainerLogTail gets the last few lines of the logs for a specific container.
-	GetContainerLogTail(uid kubetypes.UID, name, namespace string, containerID kubecontainer.ContainerID) (string, error)
-}
-
 // NewKubeGenericRuntimeManager creates a new kubeGenericRuntimeManager
 func NewKubeGenericRuntimeManager(
 	recorder record.EventRecorder,
@@ -197,7 +187,6 @@ func NewKubeGenericRuntimeManager(
 	runtimeService internalapi.RuntimeService,
 	imageService internalapi.ImageManagerService,
 	internalLifecycle cm.InternalContainerLifecycle,
-	legacyLogProvider LegacyLogProvider,
 	logManager logs.ContainerLogManager,
 	runtimeClassManager *runtimeclass.Manager,
 	seccompDefault bool,
@@ -219,7 +208,6 @@ func NewKubeGenericRuntimeManager(
 		runtimeService:         newInstrumentedRuntimeService(runtimeService),
 		imageService:           newInstrumentedImageManagerService(imageService),
 		internalLifecycle:      internalLifecycle,
-		legacyLogProvider:      legacyLogProvider,
 		logManager:             logManager,
 		runtimeClassManager:    runtimeClassManager,
 		logReduction:           logreduction.NewLogReduction(identicalErrorDelay),
@@ -301,12 +289,7 @@ func (m *kubeGenericRuntimeManager) Type() string {
 // SupportsSingleFileMapping returns whether the container runtime supports single file mappings or not.
 // It is supported on Windows only if the container runtime is containerd.
 func (m *kubeGenericRuntimeManager) SupportsSingleFileMapping() bool {
-	switch goruntime.GOOS {
-	case "windows":
-		return m.Type() != types.DockerContainerRuntime
-	default:
-		return true
-	}
+	return true
 }
 
 func newRuntimeVersion(version string) (*utilversion.Version, error) {
