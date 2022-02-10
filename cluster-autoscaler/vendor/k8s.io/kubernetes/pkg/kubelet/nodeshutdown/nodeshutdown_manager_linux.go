@@ -316,6 +316,10 @@ func (m *managerImpl) processShutdownEvent() error {
 				klog.V(1).InfoS("Shutdown manager killing pod with gracePeriod", "pod", klog.KObj(pod), "gracePeriod", gracePeriodOverride)
 
 				if err := m.killPodFunc(pod, false, &gracePeriodOverride, func(status *v1.PodStatus) {
+					// set the pod status to failed (unless it was already in a successful terminal phase)
+					if status.Phase != v1.PodSucceeded {
+						status.Phase = v1.PodFailed
+					}
 					status.Message = nodeShutdownMessage
 					status.Reason = nodeShutdownReason
 				}); err != nil {
@@ -326,15 +330,19 @@ func (m *managerImpl) processShutdownEvent() error {
 			}(pod, group)
 		}
 
-		c := make(chan struct{})
+		var (
+			doneCh = make(chan struct{})
+			timer  = m.clock.NewTimer(time.Duration(group.ShutdownGracePeriodSeconds) * time.Second)
+		)
 		go func() {
-			defer close(c)
+			defer close(doneCh)
 			wg.Wait()
 		}()
 
 		select {
-		case <-c:
-		case <-time.After(time.Duration(group.ShutdownGracePeriodSeconds) * time.Second):
+		case <-doneCh:
+			timer.Stop()
+		case <-timer.C():
 			klog.V(1).InfoS("Shutdown manager pod killing time out", "gracePeriod", group.ShutdownGracePeriodSeconds, "priority", group.Priority)
 		}
 	}
