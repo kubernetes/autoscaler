@@ -15,6 +15,7 @@ amount of CPU and memory requested by pods running in the Kubernetes Cluster. Cu
 [Addon Resizer](https://github.com/kubernetes/autoscaler/tree/master/addon-resizer) - a simplified version of vertical pod autoscaler that modifies
 resource requests of a deployment based on the number of nodes in the Kubernetes Cluster. Current state - beta.
 
+### Charts
 [Charts](https://github.com/kubernetes/autoscaler/tree/master/charts) - Supported Helm charts for components above.
 
 ## Contact Info
