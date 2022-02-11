@@ -37,8 +37,8 @@ func nodeToOciRef(n *apiv1.Node) (OciRef, error) {
 		Name:               n.ObjectMeta.Name,
 		AvailabilityDomain: n.Labels[apiv1.LabelZoneFailureDomain],
 		CompartmentID:      n.Annotations[ociAnnotationCompartmentID],
-		InstanceID:         n.Annotations[ociInstanceIDAnnotation],
-		PoolID:             n.Annotations[ociInstancePoolIDAnnotation],
+		InstanceID:         getNodeInstanceID(n),
+		PoolID:             getNodeInstancePoolID(n),
 		PrivateIPAddress:   getNodeInternalAddress(n),
 		PublicIPAddress:    getNodeExternalAddress(n),
 		Shape:              n.Labels[apiv1.LabelInstanceType],
@@ -63,4 +63,32 @@ func getNodeExternalAddress(node *apiv1.Node) string {
 		}
 	}
 	return ""
+}
+
+// getNodeInstancePoolID returns the instance pool ID if set as a label or annotation or an empty string if is not found.
+func getNodeInstancePoolID(node *apiv1.Node) string {
+
+	poolIDPrefixLabel, _ := node.Labels[instancePoolIDLabelPrefix]
+	poolIDSuffixLabel, _ := node.Labels[instancePoolIDLabelSuffix]
+
+	if poolIDPrefixLabel != "" && poolIDSuffixLabel != "" {
+		return poolIDPrefixLabel + "." + poolIDSuffixLabel
+	}
+
+	poolIDAnnotation, _ := node.Annotations[ociInstancePoolIDAnnotation]
+	return poolIDAnnotation
+}
+
+// getNodeInstanceID returns the instance ID if set as a label or annotation or an empty string if is not found.
+func getNodeInstanceID(node *apiv1.Node) string {
+
+	instancePrefixLabel, _ := node.Labels[instanceIDLabelPrefix]
+	instanceSuffixLabel, _ := node.Labels[instanceIDLabelSuffix]
+
+	if instancePrefixLabel != "" && instanceSuffixLabel != "" {
+		return instancePrefixLabel + "." + instanceSuffixLabel
+	}
+
+	instanceIDAnnotation, _ := node.Annotations[ociInstanceIDAnnotation]
+	return instanceIDAnnotation
 }
