@@ -41,7 +41,7 @@ import (
 )
 
 var (
-	internalPollInterval            = 1 * time.Minute
+	internalPollInterval            = 15 * time.Second
 	errInstanceInstancePoolNotFound = errors.New("instance-pool not found for instance")
 )
 
