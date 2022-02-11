@@ -176,6 +176,11 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 			klog.V(4).Infof("skipping over instance pool %s since it is empty", *nextInstancePool.Id)
 			continue
 		}
+		// Skip searching instance pool if we happen tp know (prior labels) the pool ID and this is not it
+		if (ociInstance.PoolID != "") && (ociInstance.PoolID != *nextInstancePool.Id) {
+			klog.V(5).Infof("skipping over instance pool %s since it is not the one we are looking for", *nextInstancePool.Id)
+			continue
+		}
 
 		var page *string
 		var instanceSummaries []core.InstanceSummary
@@ -202,6 +207,11 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 			// Skip comparing this instance if it is not in the Running state
 			if strings.ToLower(*poolMember.State) != strings.ToLower(string(core.InstanceLifecycleStateRunning)) {
 				klog.V(4).Infof("skipping over instance %s: since it is not in the running state: %s", *poolMember.Id, *poolMember.State)
+				continue
+			}
+			// Skip this instance if we happen to know (prior labels) the instance ID and this is not it
+			if (ociInstance.InstanceID != "") && (ociInstance.InstanceID != *poolMember.Id) {
+				klog.V(5).Infof("skipping over instance %s since it is not the one we are looking for", *poolMember.Id)
 				continue
 			}
 
