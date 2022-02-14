@@ -50,7 +50,7 @@ case ${SUITE} in
     pushd ${SCRIPT_ROOT}/e2e
     go test -mod vendor ./v1beta2/*go -v --test.timeout=60m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     V1BETA2_RESULT=$?
-    go test -mod vendor ./v1/*go -v --test.timeout=60m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     V1_RESULT=$?
     popd
     echo v1beta2 test result: ${V1BETA2_RESULT}
