@@ -209,6 +209,19 @@ Install the chart with
 ```
 $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 ```
+### Cluster-API
+
+`cloudProvider: clusterapi` must be set, and then one or more of
+- `autoDiscovery.clusterName`
+- or `autoDiscovery.labels`
+See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
+
+
+Additional config parameters avaible, see the `values.yaml` for more details
+`clusterAPIMode`
+`clusterAPIKubeconfigSecret`
+`clusterAPIWorkloadKubeconfigPath`
+`clusterAPICloudConfigPath`
 
 ## Uninstalling the Chart
 
