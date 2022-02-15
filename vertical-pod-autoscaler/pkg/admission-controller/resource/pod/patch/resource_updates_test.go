@@ -50,41 +50,41 @@ func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *core.Po
 
 func addResourcesPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
-		"add",
-		fmt.Sprintf("/spec/containers/%d/resources", idx),
-		core.ResourceRequirements{},
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources", idx),
+		Value: core.ResourceRequirements{},
 	}
 }
 
 func addRequestsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
-		"add",
-		fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
-		core.ResourceList{},
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
+		Value: core.ResourceList{},
 	}
 }
 
 func addLimitsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
-		"add",
-		fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
-		core.ResourceList{},
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
+		Value: core.ResourceList{},
 	}
 }
 
 func addResourceRequestPatch(index int, res, amount string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
-		"add",
-		fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
-		resource.MustParse(amount),
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
+		Value: resource.MustParse(amount),
 	}
 }
 
 func addResourceLimitPatch(index int, res, amount string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
-		"add",
-		fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
-		resource.MustParse(amount),
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
+		Value: resource.MustParse(amount),
 	}
 }
 

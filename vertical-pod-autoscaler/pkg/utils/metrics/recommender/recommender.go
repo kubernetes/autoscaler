@@ -98,7 +98,7 @@ func NewExecutionTimer() *metrics.ExecutionTimer {
 
 // ObserveRecommendationLatency observes the time it took for the first recommendation to appear
 func ObserveRecommendationLatency(created time.Time) {
-	recommendationLatency.Observe(time.Now().Sub(created).Seconds())
+	recommendationLatency.Observe(time.Since(created).Seconds())
 }
 
 // RecordAggregateContainerStatesCount records the number of containers being tracked by the recommender

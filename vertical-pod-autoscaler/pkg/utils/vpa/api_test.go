@@ -40,8 +40,8 @@ var (
 )
 
 func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("v", "5")
+	flag.Set("alsologtostderr", "true") //nolint:errcheck
+	flag.Set("v", "5")                  //nolint:errcheck
 }
 
 func parseLabelSelector(selector string) labels.Selector {

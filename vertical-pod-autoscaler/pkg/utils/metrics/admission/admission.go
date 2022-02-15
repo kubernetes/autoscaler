@@ -100,5 +100,5 @@ func NewAdmissionLatency() *AdmissionLatency {
 
 // Observe measures the execution time from when the AdmissionLatency was created
 func (t *AdmissionLatency) Observe(status AdmissionStatus, resource AdmissionResource) {
-	(*t.histo).WithLabelValues(string(status), string(resource)).Observe(time.Now().Sub(t.start).Seconds())
+	(*t.histo).WithLabelValues(string(status), string(resource)).Observe(time.Since(t.start).Seconds())
 }

@@ -27,8 +27,7 @@ import (
 )
 
 const (
-	cpu    = apiv1.ResourceCPU
-	memory = apiv1.ResourceMemory
+	cpu = apiv1.ResourceCPU
 )
 
 func TestValidateVPA(t *testing.T) {
