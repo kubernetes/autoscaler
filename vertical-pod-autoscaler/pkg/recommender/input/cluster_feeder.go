@@ -400,7 +400,9 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	for vpaID := range feeder.clusterState.Vpas {
 		if _, exists := vpaKeys[vpaID]; !exists {
 			klog.V(3).Infof("Deleting VPA %v", vpaID)
-			feeder.clusterState.DeleteVpa(vpaID)
+			if err := feeder.clusterState.DeleteVpa(vpaID); err != nil {
+				klog.Errorf("Deleting VPA %v failed: %v", vpaID, err)
+			}
 		}
 	}
 	feeder.clusterState.ObservedVpas = vpaCRDs

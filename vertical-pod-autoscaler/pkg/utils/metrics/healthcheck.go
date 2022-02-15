@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 // HealthCheck contains information about last activity time of the monitored component.
@@ -59,11 +61,13 @@ func (hc *HealthCheck) checkLastActivity() (bool, time.Duration) {
 func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	timedOut, ago := hc.checkLastActivity()
 	if timedOut {
-		w.WriteHeader(500)
-		w.Write([]byte(fmt.Sprintf("Error: last activity more than %v ago", ago)))
+		http.Error(w, fmt.Sprintf("Error: last activity more than %v ago", ago), http.StatusInternalServerError)
 	} else {
 		w.WriteHeader(200)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			klog.Fatalf("Failed to write response message: %v", err)
+		}
 	}
 }
 
