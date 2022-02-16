@@ -35,18 +35,34 @@ import (
 )
 
 const stabilizationDelay = 1 * time.Minute
+const maxCacheExpireTime = 87660 * time.Hour
+
+type cacheItem struct {
+	*schedulerframework.NodeInfo
+	added time.Time
+}
 
 // MixedTemplateNodeInfoProvider build nodeInfos from the cluster's nodes and node groups.
 type MixedTemplateNodeInfoProvider struct {
-	nodeInfoCache map[string]*schedulerframework.NodeInfo
+	nodeInfoCache map[string]cacheItem
+	ttl           time.Duration
 }
 
 // NewMixedTemplateNodeInfoProvider returns a NodeInfoProvider processor building
 // NodeInfos from real-world nodes when available, otherwise from node groups templates.
-func NewMixedTemplateNodeInfoProvider() *MixedTemplateNodeInfoProvider {
-	return &MixedTemplateNodeInfoProvider{
-		nodeInfoCache: make(map[string]*schedulerframework.NodeInfo),
+func NewMixedTemplateNodeInfoProvider(t *time.Duration) *MixedTemplateNodeInfoProvider {
+	ttl := maxCacheExpireTime
+	if t != nil {
+		ttl = *t
 	}
+	return &MixedTemplateNodeInfoProvider{
+		nodeInfoCache: make(map[string]cacheItem),
+		ttl:           ttl,
+	}
+}
+
+func (p *MixedTemplateNodeInfoProvider) isCacheItemExpired(added time.Time) bool {
+	return time.Now().Sub(added) > p.ttl
 }
 
 // CleanUp cleans up processor's internal structures.
@@ -102,7 +118,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		}
 		if added && p.nodeInfoCache != nil {
 			if nodeInfoCopy, err := utils.DeepCopyNodeInfo(result[id]); err == nil {
-				p.nodeInfoCache[id] = nodeInfoCopy
+				p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 			}
 		}
 	}
@@ -115,8 +131,10 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 		// No good template, check cache of previously running nodes.
 		if p.nodeInfoCache != nil {
-			if nodeInfo, found := p.nodeInfoCache[id]; found {
-				if nodeInfoCopy, err := utils.DeepCopyNodeInfo(nodeInfo); err == nil {
+			if cacheItem, found := p.nodeInfoCache[id]; found {
+				if p.isCacheItemExpired(cacheItem.added) {
+					delete(p.nodeInfoCache, id)
+				} else if nodeInfoCopy, err := utils.DeepCopyNodeInfo(cacheItem.NodeInfo); err == nil {
 					result[id] = nodeInfoCopy
 					continue
 				}
