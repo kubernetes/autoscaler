@@ -32,6 +32,11 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const (
+	aksManagedPoolNameTag = "aks-managed-poolName"
+	legacyAKSPoolNameTag  = "poolName"
+)
+
 //AKSAgentPool implements NodeGroup interface for agent pool deployed in AKS
 type AKSAgentPool struct {
 	azureRef
@@ -315,7 +320,10 @@ func (agentPool *AKSAgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 
 //IsAKSNode checks if the tag from the vm matches the agentPool name
 func (agentPool *AKSAgentPool) IsAKSNode(tags map[string]*string) bool {
-	poolName := tags["poolName"]
+	poolName := tags[aksManagedPoolNameTag]
+	if poolName == nil {
+		poolName = tags[legacyAKSPoolNameTag]
+	}
 	if poolName != nil {
 		klog.V(5).Infof("Matching agentPool name: %s with tag name: %s", agentPool.azureRef.Name, *poolName)
 		if strings.EqualFold(*poolName, agentPool.azureRef.Name) {

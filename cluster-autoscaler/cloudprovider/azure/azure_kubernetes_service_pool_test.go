@@ -265,13 +265,17 @@ func TestAKSIncreaseSize(t *testing.T) {
 
 func TestIsAKSNode(t *testing.T) {
 	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
-	tags := map[string]*string{"poolName": to.StringPtr(testAKSPoolName)}
+	tags := map[string]*string{aksManagedPoolNameTag: to.StringPtr(testAKSPoolName)}
 	isAKSNode := aksPool.IsAKSNode(tags)
 	assert.True(t, isAKSNode)
 
-	tags = map[string]*string{"poolName": to.StringPtr("fake")}
+	tags = map[string]*string{aksManagedPoolNameTag: to.StringPtr("fake")}
 	isAKSNode = aksPool.IsAKSNode(tags)
 	assert.False(t, isAKSNode)
+
+	tags = map[string]*string{legacyAKSPoolNameTag: to.StringPtr(testAKSPoolName)}
+	isAKSNode = aksPool.IsAKSNode(tags)
+	assert.True(t, isAKSNode)
 }
 
 func TestDeleteNodesAKS(t *testing.T) {
@@ -346,7 +350,7 @@ func TestAKSNodes(t *testing.T) {
 		{
 			Name: to.StringPtr("name"),
 			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/vm1"),
-			Tags: map[string]*string{"poolName": to.StringPtr(testAKSPoolName)},
+			Tags: map[string]*string{aksManagedPoolNameTag: to.StringPtr(testAKSPoolName)},
 		},
 	}
 
@@ -394,7 +398,7 @@ func TestAKSDecreaseTargetSize(t *testing.T) {
 		{
 			Name: to.StringPtr("name"),
 			ID:   to.StringPtr("/subscriptions/sub/resourceGroups/rg/providers/provider/vm1"),
-			Tags: map[string]*string{"poolName": to.StringPtr(testAKSPoolName)},
+			Tags: map[string]*string{aksManagedPoolNameTag: to.StringPtr(testAKSPoolName)},
 		},
 	}
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
