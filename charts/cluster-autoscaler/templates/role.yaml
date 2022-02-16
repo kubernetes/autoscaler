@@ -43,4 +43,35 @@ rules:
       - get
       - update
 {{- end }}
+{{- if and ( and ( eq .Values.cloudProvider "clusterapi" ) ( not .Values.rbac.clusterScoped ) ( or ( eq .Values.clusterAPIMode "incluster-incluster" ) ( eq .Values.clusterAPIMode "incluster-kubeconfig" ) ))}}
+  - apiGroups:
+    - cluster.x-k8s.io
+    resources:
+    - machinedeployments
+    - machinedeployments/scale
+    - machines
+    - machinesets
+    verbs:
+    - get
+    - list
+    - update
+    - watch
+{{- end }}
+{{- if ( not .Values.rbac.clusterScoped ) }}
+  - apiGroups:
+    - coordination.k8s.io
+    resources:
+    - leases
+    verbs:
+    - create
+  - apiGroups:
+    - coordination.k8s.io
+    resourceNames:
+    - cluster-autoscaler
+    resources:
+    - leases
+    verbs:
+    - get
+    - update
+{{- end }}
 {{- end -}}

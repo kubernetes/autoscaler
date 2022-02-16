@@ -1,4 +1,4 @@
-{{- if or .Values.autoDiscovery.clusterName .Values.autoscalingGroups }}
+{{- if or ( or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels ) .Values.autoscalingGroups }}
 {{/* one of the above is required */}}
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
@@ -68,6 +68,21 @@ spec:
             - --node-group-auto-discovery=magnum:role={{ tpl (join "," .Values.autoDiscovery.roles) . }}
             {{- else }}
             - --cluster-name={{ .Values.magnumClusterName }}
+            {{- end }}
+          {{- else if eq .Values.cloudProvider "clusterapi" }}
+            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels }}
+            - --node-group-auto-discovery=clusterapi:{{ template "cluster-autoscaler.capiAutodiscoveryConfig" . }}
+            {{- end }}
+            {{- if eq .Values.clusterAPIMode "incluster-kubeconfig"}}
+            - --cloud-config={{ .Values.clusterAPICloudConfigPath }}
+            {{- else if eq .Values.clusterAPIMode "kubeconfig-incluster"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            - --clusterapi-cloud-config-authoritative
+            {{- else if eq .Values.clusterAPIMode "kubeconfig-kubeconfig"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            - --cloud-config={{ .Values.clusterAPICloudConfigPath }}
+            {{- else if eq .Values.clusterAPIMode "single-kubeconfig"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "magnum" }}
@@ -203,6 +218,10 @@ spec:
               mountPath: {{ required "Must specify mountPath!" $value.mountPath }}
               readOnly: true
           {{- end }}
+          {{- if .Values.clusterAPIKubeconfigSecret }}
+            - name: cluster-api-kubeconfig
+              mountPath: {{ .Values.clusterAPIWorkloadKubeconfigPath | trimSuffix "/value" }}
+          {{- end }}
           {{- if .Values.extraVolumeMounts }}
             {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
@@ -249,6 +268,11 @@ spec:
       {{- end }}
       {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 10 }}
+      {{- end }}
+      {{- if .Values.clusterAPIKubeconfigSecret }}
+        - name: cluster-api-kubeconfig
+          secret:
+            secretName: {{ .Values.clusterAPIKubeconfigSecret }}
       {{- end }}
       {{- end }}
       {{- if .Values.image.pullSecrets }}
