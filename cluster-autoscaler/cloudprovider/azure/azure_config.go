@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/klog/v2"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -38,7 +40,7 @@ const (
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
 
-	metadataURL = "http://169.254.169.254/metadata/instance"
+	imdsServerURL = "http://169.254.169.254"
 
 	// backoff
 	backoffRetriesDefault  = 6
@@ -146,7 +148,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
-		cfg.SubscriptionID = os.Getenv("ARM_SUBSCRIPTION_ID")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
@@ -156,6 +157,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
 		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
+
+		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -472,4 +479,23 @@ func (cfg *Config) validate() error {
 	}
 
 	return nil
+}
+
+// getSubscriptionId reads the Subscription ID from the instance metadata.
+func getSubscriptionIdFromInstanceMetadata() (string, error) {
+	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
+	if !present {
+		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)
+		if err != nil {
+			return "", err
+		}
+
+		metadata, err := metadataService.GetMetadata(0)
+		if err != nil {
+			return "", err
+		}
+
+		return metadata.Compute.SubscriptionID, nil
+	}
+	return subscriptionID, nil
 }
