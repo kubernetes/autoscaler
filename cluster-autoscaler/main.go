@@ -131,15 +131,17 @@ var (
 	gpuTotal                 = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
 	cloudProviderFlag        = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
-	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
-	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
-	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
-	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
-	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
-	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
-	scaleUpFromZero            = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there 0 ready nodes.")
-	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
-	nodeGroupsFlag             = multiStringFlag(
+	maxBulkSoftTaintCount              = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
+	maxBulkSoftTaintTime               = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
+	maxEmptyBulkDeleteFlag             = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
+	maxGracefulTerminationFlag         = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
+	maxTotalUnreadyPercentage          = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
+	okTotalUnreadyCount                = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
+	scaleUpFromZero                    = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there 0 ready nodes.")
+	maxCloudProviderNodeDeletionTime   = flag.Duration("max-cloud-provider-node-deletion-time", 5*time.Minute, "Maximum time needed by cloud provider to delete a node")
+	maxKubernetesEmptyNodeDeletionTime = flag.Duration("max-kubernetes-empty-node-deletion-time", 3*time.Minute, "Maximum time needed by cloud provider to delete a node")
+	maxNodeProvisionTime               = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
+	nodeGroupsFlag                     = multiStringFlag(
 		"nodes",
 		"sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
 	nodeGroupAutoDiscoveryFlag = multiStringFlag(
@@ -227,6 +229,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxBulkSoftTaintTime:               *maxBulkSoftTaintTime,
 		MaxEmptyBulkDelete:                 *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:          *maxGracefulTerminationFlag,
+		MaxCloudProviderNodeDeletionTime:   *maxCloudProviderNodeDeletionTime,
+		MaxKubernetesEmptyNodeDeletionTime: *maxKubernetesEmptyNodeDeletionTime,
 		MaxNodeProvisionTime:               *maxNodeProvisionTime,
 		MaxNodesTotal:                      *maxNodesTotal,
 		MaxCoresTotal:                      maxCoresTotal,

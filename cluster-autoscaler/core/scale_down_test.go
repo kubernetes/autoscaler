@@ -140,7 +140,9 @@ func TestFindUnneededNodes(t *testing.T) {
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
-		UnremovableNodeRecheckTimeout: 5 * time.Minute,
+		UnremovableNodeRecheckTimeout:      5 * time.Minute,
+		MaxCloudProviderNodeDeletionTime:   5 * time.Minute,
+		MaxKubernetesEmptyNodeDeletionTime: 3 * time.Minute,
 	}
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, registry, provider, nil, nil)
 	assert.NoError(t, err)
@@ -1845,8 +1847,11 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
-
-	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
+	options := config.AutoscalingOptions{
+		MaxCloudProviderNodeDeletionTime:   5 * time.Minute,
+		MaxKubernetesEmptyNodeDeletionTime: 3 * time.Minute,
+	}
+	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(&context.AutoscalingContext{AutoscalingOptions: options}, nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
 	assert.Equal(t, int64(44000*utils.MiB), memoryTotal)

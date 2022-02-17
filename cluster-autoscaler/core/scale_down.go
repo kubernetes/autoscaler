@@ -63,10 +63,6 @@ const (
 )
 
 const (
-	// MaxKubernetesEmptyNodeDeletionTime is the maximum time needed by Kubernetes to delete an empty node.
-	MaxKubernetesEmptyNodeDeletionTime = 3 * time.Minute
-	// MaxCloudProviderNodeDeletionTime is the maximum time needed by cloud provider to delete a node.
-	MaxCloudProviderNodeDeletionTime = 5 * time.Minute
 	// MaxPodEvictionTime is the maximum time CA tries to evict a pod before giving up.
 	MaxPodEvictionTime = 2 * time.Minute
 	// EvictionRetryTime is the time after CA retries failed pod eviction.
@@ -174,7 +170,7 @@ type scaleDownResourcesDelta map[string]int64
 const scaleDownLimitUnknown = math.MinInt64
 
 func (sd *ScaleDown) computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
-	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
+	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(sd.context, nodes, timestamp)
 
 	var totalResources map[string]int64
 	var totalResourcesErr error
@@ -215,10 +211,10 @@ func computeAboveMin(total int64, min int64) int64 {
 
 }
 
-func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+func calculateScaleDownCoresMemoryTotal(ac *context.AutoscalingContext, nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if isNodeBeingDeleted(ac, node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -235,7 +231,7 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if isNodeBeingDeleted(sd.context, node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -277,9 +273,9 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	return result, nil
 }
 
-func isNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
+func isNodeBeingDeleted(ac *context.AutoscalingContext, node *apiv1.Node, timestamp time.Time) bool {
 	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
-	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
+	return deleteTime != nil && (timestamp.Sub(*deleteTime) < ac.MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < ac.MaxKubernetesEmptyNodeDeletionTime)
 }
 
 func noScaleDownLimitsOnResources() scaleDownResourcesLimits {
@@ -408,7 +404,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	// Skip nodes marked to be deleted, if they were marked recently.
 	// Old-time marked nodes are again eligible for deletion - something went wrong with them
 	// and they have not been deleted.
-	if isNodeBeingDeleted(node, timestamp) {
+	if isNodeBeingDeleted(sd.context, node, timestamp) {
 		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 		return simulator.CurrentlyBeingDeleted, nil
 	}
@@ -1138,8 +1134,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodesToRemove []simulator.Nod
 				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
 				return
 			}
-			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
-				sd.context.Recorder, sd.clusterStateRegistry)
+			deleteErr = deleteNodeFromCloudProvider(sd.context, nodeToDelete, sd.clusterStateRegistry)
 			if deleteErr != nil {
 				klog.Errorf("Problem with empty node deletion: %v", deleteErr)
 				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
@@ -1240,7 +1235,7 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 
 	// attempt delete from cloud provider
 
-	if typedErr := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry); typedErr != nil {
+	if typedErr := deleteNodeFromCloudProvider(sd.context, node, sd.clusterStateRegistry); typedErr != nil {
 		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: typedErr}
 	}
 
@@ -1379,9 +1374,8 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, 
 
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on
 // the Kubernetes side.
-func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider,
-	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
-	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+func deleteNodeFromCloudProvider(ac *context.AutoscalingContext, node *apiv1.Node, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
+	nodeGroup, err := ac.CloudProvider.NodeGroupForNode(node)
 	if err != nil {
 		return errors.NewAutoscalerError(
 			errors.CloudProviderError, "failed to find node group for %s: %v", node.Name, err)
@@ -1392,12 +1386,12 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 	if err = nodeGroup.DeleteNodes([]*apiv1.Node{node}); err != nil {
 		return errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete %s: %v", node.Name, err)
 	}
-	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
+	ac.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
 	registry.RegisterScaleDown(&clusterstate.ScaleDownRequest{
 		NodeGroup:          nodeGroup,
 		NodeName:           node.Name,
 		Time:               time.Now(),
-		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
+		ExpectedDeleteTime: time.Now().Add(ac.MaxCloudProviderNodeDeletionTime),
 	})
 	return nil
 }

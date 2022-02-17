@@ -78,6 +78,10 @@ type AutoscalingOptions struct {
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
+	// MaxCloudProviderNodeDeletionTime is the maximum time needed by cloud provider to delete a node
+	MaxCloudProviderNodeDeletionTime time.Duration
+	// MaxKubernetesEmptyNodeDeletionTime is the maximum time needed by Kubernetes to delete an empty node
+	MaxKubernetesEmptyNodeDeletionTime time.Duration
 	//  Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
