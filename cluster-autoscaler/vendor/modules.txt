@@ -9,6 +9,7 @@ github.com/Azure/azure-sdk-for-go/services/containerregistry/mgmt/2019-05-01/con
 github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network
+github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns
 github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources
 github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage
 github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage
@@ -173,8 +174,6 @@ github.com/containerd/containerd/api/types
 github.com/containerd/containerd/api/types/task
 # github.com/containerd/ttrpc v1.0.2
 github.com/containerd/ttrpc
-# github.com/containernetworking/cni v0.8.1
-## explicit
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.3.2
@@ -1800,23 +1799,50 @@ sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
 # sigs.k8s.io/cloud-provider-azure v1.23.2
 ## explicit
+sigs.k8s.io/cloud-provider-azure/pkg/auth
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/fileclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient/mockinterfaceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/loadbalancerclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/loadbalancerclient/mockloadbalancerclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privatednsclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privatednszonegroupclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/privateendpointclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/publicipclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/publicipclient/mockpublicipclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routeclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routeclient/mockrouteclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routetableclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/routetableclient/mockroutetableclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/securitygroupclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/securitygroupclient/mocksecuritygroupclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/snapshotclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/snapshotclient/mocksnapshotclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient/mockstorageaccountclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/subnetclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/subnetclient/mocksubnetclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/virtualnetworklinksclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmasclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmsizeclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/zoneclient
+sigs.k8s.io/cloud-provider-azure/pkg/cache
 sigs.k8s.io/cloud-provider-azure/pkg/consts
 sigs.k8s.io/cloud-provider-azure/pkg/metrics
+sigs.k8s.io/cloud-provider-azure/pkg/provider
 sigs.k8s.io/cloud-provider-azure/pkg/retry
 sigs.k8s.io/cloud-provider-azure/pkg/version
 # sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2
