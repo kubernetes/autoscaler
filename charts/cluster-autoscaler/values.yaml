@@ -120,6 +120,9 @@ clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
 # clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
 clusterAPICloudConfigPath: /etc/kubernetes/mgmt-kubeconfig
 
+# clusterAPIConfigMapsNamespace -- Namespace on the workload cluster to store Leader election and status configmaps
+clusterAPIConfigMapsNamespace: ""
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: /etc/gce.conf
 

@@ -46,7 +46,11 @@ spec:
           command:
             - ./cluster-autoscaler
             - --cloud-provider={{ .Values.cloudProvider }}
+          {{- if and (eq .Values.cloudProvider "clusterapi") (eq .Values.clusterAPIMode "kubeconfig-incluster") }}
+            - --namespace={{ .Values.clusterAPIConfigMapsNamespace | default "kube-system" }}
+          {{- else }}
             - --namespace={{ .Release.Namespace }}
+          {{- end }}
           {{- if .Values.autoscalingGroups }}
             {{- range .Values.autoscalingGroups }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
