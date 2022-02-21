@@ -36,6 +36,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3'
   'cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go'
   'cluster-autoscaler/cloudprovider/hetzner/hcloud-go'
+  'cluster-autoscaler/expander/grpcplugin/protos'
 )
 
 FIND_PACKAGES='go list ./... '
