@@ -470,7 +470,13 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 
 func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
 	instanceRequirements := &ec2.InstanceRequirements{}
-	if policy.launchTemplate != nil {
+	if policy.instanceRequirementsOverrides != nil {
+		var err error
+		instanceRequirements, err = m.awsService.getRequirementsRequestFromAutoscalingToEC2(policy.instanceRequirementsOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else {
 		params := &ec2.DescribeLaunchTemplateVersionsInput{
 			LaunchTemplateName: aws.String(policy.launchTemplate.name),
 			Versions:           []*string{aws.String(policy.launchTemplate.version)},
@@ -487,12 +493,8 @@ func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mix
 		}
 
 		lt := describeData.LaunchTemplateVersions[0]
-		instanceRequirements = lt.LaunchTemplateData.InstanceRequirements
-	} else if policy.instanceRequirementsOverrides != nil {
-		var err error
-		instanceRequirements, err = m.awsService.getRequirementsRequestFromAutoscalingToEC2(policy.instanceRequirementsOverrides)
-		if err != nil {
-			return nil, err
+		if lt.LaunchTemplateData.InstanceRequirements != nil {
+			instanceRequirements = lt.LaunchTemplateData.InstanceRequirements
 		}
 	}
 	return instanceRequirements, nil
