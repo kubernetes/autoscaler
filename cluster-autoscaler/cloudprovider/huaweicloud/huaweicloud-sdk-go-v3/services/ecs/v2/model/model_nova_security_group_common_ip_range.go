@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 //
 type NovaSecurityGroupCommonIpRange struct {
 	// 对端IP网段，cidr格式。
-	Cidr string `json:"cidr"`
+
+	Cidr *string `json:"cidr,omitempty"`
 }
 
 func (o NovaSecurityGroupCommonIpRange) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaSecurityGroupCommonIpRange struct{}"
+	}
+
 	return strings.Join([]string{"NovaSecurityGroupCommonIpRange", string(data)}, " ")
 }

@@ -1,30 +1,43 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type ListScalingGroupsRequest struct {
-	ScalingGroupName       *string                                     `json:"scaling_group_name,omitempty"`
-	ScalingConfigurationId *string                                     `json:"scaling_configuration_id,omitempty"`
-	ScalingGroupStatus     *ListScalingGroupsRequestScalingGroupStatus `json:"scaling_group_status,omitempty"`
-	StartNumber            *int32                                      `json:"start_number,omitempty"`
-	Limit                  *int32                                      `json:"limit,omitempty"`
+	// 伸缩组名称
+
+	ScalingGroupName *string `json:"scaling_group_name,omitempty"`
+	// 伸缩配置ID，通过查询弹性伸缩配置列表接口获取，详见查询弹性伸缩配置列表。
+
+	ScalingConfigurationId *string `json:"scaling_configuration_id,omitempty"`
+	// 伸缩组状态，包括INSERVICE，PAUSED，ERROR，DELETING。
+
+	ScalingGroupStatus *ListScalingGroupsRequestScalingGroupStatus `json:"scaling_group_status,omitempty"`
+	// 查询的起始行号，默认为0。
+
+	StartNumber *int32 `json:"start_number,omitempty"`
+	// 查询的记录条数，默认为20。
+
+	Limit *int32 `json:"limit,omitempty"`
+	// 企业项目ID，当传入all_granted_eps时表示查询该用户所有授权的企业项目下的伸缩组列表
+
+	EnterpriseProjectId *string `json:"enterprise_project_id,omitempty"`
 }
 
 func (o ListScalingGroupsRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListScalingGroupsRequest struct{}"
+	}
+
 	return strings.Join([]string{"ListScalingGroupsRequest", string(data)}, " ")
 }
 
@@ -57,7 +70,7 @@ func GetListScalingGroupsRequestScalingGroupStatusEnum() ListScalingGroupsReques
 }
 
 func (c ListScalingGroupsRequestScalingGroupStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingGroupsRequestScalingGroupStatus) UnmarshalJSON(b []byte) error {

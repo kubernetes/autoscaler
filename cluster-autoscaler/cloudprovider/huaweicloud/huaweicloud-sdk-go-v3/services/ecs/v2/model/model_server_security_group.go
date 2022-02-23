@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,12 +9,18 @@ import (
 // 弹性云服务器所属安全组列表。
 type ServerSecurityGroup struct {
 	// 安全组名称或者UUID。
+
 	Name string `json:"name"`
 	// 安全组ID。
+
 	Id string `json:"id"`
 }
 
 func (o ServerSecurityGroup) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ServerSecurityGroup struct{}"
+	}
+
 	return strings.Join([]string{"ServerSecurityGroup", string(data)}, " ")
 }

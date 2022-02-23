@@ -1,25 +1,26 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type DeleteLifecycleHookRequest struct {
-	ScalingGroupId    string `json:"scaling_group_id"`
+	// 伸缩组标识。
+
+	ScalingGroupId string `json:"scaling_group_id"`
+	// 生命周期挂钩标识。
+
 	LifecycleHookName string `json:"lifecycle_hook_name"`
 }
 
 func (o DeleteLifecycleHookRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "DeleteLifecycleHookRequest struct{}"
+	}
+
 	return strings.Join([]string{"DeleteLifecycleHookRequest", string(data)}, " ")
 }

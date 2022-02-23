@@ -1,25 +1,25 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type DeleteServerGroupMemberRequest struct {
-	ServerGroupId string                              `json:"server_group_id"`
-	Body          *DeleteServerGroupMemberRequestBody `json:"body,omitempty"`
+	// 云服务器组ID。
+
+	ServerGroupId string `json:"server_group_id"`
+
+	Body *DeleteServerGroupMemberRequestBody `json:"body,omitempty"`
 }
 
 func (o DeleteServerGroupMemberRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "DeleteServerGroupMemberRequest struct{}"
+	}
+
 	return strings.Join([]string{"DeleteServerGroupMemberRequest", string(data)}, " ")
 }

@@ -1,27 +1,30 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type ListResourceInstancesRequest struct {
+	// 资源类型，枚举类：SCALING_GROUP_TAG。
+
 	ResourceType ListResourceInstancesRequestResourceType `json:"resource_type"`
-	Body         *ShowTagsRequestBody                     `json:"body,omitempty"`
+
+	Body *QueryTagsOption `json:"body,omitempty"`
 }
 
 func (o ListResourceInstancesRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListResourceInstancesRequest struct{}"
+	}
+
 	return strings.Join([]string{"ListResourceInstancesRequest", string(data)}, " ")
 }
 
@@ -42,7 +45,7 @@ func GetListResourceInstancesRequestResourceTypeEnum() ListResourceInstancesRequ
 }
 
 func (c ListResourceInstancesRequestResourceType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListResourceInstancesRequestResourceType) UnmarshalJSON(b []byte) error {

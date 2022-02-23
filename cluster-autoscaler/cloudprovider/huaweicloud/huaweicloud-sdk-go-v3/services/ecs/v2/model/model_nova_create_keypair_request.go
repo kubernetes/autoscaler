@@ -1,25 +1,25 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type NovaCreateKeypairRequest struct {
-	OpenStackAPIVersion *string                       `json:"OpenStack-API-Version,omitempty"`
-	Body                *NovaCreateKeypairRequestBody `json:"body,omitempty"`
+	// 微版本头
+
+	OpenStackAPIVersion *string `json:"OpenStack-API-Version,omitempty"`
+
+	Body *NovaCreateKeypairRequestBody `json:"body,omitempty"`
 }
 
 func (o NovaCreateKeypairRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaCreateKeypairRequest struct{}"
+	}
+
 	return strings.Join([]string{"NovaCreateKeypairRequest", string(data)}, " ")
 }
