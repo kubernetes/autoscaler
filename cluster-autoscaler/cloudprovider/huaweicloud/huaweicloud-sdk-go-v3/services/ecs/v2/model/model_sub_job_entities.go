@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,14 +9,21 @@ import (
 //
 type SubJobEntities struct {
 	// 云服务器相关操作显示server_id。
+
 	ServerId *string `json:"server_id,omitempty"`
 	// 网卡相关操作显示nic_id。
+
 	NicId *string `json:"nic_id,omitempty"`
 	// 子任务执行失败的具体原因。
+
 	ErrorcodeMessage *string `json:"errorcode_message,omitempty"`
 }
 
 func (o SubJobEntities) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "SubJobEntities struct{}"
+	}
+
 	return strings.Join([]string{"SubJobEntities", string(data)}, " ")
 }

@@ -1,14 +1,7 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,16 @@ import (
 // Response Object
 type ListScalingTagInfosByTenantIdResponse struct {
 	// 资源标签。
-	Tags *[]TagsMultiValue `json:"tags,omitempty"`
+
+	Tags           *[]TagsMultiValue `json:"tags,omitempty"`
+	HttpStatusCode int               `json:"-"`
 }
 
 func (o ListScalingTagInfosByTenantIdResponse) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListScalingTagInfosByTenantIdResponse struct{}"
+	}
+
 	return strings.Join([]string{"ListScalingTagInfosByTenantIdResponse", string(data)}, " ")
 }
