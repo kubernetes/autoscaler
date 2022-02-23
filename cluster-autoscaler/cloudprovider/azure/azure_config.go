@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"k8s.io/legacy-cloud-providers/azure/cache"
 	"os"
 	"strconv"
 	"strings"
@@ -37,8 +38,6 @@ import (
 const (
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
-
-	metadataURL = "http://169.254.169.254/metadata/instance"
 
 	// backoff
 	backoffRetriesDefault  = 6
@@ -146,7 +145,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
-		cfg.SubscriptionID = os.Getenv("ARM_SUBSCRIPTION_ID")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
@@ -156,6 +154,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
 		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
+
+		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -472,4 +476,23 @@ func (cfg *Config) validate() error {
 	}
 
 	return nil
+}
+
+// getSubscriptionId reads the Subscription ID from the instance metadata if not set as an env VAR.
+func getSubscriptionIdFromInstanceMetadata() (string, error) {
+	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
+	if !present {
+		metadataService, err := NewInstanceMetadataService()
+		if err != nil {
+			return "", err
+		}
+
+		metadata, err := metadataService.GetMetadata(cache.CacheReadTypeDefault)
+		if err != nil {
+			return "", err
+		}
+
+		return metadata.Compute.SubscriptionID, nil
+	}
+	return subscriptionID, nil
 }
