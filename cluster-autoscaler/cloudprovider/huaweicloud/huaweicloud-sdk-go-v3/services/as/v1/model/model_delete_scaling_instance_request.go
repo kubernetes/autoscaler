@@ -1,27 +1,31 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type DeleteScalingInstanceRequest struct {
-	InstanceId     string                                      `json:"instance_id"`
+	// 实例ID。
+
+	InstanceId string `json:"instance_id"`
+	// 实例移出伸缩组，是否删除云服务器实例。默认为no；可选值为yes或no。
+
 	InstanceDelete *DeleteScalingInstanceRequestInstanceDelete `json:"instance_delete,omitempty"`
 }
 
 func (o DeleteScalingInstanceRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "DeleteScalingInstanceRequest struct{}"
+	}
+
 	return strings.Join([]string{"DeleteScalingInstanceRequest", string(data)}, " ")
 }
 
@@ -46,7 +50,7 @@ func GetDeleteScalingInstanceRequestInstanceDeleteEnum() DeleteScalingInstanceRe
 }
 
 func (c DeleteScalingInstanceRequestInstanceDelete) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *DeleteScalingInstanceRequestInstanceDelete) UnmarshalJSON(b []byte) error {
