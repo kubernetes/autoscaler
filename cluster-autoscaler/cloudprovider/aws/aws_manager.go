@@ -396,34 +396,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
-	if asg.MixedInstancesPolicy != nil {
-		instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
-		if err != nil {
-			klog.Error("error while building node template using instance requirements: (%s)", err)
-		}
-
-		if instanceRequirements.VCpuCount != nil {
-			if instanceRequirements.VCpuCount.Min != nil {
-				node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceRequirements.VCpuCount.Min, resource.DecimalSI)
-			}
-		}
-
-		for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
-			if *manufacturer == autoscaling.AcceleratorManufacturerNvidia {
-				for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
-					if *acceleratorType == autoscaling.AcceleratorTypeGpu {
-						node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceRequirements.AcceleratorCount.Min, resource.DecimalSI)
-					}
-				}
-			}
-		}
-
-		if instanceRequirements.MemoryMiB != nil {
-			if instanceRequirements.MemoryMiB.Min != nil {
-				node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceRequirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
-			}
-		}
-	}
+	node.Status.Capacity = *m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy)
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	for resourceName, val := range resourcesFromTags {
@@ -466,6 +439,38 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	}
 
 	return result
+}
+
+func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) *apiv1.ResourceList {
+	if policy == nil {
+		return capacity
+	}
+
+	instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(policy)
+	if err != nil {
+		klog.Error("error while building node template using instance requirements: (%s)", err)
+		return capacity
+	}
+
+	if instanceRequirements.VCpuCount != nil && instanceRequirements.VCpuCount.Min != nil {
+		(*capacity)[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceRequirements.VCpuCount.Min, resource.DecimalSI)
+	}
+
+	if instanceRequirements.MemoryMiB != nil && instanceRequirements.MemoryMiB.Min != nil {
+		(*capacity)[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceRequirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
+	}
+
+	for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
+		if *manufacturer == autoscaling.AcceleratorManufacturerNvidia {
+			for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
+				if *acceleratorType == autoscaling.AcceleratorTypeGpu {
+					(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceRequirements.AcceleratorCount.Min, resource.DecimalSI)
+				}
+			}
+		}
+	}
+
+	return capacity
 }
 
 func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
