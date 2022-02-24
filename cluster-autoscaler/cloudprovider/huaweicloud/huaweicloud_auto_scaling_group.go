@@ -20,11 +20,11 @@ import (
 	"context"
 	"fmt"
 
+	huaweicloudsdkasmodel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
