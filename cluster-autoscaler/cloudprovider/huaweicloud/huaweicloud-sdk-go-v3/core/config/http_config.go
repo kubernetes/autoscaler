@@ -20,16 +20,22 @@
 package config
 
 import (
+	"context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/httphandler"
+	"net"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/httphandler"
 )
 
-const DefaultTimeout = 30 * time.Second
+const DefaultTimeout = 120 * time.Second
 const DefaultRetries = 0
 const DefaultIgnoreSSLVerification = false
 
+type DialContext func(ctx context.Context, network string, addr string) (net.Conn, error)
+
 type HttpConfig struct {
+	DialContext           DialContext
 	Timeout               time.Duration
 	Retries               int
 	HttpProxy             *Proxy
@@ -43,6 +49,11 @@ func DefaultHttpConfig() *HttpConfig {
 		Retries:               DefaultRetries,
 		IgnoreSSLVerification: DefaultIgnoreSSLVerification,
 	}
+}
+
+func (config *HttpConfig) WithDialContext(dial DialContext) *HttpConfig {
+	config.DialContext = dial
+	return config
 }
 
 func (config *HttpConfig) WithTimeout(timeout time.Duration) *HttpConfig {
@@ -111,6 +122,8 @@ func (p *Proxy) GetProxyUrl() string {
 	var proxyUrl string
 	if p.Username != "" {
 		proxyUrl = fmt.Sprintf("%s://%s:%s@%s", p.Schema, p.Username, p.Password, p.Host)
+	} else {
+		proxyUrl = fmt.Sprintf("%s://%s", p.Schema, p.Host)
 	}
 	if p.Port != 0 {
 		proxyUrl = fmt.Sprintf("%s:%d", proxyUrl, p.Port)

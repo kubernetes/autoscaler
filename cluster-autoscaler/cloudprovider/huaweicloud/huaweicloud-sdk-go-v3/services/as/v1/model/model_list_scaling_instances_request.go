@@ -1,31 +1,43 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type ListScalingInstancesRequest struct {
-	ScalingGroupId         string                                             `json:"scaling_group_id"`
-	LifeCycleState         *ListScalingInstancesRequestLifeCycleState         `json:"life_cycle_state,omitempty"`
-	HealthStatus           *ListScalingInstancesRequestHealthStatus           `json:"health_status,omitempty"`
+	// 伸缩组ID。
+
+	ScalingGroupId string `json:"scaling_group_id"`
+	// 实例在伸缩组中的生命周期状态：INSERVICE： 正在使用。PENDING：正在加入伸缩组。REMOVING：正在移出伸缩组。PENDING_WAIT：正在加入伸缩组：等待。REMOVING_WAIT：正在移出伸缩组：等待。
+
+	LifeCycleState *ListScalingInstancesRequestLifeCycleState `json:"life_cycle_state,omitempty"`
+	// 实例健康状态：INITIALIZING：初始化。NORMAL：正常。ERROR：异常
+
+	HealthStatus *ListScalingInstancesRequestHealthStatus `json:"health_status,omitempty"`
+	// 实例保护状态：true：已设置实例保护。false：未设置实例保护。
+
 	ProtectFromScalingDown *ListScalingInstancesRequestProtectFromScalingDown `json:"protect_from_scaling_down,omitempty"`
-	StartNumber            *int32                                             `json:"start_number,omitempty"`
-	Limit                  *int32                                             `json:"limit,omitempty"`
+	// 查询的起始行号，默认为0。
+
+	StartNumber *int32 `json:"start_number,omitempty"`
+	// 查询的记录条数，默认为20。
+
+	Limit *int32 `json:"limit,omitempty"`
 }
 
 func (o ListScalingInstancesRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListScalingInstancesRequest struct{}"
+	}
+
 	return strings.Join([]string{"ListScalingInstancesRequest", string(data)}, " ")
 }
 
@@ -70,7 +82,7 @@ func GetListScalingInstancesRequestLifeCycleStateEnum() ListScalingInstancesRequ
 }
 
 func (c ListScalingInstancesRequestLifeCycleState) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingInstancesRequestLifeCycleState) UnmarshalJSON(b []byte) error {
@@ -112,7 +124,7 @@ func GetListScalingInstancesRequestHealthStatusEnum() ListScalingInstancesReques
 }
 
 func (c ListScalingInstancesRequestHealthStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingInstancesRequestHealthStatus) UnmarshalJSON(b []byte) error {
@@ -150,7 +162,7 @@ func GetListScalingInstancesRequestProtectFromScalingDownEnum() ListScalingInsta
 }
 
 func (c ListScalingInstancesRequestProtectFromScalingDown) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingInstancesRequestProtectFromScalingDown) UnmarshalJSON(b []byte) error {

@@ -1,41 +1,49 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // 策略执行动作包含的具体任务
 type JobRecords struct {
 	// 任务名称
+
 	JobName *string `json:"job_name,omitempty"`
 	// 记录类型。API：接口调用类型。MEG：消息类型。
+
 	RecordType *JobRecordsRecordType `json:"record_type,omitempty"`
 	// 记录时间。
+
 	RecordTime *string `json:"record_time,omitempty"`
 	// 请求体，仅当record_type为API时有效
+
 	Request *string `json:"request,omitempty"`
 	// 返回体，仅当record_type为API时有效
+
 	Response *string `json:"response,omitempty"`
 	// 返回码，仅当record_type为API时有效
-	Code *int32 `json:"code,omitempty"`
+
+	Code *string `json:"code,omitempty"`
 	// 消息，仅当record_type为MEG时有效
+
 	Message *string `json:"message,omitempty"`
 	// job执行状态：SUCCESS：成功。FAIL：失败。
+
 	JobStatus *JobRecordsJobStatus `json:"job_status,omitempty"`
 }
 
 func (o JobRecords) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "JobRecords struct{}"
+	}
+
 	return strings.Join([]string{"JobRecords", string(data)}, " ")
 }
 
@@ -60,7 +68,7 @@ func GetJobRecordsRecordTypeEnum() JobRecordsRecordTypeEnum {
 }
 
 func (c JobRecordsRecordType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *JobRecordsRecordType) UnmarshalJSON(b []byte) error {
@@ -98,7 +106,7 @@ func GetJobRecordsJobStatusEnum() JobRecordsJobStatusEnum {
 }
 
 func (c JobRecordsJobStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *JobRecordsJobStatus) UnmarshalJSON(b []byte) error {

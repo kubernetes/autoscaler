@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -19,6 +12,10 @@ type BatchRebootServersRequestBody struct {
 }
 
 func (o BatchRebootServersRequestBody) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "BatchRebootServersRequestBody struct{}"
+	}
+
 	return strings.Join([]string{"BatchRebootServersRequestBody", string(data)}, " ")
 }

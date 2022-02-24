@@ -1,25 +1,25 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type ExecuteScalingPolicyRequest struct {
-	ScalingPolicyId string                           `json:"scaling_policy_id"`
-	Body            *ExecuteScalingPolicyRequestBody `json:"body,omitempty"`
+	// 伸缩策略ID。
+
+	ScalingPolicyId string `json:"scaling_policy_id"`
+
+	Body *ExecuteScalingPolicyOption `json:"body,omitempty"`
 }
 
 func (o ExecuteScalingPolicyRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ExecuteScalingPolicyRequest struct{}"
+	}
+
 	return strings.Join([]string{"ExecuteScalingPolicyRequest", string(data)}, " ")
 }

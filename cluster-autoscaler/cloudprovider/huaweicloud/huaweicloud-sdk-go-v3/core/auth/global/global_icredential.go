@@ -20,47 +20,85 @@
 package global
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/signer"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
+	"fmt"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/cache"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/iam"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/signer"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/impl"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
+)
+
+const (
+	DomainIdInHeader      = "X-Domain-Id"
+	SecurityTokenInHeader = "X-Security-Token"
+	ContentTypeInHeader   = "Content-Type"
 )
 
 type Credentials struct {
+	IamEndpoint   string
 	AK            string
 	SK            string
 	DomainId      string
 	SecurityToken string
 }
 
-func (s Credentials) ProcessAuthRequest(req *request.DefaultHttpRequest) (*request.DefaultHttpRequest, error) {
+func (s Credentials) ProcessAuthParams(client *impl.DefaultHttpClient, region string) auth.ICredential {
+	if s.DomainId != "" {
+		return s
+	}
+
+	authCache := cache.GetCache()
+	if domainId, ok := authCache.GetAuth(s.AK); ok {
+		s.DomainId = domainId
+		return s
+	}
+
+	req, err := s.ProcessAuthRequest(client, iam.GetKeystoneListAuthDomainsRequest(s.IamEndpoint))
+	if err != nil {
+		panic(fmt.Sprintf("failed to get domain id, %s", err.Error()))
+	}
+
+	id, err := iam.KeystoneListAuthDomains(client, req)
+	if err != nil {
+		panic(fmt.Sprintf("failed to get domain id, %s", err.Error()))
+	}
+
+	s.DomainId = id
+	authCache.PutAuth(s.AK, id)
+	return s
+}
+
+func (s Credentials) ProcessAuthRequest(client *impl.DefaultHttpClient, req *request.DefaultHttpRequest) (*request.DefaultHttpRequest, error) {
 	reqBuilder := req.Builder()
 
 	if s.DomainId != "" {
-		reqBuilder.AddAutoFilledPathParam("domain_id", s.DomainId)
-		reqBuilder.AddHeaderParam("X-Domain-Id", s.DomainId)
+		reqBuilder = reqBuilder.
+			AddAutoFilledPathParam("domain_id", s.DomainId).
+			AddHeaderParam(DomainIdInHeader, s.DomainId)
 	}
 
 	if s.SecurityToken != "" {
-		reqBuilder.AddHeaderParam("X-Security-Token", s.SecurityToken)
+		reqBuilder.AddHeaderParam(SecurityTokenInHeader, s.SecurityToken)
 	}
 
-	if _, ok := req.GetHeaderParams()["Content-Type"]; ok {
-		if !strings.Contains(req.GetHeaderParams()["Content-Type"], "application/json") {
+	if _, ok := req.GetHeaderParams()[ContentTypeInHeader]; ok {
+		if !strings.Contains(req.GetHeaderParams()[ContentTypeInHeader], "application/json") {
 			reqBuilder.AddHeaderParam("X-Sdk-Content-Sha256", "UNSIGNED-PAYLOAD")
 		}
 	}
 
-	r, err := reqBuilder.Build().ConvertRequest()
+	headerParams, err := signer.Sign(reqBuilder.Build(), s.AK, s.SK)
 	if err != nil {
 		return nil, err
 	}
-	headerParams, err := signer.Sign(r, s.AK, s.SK)
-	if err != nil {
-		return nil, err
-	}
+
 	for key, value := range headerParams {
 		req.AddHeaderParam(key, value)
 	}
+
 	return req, nil
 }
 
@@ -69,7 +107,14 @@ type CredentialsBuilder struct {
 }
 
 func NewCredentialsBuilder() *CredentialsBuilder {
-	return &CredentialsBuilder{Credentials: Credentials{}}
+	return &CredentialsBuilder{Credentials: Credentials{
+		IamEndpoint: iam.DefaultIamEndpoint,
+	}}
+}
+
+func (builder *CredentialsBuilder) WithIamEndpointOverride(endpoint string) *CredentialsBuilder {
+	builder.Credentials.IamEndpoint = endpoint
+	return builder
 }
 
 func (builder *CredentialsBuilder) WithAk(ak string) *CredentialsBuilder {
