@@ -1,14 +1,7 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,16 @@ import (
 // Response Object
 type ListScalingNotificationsResponse struct {
 	// 伸缩组通知列表。
-	Topics *[]Topics `json:"topics,omitempty"`
+
+	Topics         *[]Topics `json:"topics,omitempty"`
+	HttpStatusCode int       `json:"-"`
 }
 
 func (o ListScalingNotificationsResponse) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListScalingNotificationsResponse struct{}"
+	}
+
 	return strings.Join([]string{"ListScalingNotificationsResponse", string(data)}, " ")
 }

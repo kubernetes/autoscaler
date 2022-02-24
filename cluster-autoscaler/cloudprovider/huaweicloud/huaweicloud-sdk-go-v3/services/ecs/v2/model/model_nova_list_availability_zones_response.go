@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,16 @@ import (
 // Response Object
 type NovaListAvailabilityZonesResponse struct {
 	// 可用域信息。
+
 	AvailabilityZoneInfo *[]NovaAvailabilityZone `json:"availabilityZoneInfo,omitempty"`
+	HttpStatusCode       int                     `json:"-"`
 }
 
 func (o NovaListAvailabilityZonesResponse) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaListAvailabilityZonesResponse struct{}"
+	}
+
 	return strings.Join([]string{"NovaListAvailabilityZonesResponse", string(data)}, " ")
 }

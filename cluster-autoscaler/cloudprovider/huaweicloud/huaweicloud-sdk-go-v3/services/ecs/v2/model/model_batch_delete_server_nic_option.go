@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 //
 type BatchDeleteServerNicOption struct {
 	// 网卡Port ID。
+
 	Id string `json:"id"`
 }
 
 func (o BatchDeleteServerNicOption) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "BatchDeleteServerNicOption struct{}"
+	}
+
 	return strings.Join([]string{"BatchDeleteServerNicOption", string(data)}, " ")
 }

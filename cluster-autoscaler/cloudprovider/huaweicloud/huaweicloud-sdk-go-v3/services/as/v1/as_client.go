@@ -6,11 +6,11 @@ import (
 )
 
 type AsClient struct {
-	hcClient *http_client.HcHttpClient
+	HcClient *http_client.HcHttpClient
 }
 
 func NewAsClient(hcClient *http_client.HcHttpClient) *AsClient {
-	return &AsClient{hcClient: hcClient}
+	return &AsClient{HcClient: hcClient}
 }
 
 func AsClientBuilder() *http_client.HcHttpClientBuilder {
@@ -18,25 +18,124 @@ func AsClientBuilder() *http_client.HcHttpClientBuilder {
 	return builder
 }
 
+//通过生命周期操作令牌或者通过实例ID和生命周期挂钩名称对伸缩实例指定的挂钩进行回调操作。如果在超时时间结束前已完成自定义操作，选择终止或继续完成生命周期操作。如果需要更多时间完成自定义操作，选择延长超时时间，实例保持等待状态的时间将增加1小时。只有实例的生命周期挂钩状态为 HANGING 时才可以进行回调操作。
+func (c *AsClient) AttachCallbackInstanceLifeCycleHook(request *model.AttachCallbackInstanceLifeCycleHookRequest) (*model.AttachCallbackInstanceLifeCycleHookResponse, error) {
+	requestDef := GenReqDefForAttachCallbackInstanceLifeCycleHook()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.AttachCallbackInstanceLifeCycleHookResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchAddScalingInstances(request *model.BatchAddScalingInstancesRequest) (*model.BatchAddScalingInstancesResponse, error) {
+	requestDef := GenReqDefForBatchAddScalingInstances()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchAddScalingInstancesResponse), nil
+	}
+}
+
 //批量删除指定弹性伸缩配置。被伸缩组使用的伸缩配置不能被删除。单次最多删除伸缩配置个数为50。
 func (c *AsClient) BatchDeleteScalingConfigs(request *model.BatchDeleteScalingConfigsRequest) (*model.BatchDeleteScalingConfigsResponse, error) {
 	requestDef := GenReqDefForBatchDeleteScalingConfigs()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchDeleteScalingConfigsResponse), nil
 	}
 }
 
-//通过生命周期操作令牌或者通过实例ID和生命周期挂钩名称对伸缩实例指定的挂钩进行回调操作。如果在超时时间结束前已完成自定义操作，选择终止或继续完成生命周期操作。如果需要更多时间完成自定义操作，选择延长超时时间，实例保持等待状态的时间将增加1小时。只有实例的生命周期挂钩状态为 HANGING 时才可以进行回调操作。
-func (c *AsClient) CompleteLifecycleAction(request *model.CompleteLifecycleActionRequest) (*model.CompleteLifecycleActionResponse, error) {
-	requestDef := GenReqDefForCompleteLifecycleAction()
+//批量启用、停用或者删除弹性伸缩策略。单次最多批量操作伸缩策略个数为20。
+func (c *AsClient) BatchDeleteScalingPolicies(request *model.BatchDeleteScalingPoliciesRequest) (*model.BatchDeleteScalingPoliciesResponse, error) {
+	requestDef := GenReqDefForBatchDeleteScalingPolicies()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
-		return resp.(*model.CompleteLifecycleActionResponse), nil
+		return resp.(*model.BatchDeleteScalingPoliciesResponse), nil
+	}
+}
+
+//批量启用、停用或者删除弹性伸缩策略。单次最多批量操作伸缩策略个数为20。
+func (c *AsClient) BatchPauseScalingPolicies(request *model.BatchPauseScalingPoliciesRequest) (*model.BatchPauseScalingPoliciesResponse, error) {
+	requestDef := GenReqDefForBatchPauseScalingPolicies()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchPauseScalingPoliciesResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchProtectScalingInstances(request *model.BatchProtectScalingInstancesRequest) (*model.BatchProtectScalingInstancesResponse, error) {
+	requestDef := GenReqDefForBatchProtectScalingInstances()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchProtectScalingInstancesResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchRemoveScalingInstances(request *model.BatchRemoveScalingInstancesRequest) (*model.BatchRemoveScalingInstancesResponse, error) {
+	requestDef := GenReqDefForBatchRemoveScalingInstances()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchRemoveScalingInstancesResponse), nil
+	}
+}
+
+//批量启用、停用或者删除弹性伸缩策略。单次最多批量操作伸缩策略个数为20。
+func (c *AsClient) BatchResumeScalingPolicies(request *model.BatchResumeScalingPoliciesRequest) (*model.BatchResumeScalingPoliciesResponse, error) {
+	requestDef := GenReqDefForBatchResumeScalingPolicies()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchResumeScalingPoliciesResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchSetScalingInstancesStandby(request *model.BatchSetScalingInstancesStandbyRequest) (*model.BatchSetScalingInstancesStandbyResponse, error) {
+	requestDef := GenReqDefForBatchSetScalingInstancesStandby()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchSetScalingInstancesStandbyResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchUnprotectScalingInstances(request *model.BatchUnprotectScalingInstancesRequest) (*model.BatchUnprotectScalingInstancesResponse, error) {
+	requestDef := GenReqDefForBatchUnprotectScalingInstances()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchUnprotectScalingInstancesResponse), nil
+	}
+}
+
+//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
+func (c *AsClient) BatchUnsetScalingInstancesStantby(request *model.BatchUnsetScalingInstancesStantbyRequest) (*model.BatchUnsetScalingInstancesStantbyResponse, error) {
+	requestDef := GenReqDefForBatchUnsetScalingInstancesStantby()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchUnsetScalingInstancesStantbyResponse), nil
 	}
 }
 
@@ -44,7 +143,7 @@ func (c *AsClient) CompleteLifecycleAction(request *model.CompleteLifecycleActio
 func (c *AsClient) CreateLifyCycleHook(request *model.CreateLifyCycleHookRequest) (*model.CreateLifyCycleHookResponse, error) {
 	requestDef := GenReqDefForCreateLifyCycleHook()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateLifyCycleHookResponse), nil
@@ -55,7 +154,7 @@ func (c *AsClient) CreateLifyCycleHook(request *model.CreateLifyCycleHookRequest
 func (c *AsClient) CreateScalingConfig(request *model.CreateScalingConfigRequest) (*model.CreateScalingConfigResponse, error) {
 	requestDef := GenReqDefForCreateScalingConfig()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateScalingConfigResponse), nil
@@ -66,7 +165,7 @@ func (c *AsClient) CreateScalingConfig(request *model.CreateScalingConfigRequest
 func (c *AsClient) CreateScalingGroup(request *model.CreateScalingGroupRequest) (*model.CreateScalingGroupResponse, error) {
 	requestDef := GenReqDefForCreateScalingGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateScalingGroupResponse), nil
@@ -77,7 +176,7 @@ func (c *AsClient) CreateScalingGroup(request *model.CreateScalingGroupRequest) 
 func (c *AsClient) CreateScalingNotification(request *model.CreateScalingNotificationRequest) (*model.CreateScalingNotificationResponse, error) {
 	requestDef := GenReqDefForCreateScalingNotification()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateScalingNotificationResponse), nil
@@ -88,7 +187,7 @@ func (c *AsClient) CreateScalingNotification(request *model.CreateScalingNotific
 func (c *AsClient) CreateScalingPolicy(request *model.CreateScalingPolicyRequest) (*model.CreateScalingPolicyResponse, error) {
 	requestDef := GenReqDefForCreateScalingPolicy()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateScalingPolicyResponse), nil
@@ -96,13 +195,13 @@ func (c *AsClient) CreateScalingPolicy(request *model.CreateScalingPolicyRequest
 }
 
 //创建或删除指定资源的标签。每个伸缩组最多添加10个标签。
-func (c *AsClient) CreateScalingTags(request *model.CreateScalingTagsRequest) (*model.CreateScalingTagsResponse, error) {
-	requestDef := GenReqDefForCreateScalingTags()
+func (c *AsClient) CreateScalingTagInfo(request *model.CreateScalingTagInfoRequest) (*model.CreateScalingTagInfoResponse, error) {
+	requestDef := GenReqDefForCreateScalingTagInfo()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
-		return resp.(*model.CreateScalingTagsResponse), nil
+		return resp.(*model.CreateScalingTagInfoResponse), nil
 	}
 }
 
@@ -110,7 +209,7 @@ func (c *AsClient) CreateScalingTags(request *model.CreateScalingTagsRequest) (*
 func (c *AsClient) DeleteLifecycleHook(request *model.DeleteLifecycleHookRequest) (*model.DeleteLifecycleHookResponse, error) {
 	requestDef := GenReqDefForDeleteLifecycleHook()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteLifecycleHookResponse), nil
@@ -121,7 +220,7 @@ func (c *AsClient) DeleteLifecycleHook(request *model.DeleteLifecycleHookRequest
 func (c *AsClient) DeleteScalingConfig(request *model.DeleteScalingConfigRequest) (*model.DeleteScalingConfigResponse, error) {
 	requestDef := GenReqDefForDeleteScalingConfig()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteScalingConfigResponse), nil
@@ -132,7 +231,7 @@ func (c *AsClient) DeleteScalingConfig(request *model.DeleteScalingConfigRequest
 func (c *AsClient) DeleteScalingGroup(request *model.DeleteScalingGroupRequest) (*model.DeleteScalingGroupResponse, error) {
 	requestDef := GenReqDefForDeleteScalingGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteScalingGroupResponse), nil
@@ -143,7 +242,7 @@ func (c *AsClient) DeleteScalingGroup(request *model.DeleteScalingGroupRequest) 
 func (c *AsClient) DeleteScalingInstance(request *model.DeleteScalingInstanceRequest) (*model.DeleteScalingInstanceResponse, error) {
 	requestDef := GenReqDefForDeleteScalingInstance()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteScalingInstanceResponse), nil
@@ -154,7 +253,7 @@ func (c *AsClient) DeleteScalingInstance(request *model.DeleteScalingInstanceReq
 func (c *AsClient) DeleteScalingNotification(request *model.DeleteScalingNotificationRequest) (*model.DeleteScalingNotificationResponse, error) {
 	requestDef := GenReqDefForDeleteScalingNotification()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteScalingNotificationResponse), nil
@@ -165,7 +264,7 @@ func (c *AsClient) DeleteScalingNotification(request *model.DeleteScalingNotific
 func (c *AsClient) DeleteScalingPolicy(request *model.DeleteScalingPolicyRequest) (*model.DeleteScalingPolicyResponse, error) {
 	requestDef := GenReqDefForDeleteScalingPolicy()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteScalingPolicyResponse), nil
@@ -173,24 +272,13 @@ func (c *AsClient) DeleteScalingPolicy(request *model.DeleteScalingPolicyRequest
 }
 
 //创建或删除指定资源的标签。每个伸缩组最多添加10个标签。
-func (c *AsClient) DeleteScalingTags(request *model.DeleteScalingTagsRequest) (*model.DeleteScalingTagsResponse, error) {
-	requestDef := GenReqDefForDeleteScalingTags()
+func (c *AsClient) DeleteScalingTagInfo(request *model.DeleteScalingTagInfoRequest) (*model.DeleteScalingTagInfoResponse, error) {
+	requestDef := GenReqDefForDeleteScalingTagInfo()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
-		return resp.(*model.DeleteScalingTagsResponse), nil
-	}
-}
-
-//启用或停止一个指定弹性伸缩组。已停用状态的伸缩组，不会自动触发任何伸缩活动。当伸缩组正在进行伸缩活动，即使停用，正在进行的伸缩活动也不会立即停止。
-func (c *AsClient) EnableOrDisableScalingGroup(request *model.EnableOrDisableScalingGroupRequest) (*model.EnableOrDisableScalingGroupResponse, error) {
-	requestDef := GenReqDefForEnableOrDisableScalingGroup()
-
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
-		return nil, err
-	} else {
-		return resp.(*model.EnableOrDisableScalingGroupResponse), nil
+		return resp.(*model.DeleteScalingTagInfoResponse), nil
 	}
 }
 
@@ -198,7 +286,7 @@ func (c *AsClient) EnableOrDisableScalingGroup(request *model.EnableOrDisableSca
 func (c *AsClient) ExecuteScalingPolicy(request *model.ExecuteScalingPolicyRequest) (*model.ExecuteScalingPolicyResponse, error) {
 	requestDef := GenReqDefForExecuteScalingPolicy()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ExecuteScalingPolicyResponse), nil
@@ -209,7 +297,7 @@ func (c *AsClient) ExecuteScalingPolicy(request *model.ExecuteScalingPolicyReque
 func (c *AsClient) ListHookInstances(request *model.ListHookInstancesRequest) (*model.ListHookInstancesResponse, error) {
 	requestDef := GenReqDefForListHookInstances()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListHookInstancesResponse), nil
@@ -220,7 +308,7 @@ func (c *AsClient) ListHookInstances(request *model.ListHookInstancesRequest) (*
 func (c *AsClient) ListLifeCycleHooks(request *model.ListLifeCycleHooksRequest) (*model.ListLifeCycleHooksResponse, error) {
 	requestDef := GenReqDefForListLifeCycleHooks()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListLifeCycleHooksResponse), nil
@@ -231,7 +319,7 @@ func (c *AsClient) ListLifeCycleHooks(request *model.ListLifeCycleHooksRequest) 
 func (c *AsClient) ListResourceInstances(request *model.ListResourceInstancesRequest) (*model.ListResourceInstancesResponse, error) {
 	requestDef := GenReqDefForListResourceInstances()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListResourceInstancesResponse), nil
@@ -242,10 +330,21 @@ func (c *AsClient) ListResourceInstances(request *model.ListResourceInstancesReq
 func (c *AsClient) ListScalingActivityLogs(request *model.ListScalingActivityLogsRequest) (*model.ListScalingActivityLogsResponse, error) {
 	requestDef := GenReqDefForListScalingActivityLogs()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingActivityLogsResponse), nil
+	}
+}
+
+//根据输入条件过滤查询伸缩活动日志，支持查询实例伸缩、ELB迁移、实例备用等类型活动。查询结果分页显示。查询伸缩活动日志V2版本与V1版本区别在于，V2版本展示了更详细的实例伸缩日志，如ELB迁移日志，实例备用日志信息。可根据起始时间，截止时间，起始行号，记录数，伸缩活动类型等作为条件过滤查询。若不加过滤条件默认查询最多20条伸缩活动日志信息。
+func (c *AsClient) ListScalingActivityV2Logs(request *model.ListScalingActivityV2LogsRequest) (*model.ListScalingActivityV2LogsResponse, error) {
+	requestDef := GenReqDefForListScalingActivityV2Logs()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListScalingActivityV2LogsResponse), nil
 	}
 }
 
@@ -253,7 +352,7 @@ func (c *AsClient) ListScalingActivityLogs(request *model.ListScalingActivityLog
 func (c *AsClient) ListScalingConfigs(request *model.ListScalingConfigsRequest) (*model.ListScalingConfigsResponse, error) {
 	requestDef := GenReqDefForListScalingConfigs()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingConfigsResponse), nil
@@ -264,7 +363,7 @@ func (c *AsClient) ListScalingConfigs(request *model.ListScalingConfigsRequest) 
 func (c *AsClient) ListScalingGroups(request *model.ListScalingGroupsRequest) (*model.ListScalingGroupsResponse, error) {
 	requestDef := GenReqDefForListScalingGroups()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingGroupsResponse), nil
@@ -275,7 +374,7 @@ func (c *AsClient) ListScalingGroups(request *model.ListScalingGroupsRequest) (*
 func (c *AsClient) ListScalingInstances(request *model.ListScalingInstancesRequest) (*model.ListScalingInstancesResponse, error) {
 	requestDef := GenReqDefForListScalingInstances()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingInstancesResponse), nil
@@ -286,7 +385,7 @@ func (c *AsClient) ListScalingInstances(request *model.ListScalingInstancesReque
 func (c *AsClient) ListScalingNotifications(request *model.ListScalingNotificationsRequest) (*model.ListScalingNotificationsResponse, error) {
 	requestDef := GenReqDefForListScalingNotifications()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingNotificationsResponse), nil
@@ -297,7 +396,7 @@ func (c *AsClient) ListScalingNotifications(request *model.ListScalingNotificati
 func (c *AsClient) ListScalingPolicies(request *model.ListScalingPoliciesRequest) (*model.ListScalingPoliciesResponse, error) {
 	requestDef := GenReqDefForListScalingPolicies()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingPoliciesResponse), nil
@@ -308,7 +407,7 @@ func (c *AsClient) ListScalingPolicies(request *model.ListScalingPoliciesRequest
 func (c *AsClient) ListScalingPolicyExecuteLogs(request *model.ListScalingPolicyExecuteLogsRequest) (*model.ListScalingPolicyExecuteLogsResponse, error) {
 	requestDef := GenReqDefForListScalingPolicyExecuteLogs()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingPolicyExecuteLogsResponse), nil
@@ -319,7 +418,7 @@ func (c *AsClient) ListScalingPolicyExecuteLogs(request *model.ListScalingPolicy
 func (c *AsClient) ListScalingTagInfosByResourceId(request *model.ListScalingTagInfosByResourceIdRequest) (*model.ListScalingTagInfosByResourceIdResponse, error) {
 	requestDef := GenReqDefForListScalingTagInfosByResourceId()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingTagInfosByResourceIdResponse), nil
@@ -330,10 +429,54 @@ func (c *AsClient) ListScalingTagInfosByResourceId(request *model.ListScalingTag
 func (c *AsClient) ListScalingTagInfosByTenantId(request *model.ListScalingTagInfosByTenantIdRequest) (*model.ListScalingTagInfosByTenantIdResponse, error) {
 	requestDef := GenReqDefForListScalingTagInfosByTenantId()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListScalingTagInfosByTenantIdResponse), nil
+	}
+}
+
+//启用或停止一个指定弹性伸缩组。已停用状态的伸缩组，不会自动触发任何伸缩活动。当伸缩组正在进行伸缩活动，即使停用，正在进行的伸缩活动也不会立即停止。
+func (c *AsClient) PauseScalingGroup(request *model.PauseScalingGroupRequest) (*model.PauseScalingGroupResponse, error) {
+	requestDef := GenReqDefForPauseScalingGroup()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.PauseScalingGroupResponse), nil
+	}
+}
+
+//立即执行或启用或停止一个指定弹性伸缩策略。当伸缩组、伸缩策略状态处于INSERVICE时，伸缩策略才能被正确执行，否则会执行失败。
+func (c *AsClient) PauseScalingPolicy(request *model.PauseScalingPolicyRequest) (*model.PauseScalingPolicyResponse, error) {
+	requestDef := GenReqDefForPauseScalingPolicy()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.PauseScalingPolicyResponse), nil
+	}
+}
+
+//启用或停止一个指定弹性伸缩组。已停用状态的伸缩组，不会自动触发任何伸缩活动。当伸缩组正在进行伸缩活动，即使停用，正在进行的伸缩活动也不会立即停止。
+func (c *AsClient) ResumeScalingGroup(request *model.ResumeScalingGroupRequest) (*model.ResumeScalingGroupResponse, error) {
+	requestDef := GenReqDefForResumeScalingGroup()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ResumeScalingGroupResponse), nil
+	}
+}
+
+//立即执行或启用或停止一个指定弹性伸缩策略。当伸缩组、伸缩策略状态处于INSERVICE时，伸缩策略才能被正确执行，否则会执行失败。
+func (c *AsClient) ResumeScalingPolicy(request *model.ResumeScalingPolicyRequest) (*model.ResumeScalingPolicyResponse, error) {
+	requestDef := GenReqDefForResumeScalingPolicy()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ResumeScalingPolicyResponse), nil
 	}
 }
 
@@ -341,7 +484,7 @@ func (c *AsClient) ListScalingTagInfosByTenantId(request *model.ListScalingTagIn
 func (c *AsClient) ShowLifeCycleHook(request *model.ShowLifeCycleHookRequest) (*model.ShowLifeCycleHookResponse, error) {
 	requestDef := GenReqDefForShowLifeCycleHook()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowLifeCycleHookResponse), nil
@@ -352,7 +495,7 @@ func (c *AsClient) ShowLifeCycleHook(request *model.ShowLifeCycleHookRequest) (*
 func (c *AsClient) ShowPolicyAndInstanceQuota(request *model.ShowPolicyAndInstanceQuotaRequest) (*model.ShowPolicyAndInstanceQuotaResponse, error) {
 	requestDef := GenReqDefForShowPolicyAndInstanceQuota()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowPolicyAndInstanceQuotaResponse), nil
@@ -363,7 +506,7 @@ func (c *AsClient) ShowPolicyAndInstanceQuota(request *model.ShowPolicyAndInstan
 func (c *AsClient) ShowResourceQuota(request *model.ShowResourceQuotaRequest) (*model.ShowResourceQuotaResponse, error) {
 	requestDef := GenReqDefForShowResourceQuota()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowResourceQuotaResponse), nil
@@ -374,7 +517,7 @@ func (c *AsClient) ShowResourceQuota(request *model.ShowResourceQuotaRequest) (*
 func (c *AsClient) ShowScalingConfig(request *model.ShowScalingConfigRequest) (*model.ShowScalingConfigResponse, error) {
 	requestDef := GenReqDefForShowScalingConfig()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowScalingConfigResponse), nil
@@ -385,7 +528,7 @@ func (c *AsClient) ShowScalingConfig(request *model.ShowScalingConfigRequest) (*
 func (c *AsClient) ShowScalingGroup(request *model.ShowScalingGroupRequest) (*model.ShowScalingGroupResponse, error) {
 	requestDef := GenReqDefForShowScalingGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowScalingGroupResponse), nil
@@ -396,7 +539,7 @@ func (c *AsClient) ShowScalingGroup(request *model.ShowScalingGroupRequest) (*mo
 func (c *AsClient) ShowScalingPolicy(request *model.ShowScalingPolicyRequest) (*model.ShowScalingPolicyResponse, error) {
 	requestDef := GenReqDefForShowScalingPolicy()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowScalingPolicyResponse), nil
@@ -407,7 +550,7 @@ func (c *AsClient) ShowScalingPolicy(request *model.ShowScalingPolicyRequest) (*
 func (c *AsClient) UpdateLifeCycleHook(request *model.UpdateLifeCycleHookRequest) (*model.UpdateLifeCycleHookResponse, error) {
 	requestDef := GenReqDefForUpdateLifeCycleHook()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.UpdateLifeCycleHookResponse), nil
@@ -418,21 +561,10 @@ func (c *AsClient) UpdateLifeCycleHook(request *model.UpdateLifeCycleHookRequest
 func (c *AsClient) UpdateScalingGroup(request *model.UpdateScalingGroupRequest) (*model.UpdateScalingGroupResponse, error) {
 	requestDef := GenReqDefForUpdateScalingGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.UpdateScalingGroupResponse), nil
-	}
-}
-
-//批量移出伸缩组中的实例或批量添加伸缩组外的实例。批量对伸缩组中的实例设置或取消其实例保护属性。批量将伸缩组中的实例转入或移出备用状态。
-func (c *AsClient) UpdateScalingGroupInstance(request *model.UpdateScalingGroupInstanceRequest) (*model.UpdateScalingGroupInstanceResponse, error) {
-	requestDef := GenReqDefForUpdateScalingGroupInstance()
-
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
-		return nil, err
-	} else {
-		return resp.(*model.UpdateScalingGroupInstanceResponse), nil
 	}
 }
 
@@ -440,9 +572,86 @@ func (c *AsClient) UpdateScalingGroupInstance(request *model.UpdateScalingGroupI
 func (c *AsClient) UpdateScalingPolicy(request *model.UpdateScalingPolicyRequest) (*model.UpdateScalingPolicyResponse, error) {
 	requestDef := GenReqDefForUpdateScalingPolicy()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.UpdateScalingPolicyResponse), nil
+	}
+}
+
+//查询弹性伸缩API所有版本信息
+func (c *AsClient) ListApiVersions(request *model.ListApiVersionsRequest) (*model.ListApiVersionsResponse, error) {
+	requestDef := GenReqDefForListApiVersions()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListApiVersionsResponse), nil
+	}
+}
+
+//根据租户id和资源id查询指定资源类型的标签列表
+func (c *AsClient) ShowApiVersion(request *model.ShowApiVersionRequest) (*model.ShowApiVersionResponse, error) {
+	requestDef := GenReqDefForShowApiVersion()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowApiVersionResponse), nil
+	}
+}
+
+//可针对不同类型资源如伸缩组或带宽，创建弹性伸缩策略。创建弹性伸缩策略V2版本与V1版本的区别在于，V2版本支持创建对带宽资源进行调整的策略，通过伸缩资源类型区分伸缩资源。
+func (c *AsClient) CreateScalingV2Policy(request *model.CreateScalingV2PolicyRequest) (*model.CreateScalingV2PolicyResponse, error) {
+	requestDef := GenReqDefForCreateScalingV2Policy()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.CreateScalingV2PolicyResponse), nil
+	}
+}
+
+//根据输入条件过滤查询弹性伸缩策略，支持查询当前租户下全量伸缩策略。查询结果分页显示。可根据伸缩资源ID，伸缩资源类型，伸缩策略名称，伸缩策略ID，告警ID，企业项目ID，起始行号，记录数，排序方式等条件进行过滤查询。若不加过滤添加默认查询该租户下最多20条伸缩策略信息。
+func (c *AsClient) ListAllScalingV2Policies(request *model.ListAllScalingV2PoliciesRequest) (*model.ListAllScalingV2PoliciesResponse, error) {
+	requestDef := GenReqDefForListAllScalingV2Policies()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListAllScalingV2PoliciesResponse), nil
+	}
+}
+
+//根据输入条件过滤查询弹性伸缩策略。查询结果分页显示。查询弹性伸缩策略V2版本与V1版本的区别在于，V2版本响应含伸缩资源类型。可根据伸缩策略名称，策略类型，伸缩策略ID，起始行号，记录数进行条件过滤查询。若不加过滤条件默认查询该租户下指定资源下最多20条伸缩策略信息。
+func (c *AsClient) ListScalingV2Policies(request *model.ListScalingV2PoliciesRequest) (*model.ListScalingV2PoliciesResponse, error) {
+	requestDef := GenReqDefForListScalingV2Policies()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListScalingV2PoliciesResponse), nil
+	}
+}
+
+//查询指定弹性伸缩策略信息。
+func (c *AsClient) ShowScalingV2Policy(request *model.ShowScalingV2PolicyRequest) (*model.ShowScalingV2PolicyResponse, error) {
+	requestDef := GenReqDefForShowScalingV2Policy()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowScalingV2PolicyResponse), nil
+	}
+}
+
+//修改指定弹性伸缩策略。修改弹性伸缩策略V2版本与V1版本的区别在于，V2版本支持修改伸缩资源类型。
+func (c *AsClient) UpdateScalingV2Policy(request *model.UpdateScalingV2PolicyRequest) (*model.UpdateScalingV2PolicyResponse, error) {
+	requestDef := GenReqDefForUpdateScalingV2Policy()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.UpdateScalingV2PolicyResponse), nil
 	}
 }

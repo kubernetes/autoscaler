@@ -1,29 +1,31 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // This is a auto create Body Object
 type BatchCreateServerTagsRequestBody struct {
 	// 操作标识（仅支持小写）：create（创建）。
+
 	Action BatchCreateServerTagsRequestBodyAction `json:"action"`
 	// 标签列表。
+
 	Tags []ServerTag `json:"tags"`
 }
 
 func (o BatchCreateServerTagsRequestBody) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "BatchCreateServerTagsRequestBody struct{}"
+	}
+
 	return strings.Join([]string{"BatchCreateServerTagsRequestBody", string(data)}, " ")
 }
 
@@ -44,7 +46,7 @@ func GetBatchCreateServerTagsRequestBodyActionEnum() BatchCreateServerTagsReques
 }
 
 func (c BatchCreateServerTagsRequestBodyAction) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *BatchCreateServerTagsRequestBodyAction) UnmarshalJSON(b []byte) error {

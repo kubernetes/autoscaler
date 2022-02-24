@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 // IPV6共享带宽。
 type PrePaidServerIpv6Bandwidth struct {
 	// 绑定的共享带宽ID。
+
 	Id *string `json:"id,omitempty"`
 }
 
 func (o PrePaidServerIpv6Bandwidth) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "PrePaidServerIpv6Bandwidth struct{}"
+	}
+
 	return strings.Join([]string{"PrePaidServerIpv6Bandwidth", string(data)}, " ")
 }

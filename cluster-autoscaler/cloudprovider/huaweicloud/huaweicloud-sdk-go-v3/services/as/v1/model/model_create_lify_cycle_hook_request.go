@@ -1,25 +1,25 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type CreateLifyCycleHookRequest struct {
-	ScalingGroupId string                          `json:"scaling_group_id"`
-	Body           *CreateLifeCycleHookRequestBody `json:"body,omitempty"`
+	// 伸缩组标识。
+
+	ScalingGroupId string `json:"scaling_group_id"`
+
+	Body *CreateLifeCycleHookOption `json:"body,omitempty"`
 }
 
 func (o CreateLifyCycleHookRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "CreateLifyCycleHookRequest struct{}"
+	}
+
 	return strings.Join([]string{"CreateLifyCycleHookRequest", string(data)}, " ")
 }

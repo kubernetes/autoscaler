@@ -1,25 +1,26 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
-// 用户自定义键值对
+// 创建磁盘的元数据
 type MetaData struct {
-	// 用户自定义数据总长度不大于512字节。用户自定义键不能是空串，不能包含符号.，以及不能以符号$开头。说明：Windows弹性云服务器Administrator用户的密码。示例：键（固定）：admin_pass值：cloud.1234创建密码方式鉴权的Windows弹性云服务器时为必选字段。
-	CustomizeKey *string `json:"customize_key,omitempty"`
+	// metadata中的表示加密功能的字段，0代表不加密，1代表加密。  该字段不存在时，云硬盘默认为不加密。
+
+	SystemEncrypted *string `json:"__system__encrypted,omitempty"`
+	// 用户主密钥ID，是metadata中的表示加密功能的字段，与__system__encrypted配合使用。
+
+	SystemCmkid *string `json:"__system__cmkid,omitempty"`
 }
 
 func (o MetaData) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "MetaData struct{}"
+	}
+
 	return strings.Join([]string{"MetaData", string(data)}, " ")
 }

@@ -26,6 +26,7 @@ const (
 	Path
 	Query
 	Body
+	Form
 )
 
 type FieldDef struct {

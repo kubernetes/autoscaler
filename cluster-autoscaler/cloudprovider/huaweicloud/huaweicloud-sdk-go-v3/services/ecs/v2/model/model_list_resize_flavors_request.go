@@ -1,32 +1,46 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type ListResizeFlavorsRequest struct {
-	InstanceUuid     *string                          `json:"instance_uuid,omitempty"`
-	Limit            *int32                           `json:"limit,omitempty"`
-	Marker           *string                          `json:"marker,omitempty"`
-	SortDir          *ListResizeFlavorsRequestSortDir `json:"sort_dir,omitempty"`
-	SortKey          *ListResizeFlavorsRequestSortKey `json:"sort_key,omitempty"`
-	SourceFlavorId   *string                          `json:"source_flavor_id,omitempty"`
-	SourceFlavorName *string                          `json:"source_flavor_name,omitempty"`
+	// 进行规格切换的云服务器ID，UUID格式。
+
+	InstanceUuid *string `json:"instance_uuid,omitempty"`
+	// 单页面可显示的flavor条数最大值，默认是1000。
+
+	Limit *int32 `json:"limit,omitempty"`
+	// 以单页最后一条flavor的ID作为分页标记。
+
+	Marker *string `json:"marker,omitempty"`
+	// 升序/降序排序，默认值为：asc。  取值范围：  - asc：表示升序。 - desc：表示降序
+
+	SortDir *ListResizeFlavorsRequestSortDir `json:"sort_dir,omitempty"`
+	// 排序字段。  key的取值范围：  - flavorid：表示规格ID。 - sort_key的默认值为“flavorid”。 - name：表示规格名称。 - memory_mb：表示内存大小。 - vcpus：表示CPU大小。 - root_gb：表示系统盘大小。
+
+	SortKey *ListResizeFlavorsRequestSortKey `json:"sort_key,omitempty"`
+	// 进行规格切换的云服务器源规格ID。
+
+	SourceFlavorId *string `json:"source_flavor_id,omitempty"`
+	// 进行规格切换的云服务器源规格名称。
+
+	SourceFlavorName *string `json:"source_flavor_name,omitempty"`
 }
 
 func (o ListResizeFlavorsRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListResizeFlavorsRequest struct{}"
+	}
+
 	return strings.Join([]string{"ListResizeFlavorsRequest", string(data)}, " ")
 }
 
@@ -51,7 +65,7 @@ func GetListResizeFlavorsRequestSortDirEnum() ListResizeFlavorsRequestSortDirEnu
 }
 
 func (c ListResizeFlavorsRequestSortDir) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListResizeFlavorsRequestSortDir) UnmarshalJSON(b []byte) error {
@@ -105,7 +119,7 @@ func GetListResizeFlavorsRequestSortKeyEnum() ListResizeFlavorsRequestSortKeyEnu
 }
 
 func (c ListResizeFlavorsRequestSortKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListResizeFlavorsRequestSortKey) UnmarshalJSON(b []byte) error {

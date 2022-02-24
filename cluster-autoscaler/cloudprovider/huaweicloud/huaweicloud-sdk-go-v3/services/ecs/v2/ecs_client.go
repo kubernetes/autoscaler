@@ -2,15 +2,16 @@ package v2
 
 import (
 	http_client "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
 )
 
 type EcsClient struct {
-	hcClient *http_client.HcHttpClient
+	HcClient *http_client.HcHttpClient
 }
 
 func NewEcsClient(hcClient *http_client.HcHttpClient) *EcsClient {
-	return &EcsClient{hcClient: hcClient}
+	return &EcsClient{HcClient: hcClient}
 }
 
 func EcsClientBuilder() *http_client.HcHttpClientBuilder {
@@ -22,10 +23,21 @@ func EcsClientBuilder() *http_client.HcHttpClientBuilder {
 func (c *EcsClient) AddServerGroupMember(request *model.AddServerGroupMemberRequest) (*model.AddServerGroupMemberResponse, error) {
 	requestDef := GenReqDefForAddServerGroupMember()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.AddServerGroupMemberResponse), nil
+	}
+}
+
+//虚拟IP地址用于为网卡提供第二个IP地址，同时支持与多个弹性云服务器的网卡绑定，从而实现多个弹性云服务器之间的高可用性。  该接口用于给云服务器网卡配置虚拟IP地址：  - 当指定的IP地址是一个不存在的虚拟IP地址时，系统会创建该虚拟IP，并绑定至对应网卡。  - 当指定的IP地址是一个已经创建好的私有IP时，系统会将指定的网卡和虚拟IP绑定。如果该IP的device_owner为空，则仅支持VPC内二三层通信；如果该IP的device_owner为neutron:VIP_PORT，则支持VPC内二三层通信、VPC之间对等连接访问，以及弹性公网IP、VPN、云专线等Internet接入。
+func (c *EcsClient) AssociateServerVirtualIp(request *model.AssociateServerVirtualIpRequest) (*model.AssociateServerVirtualIpResponse, error) {
+	requestDef := GenReqDefForAssociateServerVirtualIp()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.AssociateServerVirtualIpResponse), nil
 	}
 }
 
@@ -33,7 +45,7 @@ func (c *EcsClient) AddServerGroupMember(request *model.AddServerGroupMemberRequ
 func (c *EcsClient) AttachServerVolume(request *model.AttachServerVolumeRequest) (*model.AttachServerVolumeResponse, error) {
 	requestDef := GenReqDefForAttachServerVolume()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.AttachServerVolumeResponse), nil
@@ -44,10 +56,21 @@ func (c *EcsClient) AttachServerVolume(request *model.AttachServerVolumeRequest)
 func (c *EcsClient) BatchAddServerNics(request *model.BatchAddServerNicsRequest) (*model.BatchAddServerNicsResponse, error) {
 	requestDef := GenReqDefForBatchAddServerNics()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchAddServerNicsResponse), nil
+	}
+}
+
+//将指定的共享磁盘一次性挂载到多个弹性云服务器，实现批量挂载。
+func (c *EcsClient) BatchAttachSharableVolumes(request *model.BatchAttachSharableVolumesRequest) (*model.BatchAttachSharableVolumesResponse, error) {
+	requestDef := GenReqDefForBatchAttachSharableVolumes()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchAttachSharableVolumesResponse), nil
 	}
 }
 
@@ -55,7 +78,7 @@ func (c *EcsClient) BatchAddServerNics(request *model.BatchAddServerNicsRequest)
 func (c *EcsClient) BatchCreateServerTags(request *model.BatchCreateServerTagsRequest) (*model.BatchCreateServerTagsResponse, error) {
 	requestDef := GenReqDefForBatchCreateServerTags()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchCreateServerTagsResponse), nil
@@ -66,7 +89,7 @@ func (c *EcsClient) BatchCreateServerTags(request *model.BatchCreateServerTagsRe
 func (c *EcsClient) BatchDeleteServerNics(request *model.BatchDeleteServerNicsRequest) (*model.BatchDeleteServerNicsResponse, error) {
 	requestDef := GenReqDefForBatchDeleteServerNics()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchDeleteServerNicsResponse), nil
@@ -77,7 +100,7 @@ func (c *EcsClient) BatchDeleteServerNics(request *model.BatchDeleteServerNicsRe
 func (c *EcsClient) BatchDeleteServerTags(request *model.BatchDeleteServerTagsRequest) (*model.BatchDeleteServerTagsResponse, error) {
 	requestDef := GenReqDefForBatchDeleteServerTags()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchDeleteServerTagsResponse), nil
@@ -88,10 +111,21 @@ func (c *EcsClient) BatchDeleteServerTags(request *model.BatchDeleteServerTagsRe
 func (c *EcsClient) BatchRebootServers(request *model.BatchRebootServersRequest) (*model.BatchRebootServersResponse, error) {
 	requestDef := GenReqDefForBatchRebootServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchRebootServersResponse), nil
+	}
+}
+
+//批量重置弹性云服务器管理帐号（root用户或Administrator用户）的密码。
+func (c *EcsClient) BatchResetServersPassword(request *model.BatchResetServersPasswordRequest) (*model.BatchResetServersPasswordResponse, error) {
+	requestDef := GenReqDefForBatchResetServersPassword()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchResetServersPasswordResponse), nil
 	}
 }
 
@@ -99,7 +133,7 @@ func (c *EcsClient) BatchRebootServers(request *model.BatchRebootServersRequest)
 func (c *EcsClient) BatchStartServers(request *model.BatchStartServersRequest) (*model.BatchStartServersResponse, error) {
 	requestDef := GenReqDefForBatchStartServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchStartServersResponse), nil
@@ -110,10 +144,21 @@ func (c *EcsClient) BatchStartServers(request *model.BatchStartServersRequest) (
 func (c *EcsClient) BatchStopServers(request *model.BatchStopServersRequest) (*model.BatchStopServersResponse, error) {
 	requestDef := GenReqDefForBatchStopServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.BatchStopServersResponse), nil
+	}
+}
+
+//批量修改弹性云服务器信息。 当前仅支持批量修改云服务器名称，一次最多可以修改1000台。
+func (c *EcsClient) BatchUpdateServersName(request *model.BatchUpdateServersNameRequest) (*model.BatchUpdateServersNameResponse, error) {
+	requestDef := GenReqDefForBatchUpdateServersName()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.BatchUpdateServersNameResponse), nil
 	}
 }
 
@@ -121,18 +166,29 @@ func (c *EcsClient) BatchStopServers(request *model.BatchStopServersRequest) (*m
 func (c *EcsClient) ChangeServerOsWithCloudInit(request *model.ChangeServerOsWithCloudInitRequest) (*model.ChangeServerOsWithCloudInitResponse, error) {
 	requestDef := GenReqDefForChangeServerOsWithCloudInit()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ChangeServerOsWithCloudInitResponse), nil
 	}
 }
 
-//创建一台或多台按需付费方式的云服务器。  弹性云服务器的登录鉴权方式包括两种：密钥对、密码。为安全起见，推荐使用密钥对方式。  - 密钥对 密钥对指使用密钥对作为弹性云服务器的鉴权方式。 接口调用方法：使用key_name字段，指定弹性云服务器登录时使用的密钥文件。  - 密码 密码指使用设置初始密码方式作为弹性云服务器的鉴权方式，此时，您可以通过用户名密码方式登录弹性云服务器，Linux操作系统时为root用户的初始密码，Windows操作系统时为Administrator用户的初始密码。  接口调用方法：使用adminPass字段，指定管理员帐号的初始登录密码。对于镜像已安装Cloud-init的Linux云服务器，如果需要使用密文密码，可以使用user_data字段进行密码注入。  > 对于安装Cloud-init镜像的Linux云服务器云主机，若指定user_data字段，则adminPass字段无效。
+//切换弹性云服务器操作系统。  该接口支持未安装Cloud-init或Cloudbase-init的镜像使用。
+func (c *EcsClient) ChangeServerOsWithoutCloudInit(request *model.ChangeServerOsWithoutCloudInitRequest) (*model.ChangeServerOsWithoutCloudInitResponse, error) {
+	requestDef := GenReqDefForChangeServerOsWithoutCloudInit()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ChangeServerOsWithoutCloudInitResponse), nil
+	}
+}
+
+//创建一台或多台[按需付费](https://support.huaweicloud.com/productdesc-ecs/ecs_01_0065.html)方式的云服务器。  弹性云服务器的登录鉴权方式包括两种：密钥对、密码。为安全起见，推荐使用密钥对方式。  - 密钥对 密钥对指使用密钥对作为弹性云服务器的鉴权方式。 接口调用方法：使用key_name字段，指定弹性云服务器登录时使用的密钥文件。  - 密码 密码指使用设置初始密码方式作为弹性云服务器的鉴权方式，此时，您可以通过用户名密码方式登录弹性云服务器，Linux操作系统时为root用户的初始密码，Windows操作系统时为Administrator用户的初始密码。  接口调用方法：使用adminPass字段，指定管理员帐号的初始登录密码。对于镜像已安装Cloud-init的Linux云服务器，如果需要使用密文密码，可以使用user_data字段进行密码注入。  > 对于安装Cloud-init镜像的Linux云服务器云主机，若指定user_data字段，则adminPass字段无效。
 func (c *EcsClient) CreatePostPaidServers(request *model.CreatePostPaidServersRequest) (*model.CreatePostPaidServersResponse, error) {
 	requestDef := GenReqDefForCreatePostPaidServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreatePostPaidServersResponse), nil
@@ -143,18 +199,18 @@ func (c *EcsClient) CreatePostPaidServers(request *model.CreatePostPaidServersRe
 func (c *EcsClient) CreateServerGroup(request *model.CreateServerGroupRequest) (*model.CreateServerGroupResponse, error) {
 	requestDef := GenReqDefForCreateServerGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateServerGroupResponse), nil
 	}
 }
 
-//创建一台或多台云服务器。  指该接口兼容《弹性云服务器接口参考》创建云服务器v1的功能，同时合入新功能，支持创建包年/包月的弹性云服务器。  弹性云服务器的登录鉴权方式包括两种：密钥对、密码。为安全起见，推荐使用密钥对方式。  - 密钥对  指使用密钥对作为弹性云服务器的鉴权方式。  接口调用方法：使用key_name字段，指定弹性云服务器登录时使用的密钥文件。  - 密码  指使用设置初始密码方式作为弹性云服务器的鉴权方式，此时，您可以通过用户名密码方式登录弹性云服务器，Linux操作系统时为root用户的初始密码，Windows操作系统时为Administrator用户的初始密码。  接口调用方法：使用adminPass字段，指定管理员帐号的初始登录密码。对于镜像已安装Cloud-init的Linux云服务器，如果需要使用密文密码，可以使用user_data字段进行密码注入。  > 对于安装Cloud-init镜像的Linux云服务器云主机，若指定user_data字段，则adminPass字段无效。
+//创建一台或多台云服务器。  指该接口兼容《弹性云服务器接口参考》创建云服务器v1的功能，同时合入新功能，支持创建[包年/包月](https://support.huaweicloud.com/productdesc-ecs/ecs_01_0065.html)的弹性云服务器。  弹性云服务器的登录鉴权方式包括两种：密钥对、密码。为安全起见，推荐使用密钥对方式。  - 密钥对  指使用密钥对作为弹性云服务器的鉴权方式。  接口调用方法：使用key_name字段，指定弹性云服务器登录时使用的密钥文件。  - 密码  指使用设置初始密码方式作为弹性云服务器的鉴权方式，此时，您可以通过用户名密码方式登录弹性云服务器，Linux操作系统时为root用户的初始密码，Windows操作系统时为Administrator用户的初始密码。  接口调用方法：使用adminPass字段，指定管理员帐号的初始登录密码。对于镜像已安装Cloud-init的Linux云服务器，如果需要使用密文密码，可以使用user_data字段进行密码注入。  > 对于安装Cloud-init镜像的Linux云服务器云主机，若指定user_data字段，则adminPass字段无效。  购买操作示例： - [使用API购买ECS过程中常见问题及处理方法](https://support.huaweicloud.com/api-ecs/ecs_04_0007.html) - [获取Token并检验Token的有效期 ](https://support.huaweicloud.com/api-ecs/ecs_04_0008.html)
 func (c *EcsClient) CreateServers(request *model.CreateServersRequest) (*model.CreateServersResponse, error) {
 	requestDef := GenReqDefForCreateServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.CreateServersResponse), nil
@@ -165,7 +221,7 @@ func (c *EcsClient) CreateServers(request *model.CreateServersRequest) (*model.C
 func (c *EcsClient) DeleteServerGroup(request *model.DeleteServerGroupRequest) (*model.DeleteServerGroupResponse, error) {
 	requestDef := GenReqDefForDeleteServerGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteServerGroupResponse), nil
@@ -176,7 +232,7 @@ func (c *EcsClient) DeleteServerGroup(request *model.DeleteServerGroupRequest) (
 func (c *EcsClient) DeleteServerGroupMember(request *model.DeleteServerGroupMemberRequest) (*model.DeleteServerGroupMemberResponse, error) {
 	requestDef := GenReqDefForDeleteServerGroupMember()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteServerGroupMemberResponse), nil
@@ -187,10 +243,21 @@ func (c *EcsClient) DeleteServerGroupMember(request *model.DeleteServerGroupMemb
 func (c *EcsClient) DeleteServerMetadata(request *model.DeleteServerMetadataRequest) (*model.DeleteServerMetadataResponse, error) {
 	requestDef := GenReqDefForDeleteServerMetadata()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteServerMetadataResponse), nil
+	}
+}
+
+//清除Windows云服务器初始安装时系统生成的密码记录。清除密码后，不影响云服务器密码登录功能，但不能再使用获取密码功能来查询该云服务器密码。
+func (c *EcsClient) DeleteServerPassword(request *model.DeleteServerPasswordRequest) (*model.DeleteServerPasswordResponse, error) {
+	requestDef := GenReqDefForDeleteServerPassword()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.DeleteServerPasswordResponse), nil
 	}
 }
 
@@ -198,7 +265,7 @@ func (c *EcsClient) DeleteServerMetadata(request *model.DeleteServerMetadataRequ
 func (c *EcsClient) DeleteServers(request *model.DeleteServersRequest) (*model.DeleteServersResponse, error) {
 	requestDef := GenReqDefForDeleteServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DeleteServersResponse), nil
@@ -209,10 +276,21 @@ func (c *EcsClient) DeleteServers(request *model.DeleteServersRequest) (*model.D
 func (c *EcsClient) DetachServerVolume(request *model.DetachServerVolumeRequest) (*model.DetachServerVolumeResponse, error) {
 	requestDef := GenReqDefForDetachServerVolume()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.DetachServerVolumeResponse), nil
+	}
+}
+
+//虚拟IP地址用于为网卡提供第二个IP地址，同时支持与多个弹性云服务器的网卡绑定，从而实现多个弹性云服务器之间的高可用性。  该接口用于解绑定弹性云服务器网卡的虚拟IP地址。解绑后，网卡不会被删除。
+func (c *EcsClient) DisassociateServerVirtualIp(request *model.DisassociateServerVirtualIpRequest) (*model.DisassociateServerVirtualIpResponse, error) {
+	requestDef := GenReqDefForDisassociateServerVirtualIp()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.DisassociateServerVirtualIpResponse), nil
 	}
 }
 
@@ -220,7 +298,7 @@ func (c *EcsClient) DetachServerVolume(request *model.DetachServerVolumeRequest)
 func (c *EcsClient) ListFlavors(request *model.ListFlavorsRequest) (*model.ListFlavorsResponse, error) {
 	requestDef := GenReqDefForListFlavors()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListFlavorsResponse), nil
@@ -231,7 +309,7 @@ func (c *EcsClient) ListFlavors(request *model.ListFlavorsRequest) (*model.ListF
 func (c *EcsClient) ListResizeFlavors(request *model.ListResizeFlavorsRequest) (*model.ListResizeFlavorsResponse, error) {
 	requestDef := GenReqDefForListResizeFlavors()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListResizeFlavorsResponse), nil
@@ -242,10 +320,21 @@ func (c *EcsClient) ListResizeFlavors(request *model.ListResizeFlavorsRequest) (
 func (c *EcsClient) ListServerBlockDevices(request *model.ListServerBlockDevicesRequest) (*model.ListServerBlockDevicesResponse, error) {
 	requestDef := GenReqDefForListServerBlockDevices()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListServerBlockDevicesResponse), nil
+	}
+}
+
+//查询弹性云服务器组。  与原生的创建云服务器组接口不同之处在于该接口支持企业项目细粒度权限的校验。
+func (c *EcsClient) ListServerGroups(request *model.ListServerGroupsRequest) (*model.ListServerGroupsResponse, error) {
+	requestDef := GenReqDefForListServerGroups()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListServerGroupsResponse), nil
 	}
 }
 
@@ -253,10 +342,21 @@ func (c *EcsClient) ListServerBlockDevices(request *model.ListServerBlockDevices
 func (c *EcsClient) ListServerInterfaces(request *model.ListServerInterfacesRequest) (*model.ListServerInterfacesResponse, error) {
 	requestDef := GenReqDefForListServerInterfaces()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListServerInterfacesResponse), nil
+	}
+}
+
+//项目（Project）用于将OpenStack的资源（计算资源、存储资源和网络资源）进行分组和隔离。项目可以是一个部门或者一个项目组。一个帐户中可以创建多个项目。  该接口用于查询用户在指定项目所使用的全部标签。
+func (c *EcsClient) ListServerTags(request *model.ListServerTagsRequest) (*model.ListServerTagsResponse, error) {
+	requestDef := GenReqDefForListServerTags()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ListServerTagsResponse), nil
 	}
 }
 
@@ -264,10 +364,21 @@ func (c *EcsClient) ListServerInterfaces(request *model.ListServerInterfacesRequ
 func (c *EcsClient) ListServersDetails(request *model.ListServersDetailsRequest) (*model.ListServersDetailsResponse, error) {
 	requestDef := GenReqDefForListServersDetails()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ListServersDetailsResponse), nil
+	}
+}
+
+//- 将部署在专属主机上的弹性云服务器迁移至其他专属主机。 - 将部署在专属主机上的弹性云服务器迁移至公共资源池，即不再部署在专属主机上。 - 将公共资源池的弹性云服务器迁移至专属主机上，成为专属主机上部署的弹性云服务器。
+func (c *EcsClient) MigrateServer(request *model.MigrateServerRequest) (*model.MigrateServerResponse, error) {
+	requestDef := GenReqDefForMigrateServer()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.MigrateServerResponse), nil
 	}
 }
 
@@ -275,7 +386,7 @@ func (c *EcsClient) ListServersDetails(request *model.ListServersDetailsRequest)
 func (c *EcsClient) NovaAssociateSecurityGroup(request *model.NovaAssociateSecurityGroupRequest) (*model.NovaAssociateSecurityGroupResponse, error) {
 	requestDef := GenReqDefForNovaAssociateSecurityGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaAssociateSecurityGroupResponse), nil
@@ -286,7 +397,7 @@ func (c *EcsClient) NovaAssociateSecurityGroup(request *model.NovaAssociateSecur
 func (c *EcsClient) NovaCreateKeypair(request *model.NovaCreateKeypairRequest) (*model.NovaCreateKeypairResponse, error) {
 	requestDef := GenReqDefForNovaCreateKeypair()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaCreateKeypairResponse), nil
@@ -297,7 +408,7 @@ func (c *EcsClient) NovaCreateKeypair(request *model.NovaCreateKeypairRequest) (
 func (c *EcsClient) NovaCreateServers(request *model.NovaCreateServersRequest) (*model.NovaCreateServersResponse, error) {
 	requestDef := GenReqDefForNovaCreateServers()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaCreateServersResponse), nil
@@ -308,7 +419,7 @@ func (c *EcsClient) NovaCreateServers(request *model.NovaCreateServersRequest) (
 func (c *EcsClient) NovaDeleteKeypair(request *model.NovaDeleteKeypairRequest) (*model.NovaDeleteKeypairResponse, error) {
 	requestDef := GenReqDefForNovaDeleteKeypair()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaDeleteKeypairResponse), nil
@@ -319,7 +430,7 @@ func (c *EcsClient) NovaDeleteKeypair(request *model.NovaDeleteKeypairRequest) (
 func (c *EcsClient) NovaDeleteServer(request *model.NovaDeleteServerRequest) (*model.NovaDeleteServerResponse, error) {
 	requestDef := GenReqDefForNovaDeleteServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaDeleteServerResponse), nil
@@ -330,7 +441,7 @@ func (c *EcsClient) NovaDeleteServer(request *model.NovaDeleteServerRequest) (*m
 func (c *EcsClient) NovaDisassociateSecurityGroup(request *model.NovaDisassociateSecurityGroupRequest) (*model.NovaDisassociateSecurityGroupResponse, error) {
 	requestDef := GenReqDefForNovaDisassociateSecurityGroup()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaDisassociateSecurityGroupResponse), nil
@@ -341,7 +452,7 @@ func (c *EcsClient) NovaDisassociateSecurityGroup(request *model.NovaDisassociat
 func (c *EcsClient) NovaListAvailabilityZones(request *model.NovaListAvailabilityZonesRequest) (*model.NovaListAvailabilityZonesResponse, error) {
 	requestDef := GenReqDefForNovaListAvailabilityZones()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaListAvailabilityZonesResponse), nil
@@ -352,7 +463,7 @@ func (c *EcsClient) NovaListAvailabilityZones(request *model.NovaListAvailabilit
 func (c *EcsClient) NovaListKeypairs(request *model.NovaListKeypairsRequest) (*model.NovaListKeypairsResponse, error) {
 	requestDef := GenReqDefForNovaListKeypairs()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaListKeypairsResponse), nil
@@ -363,7 +474,7 @@ func (c *EcsClient) NovaListKeypairs(request *model.NovaListKeypairsRequest) (*m
 func (c *EcsClient) NovaListServerSecurityGroups(request *model.NovaListServerSecurityGroupsRequest) (*model.NovaListServerSecurityGroupsResponse, error) {
 	requestDef := GenReqDefForNovaListServerSecurityGroups()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaListServerSecurityGroupsResponse), nil
@@ -374,10 +485,21 @@ func (c *EcsClient) NovaListServerSecurityGroups(request *model.NovaListServerSe
 func (c *EcsClient) NovaListServersDetails(request *model.NovaListServersDetailsRequest) (*model.NovaListServersDetailsResponse, error) {
 	requestDef := GenReqDefForNovaListServersDetails()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaListServersDetailsResponse), nil
+	}
+}
+
+//根据SSH密钥名称查询指定SSH密钥。
+func (c *EcsClient) NovaShowKeypair(request *model.NovaShowKeypairRequest) (*model.NovaShowKeypairResponse, error) {
+	requestDef := GenReqDefForNovaShowKeypair()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.NovaShowKeypairResponse), nil
 	}
 }
 
@@ -385,10 +507,21 @@ func (c *EcsClient) NovaListServersDetails(request *model.NovaListServersDetails
 func (c *EcsClient) NovaShowServer(request *model.NovaShowServerRequest) (*model.NovaShowServerResponse, error) {
 	requestDef := GenReqDefForNovaShowServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.NovaShowServerResponse), nil
+	}
+}
+
+//配置、删除云服务器自动恢复动作。
+func (c *EcsClient) RegisterServerAutoRecovery(request *model.RegisterServerAutoRecoveryRequest) (*model.RegisterServerAutoRecoveryResponse, error) {
+	requestDef := GenReqDefForRegisterServerAutoRecovery()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.RegisterServerAutoRecoveryResponse), nil
 	}
 }
 
@@ -396,10 +529,21 @@ func (c *EcsClient) NovaShowServer(request *model.NovaShowServerRequest) (*model
 func (c *EcsClient) ReinstallServerWithCloudInit(request *model.ReinstallServerWithCloudInitRequest) (*model.ReinstallServerWithCloudInitResponse, error) {
 	requestDef := GenReqDefForReinstallServerWithCloudInit()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ReinstallServerWithCloudInitResponse), nil
+	}
+}
+
+//重装弹性云服务器的操作系统。  该接口支持未安装Cloud-init或Cloudbase-init的镜像。
+func (c *EcsClient) ReinstallServerWithoutCloudInit(request *model.ReinstallServerWithoutCloudInitRequest) (*model.ReinstallServerWithoutCloudInitResponse, error) {
+	requestDef := GenReqDefForReinstallServerWithoutCloudInit()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ReinstallServerWithoutCloudInitResponse), nil
 	}
 }
 
@@ -407,7 +551,7 @@ func (c *EcsClient) ReinstallServerWithCloudInit(request *model.ReinstallServerW
 func (c *EcsClient) ResetServerPassword(request *model.ResetServerPasswordRequest) (*model.ResetServerPasswordResponse, error) {
 	requestDef := GenReqDefForResetServerPassword()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ResetServerPasswordResponse), nil
@@ -418,7 +562,7 @@ func (c *EcsClient) ResetServerPassword(request *model.ResetServerPasswordReques
 func (c *EcsClient) ResizePostPaidServer(request *model.ResizePostPaidServerRequest) (*model.ResizePostPaidServerResponse, error) {
 	requestDef := GenReqDefForResizePostPaidServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ResizePostPaidServerResponse), nil
@@ -429,7 +573,7 @@ func (c *EcsClient) ResizePostPaidServer(request *model.ResizePostPaidServerRequ
 func (c *EcsClient) ResizeServer(request *model.ResizeServerRequest) (*model.ResizeServerResponse, error) {
 	requestDef := GenReqDefForResizeServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ResizeServerResponse), nil
@@ -440,7 +584,7 @@ func (c *EcsClient) ResizeServer(request *model.ResizeServerRequest) (*model.Res
 func (c *EcsClient) ShowResetPasswordFlag(request *model.ShowResetPasswordFlagRequest) (*model.ShowResetPasswordFlagResponse, error) {
 	requestDef := GenReqDefForShowResetPasswordFlag()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowResetPasswordFlagResponse), nil
@@ -451,10 +595,43 @@ func (c *EcsClient) ShowResetPasswordFlag(request *model.ShowResetPasswordFlagRe
 func (c *EcsClient) ShowServer(request *model.ShowServerRequest) (*model.ShowServerResponse, error) {
 	requestDef := GenReqDefForShowServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowServerResponse), nil
+	}
+}
+
+//查询云服务器是否配置了自动恢复动作。
+func (c *EcsClient) ShowServerAutoRecovery(request *model.ShowServerAutoRecoveryRequest) (*model.ShowServerAutoRecoveryResponse, error) {
+	requestDef := GenReqDefForShowServerAutoRecovery()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowServerAutoRecoveryResponse), nil
+	}
+}
+
+//查询弹性云服务器挂载的单个磁盘信息。
+func (c *EcsClient) ShowServerBlockDevice(request *model.ShowServerBlockDeviceRequest) (*model.ShowServerBlockDeviceResponse, error) {
+	requestDef := GenReqDefForShowServerBlockDevice()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowServerBlockDeviceResponse), nil
+	}
+}
+
+//查询弹性云服务器组详情。  与原生的创建云服务器组接口不同之处在于该接口支持企业项目细粒度权限的校验。
+func (c *EcsClient) ShowServerGroup(request *model.ShowServerGroupRequest) (*model.ShowServerGroupResponse, error) {
+	requestDef := GenReqDefForShowServerGroup()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowServerGroupResponse), nil
 	}
 }
 
@@ -462,10 +639,21 @@ func (c *EcsClient) ShowServer(request *model.ShowServerRequest) (*model.ShowSer
 func (c *EcsClient) ShowServerLimits(request *model.ShowServerLimitsRequest) (*model.ShowServerLimitsResponse, error) {
 	requestDef := GenReqDefForShowServerLimits()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowServerLimitsResponse), nil
+	}
+}
+
+//当通过支持Cloudbase-init功能的镜像创建Windows云服务器时，获取云服务器初始安装时系统生成的管理员帐户（Administrator帐户或Cloudbase-init设置的帐户）随机密码。
+func (c *EcsClient) ShowServerPassword(request *model.ShowServerPasswordRequest) (*model.ShowServerPasswordResponse, error) {
+	requestDef := GenReqDefForShowServerPassword()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.ShowServerPasswordResponse), nil
 	}
 }
 
@@ -473,7 +661,7 @@ func (c *EcsClient) ShowServerLimits(request *model.ShowServerLimitsRequest) (*m
 func (c *EcsClient) ShowServerRemoteConsole(request *model.ShowServerRemoteConsoleRequest) (*model.ShowServerRemoteConsoleResponse, error) {
 	requestDef := GenReqDefForShowServerRemoteConsole()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowServerRemoteConsoleResponse), nil
@@ -484,7 +672,7 @@ func (c *EcsClient) ShowServerRemoteConsole(request *model.ShowServerRemoteConso
 func (c *EcsClient) ShowServerTags(request *model.ShowServerTagsRequest) (*model.ShowServerTagsResponse, error) {
 	requestDef := GenReqDefForShowServerTags()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowServerTagsResponse), nil
@@ -495,10 +683,21 @@ func (c *EcsClient) ShowServerTags(request *model.ShowServerTagsRequest) (*model
 func (c *EcsClient) UpdateServer(request *model.UpdateServerRequest) (*model.UpdateServerResponse, error) {
 	requestDef := GenReqDefForUpdateServer()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.UpdateServerResponse), nil
+	}
+}
+
+//修改按需服务器，设置定时销毁时间。如果设置的销毁时间为空，表示取消销毁时间。  该接口支持企业项目细粒度权限的校验，具体细粒度请参见 ecs:cloudServers:put。
+func (c *EcsClient) UpdateServerAutoTerminateTime(request *model.UpdateServerAutoTerminateTimeRequest) (*model.UpdateServerAutoTerminateTimeResponse, error) {
+	requestDef := GenReqDefForUpdateServerAutoTerminateTime()
+
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
+		return nil, err
+	} else {
+		return resp.(*model.UpdateServerAutoTerminateTimeResponse), nil
 	}
 }
 
@@ -506,7 +705,7 @@ func (c *EcsClient) UpdateServer(request *model.UpdateServerRequest) (*model.Upd
 func (c *EcsClient) UpdateServerMetadata(request *model.UpdateServerMetadataRequest) (*model.UpdateServerMetadataResponse, error) {
 	requestDef := GenReqDefForUpdateServerMetadata()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.UpdateServerMetadataResponse), nil
@@ -517,7 +716,7 @@ func (c *EcsClient) UpdateServerMetadata(request *model.UpdateServerMetadataRequ
 func (c *EcsClient) ShowJob(request *model.ShowJobRequest) (*model.ShowJobResponse, error) {
 	requestDef := GenReqDefForShowJob()
 
-	if resp, err := c.hcClient.Sync(request, requestDef); err != nil {
+	if resp, err := c.HcClient.Sync(request, requestDef); err != nil {
 		return nil, err
 	} else {
 		return resp.(*model.ShowJobResponse), nil

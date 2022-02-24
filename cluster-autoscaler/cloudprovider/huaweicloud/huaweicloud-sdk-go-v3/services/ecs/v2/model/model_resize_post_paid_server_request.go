@@ -1,25 +1,25 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type ResizePostPaidServerRequest struct {
-	ServerId string                           `json:"server_id"`
-	Body     *ResizePostPaidServerRequestBody `json:"body,omitempty"`
+	// 云服务器ID。
+
+	ServerId string `json:"server_id"`
+
+	Body *ResizePostPaidServerRequestBody `json:"body,omitempty"`
 }
 
 func (o ResizePostPaidServerRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ResizePostPaidServerRequest struct{}"
+	}
+
 	return strings.Join([]string{"ResizePostPaidServerRequest", string(data)}, " ")
 }
