@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -19,6 +12,10 @@ type AddServerGroupMemberRequestBody struct {
 }
 
 func (o AddServerGroupMemberRequestBody) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "AddServerGroupMemberRequestBody struct{}"
+	}
+
 	return strings.Join([]string{"AddServerGroupMemberRequestBody", string(data)}, " ")
 }

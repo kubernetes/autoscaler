@@ -1,27 +1,31 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 // Request Object
 type DeleteScalingGroupRequest struct {
-	ScalingGroupId string                                `json:"scaling_group_id"`
-	ForceDelete    *DeleteScalingGroupRequestForceDelete `json:"force_delete,omitempty"`
+	// 伸缩组ID。
+
+	ScalingGroupId string `json:"scaling_group_id"`
+	// 是否强制删除伸缩组。默认为no；可选值为yes或no。
+
+	ForceDelete *DeleteScalingGroupRequestForceDelete `json:"force_delete,omitempty"`
 }
 
 func (o DeleteScalingGroupRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "DeleteScalingGroupRequest struct{}"
+	}
+
 	return strings.Join([]string{"DeleteScalingGroupRequest", string(data)}, " ")
 }
 
@@ -30,23 +34,23 @@ type DeleteScalingGroupRequestForceDelete struct {
 }
 
 type DeleteScalingGroupRequestForceDeleteEnum struct {
-	TRUE  DeleteScalingGroupRequestForceDelete
-	FALSE DeleteScalingGroupRequestForceDelete
+	YES DeleteScalingGroupRequestForceDelete
+	NO  DeleteScalingGroupRequestForceDelete
 }
 
 func GetDeleteScalingGroupRequestForceDeleteEnum() DeleteScalingGroupRequestForceDeleteEnum {
 	return DeleteScalingGroupRequestForceDeleteEnum{
-		TRUE: DeleteScalingGroupRequestForceDelete{
-			value: "true",
+		YES: DeleteScalingGroupRequestForceDelete{
+			value: "yes",
 		},
-		FALSE: DeleteScalingGroupRequestForceDelete{
-			value: "false",
+		NO: DeleteScalingGroupRequestForceDelete{
+			value: "no",
 		},
 	}
 }
 
 func (c DeleteScalingGroupRequestForceDelete) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *DeleteScalingGroupRequestForceDelete) UnmarshalJSON(b []byte) error {
