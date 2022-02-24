@@ -17,7 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -229,18 +228,23 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 		return "", err
 	}
 	if len(describeData.LaunchTemplateVersions) == 0 {
-		return "", fmt.Errorf("unable to find template versions")
+		return "", fmt.Errorf("unable to find versions for launch template %s", launchTemplate.name)
 	}
-	lt := describeData.LaunchTemplateVersions[0]
+
+	launchTemplateData := describeData.LaunchTemplateVersions[0].LaunchTemplateData
+	if launchTemplateData == nil {
+		return "", fmt.Errorf("no data found for launch template %s, version %s", launchTemplate.name, launchTemplate.version)
+	}
+
 	instanceType := ""
-	if lt.LaunchTemplateData.InstanceType != nil {
-		instanceType = *lt.LaunchTemplateData.InstanceType
-	} else if lt.LaunchTemplateData.InstanceRequirements != nil {
-		requirementsRequest, err := m.getRequirementsRequestFromEC2(describeData.LaunchTemplateVersions[0].LaunchTemplateData.InstanceRequirements)
+	if launchTemplateData.InstanceType != nil {
+		instanceType = *launchTemplateData.InstanceType
+	} else if launchTemplateData.InstanceRequirements != nil && launchTemplateData.ImageId != nil {
+		requirementsRequest, err := m.getRequirementsRequestFromEC2(launchTemplateData.InstanceRequirements)
 		if err != nil {
 			return "", fmt.Errorf("unable to get instance requirements request")
 		}
-		instanceType, err = m.getInstanceTypeFromLaunchTemplateData(*lt.LaunchTemplateData.ImageId, requirementsRequest)
+		instanceType, err = m.getInstanceTypeFromInstanceRequirements(*launchTemplateData.ImageId, requirementsRequest)
 		if err != nil {
 			return "", err
 		}
@@ -248,6 +252,7 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 	if len(instanceType) == 0 {
 		return "", fmt.Errorf("unable to find instance type using launch template")
 	}
+
 	return instanceType, nil
 }
 
@@ -271,7 +276,7 @@ func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInsta
 	if err != nil {
 		return "", err
 	}
-	instanceType, err := m.getInstanceTypeFromLaunchTemplateData(*describeData.LaunchTemplateVersions[0].LaunchTemplateData.ImageId, requirements)
+	instanceType, err := m.getInstanceTypeFromInstanceRequirements(*describeData.LaunchTemplateVersions[0].LaunchTemplateData.ImageId, requirements)
 	if err != nil {
 		return "", err
 	}
@@ -279,7 +284,7 @@ func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInsta
 	return instanceType, nil
 }
 
-func (m *awsWrapper) getInstanceTypeFromLaunchTemplateData(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
+func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
 	describeImagesInput := &ec2.DescribeImagesInput{
 		ImageIds: []*string{aws.String(imageId)},
 	}
@@ -321,45 +326,339 @@ func (m *awsWrapper) getInstanceTypeFromLaunchTemplateData(imageId string, requi
 }
 
 func (m *awsWrapper) getRequirementsRequestFromAutoscaling(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
-	requirementsJson, err := json.Marshal(*requirements)
-	if err != nil {
-		return nil, err
+	requirementsRequest := ec2.InstanceRequirementsRequest{}
+
+	// required instance requirements
+	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+		Min: requirements.MemoryMiB.Min,
+		Max: requirements.MemoryMiB.Max,
 	}
 
-	var requirementsRequest *ec2.InstanceRequirementsRequest
-	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
-		return nil, err
+	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+		Min: requirements.VCpuCount.Min,
+		Max: requirements.VCpuCount.Max,
 	}
 
-	return requirementsRequest, nil
+	// optional instance requirements
+	if requirements.AcceleratorCount != nil {
+		requirementsRequest.AcceleratorCount = &ec2.AcceleratorCountRequest{
+			Min: requirements.AcceleratorCount.Min,
+			Max: requirements.AcceleratorCount.Max,
+		}
+	}
+
+	if requirements.AcceleratorManufacturers != nil {
+		requirementsRequest.AcceleratorManufacturers = requirements.AcceleratorManufacturers
+	}
+
+	if requirements.AcceleratorNames != nil {
+		requirementsRequest.AcceleratorNames = requirements.AcceleratorNames
+	}
+
+	if requirements.AcceleratorTotalMemoryMiB != nil {
+		requirementsRequest.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiBRequest{
+			Min: requirements.AcceleratorTotalMemoryMiB.Min,
+			Max: requirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if requirements.AcceleratorTypes != nil {
+		requirementsRequest.AcceleratorTypes = requirements.AcceleratorTypes
+	}
+
+	if requirements.BareMetal != nil {
+		requirementsRequest.BareMetal = requirements.BareMetal
+	}
+
+	if requirements.BaselineEbsBandwidthMbps != nil {
+		requirementsRequest.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbpsRequest{
+			Min: requirements.BaselineEbsBandwidthMbps.Min,
+			Max: requirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if requirements.BurstablePerformance != nil {
+		requirementsRequest.BurstablePerformance = requirements.BurstablePerformance
+	}
+
+	if requirements.CpuManufacturers != nil {
+		requirementsRequest.CpuManufacturers = requirements.CpuManufacturers
+	}
+
+	if requirements.ExcludedInstanceTypes != nil {
+		requirementsRequest.ExcludedInstanceTypes = requirements.ExcludedInstanceTypes
+	}
+
+	if requirements.InstanceGenerations != nil {
+		requirementsRequest.InstanceGenerations = requirements.InstanceGenerations
+	}
+
+	if requirements.LocalStorage != nil {
+		requirementsRequest.LocalStorage = requirements.LocalStorage
+	}
+
+	if requirements.LocalStorageTypes != nil {
+		requirementsRequest.LocalStorageTypes = requirements.LocalStorageTypes
+	}
+
+	if requirements.MemoryGiBPerVCpu != nil {
+		requirementsRequest.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpuRequest{
+			Min: requirements.MemoryGiBPerVCpu.Min,
+			Max: requirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if requirements.NetworkInterfaceCount != nil {
+		requirementsRequest.NetworkInterfaceCount = &ec2.NetworkInterfaceCountRequest{
+			Min: requirements.NetworkInterfaceCount.Min,
+			Max: requirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if requirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.OnDemandMaxPricePercentageOverLowestPrice = requirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.RequireHibernateSupport != nil {
+		requirementsRequest.RequireHibernateSupport = requirements.RequireHibernateSupport
+	}
+
+	if requirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.SpotMaxPricePercentageOverLowestPrice = requirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.TotalLocalStorageGB != nil {
+		requirementsRequest.TotalLocalStorageGB = &ec2.TotalLocalStorageGBRequest{
+			Min: requirements.TotalLocalStorageGB.Min,
+			Max: requirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &requirementsRequest, nil
 }
 
 func (m *awsWrapper) getRequirementsRequestFromEC2(requirements *ec2.InstanceRequirements) (*ec2.InstanceRequirementsRequest, error) {
-	requirementsJson, err := json.Marshal(*requirements)
-	if err != nil {
-		return nil, err
+	requirementsRequest := ec2.InstanceRequirementsRequest{}
+
+	// required instance requirements
+	requirementsRequest.MemoryMiB = &ec2.MemoryMiBRequest{
+		Min: requirements.MemoryMiB.Min,
+		Max: requirements.MemoryMiB.Max,
 	}
 
-	var requirementsRequest *ec2.InstanceRequirementsRequest
-	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
-		return nil, err
+	requirementsRequest.VCpuCount = &ec2.VCpuCountRangeRequest{
+		Min: requirements.VCpuCount.Min,
+		Max: requirements.VCpuCount.Max,
 	}
 
-	return requirementsRequest, nil
+	// optional instance requirements
+	if requirements.AcceleratorCount != nil {
+		requirementsRequest.AcceleratorCount = &ec2.AcceleratorCountRequest{
+			Min: requirements.AcceleratorCount.Min,
+			Max: requirements.AcceleratorCount.Max,
+		}
+	}
+
+	if requirements.AcceleratorManufacturers != nil {
+		requirementsRequest.AcceleratorManufacturers = requirements.AcceleratorManufacturers
+	}
+
+	if requirements.AcceleratorNames != nil {
+		requirementsRequest.AcceleratorNames = requirements.AcceleratorNames
+	}
+
+	if requirements.AcceleratorTotalMemoryMiB != nil {
+		requirementsRequest.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiBRequest{
+			Min: requirements.AcceleratorTotalMemoryMiB.Min,
+			Max: requirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if requirements.AcceleratorTypes != nil {
+		requirementsRequest.AcceleratorTypes = requirements.AcceleratorTypes
+	}
+
+	if requirements.BareMetal != nil {
+		requirementsRequest.BareMetal = requirements.BareMetal
+	}
+
+	if requirements.BaselineEbsBandwidthMbps != nil {
+		requirementsRequest.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbpsRequest{
+			Min: requirements.BaselineEbsBandwidthMbps.Min,
+			Max: requirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if requirements.BurstablePerformance != nil {
+		requirementsRequest.BurstablePerformance = requirements.BurstablePerformance
+	}
+
+	if requirements.CpuManufacturers != nil {
+		requirementsRequest.CpuManufacturers = requirements.CpuManufacturers
+	}
+
+	if requirements.ExcludedInstanceTypes != nil {
+		requirementsRequest.ExcludedInstanceTypes = requirements.ExcludedInstanceTypes
+	}
+
+	if requirements.InstanceGenerations != nil {
+		requirementsRequest.InstanceGenerations = requirements.InstanceGenerations
+	}
+
+	if requirements.LocalStorage != nil {
+		requirementsRequest.LocalStorage = requirements.LocalStorage
+	}
+
+	if requirements.LocalStorageTypes != nil {
+		requirementsRequest.LocalStorageTypes = requirements.LocalStorageTypes
+	}
+
+	if requirements.MemoryGiBPerVCpu != nil {
+		requirementsRequest.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpuRequest{
+			Min: requirements.MemoryGiBPerVCpu.Min,
+			Max: requirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if requirements.NetworkInterfaceCount != nil {
+		requirementsRequest.NetworkInterfaceCount = &ec2.NetworkInterfaceCountRequest{
+			Min: requirements.NetworkInterfaceCount.Min,
+			Max: requirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if requirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.OnDemandMaxPricePercentageOverLowestPrice = requirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.RequireHibernateSupport != nil {
+		requirementsRequest.RequireHibernateSupport = requirements.RequireHibernateSupport
+	}
+
+	if requirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		requirementsRequest.SpotMaxPricePercentageOverLowestPrice = requirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if requirements.TotalLocalStorageGB != nil {
+		requirementsRequest.TotalLocalStorageGB = &ec2.TotalLocalStorageGBRequest{
+			Min: requirements.TotalLocalStorageGB.Min,
+			Max: requirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &requirementsRequest, nil
 }
 
-func (m *awsWrapper) getRequirementsRequestFromAutoscalingToEC2(requirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirements, error) {
-	requirementsJson, err := json.Marshal(*requirements)
-	if err != nil {
-		return nil, err
+func (m *awsWrapper) getEC2RequirementsFromAutoscaling(autoscalingRequirements *autoscaling.InstanceRequirements) (*ec2.InstanceRequirements, error) {
+	ec2Requirements := ec2.InstanceRequirements{}
+
+	// required instance requirements
+	ec2Requirements.MemoryMiB = &ec2.MemoryMiB{
+		Min: autoscalingRequirements.MemoryMiB.Min,
+		Max: autoscalingRequirements.MemoryMiB.Max,
 	}
 
-	var requirementsRequest *ec2.InstanceRequirements
-	if err := json.Unmarshal(requirementsJson, &requirementsRequest); err != nil {
-		return nil, err
+	ec2Requirements.VCpuCount = &ec2.VCpuCountRange{
+		Min: autoscalingRequirements.VCpuCount.Min,
+		Max: autoscalingRequirements.VCpuCount.Max,
 	}
 
-	return requirementsRequest, nil
+	// optional instance requirements
+	if autoscalingRequirements.AcceleratorCount != nil {
+		ec2Requirements.AcceleratorCount = &ec2.AcceleratorCount{
+			Min: autoscalingRequirements.AcceleratorCount.Min,
+			Max: autoscalingRequirements.AcceleratorCount.Max,
+		}
+	}
+
+	if autoscalingRequirements.AcceleratorManufacturers != nil {
+		ec2Requirements.AcceleratorManufacturers = autoscalingRequirements.AcceleratorManufacturers
+	}
+
+	if autoscalingRequirements.AcceleratorNames != nil {
+		ec2Requirements.AcceleratorNames = autoscalingRequirements.AcceleratorNames
+	}
+
+	if autoscalingRequirements.AcceleratorTotalMemoryMiB != nil {
+		ec2Requirements.AcceleratorTotalMemoryMiB = &ec2.AcceleratorTotalMemoryMiB{
+			Min: autoscalingRequirements.AcceleratorTotalMemoryMiB.Min,
+			Max: autoscalingRequirements.AcceleratorTotalMemoryMiB.Max,
+		}
+	}
+
+	if autoscalingRequirements.AcceleratorTypes != nil {
+		ec2Requirements.AcceleratorTypes = autoscalingRequirements.AcceleratorTypes
+	}
+
+	if autoscalingRequirements.BareMetal != nil {
+		ec2Requirements.BareMetal = autoscalingRequirements.BareMetal
+	}
+
+	if autoscalingRequirements.BaselineEbsBandwidthMbps != nil {
+		ec2Requirements.BaselineEbsBandwidthMbps = &ec2.BaselineEbsBandwidthMbps{
+			Min: autoscalingRequirements.BaselineEbsBandwidthMbps.Min,
+			Max: autoscalingRequirements.BaselineEbsBandwidthMbps.Max,
+		}
+	}
+
+	if autoscalingRequirements.BurstablePerformance != nil {
+		ec2Requirements.BurstablePerformance = autoscalingRequirements.BurstablePerformance
+	}
+
+	if autoscalingRequirements.CpuManufacturers != nil {
+		ec2Requirements.CpuManufacturers = autoscalingRequirements.CpuManufacturers
+	}
+
+	if autoscalingRequirements.ExcludedInstanceTypes != nil {
+		ec2Requirements.ExcludedInstanceTypes = autoscalingRequirements.ExcludedInstanceTypes
+	}
+
+	if autoscalingRequirements.InstanceGenerations != nil {
+		ec2Requirements.InstanceGenerations = autoscalingRequirements.InstanceGenerations
+	}
+
+	if autoscalingRequirements.LocalStorage != nil {
+		ec2Requirements.LocalStorage = autoscalingRequirements.LocalStorage
+	}
+
+	if autoscalingRequirements.LocalStorageTypes != nil {
+		ec2Requirements.LocalStorageTypes = autoscalingRequirements.LocalStorageTypes
+	}
+
+	if autoscalingRequirements.MemoryGiBPerVCpu != nil {
+		ec2Requirements.MemoryGiBPerVCpu = &ec2.MemoryGiBPerVCpu{
+			Min: autoscalingRequirements.MemoryGiBPerVCpu.Min,
+			Max: autoscalingRequirements.MemoryGiBPerVCpu.Max,
+		}
+	}
+
+	if autoscalingRequirements.NetworkInterfaceCount != nil {
+		ec2Requirements.NetworkInterfaceCount = &ec2.NetworkInterfaceCount{
+			Min: autoscalingRequirements.NetworkInterfaceCount.Min,
+			Max: autoscalingRequirements.NetworkInterfaceCount.Max,
+		}
+	}
+
+	if autoscalingRequirements.OnDemandMaxPricePercentageOverLowestPrice != nil {
+		ec2Requirements.OnDemandMaxPricePercentageOverLowestPrice = autoscalingRequirements.OnDemandMaxPricePercentageOverLowestPrice
+	}
+
+	if autoscalingRequirements.RequireHibernateSupport != nil {
+		ec2Requirements.RequireHibernateSupport = autoscalingRequirements.RequireHibernateSupport
+	}
+
+	if autoscalingRequirements.SpotMaxPricePercentageOverLowestPrice != nil {
+		ec2Requirements.SpotMaxPricePercentageOverLowestPrice = autoscalingRequirements.SpotMaxPricePercentageOverLowestPrice
+	}
+
+	if autoscalingRequirements.TotalLocalStorageGB != nil {
+		ec2Requirements.TotalLocalStorageGB = &ec2.TotalLocalStorageGB{
+			Min: autoscalingRequirements.TotalLocalStorageGB.Min,
+			Max: autoscalingRequirements.TotalLocalStorageGB.Max,
+		}
+	}
+
+	return &ec2Requirements, nil
 }
 
 func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, error) {

@@ -538,6 +538,10 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 			instanceTypesOverrides:        getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 		}
+
+		if asg.MixedInstancesPolicy.instanceTypesOverrides != nil && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
+			return nil, fmt.Errorf("invalid setup of both instance type and instance requirements overrides configured")
+		}
 	}
 
 	return asg, nil

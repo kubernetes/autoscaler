@@ -405,7 +405,9 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
-	node.Status.Capacity = *m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy)
+	if err := m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy); err != nil {
+		return nil, err
+	}
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	for resourceName, val := range resourcesFromTags {
@@ -467,15 +469,14 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	return result
 }
 
-func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) *apiv1.ResourceList {
+func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) error {
 	if policy == nil {
-		return capacity
+		return nil
 	}
 
 	instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(policy)
 	if err != nil {
-		klog.Error("error while building node template using instance requirements: (%s)", err)
-		return capacity
+		return fmt.Errorf("error while building node template using instance requirements: (%s)", err)
 	}
 
 	if instanceRequirements.VCpuCount != nil && instanceRequirements.VCpuCount.Min != nil {
@@ -496,18 +497,18 @@ func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.Res
 		}
 	}
 
-	return capacity
+	return nil
 }
 
 func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
 	instanceRequirements := &ec2.InstanceRequirements{}
 	if policy.instanceRequirementsOverrides != nil {
 		var err error
-		instanceRequirements, err = m.awsService.getRequirementsRequestFromAutoscalingToEC2(policy.instanceRequirementsOverrides)
+		instanceRequirements, err = m.awsService.getEC2RequirementsFromAutoscaling(policy.instanceRequirementsOverrides)
 		if err != nil {
 			return nil, err
 		}
-	} else {
+	} else if policy.launchTemplate != nil {
 		params := &ec2.DescribeLaunchTemplateVersionsInput{
 			LaunchTemplateName: aws.String(policy.launchTemplate.name),
 			Versions:           []*string{aws.String(policy.launchTemplate.version)},
