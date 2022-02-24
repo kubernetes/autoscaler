@@ -271,6 +271,10 @@ func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTempl
 }
 
 func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInstancesPolicy) (string, error) {
+	if policy.launchTemplate == nil {
+		return "", fmt.Errorf("no launch template found for mixed instances policy")
+	}
+
 	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
 		LaunchTemplateName: aws.String(policy.launchTemplate.name),
 		Versions:           []*string{aws.String(policy.launchTemplate.version)},
