@@ -16,6 +16,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-querystring v1.0.0
 	github.com/google/uuid v1.1.2
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.0.77
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
