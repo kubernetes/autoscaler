@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -53,6 +54,7 @@ const (
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
 	failedMachinePrefix           = "failed-machine-"
+	machineTemplateKind           = "MachineTemplate"
 	machineDeploymentKind         = "MachineDeployment"
 	machineSetKind                = "MachineSet"
 	machineKind                   = "Machine"
@@ -707,4 +709,22 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 	}
 
 	return false
+}
+
+// Get an infrastructure machine template given its GVR, name, and namespace.
+func (c *machineController) getInfrastructureResource(resource schema.GroupVersionResource, name string, namespace string) (*unstructured.Unstructured, error) {
+	infra, err := c.managementClient.
+		Resource(resource).
+		Namespace(namespace).
+		Get(
+			context.Background(),
+			name,
+			metav1.GetOptions{},
+		)
+	if err != nil {
+		klog.V(4).Infof("Unable to read infrastructure reference, error: %v", err)
+		return nil, err
+	}
+
+	return infra, err
 }

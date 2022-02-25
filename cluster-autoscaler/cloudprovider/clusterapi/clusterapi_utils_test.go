@@ -452,7 +452,6 @@ func TestScaleFromZeroEnabled(t *testing.T) {
 		annotations: map[string]string{
 			"foo":  "bar",
 			cpuKey: "1",
-			gpuKey: "2",
 		},
 		enabled: false,
 	}, {
@@ -460,12 +459,12 @@ func TestScaleFromZeroEnabled(t *testing.T) {
 		annotations: map[string]string{
 			"foo":     "bar",
 			cpuKey:    "1",
-			memoryKey: "2",
+			memoryKey: "2Mi",
 		},
 		enabled: true,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
-			got := scaleFromZeroEnabled(tc.annotations)
+			got := scaleFromZeroAnnotationsEnabled(tc.annotations)
 			if tc.enabled != got {
 				t.Errorf("expected %t, got %t", tc.enabled, got)
 			}
@@ -542,20 +541,20 @@ func TestParseMemoryCapacity(t *testing.T) {
 		expectedQuantity: zeroQuantity.DeepCopy(),
 		expectedError:    true,
 	}, {
-		description:      "valid quantity",
-		annotations:      map[string]string{memoryKey: "456"},
+		description:      "quantity as with no unit type",
+		annotations:      map[string]string{memoryKey: "1024"},
+		expectedQuantity: *resource.NewQuantity(1024, resource.DecimalSI),
 		expectedError:    false,
-		expectedQuantity: *resource.NewQuantity(456*units.MiB, resource.DecimalSI),
 	}, {
 		description:      "quantity with unit type (Mi)",
 		annotations:      map[string]string{memoryKey: "456Mi"},
-		expectedError:    true,
-		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+		expectedQuantity: *resource.NewQuantity(456*units.MiB, resource.DecimalSI),
 	}, {
 		description:      "quantity with unit type (Gi)",
 		annotations:      map[string]string{memoryKey: "8Gi"},
-		expectedError:    true,
-		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    false,
+		expectedQuantity: *resource.NewQuantity(8*units.GiB, resource.DecimalSI),
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			got, err := parseMemoryCapacity(tc.annotations)
@@ -586,17 +585,22 @@ func TestParseGPUCapacity(t *testing.T) {
 		expectedError:    false,
 	}, {
 		description:      "bad quantity",
-		annotations:      map[string]string{gpuKey: "not-a-quantity"},
+		annotations:      map[string]string{gpuCountKey: "not-a-quantity"},
 		expectedQuantity: zeroQuantity.DeepCopy(),
 		expectedError:    true,
 	}, {
 		description:      "valid quantity",
-		annotations:      map[string]string{gpuKey: "13"},
+		annotations:      map[string]string{gpuCountKey: "13"},
 		expectedError:    false,
 		expectedQuantity: resource.MustParse("13"),
+	}, {
+		description:      "valid quantity, bad unit type",
+		annotations:      map[string]string{gpuCountKey: "13Mi"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
-			got, err := parseGPUCapacity(tc.annotations)
+			got, err := parseGPUCount(tc.annotations)
 			if tc.expectedError && err == nil {
 				t.Fatal("expected an error")
 			}
@@ -632,6 +636,11 @@ func TestParseMaxPodsCapacity(t *testing.T) {
 		annotations:      map[string]string{maxPodsKey: "13"},
 		expectedError:    false,
 		expectedQuantity: resource.MustParse("13"),
+	}, {
+		description:      "valid quantity, bad unit type",
+		annotations:      map[string]string{maxPodsKey: "13Mi"},
+		expectedQuantity: zeroQuantity.DeepCopy(),
+		expectedError:    true,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			got, err := parseMaxPodsCapacity(tc.annotations)
