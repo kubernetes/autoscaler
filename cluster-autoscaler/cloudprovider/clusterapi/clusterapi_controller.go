@@ -46,7 +46,9 @@ const (
 	nodeProviderIDIndex    = "nodeProviderIDIndex"
 	defaultCAPIGroup       = "cluster.x-k8s.io"
 	// CAPIGroupEnvVar contains the environment variable name which allows overriding defaultCAPIGroup.
-	CAPIGroupEnvVar               = "CAPI_GROUP"
+	CAPIGroupEnvVar = "CAPI_GROUP"
+	// CAPIVersionEnvVar contains the environment variable name which allows overriding the Cluster API group version.
+	CAPIVersionEnvVar             = "CAPI_VERSION"
 	resourceNameMachine           = "machines"
 	resourceNameMachineSet        = "machinesets"
 	resourceNameMachineDeployment = "machinedeployments"
@@ -305,6 +307,17 @@ func getCAPIGroup() string {
 	return g
 }
 
+// getCAPIVersion returns a string the specifies the version for the API.
+// It will return either the value from the CAPI_VERSION environment variable,
+// or an empty string if the variable is not set.
+func getCAPIVersion() string {
+	v := os.Getenv(CAPIVersionEnvVar)
+	if v != "" {
+		klog.V(4).Infof("Using API Version %q", v)
+	}
+	return v
+}
+
 // newMachineController constructs a controller that watches Nodes,
 // Machines and MachineSet as they are added, updated and deleted on
 // the cluster.
@@ -415,6 +428,10 @@ func groupVersionHasResource(client discovery.DiscoveryInterface, groupVersion, 
 }
 
 func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup string) (string, error) {
+	if version := os.Getenv(CAPIVersionEnvVar); version != "" {
+		return version, nil
+	}
+
 	groupList, err := client.ServerGroups()
 	if err != nil {
 		return "", fmt.Errorf("failed to get ServerGroups: %v", err)
