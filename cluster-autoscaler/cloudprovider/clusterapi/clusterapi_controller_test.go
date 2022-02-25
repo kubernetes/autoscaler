@@ -1369,6 +1369,26 @@ func TestControllerGetAPIVersionGroup(t *testing.T) {
 	}
 }
 
+func TestControllerGetAPIVersion(t *testing.T) {
+	expected := "v1beta1"
+	if err := os.Setenv(CAPIVersionEnvVar, expected); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	observed := getCAPIVersion()
+	if observed != expected {
+		t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
+	}
+
+	if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expected = ""
+	observed = getCAPIVersion()
+	if observed != expected {
+		t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
+	}
+}
+
 func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
 	testConfig := createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, map[string]string{
 		nodeGroupMinSizeAnnotationKey: "1",
@@ -1424,28 +1444,40 @@ func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
 }
 
 func TestGetAPIGroupPreferredVersion(t *testing.T) {
+	customVersion := "v1"
 	testCases := []struct {
 		description      string
 		APIGroup         string
 		preferredVersion string
+		envVar           string
 		error            bool
 	}{
 		{
 			description:      "find version for default API group",
 			APIGroup:         defaultCAPIGroup,
 			preferredVersion: "v1alpha3",
+			envVar:           "",
 			error:            false,
 		},
 		{
 			description:      "find version for another API group",
 			APIGroup:         customCAPIGroup,
 			preferredVersion: "v1beta1",
+			envVar:           "",
+			error:            false,
+		},
+		{
+			description:      "find version for another API group while overriding version with env var",
+			APIGroup:         customCAPIGroup,
+			preferredVersion: customVersion,
+			envVar:           customVersion,
 			error:            false,
 		},
 		{
 			description:      "API group does not exist",
 			APIGroup:         "does.not.exist",
 			preferredVersion: "",
+			envVar:           "",
 			error:            true,
 		},
 	}
@@ -1459,11 +1491,23 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 				{
 					GroupVersion: fmt.Sprintf("%s/v1alpha3", defaultCAPIGroup),
 				},
+				{
+					GroupVersion: fmt.Sprintf("%s/%s", customCAPIGroup, customVersion),
+				},
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
+			if tc.envVar == "" {
+				if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+			} else {
+				if err := os.Setenv(CAPIVersionEnvVar, tc.envVar); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+			}
 			version, err := getAPIGroupPreferredVersion(discoveryClient, tc.APIGroup)
 			if (err != nil) != tc.error {
 				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
@@ -1472,6 +1516,10 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 				t.Errorf("expected %v, got: %v", tc.preferredVersion, version)
 			}
 		})
+	}
+
+	if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
