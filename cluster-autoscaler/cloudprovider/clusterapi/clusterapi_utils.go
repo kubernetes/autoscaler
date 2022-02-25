@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 const (
@@ -33,10 +32,11 @@ const (
 	deprecatedNodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 	deprecatedClusterNameLabel              = "cluster.k8s.io/cluster-name"
 
-	cpuKey     = "machine.openshift.io/vCPU"
-	memoryKey  = "machine.openshift.io/memoryMb"
-	gpuKey     = "machine.openshift.io/GPU"
-	maxPodsKey = "machine.openshift.io/maxPods"
+	cpuKey      = "capacity.cluster-autoscaler.kubernetes.io/cpu"
+	memoryKey   = "capacity.cluster-autoscaler.kubernetes.io/memory"
+	gpuTypeKey  = "capacity.cluster-autoscaler.kubernetes.io/gpu-type"
+	gpuCountKey = "capacity.cluster-autoscaler.kubernetes.io/gpu-count"
+	maxPodsKey  = "capacity.cluster-autoscaler.kubernetes.io/maxPods"
 )
 
 var (
@@ -63,7 +63,23 @@ var (
 	// machine set has a non-integral max annotation value.
 	errInvalidMaxAnnotation = errors.New("invalid max annotation")
 
-	zeroQuantity = resource.MustParse("0")
+	// machineDeleteAnnotationKey is the annotation used by cluster-api to indicate
+	// that a machine should be deleted. Because this key can be affected by the
+	// CAPI_GROUP env variable, it is initialized here.
+	machineDeleteAnnotationKey = getMachineDeleteAnnotationKey()
+
+	// machineAnnotationKey is the annotation used by the cluster-api on Node objects
+	// to specify the name of the related Machine object. Because this can be affected
+	// by the CAPI_GROUP env variable, it is initialized here.
+	machineAnnotationKey = getMachineAnnotationKey()
+
+	// nodeGroupMinSizeAnnotationKey and nodeGroupMaxSizeAnnotationKey are the keys
+	// used in MachineSet and MachineDeployment annotations to specify the limits
+	// for the node group. Because the keys can be affected by the CAPI_GROUP env
+	// variable, they are initialized here.
+	nodeGroupMinSizeAnnotationKey = getNodeGroupMinSizeAnnotationKey()
+	nodeGroupMaxSizeAnnotationKey = getNodeGroupMaxSizeAnnotationKey()
+	zeroQuantity                  = resource.MustParse("0")
 )
 
 type normalizedProviderID string
@@ -155,7 +171,7 @@ func normalizedProviderString(s string) normalizedProviderID {
 	return normalizedProviderID(split[len(split)-1])
 }
 
-func scaleFromZeroEnabled(annotations map[string]string) bool {
+func scaleFromZeroAnnotationsEnabled(annotations map[string]string) bool {
 	cpu := annotations[cpuKey]
 	mem := annotations[memoryKey]
 
@@ -172,31 +188,42 @@ func parseKey(annotations map[string]string, key string) (resource.Quantity, err
 	return zeroQuantity.DeepCopy(), nil
 }
 
+func parseIntKey(annotations map[string]string, key string) (resource.Quantity, error) {
+	if val, exists := annotations[key]; exists && val != "" {
+		valInt, err := strconv.ParseInt(val, 10, 0)
+		if err != nil {
+			return zeroQuantity.DeepCopy(), fmt.Errorf("value %q from annotation %q expected to be an integer: %v", val, key, err)
+		}
+		return *resource.NewQuantity(valInt, resource.DecimalSI), nil
+	}
+	return zeroQuantity.DeepCopy(), nil
+}
+
 func parseCPUCapacity(annotations map[string]string) (resource.Quantity, error) {
 	return parseKey(annotations, cpuKey)
 }
 
 func parseMemoryCapacity(annotations map[string]string) (resource.Quantity, error) {
-	// The value for the memoryKey is expected to be an integer representing Mebibytes. e.g. "1024".
-	// https://www.iec.ch/si/binary.htm
-	val, exists := annotations[memoryKey]
-	if exists && val != "" {
-		valInt, err := strconv.ParseInt(val, 10, 0)
-		if err != nil {
-			return zeroQuantity.DeepCopy(), fmt.Errorf("value %q from annotation %q expected to be an integer: %v", val, memoryKey, err)
-		}
-		// Convert from Mebibytes to bytes
-		return *resource.NewQuantity(valInt*units.MiB, resource.DecimalSI), nil
-	}
-	return zeroQuantity.DeepCopy(), nil
+	return parseKey(annotations, memoryKey)
 }
 
-func parseGPUCapacity(annotations map[string]string) (resource.Quantity, error) {
-	return parseKey(annotations, gpuKey)
+func parseGPUCount(annotations map[string]string) (resource.Quantity, error) {
+	return parseIntKey(annotations, gpuCountKey)
+}
+
+// The GPU type is not currently considered by the autoscaler when planning
+// expansion, but most likely will be in the future. This method is being added
+// in expectation of that arrival.
+// see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/utils/gpu/gpu.go
+func parseGPUType(annotations map[string]string) string {
+	if val, found := annotations[gpuTypeKey]; found {
+		return val
+	}
+	return ""
 }
 
 func parseMaxPodsCapacity(annotations map[string]string) (resource.Quantity, error) {
-	return parseKey(annotations, maxPodsKey)
+	return parseIntKey(annotations, maxPodsKey)
 }
 
 func clusterNameFromResource(r *unstructured.Unstructured) string {

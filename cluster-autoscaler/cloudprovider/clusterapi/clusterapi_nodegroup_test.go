@@ -19,12 +19,13 @@ package clusterapi
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/tools/cache"
 	"path"
 	"sort"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/client-go/tools/cache"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -201,7 +202,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineSet", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations))
+				test(t, tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil))
 			})
 		}
 	})
@@ -209,7 +210,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	t.Run("MachineDeployment", func(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.description, func(t *testing.T) {
-				test(t, tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations))
+				test(t, tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), tc.nodeCount, tc.annotations, nil))
 			})
 		}
 	})
@@ -293,7 +294,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 			})
 		}
 	})
@@ -305,7 +306,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 			})
 		}
 	})
@@ -371,7 +372,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
@@ -381,7 +382,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			expected:    4,
 			delta:       1,
 		}
-		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 	})
 }
 
@@ -513,7 +514,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			delta:               -1,
 			expectedError:       true,
 		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 	})
 
 	t.Run("MachineSet", func(t *testing.T) {
@@ -524,7 +525,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			expected:            3,
 			delta:               -1,
 		}
-		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+		test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
@@ -536,7 +537,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			delta:               -1,
 			expectedError:       true,
 		}
-		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+		test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 	})
 }
 
@@ -618,7 +619,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+				test(t, &tc, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 			})
 		}
 	})
@@ -630,7 +631,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 					nodeGroupMinSizeAnnotationKey: "1",
 					nodeGroupMaxSizeAnnotationKey: "10",
 				}
-				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations))
+				test(t, &tc, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), int(tc.initial), annotations, nil))
 			})
 		}
 	})
@@ -708,17 +709,37 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineSetTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineDeploymentTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 }
 
@@ -789,16 +810,16 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	t.Run("MachineSet", func(t *testing.T) {
 		namespace := RandomString(6)
 		clusterName := RandomString(6)
-		testConfig0 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
-		testConfig1 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
+		testConfig0 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
+		testConfig1 := createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
 		namespace := RandomString(6)
 		clusterName := RandomString(6)
-		testConfig0 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
-		testConfig1 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations)
+		testConfig0 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
+		testConfig1 := createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 1, 2, annotations, nil)
 		test(t, 2, append(testConfig0, testConfig1...))
 	})
 }
@@ -968,17 +989,37 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineSetTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineDeploymentTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 }
 
@@ -1097,17 +1138,37 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineSetTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineDeploymentTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 }
 
@@ -1178,17 +1239,37 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 	// sorting and the expected semantics in test() will fail.
 
 	t.Run("MachineSet", func(t *testing.T) {
-		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineSetTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
-			nodeGroupMinSizeAnnotationKey: "1",
-			nodeGroupMaxSizeAnnotationKey: "10",
-		}))
+		test(
+			t,
+			createMachineDeploymentTestConfig(
+				RandomString(6),
+				RandomString(6),
+				RandomString(6),
+				10,
+				map[string]string{
+					nodeGroupMinSizeAnnotationKey: "1",
+					nodeGroupMaxSizeAnnotationKey: "10",
+				},
+				nil,
+			),
+		)
 	})
 }
 
@@ -1221,16 +1302,18 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		{
 			name: "When the NodeGroup can scale from zero",
 			nodeGroupAnnotations: map[string]string{
-				memoryKey: "2048",
-				cpuKey:    "2",
+				memoryKey:   "2048Mi",
+				cpuKey:      "2",
+				gpuTypeKey:  gpuapis.ResourceNvidiaGPU,
+				gpuCountKey: "1",
 			},
 			config: testCaseConfig{
 				expectedErr: nil,
 				expectedCapacity: map[corev1.ResourceName]int64{
 					corev1.ResourceCPU:        2,
 					corev1.ResourceMemory:     2048 * 1024 * 1024,
-					corev1.ResourcePods:       250,
-					gpuapis.ResourceNvidiaGPU: 0,
+					corev1.ResourcePods:       110,
+					gpuapis.ResourceNvidiaGPU: 1,
 				},
 				expectedNodeLabels: map[string]string{
 					"kubernetes.io/os":        "linux",
@@ -1243,7 +1326,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		{
 			name: "When the NodeGroup can scale from zero and the nodegroup adds labels to the Node",
 			nodeGroupAnnotations: map[string]string{
-				memoryKey: "2048",
+				memoryKey: "2048Mi",
 				cpuKey:    "2",
 			},
 			config: testCaseConfig{
@@ -1253,10 +1336,9 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					"anotherLabel":   "anotherValue",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
-					corev1.ResourceCPU:        2,
-					corev1.ResourceMemory:     2048 * 1024 * 1024,
-					corev1.ResourcePods:       250,
-					gpuapis.ResourceNvidiaGPU: 0,
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
 				},
 				expectedNodeLabels: map[string]string{
 					"kubernetes.io/os":        "linux",
@@ -1271,7 +1353,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		{
 			name: "When the NodeGroup can scale from zero and the Node still exists, it includes the known node labels",
 			nodeGroupAnnotations: map[string]string{
-				memoryKey: "2048",
+				memoryKey: "2048Mi",
 				cpuKey:    "2",
 			},
 			config: testCaseConfig{
@@ -1285,13 +1367,12 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				},
 				nodegroupLabels: map[string]string{
 					"nodeGroupLabel": "value",
-					"anotherLabel":   "anotherValue",
+					"anotherLabel":   "nodeGroupValue",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
-					corev1.ResourceCPU:        2,
-					corev1.ResourceMemory:     2048 * 1024 * 1024,
-					corev1.ResourcePods:       250,
-					gpuapis.ResourceNvidiaGPU: 0,
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
 				},
 				expectedNodeLabels: map[string]string{
 					"kubernetes.io/os":                 "windows",
@@ -1299,7 +1380,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					"kubernetes.io/arch":               "arm64",
 					"beta.kubernetes.io/arch":          "amd64",
 					"nodeGroupLabel":                   "value",
-					"anotherLabel":                     "anotherValue",
+					"anotherLabel":                     "nodeGroupValue",
 					"node.kubernetes.io/instance-type": "instance1",
 				},
 			},
@@ -1375,7 +1456,16 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Run("MachineSet", func(t *testing.T) {
-				test(t, createMachineSetTestConfig(testNamespace, RandomString(6), RandomString(6), 10, cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)),
+				test(
+					t,
+					createMachineSetTestConfig(
+						testNamespace,
+						RandomString(6),
+						RandomString(6),
+						10,
+						cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations),
+						nil,
+					),
 					tc.config,
 				)
 			})
@@ -1383,7 +1473,14 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 			t.Run("MachineDeployment", func(t *testing.T) {
 				test(
 					t,
-					createMachineDeploymentTestConfig(testNamespace, RandomString(6), RandomString(6), 10, cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)),
+					createMachineDeploymentTestConfig(
+						testNamespace,
+						RandomString(6),
+						RandomString(6),
+						10,
+						cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations),
+						nil,
+					),
 					tc.config,
 				)
 			})

@@ -23,10 +23,8 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	gpuapis "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -35,17 +33,12 @@ import (
 )
 
 const (
-	// deprecatedMachineDeleteAnnotationKey should not be removed until minimum cluster-api support is v1alpha3
-	deprecatedMachineDeleteAnnotationKey = "cluster.k8s.io/delete-machine"
-	// TODO: determine what currently relies on deprecatedMachineAnnotationKey to determine when it can be removed
-	deprecatedMachineAnnotationKey = "cluster.k8s.io/machine"
-	machineDeleteAnnotationKey     = "machine.openshift.io/cluster-api-delete-machine"
-	machineAnnotationKey           = "machine.openshift.io/machine"
-	debugFormat                    = "%s (min: %d, max: %d, replicas: %d)"
+	debugFormat = "%s (min: %d, max: %d, replicas: %d)"
 
-	// This default for the maximum number of pods comes from the machine-config-operator
-	// see https://github.com/openshift/machine-config-operator/blob/2f1bd6d99131fa4471ed95543a51dec3d5922b2b/templates/worker/01-worker-kubelet/_base/files/kubelet.yaml#L19
-	defaultMaxPods = 250
+	// The default for the maximum number of pods is inspired by the Kubernetes
+	// best practices documentation for large clusters.
+	// see https://kubernetes.io/docs/setup/best-practices/cluster-large/
+	defaultMaxPods = 110
 )
 
 type nodegroup struct {
@@ -254,43 +247,9 @@ func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		return nil, cloudprovider.ErrNotImplemented
 	}
 
-	cpu, err := ng.scalableResource.InstanceCPUCapacity()
+	capacity, err := ng.scalableResource.InstanceCapacity()
 	if err != nil {
 		return nil, err
-	}
-
-	mem, err := ng.scalableResource.InstanceMemoryCapacity()
-	if err != nil {
-		return nil, err
-	}
-
-	gpu, err := ng.scalableResource.InstanceGPUCapacity()
-	if err != nil {
-		return nil, err
-	}
-
-	pod, err := ng.scalableResource.InstanceMaxPodsCapacity()
-	if err != nil {
-		return nil, err
-	}
-
-	if cpu.IsZero() || mem.IsZero() {
-		return nil, cloudprovider.ErrNotImplemented
-	}
-
-	if gpu.IsZero() {
-		gpu = zeroQuantity.DeepCopy()
-	}
-
-	if pod.IsZero() {
-		pod = *resource.NewQuantity(defaultMaxPods, resource.DecimalSI)
-	}
-
-	capacity := map[corev1.ResourceName]resource.Quantity{
-		corev1.ResourceCPU:        cpu,
-		corev1.ResourceMemory:     mem,
-		corev1.ResourcePods:       pod,
-		gpuapis.ResourceNvidiaGPU: gpu,
 	}
 
 	nodeName := fmt.Sprintf("%s-asg-%d", ng.scalableResource.Name(), rand.Int63())
