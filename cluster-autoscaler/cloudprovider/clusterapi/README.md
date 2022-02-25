@@ -180,6 +180,23 @@ the machine annotation on nodes will be `test.8s.io/machine`, the machine deleti
 annotation will be `test.k8s.io/delete-machine`, and the cluster name label will be
 `test.k8s.io/cluster-name`.
 
+## Specifying a Custom Resource Version
+
+When determining the group version for the Cluster API types, by default the autoscaler
+will look for the latest version of the group. For example, if `MachineDeployments`
+exist in the `cluster.x-k8s.io` group at versions `v1alpha1` and `v1beta1`, the
+autoscaler will choose `v1beta1`.
+
+In some cases it may be desirable to specify which version of the API the cluster
+autoscaler should use. This can be useful in debugging scenarios, or in situations
+where you have deployed multiple API versions and wish to ensure that the autoscaler
+uses a specific version.
+
+Setting the `CAPI_VERSION` environment variable will instruct the autoscaler to use
+the version specified. This works in a similar fashion as the API group environment
+variable with the exception that there is no default value. When this variable is not
+set, the autoscaler will use the behavior described above.
+
 ## Sample manifest
 
 A sample manifest that will create a deployment running the autoscaler is
