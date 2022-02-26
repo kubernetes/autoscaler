@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
@@ -194,19 +193,7 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string, times
 // CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) or gpu utilization
 // based on if the node has GPU or not. Per resource utilization is the sum of requests for it divided by allocatable.
 // It also returns the individual cpu, memory and gpu utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string, currentTime time.Time) (utilInfo UtilizationInfo, err error) {
-	if gpu.NodeHasGpu(gpuLabel, node) {
-		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods, currentTime)
-		if err != nil {
-			klog.V(3).Infof("node %s has unready GPU", node.Name)
-			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
-			return UtilizationInfo{GpuUtil: 0, ResourceName: gpu.ResourceNvidiaGPU, Utilization: 0}, nil
-		}
-
-		// Skips cpu and memory utilization calculation for node with GPU.
-		return UtilizationInfo{GpuUtil: gpuUtil, ResourceName: gpu.ResourceNvidiaGPU, Utilization: gpuUtil}, nil
-	}
-
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (utilInfo UtilizationInfo, err error) {
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
 	if err != nil {
 		return UtilizationInfo{}, err

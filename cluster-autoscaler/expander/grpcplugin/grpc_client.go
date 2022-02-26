@@ -101,16 +101,16 @@ func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nod
 	return options
 }
 
-// populateOptionsForGRPC creates a map of nodegroup ID and options, as well as a slice of Options objects for the gRPC call
-func populateOptionsForGRPC(expansionOptions []expander.Option) ([]*protos.Option, map[string]expander.Option) {
-	grpcOptionsSlice := []*protos.Option{}
-	nodeGroupIDOptionMap := make(map[string]expander.Option)
-	for _, option := range expansionOptions {
-		nodeGroupIDOptionMap[option.NodeGroup.Id()] = option
-		grpcOptionsSlice = append(grpcOptionsSlice, newOptionMessage(option.NodeGroup.Id(), int32(option.NodeCount), option.Debug, option.Pods))
-	}
-	return grpcOptionsSlice, nodeGroupIDOptionMap
-}
+//// populateOptionsForGRPC creates a map of nodegroup ID and options, as well as a slice of Options objects for the gRPC call
+//func populateOptionsForGRPC(expansionOptions []expander.Option) ([]*protos.Option, map[string]expander.Option) {
+//	grpcOptionsSlice := []*protos.Option{}
+//	nodeGroupIDOptionMap := make(map[string]expander.Option)
+//	for _, option := range expansionOptions {
+//		nodeGroupIDOptionMap[option.NodeGroup.Id()] = option
+//		grpcOptionsSlice = append(grpcOptionsSlice, newOptionMessage(option.NodeGroup.Id(), int32(option.NodeCount), option.Debug, option.Pods))
+//	}
+//	return grpcOptionsSlice, nodeGroupIDOptionMap
+//}
 
 // populateNodeInfoForGRPC looks at the corresponding v1.Node object per NodeInfo object, and populates the grpcNodeInfoMap with these to pass over grpc
 func populateNodeInfoForGRPC(nodeInfos map[string]*schedulerframework.NodeInfo) map[string]*v1.Node {

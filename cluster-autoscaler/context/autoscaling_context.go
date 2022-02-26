@@ -17,7 +17,6 @@ limitations under the License.
 package context
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -39,7 +38,8 @@ type AutoscalingContext struct {
 	// Kubernetes API clients.
 	AutoscalingKubeClients
 	// CloudProvider used in CA.
-	CloudProvider cloudprovider.CloudProvider
+	// CloudProvider cloudprovider.CloudProvider
+
 	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
 	PredicateChecker simulator.PredicateChecker
@@ -68,24 +68,24 @@ type AutoscalingKubeClients struct {
 	LogRecorder *utils.LogEventRecorder
 }
 
-// NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
-// reading limits from AutoscalingOptions struct.
-func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions) *cloudprovider.ResourceLimiter {
-	// build min/max maps for resources limits
-	minResources := make(map[string]int64)
-	maxResources := make(map[string]int64)
+// // NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
+// // reading limits from AutoscalingOptions struct.
+// func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions) *cloudprovider.ResourceLimiter {
+// 	// build min/max maps for resources limits
+// 	minResources := make(map[string]int64)
+// 	maxResources := make(map[string]int64)
 
-	minResources[cloudprovider.ResourceNameCores] = options.MinCoresTotal
-	minResources[cloudprovider.ResourceNameMemory] = options.MinMemoryTotal
-	maxResources[cloudprovider.ResourceNameCores] = options.MaxCoresTotal
-	maxResources[cloudprovider.ResourceNameMemory] = options.MaxMemoryTotal
+// 	minResources[cloudprovider.ResourceNameCores] = options.MinCoresTotal
+// 	minResources[cloudprovider.ResourceNameMemory] = options.MinMemoryTotal
+// 	maxResources[cloudprovider.ResourceNameCores] = options.MaxCoresTotal
+// 	maxResources[cloudprovider.ResourceNameMemory] = options.MaxMemoryTotal
 
-	for _, gpuLimits := range options.GpuTotal {
-		minResources[gpuLimits.GpuType] = gpuLimits.Min
-		maxResources[gpuLimits.GpuType] = gpuLimits.Max
-	}
-	return cloudprovider.NewResourceLimiter(minResources, maxResources)
-}
+// 	for _, gpuLimits := range options.GpuTotal {
+// 		minResources[gpuLimits.GpuType] = gpuLimits.Min
+// 		maxResources[gpuLimits.GpuType] = gpuLimits.Max
+// 	}
+// 	return cloudprovider.NewResourceLimiter(minResources, maxResources)
+// }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(
@@ -93,14 +93,14 @@ func NewAutoscalingContext(
 	predicateChecker simulator.PredicateChecker,
 	clusterSnapshot simulator.ClusterSnapshot,
 	autoscalingKubeClients *AutoscalingKubeClients,
-	cloudProvider cloudprovider.CloudProvider,
+	// cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
 	processorCallbacks processor_callbacks.ProcessorCallbacks,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) *AutoscalingContext {
 	return &AutoscalingContext{
-		AutoscalingOptions:     options,
-		CloudProvider:          cloudProvider,
+		AutoscalingOptions: options,
+		// CloudProvider:          cloudProvider,
 		AutoscalingKubeClients: *autoscalingKubeClients,
 		PredicateChecker:       predicateChecker,
 		ClusterSnapshot:        clusterSnapshot,

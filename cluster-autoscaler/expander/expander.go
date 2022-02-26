@@ -18,7 +18,6 @@ package expander
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -42,7 +41,7 @@ var (
 
 // Option describes an option to expand the cluster.
 type Option struct {
-	NodeGroup cloudprovider.NodeGroup
+	//NodeGroup cloudprovider.NodeGroup
 	NodeCount int
 	Debug     string
 	Pods      []*apiv1.Pod

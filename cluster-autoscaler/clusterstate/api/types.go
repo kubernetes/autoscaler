@@ -98,7 +98,9 @@ type ClusterAutoscalerStatus struct {
 type NodeGroupStatus struct {
 	// ProviderID is the cloud-provider-specific name of the node group. On GCE it will be equal
 	// to MIG url, on AWS it will be ASG name, etc.
-	ProviderID string `json:"providerID,omitempty"`
+
+	// ProviderID string `json:"providerID,omitempty"`
+
 	// Conditions is a list of conditions that describe the state of the node group.
 	Conditions []ClusterAutoscalerCondition `json:"conditions,omitempty"`
 }

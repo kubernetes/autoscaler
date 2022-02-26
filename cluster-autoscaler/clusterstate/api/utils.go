@@ -84,7 +84,7 @@ func (status ClusterAutoscalerStatus) GetReadableString() string {
 	}
 	buffer.WriteString("\nNodeGroups:\n")
 	for _, nodeGroupStatus := range status.NodeGroupStatuses {
-		buffer.WriteString(fmt.Sprintf("  Name:        %v\n", nodeGroupStatus.ProviderID))
+		// buffer.WriteString(fmt.Sprintf("  Name:        %v\n", nodeGroupStatus.ProviderID))
 		buffer.WriteString(getConditionsString(nodeGroupStatus.Conditions, "  "))
 		buffer.WriteString("\n")
 	}

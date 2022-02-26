@@ -17,18 +17,14 @@ limitations under the License.
 package core
 
 import (
-	"strings"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
@@ -42,14 +38,14 @@ type AutoscalerOptions struct {
 	KubeClient             kube_client.Interface
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
-	CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker       simulator.PredicateChecker
-	ClusterSnapshot        simulator.ClusterSnapshot
-	ExpanderStrategy       expander.Strategy
-	EstimatorBuilder       estimator.EstimatorBuilder
-	Processors             *ca_processors.AutoscalingProcessors
-	Backoff                backoff.Backoff
-	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
+	// CloudProvider          cloudprovider.CloudProvider
+	PredicateChecker     simulator.PredicateChecker
+	ClusterSnapshot      simulator.ClusterSnapshot
+	ExpanderStrategy     expander.Strategy
+	EstimatorBuilder     estimator.EstimatorBuilder
+	Processors           *ca_processors.AutoscalingProcessors
+	Backoff              backoff.Backoff
+	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -75,7 +71,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,
-		opts.CloudProvider,
+		// opts.CloudProvider,
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff,
@@ -101,17 +97,17 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.ClusterSnapshot == nil {
 		opts.ClusterSnapshot = simulator.NewBasicClusterSnapshot()
 	}
-	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
-	}
-	if opts.ExpanderStrategy == nil {
-		expanderStrategy, err := factory.ExpanderStrategyFromStrings(strings.Split(opts.ExpanderNames, ","), opts.CloudProvider,
-			opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
-		if err != nil {
-			return err
-		}
-		opts.ExpanderStrategy = expanderStrategy
-	}
+	// if opts.CloudProvider == nil {
+	// 	opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
+	// }
+	// if opts.ExpanderStrategy == nil {
+	// 	expanderStrategy, err := factory.ExpanderStrategyFromStrings(strings.Split(opts.ExpanderNames, ","), opts.CloudProvider,
+	// 		opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace, opts.GRPCExpanderCert, opts.GRPCExpanderURL)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	opts.ExpanderStrategy = expanderStrategy
+	// }
 	if opts.EstimatorBuilder == nil {
 		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName)
 		if err != nil {

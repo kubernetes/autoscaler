@@ -17,12 +17,10 @@ limitations under the License.
 package factory
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/priority"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
@@ -33,7 +31,7 @@ import (
 
 // ExpanderStrategyFromStrings creates an expander.Strategy according to the names of the expanders passed in
 // take in whole opts and access stuff here
-func ExpanderStrategyFromStrings(expanderFlags []string, cloudProvider cloudprovider.CloudProvider,
+func ExpanderStrategyFromStrings(expanderFlags []string,
 	autoscalingKubeClients *context.AutoscalingKubeClients, kubeClient kube_client.Interface,
 	configNamespace string, GRPCExpanderCert string, GRPCExpanderURL string) (expander.Strategy, errors.AutoscalerError) {
 	var filters []expander.Filter
@@ -55,13 +53,6 @@ func ExpanderStrategyFromStrings(expanderFlags []string, cloudProvider cloudprov
 			filters = append(filters, mostpods.NewFilter())
 		case expander.LeastWasteExpanderName:
 			filters = append(filters, waste.NewFilter())
-		case expander.PriceBasedExpanderName:
-			if _, err := cloudProvider.Pricing(); err != nil {
-				return nil, err
-			}
-			filters = append(filters, price.NewFilter(cloudProvider,
-				price.NewSimplePreferredNodeProvider(autoscalingKubeClients.AllNodeLister()),
-				price.SimpleNodeUnfitness))
 		case expander.PriorityBasedExpanderName:
 			// It seems other listers do the same here - they never receive the termination msg on the ch.
 			// This should be currently OK.

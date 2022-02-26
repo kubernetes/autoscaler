@@ -16,26 +16,26 @@ limitations under the License.
 
 package cloudprovider
 
-// NodeGroupDiscoveryOptions contains various options to configure how a cloud provider discovers node groups
-type NodeGroupDiscoveryOptions struct {
-	// NodeGroupSpecs is specified to statically discover node groups listed in it
-	NodeGroupSpecs []string
-	// NodeGroupAutoDiscoverySpec is specified for automatically discovering node groups according to the specs
-	NodeGroupAutoDiscoverySpecs []string
-}
+// // NodeGroupDiscoveryOptions contains various options to configure how a cloud provider discovers node groups
+// type NodeGroupDiscoveryOptions struct {
+// 	// NodeGroupSpecs is specified to statically discover node groups listed in it
+// 	NodeGroupSpecs []string
+// 	// NodeGroupAutoDiscoverySpec is specified for automatically discovering node groups according to the specs
+// 	NodeGroupAutoDiscoverySpecs []string
+// }
 
-// StaticDiscoverySpecified returns true only when there are 1 or more --nodes flags specified
-func (o NodeGroupDiscoveryOptions) StaticDiscoverySpecified() bool {
-	return len(o.NodeGroupSpecs) > 0
-}
+// // StaticDiscoverySpecified returns true only when there are 1 or more --nodes flags specified
+// func (o NodeGroupDiscoveryOptions) StaticDiscoverySpecified() bool {
+// 	return len(o.NodeGroupSpecs) > 0
+// }
 
-// AutoDiscoverySpecified returns true only when there are 1 or more --node-group-auto-discovery flags specified
-func (o NodeGroupDiscoveryOptions) AutoDiscoverySpecified() bool {
-	return len(o.NodeGroupAutoDiscoverySpecs) > 0
-}
+// // AutoDiscoverySpecified returns true only when there are 1 or more --node-group-auto-discovery flags specified
+// func (o NodeGroupDiscoveryOptions) AutoDiscoverySpecified() bool {
+// 	return len(o.NodeGroupAutoDiscoverySpecs) > 0
+// }
 
-// DiscoverySpecified returns true when at least one of the --nodes or
-// --node-group-auto-discovery flags specified.
-func (o NodeGroupDiscoveryOptions) DiscoverySpecified() bool {
-	return o.StaticDiscoverySpecified() || o.AutoDiscoverySpecified()
-}
+// // DiscoverySpecified returns true when at least one of the --nodes or
+// // --node-group-auto-discovery flags specified.
+// func (o NodeGroupDiscoveryOptions) DiscoverySpecified() bool {
+// 	return o.StaticDiscoverySpecified() || o.AutoDiscoverySpecified()
+// }
