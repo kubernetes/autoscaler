@@ -43,15 +43,7 @@ var (
 
 const (
 	nodePoolIDKey = "kubernetes.io/node-pool.id"
-<<<<<<< HEAD
-<<<<<<< HEAD
 	// DefaultPoolName defines default pool name
-=======
-	// DefaultPoolName
->>>>>>> e55dc03ba (added cce version and move sdk to go mod)
-=======
-	// DefaultPoolName defines default pool name
->>>>>>> d09c04151 (added comment to fix PR checking issue)
 	DefaultPoolName = "DefaultPool"
 
 	// ToBeDeletedByCCEAnnotation is a annotation used to mark the node to be deleted by cce.
