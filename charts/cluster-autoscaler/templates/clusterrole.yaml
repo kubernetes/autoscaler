@@ -146,7 +146,7 @@ rules:
     verbs:
     - use
 {{- end -}}
-{{- if and ( and ( eq .Values.cloudProvider "clusterapi" ) ( .Values.rbac.clusterScoped ) ( or ( eq .Values.clusterAPIMode "incluster-incluster" ) ( eq .Values.clusterAPIMode "incluster-kubeconfig" ) ))}}
+{{- if and ( and ( eq .Values.cloudProvider "clusterapi" ) ( .Values.rbac.clusterScoped ) ( or ( eq .Values.clusterAPIMode "incluster-incluster" ) ( eq .Values.clusterAPIMode "kubeconfig-incluster" ) ))}}
   - apiGroups:
     - cluster.x-k8s.io
     resources:
