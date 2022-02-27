@@ -46,7 +46,11 @@ spec:
           command:
             - ./cluster-autoscaler
             - --cloud-provider={{ .Values.cloudProvider }}
+          {{- if and (eq .Values.cloudProvider "clusterapi") (eq .Values.clusterAPIMode "kubeconfig-incluster") }}
+            - --namespace={{ .Values.clusterAPIConfigMapsNamespace | default "kube-system" }}
+          {{- else }}
             - --namespace={{ .Release.Namespace }}
+          {{- end }}
           {{- if .Values.autoscalingGroups }}
             {{- range .Values.autoscalingGroups }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
@@ -201,7 +205,7 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
+          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts .Values.clusterAPIKubeconfigSecret }}
           volumeMounts:
           {{- if eq .Values.cloudProvider "magnum" }}
             - name: cloudconfig
@@ -245,7 +249,7 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
+      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes .Values.clusterAPIKubeconfigSecret }}
       volumes:
       {{- if eq .Values.cloudProvider "magnum" }}
         - name: cloudconfig
