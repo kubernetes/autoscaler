@@ -43,6 +43,7 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704
 	sigs.k8s.io/cloud-provider-azure v1.23.2
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.0.78
 )
 
 replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49
