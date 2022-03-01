@@ -22,13 +22,11 @@ import (
 	"sync"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
-
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
@@ -126,7 +124,7 @@ type ClusterStateRegistry struct {
 	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
 	unregisteredNodes       map[string]UnregisteredNode
 	candidatesForScaleDown  map[string][]string
-	backoff                 backoff.Backoff
+	//backoff                 backoff.Backoff
 	lastStatus              *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime time.Time
 	logRecorder             *utils.LogEventRecorder
@@ -141,7 +139,7 @@ type ClusterStateRegistry struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff) *ClusterStateRegistry {
+func NewClusterStateRegistry(config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
@@ -158,19 +156,19 @@ func NewClusterStateRegistry(config ClusterStateRegistryConfig, logRecorder *uti
 		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:       make(map[string]UnregisteredNode),
 		candidatesForScaleDown:  make(map[string][]string),
-		backoff:                 backoff,
-		lastStatus:              emptyStatus,
-		logRecorder:             logRecorder,
+		//backoff:                 backoff,
+		lastStatus:  emptyStatus,
+		logRecorder: logRecorder,
 		// cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:       make(chan struct{}),
 		scaleUpFailures: make(map[string][]ScaleUpFailure),
 	}
 }
 
-// Start starts components running in background.
-// func (csr *ClusterStateRegistry) Start() {
-// 	csr.cloudProviderNodeInstancesCache.Start(csr.interrupt)
-// }
+//Start starts components running in background.
+func (csr *ClusterStateRegistry) Start() {
+	//csr.cloudProviderNodeInstancesCache.Start(csr.interrupt)
+}
 
 // Stop stops components running in background.
 func (csr *ClusterStateRegistry) Stop() {
@@ -323,17 +321,17 @@ func (csr *ClusterStateRegistry) Stop() {
 // 	return nil
 // }
 
-// Recalculate cluster state after scale-ups or scale-downs were registered.
-// func (csr *ClusterStateRegistry) Recalculate() {
-// 	// targetSizes, err := getTargetSizes(csr.cloudProvider)
-// 	// if err != nil {
-// 	// 	klog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
-// 	// }
-
-// 	csr.Lock()
-// 	defer csr.Unlock()
-// 	csr.updateAcceptableRanges(targetSizes)
-// }
+////Recalculate cluster state after scale-ups or scale-downs were registered.
+//func (csr *ClusterStateRegistry) Recalculate() {
+//	// targetSizes, err := getTargetSizes(csr.cloudProvider)
+//	// if err != nil {
+//	// 	klog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
+//	// }
+//
+//	csr.Lock()
+//	defer csr.Unlock()
+//	csr.updateAcceptableRanges(targetSizes)
+//}
 
 // getTargetSizes gets target sizes of node groups.
 // func getTargetSizes(cp cloudprovider.CloudProvider) (map[string]int, error) {
@@ -684,48 +682,48 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 // 	csr.lastScaleDownUpdateTime = now
 // }
 
-// // GetStatus returns ClusterAutoscalerStatus with the current cluster autoscaler status.
-// func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscalerStatus {
-// 	result := &api.ClusterAutoscalerStatus{
-// 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
-// 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
-// 	}
-// 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
-// 		nodeGroupStatus := api.NodeGroupStatus{
-// 			ProviderID: nodeGroup.Id(),
-// 			Conditions: make([]api.ClusterAutoscalerCondition, 0),
-// 		}
-// 		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
-// 		acceptable := csr.acceptableRanges[nodeGroup.Id()]
+// GetStatus returns ClusterAutoscalerStatus with the current cluster autoscaler status.
+func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscalerStatus {
+	result := &api.ClusterAutoscalerStatus{
+		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
+		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
+	}
+	//for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	//	nodeGroupStatus := api.NodeGroupStatus{
+	//		ProviderID: nodeGroup.Id(),
+	//		Conditions: make([]api.ClusterAutoscalerCondition, 0),
+	//	}
+	//	readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
+	//	acceptable := csr.acceptableRanges[nodeGroup.Id()]
+	//
+	//	// Health.
+	//	nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildHealthStatusNodeGroup(
+	//		csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable, nodeGroup.MinSize(), nodeGroup.MaxSize()))
+	//
+	//	// Scale up.
+	//	nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleUpStatusNodeGroup(
+	//		csr.IsNodeGroupScalingUp(nodeGroup.Id()),
+	//		csr.IsNodeGroupSafeToScaleUp(nodeGroup, now),
+	//		readiness,
+	//		acceptable))
+	//
+	//	// Scale down.
+	//	nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleDownStatusNodeGroup(
+	//		csr.candidatesForScaleDown[nodeGroup.Id()], csr.lastScaleDownUpdateTime))
+	//
+	//	result.NodeGroupStatuses = append(result.NodeGroupStatuses, nodeGroupStatus)
+	//}
+	result.ClusterwideConditions = append(result.ClusterwideConditions,
+		buildHealthStatusClusterwide(csr.IsClusterHealthy(), csr.totalReadiness))
+	result.ClusterwideConditions = append(result.ClusterwideConditions,
+		buildScaleUpStatusClusterwide(result.NodeGroupStatuses, csr.totalReadiness))
+	result.ClusterwideConditions = append(result.ClusterwideConditions,
+		buildScaleDownStatusClusterwide(csr.candidatesForScaleDown, csr.lastScaleDownUpdateTime))
 
-// 		// Health.
-// 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildHealthStatusNodeGroup(
-// 			csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable, nodeGroup.MinSize(), nodeGroup.MaxSize()))
-
-// 		// Scale up.
-// 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleUpStatusNodeGroup(
-// 			csr.IsNodeGroupScalingUp(nodeGroup.Id()),
-// 			csr.IsNodeGroupSafeToScaleUp(nodeGroup, now),
-// 			readiness,
-// 			acceptable))
-
-// 		// Scale down.
-// 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleDownStatusNodeGroup(
-// 			csr.candidatesForScaleDown[nodeGroup.Id()], csr.lastScaleDownUpdateTime))
-
-// 		result.NodeGroupStatuses = append(result.NodeGroupStatuses, nodeGroupStatus)
-// 	}
-// 	result.ClusterwideConditions = append(result.ClusterwideConditions,
-// 		buildHealthStatusClusterwide(csr.IsClusterHealthy(), csr.totalReadiness))
-// 	result.ClusterwideConditions = append(result.ClusterwideConditions,
-// 		buildScaleUpStatusClusterwide(result.NodeGroupStatuses, csr.totalReadiness))
-// 	result.ClusterwideConditions = append(result.ClusterwideConditions,
-// 		buildScaleDownStatusClusterwide(csr.candidatesForScaleDown, csr.lastScaleDownUpdateTime))
-
-// 	updateLastTransition(csr.lastStatus, result)
-// 	csr.lastStatus = result
-// 	return result
-// }
+	updateLastTransition(csr.lastStatus, result)
+	csr.lastStatus = result
+	return result
+}
 
 // GetClusterReadiness returns current readiness stats of cluster
 func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {

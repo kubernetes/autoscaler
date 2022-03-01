@@ -17,8 +17,6 @@ limitations under the License.
 package nodes
 
 import (
-	"reflect"
-
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
@@ -45,24 +43,24 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx.CloudProvider)
+	nodeGroupSize := utils.GetNodeGroupSize()
 
 	for _, node := range nodes {
-		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
-			continue
-		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.V(4).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
-			continue
-		}
-		size, found := nodeGroupSize[nodeGroup.Id()]
-		if !found {
-			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
-			continue
-		}
-		if size <= nodeGroup.MinSize() {
+		//nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
+		//if err != nil {
+		//	klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
+		//	continue
+		//}
+		//if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		//	klog.V(4).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
+		//	continue
+		//}
+		size := nodeGroupSize
+		//if !found {
+		//	klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
+		//	continue
+		//}
+		if size <= utils.GetMinSizeNodeGroup() {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			continue
 		}

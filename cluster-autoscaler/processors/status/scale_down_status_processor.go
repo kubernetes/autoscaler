@@ -18,32 +18,30 @@ package status
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	klog "k8s.io/klog/v2"
 )
 
 // ScaleDownStatus represents the state of scale down.
 type ScaleDownStatus struct {
-	Result            ScaleDownResult
-	ScaledDownNodes   []*ScaleDownNode
-	UnremovableNodes  []*UnremovableNode
-	RemovedNodeGroups []cloudprovider.NodeGroup
+	Result           ScaleDownResult
+	ScaledDownNodes  []*ScaleDownNode
+	UnremovableNodes []*UnremovableNode
+	//RemovedNodeGroups []cloudprovider.NodeGroup
 	NodeDeleteResults map[string]NodeDeleteResult
 }
 
 // SetUnremovableNodesInfo sets the status of nodes that were found to be unremovable.
-func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string]*simulator.UnremovableNode, nodeUtilizationMap map[string]simulator.UtilizationInfo, cp cloudprovider.CloudProvider) {
+func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string]*simulator.UnremovableNode, nodeUtilizationMap map[string]simulator.UtilizationInfo) {
 	s.UnremovableNodes = make([]*UnremovableNode, 0, len(unremovableNodesMap))
 
 	for _, unremovableNode := range unremovableNodesMap {
-		nodeGroup, err := cp.NodeGroupForNode(unremovableNode.Node)
-		if err != nil {
-			klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
-			continue
-		}
+		//nodeGroup, err := cp.NodeGroupForNode(unremovableNode.Node)
+		//if err != nil {
+		//	klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
+		//	continue
+		//}
 
 		var utilInfoPtr *simulator.UtilizationInfo
 		if utilInfo, found := nodeUtilizationMap[unremovableNode.Node.Name]; found {
@@ -52,8 +50,8 @@ func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string
 		}
 
 		s.UnremovableNodes = append(s.UnremovableNodes, &UnremovableNode{
-			Node:        unremovableNode.Node,
-			NodeGroup:   nodeGroup,
+			Node: unremovableNode.Node,
+			//NodeGroup:   nodeGroup,
 			UtilInfo:    utilInfoPtr,
 			Reason:      unremovableNode.Reason,
 			BlockingPod: unremovableNode.BlockingPod,
@@ -63,8 +61,8 @@ func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodesMap map[string
 
 // UnremovableNode represents the state of a node that couldn't be removed.
 type UnremovableNode struct {
-	Node        *apiv1.Node
-	NodeGroup   cloudprovider.NodeGroup
+	Node *apiv1.Node
+	//NodeGroup   cloudprovider.NodeGroup
 	UtilInfo    *simulator.UtilizationInfo
 	Reason      simulator.UnremovableReason
 	BlockingPod *drain.BlockingPod
@@ -72,8 +70,8 @@ type UnremovableNode struct {
 
 // ScaleDownNode represents the state of a node that's being scaled down.
 type ScaleDownNode struct {
-	Node        *apiv1.Node
-	NodeGroup   cloudprovider.NodeGroup
+	Node *apiv1.Node
+	//NodeGroup   cloudprovider.NodeGroup
 	EvictedPods []*apiv1.Pod
 	UtilInfo    simulator.UtilizationInfo
 }

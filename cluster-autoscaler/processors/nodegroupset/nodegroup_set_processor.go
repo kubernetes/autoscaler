@@ -16,19 +16,10 @@ limitations under the License.
 
 package nodegroupset
 
-import (
-	"fmt"
-
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-)
-
 // ScaleUpInfo contains information about planned scale-up of a single NodeGroup
 type ScaleUpInfo struct {
-	// Group is the group to be scaled-up
-	Group cloudprovider.NodeGroup
+	//// Group is the group to be scaled-up
+	//Group cloudprovider.NodeGroup
 	// CurrentSize is the current size of the Group
 	CurrentSize int
 	// NewSize is the size the Group will be scaled-up to
@@ -37,41 +28,41 @@ type ScaleUpInfo struct {
 	MaxSize int
 }
 
-// String is used for printing ScaleUpInfo for logging, etc
-func (s ScaleUpInfo) String() string {
-	return fmt.Sprintf("{%v %v->%v (max: %v)}", s.Group.Id(), s.CurrentSize, s.NewSize, s.MaxSize)
-}
+//// String is used for printing ScaleUpInfo for logging, etc
+//func (s ScaleUpInfo) String() string {
+//	return fmt.Sprintf("{%v %v->%v (max: %v)}", s.Group.Id(), s.CurrentSize, s.NewSize, s.MaxSize)
+//}
 
-// NodeGroupSetProcessor finds nodegroups that are similar and allows balancing scale-up between them.
-type NodeGroupSetProcessor interface {
-	FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
-		nodeInfosForGroups map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError)
-
-	BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
-	CleanUp()
-}
+//// NodeGroupSetProcessor finds nodegroups that are similar and allows balancing scale-up between them.
+//type NodeGroupSetProcessor interface {
+//	FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+//		nodeInfosForGroups map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError)
+//
+//	BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
+//	CleanUp()
+//}
 
 // NoOpNodeGroupSetProcessor returns no similar node groups and doesn't do any balancing.
 type NoOpNodeGroupSetProcessor struct {
 }
 
-// FindSimilarNodeGroups returns a list of NodeGroups similar to the one provided in parameter.
-func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
-	nodeInfosForGroups map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
-	return []cloudprovider.NodeGroup{}, nil
-}
+//// FindSimilarNodeGroups returns a list of NodeGroups similar to the one provided in parameter.
+//func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+//	nodeInfosForGroups map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+//	return []cloudprovider.NodeGroup{}, nil
+//}
 
-// BalanceScaleUpBetweenGroups splits a scale-up between provided NodeGroups.
-func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
-	return []ScaleUpInfo{}, nil
-}
+//// BalanceScaleUpBetweenGroups splits a scale-up between provided NodeGroups.
+//func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+//	return []ScaleUpInfo{}, nil
+//}
 
 // CleanUp performs final clean up of processor state.
 func (n *NoOpNodeGroupSetProcessor) CleanUp() {}
 
-// NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
-func NewDefaultNodeGroupSetProcessor(ignoredLabels []string) NodeGroupSetProcessor {
-	return &BalancingNodeGroupSetProcessor{
-		Comparator: CreateGenericNodeInfoComparator(ignoredLabels),
-	}
-}
+//// NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
+//func NewDefaultNodeGroupSetProcessor(ignoredLabels []string) NodeGroupSetProcessor {
+//	return &BalancingNodeGroupSetProcessor{
+//		Comparator: CreateGenericNodeInfoComparator(ignoredLabels),
+//	}
+//}

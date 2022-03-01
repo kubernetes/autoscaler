@@ -18,6 +18,7 @@ package status
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -27,9 +28,9 @@ import (
 // on if scale-up happened, description of scale-up operation performed and
 // status of pods that took part in the scale-up evaluation.
 type ScaleUpStatus struct {
-	Result       ScaleUpResult
-	ScaleUpError *errors.AutoscalerError
-	//ScaleUpInfos             []nodegroupset.ScaleUpInfo
+	Result                  ScaleUpResult
+	ScaleUpError            *errors.AutoscalerError
+	ScaleUpInfos            []nodegroupset.ScaleUpInfo
 	PodsTriggeredScaleUp    []*apiv1.Pod
 	PodsRemainUnschedulable []NoScaleUpInfo
 	PodsAwaitEvaluation     []*apiv1.Pod

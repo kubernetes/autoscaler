@@ -17,17 +17,27 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
-	"time"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"time"
 )
 
+//import (
+//	"time"
+//
+//	appsv1 "k8s.io/api/apps/v1"
+//	apiv1 "k8s.io/api/core/v1"
+//
+//	"k8s.io/autoscaler/cluster-autoscaler/context"
+//	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+//	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+//	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+//)
+//
 // TemplateNodeInfoProvider is provides the initial nodeInfos set.
 type TemplateNodeInfoProvider interface {
 	// Process returns a map of nodeInfos for node groups.
@@ -36,7 +46,8 @@ type TemplateNodeInfoProvider interface {
 	CleanUp()
 }
 
-// NewDefaultTemplateNodeInfoProvider returns a default TemplateNodeInfoProvider.
-func NewDefaultTemplateNodeInfoProvider(time *time.Duration) TemplateNodeInfoProvider {
-	return NewMixedTemplateNodeInfoProvider(time)
-}
+//
+//// NewDefaultTemplateNodeInfoProvider returns a default TemplateNodeInfoProvider.
+//func NewDefaultTemplateNodeInfoProvider(time *time.Duration) TemplateNodeInfoProvider {
+//	return NewMixedTemplateNodeInfoProvider(time)
+//}

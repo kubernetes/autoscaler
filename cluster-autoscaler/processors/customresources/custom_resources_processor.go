@@ -18,9 +18,7 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 // CustomResourceTarget contains information about targeted custom resources
@@ -36,13 +34,13 @@ type CustomResourcesProcessor interface {
 	// FilterOutNodesWithUnreadyResources removes nodes that should have a custom resource, but don't have
 	// it in allocatable from ready nodes list and updates their status to unready on all nodes list.
 	FilterOutNodesWithUnreadyResources(context *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node)
-	// GetNodeResourceTargets returns mapping of resource names to their targets.
-	GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError)
+	//// GetNodeResourceTargets returns mapping of resource names to their targets.
+	//GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
 
-// NewDefaultCustomResourcesProcessor returns a default instance of CustomResourcesProcessor.
-func NewDefaultCustomResourcesProcessor() CustomResourcesProcessor {
-	return &GpuCustomResourcesProcessor{}
-}
+//// NewDefaultCustomResourcesProcessor returns a default instance of CustomResourcesProcessor.
+//func NewDefaultCustomResourcesProcessor() CustomResourcesProcessor {
+//	return &GpuCustomResourcesProcessor{}
+//}

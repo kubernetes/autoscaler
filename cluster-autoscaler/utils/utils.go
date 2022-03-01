@@ -19,23 +19,32 @@ package utils
 import (
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	klog "k8s.io/klog/v2"
-
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-// GetNodeGroupSizeMap return a map of node group id and its target size
-func GetNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
-	nodeGroupSize := make(map[string]int)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		nodeGroupSize[nodeGroup.Id()] = size
-	}
+//// GetNodeGroupSizeMap return a map of node group id and its target size
+//func GetNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
+//	nodeGroupSize := make(map[string]int)
+//	for _, nodeGroup := range cloudProvider.NodeGroups() {
+//		size, err := nodeGroup.TargetSize()
+//		if err != nil {
+//			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+//			continue
+//		}
+//		nodeGroupSize[nodeGroup.Id()] = size
+//	}
+//	return nodeGroupSize
+//}
+
+// Get group size
+func GetNodeGroupSize() int {
+	var nodeGroupSize int = 5
 	return nodeGroupSize
+}
+
+// Get min size group
+func GetMinSizeNodeGroup() int {
+	var minSizeNodeGroup int = 1
+	return minSizeNodeGroup
 }
 
 // FilterOutNodes filters out nodesToFilterOut from nodes

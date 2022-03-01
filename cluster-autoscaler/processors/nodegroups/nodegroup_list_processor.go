@@ -16,35 +16,28 @@ limitations under the License.
 
 package nodegroups
 
-import (
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-)
-
-// NodeGroupListProcessor processes lists of NodeGroups considered in scale-up.
-type NodeGroupListProcessor interface {
-	Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
-		nodeInfos map[string]*schedulerframework.NodeInfo,
-		unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error)
-	CleanUp()
-}
+//// NodeGroupListProcessor processes lists of NodeGroups considered in scale-up.
+//type NodeGroupListProcessor interface {
+//	Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
+//		nodeInfos map[string]*schedulerframework.NodeInfo,
+//		unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error)
+//	CleanUp()
+//}
 
 // NoOpNodeGroupListProcessor is returning pod lists without processing them.
 type NoOpNodeGroupListProcessor struct {
 }
 
-// NewDefaultNodeGroupListProcessor creates an instance of NodeGroupListProcessor.
-func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
-	return &NoOpNodeGroupListProcessor{}
-}
+//// NewDefaultNodeGroupListProcessor creates an instance of NodeGroupListProcessor.
+//func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
+//	return &NoOpNodeGroupListProcessor{}
+//}
 
-// Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
-func (p *NoOpNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
-	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error) {
-	return nodeGroups, nodeInfos, nil
-}
+//// Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
+//func (p *NoOpNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
+//	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error) {
+//	return nodeGroups, nodeInfos, nil
+//}
 
 // CleanUp cleans up the processor's internal structures.
 func (p *NoOpNodeGroupListProcessor) CleanUp() {

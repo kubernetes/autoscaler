@@ -19,7 +19,6 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -27,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_client "k8s.io/client-go/kubernetes"
 )
@@ -39,12 +37,12 @@ type AutoscalerOptions struct {
 	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	// CloudProvider          cloudprovider.CloudProvider
-	PredicateChecker     simulator.PredicateChecker
-	ClusterSnapshot      simulator.ClusterSnapshot
-	ExpanderStrategy     expander.Strategy
-	EstimatorBuilder     estimator.EstimatorBuilder
-	Processors           *ca_processors.AutoscalingProcessors
-	Backoff              backoff.Backoff
+	PredicateChecker simulator.PredicateChecker
+	ClusterSnapshot  simulator.ClusterSnapshot
+	ExpanderStrategy expander.Strategy
+	EstimatorBuilder estimator.EstimatorBuilder
+	Processors       *ca_processors.AutoscalingProcessors
+	//Backoff              backoff.Backoff
 	DebuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 }
 
@@ -74,7 +72,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		// opts.CloudProvider,
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
-		opts.Backoff,
+		//opts.Backoff,
 		opts.DebuggingSnapshotter), nil
 }
 
@@ -115,10 +113,10 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		}
 		opts.EstimatorBuilder = estimatorBuilder
 	}
-	if opts.Backoff == nil {
-		opts.Backoff =
-			backoff.NewIdBasedExponentialBackoff(clusterstate.InitialNodeGroupBackoffDuration, clusterstate.MaxNodeGroupBackoffDuration, clusterstate.NodeGroupBackoffResetTimeout)
-	}
+	//if opts.Backoff == nil {
+	//	opts.Backoff =
+	//		backoff.NewIdBasedExponentialBackoff(clusterstate.InitialNodeGroupBackoffDuration, clusterstate.MaxNodeGroupBackoffDuration, clusterstate.NodeGroupBackoffResetTimeout)
+	//}
 
 	return nil
 }

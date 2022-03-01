@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -193,17 +192,17 @@ func GetOldestCreateTime(pods []*apiv1.Pod) time.Time {
 	return oldest
 }
 
-// GetOldestCreateTimeWithGpu returns oldest creation time out of pods with GPU in the set
-func GetOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
-	oldest := time.Now()
-	gpuFound := false
-	for _, pod := range pods {
-		if gpu.PodRequestsGpu(pod) {
-			gpuFound = true
-			if oldest.After(pod.CreationTimestamp.Time) {
-				oldest = pod.CreationTimestamp.Time
-			}
-		}
-	}
-	return gpuFound, oldest
-}
+//// GetOldestCreateTimeWithGpu returns oldest creation time out of pods with GPU in the set
+//func GetOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
+//	oldest := time.Now()
+//	gpuFound := false
+//	for _, pod := range pods {
+//		if gpu.PodRequestsGpu(pod) {
+//			gpuFound = true
+//			if oldest.After(pod.CreationTimestamp.Time) {
+//				oldest = pod.CreationTimestamp.Time
+//			}
+//		}
+//	}
+//	return gpuFound, oldest
+//}
