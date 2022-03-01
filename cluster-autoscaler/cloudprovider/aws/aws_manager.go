@@ -509,24 +509,13 @@ func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mix
 			return nil, err
 		}
 	} else if policy.launchTemplate != nil {
-		params := &ec2.DescribeLaunchTemplateVersionsInput{
-			LaunchTemplateName: aws.String(policy.launchTemplate.name),
-			Versions:           []*string{aws.String(policy.launchTemplate.version)},
-		}
-
-		start := time.Now()
-		describeData, err := m.awsService.DescribeLaunchTemplateVersions(params)
-		observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+		templateData, err := m.awsService.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
 		if err != nil {
 			return nil, err
 		}
-		if len(describeData.LaunchTemplateVersions) == 0 {
-			return nil, fmt.Errorf("unable to find template versions")
-		}
 
-		lt := describeData.LaunchTemplateVersions[0]
-		if lt.LaunchTemplateData.InstanceRequirements != nil {
-			instanceRequirements = lt.LaunchTemplateData.InstanceRequirements
+		if templateData.InstanceRequirements != nil {
+			instanceRequirements = templateData.InstanceRequirements
 		}
 	}
 	return instanceRequirements, nil
