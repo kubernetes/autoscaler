@@ -37,16 +37,12 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -129,8 +125,8 @@ var (
 	coresTotal               = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal              = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	gpuTotal                 = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
-	cloudProviderFlag        = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
-		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
+	//cloudProviderFlag        = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
+	//	"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
 	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
@@ -205,10 +201,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	minMemoryTotal = minMemoryTotal * units.GiB
 	maxMemoryTotal = maxMemoryTotal * units.GiB
 
-	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
-	if err != nil {
-		klog.Fatalf("Failed to parse flags: %v", err)
-	}
+	//parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	//if err != nil {
+	//	klog.Fatalf("Failed to parse flags: %v", err)
+	//}
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -216,54 +212,54 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			ScaleDownUnneededTime:            *scaleDownUnneededTime,
 			ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 		},
-		CloudConfig:                        *cloudConfig,
-		CloudProviderName:                  *cloudProviderFlag,
-		NodeGroupAutoDiscovery:             *nodeGroupAutoDiscoveryFlag,
-		MaxTotalUnreadyPercentage:          *maxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:                *okTotalUnreadyCount,
-		ScaleUpFromZero:                    *scaleUpFromZero,
-		EstimatorName:                      *estimatorFlag,
-		ExpanderNames:                      *expanderFlag,
-		GRPCExpanderCert:                   *grpcExpanderCert,
-		GRPCExpanderURL:                    *grpcExpanderURL,
-		IgnoreDaemonSetsUtilization:        *ignoreDaemonSetsUtilization,
-		IgnoreMirrorPodsUtilization:        *ignoreMirrorPodsUtilization,
-		MaxBulkSoftTaintCount:              *maxBulkSoftTaintCount,
-		MaxBulkSoftTaintTime:               *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:                 *maxEmptyBulkDeleteFlag,
-		MaxGracefulTerminationSec:          *maxGracefulTerminationFlag,
-		MaxNodeProvisionTime:               *maxNodeProvisionTime,
-		MaxNodesTotal:                      *maxNodesTotal,
-		MaxCoresTotal:                      maxCoresTotal,
-		MinCoresTotal:                      minCoresTotal,
-		MaxMemoryTotal:                     maxMemoryTotal,
-		MinMemoryTotal:                     minMemoryTotal,
-		GpuTotal:                           parsedGpuTotal,
-		NodeGroups:                         *nodeGroupsFlag,
-		ScaleDownDelayAfterAdd:             *scaleDownDelayAfterAdd,
-		ScaleDownDelayAfterDelete:          *scaleDownDelayAfterDelete,
-		ScaleDownDelayAfterFailure:         *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                   *scaleDownEnabled,
-		ScaleDownNonEmptyCandidatesCount:   *scaleDownNonEmptyCandidatesCount,
-		ScaleDownCandidatesPoolRatio:       *scaleDownCandidatesPoolRatio,
-		ScaleDownCandidatesPoolMinCount:    *scaleDownCandidatesPoolMinCount,
-		WriteStatusConfigMap:               *writeStatusConfigMapFlag,
-		StatusConfigMapName:                *statusConfigMapName,
-		BalanceSimilarNodeGroups:           *balanceSimilarNodeGroupsFlag,
-		ConfigNamespace:                    *namespace,
-		ClusterName:                        *clusterName,
-		NodeAutoprovisioningEnabled:        *nodeAutoprovisioningEnabled,
-		MaxAutoprovisionedNodeGroupCount:   *maxAutoprovisionedNodeGroupCount,
-		UnremovableNodeRecheckTimeout:      *unremovableNodeRecheckTimeout,
-		ExpendablePodsPriorityCutoff:       *expendablePodsPriorityCutoff,
-		Regional:                           *regional,
-		NewPodScaleUpDelay:                 *newPodScaleUpDelay,
-		IgnoredTaints:                      *ignoreTaintsFlag,
-		BalancingExtraIgnoredLabels:        *balancingIgnoreLabelsFlag,
-		KubeConfigPath:                     *kubeConfigFile,
-		NodeDeletionDelayTimeout:           *nodeDeletionDelayTimeout,
-		AWSUseStaticInstanceList:           *awsUseStaticInstanceList,
-		ConcurrentGceRefreshes:             *concurrentGceRefreshes,
+		CloudConfig: *cloudConfig,
+		//CloudProviderName:                  *cloudProviderFlag,
+		NodeGroupAutoDiscovery:      *nodeGroupAutoDiscoveryFlag,
+		MaxTotalUnreadyPercentage:   *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:         *okTotalUnreadyCount,
+		ScaleUpFromZero:             *scaleUpFromZero,
+		EstimatorName:               *estimatorFlag,
+		ExpanderNames:               *expanderFlag,
+		GRPCExpanderCert:            *grpcExpanderCert,
+		GRPCExpanderURL:             *grpcExpanderURL,
+		IgnoreDaemonSetsUtilization: *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization: *ignoreMirrorPodsUtilization,
+		MaxBulkSoftTaintCount:       *maxBulkSoftTaintCount,
+		MaxBulkSoftTaintTime:        *maxBulkSoftTaintTime,
+		MaxEmptyBulkDelete:          *maxEmptyBulkDeleteFlag,
+		MaxGracefulTerminationSec:   *maxGracefulTerminationFlag,
+		MaxNodeProvisionTime:        *maxNodeProvisionTime,
+		MaxNodesTotal:               *maxNodesTotal,
+		MaxCoresTotal:               maxCoresTotal,
+		MinCoresTotal:               minCoresTotal,
+		MaxMemoryTotal:              maxMemoryTotal,
+		MinMemoryTotal:              minMemoryTotal,
+		//GpuTotal:                           parsedGpuTotal,
+		NodeGroups:                       *nodeGroupsFlag,
+		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
+		ScaleDownEnabled:                 *scaleDownEnabled,
+		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
+		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
+		StatusConfigMapName:              *statusConfigMapName,
+		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:                  *namespace,
+		ClusterName:                      *clusterName,
+		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
+		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
+		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
+		Regional:                         *regional,
+		NewPodScaleUpDelay:               *newPodScaleUpDelay,
+		IgnoredTaints:                    *ignoreTaintsFlag,
+		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
+		KubeConfigPath:                   *kubeConfigFile,
+		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
+		//AWSUseStaticInstanceList:           *awsUseStaticInstanceList,
+		//ConcurrentGceRefreshes:             *concurrentGceRefreshes,
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
 		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
@@ -329,26 +325,26 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors()
-	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime)
+	//opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime)
 	opts.Processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
 
-	nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
-	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
-		nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
-	} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
-		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
-	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
-		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
-	} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
-		nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
-	}
+	//nodeInfoComparatorBuilder := nodegroupset.CreateGenericNodeInfoComparator
+	//if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
+	//	nodeInfoComparatorBuilder = nodegroupset.CreateAzureNodeInfoComparator
+	//} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
+	//	nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
+	//} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
+	//	nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
+	//} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
+	//	nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
+	//}
 
-	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-		Comparator: nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels),
-	}
+	//opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+	//	Comparator: nodeInfoComparatorBuilder(autoscalingOptions.BalancingExtraIgnoredLabels),
+	//}
 
 	// These metrics should be published only once.
-	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
+	//metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	metrics.UpdateMaxNodesCount(autoscalingOptions.MaxNodesTotal)
 	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
@@ -537,45 +533,45 @@ func minMaxFlagString(min, max int64) string {
 	return fmt.Sprintf("%v:%v", min, max)
 }
 
-func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
-	parsedFlags := make([]config.GpuLimits, 0, len(flags))
-	for _, flag := range flags {
-		parsedFlag, err := parseSingleGpuLimit(flag)
-		if err != nil {
-			return nil, err
-		}
-		parsedFlags = append(parsedFlags, parsedFlag)
-	}
-	return parsedFlags, nil
-}
+//func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
+//	parsedFlags := make([]config.GpuLimits, 0, len(flags))
+//	for _, flag := range flags {
+//		parsedFlag, err := parseSingleGpuLimit(flag)
+//		if err != nil {
+//			return nil, err
+//		}
+//		parsedFlags = append(parsedFlags, parsedFlag)
+//	}
+//	return parsedFlags, nil
+//}
 
-func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
-	parts := strings.Split(limits, ":")
-	if len(parts) != 3 {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit specification: %v", limits)
-	}
-	gpuType := parts[0]
-	minVal, err := strconv.ParseInt(parts[1], 10, 64)
-	if err != nil {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is not integer: %v", limits)
-	}
-	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
-	if err != nil {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is not integer: %v", limits)
-	}
-	if minVal < 0 {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is less than 0; %v", limits)
-	}
-	if maxVal < 0 {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is less than 0; %v", limits)
-	}
-	if minVal > maxVal {
-		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is greater than max; %v", limits)
-	}
-	parsedGpuLimits := config.GpuLimits{
-		GpuType: gpuType,
-		Min:     minVal,
-		Max:     maxVal,
-	}
-	return parsedGpuLimits, nil
-}
+//func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
+//	parts := strings.Split(limits, ":")
+//	if len(parts) != 3 {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit specification: %v", limits)
+//	}
+//	gpuType := parts[0]
+//	minVal, err := strconv.ParseInt(parts[1], 10, 64)
+//	if err != nil {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is not integer: %v", limits)
+//	}
+//	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
+//	if err != nil {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is not integer: %v", limits)
+//	}
+//	if minVal < 0 {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is less than 0; %v", limits)
+//	}
+//	if maxVal < 0 {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is less than 0; %v", limits)
+//	}
+//	if minVal > maxVal {
+//		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is greater than max; %v", limits)
+//	}
+//	parsedGpuLimits := config.GpuLimits{
+//		GpuType: gpuType,
+//		Min:     minVal,
+//		Max:     maxVal,
+//	}
+//	return parsedGpuLimits, nil
+//}

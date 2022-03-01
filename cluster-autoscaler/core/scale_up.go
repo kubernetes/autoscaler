@@ -28,7 +28,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -222,22 +221,22 @@ func scaleUpLimitsNotExceeded() scaleUpLimitsCheckResult {
 	return scaleUpLimitsCheckResult{false, []string{}}
 }
 
-func (limits *scaleUpResourcesLimits) checkScaleUpDeltaWithinLimits(delta scaleUpResourcesDelta) scaleUpLimitsCheckResult {
-	exceededResources := sets.NewString()
-	for resource, resourceDelta := range delta {
-		resourceLeft, found := (*limits)[resource]
-		if found {
-			if (resourceDelta > 0) && (resourceLeft == scaleUpLimitUnknown || resourceDelta > resourceLeft) {
-				exceededResources.Insert(resource)
-			}
-		}
-	}
-	if len(exceededResources) > 0 {
-		return scaleUpLimitsCheckResult{true, exceededResources.List()}
-	}
-
-	return scaleUpLimitsNotExceeded()
-}
+//func (limits *scaleUpResourcesLimits) checkScaleUpDeltaWithinLimits(delta scaleUpResourcesDelta) scaleUpLimitsCheckResult {
+//	exceededResources := sets.NewString()
+//	for resource, resourceDelta := range delta {
+//		resourceLeft, found := (*limits)[resource]
+//		if found {
+//			if (resourceDelta > 0) && (resourceLeft == scaleUpLimitUnknown || resourceDelta > resourceLeft) {
+//				exceededResources.Insert(resource)
+//			}
+//		}
+//	}
+//	if len(exceededResources) > 0 {
+//		return scaleUpLimitsCheckResult{true, exceededResources.List()}
+//	}
+//
+//	return scaleUpLimitsNotExceeded()
+//}
 
 func getNodeInfoCoresAndMemory(nodeInfo *schedulerframework.NodeInfo) (int64, int64) {
 	return utils.GetNodeCoresAndMemory(nodeInfo.Node())
@@ -337,116 +336,116 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 
-	nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
-	if err != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: "))
-	}
+	//nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
+	//if err != nil {
+	//	return scaleUpError(&status.ScaleUpStatus{}, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: "))
+	//}
 
-	nodeGroups := context.CloudProvider.NodeGroups()
-	gpuLabel := context.CloudProvider.GPULabel()
-	availableGPUTypes := context.CloudProvider.GetAvailableGPUTypes()
+	//nodeGroups := context.CloudProvider.NodeGroups()
+	//gpuLabel := context.CloudProvider.GPULabel()
+	//availableGPUTypes := context.CloudProvider.GetAvailableGPUTypes()
+	//
+	//resourceLimiter, errCP := context.CloudProvider.GetResourceLimiter()
+	//if errCP != nil {
+	//	return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(
+	//		errors.CloudProviderError,
+	//		errCP))
+	//}
 
-	resourceLimiter, errCP := context.CloudProvider.GetResourceLimiter()
-	if errCP != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(
-			errors.CloudProviderError,
-			errCP))
-	}
+	//scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(context, processors, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
+	//if errLimits != nil {
+	//	return scaleUpError(&status.ScaleUpStatus{}, errLimits.AddPrefix("Could not compute total resources: "))
+	//}
 
-	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(context, processors, nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
-	if errLimits != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, errLimits.AddPrefix("Could not compute total resources: "))
-	}
-
-	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
-		nodeTemplate, found := nodeInfos[nodeGroup]
-		if !found {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
-				errors.InternalError,
-				"failed to find template node for node group %s",
-				nodeGroup))
-		}
-		for i := 0; i < numberOfNodes; i++ {
-			upcomingNodes = append(upcomingNodes, nodeTemplate)
-		}
-	}
-	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
+	//upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
+	//for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
+	//	nodeTemplate, found := nodeInfos[nodeGroup]
+	//	if !found {
+	//		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(
+	//			errors.InternalError,
+	//			"failed to find template node for node group %s",
+	//			nodeGroup))
+	//	}
+	//	for i := 0; i < numberOfNodes; i++ {
+	//		upcomingNodes = append(upcomingNodes, nodeTemplate)
+	//	}
+	//}
+	//klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
 	expansionOptions := make(map[string]expander.Option, 0)
-
-	if processors != nil && processors.NodeGroupListProcessor != nil {
-		var errProc error
-		nodeGroups, nodeInfos, errProc = processors.NodeGroupListProcessor.Process(context, nodeGroups, nodeInfos, unschedulablePods)
-		if errProc != nil {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, errProc))
-		}
-	}
+	//
+	//if processors != nil && processors.NodeGroupListProcessor != nil {
+	//	var errProc error
+	//	nodeGroups, nodeInfos, errProc = processors.NodeGroupListProcessor.Process(context, nodeGroups, nodeInfos, unschedulablePods)
+	//	if errProc != nil {
+	//		return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, errProc))
+	//	}
+	//}
 
 	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
 
-	skippedNodeGroups := map[string]status.Reasons{}
-	for _, nodeGroup := range nodeGroups {
-		// Autoprovisioned node groups without nodes are created later so skip check for them.
-		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now) {
-			// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
-			if !clusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
-				klog.Warningf("Node group %s is not ready for scaleup - unhealthy", nodeGroup.Id())
-				skippedNodeGroups[nodeGroup.Id()] = notReadyReason
-			} else {
-				klog.Warningf("Node group %s is not ready for scaleup - backoff", nodeGroup.Id())
-				skippedNodeGroups[nodeGroup.Id()] = backoffReason
-			}
-			continue
-		}
-
-		currentTargetSize, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Errorf("Failed to get node group size: %v", err)
-			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
-			continue
-		}
-		if currentTargetSize >= nodeGroup.MaxSize() {
-			klog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
-			skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
-			continue
-		}
-
-		nodeInfo, found := nodeInfos[nodeGroup.Id()]
-		if !found {
-			klog.Errorf("No node info for: %s", nodeGroup.Id())
-			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
-			continue
-		}
-
-		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(context, processors, nodeInfo, nodeGroup, resourceLimiter)
-		if err != nil {
-			klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
-			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
-			continue
-		}
-		checkResult := scaleUpResourcesLeft.checkScaleUpDeltaWithinLimits(scaleUpResourcesDelta)
-		if checkResult.exceeded {
-			klog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.exceededResources)
-			skippedNodeGroups[nodeGroup.Id()] = maxResourceLimitReached(checkResult.exceededResources)
-			continue
-		}
-
-		option, err := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
-		if err != nil {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
-		}
-
-		if len(option.Pods) > 0 {
-			if option.NodeCount > 0 {
-				expansionOptions[nodeGroup.Id()] = option
-			} else {
-				klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-			}
-		} else {
-			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-		}
-	}
+	//skippedNodeGroups := map[string]status.Reasons{}
+	//for _, nodeGroup := range nodeGroups {
+	//	// Autoprovisioned node groups without nodes are created later so skip check for them.
+	//	if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now) {
+	//		// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
+	//		if !clusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
+	//			klog.Warningf("Node group %s is not ready for scaleup - unhealthy", nodeGroup.Id())
+	//			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+	//		} else {
+	//			klog.Warningf("Node group %s is not ready for scaleup - backoff", nodeGroup.Id())
+	//			skippedNodeGroups[nodeGroup.Id()] = backoffReason
+	//		}
+	//		continue
+	//	}
+	//
+	//	currentTargetSize, err := nodeGroup.TargetSize()
+	//	if err != nil {
+	//		klog.Errorf("Failed to get node group size: %v", err)
+	//		skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+	//		continue
+	//	}
+	//	if currentTargetSize >= nodeGroup.MaxSize() {
+	//		klog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
+	//		skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
+	//		continue
+	//	}
+	//
+	//	nodeInfo, found := nodeInfos[nodeGroup.Id()]
+	//	if !found {
+	//		klog.Errorf("No node info for: %s", nodeGroup.Id())
+	//		skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+	//		continue
+	//	}
+	//
+	//	scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(context, processors, nodeInfo, nodeGroup, resourceLimiter)
+	//	if err != nil {
+	//		klog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
+	//		skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+	//		continue
+	//	}
+	//	checkResult := scaleUpResourcesLeft.checkScaleUpDeltaWithinLimits(scaleUpResourcesDelta)
+	//	if checkResult.exceeded {
+	//		klog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.exceededResources)
+	//		skippedNodeGroups[nodeGroup.Id()] = maxResourceLimitReached(checkResult.exceededResources)
+	//		continue
+	//	}
+	//
+	//	option, err := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
+	//	if err != nil {
+	//		return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+	//	}
+	//
+	//	if len(option.Pods) > 0 {
+	//		if option.NodeCount > 0 {
+	//			expansionOptions[nodeGroup.Id()] = option
+	//		} else {
+	//			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
+	//		}
+	//	} else {
+	//		klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
+	//	}
+	//}
 	if len(expansionOptions) == 0 {
 		klog.V(1).Info("No expansion options")
 		return &status.ScaleUpStatus{

@@ -235,26 +235,26 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	stateUpdateStart := time.Now()
 
 	//// Get nodes and pods currently living on cluster
-	//allNodes, readyNodes, typedErr := a.obtainNodeLists(a.CloudProvider)
-	//if typedErr != nil {
-	//	klog.Errorf("Failed to get node list: %v", typedErr)
-	//	return typedErr
-	//}
+	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	if typedErr != nil {
+		klog.Errorf("Failed to get node list: %v", typedErr)
+		return typedErr
+	}
 	originalScheduledPods, err := scheduledPodLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list scheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	//if abortLoop, err := a.processors.ActionableClusterProcessor.ShouldAbort(
-	//	a.AutoscalingContext, allNodes, readyNodes, currentTime); abortLoop {
-	//	return err
-	//}
+	if abortLoop, err := a.processors.ActionableClusterProcessor.ShouldAbort(
+		a.AutoscalingContext, allNodes, readyNodes, currentTime); abortLoop {
+		return err
+	}
 
 	// Update cluster resource usage metrics
-	//coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
-	//metrics.UpdateClusterCPUCurrentCores(coresTotal)
-	//metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
+	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
+	metrics.UpdateClusterCPUCurrentCores(coresTotal)
+	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
 
 	daemonsets, err := a.ListerRegistry.DaemonSetLister().List(labels.Everything())
 	if err != nil {
@@ -277,11 +277,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//	metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
 	//}
 
-	//nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
+	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
-	//if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
-	//	return typedErr.AddPrefix("Initialize ClusterSnapshot")
-	//}
+	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
+		return typedErr.AddPrefix("Initialize ClusterSnapshot")
+	}
 
 	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints, currentTime)
 	if autoscalerError != nil {
@@ -737,27 +737,27 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-//func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {
-//	allNodes, err := a.AllNodeLister().List()
-//	if err != nil {
-//		klog.Errorf("Failed to list all nodes: %v", err)
-//		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
-//	}
-//	readyNodes, err := a.ReadyNodeLister().List()
-//	if err != nil {
-//		klog.Errorf("Failed to list ready nodes: %v", err)
-//		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
-//	}
-//
-//	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
-//	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
-//	// Treat those nodes as unready until GPU actually becomes available and let
-//	// our normal handling for booting up nodes deal with this.
-//	// TODO: Remove this call when we handle dynamically provisioned resources.
-//	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-//	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.ignoredTaints, allNodes, readyNodes)
-//	return allNodes, readyNodes, nil
-//}
+func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {
+	allNodes, err := a.AllNodeLister().List()
+	if err != nil {
+		klog.Errorf("Failed to list all nodes: %v", err)
+		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+	readyNodes, err := a.ReadyNodeLister().List()
+	if err != nil {
+		klog.Errorf("Failed to list ready nodes: %v", err)
+		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// Treat those nodes as unready until GPU actually becomes available and let
+	// our normal handling for booting up nodes deal with this.
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
+	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.ignoredTaints, allNodes, readyNodes)
+	return allNodes, readyNodes, nil
+}
 
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) errors.AutoscalerError {
 	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
