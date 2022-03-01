@@ -19,7 +19,6 @@ package core
 import (
 	ctx "context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"math"
 	"strings"
 	"sync"
@@ -797,8 +796,8 @@ func (sd *ScaleDown) TryToScaleDown(
 	}
 
 	candidateNames := make([]string, 0)
-	readinessMap := make(map[string]bool)
-	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
+	//readinessMap := make(map[string]bool)
+	//candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
 	// gpuLabel := sd.context.CloudProvider.GPULabel()
 	// availableGPUTypes := sd.context.CloudProvider.GetAvailableGPUTypes()
 
@@ -810,7 +809,7 @@ func (sd *ScaleDown) TryToScaleDown(
 
 	// scaleDownResourcesLeft := sd.computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
+	//nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	// resourcesWithLimits := resourceLimiter.GetResources()
 	for nodeName, unneededSince := range sd.unneededNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, currentTime.Sub(unneededSince).String())
@@ -830,8 +829,8 @@ func (sd *ScaleDown) TryToScaleDown(
 			continue
 		}
 
-		ready, _, _ := kube_util.GetReadinessState(node)
-		readinessMap[node.Name] = ready
+		//ready, _, _ := kube_util.GetReadinessState(node)
+		//readinessMap[node.Name] = ready
 
 		//nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 		//if err != nil {
@@ -845,43 +844,53 @@ func (sd *ScaleDown) TryToScaleDown(
 		//	continue
 		//}
 
-		if ready {
-			// Check how long a ready node was underutilized.
-			unneededTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnneededTime(sd.context, nodeGroup)
-			if err != nil {
-				klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-				continue
-			}
-			if !unneededSince.Add(unneededTime).Before(currentTime) {
-				sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
-				continue
-			}
-		} else {
-			// Unready nodes may be deleted after a different time than underutilized nodes.
-			unreadyTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnreadyTime(sd.context, nodeGroup)
-			if err != nil {
-				klog.Errorf("Error trying to get ScaleDownUnnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-				continue
-			}
-			if !unneededSince.Add(unreadyTime).Before(currentTime) {
-				sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
-				continue
-			}
-		}
+		//if ready {
+		//	// Check how long a ready node was underutilized.
+		//	unneededTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnneededTime(sd.context, nodeGroup)
+		//	if err != nil {
+		//		klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+		//		continue
+		//	}
+		//	if !unneededSince.Add(unneededTime).Before(currentTime) {
+		//		sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
+		//		continue
+		//	}
+		//} else {
+		//	// Unready nodes may be deleted after a different time than underutilized nodes.
+		//	unreadyTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnreadyTime(sd.context, nodeGroup)
+		//	if err != nil {
+		//		klog.Errorf("Error trying to get ScaleDownUnnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+		//		continue
+		//	}
+		//	if !unneededSince.Add(unreadyTime).Before(currentTime) {
+		//		sd.addUnremovableNodeReason(node, simulator.NotUnreadyLongEnough)
+		//		continue
+		//	}
+		//}
 
-		size, found := nodeGroupSize[nodeGroup.Id()]
-		if !found {
-			klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
-			sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+		unneededTime := time.Duration(0)
+		//if err != nil {
+		//	klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+		//	continue
+		//}
+		if !unneededSince.Add(unneededTime).Before(currentTime) {
+			sd.addUnremovableNodeReason(node, simulator.NotUnneededLongEnough)
 			continue
 		}
 
-		deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
-		if size-deletionsInProgress <= nodeGroup.MinSize() {
-			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
-			sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
-			continue
-		}
+		//size, found := nodeGroupSize[nodeGroup.Id()]
+		//if !found {
+		//	klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
+		//	sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
+		//	continue
+		//}
+
+		//deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
+		//if size-deletionsInProgress <= nodeGroup.MinSize() {
+		//	klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+		//	sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
+		//	continue
+		//}
 
 		//scaleDownResourcesDelta, err := sd.computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
 		//if err != nil {
@@ -898,7 +907,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		//}
 
 		candidateNames = append(candidateNames, node.Name)
-		candidateNodeGroups[node.Name] = nodeGroup
+		//candidateNodeGroups[node.Name] = nodeGroup
 	}
 
 	if len(candidateNames) == 0 {

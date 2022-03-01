@@ -20,26 +20,23 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 // ScaleUpStatus is the status of a scale-up attempt. This includes information
 // on if scale-up happened, description of scale-up operation performed and
 // status of pods that took part in the scale-up evaluation.
 type ScaleUpStatus struct {
-	Result                   ScaleUpResult
-	ScaleUpError             *errors.AutoscalerError
-	ScaleUpInfos             []nodegroupset.ScaleUpInfo
-	PodsTriggeredScaleUp     []*apiv1.Pod
-	PodsRemainUnschedulable  []NoScaleUpInfo
-	PodsAwaitEvaluation      []*apiv1.Pod
-	CreateNodeGroupResults   []nodegroups.CreateNodeGroupResult
-	ConsideredNodeGroups     []cloudprovider.NodeGroup
-	FailedCreationNodeGroups []cloudprovider.NodeGroup
-	FailedResizeNodeGroups   []cloudprovider.NodeGroup
+	Result       ScaleUpResult
+	ScaleUpError *errors.AutoscalerError
+	//ScaleUpInfos             []nodegroupset.ScaleUpInfo
+	PodsTriggeredScaleUp    []*apiv1.Pod
+	PodsRemainUnschedulable []NoScaleUpInfo
+	PodsAwaitEvaluation     []*apiv1.Pod
+	//CreateNodeGroupResults   []nodegroups.CreateNodeGroupResult
+	//ConsideredNodeGroups     []cloudprovider.NodeGroup
+	//FailedCreationNodeGroups []cloudprovider.NodeGroup
+	//FailedResizeNodeGroups   []cloudprovider.NodeGroup
 }
 
 // NoScaleUpInfo contains information about a pod that didn't trigger scale-up.
