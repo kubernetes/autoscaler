@@ -231,34 +231,20 @@ func (m *awsWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]st
 }
 
 func (m *awsWrapper) getInstanceTypeByLaunchTemplate(launchTemplate *launchTemplate) (string, error) {
-	params := &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String(launchTemplate.name),
-		Versions:           []*string{aws.String(launchTemplate.version)},
-	}
-	start := time.Now()
-	describeData, err := m.DescribeLaunchTemplateVersions(params)
-	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	templateData, err := m.getLaunchTemplateData(launchTemplate.name, launchTemplate.version)
 	if err != nil {
 		return "", err
 	}
-	if len(describeData.LaunchTemplateVersions) == 0 {
-		return "", fmt.Errorf("unable to find versions for launch template %s", launchTemplate.name)
-	}
-
-	launchTemplateData := describeData.LaunchTemplateVersions[0].LaunchTemplateData
-	if launchTemplateData == nil {
-		return "", fmt.Errorf("no data found for launch template %s, version %s", launchTemplate.name, launchTemplate.version)
-	}
 
 	instanceType := ""
-	if launchTemplateData.InstanceType != nil {
-		instanceType = *launchTemplateData.InstanceType
-	} else if launchTemplateData.InstanceRequirements != nil && launchTemplateData.ImageId != nil {
-		requirementsRequest, err := m.getRequirementsRequestFromEC2(launchTemplateData.InstanceRequirements)
+	if templateData.InstanceType != nil {
+		instanceType = *templateData.InstanceType
+	} else if templateData.InstanceRequirements != nil && templateData.ImageId != nil {
+		requirementsRequest, err := m.getRequirementsRequestFromEC2(templateData.InstanceRequirements)
 		if err != nil {
 			return "", fmt.Errorf("unable to get instance requirements request")
 		}
-		instanceType, err = m.getInstanceTypeFromInstanceRequirements(*launchTemplateData.ImageId, requirementsRequest)
+		instanceType, err = m.getInstanceTypeFromInstanceRequirements(*templateData.ImageId, requirementsRequest)
 		if err != nil {
 			return "", err
 		}
@@ -275,31 +261,43 @@ func (m *awsWrapper) getInstanceTypeFromRequirementsOverrides(policy *mixedInsta
 		return "", fmt.Errorf("no launch template found for mixed instances policy")
 	}
 
-	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String(policy.launchTemplate.name),
-		Versions:           []*string{aws.String(policy.launchTemplate.version)},
-	}
-
-	start := time.Now()
-	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
-	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	templateData, err := m.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
 	if err != nil {
 		return "", err
-	}
-	if len(describeData.LaunchTemplateVersions) == 0 {
-		return "", fmt.Errorf("unable to find template versions")
 	}
 
 	requirements, err := m.getRequirementsRequestFromAutoscaling(policy.instanceRequirementsOverrides)
 	if err != nil {
 		return "", err
 	}
-	instanceType, err := m.getInstanceTypeFromInstanceRequirements(*describeData.LaunchTemplateVersions[0].LaunchTemplateData.ImageId, requirements)
+	instanceType, err := m.getInstanceTypeFromInstanceRequirements(*templateData.ImageId, requirements)
 	if err != nil {
 		return "", err
 	}
 
 	return instanceType, nil
+}
+
+func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion string) (*ec2.ResponseLaunchTemplateData, error) {
+	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(templateName),
+		Versions:           []*string{aws.String(templateVersion)},
+	}
+
+	start := time.Now()
+	describeData, err := m.DescribeLaunchTemplateVersions(describeTemplateInput)
+	observeAWSRequest("DescribeLaunchTemplateVersions", err, start)
+	if err != nil {
+		return nil, err
+	}
+	if describeData == nil || len(describeData.LaunchTemplateVersions) == 0 {
+		return nil, fmt.Errorf("unable to find template versions")
+	}
+	if describeData.LaunchTemplateVersions[0].LaunchTemplateData == nil {
+		return nil, fmt.Errorf("no data found for launch template %s, version %s", templateName, templateVersion)
+	}
+
+	return describeData.LaunchTemplateVersions[0].LaunchTemplateData, nil
 }
 
 func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, requirementsRequest *ec2.InstanceRequirementsRequest) (string, error) {
