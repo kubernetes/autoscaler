@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -559,6 +560,72 @@ func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) 
 	result, err := awsWrapper.getInstanceTypeByLaunchTemplate(launchTemplate)
 	assert.NoError(t, err)
 	assert.Equal(t, "g4dn.xlarge", result)
+}
+
+func TestGetLaunchTemplateData(t *testing.T) {
+	e := &ec2Mock{}
+	awsWrapper := &awsWrapper{
+		ec2I: e,
+	}
+
+	testCases := []struct {
+		testName             string
+		describeTemplateData *ec2.DescribeLaunchTemplateVersionsOutput
+		expectedData         *ec2.ResponseLaunchTemplateData
+		expectedErr          error
+	}{
+		{
+			"no launch template version found",
+			&ec2.DescribeLaunchTemplateVersionsOutput{
+				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{},
+			},
+			nil,
+			errors.New("unable to find template versions for launch template launchTemplateName"),
+		},
+		{
+			"no data found for launch template",
+			&ec2.DescribeLaunchTemplateVersionsOutput{
+				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+					{
+						LaunchTemplateName: aws.String("launchTemplateName"),
+						LaunchTemplateData: nil,
+					},
+				},
+			},
+			nil,
+			errors.New("no data found for launch template launchTemplateName, version 1"),
+		},
+		{
+			"launch template data found successfully",
+			&ec2.DescribeLaunchTemplateVersionsOutput{
+				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+					{
+						LaunchTemplateName: aws.String("launchTemplateName"),
+						LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+							ImageId: aws.String("123"),
+						},
+					},
+				},
+			},
+			&ec2.ResponseLaunchTemplateData{
+				ImageId: aws.String("123"),
+			},
+			nil,
+		},
+	}
+
+	describeTemplateInput := &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String("launchTemplateName"),
+		Versions:           []*string{aws.String("1")},
+	}
+
+	for _, testCase := range testCases {
+		e.On("DescribeLaunchTemplateVersions", describeTemplateInput).Return(testCase.describeTemplateData).Once()
+
+		describeData, err := awsWrapper.getLaunchTemplateData("launchTemplateName", "1")
+		assert.Equal(t, testCase.expectedData, describeData)
+		assert.Equal(t, testCase.expectedErr, err)
+	}
 }
 
 func TestBuildLaunchTemplateFromSpec(t *testing.T) {
