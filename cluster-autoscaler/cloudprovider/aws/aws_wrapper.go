@@ -277,7 +277,7 @@ func (m *awsWrapper) getLaunchTemplateData(templateName string, templateVersion 
 		return nil, err
 	}
 	if describeData == nil || len(describeData.LaunchTemplateVersions) == 0 {
-		return nil, fmt.Errorf("unable to find template versions")
+		return nil, fmt.Errorf("unable to find template versions for launch template %s", templateName)
 	}
 	if describeData.LaunchTemplateVersions[0].LaunchTemplateData == nil {
 		return nil, fmt.Errorf("no data found for launch template %s, version %s", templateName, templateVersion)
