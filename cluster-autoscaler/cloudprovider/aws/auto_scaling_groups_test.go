@@ -59,7 +59,7 @@ func TestCreatePlaceholders(t *testing.T) {
 		name                string
 		desiredCapacity     *int64
 		activities          []*autoscaling.Activity
-		groupLastUpdateTime *time.Time
+		groupLastUpdateTime time.Time
 		describeErr         error
 		asgToCheck          *string
 	}{
@@ -85,7 +85,7 @@ func TestCreatePlaceholders(t *testing.T) {
 					StartTime:  aws.Time(time.Unix(10, 0)),
 				},
 			},
-			groupLastUpdateTime: aws.Time(time.Unix(9, 0)),
+			groupLastUpdateTime: time.Unix(9, 0),
 		},
 		{
 			name:            "AWS scaling failed event before CA scale_up",
@@ -96,7 +96,7 @@ func TestCreatePlaceholders(t *testing.T) {
 					StartTime:  aws.Time(time.Unix(9, 0)),
 				},
 			},
-			groupLastUpdateTime: aws.Time(time.Unix(10, 0)),
+			groupLastUpdateTime: time.Unix(10, 0),
 		},
 		{
 			name:            "asg not registered",
@@ -107,7 +107,7 @@ func TestCreatePlaceholders(t *testing.T) {
 					StartTime:  aws.Time(time.Unix(10, 0)),
 				},
 			},
-			groupLastUpdateTime: aws.Time(time.Unix(9, 0)),
+			groupLastUpdateTime: time.Unix(9, 0),
 			asgToCheck:          aws.String("unregisteredAsgName"),
 		},
 	}
@@ -158,7 +158,7 @@ func TestCreatePlaceholders(t *testing.T) {
 			}
 			asgCache.createPlaceholdersForDesiredNonStartedInstances(groups)
 			assert.Equal(t, int64(len(groups[0].Instances)), *tc.desiredCapacity)
-			if tc.activities != nil && *tc.activities[0].StatusCode == "Failed" && tc.activities[0].StartTime.After(*tc.groupLastUpdateTime) && asgName == registeredAsgName {
+			if tc.activities != nil && *tc.activities[0].StatusCode == "Failed" && tc.activities[0].StartTime.After(tc.groupLastUpdateTime) && asgName == registeredAsgName {
 				assert.Equal(t, *groups[0].Instances[0].HealthStatus, placeholderUnfulfillableStatus)
 			} else if len(groups[0].Instances) > 0 {
 				assert.Equal(t, *groups[0].Instances[0].HealthStatus, "")
