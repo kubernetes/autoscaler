@@ -313,7 +313,7 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod,
-	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, nodeInfos map[string]*schedulerframework.NodeInfo, ignoredTaints taints.TaintKeySet) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -454,7 +454,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	for _, o := range expansionOptions {
 		options = append(options, o)
 	}
-	bestOption := context.ExpanderStrategy.BestOption(options, nodeInfos)
+	bestOption := context.ExpanderStrategy.BestOption(options)
 	if bestOption != nil && bestOption.NodeCount > 0 {
 		//klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
 		if len(bestOption.Debug) > 0 {

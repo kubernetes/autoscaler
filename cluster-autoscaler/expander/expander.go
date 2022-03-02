@@ -49,7 +49,7 @@ type Option struct {
 
 // Strategy describes an interface for selecting the best option when scaling up
 type Strategy interface {
-	BestOption(options []Option, nodeInfo map[string]*schedulerframework.NodeInfo) *Option
+	BestOption(options []Option) *Option
 }
 
 // Filter describes an interface for filtering to equally good options according to some criteria

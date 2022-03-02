@@ -17,18 +17,17 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -112,10 +111,10 @@ func NewStaticAutoscaler(
 	clusterSnapshot simulator.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
-// cloudProvider cloudprovider.CloudProvider,
+	// cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
-//backoff backoff.Backoff,
+	//backoff backoff.Backoff,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) *StaticAutoscaler {
 
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
@@ -222,9 +221,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	defer a.DebuggingSnapshotter.Flush()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
+	fmt.Println("unschedulablePodLister is")
+	fmt.Println(unschedulablePodLister.List())
 	scheduledPodLister := a.ScheduledPodLister()
+	//fmt.Println("scheduledPodLister is")
+	//fmt.Println(scheduledPodLister.List())
 	pdbLister := a.PodDisruptionBudgetLister()
+	fmt.Println("pdbLister is")
+	fmt.Println(pdbLister.List())
 	scaleDown := a.scaleDown
+	fmt.Println("unneededNodesList is")
+	fmt.Println(scaleDown.unneededNodesList)
 	autoscalingContext := a.AutoscalingContext
 
 	klog.V(4).Info("Starting main loop")
@@ -233,11 +240,25 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	//// Get nodes and pods currently living on cluster
 	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	fmt.Println("allNodes are")
+	for _, node := range allNodes {
+		fmt.Println(node.Name)
+	}
+	fmt.Println("readyNodes are")
+	for _, node := range readyNodes {
+		fmt.Println(node.Name)
+	}
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
 	}
 	originalScheduledPods, err := scheduledPodLister.List()
+	//fmt.Println()
+	//fmt.Println("originalScheduledPods are")
+	//for _, pod := range originalScheduledPods {
+	//	fmt.Println(pod.Name)
+	//}
+	fmt.Println()
 	if err != nil {
 		klog.Errorf("Failed to list scheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
@@ -250,10 +271,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	// Update cluster resource usage metrics
 	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
+	fmt.Println("coresTotal is: ", coresTotal)
+	fmt.Println("memoryTotal is: ", memoryTotal)
 	metrics.UpdateClusterCPUCurrentCores(coresTotal)
 	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
 
 	daemonsets, err := a.ListerRegistry.DaemonSetLister().List(labels.Everything())
+	fmt.Println()
+	fmt.Println("daemonsets are:")
+	for _, ds := range daemonsets {
+		fmt.Println(ds.Name)
+	}
 	if err != nil {
 		klog.Errorf("Failed to get daemonset list: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
@@ -275,26 +303,31 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//}
 
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
+	fmt.Println()
+	//fmt.Println("nonExpendableScheduledPods are")
+	//for _, pod := range nonExpendableScheduledPods {
+	//	fmt.Println(pod.Name)
+	//}
 	// Initialize cluster state to ClusterSnapshot
 	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
 		return typedErr.AddPrefix("Initialize ClusterSnapshot")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints, currentTime)
-	if autoscalerError != nil {
-		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
-		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
-	}
+	//nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints, currentTime)
+	//if autoscalerError != nil {
+	//	klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
+	//	return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
+	//}
 
-	a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
+	//a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
 
-	nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups)
-	if err != nil {
-		klog.Errorf("Failed to process nodeInfos: %v", err)
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	//nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups)
+	//if err != nil {
+	//	klog.Errorf("Failed to process nodeInfos: %v", err)
+	//	return errors.ToAutoscalerError(errors.InternalError, err)
+	//}
 
-	if typedErr := a.updateClusterState(allNodes, nodeInfosForGroups, currentTime); typedErr != nil {
+	if typedErr := a.updateClusterState(allNodes, currentTime); typedErr != nil {
 		klog.Errorf("Failed to update cluster state: %v", typedErr)
 		return typedErr
 	}
@@ -374,6 +407,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	unschedulablePods, err := unschedulablePodLister.List()
+	fmt.Println("unschedulablePods are: ")
+	for _, pod := range unschedulablePods {
+		fmt.Println(pod.Name)
+	}
 	if err != nil {
 		klog.Errorf("Failed to list unscheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
@@ -412,6 +449,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//}
 
 	l, err := a.ClusterSnapshot.NodeInfos().List()
+	fmt.Println()
+	fmt.Println("Nodes in Cluster Snapshot are: ")
+	for _, list := range l {
+		fmt.Println(list.Node().Name)
+	}
 	if err != nil {
 		klog.Errorf("Unable to fetch ClusterNode List for Debugging Snapshot, %v", err)
 	} else {
@@ -419,13 +461,25 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	unschedulablePodsToHelp, _ := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
+	fmt.Println()
+	fmt.Println("unschedulablePodsToHelp are: ")
+	for _, pod := range unschedulablePodsToHelp {
+		fmt.Println(pod.Name)
+	}
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
-
+	fmt.Println()
+	fmt.Println("filter out unschedulablePodsToHelp are: ")
+	for _, pod := range unschedulablePodsToHelp {
+		fmt.Println(pod.Name)
+	}
+	fmt.Println()
+	fmt.Println("Max node total is: ", a.MaxNodesTotal)
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
+		fmt.Println("No need Scale up")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
@@ -441,7 +495,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, a.ignoredTaints)
+		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, a.ignoredTaints)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
@@ -757,7 +811,7 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, erro
 	return allNodes, readyNodes, nil
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
 	//err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
 	//if err != nil {
 	//	klog.Errorf("Failed to update node registry: %v", err)
