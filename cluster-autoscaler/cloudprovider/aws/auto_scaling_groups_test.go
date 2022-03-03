@@ -128,7 +128,6 @@ func TestCreatePlaceholders(t *testing.T) {
 			if shouldCallDescribeScalingActivities {
 				a.On("DescribeScalingActivities", &autoscaling.DescribeScalingActivitiesInput{
 					AutoScalingGroupName: asgName,
-					MaxRecords:           aws.Int64(1),
 				}).Return(
 					&autoscaling.DescribeScalingActivitiesOutput{Activities: tc.activities},
 					tc.describeErr,
