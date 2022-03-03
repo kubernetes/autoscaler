@@ -84,7 +84,7 @@ func (c *jitterClock) Since(ts time.Time) time.Duration {
 	return since
 }
 
-func (es instanceTypeExpirationStore) populate(autoscalingGroups []*asg) error {
+func (es instanceTypeExpirationStore) populate(autoscalingGroups map[AwsRef]*asg) error {
 	asgsToQuery := []*asg{}
 
 	if c, ok := es.jitterClock.(*jitterClock); ok {
