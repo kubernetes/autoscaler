@@ -49,7 +49,7 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context
 		if hasGpuLabel && (!hasGpuAllocatable || gpuAllocatable.IsZero()) {
 			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
-			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node)
+			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
 		} else {
 			newReadyNodes = append(newReadyNodes, node)
 		}
