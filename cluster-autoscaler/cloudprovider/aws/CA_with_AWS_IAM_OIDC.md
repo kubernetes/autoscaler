@@ -67,6 +67,7 @@ __NOTE:__ Please see [the README](README.md#IAM-Policy) for more information on 
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeScalingActivities",
                 "autoscaling:DescribeTags",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeLaunchTemplateVersions"
