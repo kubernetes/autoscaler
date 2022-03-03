@@ -394,7 +394,6 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	a.On("DescribeScalingActivities",
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
-			MaxRecords:           aws.Int64(1),
 		},
 	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
@@ -559,7 +558,6 @@ func TestFetchAutoAsgs(t *testing.T) {
 	a.On("DescribeScalingActivities",
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
-			MaxRecords:           aws.Int64(1),
 		},
 	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 

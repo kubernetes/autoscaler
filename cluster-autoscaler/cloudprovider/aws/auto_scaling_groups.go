@@ -479,7 +479,6 @@ func (m *asgCache) createPlaceholdersForDesiredNonStartedInstances(groups []*aut
 func (m *asgCache) isNodeGroupAvailable(group *autoscaling.Group) (bool, error) {
 	input := &autoscaling.DescribeScalingActivitiesInput{
 		AutoScalingGroupName: group.AutoScalingGroupName,
-		MaxRecords:           aws.Int64(1), // We only care about the most recent event
 	}
 
 	start := time.Now()
@@ -496,6 +495,7 @@ func (m *asgCache) isNodeGroupAvailable(group *autoscaling.Group) (bool, error) 
 			if activity.StartTime.Before(lut) {
 				break
 			} else if *activity.StatusCode == "Failed" {
+				klog.Warningf("ASG %s scaling failed with %s", asgRef.Name, *activity)
 				return false, nil
 			}
 		} else {
