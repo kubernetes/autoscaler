@@ -97,7 +97,7 @@ func TestQueryNodes(t *testing.T) {
 	val, err := GetToBeDeletedTime(updatedNode)
 	assert.NoError(t, err)
 	assert.NotNil(t, val)
-	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
+	assert.True(t, time.Since(*val) < 10*time.Second)
 }
 
 func TestSoftQueryNodes(t *testing.T) {
@@ -113,7 +113,7 @@ func TestSoftQueryNodes(t *testing.T) {
 	val, err := GetDeletionCandidateTime(updatedNode)
 	assert.NoError(t, err)
 	assert.NotNil(t, val)
-	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
+	assert.True(t, time.Since(*val) < 10*time.Second)
 }
 
 func TestCleanNodes(t *testing.T) {

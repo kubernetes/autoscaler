@@ -69,7 +69,7 @@ func NewStatusMapRecorder(kubeClient kube_client.Interface, namespace string, re
 	if active {
 		mapObj, err = WriteStatusConfigMap(kubeClient, namespace, "Initializing", nil, statusConfigMapName)
 		if err != nil {
-			return nil, errors.New("Failed to init status ConfigMap")
+			return nil, errors.New("failed to init status ConfigMap")
 		}
 	}
 	return &LogEventRecorder{

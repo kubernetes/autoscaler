@@ -46,17 +46,24 @@ type EmptyClusterProcessor struct {
 
 // ShouldAbort give the decision on whether CA can act on the cluster
 func (e *EmptyClusterProcessor) ShouldAbort(context *context.AutoscalingContext, allNodes []*apiv1.Node, readyNodes []*apiv1.Node, currentTime time.Time) (bool, errors.AutoscalerError) {
+	var err error
 	if context.AutoscalingOptions.ScaleUpFromZero {
 		return false, nil
 	}
 	if len(allNodes) == 0 {
-		OnEmptyCluster(context, "Cluster has no nodes.", true)
+		err = OnEmptyCluster(context, "Cluster has no nodes.", true)
+		if err != nil {
+			return false, errors.NewAutoscalerError(errors.ApiCallError, err.Error())
+		}
 		return true, nil
 	}
 	if len(readyNodes) == 0 {
 		// Cluster Autoscaler may start running before nodes are ready.
 		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		OnEmptyCluster(context, "Cluster has no ready nodes.", currentTime.After(e.startTime.Add(e.nodesNotReadyAfterStartTimeout)))
+		err := OnEmptyCluster(context, "Cluster has no ready nodes.", currentTime.After(e.startTime.Add(e.nodesNotReadyAfterStartTimeout)))
+		if err != nil {
+			return false, errors.NewAutoscalerError(errors.ApiCallError, err.Error())
+		}
 		return true, nil
 	}
 	// the cluster is not empty
@@ -64,18 +71,22 @@ func (e *EmptyClusterProcessor) ShouldAbort(context *context.AutoscalingContext,
 }
 
 // OnEmptyCluster runs actions if the cluster is empty
-func OnEmptyCluster(context *context.AutoscalingContext, status string, emitEvent bool) {
+func OnEmptyCluster(context *context.AutoscalingContext, status string, emitEvent bool) error {
 	klog.Warningf(status)
 	context.ProcessorCallbacks.ResetUnneededNodes()
 	// updates metrics related to empty cluster's state.
 	metrics.UpdateClusterSafeToAutoscale(false)
 	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 	if context.WriteStatusConfigMap {
-		utils.WriteStatusConfigMap(context.ClientSet, context.ConfigNamespace, status, context.LogRecorder, context.StatusConfigMapName)
+		if _, err := utils.WriteStatusConfigMap(context.ClientSet, context.ConfigNamespace, status, context.LogRecorder, context.StatusConfigMapName); err != nil {
+			return err
+		}
 	}
 	if emitEvent {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
+
+	return nil
 }
 
 // CleanUp cleans up the Processor

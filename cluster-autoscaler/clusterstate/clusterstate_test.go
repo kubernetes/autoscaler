@@ -512,19 +512,22 @@ func TestIncorrectSize(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff())
 	now := time.Now()
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-5*time.Minute))
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-5*time.Minute))
+	assert.NoError(t, err)
 	incorrect := clusterstate.incorrectNodeGroupSizes["ng1"]
 	assert.Equal(t, 5, incorrect.ExpectedSize)
 	assert.Equal(t, 1, incorrect.CurrentSize)
 	assert.Equal(t, now.Add(-5*time.Minute), incorrect.FirstObserved)
 
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-4*time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-4*time.Minute))
+	assert.NoError(t, err)
 	incorrect = clusterstate.incorrectNodeGroupSizes["ng1"]
 	assert.Equal(t, 5, incorrect.ExpectedSize)
 	assert.Equal(t, 1, incorrect.CurrentSize)
 	assert.Equal(t, now.Add(-5*time.Minute), incorrect.FirstObserved)
 
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1}, nil, now.Add(-3*time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1}, nil, now.Add(-3*time.Minute))
+	assert.NoError(t, err)
 	incorrect = clusterstate.incorrectNodeGroupSizes["ng1"]
 	assert.Equal(t, 5, incorrect.ExpectedSize)
 	assert.Equal(t, 2, incorrect.CurrentSize)
@@ -653,7 +656,7 @@ func TestUpdateLastTransitionTimes(t *testing.T) {
 		}
 	}
 
-	expectedNgTimestamps := make(map[string](map[api.ClusterAutoscalerConditionType]metav1.Time), 0)
+	expectedNgTimestamps := make(map[string](map[api.ClusterAutoscalerConditionType]metav1.Time))
 	// Same as cluster-wide
 	expectedNgTimestamps["ng1"] = map[api.ClusterAutoscalerConditionType]metav1.Time{
 		api.ClusterAutoscalerHealth:    now,
@@ -769,20 +772,23 @@ func TestGetClusterSize(t *testing.T) {
 	}, fakeLogRecorder, newBackoff())
 
 	// There are 2 actual nodes in 2 node groups with target sizes of 5 and 1.
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, notAutoscaledNode}, nil, now)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, notAutoscaledNode}, nil, now)
+	assert.NoError(t, err)
 	currentSize, targetSize := clusterstate.GetAutoscaledNodesCount()
 	assert.Equal(t, 2, currentSize)
 	assert.Equal(t, 6, targetSize)
 
 	// Current size should increase after a new node is added.
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(time.Minute))
+	assert.NoError(t, err)
 	currentSize, targetSize = clusterstate.GetAutoscaledNodesCount()
 	assert.Equal(t, 3, currentSize)
 	assert.Equal(t, 6, targetSize)
 
 	// Target size should increase after a new node group is added.
 	provider.AddNodeGroup("ng3", 1, 10, 1)
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(2*time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(2*time.Minute))
+	assert.NoError(t, err)
 	currentSize, targetSize = clusterstate.GetAutoscaledNodesCount()
 	assert.Equal(t, 3, currentSize)
 	assert.Equal(t, 7, targetSize)
@@ -791,7 +797,8 @@ func TestGetClusterSize(t *testing.T) {
 	for _, ng := range provider.NodeGroups() {
 		ng.(*testprovider.TestNodeGroup).SetTargetSize(10)
 	}
-	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(3*time.Minute))
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, notAutoscaledNode, ng2_1}, nil, now.Add(3*time.Minute))
+	assert.NoError(t, err)
 	currentSize, targetSize = clusterstate.GetAutoscaledNodesCount()
 	assert.Equal(t, 3, currentSize)
 	assert.Equal(t, 30, targetSize)

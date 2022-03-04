@@ -187,10 +187,7 @@ func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
 		delete(data.addedNodeInfoMap, nodeName)
 	}
 
-	if _, modified := data.modifiedNodeInfoMap[nodeName]; modified {
-		// If node was modified within this delta, delete this change.
-		delete(data.modifiedNodeInfoMap, nodeName)
-	}
+	delete(data.modifiedNodeInfoMap, nodeName)
 
 	if _, deleted := data.deletedNodeInfos[nodeName]; deleted {
 		// If node was deleted within this delta, fail with error.

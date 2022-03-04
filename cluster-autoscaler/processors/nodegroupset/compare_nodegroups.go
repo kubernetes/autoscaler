@@ -77,7 +77,7 @@ func compareLabels(nodes []*schedulerframework.NodeInfo, ignoredLabels map[strin
 	labels := make(map[string][]string)
 	for _, node := range nodes {
 		for label, value := range node.Node().ObjectMeta.Labels {
-			ignore, _ := ignoredLabels[label]
+			ignore := ignoredLabels[label]
 			if !ignore {
 				labels[label] = append(labels[label], value)
 			}

@@ -375,7 +375,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
-	expansionOptions := make(map[string]expander.Option, 0)
+	expansionOptions := make(map[string]expander.Option)
 
 	if processors != nil && processors.NodeGroupListProcessor != nil {
 		var errProc error

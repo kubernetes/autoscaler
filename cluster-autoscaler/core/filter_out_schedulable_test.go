@@ -101,6 +101,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			predicateChecker, err := simulator.NewTestPredicateChecker()
+			assert.NoError(t, err)
 			clusterSnapshot := simulator.NewBasicClusterSnapshot()
 
 			for _, node := range tt.nodes {
@@ -119,9 +120,7 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 			assert.NoError(t, err)
 
 			var expectedPodsInSnapshot = tt.scheduledPods
-			for _, pod := range tt.expectedFilteredOutPods {
-				expectedPodsInSnapshot = append(expectedPodsInSnapshot, pod)
-			}
+			expectedPodsInSnapshot = append(expectedPodsInSnapshot, tt.expectedFilteredOutPods...)
 
 			var expectedPendingPods []*apiv1.Pod
 			for _, pod := range tt.pendingPods {
@@ -222,16 +221,16 @@ func BenchmarkFilterOutSchedulableByPacking(b *testing.B) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range tests {
 			b.Run(fmt.Sprintf("%s: %d nodes %d scheduled %d pending", snapshotName, tc.nodes, tc.scheduledPods, tc.pendingPods), func(b *testing.B) {
-				pendingPods := make([]*apiv1.Pod, tc.pendingPods, tc.pendingPods)
+				pendingPods := make([]*apiv1.Pod, tc.pendingPods)
 				for i := 0; i < tc.pendingPods; i++ {
 					pendingPods[i] = BuildTestPod(fmt.Sprintf("p-%d", i), 1000, 2000000)
 				}
-				nodes := make([]*apiv1.Node, tc.nodes, tc.nodes)
+				nodes := make([]*apiv1.Node, tc.nodes)
 				for i := 0; i < tc.nodes; i++ {
 					nodes[i] = BuildTestNode(fmt.Sprintf("n-%d", i), 2000, 200000)
 					SetNodeReadyState(nodes[i], true, time.Time{})
 				}
-				scheduledPods := make([]*apiv1.Pod, tc.scheduledPods, tc.scheduledPods)
+				scheduledPods := make([]*apiv1.Pod, tc.scheduledPods)
 				j := 0
 				for i := 0; i < tc.scheduledPods; i++ {
 					scheduledPods[i] = BuildTestPod(fmt.Sprintf("s-%d", i), 1000, 200000)

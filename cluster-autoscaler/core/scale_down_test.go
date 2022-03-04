@@ -40,7 +40,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -1809,18 +1808,6 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
 }
 
-func getCountOfChan(c chan string) int {
-	count := 0
-	for {
-		select {
-		case <-c:
-			count++
-		default:
-			return count
-		}
-	}
-}
-
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	nodeConfigs := []nodeConfig{
 		{"n1", 2000, 7500 * utils.MiB, 0, true, "ng1"},
@@ -2129,7 +2116,6 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	}
 	defer func() {
 		now = time.Now
-		return
 	}()
 
 	fakeClient := fake.NewSimpleClientset()
@@ -2217,11 +2203,10 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 
 func TestWaitForDelayDeletion(t *testing.T) {
 	type testcase struct {
-		name                 string
-		timeout              time.Duration
-		addAnnotation        bool
-		removeAnnotation     bool
-		expectCallingGetNode bool
+		name             string
+		timeout          time.Duration
+		addAnnotation    bool
+		removeAnnotation bool
 	}
 	tests := []testcase{
 		{
@@ -2257,7 +2242,7 @@ func TestWaitForDelayDeletion(t *testing.T) {
 			node := BuildTestNode("n1", 1000, 10)
 			nodeWithAnnotation := BuildTestNode("n1", 1000, 10)
 			nodeWithAnnotation.Annotations = map[string]string{DelayDeletionAnnotationPrefix + "ingress": "true"}
-			allNodeLister := kubernetes.NewTestNodeLister(nil)
+			allNodeLister := kube_util.NewTestNodeLister(nil)
 			if test.addAnnotation {
 				if test.removeAnnotation {
 					allNodeLister.SetNodes([]*apiv1.Node{node})

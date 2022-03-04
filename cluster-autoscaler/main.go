@@ -301,13 +301,18 @@ func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	klog.V(1).Info("Registered cleanup signal handler")
 
 	go func() {
 		<-sigs
 		klog.V(1).Info("Received signal, attempting cleanup")
-		autoscaler.ExitCleanUp()
+		err := autoscaler.ExitCleanUp()
+		if err != nil {
+			klog.Errorf("Cleanup failed: %v", err)
+			klog.Flush()
+			os.Exit(1)
+		}
 		klog.V(1).Info("Cleaned up, exiting...")
 		klog.Flush()
 		os.Exit(0)
@@ -378,23 +383,20 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 	// Autoscale ad infinitum.
 	for {
-		select {
-		case <-time.After(*scanInterval):
-			{
-				loopStart := time.Now()
-				metrics.UpdateLastTime(metrics.Main, loopStart)
-				healthCheck.UpdateLastActivity(loopStart)
+		time.Sleep(*scanInterval)
 
-				err := autoscaler.RunOnce(loopStart)
-				if err != nil && err.Type() != errors.TransientError {
-					metrics.RegisterError(err)
-				} else {
-					healthCheck.UpdateLastSuccessfulRun(time.Now())
-				}
+		loopStart := time.Now()
+		metrics.UpdateLastTime(metrics.Main, loopStart)
+		healthCheck.UpdateLastActivity(loopStart)
 
-				metrics.UpdateDurationFromStart(metrics.Main, loopStart)
-			}
+		err := autoscaler.RunOnce(loopStart)
+		if err != nil && err.Type() != errors.TransientError {
+			metrics.RegisterError(err)
+		} else {
+			healthCheck.UpdateLastSuccessfulRun(time.Now())
 		}
+
+		metrics.UpdateDurationFromStart(metrics.Main, loopStart)
 	}
 }
 

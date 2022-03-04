@@ -368,7 +368,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
 func UpdateDurationFromStart(label FunctionLabel, start time.Time) {
-	duration := time.Now().Sub(start)
+	duration := time.Since(start)
 	UpdateDuration(label, duration)
 }
 

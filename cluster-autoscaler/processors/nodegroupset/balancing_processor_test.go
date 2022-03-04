@@ -205,7 +205,7 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	}
 
 	toMap := func(suiList []ScaleUpInfo) map[string]ScaleUpInfo {
-		result := make(map[string]ScaleUpInfo, 0)
+		result := make(map[string]ScaleUpInfo)
 		for _, sui := range suiList {
 			result[sui.Group.Id()] = sui
 		}

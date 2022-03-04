@@ -38,8 +38,6 @@ const (
 	configWarnConfigMapEmpty = "Warning PriorityConfigMapInvalid Wrong configuration for priority expander: " +
 		"priority configuration in cluster-autoscaler-priority-expander configmap is empty; please provide " +
 		"valid configuration. Ignoring update."
-	configWarnEmptyMsg = "priority configuration in cluster-autoscaler-priority-expander configmap is empty; please provide valid configuration"
-	configWarnParseMsg = "Can't parse YAML with priorities in the configmap"
 )
 
 var (
@@ -55,12 +53,6 @@ var (
 	oneEntryConfig = `
 10: 
   - ".*t2\\.large.*"
-`
-	notMatchingConfig = `
-5:
-  - ".*t\\.micro.*"
-10: 
-  - ".*t\\.large.*"
 `
 	wildcardMatchConfig = `
 5:

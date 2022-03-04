@@ -165,7 +165,7 @@ func (cache *CloudProviderNodeInstancesCache) Refresh() {
 		}
 		cache.updateCacheEntryLocked(nodeGroup, &cloudProviderNodeInstancesCacheEntry{nodeGroupInstances, time.Now()})
 	}
-	klog.Infof("Refresh cloud provider node instances cache finished, refresh took %v", time.Now().Sub(refreshStart))
+	klog.Infof("Refresh cloud provider node instances cache finished, refresh took %v", time.Since(refreshStart))
 }
 
 // Start starts components running in background.

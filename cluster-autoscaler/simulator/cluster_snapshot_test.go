@@ -35,14 +35,6 @@ var snapshots = map[string]func() ClusterSnapshot{
 	"delta": func() ClusterSnapshot { return NewDeltaClusterSnapshot() },
 }
 
-func nodeNames(nodes []*apiv1.Node) []string {
-	names := make([]string, len(nodes), len(nodes))
-	for i, node := range nodes {
-		names[i] = node.Name
-	}
-	return names
-}
-
 func extractNodes(nodeInfos []*schedulerframework.NodeInfo) []*apiv1.Node {
 	nodes := []*apiv1.Node{}
 	for _, ni := range nodeInfos {
@@ -253,14 +245,14 @@ func TestClear(t *testing.T) {
 
 	extraNodes := createTestNodesWithPrefix("extra", extraNodeCount)
 
-	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes), len(nodes)+len(extraNodes))
+	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes))
 	copy(allNodes, nodes)
 	copy(allNodes[len(nodes):], extraNodes)
 
 	extraPods := createTestPodsWithPrefix("extra", extraPodCount)
 	assignPodsToNodes(extraPods, allNodes)
 
-	allPods := make([]*apiv1.Pod, len(pods)+len(extraPods), len(pods)+len(extraPods))
+	allPods := make([]*apiv1.Pod, len(pods)+len(extraPods))
 	copy(allPods, pods)
 	copy(allPods[len(pods):], extraPods)
 

@@ -74,11 +74,14 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hc.mutex.Unlock()
 
 	if timedOut {
-		w.WriteHeader(500)
-		w.Write([]byte(fmt.Sprintf("Error: last activity more %v ago, last success more than %v ago", time.Now().Sub(lastActivity).String(), time.Now().Sub(lastSuccessfulRun).String())))
+		msg := fmt.Sprintf("Error: last activity more %v ago, last success more than %v ago", time.Since(lastActivity).String(), time.Since(lastSuccessfulRun).String())
+		http.Error(w, msg, http.StatusInternalServerError)
 	} else {
 		w.WriteHeader(200)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
 	}
 }
 

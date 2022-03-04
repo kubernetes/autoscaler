@@ -139,23 +139,6 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints tain
 	return newNode, nil
 }
 
-func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
-	if affinity == nil {
-		return false
-	}
-	if affinity.PodAffinity != nil {
-		if len(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
-			return true
-		}
-	}
-	if affinity.PodAntiAffinity != nil {
-		if len(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
-			return true
-		}
-	}
-	return false
-}
-
 // GetNodeCoresAndMemory extracts cpu and memory resources out of Node object
 func GetNodeCoresAndMemory(node *apiv1.Node) (int64, int64) {
 	cores := getNodeResource(node, apiv1.ResourceCPU)

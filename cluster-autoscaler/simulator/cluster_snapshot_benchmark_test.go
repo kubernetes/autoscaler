@@ -28,7 +28,7 @@ import (
 )
 
 func createTestNodesWithPrefix(prefix string, n int) []*apiv1.Node {
-	nodes := make([]*apiv1.Node, n, n)
+	nodes := make([]*apiv1.Node, n)
 	for i := 0; i < n; i++ {
 		nodes[i] = BuildTestNode(fmt.Sprintf("%s-%d", prefix, i), 2000, 2000000)
 		SetNodeReadyState(nodes[i], true, time.Time{})
@@ -41,7 +41,7 @@ func createTestNodes(n int) []*apiv1.Node {
 }
 
 func createTestPodsWithPrefix(prefix string, n int) []*apiv1.Pod {
-	pods := make([]*apiv1.Pod, n, n)
+	pods := make([]*apiv1.Pod, n)
 	for i := 0; i < n; i++ {
 		pods[i] = BuildTestPod(fmt.Sprintf("%s-%d", prefix, i), 1000, 2000000)
 	}

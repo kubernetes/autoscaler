@@ -97,7 +97,6 @@ type scaleTestResults struct {
 	expansionOptions []groupSizeChange
 	finalOption      groupSizeChange
 	noScaleUpReason  string
-	finalScaleDowns  []string
 	events           []string
 	scaleUpStatus    scaleUpStatusInfo
 }

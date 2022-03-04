@@ -1100,7 +1100,7 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
 	csr.Lock()
 	defer csr.Unlock()
 
-	nodesWithCreateErrors := make([]*apiv1.Node, 0, 0)
+	nodesWithCreateErrors := make([]*apiv1.Node, 0)
 	for _, nodeGroupInstances := range csr.cloudProviderNodeInstances {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {

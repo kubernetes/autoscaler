@@ -195,14 +195,15 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	cachedInfo, found = niProcessor.nodeInfoCache["ng2"]
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = niProcessor.nodeInfoCache["ng3"]
+	_, found = niProcessor.nodeInfoCache["ng3"]
 	assert.False(t, found)
-	cachedInfo, found = niProcessor.nodeInfoCache["ng4"]
+	_, found = niProcessor.nodeInfoCache["ng4"]
 	assert.False(t, found)
 
 	// Invalidate part of cache in two different ways
 	provider1.DeleteNodeGroup("ng1")
-	provider1.GetNodeGroup("ng3").Delete()
+	err = provider1.GetNodeGroup("ng3").Delete()
+	assert.NoError(t, err)
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
@@ -221,7 +222,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	cachedInfo, found = niProcessor.nodeInfoCache["ng2"]
 	assert.True(t, found)
 	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
-	cachedInfo, found = niProcessor.nodeInfoCache["ng4"]
+	_, found = niProcessor.nodeInfoCache["ng4"]
 	assert.False(t, found)
 
 	// Fill cache manually

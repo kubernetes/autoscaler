@@ -314,8 +314,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// Update status information when the loop is done (regardless of reason)
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
-			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
+			_, err := utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
+			if err != nil {
+				klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
+				return
+			}
 		}
 
 		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
@@ -727,16 +731,21 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 }
 
 // ExitCleanUp performs all necessary clean-ups when the autoscaler's exiting.
-func (a *StaticAutoscaler) ExitCleanUp() {
+func (a *StaticAutoscaler) ExitCleanUp() error {
 	a.processors.CleanUp()
 	a.DebuggingSnapshotter.Cleanup()
 
 	if !a.AutoscalingContext.WriteStatusConfigMap {
-		return
+		return nil
 	}
-	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, a.AutoscalingContext.StatusConfigMapName)
+	err := utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, a.AutoscalingContext.StatusConfigMapName)
+	if err != nil {
+		return fmt.Errorf("cannot delete status config map: %v", err)
+	}
 
 	a.clusterStateRegistry.Stop()
+
+	return nil
 }
 
 func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {

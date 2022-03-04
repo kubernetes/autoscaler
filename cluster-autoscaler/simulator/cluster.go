@@ -321,7 +321,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 			if err := predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, hintedNode)
 				if err := clusterSnapshot.AddPod(pod, hintedNode); err != nil {
-					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
+					return fmt.Errorf("simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, hintedNode, err)
 				}
 				newHints[podKey(pod)] = hintedNode
 				foundPlace = true
@@ -336,7 +336,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
 			if err == nil {
 				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, newNodeName)
 				if err := clusterSnapshot.AddPod(pod, newNodeName); err != nil {
-					return fmt.Errorf("Simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
+					return fmt.Errorf("simulating scheduling of %s/%s to %s return error; %v", pod.Namespace, pod.Name, newNodeName, err)
 				}
 				newHints[podKey(pod)] = newNodeName
 				targetNode = newNodeName

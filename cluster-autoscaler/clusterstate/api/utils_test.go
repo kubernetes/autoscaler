@@ -38,7 +38,7 @@ func prepareConditions() (health, scaleUp ClusterAutoscalerCondition) {
 
 func TestGetStringForEmptyStatus(t *testing.T) {
 	var empty ClusterAutoscalerStatus
-	assert.Regexp(t, regexp.MustCompile("\\s*Health:\\s*<unknown>"), empty.GetReadableString())
+	assert.Regexp(t, regexp.MustCompile(`\s*Health:\s*<unknown>`), empty.GetReadableString())
 }
 
 func TestGetStringNothingGoingOn(t *testing.T) {
@@ -86,6 +86,6 @@ func TestGetStringNodeGroups(t *testing.T) {
 	status.NodeGroupStatuses = append(status.NodeGroupStatuses, ng1)
 	status.NodeGroupStatuses = append(status.NodeGroupStatuses, ng2)
 	result := status.GetReadableString()
-	assert.Regexp(t, regexp.MustCompile("(?ms)NodeGroups:.*Name:\\s*ng1"), result)
-	assert.Regexp(t, regexp.MustCompile("(?ms)NodeGroups:.*Name:\\s*ng2"), result)
+	assert.Regexp(t, regexp.MustCompile(`(?ms)NodeGroups:.*Name:\s*ng1`), result)
+	assert.Regexp(t, regexp.MustCompile(`(?ms)NodeGroups:.*Name:\s*ng2`), result)
 }

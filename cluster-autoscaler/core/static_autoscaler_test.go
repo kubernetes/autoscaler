@@ -32,7 +32,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	kube_record "k8s.io/client-go/tools/record"
@@ -133,8 +132,8 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 }
 
 func TestStaticAutoscalerRunOnce(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -302,8 +301,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -456,8 +455,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -528,10 +527,12 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1}
 	//nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
-	clusterState.UpdateNodes(nodes, nil, now)
+	err = clusterState.UpdateNodes(nodes, nil, now)
+	assert.NoError(t, err)
 
 	// broken node failed to register in time
-	clusterState.UpdateNodes(nodes, nil, later)
+	err = clusterState.UpdateNodes(nodes, nil, later)
+	assert.NoError(t, err)
 
 	processors := NewTestProcessors()
 
@@ -578,8 +579,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -732,8 +733,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 }
 
 func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -828,8 +829,8 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 }
 
 func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *testing.T) {
-	readyNodeLister := kubernetes.NewTestNodeLister(nil)
-	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	readyNodeLister := kube_util.NewTestNodeLister(nil)
+	allNodeLister := kube_util.NewTestNodeLister(nil)
 	scheduledPodMock := &podListerMock{}
 	unschedulablePodMock := &podListerMock{}
 	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
@@ -1055,7 +1056,8 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	// propagate nodes info in cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	err = clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	assert.NoError(t, err)
 
 	// delete nodes with create errors
 	assert.True(t, autoscaler.deleteCreatedNodesWithErrors())
@@ -1079,7 +1081,8 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 
 	// propagate nodes info in cluster state again
 	// no changes in what provider returns
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	err = clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	assert.NoError(t, err)
 
 	// delete nodes with create errors
 	assert.True(t, autoscaler.deleteCreatedNodesWithErrors())
@@ -1142,7 +1145,8 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 
 	// update cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	err = clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	assert.NoError(t, err)
 
 	// delete nodes with create errors
 	assert.False(t, autoscaler.deleteCreatedNodesWithErrors())

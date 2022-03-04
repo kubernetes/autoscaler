@@ -105,7 +105,7 @@ func TestUtilization(t *testing.T) {
 	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, gpuPod)
 	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
+	assert.InEpsilon(t, 1, utilInfo.Utilization, 0.01)
 
 	// Node with Unready GPU
 	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
@@ -114,16 +114,6 @@ func TestUtilization(t *testing.T) {
 	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
-}
-
-func nodeInfos(nodes []*apiv1.Node) []*schedulerframework.NodeInfo {
-	result := make([]*schedulerframework.NodeInfo, len(nodes))
-	for i, node := range nodes {
-		ni := schedulerframework.NewNodeInfo()
-		ni.SetNode(node)
-		result[i] = ni
-	}
-	return result
 }
 
 func TestFindPlaceAllOk(t *testing.T) {

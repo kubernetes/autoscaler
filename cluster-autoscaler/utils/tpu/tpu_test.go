@@ -32,7 +32,6 @@ var (
 )
 
 type requests map[apiv1.ResourceName]int64
-type containerSpecs []requests
 
 func testContainer(requests requests) apiv1.Container {
 	container := apiv1.Container{

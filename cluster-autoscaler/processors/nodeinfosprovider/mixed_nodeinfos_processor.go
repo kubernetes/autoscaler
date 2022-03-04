@@ -62,7 +62,7 @@ func NewMixedTemplateNodeInfoProvider(t *time.Duration) *MixedTemplateNodeInfoPr
 }
 
 func (p *MixedTemplateNodeInfoProvider) isCacheItemExpired(added time.Time) bool {
-	return time.Now().Sub(added) > p.ttl
+	return time.Since(added) > p.ttl
 }
 
 // CleanUp cleans up processor's internal structures.
@@ -198,8 +198,12 @@ func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod,
 }
 
 func isNodeGoodTemplateCandidate(node *apiv1.Node, now time.Time) bool {
-	ready, lastTransitionTime, _ := kube_util.GetReadinessState(node)
-	stable := lastTransitionTime.Add(stabilizationDelay).Before(now)
+	readiness, err := kube_util.GetNodeReadiness(node)
+	if err != nil {
+		return false
+	}
+
+	stable := readiness.LastTransitionTime.Add(stabilizationDelay).Before(now)
 	schedulable := !node.Spec.Unschedulable
-	return ready && stable && schedulable
+	return readiness.Ready && stable && schedulable
 }

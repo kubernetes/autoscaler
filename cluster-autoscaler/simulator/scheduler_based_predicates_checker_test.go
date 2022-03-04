@@ -76,6 +76,7 @@ func TestCheckPredicate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var err error
 			predicateChecker, err := NewTestPredicateChecker()
+			assert.NoError(t, err)
 			clusterSnapshot := NewBasicClusterSnapshot()
 			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
 			assert.NoError(t, err)
@@ -120,7 +121,7 @@ func TestFitsAnyNode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "n2000", nodeName)
 
-	nodeName, err = predicateChecker.FitsAnyNode(clusterSnapshot, p2100)
+	_, err = predicateChecker.FitsAnyNode(clusterSnapshot, p2100)
 	assert.Error(t, err)
 }
 

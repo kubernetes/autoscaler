@@ -532,7 +532,8 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	err = clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	assert.NoError(t, err)
 
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
 	for i, p := range config.extraPods {
@@ -693,7 +694,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	err = clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	assert.NoError(t, err)
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := NewTestProcessors()
@@ -734,7 +736,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 	nodes := []*apiv1.Node{n1}
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	err = clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	assert.NoError(t, err)
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := NewTestProcessors()
@@ -801,7 +804,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil).Process(&context, nodes, []*appsv1.DaemonSet{}, nil, now)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	err = clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	assert.NoError(t, err)
 
 	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 2; i++ {

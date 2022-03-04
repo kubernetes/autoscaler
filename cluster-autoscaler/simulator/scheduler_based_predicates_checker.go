@@ -23,7 +23,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -36,8 +35,6 @@ import (
 type SchedulerBasedPredicateChecker struct {
 	framework              schedulerframework.Framework
 	delegatingSharedLister *DelegatingSchedulerSharedLister
-	nodeLister             v1listers.NodeLister
-	podLister              v1listers.PodLister
 	lastIndex              int
 }
 

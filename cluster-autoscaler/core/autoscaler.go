@@ -60,7 +60,7 @@ type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
 	RunOnce(currentTime time.Time) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
-	ExitCleanUp()
+	ExitCleanUp() error
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
