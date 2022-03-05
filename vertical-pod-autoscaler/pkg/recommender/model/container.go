@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"flag"
 	"fmt"
 	"time"
 
@@ -26,10 +27,19 @@ import (
 )
 
 const (
+	// DefaultOOMBumpUpRatio specifies by default how much memory will be added after observing OOM.
+	DefaultOOMBumpUpRatio float64 = 1.2
+	// DefaultOOMMinBumpUp specifies by default minimal increase of memory after observing OOM.
+	DefaultOOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
+)
+
+var (
 	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
-	OOMBumpUpRatio float64 = 1.2
+	// Ideally bump up ratio should be per VPA configuration.
+	OOMBumpUpRatio = flag.Float64("oom-bump-up-ratio", DefaultOOMBumpUpRatio, `Specifies how much memory will be added after observing OOM.`)
 	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
-	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
+	// Ideally min bump up should be per VPA configuration.
+	OOMMinBumpUp = flag.Float64("oom-min-bump-up-ratio", DefaultOOMMinBumpUp, `Specifies minimal increase of memory after observing OOM.`)
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -198,8 +208,8 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(OOMMinBumpUp),
-		ScaleResource(memoryUsed, OOMBumpUpRatio))
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(*OOMMinBumpUp),
+		ScaleResource(memoryUsed, *OOMBumpUpRatio))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
