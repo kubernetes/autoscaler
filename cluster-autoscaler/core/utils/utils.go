@@ -206,3 +206,15 @@ func GetOldestCreateTime(pods []*apiv1.Pod) time.Time {
 //	}
 //	return gpuFound, oldest
 //}
+
+// Get core worker node
+func GetCPUworker() int64 {
+	var CPUs int64 = 2
+	return CPUs
+}
+
+// Get Memory worker node
+func GetMemoryWorker() int64 {
+	var Memory int64 = 4096
+	return Memory
+}

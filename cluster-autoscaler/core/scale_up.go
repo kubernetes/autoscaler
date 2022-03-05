@@ -22,12 +22,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"math"
 	"strings"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -309,6 +309,36 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 //	return option, nil
 //}
 
+// Calculate new node need to be scaled up
+func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod) int {
+	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
+	skippedNodeGroups := map[string]status.Reasons{}
+	podsRemainUnschedulable := getRemainingPods(podEquivalenceGroups, skippedNodeGroups)
+	var totalCPUrequest int64 = 0
+	var totalMemoryRequest int64 = 0
+	var numberNodeScaledUpFloat float64 = 0.0
+	for _, pod := range podsRemainUnschedulable {
+		for _, container := range pod.Pod.Spec.Containers {
+			//fmt.Println(container.Resources.Requests.Cpu().MilliValue())
+			//fmt.Println(container.Resources.Requests.Memory().MilliValue())
+			totalCPUrequest += container.Resources.Requests.Cpu().MilliValue()
+			totalMemoryRequest += container.Resources.Requests.Memory().MilliValue()
+		}
+	}
+	fmt.Println("total CPU Pod request: ", totalCPUrequest)
+	fmt.Println("total Memory Pod request: ", totalMemoryRequest)
+	cpus := utils.GetCPUworker()
+	memory := utils.GetMemoryWorker()
+	numberNodeScaledUpFloat = float64(totalCPUrequest) / (float64(cpus) * 1000)
+	if numberNodeScaledUpFloat < (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1024)) {
+		numberNodeScaledUpFloat = (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1024))
+	}
+	fmt.Println("numberNodeScaledUpFloat is: ", numberNodeScaledUpFloat)
+	numberNodeScaledUpInt := int(math.Ceil(numberNodeScaledUpFloat))
+	fmt.Println("numberNodeScaledUpInt is: ", numberNodeScaledUpInt)
+	return numberNodeScaledUpInt
+}
+
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
@@ -366,7 +396,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	//}
 	//klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
-	expansionOptions := make(map[string]expander.Option, 0)
+	//expansionOptions := make(map[string]expander.Option, 0)
 	//
 	//if processors != nil && processors.NodeGroupListProcessor != nil {
 	//	var errProc error
@@ -440,190 +470,195 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	//		klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
 	//	}
 	//}
-	if len(expansionOptions) == 0 {
-		klog.V(1).Info("No expansion options")
-		return &status.ScaleUpStatus{
-			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
-			//ConsideredNodeGroups:    nodeGroups,
-		}, nil
-	}
 
-	// Pick some expansion option.
-	options := make([]expander.Option, 0, len(expansionOptions))
-	for _, o := range expansionOptions {
-		options = append(options, o)
-	}
-	bestOption := context.ExpanderStrategy.BestOption(options)
-	if bestOption != nil && bestOption.NodeCount > 0 {
-		//klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
-		if len(bestOption.Debug) > 0 {
-			klog.V(1).Info(bestOption.Debug)
-		}
-		klog.V(1).Infof("Estimated %d nodes needed", bestOption.NodeCount)
+	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods)
+	fmt.Println("scaling up ", numberNodeScaleUp, " node")
+	fmt.Println("waiting for job running in AWX successfully")
+	time.Sleep(2 * time.Minute)
+	//if len(expansionOptions) == 0 {
+	//	klog.V(1).Info("No expansion options")
+	//	return &status.ScaleUpStatus{
+	//		Result:                  status.ScaleUpNoOptionsAvailable,
+	//		PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+	//		//ConsideredNodeGroups:    nodeGroups,
+	//	}, nil
+	//}
 
-		newNodes := bestOption.NodeCount
-
-		//if context.MaxNodesTotal > 0 && len(nodes)+newNodes+len(upcomingNodes) > context.MaxNodesTotal {
-		//	klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
-		//	newNodes = context.MaxNodesTotal - len(nodes) - len(upcomingNodes)
-		//	context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
-		//	if newNodes < 1 {
-		//		return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
-		//			errors.NewAutoscalerError(errors.TransientError, "max node total count already reached"))
-		//	}
-		//}
-
-		if context.MaxNodesTotal > 0 && len(nodes)+newNodes > context.MaxNodesTotal {
-			klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
-			newNodes = context.MaxNodesTotal - len(nodes)
-			context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
-			if newNodes < 1 {
-				return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
-					errors.NewAutoscalerError(errors.TransientError, "max node total count already reached"))
-			}
-		}
-
-		//createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
-		//if !bestOption.NodeGroup.Exist() {
-		//	oldId := bestOption.NodeGroup.Id()
-		//	createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
-		//	if err != nil {
-		//		return scaleUpError(
-		//			&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}, PodsTriggeredScaleUp: bestOption.Pods},
-		//			err)
-		//	}
-		//	createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
-		//	bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
-		//
-		//	// If possible replace candidate node-info with node info based on crated node group. The latter
-		//	// one should be more in line with nodes which will be created by node group.
-		//	mainCreatedNodeInfo, err := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
-		//	if err == nil {
-		//		nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
-		//	} else {
-		//		klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), err)
-		//		// Use node info based on expansion candidate but upadte Id which likely changed when node group was created.
-		//		nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
-		//	}
-		//
-		//	if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
-		//		delete(nodeInfos, oldId)
-		//	}
-		//
-		//	for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
-		//		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
-		//
-		//		if err != nil {
-		//			klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
-		//			continue
-		//		}
-		//		nodeInfos[nodeGroup.Id()] = nodeInfo
-		//
-		//		option, err2 := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
-		//		if err2 != nil {
-		//			return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, errors.ToAutoscalerError(errors.InternalError, err))
-		//		}
-		//
-		//		if len(option.Pods) > 0 && option.NodeCount > 0 {
-		//			expansionOptions[nodeGroup.Id()] = option
-		//		}
-		//	}
-		//
-		//	// Update ClusterStateRegistry so similar nodegroups rebalancing works.
-		//	// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
-		//	//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
-		//	clusterStateRegistry.Recalculate()
-		//}
-
-		//nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
-		//if !found {
-		//	// This should never happen, as we already should have retrieved
-		//	// nodeInfo for any considered nodegroup.
-		//	klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-		//	return scaleUpError(
-		//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-		//		errors.NewAutoscalerError(
-		//			errors.CloudProviderError,
-		//			"No node info for best expansion option!"))
-		//}
-
-		//// apply upper limits for CPU and memory
-		//newNodes, err = applyScaleUpResourcesLimits(context, processors, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
-		//if err != nil {
-		//	return scaleUpError(
-		//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-		//		err)
-		//}
-
-		//targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
-		//if context.BalanceSimilarNodeGroups {
-		//	similarNodeGroups, typedErr := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, bestOption.NodeGroup, nodeInfos)
-		//	if typedErr != nil {
-		//		return scaleUpError(
-		//			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-		//			typedErr.AddPrefix("Failed to find matching node groups: "))
-		//	}
-		//	similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, expansionOptions)
-		//	for _, ng := range similarNodeGroups {
-		//		if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now) {
-		//			targetNodeGroups = append(targetNodeGroups, ng)
-		//		} else {
-		//			// This should never happen, as we will filter out the node group earlier on
-		//			// because of missing entry in podsPassingPredicates, but double checking doesn't
-		//			// really cost us anything
-		//			klog.V(2).Infof("Ignoring node group %s when balancing: group is not ready for scaleup", ng.Id())
-		//		}
-		//	}
-		//	if len(targetNodeGroups) > 1 {
-		//		var buffer bytes.Buffer
-		//		for i, ng := range targetNodeGroups {
-		//			if i > 0 {
-		//				buffer.WriteString(", ")
-		//			}
-		//			buffer.WriteString(ng.Id())
-		//		}
-		//		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), buffer.String())
-		//	}
-		//}
-		//scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
-		//	context, targetNodeGroups, newNodes)
-		//if typedErr != nil {
-		//	return scaleUpError(
-		//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-		//		typedErr)
-		//}
-		//klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
-		//for _, info := range scaleUpInfos {
-		//	typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
-		//	if typedErr != nil {
-		//		return scaleUpError(
-		//			&status.ScaleUpStatus{
-		//				CreateNodeGroupResults: createNodeGroupResults,
-		//				FailedResizeNodeGroups: []cloudprovider.NodeGroup{info.Group},
-		//				PodsTriggeredScaleUp:   bestOption.Pods,
-		//			},
-		//			typedErr,
-		//		)
-		//	}
-		//}
-		fmt.Println(newNodes)
-
-		//clusterStateRegistry.Recalculate()
-		return &status.ScaleUpStatus{
-			Result: status.ScaleUpSuccessful,
-			//ScaleUpInfos:            scaleUpInfos,
-			PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
-			//ConsideredNodeGroups:    nodeGroups,
-			//CreateNodeGroupResults:  createNodeGroupResults,
-			PodsTriggeredScaleUp: bestOption.Pods,
-			//PodsAwaitEvaluation:     getPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
-			PodsAwaitEvaluation: getPodsAwaitingEvaluation(podEquivalenceGroups, ""),
-		}, nil
-	}
+	//// Pick some expansion option.
+	//options := make([]expander.Option, 0, len(expansionOptions))
+	//for _, o := range expansionOptions {
+	//	options = append(options, o)
+	//}
+	//bestOption := context.ExpanderStrategy.BestOption(options)
+	//if bestOption != nil && bestOption.NodeCount > 0 {
+	//	//klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
+	//	if len(bestOption.Debug) > 0 {
+	//		klog.V(1).Info(bestOption.Debug)
+	//	}
+	//	klog.V(1).Infof("Estimated %d nodes needed", bestOption.NodeCount)
+	//
+	//	newNodes := bestOption.NodeCount
+	//
+	//	//if context.MaxNodesTotal > 0 && len(nodes)+newNodes+len(upcomingNodes) > context.MaxNodesTotal {
+	//	//	klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
+	//	//	newNodes = context.MaxNodesTotal - len(nodes) - len(upcomingNodes)
+	//	//	context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
+	//	//	if newNodes < 1 {
+	//	//		return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
+	//	//			errors.NewAutoscalerError(errors.TransientError, "max node total count already reached"))
+	//	//	}
+	//	//}
+	//
+	//	if context.MaxNodesTotal > 0 && len(nodes)+newNodes > context.MaxNodesTotal {
+	//		klog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
+	//		newNodes = context.MaxNodesTotal - len(nodes)
+	//		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached", "Max total nodes in cluster reached: %v", context.MaxNodesTotal)
+	//		if newNodes < 1 {
+	//			return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
+	//				errors.NewAutoscalerError(errors.TransientError, "max node total count already reached"))
+	//		}
+	//	}
+	//
+	//	//createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
+	//	//if !bestOption.NodeGroup.Exist() {
+	//	//	oldId := bestOption.NodeGroup.Id()
+	//	//	createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
+	//	//	if err != nil {
+	//	//		return scaleUpError(
+	//	//			&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}, PodsTriggeredScaleUp: bestOption.Pods},
+	//	//			err)
+	//	//	}
+	//	//	createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
+	//	//	bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
+	//	//
+	//	//	// If possible replace candidate node-info with node info based on crated node group. The latter
+	//	//	// one should be more in line with nodes which will be created by node group.
+	//	//	mainCreatedNodeInfo, err := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
+	//	//	if err == nil {
+	//	//		nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
+	//	//	} else {
+	//	//		klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), err)
+	//	//		// Use node info based on expansion candidate but upadte Id which likely changed when node group was created.
+	//	//		nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
+	//	//	}
+	//	//
+	//	//	if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
+	//	//		delete(nodeInfos, oldId)
+	//	//	}
+	//	//
+	//	//	for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
+	//	//		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
+	//	//
+	//	//		if err != nil {
+	//	//			klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
+	//	//			continue
+	//	//		}
+	//	//		nodeInfos[nodeGroup.Id()] = nodeInfo
+	//	//
+	//	//		option, err2 := computeExpansionOption(context, podEquivalenceGroups, nodeGroup, nodeInfo, upcomingNodes)
+	//	//		if err2 != nil {
+	//	//			return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, errors.ToAutoscalerError(errors.InternalError, err))
+	//	//		}
+	//	//
+	//	//		if len(option.Pods) > 0 && option.NodeCount > 0 {
+	//	//			expansionOptions[nodeGroup.Id()] = option
+	//	//		}
+	//	//	}
+	//	//
+	//	//	// Update ClusterStateRegistry so similar nodegroups rebalancing works.
+	//	//	// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
+	//	//	//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
+	//	//	clusterStateRegistry.Recalculate()
+	//	//}
+	//
+	//	//nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
+	//	//if !found {
+	//	//	// This should never happen, as we already should have retrieved
+	//	//	// nodeInfo for any considered nodegroup.
+	//	//	klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
+	//	//	return scaleUpError(
+	//	//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+	//	//		errors.NewAutoscalerError(
+	//	//			errors.CloudProviderError,
+	//	//			"No node info for best expansion option!"))
+	//	//}
+	//
+	//	//// apply upper limits for CPU and memory
+	//	//newNodes, err = applyScaleUpResourcesLimits(context, processors, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
+	//	//if err != nil {
+	//	//	return scaleUpError(
+	//	//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+	//	//		err)
+	//	//}
+	//
+	//	//targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
+	//	//if context.BalanceSimilarNodeGroups {
+	//	//	similarNodeGroups, typedErr := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, bestOption.NodeGroup, nodeInfos)
+	//	//	if typedErr != nil {
+	//	//		return scaleUpError(
+	//	//			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+	//	//			typedErr.AddPrefix("Failed to find matching node groups: "))
+	//	//	}
+	//	//	similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, expansionOptions)
+	//	//	for _, ng := range similarNodeGroups {
+	//	//		if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now) {
+	//	//			targetNodeGroups = append(targetNodeGroups, ng)
+	//	//		} else {
+	//	//			// This should never happen, as we will filter out the node group earlier on
+	//	//			// because of missing entry in podsPassingPredicates, but double checking doesn't
+	//	//			// really cost us anything
+	//	//			klog.V(2).Infof("Ignoring node group %s when balancing: group is not ready for scaleup", ng.Id())
+	//	//		}
+	//	//	}
+	//	//	if len(targetNodeGroups) > 1 {
+	//	//		var buffer bytes.Buffer
+	//	//		for i, ng := range targetNodeGroups {
+	//	//			if i > 0 {
+	//	//				buffer.WriteString(", ")
+	//	//			}
+	//	//			buffer.WriteString(ng.Id())
+	//	//		}
+	//	//		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), buffer.String())
+	//	//	}
+	//	//}
+	//	//scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
+	//	//	context, targetNodeGroups, newNodes)
+	//	//if typedErr != nil {
+	//	//	return scaleUpError(
+	//	//		&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
+	//	//		typedErr)
+	//	//}
+	//	//klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
+	//	//for _, info := range scaleUpInfos {
+	//	//	typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
+	//	//	if typedErr != nil {
+	//	//		return scaleUpError(
+	//	//			&status.ScaleUpStatus{
+	//	//				CreateNodeGroupResults: createNodeGroupResults,
+	//	//				FailedResizeNodeGroups: []cloudprovider.NodeGroup{info.Group},
+	//	//				PodsTriggeredScaleUp:   bestOption.Pods,
+	//	//			},
+	//	//			typedErr,
+	//	//		)
+	//	//	}
+	//	//}
+	//	fmt.Println(newNodes)
+	//
+	//	//clusterStateRegistry.Recalculate()
+	//	return &status.ScaleUpStatus{
+	//		Result: status.ScaleUpSuccessful,
+	//		//ScaleUpInfos:            scaleUpInfos,
+	//		PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+	//		//ConsideredNodeGroups:    nodeGroups,
+	//		//CreateNodeGroupResults:  createNodeGroupResults,
+	//		PodsTriggeredScaleUp: bestOption.Pods,
+	//		//PodsAwaitEvaluation:     getPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
+	//		PodsAwaitEvaluation: getPodsAwaitingEvaluation(podEquivalenceGroups, ""),
+	//	}, nil
+	//}
 
 	return &status.ScaleUpStatus{
-		Result:                  status.ScaleUpNoOptionsAvailable,
+		Result:                  status.ScaleUpSuccessful,
 		PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 		//ConsideredNodeGroups:    nodeGroups,
 	}, nil

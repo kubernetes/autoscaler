@@ -37,7 +37,7 @@ import (
 
 // Get group size
 func GetNodeGroupSize() int {
-	var nodeGroupSize int = 5
+	var nodeGroupSize int = 3
 	return nodeGroupSize
 }
 
@@ -45,6 +45,12 @@ func GetNodeGroupSize() int {
 func GetMinSizeNodeGroup() int {
 	var minSizeNodeGroup int = 1
 	return minSizeNodeGroup
+}
+
+// Get max size group
+func GetMaxSizeNodeGroup() int {
+	var maxSizeNodeGroup int = 5
+	return maxSizeNodeGroup
 }
 
 // FilterOutNodes filters out nodesToFilterOut from nodes

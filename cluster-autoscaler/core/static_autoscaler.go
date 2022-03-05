@@ -221,17 +221,25 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	defer a.DebuggingSnapshotter.Flush()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
-	fmt.Println("unschedulablePodLister is")
-	fmt.Println(unschedulablePodLister.List())
+
+	//fmt.Println("unschedulablePodLister is")
+	//fmt.Println(unschedulablePodLister.List())
+
 	scheduledPodLister := a.ScheduledPodLister()
 	//fmt.Println("scheduledPodLister is")
 	//fmt.Println(scheduledPodLister.List())
 	pdbLister := a.PodDisruptionBudgetLister()
+
 	fmt.Println("pdbLister is")
 	fmt.Println(pdbLister.List())
+
 	scaleDown := a.scaleDown
+
 	fmt.Println("unneededNodesList is")
-	fmt.Println(scaleDown.unneededNodesList)
+	for _, node := range scaleDown.unneededNodesList {
+		fmt.Println(node.Name)
+	}
+
 	autoscalingContext := a.AutoscalingContext
 
 	klog.V(4).Info("Starting main loop")
@@ -296,7 +304,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//	return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	//}
 
-	// Update node groups min/max after cloud provider refresh
+	//Update node groups min/max after cloud provider refresh
 	//for _, nodeGroup := range a.AutoscalingContext.CloudProvider.NodeGroups() {
 	//	metrics.UpdateNodeGroupMin(nodeGroup.Id(), nodeGroup.MinSize())
 	//	metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
@@ -479,7 +487,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
+
 		fmt.Println("No need Scale up")
+
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
@@ -491,8 +501,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		a.processorCallbacks.DisableScaleDownForLoop()
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
+
+		fmt.Println()
+		fmt.Println("Unschedulable pods are very new, waiting one iteration for more")
+
 	} else {
 		scaleUpStart := time.Now()
+		fmt.Println("Start to scale up")
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
 		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, a.ignoredTaints)
@@ -516,8 +531,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 
+	fmt.Println()
+	fmt.Println("ScaleDownEnabled is: ", a.ScaleDownEnabled)
+
 	if a.ScaleDownEnabled {
 		pdbs, err := pdbLister.List()
+
+		fmt.Println()
+		fmt.Println("PDBs are: ")
+
+		for _, pdb := range pdbs {
+			fmt.Println(pdb.Name)
+		}
 		if err != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to list pod disruption budgets: %v", err)
@@ -539,18 +564,42 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// allNodes here, we could use nodes from clusterSnapshot and explicitly filter out upcoming nodes here but it
 		// is of little (if any) benefit.
 
+		fmt.Println()
+		fmt.Println("ScaleDownNodeProcessor is: ")
+		fmt.Println(a.processors.ScaleDownNodeProcessor)
+
 		if a.processors == nil || a.processors.ScaleDownNodeProcessor == nil {
+
+			fmt.Println()
+			fmt.Println("scaleDownCandidates are allNodes")
+
 			scaleDownCandidates = allNodes
 			podDestinations = allNodes
 		} else {
 			var err errors.AutoscalerError
+
+			fmt.Println()
+			fmt.Println("GetScaleDownCandidates")
+
 			scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
 				autoscalingContext, allNodes)
+			fmt.Println()
+			fmt.Println("ScaleDownCandidates are:")
+			for _, node := range scaleDownCandidates {
+				fmt.Println(node.Name)
+			}
 			if err != nil {
 				klog.Error(err)
 				return err
 			}
 			podDestinations, err = a.processors.ScaleDownNodeProcessor.GetPodDestinationCandidates(autoscalingContext, allNodes)
+
+			fmt.Println()
+			fmt.Println("podDestinations are:")
+			for _, node := range podDestinations {
+				fmt.Println(node.Name)
+			}
+
 			if err != nil {
 				klog.Error(err)
 				return err
@@ -577,6 +626,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
+
+		fmt.Println()
+		fmt.Println("scaleDownInCooldown is: ", scaleDownInCooldown)
+		fmt.Println("lastScaleUpTime is: ", a.lastScaleUpTime)
+		fmt.Println("lastScaleDownFailTime is: ", a.lastScaleDownFailTime)
+		fmt.Println("lastScaleDownDeleteTime is: ", a.lastScaleDownDeleteTime)
+
 		// In dry run only utilization is updated
 		calculateUnneededOnly := scaleDownInCooldown || scaleDown.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress()
 
@@ -595,6 +651,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
+			fmt.Println()
+			fmt.Println("starting scale down")
+
 			//// We want to delete unneeded Node Groups only if there was no recent scale up,
 			//// and there is no current delete in progress and there was no recent errors.
 			//removedNodeGroups, err := a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingContext)
@@ -609,6 +668,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			metrics.UpdateUnremovableNodesCount(scaleDown.getUnremovableNodesCount())
 
 			//scaleDownStatus.RemovedNodeGroups = removedNodeGroups
+
+			fmt.Println()
+			fmt.Println("scale down status is: ", scaleDownStatus.Result)
 
 			if scaleDownStatus.Result == status.ScaleDownNodeDeleteStarted {
 				a.lastScaleDownDeleteTime = currentTime
@@ -829,7 +891,7 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	}
 	//found, oldest := core_utils.GetOldestCreateTimeWithGpu(pods)
 	//return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
-	return true
+	return false
 }
 
 //func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulerframework.NodeInfo) []*schedulerframework.NodeInfo {

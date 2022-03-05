@@ -460,6 +460,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 	// Extract cluster state from snapshot for initial analysis
 	allNodeInfos, err := sd.context.ClusterSnapshot.NodeInfos().List()
+
+	fmt.Println()
+	fmt.Println("all Node Infos are: ")
+	for _, info := range allNodeInfos {
+		fmt.Println(info.Node().Name)
+	}
+
 	if err != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
 		return errors.ToAutoscalerError(errors.InternalError, err)
@@ -485,6 +492,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		if utilInfo != nil {
 			utilizationMap[node.Name] = *utilInfo
 		}
+
+		fmt.Println()
+		fmt.Println("Utilization info are: ")
+		for node, util := range utilizationMap {
+			fmt.Println("Node: ", node, " CPU-Util: ", util.CpuUtil, " MemoryUtil: ", util.MemUtil, " Utilization: ", util.Utilization)
+		}
+
 		if reason != simulator.NoReason {
 			// For logging purposes.
 			if reason == simulator.RecentlyUnremovable {
@@ -496,6 +510,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 
 		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
+
+		fmt.Println()
+		fmt.Println("currentlyUnneededNodeNames are: ")
+		for _, node := range currentlyUnneededNodeNames {
+			fmt.Println(node)
+		}
+
 	}
 
 	if skipped > 0 {
@@ -510,14 +531,16 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	//}
 
 	currentlyUnneededNonEmptyNodes := make([]string, 0, len(currentlyUnneededNodeNames))
-	//for _, node := range currentlyUnneededNodeNames {
-	//	if !emptyNodes[node] {
-	//		currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
-	//	}
-	//}
+	for _, node := range currentlyUnneededNodeNames {
+		currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
+	}
 
 	//Phase2 - check which nodes can be probably removed using fast drain.
 	currentCandidates, currentNonCandidates := sd.chooseCandidates(currentlyUnneededNonEmptyNodes)
+
+	fmt.Println()
+	fmt.Println("current candidate: ", currentCandidates)
+	fmt.Println("current non candidate", currentNonCandidates)
 
 	destinations := make([]string, 0, len(destinationNodes))
 	for _, destinationNode := range destinationNodes {
@@ -537,6 +560,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		pdbs)
 	if simulatorErr != nil {
 		return sd.markSimulationError(simulatorErr, timestamp)
+	}
+
+	fmt.Println()
+	fmt.Println("number of nodes to Remove is: ", len(nodesToRemove))
+	fmt.Println("node to Remove are: ")
+	for _, node := range nodesToRemove {
+		fmt.Println(node.Node.Name)
 	}
 
 	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
@@ -626,7 +656,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 // isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
 func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) (bool, error) {
-	var threshold float64 = 0.8
+	var threshold float64 = 0.5
 	//var err error
 	//threshold, err = sd.processors.NodeGroupConfigProcessor.GetScaleDownUtilizationThreshold(sd.context)
 	//if err != nil {
@@ -791,8 +821,15 @@ func (sd *ScaleDown) TryToScaleDown(
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
 	nodesWithoutMasterNames := make([]string, 0, len(nodesWithoutMaster))
+
+	fmt.Println()
+	fmt.Println("nodes without master are: ")
+
 	for _, node := range nodesWithoutMaster {
 		nodesWithoutMasterNames = append(nodesWithoutMasterNames, node.Name)
+
+		fmt.Println(node.Name)
+
 	}
 
 	candidateNames := make([]string, 0)
@@ -868,7 +905,8 @@ func (sd *ScaleDown) TryToScaleDown(
 		//	}
 		//}
 
-		unneededTime := time.Duration(0)
+		//unneededTime := time.Duration(0)
+		unneededTime := 1 * time.Minute
 		//if err != nil {
 		//	klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 		//	continue
@@ -878,19 +916,17 @@ func (sd *ScaleDown) TryToScaleDown(
 			continue
 		}
 
-		//size, found := nodeGroupSize[nodeGroup.Id()]
-		//if !found {
-		//	klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
-		//	sd.addUnremovableNodeReason(node, simulator.UnexpectedError)
-		//	continue
-		//}
-
-		//deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
-		//if size-deletionsInProgress <= nodeGroup.MinSize() {
+		//size := utils.GetNodeGroupSize()
+		//min_size := utils.GetMinSizeNodeGroup()
+		//
+		//deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress("")
+		//if size-deletionsInProgress <= min_size {
 		//	klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 		//	sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
 		//	continue
 		//}
+
+		//fmt.Println("number nodes in deletionsInProgress are: ", deletionsInProgress)
 
 		//scaleDownResourcesDelta, err := sd.computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesWithLimits)
 		//if err != nil {
@@ -907,6 +943,12 @@ func (sd *ScaleDown) TryToScaleDown(
 		//}
 
 		candidateNames = append(candidateNames, node.Name)
+
+		fmt.Println()
+		fmt.Println("candidateNames are: ")
+		for _, node := range candidateNames {
+			fmt.Println(node)
+		}
 		//candidateNodeGroups[node.Name] = nodeGroup
 	}
 
@@ -962,18 +1004,24 @@ func (sd *ScaleDown) TryToScaleDown(
 		scaleDownStatus.Result = status.ScaleDownError
 		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
 	}
-	nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, nodesToRemove, 1)
-	// if len(nodesToRemove) == 0 {
-	// 	klog.V(1).Infof("No node to remove")
-	// 	scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
-	// 	return scaleDownStatus, nil
-	// }
-	// toRemove := nodesToRemove[0]
-	// utilization := sd.nodeUtilizationMap[toRemove.Node.Name]
-	// podNames := make([]string, 0, len(toRemove.PodsToReschedule))
-	// for _, pod := range toRemove.PodsToReschedule {
-	// 	podNames = append(podNames, pod.Namespace+"/"+pod.Name)
-	// }
+
+	fmt.Println()
+	fmt.Println("number of nodes to Remove: ", len(nodesToRemove))
+	for _, node := range nodesToRemove {
+		fmt.Println(node.Node.Name)
+	}
+	//nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, nodesToRemove, 1)
+	//if len(nodesToRemove) == 0 {
+	//	klog.V(1).Infof("No node to remove")
+	//	scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
+	//	return scaleDownStatus, nil
+	//}
+	//toRemove := nodesToRemove[0]
+	//utilization := sd.nodeUtilizationMap[toRemove.Node.Name]
+	//podNames := make([]string, 0, len(toRemove.PodsToReschedule))
+	//for _, pod := range toRemove.PodsToReschedule {
+	//	podNames = append(podNames, pod.Namespace+"/"+pod.Name)
+	//}
 	// klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
 	// 	strings.Join(podNames, ","))
 	// sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s",
@@ -982,38 +1030,44 @@ func (sd *ScaleDown) TryToScaleDown(
 	// // Nothing super-bad should happen if the node is removed from tracker prematurely.
 	// simulator.RemoveNodeFromTracker(sd.usageTracker, toRemove.Node.Name, sd.unneededNodes)
 	nodeDeletionStart := time.Now()
+	fmt.Println("node deletion start: ", nodeDeletionStart)
 
 	// Starting deletion.
 	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
+	fmt.Println("nodeDeletionDuration: ", nodeDeletionDuration)
 	//sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(true)
-	fmt.Print("scale-down")
-	fmt.Println(len(nodesToRemove))
+	fmt.Println("scaling down ", len(nodesToRemove), " node")
+	fmt.Println("Wait for running in AWX successfully")
+	time.Sleep(2 * time.Minute)
 
 	//go func() {
-	//	// Finishing the delete process once this goroutine is over.
-	//	var result status.NodeDeleteResult
-	//	defer func() { sd.nodeDeletionTracker.AddNodeDeleteResult(toRemove.Node.Name, result) }()
-	//	defer sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(false)
-	//	nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
-	//	if !found {
-	//		result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(
-	//			errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)}
-	//		return
-	//	}
-	//	result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, toRemove.DaemonSetPods, nodeGroup)
-	//	if result.ResultType != status.NodeDeleteOk {
-	//		klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
-	//		return
-	//	}
+	//	//// Finishing the delete process once this goroutine is over.
+	//	//var result status.NodeDeleteResult
+	//	//defer func() { sd.nodeDeletionTracker.AddNodeDeleteResult(toRemove.Node.Name, result) }()
+	//	//defer sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(false)
+	//	//nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
+	//	//if !found {
+	//	//	result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(
+	//	//		errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)}
+	//	//	return
+	//	//}
+	//	//result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, toRemove.DaemonSetPods, nodeGroup)
+	//	//if result.ResultType != status.NodeDeleteOk {
+	//	//	klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
+	//	//	return
+	//	//}
 	//	// if readinessMap[toRemove.Node.Name] {
 	//	// 	metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, toRemove.Node, nodeGroup), metrics.Underutilized)
 	//	// } else {
 	//	// 	metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, toRemove.Node, nodeGroup), metrics.Unready)
 	//	// }
+	//	time.Sleep(2 * time.Minute)
+	//	fmt.Println("end of scale down process")
 	//}()
 
 	//scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups, map[string][]*apiv1.Pod{toRemove.Node.Name: toRemove.PodsToReschedule})
 	scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
+	fmt.Println("end of scale down process")
 	return scaleDownStatus, nil
 }
 
