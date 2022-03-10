@@ -55,6 +55,7 @@ package azure
 // InstanceType is the sepc of Azure instance
 type InstanceType struct {
 	InstanceType string
+	SkuFamily    string
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
@@ -65,6 +66,7 @@ var InstanceTypes = map[string]*InstanceType{
 {{- range .InstanceTypes }}
 	"{{ .InstanceType }}": {
 		InstanceType: "{{ .InstanceType }}",
+		SkuFamily:    "{{ .SkuFamily }}",
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
@@ -81,6 +83,7 @@ type InstanceCapabilities struct {
 type RawInstanceType struct {
 	Name         string
 	ResourceType string
+	Family       string
 	Capabilities []InstanceCapabilities
 }
 
@@ -113,6 +116,7 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 		if strings.EqualFold(instance.ResourceType, "virtualMachines") {
 			var virtualMachine azure.InstanceType
 			virtualMachine.InstanceType = instance.Name
+			virtualMachine.SkuFamily = instance.Family
 			for _, capability := range instance.Capabilities {
 				switch capability.Name {
 				case "vCPUs":
