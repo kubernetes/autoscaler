@@ -29,10 +29,9 @@ import (
 )
 
 var (
-	testPodID1       = PodID{"namespace-1", "pod-1"}
-	testPodID2       = PodID{"namespace-1", "pod-2"}
-	testContainerID1 = ContainerID{testPodID1, "container-1"}
-	testRequest      = Resources{
+	testPodID1  = PodID{"namespace-1", "pod-1"}
+	testPodID2  = PodID{"namespace-1", "pod-2"}
+	testRequest = Resources{
 		ResourceCPU:    CPUAmountFromCores(3.14),
 		ResourceMemory: MemoryAmountFromBytes(3.14e9),
 	}
@@ -141,7 +140,7 @@ func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.True(t, time.Now().Sub(checkpoint.LastUpdateTime.Time) < 10*time.Second)
+	assert.True(t, time.Since(checkpoint.LastUpdateTime.Time) < 10*time.Second)
 	assert.Equal(t, t1, checkpoint.FirstSampleStart.Time)
 	assert.Equal(t, t2, checkpoint.LastSampleStart.Time)
 	assert.Equal(t, 10, checkpoint.TotalSamplesCount)

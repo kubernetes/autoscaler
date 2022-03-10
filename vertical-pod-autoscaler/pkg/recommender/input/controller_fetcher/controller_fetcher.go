@@ -180,52 +180,24 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 	if !exists {
 		return nil, fmt.Errorf("%s %s/%s does not exist", kind, namespace, name)
 	}
-	switch obj.(type) {
+	switch apiObj := obj.(type) {
 	case (*appsv1.DaemonSet):
-		apiObj, ok := obj.(*appsv1.DaemonSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*appsv1.Deployment):
-		apiObj, ok := obj.(*appsv1.Deployment)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*appsv1.StatefulSet):
-		apiObj, ok := obj.(*appsv1.StatefulSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*appsv1.ReplicaSet):
-		apiObj, ok := obj.(*appsv1.ReplicaSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*batchv1.Job):
-		apiObj, ok := obj.(*batchv1.Job)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*batchv1beta1.CronJob):
-		apiObj, ok := obj.(*batchv1beta1.CronJob)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*corev1.ReplicationController):
-		apiObj, ok := obj.(*corev1.ReplicationController)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	}
 
-	return nil, fmt.Errorf("Don't know how to read owner controller")
+	return nil, fmt.Errorf("don't know how to read owner controller")
 }
 
 func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
@@ -375,35 +347,4 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWit
 
 		key = owner
 	}
-}
-
-type identityControllerFetcher struct {
-}
-
-func (f *identityControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
-	return controller, nil
-}
-
-type constControllerFetcher struct {
-	ControllerKeyWithAPIVersion *ControllerKeyWithAPIVersion
-}
-
-func (f *constControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
-	return f.ControllerKeyWithAPIVersion, nil
-}
-
-type mockControllerFetcher struct {
-	expected *ControllerKeyWithAPIVersion
-	result   *ControllerKeyWithAPIVersion
-}
-
-func (f *mockControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
-	if controller == nil && f.expected == nil {
-		return f.result, nil
-	}
-	if controller == nil || *controller != *f.expected {
-		return nil, fmt.Errorf("Unexpected argument: %v", controller)
-	}
-
-	return f.result, nil
 }
