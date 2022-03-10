@@ -98,18 +98,18 @@ func simpleControllerFetcher() *controllerFetcher {
 	return &f
 }
 
-func addController(controller *controllerFetcher, obj runtime.Object) {
+func addController(t *testing.T, controller *controllerFetcher, obj runtime.Object) {
 	kind := wellKnownController(obj.GetObjectKind().GroupVersionKind().Kind)
 	_, ok := controller.informersMap[kind]
 	if ok {
-		controller.informersMap[kind].GetStore().Add(obj)
+		err := controller.informersMap[kind].GetStore().Add(obj)
+		assert.NoError(t, err)
 	}
 }
 
 func TestControllerFetcher(t *testing.T) {
 	type testCase struct {
 		name          string
-		apiVersion    string
 		key           *ControllerKeyWithAPIVersion
 		objects       []runtime.Object
 		expectedKey   *ControllerKeyWithAPIVersion
@@ -383,7 +383,7 @@ func TestControllerFetcher(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			f := simpleControllerFetcher()
 			for _, obj := range tc.objects {
-				addController(f, obj)
+				addController(t, f, obj)
 			}
 			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(tc.key)
 			if tc.expectedKey == nil {

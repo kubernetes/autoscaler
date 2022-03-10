@@ -52,13 +52,11 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 var (
-	unsupportedConditionNoLongerSupported = "Label selector is no longer supported, please migrate to targetRef"
-	unsupportedConditionTextFromFetcher   = "Cannot read targetRef. Reason: targetRef not defined"
-	unsupportedConditionNoExtraText       = "Cannot read targetRef"
-	unsupportedConditionBothDefined       = "Both targetRef and label selector defined. Please remove label selector"
-	unsupportedConditionNoTargetRef       = "Cannot read targetRef"
-	unsupportedConditionMudaMudaMuda      = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
-	unsupportedTargetRefHasParent         = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
+	unsupportedConditionTextFromFetcher = "Cannot read targetRef. Reason: targetRef not defined"
+	unsupportedConditionNoExtraText     = "Cannot read targetRef"
+	unsupportedConditionNoTargetRef     = "Cannot read targetRef"
+	unsupportedConditionMudaMudaMuda    = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
+	unsupportedTargetRefHasParent       = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
 )
 
 const (
