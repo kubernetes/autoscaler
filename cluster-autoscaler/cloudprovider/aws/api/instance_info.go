@@ -240,11 +240,41 @@ func (s *instanceInfoService) sync(region string) error {
 }
 
 func (s *instanceInfoService) fetch(region string, etag string) (*response, error) {
+
 	regionName, err := regionFullName(region)
 	if err != nil {
 		return nil, err
 	}
 
+	var data = new(response)
+	data.Products = make(map[string]product, 0)
+	data.Terms.OnDemand = make(map[string]productOffer, 0)
+
+	// Perform first iteration
+	r, err2, done, nextToken := fetchInstanceInfoIteration(region, regionName, err, s, data, "")
+	if done {
+		return r, err2
+	}
+
+	// Continue while 'next' token is present
+	for nextToken != "" {
+
+		r, err2, done, currentNextToken := fetchInstanceInfoIteration(region, regionName, err, s, data, nextToken)
+		if done {
+			return r, err2
+		}
+
+		nextToken = currentNextToken
+	}
+
+	if len(data.Products) == 0 {
+		return nil, fmt.Errorf("no price information found for region %s", region)
+	}
+
+	return data, nil
+}
+
+func fetchInstanceInfoIteration(region string, regionName string, err error, s *instanceInfoService, data *response, nextToken string) (*response, error, bool, string) {
 	input := &pricing.GetProductsInput{
 		ServiceCode: aws.String("AmazonEC2"),
 		Filters: []*pricing.Filter{
@@ -275,25 +305,24 @@ func (s *instanceInfoService) fetch(region string, etag string) (*response, erro
 			},
 		},
 	}
+	if nextToken != "" {
+		input.NextToken = aws.String(nextToken)
+	}
 
 	output, err := s.client.GetProducts(input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not fetch products for region %s", region)
+		return nil, errors.Wrapf(err, "could not fetch products for region %s", region), true, ""
 	}
-
-	var data = new(response)
-	data.Products = make(map[string]product, 0)
-	data.Terms.OnDemand = make(map[string]productOffer, 0)
 
 	for _, entry := range output.PriceList {
 		raw, err := protocol.EncodeJSONValue(entry, protocol.NoEscape)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not encode back aws sdk pricing response")
+			return nil, errors.Wrap(err, "could not encode back aws sdk pricing response"), true, ""
 		}
 
 		var entry = new(priceListEntry)
 		if err := json.Unmarshal([]byte(raw), entry); err != nil {
-			return nil, errors.Wrapf(err, "error unmarshaling pricing list entry: %s", raw)
+			return nil, errors.Wrapf(err, "error unmarshaling pricing list entry: %s", raw), true, ""
 		}
 
 		var validTerm productOffer
@@ -315,11 +344,12 @@ func (s *instanceInfoService) fetch(region string, etag string) (*response, erro
 
 	}
 
-	if len(data.Products) == 0 {
-		return nil, fmt.Errorf("no price information found for region %s", region)
+	returnNextToken := ""
+	if output.NextToken != nil {
+		returnNextToken = *output.NextToken
 	}
 
-	return data, nil
+	return nil, nil, false, returnNextToken
 }
 
 type instanceInfoCache map[string]*regionalInstanceInfoBucket
