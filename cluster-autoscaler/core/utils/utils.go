@@ -218,3 +218,21 @@ func GetMemoryWorker() int64 {
 	var Memory int64 = 4096
 	return Memory
 }
+
+// Get group size
+func GetNodeGroupSize() int {
+	var nodeGroupSize int = 3
+	return nodeGroupSize
+}
+
+// Get min size group
+func GetMinSizeNodeGroup() int {
+	var minSizeNodeGroup int = 2
+	return minSizeNodeGroup
+}
+
+// Get max size group
+func GetMaxSizeNodeGroup() int {
+	var maxSizeNodeGroup int = 4
+	return maxSizeNodeGroup
+}

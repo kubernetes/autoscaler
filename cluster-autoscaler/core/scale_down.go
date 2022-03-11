@@ -19,6 +19,7 @@ package core
 import (
 	ctx "context"
 	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"math"
 	"strings"
 	"sync"
@@ -917,7 +918,12 @@ func (sd *ScaleDown) TryToScaleDown(
 		}
 
 		//size := utils.GetNodeGroupSize()
-		//min_size := utils.GetMinSizeNodeGroup()
+		minSize := utils.GetMinSizeNodeGroup()
+		if (len(nodesWithoutMasterNames) - len(candidateNames)) <= minSize {
+			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+			fmt.Println("Skipping", node.Name, "node group min size reached")
+			continue
+		}
 		//
 		//deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress("")
 		//if size-deletionsInProgress <= min_size {
@@ -1005,6 +1011,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
 	}
 
+	klog.V(1).Infof("find nodes to remove")
 	fmt.Println()
 	fmt.Println("number of nodes to Remove: ", len(nodesToRemove))
 	for _, node := range nodesToRemove {

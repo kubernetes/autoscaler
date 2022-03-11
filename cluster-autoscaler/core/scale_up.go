@@ -310,7 +310,7 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 //}
 
 // Calculate new node need to be scaled up
-func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod) int {
+func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node) int {
 	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
 	skippedNodeGroups := map[string]status.Reasons{}
 	podsRemainUnschedulable := getRemainingPods(podEquivalenceGroups, skippedNodeGroups)
@@ -327,11 +327,20 @@ func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod) int {
 	}
 	fmt.Println("total CPU Pod request: ", totalCPUrequest)
 	fmt.Println("total Memory Pod request: ", totalMemoryRequest)
-	cpus := utils.GetCPUworker()
-	memory := utils.GetMemoryWorker()
+	var cpus int64
+	var memory int64
+	for _, node := range nodes {
+		if strings.Contains(node.Name, "worker") {
+			cpus, memory = utils.GetNodeCoresAndMemory(node)
+			break
+		}
+		continue
+	}
+	fmt.Println("worker CPU: ", cpus)
+	fmt.Println("worker Memory: ", memory)
 	numberNodeScaledUpFloat = float64(totalCPUrequest) / (float64(cpus) * 1000)
-	if numberNodeScaledUpFloat < (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1024)) {
-		numberNodeScaledUpFloat = (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1024))
+	if numberNodeScaledUpFloat < (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1000)) {
+		numberNodeScaledUpFloat = (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1000))
 	}
 	fmt.Println("numberNodeScaledUpFloat is: ", numberNodeScaledUpFloat)
 	numberNodeScaledUpInt := int(math.Ceil(numberNodeScaledUpFloat))
@@ -471,7 +480,16 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	//	}
 	//}
 
-	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods)
+	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods, nodes)
+	if (len(nodes) + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup() {
+		klog.V(4).Infof("Skipping node group - max size reached")
+		fmt.Println("scaling up cannot perform because max node group size reached")
+		klog.V(4).Infof("You need to increase max group size")
+		fmt.Println("You need to increase max group size")
+		numberNodeScaleUp = len(nodes) - utils.GetMaxSizeNodeGroup()
+		fmt.Println("scaling up ", numberNodeScaleUp, " node")
+		fmt.Println("waiting for job running in AWX successfully")
+	}
 	fmt.Println("scaling up ", numberNodeScaleUp, " node")
 	fmt.Println("waiting for job running in AWX successfully")
 	time.Sleep(2 * time.Minute)

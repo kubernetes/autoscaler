@@ -43,13 +43,13 @@ func GetNodeGroupSize() int {
 
 // Get min size group
 func GetMinSizeNodeGroup() int {
-	var minSizeNodeGroup int = 1
+	var minSizeNodeGroup int = 2
 	return minSizeNodeGroup
 }
 
 // Get max size group
 func GetMaxSizeNodeGroup() int {
-	var maxSizeNodeGroup int = 5
+	var maxSizeNodeGroup int = 4
 	return maxSizeNodeGroup
 }
 
