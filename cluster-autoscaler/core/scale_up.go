@@ -339,8 +339,8 @@ func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Nod
 	fmt.Println("worker CPU: ", cpus)
 	fmt.Println("worker Memory: ", memory)
 	numberNodeScaledUpFloat = float64(totalCPUrequest) / (float64(cpus) * 1000)
-	if numberNodeScaledUpFloat < (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1000)) {
-		numberNodeScaledUpFloat = (float64(totalMemoryRequest) / (float64(memory) * 1024 * 1024 * 1000))
+	if numberNodeScaledUpFloat < (float64(totalMemoryRequest) / (float64(memory) * 1000)) {
+		numberNodeScaledUpFloat = (float64(totalMemoryRequest) / (float64(memory) * 1000))
 	}
 	fmt.Println("numberNodeScaledUpFloat is: ", numberNodeScaledUpFloat)
 	numberNodeScaledUpInt := int(math.Ceil(numberNodeScaledUpFloat))
@@ -480,13 +480,21 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	//	}
 	//}
 
+	var numberWorkerNode int = 0
+	for _, node := range nodes {
+		if strings.Contains(node.Name, "worker") {
+			numberWorkerNode += 1
+		}
+	}
+	fmt.Println()
+	fmt.Println("Number of worker node: ", numberWorkerNode)
 	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods, nodes)
-	if (len(nodes) + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup() {
+	if (numberWorkerNode + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup() {
 		klog.V(4).Infof("Skipping node group - max size reached")
 		fmt.Println("scaling up cannot perform because max node group size reached")
 		klog.V(4).Infof("You need to increase max group size")
 		fmt.Println("You need to increase max group size")
-		numberNodeScaleUp = len(nodes) - utils.GetMaxSizeNodeGroup()
+		numberNodeScaleUp = utils.GetMaxSizeNodeGroup() - numberWorkerNode
 		fmt.Println("scaling up ", numberNodeScaleUp, " node")
 		fmt.Println("waiting for job running in AWX successfully")
 	}

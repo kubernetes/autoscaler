@@ -479,6 +479,15 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	utilizationMap := make(map[string]simulator.UtilizationInfo)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
 
+	var scaleDownCadidatesWorker int = 0
+	for _, node := range scaleDownCandidates {
+		if strings.Contains(node.Name, "worker") {
+			scaleDownCadidatesWorker += 1
+		}
+	}
+
+	fmt.Println()
+	fmt.Println("number of worker scale down candidates is: ", scaleDownCadidatesWorker)
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
 	for _, node := range scaleDownCandidates {
@@ -510,6 +519,14 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
+		if strings.Contains(node.Name, "master") {
+			continue
+		}
+
+		if (scaleDownCadidatesWorker - len(currentlyUnneededNodeNames)) <= utils.GetMinSizeNodeGroup() {
+			continue
+		}
+
 		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
 
 		fmt.Println()
@@ -517,7 +534,6 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		for _, node := range currentlyUnneededNodeNames {
 			fmt.Println(node)
 		}
-
 	}
 
 	if skipped > 0 {

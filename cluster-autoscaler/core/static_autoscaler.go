@@ -484,13 +484,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	fmt.Println()
 	fmt.Println("Max node total is: ", a.MaxNodesTotal)
+	fmt.Println("Max node total is: ", core_utils.GetMaxSizeNodeGroup())
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
 
 		fmt.Println("No need Scale up")
 
-	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+	} else if core_utils.GetMaxSizeNodeGroup() > 0 && len(readyNodes) >= core_utils.GetMaxSizeNodeGroup() {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
