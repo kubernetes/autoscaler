@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 type podEquivalenceGroup struct {
@@ -54,6 +55,7 @@ type equivalenceGroup struct {
 const maxEquivalenceGroupsByController = 10
 
 // groupPodsBySchedulingProperties groups pods based on scheduling properties. Group ID is meaningless.
+// TODO(x13n): refactor this to have shared logic with PodSchedulableMap.
 func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][]*apiv1.Pod {
 	podEquivalenceGroups := map[equivalenceGroupId][]*apiv1.Pod{}
 	equivalenceGroupsByController := make(map[types.UID][]equivalenceGroup)
@@ -61,7 +63,7 @@ func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][
 	var nextGroupId equivalenceGroupId
 	for _, pod := range pods {
 		controllerRef := drain.ControllerRef(pod)
-		if controllerRef == nil {
+		if controllerRef == nil || pod_utils.IsDaemonSetPod(pod) {
 			podEquivalenceGroups[nextGroupId] = []*apiv1.Pod{pod}
 			nextGroupId++
 			continue
