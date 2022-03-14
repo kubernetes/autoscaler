@@ -138,3 +138,30 @@ func TestGroupSchedulablePodsForNode(t *testing.T) {
 		assert.True(t, w.found, fmt.Errorf("Expected pod group: %+v", w))
 	}
 }
+
+func TestEquivalenceGroupSizeLimiting(t *testing.T) {
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pods := make([]*apiv1.Pod, 0, maxEquivalenceGroupsByController+1)
+	for i := 0; i < maxEquivalenceGroupsByController+1; i += 1 {
+		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
+		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
+		label := fmt.Sprintf("l%d", i)
+		if i > maxEquivalenceGroupsByController {
+			label = fmt.Sprintf("l%d", maxEquivalenceGroupsByController)
+		}
+		p.Labels = map[string]string{"uniqueLabel": label}
+		pods = append(pods, p)
+	}
+	podGroups := groupPodsBySchedulingProperties(pods)
+	assert.Equal(t, len(pods), len(podGroups))
+	for i := range podGroups {
+		assert.Equal(t, 1, len(podGroups[i]))
+	}
+}

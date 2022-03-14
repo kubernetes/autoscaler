@@ -51,6 +51,8 @@ type equivalenceGroup struct {
 	representant *apiv1.Pod
 }
 
+const maxEquivalenceGroupsByController = 10
+
 // groupPodsBySchedulingProperties groups pods based on scheduling properties. Group ID is meaningless.
 func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][]*apiv1.Pod {
 	podEquivalenceGroups := map[equivalenceGroupId][]*apiv1.Pod{}
@@ -65,25 +67,33 @@ func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][
 			continue
 		}
 
-		matchingFound := false
-		for _, g := range equivalenceGroupsByController[controllerRef.UID] {
-			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && utils.PodSpecSemanticallyEqual(pod.Spec, g.representant.Spec) {
-				matchingFound = true
-				podEquivalenceGroups[g.id] = append(podEquivalenceGroups[g.id], pod)
-				break
-			}
+		egs := equivalenceGroupsByController[controllerRef.UID]
+		if gid := match(egs, pod); gid != nil {
+			podEquivalenceGroups[*gid] = append(podEquivalenceGroups[*gid], pod)
+			continue
 		}
-
-		if !matchingFound {
+		if len(egs) < maxEquivalenceGroupsByController {
+			// Avoid too many different pods per owner reference.
 			newGroup := equivalenceGroup{
 				id:           nextGroupId,
 				representant: pod,
 			}
-			equivalenceGroupsByController[controllerRef.UID] = append(equivalenceGroupsByController[controllerRef.UID], newGroup)
-			podEquivalenceGroups[newGroup.id] = append(podEquivalenceGroups[newGroup.id], pod)
-			nextGroupId++
+			equivalenceGroupsByController[controllerRef.UID] = append(egs, newGroup)
 		}
+		podEquivalenceGroups[nextGroupId] = append(podEquivalenceGroups[nextGroupId], pod)
+		nextGroupId++
 	}
 
 	return podEquivalenceGroups
+}
+
+// match tries to find an equivalence group for a given pod and returns the
+// group id or nil if the group can't be found.
+func match(egs []equivalenceGroup, pod *apiv1.Pod) *equivalenceGroupId {
+	for _, g := range egs {
+		if reflect.DeepEqual(pod.Labels, g.representant.Labels) && utils.PodSpecSemanticallyEqual(pod.Spec, g.representant.Spec) {
+			return &g.id
+		}
+	}
+	return nil
 }
