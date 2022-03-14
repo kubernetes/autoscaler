@@ -20,6 +20,7 @@ import (
 	ctx "context"
 	"flag"
 	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"net/http"
 	"net/url"
 	"os"
@@ -353,7 +354,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	return core.NewAutoscaler(opts)
 }
 
-func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
+func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, kubeclient kube_client.Interface, vpcID string, accessToken string) {
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
 
 	autoscaler, err := buildAutoscaler(debuggingSnapshotter)
@@ -381,7 +382,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				metrics.UpdateLastTime(metrics.Main, loopStart)
 				healthCheck.UpdateLastActivity(loopStart)
 
-				err := autoscaler.RunOnce(loopStart)
+				err := autoscaler.RunOnce(loopStart, kubeclient, accessToken, vpcID)
 				if err != nil && err.Type() != errors.TransientError {
 					metrics.RegisterError(err)
 				} else {
@@ -428,7 +429,7 @@ func main() {
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, debuggingSnapshotter)
+		run(healthCheck, debuggingSnapshotter, nil, "", "")
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -436,7 +437,8 @@ func main() {
 		}
 
 		kubeClient := createKubeClient(getKubeConfig())
-
+		vpcID := utils.GetVPCId(kubeClient)
+		accessToken := utils.GetAccessToken(kubeClient)
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
 		if err != nil {
@@ -468,7 +470,7 @@ func main() {
 				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
-					run(healthCheck, debuggingSnapshotter)
+					run(healthCheck, debuggingSnapshotter, kubeClient, vpcID, accessToken)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatalf("lost master")

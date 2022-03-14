@@ -18,6 +18,7 @@ package nodes
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	kube_client "k8s.io/client-go/kubernetes"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -30,7 +31,7 @@ type ScaleDownNodeProcessor interface {
 	// that would become unscheduled after a scale down.
 	GetPodDestinationCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
 	// GetScaleDownCandidates returns nodes that potentially could be scaled down.
-	GetScaleDownCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
+	GetScaleDownCandidates(*context.AutoscalingContext, []*apiv1.Node, kube_client.Interface) ([]*apiv1.Node, errors.AutoscalerError)
 	// CleanUp is called at CA termination
 	CleanUp()
 }

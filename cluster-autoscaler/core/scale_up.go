@@ -17,10 +17,17 @@ limitations under the License.
 package core
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	kube_client "k8s.io/client-go/kubernetes"
+	"log"
 	"math"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -352,7 +359,7 @@ func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Nod
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod,
-	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, kubeclient kube_client.Interface, accessToken string, vpcID string) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -489,17 +496,18 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	fmt.Println()
 	fmt.Println("Number of worker node: ", numberWorkerNode)
 	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods, nodes)
-	if (numberWorkerNode + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup() {
+	if (numberWorkerNode + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup(kubeclient) {
 		klog.V(4).Infof("Skipping node group - max size reached")
 		fmt.Println("scaling up cannot perform because max node group size reached")
 		klog.V(4).Infof("You need to increase max group size")
 		fmt.Println("You need to increase max group size")
-		numberNodeScaleUp = utils.GetMaxSizeNodeGroup() - numberWorkerNode
+		numberNodeScaleUp = utils.GetMaxSizeNodeGroup(kubeclient) - numberWorkerNode
 		fmt.Println("scaling up ", numberNodeScaleUp, " node")
 		fmt.Println("waiting for job running in AWX successfully")
 	}
 	fmt.Println("scaling up ", numberNodeScaleUp, " node")
 	fmt.Println("waiting for job running in AWX successfully")
+	performScaleUp(vpcID, accessToken, numberNodeScaleUp)
 	time.Sleep(2 * time.Minute)
 	//if len(expansionOptions) == 0 {
 	//	klog.V(1).Info("No expansion options")
@@ -818,4 +826,29 @@ func scaleUpError(s *status.ScaleUpStatus, err errors.AutoscalerError) (*status.
 	s.ScaleUpError = &err
 	s.Result = status.ScaleUpError
 	return s, err
+}
+
+func performScaleUp(vpcID string, accessToken string, workerCount int, idCluster string, clusterIDPortal string) {
+	url := "https://console-api-pilot.fptcloud.com/api/v1/vmware/vpc/" + vpcID + "/cluster/" + idCluster + "/scale-cluster"
+	postBody, _ := json.Marshal(map[string]string{
+		"cluster_id":   clusterIDPortal,
+		"scale_type":   "up",
+		"worker_count": strconv.Itoa(workerCount),
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	var bearer = "Bearer " + accessToken
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", url, responseBody)
+	req.Header.Add("Authorization", bearer)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+	log.Println(resp)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the response bytes:", err)
+	}
+	log.Println(string([]byte(body)))
 }

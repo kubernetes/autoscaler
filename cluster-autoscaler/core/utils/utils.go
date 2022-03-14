@@ -17,9 +17,18 @@ limitations under the License.
 package utils
 
 import (
+	ctx "context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
+	"log"
 	"math/rand"
+	"net/http"
 	"reflect"
+	"strconv"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -207,32 +216,161 @@ func GetOldestCreateTime(pods []*apiv1.Pod) time.Time {
 //	return gpuFound, oldest
 //}
 
-// Get core worker node
-func GetCPUworker() int64 {
-	var CPUs int64 = 2
-	return CPUs
-}
-
-// Get Memory worker node
-func GetMemoryWorker() int64 {
-	var Memory int64 = 4096
-	return Memory
-}
-
-// Get group size
-func GetNodeGroupSize() int {
-	var nodeGroupSize int = 3
-	return nodeGroupSize
-}
-
 // Get min size group
-func GetMinSizeNodeGroup() int {
-	var minSizeNodeGroup int = 2
+func GetMinSizeNodeGroup(kubeclient kube_client.Interface) int {
+	var minSizeNodeGroup int
+	configmaps, err := kubeclient.CoreV1().ConfigMaps("kube-system").Get(ctx.Background(), "autoscaling-configmap", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from autoscaling configmap")
+		klog.Fatalf("Failed to get information of autoscaling configmap: %v", err)
+	}
+	for k, v := range configmaps.Data {
+		if k == "min_node_group_size" {
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				klog.Fatalf("Failed to convert string to integer: %v", err)
+			}
+			minSizeNodeGroup = value
+		}
+	}
 	return minSizeNodeGroup
 }
 
 // Get max size group
-func GetMaxSizeNodeGroup() int {
-	var maxSizeNodeGroup int = 4
+func GetMaxSizeNodeGroup(kubeclient kube_client.Interface) int {
+	var maxSizeNodeGroup int
+	configmaps, err := kubeclient.CoreV1().ConfigMaps("kube-system").Get(ctx.Background(), "autoscaling-configmap", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from autoscaling configmap")
+		klog.Fatalf("Failed to get information of autoscaling configmap: %v", err)
+	}
+	for k, v := range configmaps.Data {
+		if k == "max_node_group_size" {
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				klog.Fatalf("Failed to convert string to integer: %v", err)
+			}
+			maxSizeNodeGroup = value
+		}
+	}
 	return maxSizeNodeGroup
+}
+
+// Get access token of FPTCloud
+func GetAccessToken(kubeclient kube_client.Interface) string {
+	var accessToken string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "access_token" {
+			accessToken = string(v)
+		}
+	}
+	return accessToken
+}
+
+// Get vpc_id of customer
+func GetVPCId(kubeclient kube_client.Interface) string {
+	var vpcID string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "vpc_id" {
+			vpcID = string(v)
+		}
+	}
+	return vpcID
+}
+
+// Get cluster_id info of K8S cluster
+func GetClusterID(kubeclient kube_client.Interface) string {
+	var clusterID string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "cluster_id" {
+			clusterID = string(v)
+		}
+	}
+	return clusterID
+}
+
+type Cluster struct {
+	Total int `json:"total"`
+	Data  []struct {
+		ID                  string `json:"id"`
+		ClusterSlug         string `json:"cluster_slug"`
+		ClusterID           string `json:"cluster_id"`
+		VpcID               string `json:"vpc_id"`
+		EdgeGatewayID       string `json:"edge_gateway_id"`
+		NetworkID           string `json:"network_id"`
+		CreatedAt           string `json:"created_at"`
+		UpdatedAt           string `json:"updated_at"`
+		Name                string `json:"name"`
+		Status              string `json:"status"`
+		WorkerNodeCount     string `json:"worker_node_count"`
+		MasterNodeCount     string `json:"master_node_count"`
+		KubernetesVersion   string `json:"kubernetes_version"`
+		IsDeleted           string `json:"is_deleted"`
+		AwxJobID            string `json:"awx_job_id"`
+		AwxParams           string `json:"awx_params"`
+		NfsDiskSize         string `json:"nfs_disk_size"`
+		NfsStatus           string `json:"nfs_status"`
+		IsRunning           string `json:"is_running"`
+		ErrorMessage        string `json:"error_message"`
+		Templates           string `json:"templates"`
+		LoadBalancerSize    string `json:"load_balancer_size"`
+		ProcessingMess      string `json:"processing_mess"`
+		ClusterType         string `json:"cluster_type"`
+		DistributedFirewall string `json:"distributed_firewall"`
+	} `json:"data"`
+}
+
+// Get ID of cluster
+func GetIDCluster(vpcID string, accessToken string, clusterID string) string {
+	var id string
+	var k8sCluster Cluster
+	url := "https://console-api-pilot.fptcloud.com/api/v1/vmware/vpc/" + vpcID + "/kubernetes?page=1&page_size=25"
+	token := accessToken
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer "+token)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(resp)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	data_body := []byte(body)
+	error := json.Unmarshal(data_body, &k8sCluster)
+	if error != nil {
+		// if error is not nil
+		// print error
+		fmt.Println(error)
+	}
+
+	//fmt.Println(k8sCluster.Data[0])
+	for _, cluster := range k8sCluster.Data {
+		//fmt.Println(cluster)
+		if cluster.ClusterID == clusterID {
+			id = cluster.ID
+		}
+	}
+
+	defer resp.Body.Close()
+	fmt.Println("ID is: ", id)
+	return id
 }

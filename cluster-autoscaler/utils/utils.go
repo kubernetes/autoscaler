@@ -17,8 +17,14 @@ limitations under the License.
 package utils
 
 import (
+	ctx "context"
+	"fmt"
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
+	"strconv"
 )
 
 //// GetNodeGroupSizeMap return a map of node group id and its target size
@@ -35,22 +41,76 @@ import (
 //	return nodeGroupSize
 //}
 
-// Get group size
-func GetNodeGroupSize() int {
-	var nodeGroupSize int = 3
-	return nodeGroupSize
-}
-
 // Get min size group
-func GetMinSizeNodeGroup() int {
-	var minSizeNodeGroup int = 2
+func GetMinSizeNodeGroup(kubeclient kube_client.Interface) int {
+	var minSizeNodeGroup int
+	configmaps, err := kubeclient.CoreV1().ConfigMaps("kube-system").Get(ctx.Background(), "autoscaling-configmap", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from autoscaling configmap")
+		klog.Fatalf("Failed to get information of autoscaling configmap: %v", err)
+	}
+	for k, v := range configmaps.Data {
+		if k == "min_node_group_size" {
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				klog.Fatalf("Failed to convert string to integer: %v", err)
+			}
+			minSizeNodeGroup = value
+		}
+	}
 	return minSizeNodeGroup
 }
 
 // Get max size group
-func GetMaxSizeNodeGroup() int {
-	var maxSizeNodeGroup int = 4
+func GetMaxSizeNodeGroup(kubeclient kube_client.Interface) int {
+	var maxSizeNodeGroup int
+	configmaps, err := kubeclient.CoreV1().ConfigMaps("kube-system").Get(ctx.Background(), "autoscaling-configmap", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from autoscaling configmap")
+		klog.Fatalf("Failed to get information of autoscaling configmap: %v", err)
+	}
+	for k, v := range configmaps.Data {
+		if k == "max_node_group_size" {
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				klog.Fatalf("Failed to convert string to integer: %v", err)
+			}
+			maxSizeNodeGroup = value
+		}
+	}
 	return maxSizeNodeGroup
+}
+
+// Get access token of FPTCloud
+func GetAccessToken(kubeclient kube_client.Interface) string {
+	var accessToken string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "access_token" {
+			accessToken = string(v)
+		}
+	}
+	return accessToken
+}
+
+// Get vpc_id of customer
+func GetVPCId(kubeclient kube_client.Interface) string {
+	var vpcID string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "vpc_id" {
+			vpcID = string(v)
+		}
+	}
+	return vpcID
 }
 
 // FilterOutNodes filters out nodesToFilterOut from nodes
@@ -106,4 +166,20 @@ func sanitizeProjectedVolumesAndMounts(podSpec apiv1.PodSpec) apiv1.PodSpec {
 		podSpec.Containers[i].VolumeMounts = volumeMounts
 	}
 	return podSpec
+}
+
+// Get cluster_id of K8S cluster
+func GetClusterID(kubeclient kube_client.Interface) string {
+	var clusterID string
+	secret, err := kubeclient.CoreV1().Secrets("kube-system").Get(ctx.Background(), "fke-secret", metav1.GetOptions{})
+	if err != nil {
+		fmt.Println("cannot get information from fke secret")
+		klog.Fatalf("Failed to get information of fke secret: %v", err)
+	}
+	for k, v := range secret.Data {
+		if k == "cluster_id" {
+			clusterID = string(v)
+		}
+	}
+	return clusterID
 }

@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	kube_client "k8s.io/client-go/kubernetes"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -213,7 +214,7 @@ func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, schedu
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
-func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) RunOnce(currentTime time.Time, kubeclient kube_client.Interface, vpcID string, accessToken string) errors.AutoscalerError {
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
 	a.clusterStateRegistry.PeriodicCleanup()
@@ -483,15 +484,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		fmt.Println(pod.Name)
 	}
 	fmt.Println()
-	fmt.Println("Max node total is: ", a.MaxNodesTotal)
-	fmt.Println("Max node total is: ", core_utils.GetMaxSizeNodeGroup())
+	fmt.Println("Max node total is: ", core_utils.GetMaxSizeNodeGroup(kubeclient))
+	fmt.Println("Min node total is: ", core_utils.GetMinSizeNodeGroup(kubeclient))
+	fmt.Println("Access Token FPTCloud is: ", core_utils.GetAccessToken(kubeclient))
+	fmt.Println("VPC ID of customer is: ", core_utils.GetVPCId(kubeclient))
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		klog.V(1).Info("No unschedulable pods")
 
 		fmt.Println("No need Scale up")
 
-	} else if core_utils.GetMaxSizeNodeGroup() > 0 && len(readyNodes) >= core_utils.GetMaxSizeNodeGroup() {
+	} else if core_utils.GetMaxSizeNodeGroup(kubeclient) > 0 && len(readyNodes) >= core_utils.GetMaxSizeNodeGroup(kubeclient) {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
@@ -511,7 +514,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		fmt.Println("Start to scale up")
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, a.ignoredTaints)
+		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, a.ignoredTaints, kubeclient, accessToken, vpcID)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
@@ -583,7 +586,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			fmt.Println("GetScaleDownCandidates")
 
 			scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
-				autoscalingContext, allNodes)
+				autoscalingContext, allNodes, kubeclient)
 			fmt.Println()
 			fmt.Println("ScaleDownCandidates are:")
 			for _, node := range scaleDownCandidates {
@@ -609,7 +612,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		// We use scheduledPods (not originalScheduledPods) here, so artificial scheduled pods introduced by processors
 		// (e.g unscheduled pods with nominated node name) can block scaledown of given node.
-		if typedErr := scaleDown.UpdateUnneededNodes(podDestinations, scaleDownCandidates, currentTime, pdbs); typedErr != nil {
+		if typedErr := scaleDown.UpdateUnneededNodes(podDestinations, scaleDownCandidates, currentTime, pdbs, kubeclient); typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
@@ -664,7 +667,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(currentTime, pdbs)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(currentTime, pdbs, kubeclient, accessToken, vpcID)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 			metrics.UpdateUnremovableNodesCount(scaleDown.getUnremovableNodesCount())
 

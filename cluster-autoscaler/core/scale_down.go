@@ -17,10 +17,16 @@ limitations under the License.
 package core
 
 import (
+	"bytes"
 	ctx "context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"log"
 	"math"
+	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -456,6 +462,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	scaleDownCandidates []*apiv1.Node,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
+	kubeclient kube_client.Interface,
 ) errors.AutoscalerError {
 
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
@@ -523,7 +530,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
-		if (scaleDownCadidatesWorker - len(currentlyUnneededNodeNames)) <= utils.GetMinSizeNodeGroup() {
+		if (scaleDownCadidatesWorker - len(currentlyUnneededNodeNames)) <= utils.GetMinSizeNodeGroup(kubeclient) {
 			continue
 		}
 
@@ -823,6 +830,9 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 func (sd *ScaleDown) TryToScaleDown(
 	currentTime time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
+	kubeclient kube_client.Interface,
+	accessToken string,
+	vpcID string,
 ) (*status.ScaleDownStatus, errors.AutoscalerError) {
 
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
@@ -934,7 +944,7 @@ func (sd *ScaleDown) TryToScaleDown(
 		}
 
 		//size := utils.GetNodeGroupSize()
-		minSize := utils.GetMinSizeNodeGroup()
+		minSize := utils.GetMinSizeNodeGroup(kubeclient)
 		if (len(nodesWithoutMasterNames) - len(candidateNames)) <= minSize {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			fmt.Println("Skipping", node.Name, "node group min size reached")
@@ -1061,6 +1071,7 @@ func (sd *ScaleDown) TryToScaleDown(
 	//sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(true)
 	fmt.Println("scaling down ", len(nodesToRemove), " node")
 	fmt.Println("Wait for running in AWX successfully")
+	performScaleDown(vpcID, accessToken, len(nodesToRemove))
 	time.Sleep(2 * time.Minute)
 
 	//go func() {
@@ -1536,4 +1547,29 @@ func filterOutMasters(nodeInfos []*schedulerframework.NodeInfo) []*apiv1.Node {
 		}
 	}
 	return result
+}
+
+func performScaleDown(vpcID string, token string, workerCount int) {
+	url := "https://console-api-pilot.fptcloud.com/api/v1/vmware/vpc/" + vpcID + "/cluster/170e9b09-c459-42e1-a0e2-adb377f25f7b/scale-cluster"
+	postBody, _ := json.Marshal(map[string]string{
+		"cluster_id":   "170e9b09-c459-42e1-a0e2-adb377f25f7b",
+		"scale_type":   "up",
+		"worker_count": strconv.Itoa(workerCount),
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	var bearer = "Bearer " + token
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", url, responseBody)
+	req.Header.Add("Authorization", bearer)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+	log.Println(resp)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the response bytes:", err)
+	}
+	log.Println(string([]byte(body)))
 }

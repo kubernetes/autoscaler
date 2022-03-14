@@ -52,7 +52,7 @@ type Autoscaler interface {
 	// Start starts components running in background.
 	Start() error
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time) errors.AutoscalerError
+	RunOnce(currentTime time.Time, kubeclient kube_client.Interface, vpcID string, accessToken string) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
 }

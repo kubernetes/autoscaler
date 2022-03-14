@@ -18,7 +18,9 @@ package nodes
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	kube_client "k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
+	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
@@ -40,10 +42,15 @@ func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(ctx *co
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and
 func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext,
-	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+	nodes []*apiv1.Node, kubeclient kube_client.Interface) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSize()
+	var numberWorkerNode int = 0
+	for _, node := range nodes {
+		if strings.Contains(node.Name, "worker") {
+			numberWorkerNode += 1
+		}
+	}
 
 	for _, node := range nodes {
 		//nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
@@ -55,12 +62,12 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 		//	klog.V(4).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
 		//	continue
 		//}
-		size := nodeGroupSize
+		size := numberWorkerNode
 		//if !found {
 		//	klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
 		//	continue
 		//}
-		if size <= utils.GetMinSizeNodeGroup() {
+		if size <= utils.GetMinSizeNodeGroup(kubeclient) {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			continue
 		}
