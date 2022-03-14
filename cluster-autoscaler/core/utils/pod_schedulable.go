@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // PodSchedulableInfo data structure is used to avoid running predicates #pending_pods * #nodes
@@ -86,7 +87,7 @@ func (p PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool)
 // Set sets scheduling info for given pod in PodSchedulableMap
 func (p PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateError) {
 	ref := drain.ControllerRef(pod)
-	if ref == nil {
+	if ref == nil || pod_utils.IsDaemonSetPod(pod) {
 		return
 	}
 	uid := string(ref.UID)

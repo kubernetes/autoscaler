@@ -23,6 +23,7 @@ import (
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -153,4 +154,21 @@ func TestPodSchedulableMapSizeLimiting(t *testing.T) {
 		}
 	}
 	assert.Equal(t, 1, pMap.OverflowingControllerCount())
+}
+
+func TestPodSchedulableMapIgnoreDaemonSets(t *testing.T) {
+	ds := appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ds",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/daemonsets/ds",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pMap := NewPodSchedulableMap()
+	pod := BuildTestPod("pod", 3000, 200000)
+	pod.OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
+	pMap.Set(pod, nil)
+	_, found := pMap.Get(pod)
+	assert.False(t, found)
 }
