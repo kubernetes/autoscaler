@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -40,11 +40,6 @@ import re
 import subprocess
 import sys
 import time
-
-try:
-  range = xrange   # Python 2
-except NameError:  # Python 3
-  pass
 
 
 InstanceInfo = collections.namedtuple("InstanceInfo", 'name ip')
