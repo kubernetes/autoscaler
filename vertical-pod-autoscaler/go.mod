@@ -3,19 +3,16 @@ module k8s.io/autoscaler/vertical-pod-autoscaler
 go 1.16
 
 require (
-	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/golang/mock v1.3.1
-	github.com/prometheus/client_golang v1.0.0
-	github.com/prometheus/common v0.4.1
-	github.com/prometheus/procfs v0.0.5 // indirect
-	github.com/stretchr/testify v1.4.0
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
-	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	k8s.io/api v0.18.3
-	k8s.io/apimachinery v0.18.3
-	k8s.io/client-go v0.18.3
-	k8s.io/component-base v0.18.3
-	k8s.io/klog/v2 v2.9.0
-	k8s.io/metrics v0.18.3
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
+	github.com/golang/mock v1.6.0
+	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/common v0.32.1
+	github.com/stretchr/testify v1.7.0
+	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
+	k8s.io/client-go v0.23.4
+	k8s.io/component-base v0.23.4
+	k8s.io/klog/v2 v2.40.1
+	k8s.io/metrics v0.23.4
+	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 )

@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // APIGroupResources is an API group with a mapping of versions to
@@ -205,7 +205,7 @@ func (d *DeferredDiscoveryRESTMapper) getDelegate() (meta.RESTMapper, error) {
 	}
 
 	d.delegate = NewDiscoveryRESTMapper(groupResources)
-	return d.delegate, err
+	return d.delegate, nil
 }
 
 // Reset resets the internally cached Discovery information and will
@@ -335,4 +335,4 @@ func (d *DeferredDiscoveryRESTMapper) String() string {
 }
 
 // Make sure it satisfies the interface
-var _ meta.RESTMapper = &DeferredDiscoveryRESTMapper{}
+var _ meta.ResettableRESTMapper = &DeferredDiscoveryRESTMapper{}
