@@ -354,8 +354,8 @@ func GetIDCluster(vpcID string, accessToken string, clusterID string) string {
 		log.Fatalln(err)
 	}
 
-	data_body := []byte(body)
-	error := json.Unmarshal(data_body, &k8sCluster)
+	dataBody := []byte(body)
+	error := json.Unmarshal(dataBody, &k8sCluster)
 	if error != nil {
 		// if error is not nil
 		// print error

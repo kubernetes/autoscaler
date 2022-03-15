@@ -359,7 +359,7 @@ func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Nod
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod,
-	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, kubeclient kube_client.Interface, accessToken string, vpcID string) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, kubeclient kube_client.Interface, accessToken string, vpcID string, idCluster string, clusterIDPortal string) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -507,7 +507,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	fmt.Println("scaling up ", numberNodeScaleUp, " node")
 	fmt.Println("waiting for job running in AWX successfully")
-	performScaleUp(vpcID, accessToken, numberNodeScaleUp)
+	performScaleUp(vpcID, accessToken, numberNodeScaleUp, idCluster, clusterIDPortal)
 	time.Sleep(2 * time.Minute)
 	//if len(expansionOptions) == 0 {
 	//	klog.V(1).Info("No expansion options")
@@ -840,6 +840,7 @@ func performScaleUp(vpcID string, accessToken string, workerCount int, idCluster
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", url, responseBody)
 	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
@@ -851,4 +852,7 @@ func performScaleUp(vpcID string, accessToken string, workerCount int, idCluster
 		log.Println("Error while reading the response bytes:", err)
 	}
 	log.Println(string([]byte(body)))
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	fmt.Println("response Body:", string(body))
 }
