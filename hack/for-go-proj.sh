@@ -45,6 +45,8 @@ for project_name in ${PROJECT_NAMES[*]}; do
   (
     if [[ $project_name == cluster-autoscaler ]];then
       export GO111MODULE=off
+    else
+      export GO111MODULE=auto
     fi
 
     project=${CONTRIB_ROOT}/${project_name}
