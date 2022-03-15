@@ -1,13 +1,13 @@
-ALL_ARCH = amd64 arm64
+ALL_ARCH = amd64
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-TAG?=dev
+TAG?=dev-0.1
 FLAGS=
 LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=registry.hub.docker.com
+REGISTRY?=docker.io
 DOCKER_NETWORK?=default
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
@@ -46,11 +46,11 @@ make-image: make-image-arch-$(GOARCH)
 make-image-arch-%:
 ifdef BASEIMAGE
 	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
-		-t ${IMAGE}-$*:${TAG} \
+		-t ${IMAGE}:${TAG} \
 		-f Dockerfile.$* .
 else
 	docker build --pull \
-		-t ${IMAGE}-$*:${TAG} \
+		-t ${IMAGE}:${TAG} \
 		-f Dockerfile.$* .
 endif
 	@echo "Image ${TAG}-$* completed"
@@ -58,7 +58,7 @@ endif
 push-image: push-image-arch-$(GOARCH)
 
 push-image-arch-%:
-	./push_image.sh ${IMAGE}-$*:${TAG}
+	./push_image.sh ${IMAGE}:${TAG}
 
 push-manifest:
 	docker manifest create ${IMAGE}:${TAG} \

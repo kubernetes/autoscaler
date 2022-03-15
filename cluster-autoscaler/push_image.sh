@@ -21,7 +21,7 @@ if [ -z $IMAGE_TO_PUSH ]; then
 fi
 
 docker_push_cmd=("docker")
-if [[ "${IMAGE_TO_PUSH}" == "registry.hub.docker.com/"* ]] ; then
+if [[ "${IMAGE_TO_PUSH}" == "docker.io/"* ]] ; then
     docker_push_cmd=("docker" "--")
 fi
 
