@@ -508,7 +508,15 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	fmt.Println("scaling up ", numberNodeScaleUp, " node")
 	fmt.Println("waiting for job running in AWX successfully")
 	performScaleUp(vpcID, accessToken, numberNodeScaleUp, idCluster, clusterIDPortal)
-	time.Sleep(2 * time.Minute)
+	for {
+		time.Sleep(30 * time.Second)
+		isSucceededStatus := utils.CheckStatusCluster(vpcID, accessToken, clusterIDPortal)
+		fmt.Println("status cluster is SCALING")
+		if isSucceededStatus == true {
+			fmt.Println("status cluster is SUCCEEDED")
+			break
+		}
+	}
 	//if len(expansionOptions) == 0 {
 	//	klog.V(1).Info("No expansion options")
 	//	return &status.ScaleUpStatus{

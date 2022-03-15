@@ -7,16 +7,12 @@ LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=staging-k8s.gcr.io
+REGISTRY?=registry.hub.docker.com
 DOCKER_NETWORK?=default
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
-  PROVIDER=-${BUILD_TAGS}
-  FOR_PROVIDER=" for ${BUILD_TAGS}"
 else
   TAGS_FLAG=
-  PROVIDER=
-  FOR_PROVIDER=
 endif
 ifdef LDFLAGS
   LDFLAGS_FLAG=--ldflags "${LDFLAGS}"
@@ -28,7 +24,7 @@ ifdef DOCKER_RM
 else
   RM_FLAG=
 endif
-IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
+IMAGE=$(REGISTRY)/phongvu0403/cluster-autoscaler
 
 export DOCKER_CLI_EXPERIMENTAL := enabled
 
@@ -57,7 +53,7 @@ else
 		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile.$* .
 endif
-	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
+	@echo "Image ${TAG}-$* completed"
 
 push-image: push-image-arch-$(GOARCH)
 
@@ -69,8 +65,8 @@ push-manifest:
 	    $(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER)-, $(addsuffix :$(TAG), $(ALL_ARCH)))
 	docker manifest push --purge ${IMAGE}:${TAG}
 
-execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-image-arch-,$(ALL_ARCH)) push-manifest
-	@echo "Release ${TAG}${FOR_PROVIDER} completed"
+execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-image-arch-,$(ALL_ARCH))
+	@echo "Release ${TAG} completed"
 
 clean: clean-arch-$(GOARCH)
 

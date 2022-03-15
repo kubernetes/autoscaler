@@ -1073,8 +1073,18 @@ func (sd *ScaleDown) TryToScaleDown(
 	//sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(true)
 	fmt.Println("scaling down ", len(nodesToRemove), " node")
 	fmt.Println("Wait for running in AWX successfully")
-	performScaleDown(vpcID, accessToken, len(nodesToRemove), idCluster, clusterIDPortal)
-	time.Sleep(2 * time.Minute)
+	fmt.Println("vpcID is: ", vpcID)
+	fmt.Println("access token is: ", accessToken)
+	performScaleDown(vpcID, accessToken, 1, idCluster, clusterIDPortal)
+	for {
+		time.Sleep(30 * time.Second)
+		isSucceededStatus := utils.CheckStatusCluster(vpcID, accessToken, clusterIDPortal)
+		fmt.Println("status cluster is SCALING")
+		if isSucceededStatus == true {
+			fmt.Println("status cluster is SUCCEEDED")
+			break
+		}
+	}
 
 	//go func() {
 	//	//// Finishing the delete process once this goroutine is over.

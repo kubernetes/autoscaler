@@ -374,3 +374,46 @@ func GetIDCluster(vpcID string, accessToken string, clusterID string) string {
 	fmt.Println("ID is: ", id)
 	return id
 }
+
+func CheckStatusCluster(vpcID string, accessToken string, clusterID string) bool {
+	var isSucceeded bool = false
+	var k8sCluster Cluster
+	url := "https://console-api-pilot.fptcloud.com/api/v1/vmware/vpc/" + vpcID + "/kubernetes?page=1&page_size=25"
+	token := accessToken
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer "+token)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(resp)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dataBody := []byte(body)
+	error := json.Unmarshal(dataBody, &k8sCluster)
+	if error != nil {
+		// if error is not nil
+		// print error
+		fmt.Println(error)
+	}
+
+	//fmt.Println(k8sCluster.Data[0])
+	for _, cluster := range k8sCluster.Data {
+		//fmt.Println(cluster)
+		if cluster.ClusterID == clusterID {
+			if cluster.Status == "SCALING" {
+				isSucceeded = false
+			} else if cluster.Status == "SUCCEEDED" {
+				isSucceeded = true
+			}
+		}
+	}
+
+	defer resp.Body.Close()
+	fmt.Println("isSucceed is: ", isSucceeded)
+	return isSucceeded
+}

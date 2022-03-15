@@ -382,7 +382,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				metrics.UpdateLastTime(metrics.Main, loopStart)
 				healthCheck.UpdateLastActivity(loopStart)
 
-				err := autoscaler.RunOnce(loopStart, kubeclient, accessToken, vpcID, idCluster, clusterIDPortal)
+				err := autoscaler.RunOnce(loopStart, kubeclient, vpcID, accessToken, idCluster, clusterIDPortal)
 				if err != nil && err.Type() != errors.TransientError {
 					metrics.RegisterError(err)
 				} else {
