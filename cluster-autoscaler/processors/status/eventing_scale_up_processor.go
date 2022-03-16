@@ -39,8 +39,8 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-				fmt.Sprintf("pod didn't trigger scale-up: %s", ReasonsMessage(noScaleUpInfo)))
-
+				fmt.Sprintf("pod didn't trigger scale-up: %s",
+					ReasonsMessage(noScaleUpInfo)))
 		}
 	} else {
 		klog.V(4).Infof("Skipping event processing for unschedulable pods since there is a" +
@@ -62,25 +62,25 @@ func (p *EventingScaleUpStatusProcessor) CleanUp() {
 func ReasonsMessage(noScaleUpInfo NoScaleUpInfo) string {
 	messages := []string{}
 	aggregated := map[string]int{}
-	//for nodeGroupId, reasons := range noScaleUpInfo.RejectedNodeGroups {
-	//	if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
-	//		continue
-	//	}
-	//
-	//	for _, reason := range reasons.Reasons() {
-	//		aggregated[reason]++
-	//	}
-	//}
+	for _, reasons := range noScaleUpInfo.RejectedNodeGroups {
+		//if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+		//	continue
+		//}
 
-	//for nodeGroupId, reasons := range noScaleUpInfo.SkippedNodeGroups {
-	//	if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
-	//		continue
-	//	}
-	//
-	//	for _, reason := range reasons.Reasons() {
-	//		aggregated[reason]++
-	//	}
-	//}
+		for _, reason := range reasons.Reasons() {
+			aggregated[reason]++
+		}
+	}
+
+	for _, reasons := range noScaleUpInfo.SkippedNodeGroups {
+		//if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+		//	continue
+		//}
+
+		for _, reason := range reasons.Reasons() {
+			aggregated[reason]++
+		}
+	}
 
 	for msg, count := range aggregated {
 		messages = append(messages, fmt.Sprintf("%d %s", count, msg))

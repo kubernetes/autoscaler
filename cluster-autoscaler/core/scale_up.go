@@ -18,28 +18,29 @@ package core
 
 import (
 	"bytes"
+	ctx "context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	kube_client "k8s.io/client-go/kubernetes"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -317,7 +318,7 @@ func maxResourceLimitReached(resources []string) *skippedReasons {
 //}
 
 // Calculate new node need to be scaled up
-func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node) int {
+func CalculateNewNodeScaledUp(kubeclient kube_client.Interface, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node) int {
 	podEquivalenceGroups := buildPodEquivalenceGroups(unschedulablePods)
 	skippedNodeGroups := map[string]status.Reasons{}
 	podsRemainUnschedulable := getRemainingPods(podEquivalenceGroups, skippedNodeGroups)
@@ -325,13 +326,19 @@ func CalculateNewNodeScaledUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Nod
 	var totalMemoryRequest int64 = 0
 	var numberNodeScaledUpFloat float64 = 0.0
 	for _, pod := range podsRemainUnschedulable {
-		for _, container := range pod.Pod.Spec.Containers {
-			//fmt.Println(container.Resources.Requests.Cpu().MilliValue())
-			//fmt.Println(container.Resources.Requests.Memory().MilliValue())
-			totalCPUrequest += container.Resources.Requests.Cpu().MilliValue()
-			totalMemoryRequest += container.Resources.Requests.Memory().MilliValue()
+		events, _ := kubeclient.CoreV1().Events(pod.Pod.Namespace).List(ctx.TODO(), metav1.ListOptions{FieldSelector: "involvedObject.name=" + pod.Pod.Name, TypeMeta: metav1.TypeMeta{Kind: "Pod"}})
+		fmt.Println("first event of ", pod.Pod.Name, " is: ", events.Items[0].Message)
+
+		if strings.Contains(events.Items[0].Message, "Insufficient") == false {
+			continue
+		} else {
+			for _, container := range pod.Pod.Spec.Containers {
+				totalCPUrequest += container.Resources.Requests.Cpu().MilliValue()
+				totalMemoryRequest += container.Resources.Requests.Memory().MilliValue()
+			}
 		}
 	}
+
 	fmt.Println("total CPU Pod request: ", totalCPUrequest)
 	fmt.Println("total Memory Pod request: ", totalMemoryRequest)
 	var cpus int64
@@ -495,7 +502,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	fmt.Println()
 	fmt.Println("Number of worker node: ", numberWorkerNode)
-	numberNodeScaleUp := CalculateNewNodeScaledUp(unschedulablePods, nodes)
+	numberNodeScaleUp := CalculateNewNodeScaledUp(kubeclient, unschedulablePods, nodes)
+	if numberNodeScaleUp == 0 {
+		return &status.ScaleUpStatus{
+			Result:                  status.ScaleUpNotNeeded,
+			PodsRemainUnschedulable: getRemainingPods(podEquivalenceGroups, skippedNodeGroups),
+			//ConsideredNodeGroups:    nodeGroups,
+		}, nil
+	}
 	if (numberWorkerNode + numberNodeScaleUp) > utils.GetMaxSizeNodeGroup(kubeclient) {
 		klog.V(4).Infof("Skipping node group - max size reached")
 		fmt.Println("scaling up cannot perform because max node group size reached")
@@ -507,16 +521,17 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	fmt.Println("scaling up ", numberNodeScaleUp, " node")
 	fmt.Println("waiting for job running in AWX successfully")
-	performScaleUp(vpcID, accessToken, numberNodeScaleUp, idCluster, clusterIDPortal)
-	for {
-		time.Sleep(30 * time.Second)
-		isSucceededStatus := utils.CheckStatusCluster(vpcID, accessToken, clusterIDPortal)
-		fmt.Println("status cluster is SCALING")
-		if isSucceededStatus == true {
-			fmt.Println("status cluster is SUCCEEDED")
-			break
-		}
-	}
+	//performScaleUp(vpcID, accessToken, numberNodeScaleUp, idCluster, clusterIDPortal)
+	//for {
+	//	time.Sleep(30 * time.Second)
+	//	isSucceededStatus := utils.CheckStatusCluster(vpcID, accessToken, clusterIDPortal)
+	//	fmt.Println("status cluster is SCALING")
+	//	if isSucceededStatus == true {
+	//		fmt.Println("status cluster is SUCCEEDED")
+	//		break
+	//	}
+	//}
+	time.Sleep(3 * time.Minute)
 	//if len(expansionOptions) == 0 {
 	//	klog.V(1).Info("No expansion options")
 	//	return &status.ScaleUpStatus{
