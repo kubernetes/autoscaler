@@ -17,11 +17,13 @@ limitations under the License.
 package utils
 
 import (
+	"fmt"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -47,7 +49,7 @@ func TestPodSchedulableMap(t *testing.T) {
 		},
 	}
 
-	pMap := make(PodSchedulableMap)
+	pMap := NewPodSchedulableMap()
 
 	podInRc1_1 := BuildTestPod("podInRc1_1", 500, 1000)
 	podInRc1_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
@@ -119,4 +121,54 @@ func TestPodSchedulableMap(t *testing.T) {
 	err, found = pMap.Get(podInRc1_1)
 	assert.True(t, found)
 	assert.Nil(t, err)
+}
+
+func TestPodSchedulableMapSizeLimiting(t *testing.T) {
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pMap := NewPodSchedulableMap()
+	pods := make([]*apiv1.Pod, 0, maxPodsPerOwnerRef+1)
+	for i := 0; i < maxPodsPerOwnerRef+1; i += 1 {
+		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
+		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
+		p.Labels = map[string]string{"uniqueLabel": fmt.Sprintf("l%d", i)}
+		pods = append(pods, p)
+		_, found := pMap.Get(p)
+		assert.False(t, found)
+	}
+	for _, p := range pods {
+		pMap.Set(p, nil)
+	}
+	for i, p := range pods {
+		_, found := pMap.Get(p)
+		if i != len(pods)-1 {
+			assert.True(t, found)
+		} else {
+			assert.False(t, found)
+		}
+	}
+	assert.Equal(t, 1, pMap.OverflowingControllerCount())
+}
+
+func TestPodSchedulableMapIgnoreDaemonSets(t *testing.T) {
+	ds := appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ds",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/daemonsets/ds",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pMap := NewPodSchedulableMap()
+	pod := BuildTestPod("pod", 3000, 200000)
+	pod.OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
+	pMap.Set(pod, nil)
+	_, found := pMap.Get(pod)
+	assert.False(t, found)
 }
