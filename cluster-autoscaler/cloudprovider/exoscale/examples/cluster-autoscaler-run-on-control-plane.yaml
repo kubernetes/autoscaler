@@ -143,11 +143,10 @@ spec:
           operator: "Equal"
           value: "true"
           key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
       containers:
-        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:latest
-          name: cluster-autoscaler
+        - name: cluster-autoscaler
+          image: exoscale/cluster-autoscaler:latest
+          imagePullPolicy: "Always"
           resources:
             limits:
               cpu: 100m
@@ -156,40 +155,30 @@ spec:
               cpu: 100m
               memory: 300Mi
           command:
-            - ./cluster-autoscaler
+            - /cluster-autoscaler
             - --cloud-provider=exoscale
             - --stderrthreshold=info
-            #- --scale-down-delay-after-add=1m # For development
-            #- --scale-down-unneeded-time=1m # For development
-            #- --unremovable-node-recheck-timeout=1m # For development
+            #- --scale-down-delay-after-add=30s
+            #- --scale-down-unneeded-time=30s
+            #- --unremovable-node-recheck-timeout=30s
           env:
           - name: EXOSCALE_API_KEY
             valueFrom:
               secretKeyRef:
                 key: api-key
-                name: exoscale-credentials
+                name: exoscale-api-credentials
           - name: EXOSCALE_API_SECRET
             valueFrom:
               secretKeyRef:
                 key: api-secret
-                name: exoscale-credentials
-          - name: EXOSCALE_API_ENDPOINT
-            valueFrom:
-              secretKeyRef:
-                key: api-endpoint
-                name: exoscale-credentials
+                name: exoscale-api-credentials
+          - name: EXOSCALE_ZONE
+            value: de-fra-1 # Change this to match your actual Kubernetes cluster zone
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
-            - name: cloud-config
-              mountPath: /config
-              readOnly: true
-          imagePullPolicy: "Always"
       volumes:
         - name: ssl-certs
           hostPath:
             path: "/etc/ssl/certs/ca-certificates.crt"
-        - name: cloud-config
-          secret:
-            secretName: cluster-autoscaler-cloud-config

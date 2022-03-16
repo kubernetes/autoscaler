@@ -1,7 +1,7 @@
 # Cluster Autoscaler for Exoscale
 
 The Cluster Autoscaler (CA) for Exoscale scales worker nodes running in
-Exoscale Instance Pools.
+Exoscale SKS Nodepools or Instance Pools.
 
 
 ## Configuration
@@ -20,7 +20,8 @@ the CA *Deployment*.
 
 First, start by exporting the Exoscale API credentials (we recommend that you
 create dedicated API credentials using the [Exoscale IAM][exo-iam] service) to
-provide to the CA in your shell:
+provide to the CA in your shell, as well as the zone the target Kubernetes
+cluster is located in:
 
 ```sh
 export EXOSCALE_API_KEY="EXOxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -33,12 +34,16 @@ Next, run the following command from the same shell:
 ./examples/generate-secret.sh
 ```
 
-Finally, ensure that the `exoscale-secret` *Secret* has been created
+Next, ensure that the `exoscale-api-credentials` *Secret* has been created
 successfully by running the following command:
 
 ```
-kubectl get secret --namespace kube-system exoscale-credentials
+kubectl get secret --namespace kube-system exoscale-api-credentials
 ```
+
+Finally, a `EXOSCALE_ZONE` variable must be set to the target Kubernetes
+cluster zone along with the API credentials in the CA *Deployment* shell
+environment.
 
 
 ### Deploying the Cluster Autoscaler

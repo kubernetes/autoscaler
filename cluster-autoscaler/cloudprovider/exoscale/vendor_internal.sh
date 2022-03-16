@@ -6,7 +6,7 @@
 # The following modules have been vendored manually and are not managed
 # by this script:
 #   - github.com/gofrs/uuid
-#   - github.com/deepmap/oapi-codegen/{runtime,types}
+#   - github.com/deepmap/oapi-codegen
 #   - k8s.io/klog
 
 if [[ $# -ne 1 ]]; then 
@@ -17,8 +17,8 @@ fi
 EGOSCALE_DIR=$(readlink -f "$1")
 
 rm -rf ./internal/github.com/exoscale/egoscale/*
-cp -rf $EGOSCALE_DIR/* ./internal/github.com/exoscale/egoscale/
-rm -rf ./internal/github.com/exoscale/egoscale/{*_test.go,doc.go,api/v2/*_test.go,internal/v2/*_test.go,internal/v2/mock.go,go.*,gopher.png,*.md,admin,cmd,generate,test,website}
+cp -rf $EGOSCALE_DIR/{v2,version} ./internal/github.com/exoscale/egoscale/
+rm -rf ./internal/github.com/exoscale/egoscale/v2/{*_test.go,doc.go,*_test.go,api/*_test.go,oapi/*_test.go,oapi/test.go,oapi/mock.go}
 
 find ./internal -name '*.go' | while read f; do
     sed -i -r \
@@ -30,7 +30,7 @@ find ./internal -name '*.go' | while read f; do
         "$f"
     cat <<EOF > "$f.tmp"
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
