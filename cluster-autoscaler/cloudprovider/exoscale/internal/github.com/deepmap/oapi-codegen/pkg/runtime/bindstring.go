@@ -1,5 +1,21 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -92,8 +108,12 @@ func BindStringToObject(src string, dst interface{}) error {
 			v.SetBool(val)
 		}
 	case reflect.Struct:
-		switch dstType := dst.(type) {
-		case *time.Time:
+		// if this is not of type Time or of type Date look to see if this is of type Binder.
+		if dstType, ok := dst.(Binder); ok {
+			return dstType.Bind(src)
+		}
+
+		if t.ConvertibleTo(reflect.TypeOf(time.Time{})) {
 			// Don't fail on empty string.
 			if src == "" {
 				return nil
@@ -106,9 +126,20 @@ func BindStringToObject(src string, dst interface{}) error {
 					return fmt.Errorf("error parsing '%s' as RFC3339 or 2006-01-02 time: %s", src, err)
 				}
 			}
-			*dstType = parsedTime
+			// So, assigning this gets a little fun. We have a value to the
+			// dereference destination. We can't do a conversion to
+			// time.Time because the result isn't assignable, so we need to
+			// convert pointers.
+			if t != reflect.TypeOf(time.Time{}) {
+				vPtr := v.Addr()
+				vtPtr := vPtr.Convert(reflect.TypeOf(&time.Time{}))
+				v = reflect.Indirect(vtPtr)
+			}
+			v.Set(reflect.ValueOf(parsedTime))
 			return nil
-		case *types.Date:
+		}
+
+		if t.ConvertibleTo(reflect.TypeOf(types.Date{})) {
 			// Don't fail on empty string.
 			if src == "" {
 				return nil
@@ -117,9 +148,21 @@ func BindStringToObject(src string, dst interface{}) error {
 			if err != nil {
 				return fmt.Errorf("error parsing '%s' as date: %s", src, err)
 			}
-			dstType.Time = parsedTime
+			parsedDate := types.Date{Time: parsedTime}
+
+			// We have to do the same dance here to assign, just like with times
+			// above.
+			if t != reflect.TypeOf(types.Date{}) {
+				vPtr := v.Addr()
+				vtPtr := vPtr.Convert(reflect.TypeOf(&types.Date{}))
+				v = reflect.Indirect(vtPtr)
+			}
+			v.Set(reflect.ValueOf(parsedDate))
 			return nil
 		}
+
+		// We fall through to the error case below if we haven't handled the
+		// destination type above.
 		fallthrough
 	default:
 		// We've got a bunch of types unimplemented, don't fail silently.
