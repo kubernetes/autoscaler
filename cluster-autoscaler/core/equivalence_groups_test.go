@@ -22,6 +22,7 @@ import (
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -137,4 +138,49 @@ func TestGroupSchedulablePodsForNode(t *testing.T) {
 	for _, w := range wantedGroups {
 		assert.True(t, w.found, fmt.Errorf("Expected pod group: %+v", w))
 	}
+}
+
+func TestEquivalenceGroupSizeLimiting(t *testing.T) {
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/replicationcontrollers/rc",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pods := make([]*apiv1.Pod, 0, maxEquivalenceGroupsByController+1)
+	for i := 0; i < maxEquivalenceGroupsByController+1; i += 1 {
+		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
+		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
+		label := fmt.Sprintf("l%d", i)
+		if i > maxEquivalenceGroupsByController {
+			label = fmt.Sprintf("l%d", maxEquivalenceGroupsByController)
+		}
+		p.Labels = map[string]string{"uniqueLabel": label}
+		pods = append(pods, p)
+	}
+	podGroups := groupPodsBySchedulingProperties(pods)
+	assert.Equal(t, len(pods), len(podGroups))
+	for i := range podGroups {
+		assert.Equal(t, 1, len(podGroups[i]))
+	}
+}
+
+func TestEquivalenceGroupIgnoresDaemonSets(t *testing.T) {
+	ds := appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ds",
+			Namespace: "default",
+			SelfLink:  "api/v1/namespaces/default/daemonsets/ds",
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+	pods := make([]*apiv1.Pod, 2)
+	pods[0] = BuildTestPod("p1", 3000, 200000)
+	pods[0].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
+	pods[1] = BuildTestPod("p2", 3000, 200000)
+	pods[1].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
+	podGroups := groupPodsBySchedulingProperties(pods)
+	assert.Equal(t, 2, len(podGroups))
 }

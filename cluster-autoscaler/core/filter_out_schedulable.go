@@ -100,7 +100,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 	unschedulableCandidates []*apiv1.Pod,
 	clusterSnapshot simulator.ClusterSnapshot,
 	predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
-	unschedulablePodsCache := make(utils.PodSchedulableMap)
+	unschedulablePodsCache := utils.NewPodSchedulableMap()
 
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
@@ -172,6 +172,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 			unschedulablePodsCache.Set(pod, nil)
 		}
 	}
+	metrics.UpdateOverflowingControllers(unschedulablePodsCache.OverflowingControllerCount())
 	klog.V(4).Infof("%v pods were kept as unschedulable based on caching", unschedulePodsCacheHitCounter)
 	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
 	return unschedulablePods, nil

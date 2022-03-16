@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 type podEquivalenceGroup struct {
@@ -51,7 +52,10 @@ type equivalenceGroup struct {
 	representant *apiv1.Pod
 }
 
+const maxEquivalenceGroupsByController = 10
+
 // groupPodsBySchedulingProperties groups pods based on scheduling properties. Group ID is meaningless.
+// TODO(x13n): refactor this to have shared logic with PodSchedulableMap.
 func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][]*apiv1.Pod {
 	podEquivalenceGroups := map[equivalenceGroupId][]*apiv1.Pod{}
 	equivalenceGroupsByController := make(map[types.UID][]equivalenceGroup)
@@ -59,31 +63,39 @@ func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][
 	var nextGroupId equivalenceGroupId
 	for _, pod := range pods {
 		controllerRef := drain.ControllerRef(pod)
-		if controllerRef == nil {
+		if controllerRef == nil || pod_utils.IsDaemonSetPod(pod) {
 			podEquivalenceGroups[nextGroupId] = []*apiv1.Pod{pod}
 			nextGroupId++
 			continue
 		}
 
-		matchingFound := false
-		for _, g := range equivalenceGroupsByController[controllerRef.UID] {
-			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && utils.PodSpecSemanticallyEqual(pod.Spec, g.representant.Spec) {
-				matchingFound = true
-				podEquivalenceGroups[g.id] = append(podEquivalenceGroups[g.id], pod)
-				break
-			}
+		egs := equivalenceGroupsByController[controllerRef.UID]
+		if gid := match(egs, pod); gid != nil {
+			podEquivalenceGroups[*gid] = append(podEquivalenceGroups[*gid], pod)
+			continue
 		}
-
-		if !matchingFound {
+		if len(egs) < maxEquivalenceGroupsByController {
+			// Avoid too many different pods per owner reference.
 			newGroup := equivalenceGroup{
 				id:           nextGroupId,
 				representant: pod,
 			}
-			equivalenceGroupsByController[controllerRef.UID] = append(equivalenceGroupsByController[controllerRef.UID], newGroup)
-			podEquivalenceGroups[newGroup.id] = append(podEquivalenceGroups[newGroup.id], pod)
-			nextGroupId++
+			equivalenceGroupsByController[controllerRef.UID] = append(egs, newGroup)
 		}
+		podEquivalenceGroups[nextGroupId] = append(podEquivalenceGroups[nextGroupId], pod)
+		nextGroupId++
 	}
 
 	return podEquivalenceGroups
+}
+
+// match tries to find an equivalence group for a given pod and returns the
+// group id or nil if the group can't be found.
+func match(egs []equivalenceGroup, pod *apiv1.Pod) *equivalenceGroupId {
+	for _, g := range egs {
+		if reflect.DeepEqual(pod.Labels, g.representant.Labels) && utils.PodSpecSemanticallyEqual(pod.Spec, g.representant.Spec) {
+			return &g.id
+		}
+	}
+	return nil
 }
