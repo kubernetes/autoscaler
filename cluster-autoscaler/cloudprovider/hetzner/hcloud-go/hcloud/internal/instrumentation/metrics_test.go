@@ -14,8 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package hcloud is a library for the Hetzner Cloud API.
-package hcloud
+package instrumentation
 
-// Version is the library's version following Semantic Versioning.
-const Version = "1.32.0"
+import "testing"
+
+func Test_preparePath(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want string
+	}{
+		{
+			"simple test",
+			"/v1/volumes/123456",
+			"/volumes/",
+		},
+		{
+			"simple test",
+			"/v1/volumes/123456/actions/attach",
+			"/volumes/actions/attach",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := preparePathForLabel(tt.path); got != tt.want {
+				t.Errorf("preparePathForLabel() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

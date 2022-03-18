@@ -16,7 +16,10 @@ limitations under the License.
 
 package hcloud
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 // ErrorCode represents an error code returned from the API.
 type ErrorCode string
@@ -68,11 +71,12 @@ const (
 	ErrorCodeVolumeAlreadyAttached ErrorCode = "volume_already_attached"   // Volume is already attached to a server, detach first
 
 	// Firewall related error codes
-	ErrorCodeFirewallAlreadyApplied  ErrorCode = "firewall_already_applied"  // Firewall was already applied on resource
-	ErrorCodeFirewallAlreadyRemoved  ErrorCode = "firewall_already_removed"  // Firewall was already removed from the resource
-	ErrorCodeIncompatibleNetworkType ErrorCode = "incompatible_network_type" // The Network type is incompatible for the given resource
-	ErrorCodeResourceInUse           ErrorCode = "resource_in_use"           // Firewall must not be in use to be deleted
-	ErrorCodeServerAlreadyAdded      ErrorCode = "server_already_added"      // Server added more than one time to resource
+	ErrorCodeFirewallAlreadyApplied   ErrorCode = "firewall_already_applied"    // Firewall was already applied on resource
+	ErrorCodeFirewallAlreadyRemoved   ErrorCode = "firewall_already_removed"    // Firewall was already removed from the resource
+	ErrorCodeIncompatibleNetworkType  ErrorCode = "incompatible_network_type"   // The Network type is incompatible for the given resource
+	ErrorCodeResourceInUse            ErrorCode = "resource_in_use"             // Firewall must not be in use to be deleted
+	ErrorCodeServerAlreadyAdded       ErrorCode = "server_already_added"        // Server added more than one time to resource
+	ErrorCodeFirewallResourceNotFound ErrorCode = "firewall_resource_not_found" // Resource a firewall should be attached to / detached from not found
 
 	// Certificate related error codes
 	ErrorCodeCAARecordDoesNotAllowCA                        ErrorCode = "caa_record_does_not_allow_ca"                          // CAA record does not allow certificate authority
@@ -118,4 +122,20 @@ type ErrorDetailsInvalidInputField struct {
 func IsError(err error, code ErrorCode) bool {
 	apiErr, ok := err.(Error)
 	return ok && apiErr.Code == code
+}
+
+type InvalidIPError struct {
+	IP string
+}
+
+func (e InvalidIPError) Error() string {
+	return fmt.Sprintf("could not parse ip address %s", e.IP)
+}
+
+type DNSNotFoundError struct {
+	IP net.IP
+}
+
+func (e DNSNotFoundError) Error() string {
+	return fmt.Sprintf("dns for ip %s not found", e.IP.String())
 }
