@@ -188,6 +188,9 @@ func ServerFromSchema(s schema.Server) *Server {
 	for _, privNet := range s.PrivateNet {
 		server.PrivateNet = append(server.PrivateNet, ServerPrivateNetFromSchema(privNet))
 	}
+	if s.PlacementGroup != nil {
+		server.PlacementGroup = PlacementGroupFromSchema(*s.PlacementGroup)
+	}
 	return server
 }
 
@@ -446,10 +449,12 @@ func LoadBalancerFromSchema(s schema.LoadBalancer) *LoadBalancer {
 		PublicNet: LoadBalancerPublicNet{
 			Enabled: s.PublicNet.Enabled,
 			IPv4: LoadBalancerPublicNetIPv4{
-				IP: net.ParseIP(s.PublicNet.IPv4.IP),
+				IP:     net.ParseIP(s.PublicNet.IPv4.IP),
+				DNSPtr: s.PublicNet.IPv4.DNSPtr,
 			},
 			IPv6: LoadBalancerPublicNetIPv6{
-				IP: net.ParseIP(s.PublicNet.IPv6.IP),
+				IP:     net.ParseIP(s.PublicNet.IPv6.IP),
+				DNSPtr: s.PublicNet.IPv6.DNSPtr,
 			},
 		},
 		Location:         LocationFromSchema(s.Location),
@@ -676,6 +681,22 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 			},
 		},
 	}
+	for _, floatingIPType := range s.FloatingIPs {
+		var pricings []FloatingIPTypeLocationPricing
+		for _, price := range floatingIPType.Prices {
+			p := FloatingIPTypeLocationPricing{
+				Location: &Location{Name: price.Location},
+				Monthly: Price{
+					Currency: s.Currency,
+					VATRate:  s.VATRate,
+					Net:      price.PriceMonthly.Net,
+					Gross:    price.PriceMonthly.Gross,
+				},
+			}
+			pricings = append(pricings, p)
+		}
+		p.FloatingIPs = append(p.FloatingIPs, FloatingIPTypePricing{Type: FloatingIPType(floatingIPType.Type), Pricings: pricings})
+	}
 	for _, serverType := range s.ServerTypes {
 		var pricings []ServerTypeLocationPricing
 		for _, price := range serverType.Prices {
@@ -775,9 +796,34 @@ func FirewallFromSchema(s schema.Firewall) *Firewall {
 			DestinationIPs: destinationIPs,
 			Protocol:       FirewallRuleProtocol(rule.Protocol),
 			Port:           rule.Port,
+			Description:    rule.Description,
 		})
 	}
 	return f
+}
+
+// PlacementGroupFromSchema converts a schema.PlacementGroup to a PlacementGroup.
+func PlacementGroupFromSchema(s schema.PlacementGroup) *PlacementGroup {
+	g := &PlacementGroup{
+		ID:      s.ID,
+		Name:    s.Name,
+		Labels:  s.Labels,
+		Created: s.Created,
+		Servers: s.Servers,
+		Type:    PlacementGroupType(s.Type),
+	}
+	return g
+}
+
+func placementGroupCreateOptsToSchema(opts PlacementGroupCreateOpts) schema.PlacementGroupCreateRequest {
+	req := schema.PlacementGroupCreateRequest{
+		Name: opts.Name,
+		Type: string(opts.Type),
+	}
+	if opts.Labels != nil {
+		req.Labels = &opts.Labels
+	}
+	return req
 }
 
 func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBalancerCreateRequest {
@@ -997,9 +1043,10 @@ func firewallCreateOptsToSchema(opts FirewallCreateOpts) schema.FirewallCreateRe
 	}
 	for _, rule := range opts.Rules {
 		schemaRule := schema.FirewallRule{
-			Direction: string(rule.Direction),
-			Protocol:  string(rule.Protocol),
-			Port:      rule.Port,
+			Direction:   string(rule.Direction),
+			Protocol:    string(rule.Protocol),
+			Port:        rule.Port,
+			Description: rule.Description,
 		}
 		switch rule.Direction {
 		case FirewallRuleDirectionOut:
@@ -1037,9 +1084,10 @@ func firewallSetRulesOptsToSchema(opts FirewallSetRulesOpts) schema.FirewallActi
 	req := schema.FirewallActionSetRulesRequest{Rules: []schema.FirewallRule{}}
 	for _, rule := range opts.Rules {
 		schemaRule := schema.FirewallRule{
-			Direction: string(rule.Direction),
-			Protocol:  string(rule.Protocol),
-			Port:      rule.Port,
+			Direction:   string(rule.Direction),
+			Protocol:    string(rule.Protocol),
+			Port:        rule.Port,
+			Description: rule.Description,
 		}
 		switch rule.Direction {
 		case FirewallRuleDirectionOut:

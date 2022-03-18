@@ -40,6 +40,7 @@ type Server struct {
 	Labels          map[string]string  `json:"labels"`
 	Volumes         []int              `json:"volumes"`
 	PrimaryDiskSize int                `json:"primary_disk_size"`
+	PlacementGroup  *PlacementGroup    `json:"placement_group"`
 }
 
 // ServerProtection defines the schema of a server's resource protection.
@@ -123,6 +124,7 @@ type ServerCreateRequest struct {
 	Volumes          []int                   `json:"volumes,omitempty"`
 	Networks         []int                   `json:"networks,omitempty"`
 	Firewalls        []ServerCreateFirewalls `json:"firewalls,omitempty"`
+	PlacementGroup   int                     `json:"placement_group,omitempty"`
 }
 
 // ServerCreateFirewall defines which Firewalls to apply when creating a Server.
@@ -410,4 +412,22 @@ type ServerGetMetricsResponse struct {
 // ServerTimeSeriesVals contains the values for a Server time series.
 type ServerTimeSeriesVals struct {
 	Values []interface{} `json:"values"`
+}
+
+// ServerActionAddToPlacementGroupRequest defines the schema for the request to
+// add a server to a placement group.
+type ServerActionAddToPlacementGroupRequest struct {
+	PlacementGroup int `json:"placement_group"`
+}
+
+// ServerActionAddToPlacementGroupResponse defines the schema of the response when
+// creating an add_to_placement_group server action.
+type ServerActionAddToPlacementGroupResponse struct {
+	Action Action `json:"action"`
+}
+
+// ServerActionRemoveFromPlacementGroupResponse defines the schema of the response when
+// creating a remove_from_placement_group server action.
+type ServerActionRemoveFromPlacementGroupResponse struct {
+	Action Action `json:"action"`
 }

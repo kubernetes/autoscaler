@@ -22,6 +22,7 @@ type Pricing struct {
 	VATRate           string                    `json:"vat_rate"`
 	Image             PricingImage              `json:"image"`
 	FloatingIP        PricingFloatingIP         `json:"floating_ip"`
+	FloatingIPs       []PricingFloatingIPType   `json:"floating_ips"`
 	Traffic           PricingTraffic            `json:"traffic"`
 	ServerBackup      PricingServerBackup       `json:"server_backup"`
 	ServerTypes       []PricingServerType       `json:"server_types"`
@@ -43,6 +44,19 @@ type PricingImage struct {
 // PricingFloatingIP defines the schema of pricing information for a Floating IP.
 type PricingFloatingIP struct {
 	PriceMonthly Price `json:"price_monthly"`
+}
+
+// PricingFloatingIPType defines the schema of pricing information for a Floating IP per type.
+type PricingFloatingIPType struct {
+	Type   string                       `json:"type"`
+	Prices []PricingFloatingIPTypePrice `json:"prices"`
+}
+
+// PricingFloatingIPTypePrice defines the schema of pricing information for a Floating IP
+// type at a location.
+type PricingFloatingIPTypePrice struct {
+	Location     string `json:"location"`
+	PriceMonthly Price  `json:"price_monthly"`
 }
 
 // PricingTraffic defines the schema of pricing information for traffic.
