@@ -31,6 +31,10 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/internal/instrumentation"
+
+	"github.com/prometheus/client_golang/prometheus"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
@@ -64,15 +68,16 @@ func ExponentialBackoff(b float64, d time.Duration) BackoffFunc {
 
 // Client is a client for the Hetzner Cloud API.
 type Client struct {
-	endpoint           string
-	token              string
-	pollInterval       time.Duration
-	backoffFunc        BackoffFunc
-	httpClient         *http.Client
-	applicationName    string
-	applicationVersion string
-	userAgent          string
-	debugWriter        io.Writer
+	endpoint                string
+	token                   string
+	pollInterval            time.Duration
+	backoffFunc             BackoffFunc
+	httpClient              *http.Client
+	applicationName         string
+	applicationVersion      string
+	userAgent               string
+	debugWriter             io.Writer
+	instrumentationRegistry *prometheus.Registry
 
 	Action           ActionClient
 	Certificate      CertificateClient
@@ -90,6 +95,8 @@ type Client struct {
 	ServerType       ServerTypeClient
 	SSHKey           SSHKeyClient
 	Volume           VolumeClient
+	PlacementGroup   PlacementGroupClient
+	RDNS             RDNSClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -149,6 +156,13 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 	}
 }
 
+// WithInstrumentation configures a Client to collect metrics about the performed HTTP requests.
+func WithInstrumentation(registry *prometheus.Registry) ClientOption {
+	return func(client *Client) {
+		client.instrumentationRegistry = registry
+	}
+}
+
 // NewClient creates a new client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
@@ -163,6 +177,10 @@ func NewClient(options ...ClientOption) *Client {
 	}
 
 	client.buildUserAgent()
+	if client.instrumentationRegistry != nil {
+		i := instrumentation.New("api", client.instrumentationRegistry)
+		client.httpClient.Transport = i.InstrumentedRoundTripper()
+	}
 
 	client.Action = ActionClient{client: client}
 	client.Datacenter = DatacenterClient{client: client}
@@ -180,6 +198,8 @@ func NewClient(options ...ClientOption) *Client {
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
 	client.Certificate = CertificateClient{client: client}
 	client.Firewall = FirewallClient{client: client}
+	client.PlacementGroup = PlacementGroupClient{client: client}
+	client.RDNS = RDNSClient{client: client}
 
 	return client
 }
