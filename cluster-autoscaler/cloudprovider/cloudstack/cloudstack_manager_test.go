@@ -56,6 +56,7 @@ func createClusterDetails() *service.Cluster {
 				ID: "vm3",
 			},
 		},
+		VirtualMachineMap: make(map[string]*service.VirtualMachine),
 	}
 }
 

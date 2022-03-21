@@ -77,6 +77,16 @@ type cksService struct {
 	client APIClient
 }
 
+func virtaulMachinesToMap(vms []*VirtualMachine) map[string]*VirtualMachine {
+	vmMap := make(map[string]*VirtualMachine)
+	for _, vm := range vms {
+		if vm.Name != "" {
+			vmMap[vm.Name] = vm
+		}
+	}
+	return vmMap
+}
+
 func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error) {
 	var out ListClusterResponse
 	_, err := service.client.NewRequest("listKubernetesClusters", map[string]string{
@@ -91,7 +101,9 @@ func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error)
 	if len(clusters) == 0 {
 		return nil, fmt.Errorf("Unable to fetch cluster with id : %v", clusterID)
 	}
-	return clusters[0], err
+	cluster := clusters[0]
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Cluster, error) {
@@ -104,7 +116,9 @@ func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Clu
 	if err != nil {
 		return nil, fmt.Errorf("Unable to scale cluster : %v", err)
 	}
-	return out.Cluster, err
+	cluster := out.Cluster
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) RemoveNodesFromCluster(clusterID string, nodeIDs ...string) (*Cluster, error) {
@@ -116,7 +130,9 @@ func (service *cksService) RemoveNodesFromCluster(clusterID string, nodeIDs ...s
 	if err != nil {
 		return nil, fmt.Errorf("Unable to delete %v from cluster : %v", nodeIDs, err)
 	}
-	return out.Cluster, err
+	cluster := out.Cluster
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) Close() {

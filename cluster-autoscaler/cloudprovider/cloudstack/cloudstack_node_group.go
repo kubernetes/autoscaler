@@ -83,7 +83,7 @@ func (asg *asg) DecreaseTargetSize(delta int) error {
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (asg *asg) Belongs(node *apiv1.Node) (bool, error) {
 	for _, vm := range asg.cluster.VirtualMachines {
-		if vm.Name == node.Name {
+		if vm.Name != "" && node.Name != "" && vm.Name == node.Name {
 			return true, nil
 		}
 		if vm.ID == node.Status.NodeInfo.SystemUUID {
