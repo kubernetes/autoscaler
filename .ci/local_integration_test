@@ -1,0 +1,5 @@
+cd ./integration/
+
+echo "Starting integration tests..."
+
+ginkgo -v

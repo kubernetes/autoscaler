@@ -50,7 +50,7 @@ fi
 
 ##############################################################################
 
-go test $(go list ./cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
+go test $(go list ./cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor | grep -v integration)
 go test $(go list ./cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
 
 #TODO: Return success failure properly

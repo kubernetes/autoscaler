@@ -109,3 +109,29 @@ test-in-docker: clean docker-builder
 		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && GO111MODULE=off go test -race ./... ${TAGS_FLAG}'
 
 .PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
+
+.PHONY: start
+start:
+	@GO111MODULE=on go run main.go \
+			--kubeconfig=$(TARGET_KUBECONFIG) \
+			--cloud-provider=mcm \
+			--nodes=1:2:$(MACHINE_DEPLOYMENT_ZONE_1) \
+			--nodes=0:1:$(MACHINE_DEPLOYMENT_ZONE_2) \
+			--nodes=0:1:$(MACHINE_DEPLOYMENT_ZONE_3) \
+			--skip-nodes-with-system-pods=false \
+			--skip-nodes-with-local-storage=false \
+			--scale-down-delay-after-add=10s \
+			--scale-down-delay-after-failure=2s \
+			--v=4 \
+			--expander=least-waste \
+			--scale-down-unneeded-time=5s \
+			--balance-similar-node-groups=true \
+			--max-node-provision-time=4m \
+			--leader-elect=$(LEADER_ELECT) \
+			--leader-elect-retry-period="20s" \
+			--leader-elect-renew-deadline="30s" \
+			--leader-elect-lease-duration="40s"
+
+.PHONY: test-integration
+test-integration:
+	../.ci/local_integration_test

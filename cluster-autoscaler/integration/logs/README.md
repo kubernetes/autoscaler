@@ -1,0 +1,1 @@
+This folder is to save the CA logs when integration tests are run.
