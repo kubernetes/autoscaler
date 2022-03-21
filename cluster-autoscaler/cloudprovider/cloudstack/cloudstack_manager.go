@@ -84,10 +84,6 @@ func (manager *manager) fetchCluster() error {
 	if err != nil {
 		return err
 	}
-	cluster.VirtualMachineMap = make(map[string]*service.VirtualMachine)
-	for _, vm := range cluster.VirtualMachines {
-		cluster.VirtualMachineMap[vm.Name] = vm
-	}
 
 	klog.Info("Got cluster : ", cluster)
 	manager.setMinMaxIfNotPresent(cluster)
