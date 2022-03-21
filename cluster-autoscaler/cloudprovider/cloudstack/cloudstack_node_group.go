@@ -83,6 +83,9 @@ func (asg *asg) DecreaseTargetSize(delta int) error {
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (asg *asg) Belongs(node *apiv1.Node) (bool, error) {
 	for _, vm := range asg.cluster.VirtualMachines {
+		if vm.Name != "" && node.Name != "" && vm.Name == node.Name {
+			return true, nil
+		}
 		if vm.ID == node.Status.NodeInfo.SystemUUID {
 			return true, nil
 		}
@@ -98,7 +101,11 @@ func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
 
 	nodeIDs := make([]string, len(nodes))
 	for i, node := range nodes {
-		nodeIDs[i] = node.Status.NodeInfo.SystemUUID
+		if vm, ok := asg.cluster.VirtualMachineMap[node.Name]; ok {
+			nodeIDs[i] = vm.ID
+		} else {
+			nodeIDs[i] = node.Status.NodeInfo.SystemUUID
+		}
 	}
 	if len(nodeIDs) == 0 {
 		return fmt.Errorf("Unable to fetch nodeids from %v", nodes)
