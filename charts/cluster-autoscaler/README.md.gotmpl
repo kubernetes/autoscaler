@@ -239,72 +239,9 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### AWS - IAM
 
-The worker running the cluster autoscaler will need access to certain resources and actions:
+The worker running the cluster autoscaler will need access to certain resources and actions depending on the version you run and your configuration of it.
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "autoscaling:DescribeAutoScalingGroups",
-        "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations",
-        "autoscaling:DescribeTags",
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-```
-
-- `DescribeTags` is required for autodiscovery.
-- `DescribeLaunchConfigurations` is required to scale up an ASG from 0.
-
-If you would like to limit the scope of the Cluster Autoscaler to ***only*** modify ASGs for a particular cluster, use the following policy instead:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "autoscaling:DescribeAutoScalingGroups",
-        "autoscaling:DescribeAutoScalingInstances",
-        "autoscaling:DescribeLaunchConfigurations",
-        "autoscaling:DescribeTags",
-        "ec2:DescribeLaunchTemplateVersions"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "autoscaling:UpdateAutoScalingGroup"
-      ],
-      "Resource": [
-        "arn:aws:autoscaling:<aws-region>:<account-id>:autoScalingGroup:<some-random-id>:autoScalingGroupName/node-group-1",
-        "arn:aws:autoscaling:<aws-region>:<account-id>:autoScalingGroup:<some-random-id>:autoScalingGroupName/node-group-2",
-        "arn:aws:autoscaling:<aws-region>:<account-id>:autoScalingGroup:<some-random-id>:autoScalingGroupName/node-group-3"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled": "true",
-          "autoscaling:ResourceTag/kubernetes.io/cluster/<cluster-name>": "owned"
-        }
-      }
-    }
-  ]
-}
-```
-
-Make sure to replace the variables `<aws-region>`, `<cluster-name>`, `<account-id>`, and the ARNs of the ASGs where applicable.
+For the up-to-date IAM permissions required, please see the [cluster autoscaler's AWS Cloudprovider Readme](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#iam-policy) and switch to the tag of the cluster autoscaler image you are using.
 
 ### AWS - IAM Roles for Service Accounts (IRSA)
 
