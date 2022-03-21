@@ -367,10 +367,10 @@ globalDefault: false
 description: "Priority class used by overprovisioning."
 ```
 
-**For 1.11:**
+**For 1.11+:**
 
 ```yaml
-apiVersion: scheduling.k8s.io/v1beta1
+apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: overprovisioning
