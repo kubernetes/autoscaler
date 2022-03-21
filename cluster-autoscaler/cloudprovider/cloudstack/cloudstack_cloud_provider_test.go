@@ -17,6 +17,7 @@ limitations under the License.
 package cloudstack
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -110,6 +111,8 @@ func testNodeNotExist(t *testing.T) {
 		},
 	}
 	_, err := provider.NodeGroupForNode(node)
+	fmt.Println(provider.manager.asg.cluster)
+	fmt.Println(err)
 	assert.NotEqual(t, nil, err)
 }
 
