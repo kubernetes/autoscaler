@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	nodeIDs = []string{"vm2", "vm3"}
+	nodeIDs = []string{"m1", "vm2"}
 )
 
 func createClusterDetails() *service.Cluster {
@@ -47,15 +47,19 @@ func createClusterDetails() *service.Cluster {
 				ID: "m1",
 			},
 			{
-				ID: "vm1",
+				ID:   "vm1",
+				Name: "vm1",
 			},
 			{
-				ID: "vm2",
+				ID:   "vm2",
+				Name: "vm2",
 			},
 			{
-				ID: "vm3",
+				ID:   "vm3",
+				Name: "vm3",
 			},
 		},
+		VirtualMachineMap: make(map[string]*service.VirtualMachine),
 	}
 }
 
@@ -71,19 +75,24 @@ func createScaleUpClusterDetails() *service.Cluster {
 				ID: "m1",
 			},
 			{
-				ID: "vm1",
+				ID:   "vm1",
+				Name: "vm1",
 			},
 			{
-				ID: "vm2",
+				ID:   "vm2",
+				Name: "vm2",
 			},
 			{
-				ID: "vm3",
+				ID:   "vm3",
+				Name: "vm3",
 			},
 			{
-				ID: "vm4",
+				ID:   "vm4",
+				Name: "vm4",
 			},
 			{
-				ID: "vm5",
+				ID:   "vm5",
+				Name: "vm5",
 			},
 		},
 	}
@@ -98,10 +107,12 @@ func createScaleDownClusterDetails() *service.Cluster {
 		WorkerCount: 1,
 		VirtualMachines: []*service.VirtualMachine{
 			{
-				ID: "m1",
+				ID:   "vm2",
+				Name: "vm2",
 			},
 			{
-				ID: "vm1",
+				ID:   "vm3",
+				Name: "vm3",
 			},
 		},
 	}
@@ -169,6 +180,7 @@ func TestFetchCluster(t *testing.T) {
 	assert.Equal(t, testConfig.clusterID, asg.Id())
 	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
 	assert.Equal(t, testConfig.minSize, asg.MinSize())
+	assert.Nil(t, asg.cluster.VirtualMachineMap[""])
 	s.AssertExpectations(t)
 }
 

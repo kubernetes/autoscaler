@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
@@ -144,11 +145,14 @@ func testDeleteNodesError(t *testing.T) {
 		{
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{
-					SystemUUID: "vm1",
+					SystemUUID: "m1",
 				},
 			},
 		},
 		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "vm2",
+			},
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{
 					SystemUUID: "vm2",
@@ -178,14 +182,17 @@ func testDeleteNodesSuccess(t *testing.T) {
 		{
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{
-					SystemUUID: "vm2",
+					SystemUUID: "m1",
 				},
 			},
 		},
 		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "vm2",
+			},
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{
-					SystemUUID: "vm3",
+					SystemUUID: "vm2",
 				},
 			},
 		},
