@@ -55,13 +55,14 @@ type ClusterResponse struct {
 
 // Cluster contains the CKS Cluster details
 type Cluster struct {
-	ID              string            `json:"id"`
-	Name            string            `json:"name"`
-	Minsize         int               `json:"minsize"`
-	Maxsize         int               `json:"maxsize"`
-	WorkerCount     int               `json:"size"`
-	MasterCount     int               `json:"masternodes"`
-	VirtualMachines []*VirtualMachine `json:"virtualmachines"`
+	ID                string            `json:"id"`
+	Name              string            `json:"name"`
+	Minsize           int               `json:"minsize"`
+	Maxsize           int               `json:"maxsize"`
+	WorkerCount       int               `json:"size"`
+	MasterCount       int               `json:"masternodes"`
+	VirtualMachines   []*VirtualMachine `json:"virtualmachines"`
+	VirtualMachineMap map[string]*VirtualMachine
 }
 
 // VirtualMachine represents a node in a CKS cluster
