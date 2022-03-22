@@ -46,10 +46,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/selection"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/discovery"
 	coreinformers "k8s.io/client-go/informers"
@@ -109,10 +111,12 @@ type McmManager struct {
 }
 
 type instanceType struct {
-	InstanceType string
-	VCPU         resource.Quantity
-	Memory       resource.Quantity
-	GPU          resource.Quantity
+	InstanceType     string
+	VCPU             resource.Quantity
+	Memory           resource.Quantity
+	GPU              resource.Quantity
+	EphemeralStorage resource.Quantity
+	PodCount         resource.Quantity
 }
 
 type nodeTemplate struct {
@@ -611,7 +615,8 @@ func validateNodeTemplate(nodeTemplateAttributes *v1alpha1.NodeTemplate) error {
 	return nil
 }
 
-// GetMachineDeploymentNodeTemplate returns the NodeTemplate which belongs to the MachineDeployment.
+// GetMachineDeploymentNodeTemplate returns the NodeTemplate of a node belonging to the same worker pool as the machinedeployment
+// If no node present then it forms the nodeTemplate using the one present in machineClass
 func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *MachineDeployment) (*nodeTemplate, error) {
 
 	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
@@ -620,13 +625,22 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 	}
 
 	var (
-		region   string
-		zone     string
-		instance instanceType
-
+		workerPool       = getWorkerPoolForMachineDeploy(md)
+		list             = []string{workerPool}
+		selector         = labels.NewSelector()
+		req, _           = labels.NewRequirement(nodegroupset.LabelWorkerPool, selection.Equals, list)
+		region           string
+		zone             string
+		instance         instanceType
 		machineClass     = md.Spec.Template.Spec.Class
 		nodeTemplateSpec = md.Spec.Template.Spec.NodeTemplateSpec
 	)
+
+	selector = selector.Add(*req)
+	nodes, err := m.nodeLister.List(selector)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching node object for worker pool %s, Error: %v", workerPool, err)
+	}
 
 	switch machineClass.Kind {
 	case kindMachineClass:
@@ -639,16 +653,33 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 
 			err := validateNodeTemplate(nodeTemplateAttributes)
 			if err != nil {
-				return nil, fmt.Errorf("NodeTemplate validation error in MachineClass %s : %s", mc.Name, err)
+				return nil, fmt.Errorf("nodeTemplate validation error in MachineClass %s : %s", mc.Name, err)
 			}
 
-			klog.V(1).Infof("Generating node template using nodeTemplate from MachineClass %s", machineClass.Name)
-			instance = instanceType{
-				InstanceType: nodeTemplateAttributes.InstanceType,
-				VCPU:         nodeTemplateAttributes.Capacity["cpu"],
-				Memory:       nodeTemplateAttributes.Capacity["memory"],
-				GPU:          nodeTemplateAttributes.Capacity["gpu"],
+			filteredNodes := filterOutNodes(nodes, nodeTemplateAttributes.InstanceType)
+
+			if len(filteredNodes) > 0 {
+				klog.V(1).Infof("Nodes already existing in the worker pool %s", workerPool)
+				baseNode := filteredNodes[0]
+				klog.V(1).Infof("Worker pool node used to form template is %s and its capacity is cpu: %s, memory:%s", baseNode.Name, baseNode.Status.Capacity.Cpu().String(), baseNode.Status.Capacity.Memory().String())
+				instance = instanceType{
+					VCPU:             baseNode.Status.Capacity[apiv1.ResourceCPU],
+					Memory:           baseNode.Status.Capacity[apiv1.ResourceMemory],
+					GPU:              baseNode.Status.Capacity[gpu.ResourceNvidiaGPU],
+					EphemeralStorage: baseNode.Status.Capacity[apiv1.ResourceEphemeralStorage],
+					PodCount:         baseNode.Status.Capacity[apiv1.ResourcePods],
+				}
+			} else {
+				klog.V(1).Infof("Generating node template only using nodeTemplate from MachineClass %s: template resources-> cpu: %s,memory: %s", machineClass.Name, nodeTemplateAttributes.Capacity.Cpu().String(), nodeTemplateAttributes.Capacity.Memory().String())
+				instance = instanceType{
+					VCPU:   nodeTemplateAttributes.Capacity[apiv1.ResourceCPU],
+					Memory: nodeTemplateAttributes.Capacity[apiv1.ResourceMemory],
+					GPU:    nodeTemplateAttributes.Capacity["gpu"],
+					// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 110
+					PodCount: resource.MustParse("110"),
+				}
 			}
+			instance.InstanceType = nodeTemplateAttributes.InstanceType
 			region = nodeTemplateAttributes.Region
 			zone = nodeTemplateAttributes.Zone
 			break
@@ -671,6 +702,8 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				VCPU:         awsInstance.VCPU,
 				Memory:       awsInstance.Memory,
 				GPU:          awsInstance.GPU,
+				// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 110
+				PodCount: resource.MustParse("110"),
 			}
 			region = providerSpec.Region
 			zone = getZoneValueFromMCLabels(mc.Labels)
@@ -689,6 +722,8 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				VCPU:         azureInstance.VCPU,
 				Memory:       azureInstance.Memory,
 				GPU:          azureInstance.GPU,
+				// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 110
+				PodCount: resource.MustParse("110"),
 			}
 			region = providerSpec.Location
 			if providerSpec.Properties.Zone != nil {
@@ -722,6 +757,40 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 	return nodeTmpl, nil
 }
 
+func filterOutNodes(nodes []*v1.Node, instanceType string) []*v1.Node {
+	var filteredNodes []*v1.Node
+	for _, node := range nodes {
+		if node.Status.Capacity != nil && getInstanceTypeForNode(node) == instanceType {
+			filteredNodes = append(filteredNodes, node)
+		}
+	}
+
+	return filteredNodes
+}
+
+func getInstanceTypeForNode(node *v1.Node) string {
+	var instanceTypeLabelValue string
+	if node.Labels != nil {
+		if val, ok := node.Labels[apiv1.LabelInstanceTypeStable]; ok {
+			instanceTypeLabelValue = val
+		} else if val, ok := node.Labels[apiv1.LabelInstanceType]; ok {
+			instanceTypeLabelValue = val
+		}
+	}
+
+	return instanceTypeLabelValue
+}
+
+func getWorkerPoolForMachineDeploy(md *v1alpha1.MachineDeployment) string {
+	if md.Spec.Template.Spec.NodeTemplateSpec.Labels != nil {
+		if value, exists := md.Spec.Template.Spec.NodeTemplateSpec.Labels[nodegroupset.LabelWorkerPool]; exists {
+			return value
+		}
+	}
+
+	return ""
+}
+
 func getZoneValueFromMCLabels(labels map[string]string) string {
 	var zone string
 
@@ -730,7 +799,7 @@ func getZoneValueFromMCLabels(labels map[string]string) string {
 			// Prefer zone value from the new label
 			zone = value
 		} else if value, exists := labels[apiv1.LabelZoneFailureDomain]; exists {
-			// Fallback to zone value from deprecated label if new lable value doesn't exist
+			// Fallback to zone value from deprecated label if new label value doesn't exist
 			zone = value
 		}
 	}
@@ -752,11 +821,16 @@ func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) 
 		Capacity: apiv1.ResourceList{},
 	}
 
-	// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 100
-	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(100, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourcePods] = template.InstanceType.PodCount
 	node.Status.Capacity[apiv1.ResourceCPU] = template.InstanceType.VCPU
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = template.InstanceType.GPU
+	if template.InstanceType.GPU.Cmp(resource.MustParse("0")) != 0 {
+		node.Status.Capacity[gpu.ResourceNvidiaGPU] = template.InstanceType.GPU
+	}
 	node.Status.Capacity[apiv1.ResourceMemory] = template.InstanceType.Memory
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = template.InstanceType.EphemeralStorage
+	// added most common hugepages sizes. This will help to consider the template node while finding similar node groups
+	node.Status.Capacity["hugepages-1Gi"] = *resource.NewQuantity(0, resource.DecimalSI)
+	node.Status.Capacity["hugepages-2Mi"] = *resource.NewQuantity(0, resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
 

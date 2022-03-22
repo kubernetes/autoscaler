@@ -61,9 +61,9 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 	n3.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(999, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n3, comparator, true)
 
-	// Same CPU capacity, significantly different allocatable
+	// Same CPU capacity, significantly different allocatable (more than 50%)
 	n4 := BuildTestNode("node4", 1000, 2000)
-	n4.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(500, resource.DecimalSI)
+	n4.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(400, resource.DecimalSI)
 	checkNodesSimilar(t, n1, n4, comparator, false)
 
 	// One with GPU, one without
@@ -81,7 +81,7 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 
 	// Different allocatable, but same free
 	n2 := BuildTestNode("node2", 1000, 2000)
-	n2.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(500, resource.DecimalSI)
+	n2.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewMilliQuantity(400, resource.DecimalSI)
 	n2.Status.Allocatable[apiv1.ResourceMemory] = *resource.NewQuantity(1000, resource.DecimalSI)
 	checkNodesSimilarWithPods(t, n1, n2, []*apiv1.Pod{p1}, []*apiv1.Pod{}, comparator, false)
 
@@ -129,9 +129,9 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM5XLarge(t *testing.T) {
 	n2 := BuildTestNode("node2", 1000, q2.Value())
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
-	// Different memory capacity exceeds tolerance
-	// Value of q1 * 1.02
-	q3 := resource.MustParse("16438475Ki")
+	// Different memory capacity exceeds tolerance (50%)
+	// Value of q1 * 2.05
+	q3 := resource.MustParse("33038111Ki")
 	n3 := BuildTestNode("node3", 1000, q3.Value())
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }
@@ -151,9 +151,9 @@ func TestNodesSimilarVariousLargeMemoryRequirementsM516XLarge(t *testing.T) {
 	n2 := BuildTestNode("node2", 1000, q2.Value())
 	checkNodesSimilar(t, n1, n2, comparator, true)
 
-	// Different memory capacity exceeds tolerance
-	// Value of q1 * 1.02
-	q3 := resource.MustParse("265169453Ki")
+	// Different memory capacity exceeds tolerance (50%)
+	// Value of q1 * 2.05
+	q3 := resource.MustParse("532938606Ki")
 	n3 := BuildTestNode("node3", 1000, q3.Value())
 	checkNodesSimilar(t, n1, n3, comparator, false)
 }

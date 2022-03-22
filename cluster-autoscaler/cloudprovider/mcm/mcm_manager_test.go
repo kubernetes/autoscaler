@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
@@ -36,9 +37,10 @@ func TestBuildGenericLabels(t *testing.T) {
 
 	labels := buildGenericLabels(&nodeTemplate{
 		InstanceType: &instanceType{
-			InstanceType: instanceTypeC4Large,
-			VCPU:         resource.MustParse("2"),
-			Memory:       resource.MustParse("3840Mi"),
+			InstanceType:     instanceTypeC4Large,
+			VCPU:             resource.MustParse("2"),
+			Memory:           resource.MustParse("3840Mi"),
+			EphemeralStorage: resource.MustParse("50378260Ki"),
 		},
 		Region: regionUSEast1,
 		Zone:   zoneUSEast1a,
@@ -96,4 +98,39 @@ func TestGenerationOfCorrectZoneValueFromMCLabel(t *testing.T) {
 		randomKey: randomValue,
 	})
 	assert.Equal(t, resultingZone, "")
+}
+
+func TestFilterNodes(t *testing.T) {
+	var (
+		node1 = &apiv1.Node{
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					"cpu":    resource.MustParse("2"),
+					"memory": resource.MustParse("64Gi"),
+				},
+			},
+		}
+		node2 = &apiv1.Node{
+			ObjectMeta: v1.ObjectMeta{
+				Labels: map[string]string{
+					apiv1.LabelInstanceTypeStable: "test-instance-type",
+				},
+			},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					"cpu":    resource.MustParse("2"),
+					"memory": resource.MustParse("64Gi"),
+				},
+			},
+		}
+		emptyNode = &apiv1.Node{}
+	)
+	filteredNodes := filterOutNodes([]*apiv1.Node{
+		node1,
+		node2,
+		emptyNode,
+	}, "test-instance-type")
+
+	assert.EqualValues(t, len(filteredNodes), 1)
+	assert.Equal(t, filteredNodes, []*apiv1.Node{node2})
 }
