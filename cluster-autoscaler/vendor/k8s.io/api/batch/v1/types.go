@@ -190,9 +190,6 @@ type JobSpec struct {
 	// Suspending a Job will reset the StartTime field of the Job, effectively
 	// resetting the ActiveDeadlineSeconds timer too. Defaults to false.
 	//
-	// This field is beta-level, gated by SuspendJob feature flag (enabled by
-	// default).
-	//
 	// +optional
 	Suspend *bool `json:"suspend,omitempty" protobuf:"varint,10,opt,name=suspend"`
 }
@@ -289,10 +286,9 @@ type UncountedTerminatedPods struct {
 	Failed []types.UID `json:"failed,omitempty" protobuf:"bytes,2,rep,name=failed,casttype=k8s.io/apimachinery/pkg/types.UID"`
 }
 
-// +enum
 type JobConditionType string
 
-// These are valid conditions of a job.
+// These are built-in conditions of a job.
 const (
 	// JobSuspended means the job has been suspended.
 	JobSuspended JobConditionType = "Suspended"
