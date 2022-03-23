@@ -59,8 +59,14 @@ func doTransformObject(ctx context.Context, obj runtime.Object, opts interface{}
 	if _, ok := obj.(*metav1.Status); ok {
 		return obj, nil
 	}
-	if err := setObjectSelfLink(ctx, obj, req, scope.Namer); err != nil {
-		return nil, err
+
+	// ensure that for empty lists we don't return <nil> items.
+	// This is safe to modify without deep-copying the object, as
+	// List objects themselves are never cached.
+	if meta.IsListType(obj) && meta.LenList(obj) == 0 {
+		if err := meta.SetList(obj, []runtime.Object{}); err != nil {
+			return nil, err
+		}
 	}
 
 	switch target := mediaType.Convert; {
@@ -244,7 +250,6 @@ func asPartialObjectMetadataList(result runtime.Object, groupVersion schema.Grou
 		if err != nil {
 			return nil, err
 		}
-		list.SelfLink = li.GetSelfLink()
 		list.ResourceVersion = li.GetResourceVersion()
 		list.Continue = li.GetContinue()
 		list.RemainingItemCount = li.GetRemainingItemCount()
@@ -265,7 +270,6 @@ func asPartialObjectMetadataList(result runtime.Object, groupVersion schema.Grou
 		if err != nil {
 			return nil, err
 		}
-		list.SelfLink = li.GetSelfLink()
 		list.ResourceVersion = li.GetResourceVersion()
 		list.Continue = li.GetContinue()
 		list.RemainingItemCount = li.GetRemainingItemCount()
