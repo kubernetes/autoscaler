@@ -16,4 +16,4 @@ limitations under the License.
 
 // Package provider is an implementation of CloudProvider Interface, LoadBalancer
 // and Instances for Azure.
-package provider // import "sigs.k8s.io/cloud-provider-azure/pkg/provider
+package provider // import "sigs.k8s.io/cloud-provider-azure/pkg/provider"
