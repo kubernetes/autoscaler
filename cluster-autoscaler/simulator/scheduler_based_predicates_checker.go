@@ -103,7 +103,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot Clu
 	defer p.delegatingSharedLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
-	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	_, preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
 	}
@@ -150,7 +150,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot Cluster
 	defer p.delegatingSharedLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
-	preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	_, preFilterStatus := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return NewPredicateError(
 			InternalPredicateError,
