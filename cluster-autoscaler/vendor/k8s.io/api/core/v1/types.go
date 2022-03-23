@@ -522,7 +522,6 @@ type PersistentVolumeClaimSpec struct {
 }
 
 // PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type
-// +enum
 type PersistentVolumeClaimConditionType string
 
 const (
@@ -2293,14 +2292,14 @@ type Container struct {
 	// Each container in a pod must have a unique name (DNS_LABEL).
 	// Cannot be updated.
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
-	// Docker image name.
+	// Container image name.
 	// More info: https://kubernetes.io/docs/concepts/containers/images
 	// This field is optional to allow higher level config management to default or override
 	// container images in workload controllers like Deployments and StatefulSets.
 	// +optional
 	Image string `json:"image,omitempty" protobuf:"bytes,2,opt,name=image"`
 	// Entrypoint array. Not executed within a shell.
-	// The docker image's ENTRYPOINT is used if this is not provided.
+	// The container image's ENTRYPOINT is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
 	// cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
 	// to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
@@ -2310,7 +2309,7 @@ type Container struct {
 	// +optional
 	Command []string `json:"command,omitempty" protobuf:"bytes,3,rep,name=command"`
 	// Arguments to the entrypoint.
-	// The docker image's CMD is used if this is not provided.
+	// The container image's CMD is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
 	// cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
 	// to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
@@ -2555,7 +2554,7 @@ type ContainerStateTerminated struct {
 	// Time at which the container last terminated
 	// +optional
 	FinishedAt metav1.Time `json:"finishedAt,omitempty" protobuf:"bytes,6,opt,name=finishedAt"`
-	// Container's ID in the format 'docker://<container_id>'
+	// Container's ID in the format '<type>://<container_id>'
 	// +optional
 	ContainerID string `json:"containerID,omitempty" protobuf:"bytes,7,opt,name=containerID"`
 }
@@ -2595,7 +2594,7 @@ type ContainerStatus struct {
 	Image string `json:"image" protobuf:"bytes,6,opt,name=image"`
 	// ImageID of the container's image.
 	ImageID string `json:"imageID" protobuf:"bytes,7,opt,name=imageID"`
-	// Container's ID in the format 'docker://<container_id>'.
+	// Container's ID in the format '<type>://<container_id>'.
 	// +optional
 	ContainerID string `json:"containerID,omitempty" protobuf:"bytes,8,opt,name=containerID"`
 	// Specifies whether the container has passed its startup probe.
@@ -2632,10 +2631,9 @@ const (
 )
 
 // PodConditionType is a valid value for PodCondition.Type
-// +enum
 type PodConditionType string
 
-// These are valid conditions of pod.
+// These are built-in conditions of pod. An application may use a custom condition not listed here.
 const (
 	// ContainersReady indicates whether all containers in the pod are ready.
 	ContainersReady PodConditionType = "ContainersReady"
@@ -2904,7 +2902,7 @@ type PodAffinityTerm struct {
 	// namespaces specifies a static list of namespace names that the term applies to.
 	// The term is applied to the union of the namespaces listed in this field
 	// and the ones selected by namespaceSelector.
-	// null or empty namespaces list and null namespaceSelector means "this pod's namespace"
+	// null or empty namespaces list and null namespaceSelector means "this pod's namespace".
 	// +optional
 	Namespaces []string `json:"namespaces,omitempty" protobuf:"bytes,2,rep,name=namespaces"`
 	// This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
@@ -2918,7 +2916,6 @@ type PodAffinityTerm struct {
 	// and the ones listed in the namespaces field.
 	// null selector and null or empty namespaces list means "this pod's namespace".
 	// An empty selector ({}) matches all namespaces.
-	// This field is beta-level and is only honored when PodAffinityNamespaceSelector feature is enabled.
 	// +optional
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty" protobuf:"bytes,4,opt,name=namespaceSelector"`
 }
@@ -3234,7 +3231,6 @@ type PodSpec struct {
 	// If unset or empty, the "legacy" RuntimeClass will be used, which is an implicit class with an
 	// empty definition that uses the default runtime handler.
 	// More info: https://git.k8s.io/enhancements/keps/sig-node/585-runtime-class
-	// This is a beta feature as of Kubernetes v1.14.
 	// +optional
 	RuntimeClassName *string `json:"runtimeClassName,omitempty" protobuf:"bytes,29,opt,name=runtimeClassName"`
 	// EnableServiceLinks indicates whether information about services should be injected into pod's
@@ -3245,7 +3241,6 @@ type PodSpec struct {
 	// PreemptionPolicy is the Policy for preempting pods with lower priority.
 	// One of Never, PreemptLowerPriority.
 	// Defaults to PreemptLowerPriority if unset.
-	// This field is beta-level, gated by the NonPreemptingPriority feature-gate.
 	// +optional
 	PreemptionPolicy *PreemptionPolicy `json:"preemptionPolicy,omitempty" protobuf:"bytes,31,opt,name=preemptionPolicy"`
 	// Overhead represents the resource overhead associated with running a pod for a given RuntimeClass.
@@ -3255,7 +3250,6 @@ type PodSpec struct {
 	// set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value
 	// defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero.
 	// More info: https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead/README.md
-	// This field is beta-level as of Kubernetes v1.18, and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	Overhead ResourceList `json:"overhead,omitempty" protobuf:"bytes,32,opt,name=overhead"`
 	// TopologySpreadConstraints describes how a group of pods ought to spread across topology
@@ -3342,15 +3336,18 @@ type TopologySpreadConstraint struct {
 	// MaxSkew describes the degree to which pods may be unevenly distributed.
 	// When `whenUnsatisfiable=DoNotSchedule`, it is the maximum permitted difference
 	// between the number of matching pods in the target topology and the global minimum.
+	// The global minimum is the minimum number of matching pods in an eligible domain
+	// or zero if the number of eligible domains is less than MinDomains.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
-	// labelSelector spread as 1/1/0:
+	// labelSelector spread as 2/2/1:
+	// In this case, the global minimum is 1.
 	// +-------+-------+-------+
 	// | zone1 | zone2 | zone3 |
 	// +-------+-------+-------+
-	// |   P   |   P   |       |
+	// |  P P  |  P P  |   P   |
 	// +-------+-------+-------+
-	// - if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 1/1/1;
-	// scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2)
+	// - if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 2/2/2;
+	// scheduling it onto zone1(zone2) would make the ActualSkew(3-1) on zone1(zone2)
 	// violate MaxSkew(1).
 	// - if MaxSkew is 2, incoming pod can be scheduled onto any zone.
 	// When `whenUnsatisfiable=ScheduleAnyway`, it is used to give higher precedence
@@ -3361,6 +3358,10 @@ type TopologySpreadConstraint struct {
 	// and identical values are considered to be in the same topology.
 	// We consider each <key, value> as a "bucket", and try to put balanced number
 	// of pods into each bucket.
+	// We define a domain as a particular instance of a topology.
+	// Also, we define an eligible domain as a domain whose nodes match the node selector.
+	// e.g. If TopologyKey is "kubernetes.io/hostname", each Node is a domain of that topology.
+	// And, if TopologyKey is "topology.kubernetes.io/zone", each zone is a domain of that topology.
 	// It's a required field.
 	TopologyKey string `json:"topologyKey" protobuf:"bytes,2,opt,name=topologyKey"`
 	// WhenUnsatisfiable indicates how to deal with a pod if it doesn't satisfy
@@ -3390,6 +3391,32 @@ type TopologySpreadConstraint struct {
 	// in their corresponding topology domain.
 	// +optional
 	LabelSelector *metav1.LabelSelector `json:"labelSelector,omitempty" protobuf:"bytes,4,opt,name=labelSelector"`
+	// MinDomains indicates a minimum number of eligible domains.
+	// When the number of eligible domains with matching topology keys is less than minDomains,
+	// Pod Topology Spread treats "global minimum" as 0, and then the calculation of Skew is performed.
+	// And when the number of eligible domains with matching topology keys equals or greater than minDomains,
+	// this value has no effect on scheduling.
+	// As a result, when the number of eligible domains is less than minDomains,
+	// scheduler won't schedule more than maxSkew Pods to those domains.
+	// If value is nil, the constraint behaves as if MinDomains is equal to 1.
+	// Valid values are integers greater than 0.
+	// When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
+	//
+	// For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
+	// labelSelector spread as 2/2/2:
+	// +-------+-------+-------+
+	// | zone1 | zone2 | zone3 |
+	// +-------+-------+-------+
+	// |  P P  |  P P  |  P P  |
+	// +-------+-------+-------+
+	// The number of domains is less than 5(MinDomains), so "global minimum" is treated as 0.
+	// In this situation, new pod with the same labelSelector cannot be scheduled,
+	// because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
+	// it will violate MaxSkew.
+	//
+	// This is an alpha field and requires enabling MinDomainsInPodTopologySpread feature gate.
+	// +optional
+	MinDomains *int32 `json:"minDomains,omitempty" protobuf:"varint,5,opt,name=minDomains"`
 }
 
 const (
@@ -3595,11 +3622,11 @@ type EphemeralContainerCommon struct {
 	// Name of the ephemeral container specified as a DNS_LABEL.
 	// This name must be unique among all containers, init containers and ephemeral containers.
 	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
-	// Docker image name.
+	// Container image name.
 	// More info: https://kubernetes.io/docs/concepts/containers/images
 	Image string `json:"image,omitempty" protobuf:"bytes,2,opt,name=image"`
 	// Entrypoint array. Not executed within a shell.
-	// The docker image's ENTRYPOINT is used if this is not provided.
+	// The image's ENTRYPOINT is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
 	// cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
 	// to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
@@ -3609,7 +3636,7 @@ type EphemeralContainerCommon struct {
 	// +optional
 	Command []string `json:"command,omitempty" protobuf:"bytes,3,rep,name=command"`
 	// Arguments to the entrypoint.
-	// The docker image's CMD is used if this is not provided.
+	// The image's CMD is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
 	// cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
 	// to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
@@ -3831,8 +3858,7 @@ type PodStatus struct {
 	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-and-container-status
 	InitContainerStatuses []ContainerStatus `json:"initContainerStatuses,omitempty" protobuf:"bytes,10,rep,name=initContainerStatuses"`
 
-	// The list has one entry per container in the manifest. Each entry is currently the output
-	// of `docker inspect`.
+	// The list has one entry per container in the manifest.
 	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#pod-and-container-status
 	// +optional
 	ContainerStatuses []ContainerStatus `json:"containerStatuses,omitempty" protobuf:"bytes,8,rep,name=containerStatuses"`
@@ -4602,7 +4628,10 @@ type ServiceAccount struct {
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	// Secrets is the list of secrets allowed to be used by pods running using this ServiceAccount.
+	// Secrets is a list of the secrets in the same namespace that pods running using this ServiceAccount are allowed to use.
+	// Pods are only limited to this list if this service account has a "kubernetes.io/enforce-mountable-secrets" annotation set to "true".
+	// This field should not be used to find auto-generated service account token secrets for use outside of pods.
+	// Instead, tokens can be requested directly using the TokenRequest API, or service account token secrets can be manually created.
 	// More info: https://kubernetes.io/docs/concepts/configuration/secret
 	// +optional
 	// +patchMergeKey=name
@@ -5051,11 +5080,10 @@ const (
 	NodeTerminated NodePhase = "Terminated"
 )
 
-// +enum
 type NodeConditionType string
 
-// These are valid conditions of node. Currently, we don't have enough information to decide
-// node condition. In the future, we will add more. The proposed set of conditions are:
+// These are valid but not exhaustive conditions of node. A cloud provider may set a condition not listed here.
+// The built-in set of conditions are:
 // NodeReachable, NodeLive, NodeReady, NodeSchedulable, NodeRunnable.
 const (
 	// NodeReady means kubelet is healthy and ready to accept pods.
@@ -5090,10 +5118,9 @@ type NodeCondition struct {
 	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
 }
 
-// +enum
 type NodeAddressType string
 
-// These are valid address type of node.
+// These are built-in addresses type of node. A cloud provider may set a type not listed here.
 const (
 	// NodeHostName identifies a name of the node. Although every node can be assumed
 	// to have a NodeAddress of this type, its exact syntax and semantics are not
@@ -5263,10 +5290,9 @@ const (
 	NamespaceTerminatingCause metav1.CauseType = "NamespaceTerminating"
 )
 
-// +enum
 type NamespaceConditionType string
 
-// These are valid conditions of a namespace.
+// These are built-in conditions of a namespace.
 const (
 	// NamespaceDeletionDiscoveryFailure contains information about namespace deleter errors during resource discovery.
 	NamespaceDeletionDiscoveryFailure NamespaceConditionType = "NamespaceDeletionDiscoveryFailure"
@@ -5754,8 +5780,8 @@ type EventList struct {
 // List holds a list of objects, which may not be known by the server.
 type List metav1.List
 
-// LimitType is a type of object that is limited
-// +enum
+// LimitType is a type of object that is limited. It can be Pod, Container, PersistentVolumeClaim or
+// a fully qualified resource name.
 type LimitType string
 
 const (
@@ -5887,7 +5913,6 @@ const (
 	// Match all pod objects that have priority class mentioned
 	ResourceQuotaScopePriorityClass ResourceQuotaScope = "PriorityClass"
 	// Match all pod objects that have cross-namespace pod (anti)affinity mentioned.
-	// This is a beta feature enabled by the PodAffinityNamespaceSelector feature flag.
 	ResourceQuotaScopeCrossNamespacePodAffinity ResourceQuotaScope = "CrossNamespacePodAffinity"
 )
 
