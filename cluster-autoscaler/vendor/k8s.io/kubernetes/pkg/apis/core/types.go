@@ -2662,7 +2662,7 @@ type PodAffinityTerm struct {
 	// namespaces specifies a static list of namespace names that the term applies to.
 	// The term is applied to the union of the namespaces listed in this field
 	// and the ones selected by namespaceSelector.
-	// null or empty namespaces list and null namespaceSelector means "this pod's namespace"
+	// null or empty namespaces list and null namespaceSelector means "this pod's namespace".
 	// +optional
 	Namespaces []string
 	// This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
@@ -2676,7 +2676,6 @@ type PodAffinityTerm struct {
 	// and the ones listed in the namespaces field.
 	// null selector and null or empty namespaces list means "this pod's namespace".
 	// An empty selector ({}) matches all namespaces.
-	// This field is beta-level and is only honored when PodAffinityNamespaceSelector feature is enabled.
 	// +optional
 	NamespaceSelector *metav1.LabelSelector
 }
@@ -2918,7 +2917,6 @@ type PodSpec struct {
 	// PreemptionPolicy is the Policy for preempting pods with lower priority.
 	// One of Never, PreemptLowerPriority.
 	// Defaults to PreemptLowerPriority if unset.
-	// This field is beta-level, gated by the NonPreemptingPriority feature-gate.
 	// +optional
 	PreemptionPolicy *PreemptionPolicy
 	// Specifies the DNS parameters of a pod.
@@ -2946,7 +2944,6 @@ type PodSpec struct {
 	// set. If RuntimeClass is configured and selected in the PodSpec, Overhead will be set to the value
 	// defined in the corresponding RuntimeClass, otherwise it will remain unset and treated as zero.
 	// More info: https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead
-	// This field is beta-level as of Kubernetes v1.18, and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	Overhead ResourceList
 	// EnableServiceLinks indicates whether information about services should be injected into pod's
@@ -3990,7 +3987,10 @@ type ServiceAccount struct {
 	// +optional
 	metav1.ObjectMeta
 
-	// Secrets is the list of secrets allowed to be used by pods running using this ServiceAccount
+	// Secrets is a list of the secrets in the same namespace that pods running using this ServiceAccount are allowed to use.
+	// Pods are only limited to this list if this service account has a "kubernetes.io/enforce-mountable-secrets" annotation set to "true".
+	// This field should not be used to find auto-generated service account token secrets for use outside of pods.
+	// Instead, tokens can be requested directly using the TokenRequest API, or service account token secrets can be manually created.
 	Secrets []ObjectReference
 
 	// ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling any images
@@ -5066,7 +5066,6 @@ const (
 	// Match all pod objects that have priority class mentioned
 	ResourceQuotaScopePriorityClass ResourceQuotaScope = "PriorityClass"
 	// Match all pod objects that have cross-namespace pod (anti)affinity mentioned
-	// This is a beta feature enabled by the PodAffinityNamespaceSelector feature flag.
 	ResourceQuotaScopeCrossNamespacePodAffinity ResourceQuotaScope = "CrossNamespacePodAffinity"
 )
 
@@ -5605,15 +5604,18 @@ type TopologySpreadConstraint struct {
 	// MaxSkew describes the degree to which pods may be unevenly distributed.
 	// When `whenUnsatisfiable=DoNotSchedule`, it is the maximum permitted difference
 	// between the number of matching pods in the target topology and the global minimum.
+	// The global minimum is the minimum number of matching pods in an eligible domain
+	// or zero if the number of eligible domains is less than MinDomains.
 	// For example, in a 3-zone cluster, MaxSkew is set to 1, and pods with the same
-	// labelSelector spread as 1/1/0:
+	// labelSelector spread as 2/2/1:
+	// In this case, the global minimum is 1.
 	// +-------+-------+-------+
 	// | zone1 | zone2 | zone3 |
 	// +-------+-------+-------+
-	// |   P   |   P   |       |
+	// |  P P  |  P P  |   P   |
 	// +-------+-------+-------+
-	// - if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 1/1/1;
-	// scheduling it onto zone1(zone2) would make the ActualSkew(2-0) on zone1(zone2)
+	// - if MaxSkew is 1, incoming pod can only be scheduled to zone3 to become 2/2/2;
+	// scheduling it onto zone1(zone2) would make the ActualSkew(3-1) on zone1(zone2)
 	// violate MaxSkew(1).
 	// - if MaxSkew is 2, incoming pod can be scheduled onto any zone.
 	// When `whenUnsatisfiable=ScheduleAnyway`, it is used to give higher precedence
@@ -5624,6 +5626,10 @@ type TopologySpreadConstraint struct {
 	// and identical values are considered to be in the same topology.
 	// We consider each <key, value> as a "bucket", and try to put balanced number
 	// of pods into each bucket.
+	// We define a domain as a particular instance of a topology.
+	// Also, we define an eligible domain as a domain whose nodes match the node selector.
+	// e.g. If TopologyKey is "kubernetes.io/hostname", each Node is a domain of that topology.
+	// And, if TopologyKey is "topology.kubernetes.io/zone", each zone is a domain of that topology.
 	// It's a required field.
 	TopologyKey string
 	// WhenUnsatisfiable indicates how to deal with a pod if it doesn't satisfy
@@ -5653,6 +5659,32 @@ type TopologySpreadConstraint struct {
 	// in their corresponding topology domain.
 	// +optional
 	LabelSelector *metav1.LabelSelector
+	// MinDomains indicates a minimum number of eligible domains.
+	// When the number of eligible domains with matching topology keys is less than minDomains,
+	// Pod Topology Spread treats "global minimum" as 0, and then the calculation of Skew is performed.
+	// And when the number of eligible domains with matching topology keys equals or greater than minDomains,
+	// this value has no effect on scheduling.
+	// As a result, when the number of eligible domains is less than minDomains,
+	// scheduler won't schedule more than maxSkew Pods to those domains.
+	// If value is nil, the constraint behaves as if MinDomains is equal to 1.
+	// Valid values are integers greater than 0.
+	// When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
+	//
+	// For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same
+	// labelSelector spread as 2/2/2:
+	// +-------+-------+-------+
+	// | zone1 | zone2 | zone3 |
+	// +-------+-------+-------+
+	// |  P P  |  P P  |  P P  |
+	// +-------+-------+-------+
+	// The number of domains is less than 5(MinDomains), so "global minimum" is treated as 0.
+	// In this situation, new pod with the same labelSelector cannot be scheduled,
+	// because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
+	// it will violate MaxSkew.
+	//
+	// This is an alpha field and requires enabling MinDomainsInPodTopologySpread feature gate.
+	// +optional
+	MinDomains *int32
 }
 
 // These are the built-in errors for PortStatus.
