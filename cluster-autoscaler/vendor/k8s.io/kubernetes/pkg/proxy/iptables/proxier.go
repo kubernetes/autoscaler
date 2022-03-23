@@ -142,16 +142,16 @@ func newServiceInfo(port *v1.ServicePort, service *v1.Service, baseInfo *proxy.B
 // internal struct for endpoints information
 type endpointsInfo struct {
 	*proxy.BaseEndpointInfo
-	// The following fields we lazily compute and store here for performance
-	// reasons. If the protocol is the same as you expect it to be, then the
-	// chainName can be reused, otherwise it should be recomputed.
-	protocol  string
-	chainName utiliptables.Chain
+
+	ChainName utiliptables.Chain
 }
 
 // returns a new proxy.Endpoint which abstracts a endpointsInfo
-func newEndpointInfo(baseInfo *proxy.BaseEndpointInfo) proxy.Endpoint {
-	return &endpointsInfo{BaseEndpointInfo: baseInfo}
+func newEndpointInfo(baseInfo *proxy.BaseEndpointInfo, svcPortName *proxy.ServicePortName) proxy.Endpoint {
+	return &endpointsInfo{
+		BaseEndpointInfo: baseInfo,
+		ChainName:        servicePortEndpointChainName(svcPortName.String(), strings.ToLower(string(svcPortName.Protocol)), baseInfo.Endpoint),
+	}
 }
 
 // Equal overrides the Equal() function implemented by proxy.BaseEndpointInfo.
@@ -163,18 +163,8 @@ func (e *endpointsInfo) Equal(other proxy.Endpoint) bool {
 	}
 	return e.Endpoint == o.Endpoint &&
 		e.IsLocal == o.IsLocal &&
-		e.protocol == o.protocol &&
-		e.chainName == o.chainName &&
+		e.ChainName == o.ChainName &&
 		e.Ready == o.Ready
-}
-
-// Returns the endpoint chain name for a given endpointsInfo.
-func (e *endpointsInfo) endpointChain(svcNameString, protocol string) utiliptables.Chain {
-	if e.protocol != protocol {
-		e.protocol = protocol
-		e.chainName = servicePortEndpointChainName(svcNameString, protocol, e.Endpoint)
-	}
-	return e.chainName
 }
 
 // Proxier is an iptables based proxy for connections between a localhost:lport
@@ -190,7 +180,6 @@ type Proxier struct {
 	mu           sync.Mutex // protects the following fields
 	serviceMap   proxy.ServiceMap
 	endpointsMap proxy.EndpointsMap
-	portsMap     map[netutils.LocalPort]netutils.Closeable
 	nodeLabels   map[string]string
 	// endpointSlicesSynced, and servicesSynced are set to true
 	// when corresponding objects are synced after startup. This is used to avoid
@@ -209,7 +198,6 @@ type Proxier struct {
 	localDetector  proxyutiliptables.LocalTrafficDetector
 	hostname       string
 	nodeIP         net.IP
-	portMapper     netutils.PortOpener
 	recorder       events.EventRecorder
 
 	serviceHealthServer healthcheck.ServiceHealthServer
@@ -264,9 +252,12 @@ func NewProxier(ipt utiliptables.Interface,
 	healthzServer healthcheck.ProxierHealthUpdater,
 	nodePortAddresses []string,
 ) (*Proxier, error) {
-	// Set the route_localnet sysctl we need for
-	if err := utilproxy.EnsureSysctl(sysctl, sysctlRouteLocalnet, 1); err != nil {
-		return nil, err
+	if utilproxy.ContainsIPv4Loopback(nodePortAddresses) {
+		// Set the route_localnet sysctl we need for exposing NodePorts on loopback addresses
+		klog.InfoS("Setting route_localnet=1, use nodePortAddresses to filter loopback addresses for NodePorts to skip it https://issues.k8s.io/90259")
+		if err := utilproxy.EnsureSysctl(sysctl, sysctlRouteLocalnet, 1); err != nil {
+			return nil, err
+		}
 	}
 
 	// Proxy needs br_netfilter and bridge-nf-call-iptables=1 when containers
@@ -296,7 +287,6 @@ func NewProxier(ipt utiliptables.Interface,
 	}
 
 	proxier := &Proxier{
-		portsMap:                 make(map[netutils.LocalPort]netutils.Closeable),
 		serviceMap:               make(proxy.ServiceMap),
 		serviceChanges:           proxy.NewServiceChangeTracker(newServiceInfo, ipFamily, recorder, nil),
 		endpointsMap:             make(proxy.EndpointsMap),
@@ -309,7 +299,6 @@ func NewProxier(ipt utiliptables.Interface,
 		localDetector:            localDetector,
 		hostname:                 hostname,
 		nodeIP:                   nodeIP,
-		portMapper:               &netutils.ListenPortOpener,
 		recorder:                 recorder,
 		serviceHealthServer:      serviceHealthServer,
 		healthzServer:            healthzServer,
@@ -890,10 +879,6 @@ func (proxier *Proxier) syncProxyRules() {
 	proxier.natChains.Reset()
 	proxier.natRules.Reset()
 
-	// Write table headers.
-	proxier.filterChains.Write("*filter")
-	proxier.natChains.Write("*nat")
-
 	// Make sure we keep stats for the top-level chains, if they existed
 	// (which most should have because we created them above).
 	for _, chainName := range []utiliptables.Chain{kubeServicesChain, kubeExternalServicesChain, kubeForwardChain, kubeNodePortsChain} {
@@ -946,9 +931,6 @@ func (proxier *Proxier) syncProxyRules() {
 	// Accumulate NAT chains to keep.
 	activeNATChains := map[utiliptables.Chain]bool{} // use a map as a set
 
-	// Accumulate the set of local ports that we will be holding open once this update is complete
-	replacementPortsMap := map[netutils.LocalPort]netutils.Closeable{}
-
 	// We are creating those slices ones here to avoid memory reallocations
 	// in every loop. Note that reuse the memory, instead of doing:
 	//   slice = <some new slice>
@@ -970,7 +952,6 @@ func (proxier *Proxier) syncProxyRules() {
 		proxier.endpointChainsNumber += len(proxier.endpointsMap[svcName])
 	}
 
-	localAddrSet := utilproxy.GetLocalAddrSet()
 	nodeAddresses, err := utilproxy.GetNodeAddresses(proxier.nodePortAddresses, proxier.networkInterfacer)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get node ip address matching nodeport cidrs, services with nodeport may not work as intended", "CIDRs", proxier.nodePortAddresses)
@@ -994,10 +975,6 @@ func (proxier *Proxier) syncProxyRules() {
 			continue
 		}
 		isIPv6 := netutils.IsIPv6(svcInfo.ClusterIP())
-		localPortIPFamily := netutils.IPv4
-		if isIPv6 {
-			localPortIPFamily = netutils.IPv6
-		}
 		protocol := strings.ToLower(string(svcInfo.Protocol()))
 		svcNameString := svcInfo.serviceNameString
 
@@ -1039,7 +1016,7 @@ func (proxier *Proxier) syncProxyRules() {
 				continue
 			}
 
-			endpointChain := epInfo.endpointChain(svcNameString, protocol)
+			endpointChain := epInfo.ChainName
 			endpointInUse := false
 
 			if epInfo.Ready {
@@ -1098,7 +1075,7 @@ func (proxier *Proxier) syncProxyRules() {
 		}
 
 		svcXlbChain := svcInfo.serviceLBChainName
-		if svcInfo.NodeLocalExternal() {
+		if hasEndpoints && svcInfo.NodeLocalExternal() {
 			// Only for services request OnlyLocal traffic
 			// create the per-service LB chain, retaining counters if possible.
 			if lbChain, ok := existingNATChains[svcXlbChain]; ok {
@@ -1130,7 +1107,9 @@ func (proxier *Proxier) syncProxyRules() {
 				// If/when we support "Local" policy for VIPs, we should update this.
 				proxier.natRules.Write(
 					"-A", string(svcChain),
-					proxier.localDetector.JumpIfNotLocal(args, string(KubeMarkMasqChain)))
+					args,
+					proxier.localDetector.IfNotLocal(),
+					"-j", string(KubeMarkMasqChain))
 			}
 			proxier.natRules.Write(
 				"-A", string(kubeServicesChain),
@@ -1150,20 +1129,6 @@ func (proxier *Proxier) syncProxyRules() {
 
 		// Capture externalIPs.
 		for _, externalIP := range svcInfo.ExternalIPStrings() {
-			// If the "external" IP happens to be an IP that is local to this
-			// machine, hold the local port open so no other process can open it
-			// (because the socket might open but it would never work).
-			if (svcInfo.Protocol() != v1.ProtocolSCTP) && localAddrSet.Has(netutils.ParseIPSloppy(externalIP)) {
-				lp := netutils.LocalPort{
-					Description: "externalIP for " + svcNameString,
-					IP:          externalIP,
-					IPFamily:    localPortIPFamily,
-					Port:        svcInfo.Port(),
-					Protocol:    netutils.Protocol(svcInfo.Protocol()),
-				}
-				proxier.openPort(lp, replacementPortsMap)
-			}
-
 			if hasEndpoints {
 				args = append(args[:0],
 					"-m", "comment", "--comment", fmt.Sprintf(`"%s external IP"`, svcNameString),
@@ -1184,7 +1149,9 @@ func (proxier *Proxier) syncProxyRules() {
 					if proxier.localDetector.IsImplemented() {
 						proxier.natRules.Write(
 							appendTo,
-							proxier.localDetector.JumpIfNotLocal(args, string(KubeMarkMasqChain)))
+							args,
+							proxier.localDetector.IfNotLocal(),
+							"-j", string(KubeMarkMasqChain))
 					} else {
 						proxier.natRules.Write(
 							appendTo,
@@ -1296,23 +1263,6 @@ func (proxier *Proxier) syncProxyRules() {
 		// worthwhile to make a new per-service chain for nodeport rules, but
 		// with just 2 rules it ends up being a waste and a cognitive burden.
 		if svcInfo.NodePort() != 0 && len(nodeAddresses) != 0 {
-			// Hold the local port open so no other process can open it
-			// (because the socket might open but it would never work).
-
-			// nodeAddresses only contains the addresses for this proxier's IP family.
-			for address := range nodeAddresses {
-				if utilproxy.IsZeroCIDR(address) {
-					address = ""
-				}
-				lp := netutils.LocalPort{
-					Description: "nodePort for " + svcNameString,
-					IP:          address,
-					IPFamily:    localPortIPFamily,
-					Port:        svcInfo.NodePort(),
-					Protocol:    netutils.Protocol(svcInfo.Protocol()),
-				}
-				proxier.openPort(lp, replacementPortsMap)
-			}
 
 			if hasEndpoints {
 				args = append(args[:0],
@@ -1392,12 +1342,12 @@ func (proxier *Proxier) syncProxyRules() {
 		// Service's ClusterIP instead. This happens whether or not we have local
 		// endpoints; only if localDetector is implemented
 		if proxier.localDetector.IsImplemented() {
-			args = append(args[:0],
+			proxier.natRules.Write(
 				"-A", string(svcXlbChain),
 				"-m", "comment", "--comment",
 				`"Redirect pods trying to reach external loadbalancer VIP to clusterIP"`,
-			)
-			proxier.natRules.Write(proxier.localDetector.JumpIfLocal(args, string(svcChain)))
+				proxier.localDetector.IfLocal(),
+				"-j", string(svcChain))
 		}
 
 		// Next, redirect all src-type=LOCAL -> LB IP to the service chain for externalTrafficPolicy=Local
@@ -1504,24 +1454,31 @@ func (proxier *Proxier) syncProxyRules() {
 		"-j", "ACCEPT",
 	)
 
-	numberFilterIptablesRules := utilproxy.CountBytesLines(proxier.filterRules.Bytes())
-	metrics.IptablesRulesTotal.WithLabelValues(string(utiliptables.TableFilter)).Set(float64(numberFilterIptablesRules))
-	numberNatIptablesRules := utilproxy.CountBytesLines(proxier.natRules.Bytes())
-	metrics.IptablesRulesTotal.WithLabelValues(string(utiliptables.TableNAT)).Set(float64(numberNatIptablesRules))
-
-	// Write the end-of-table markers.
-	proxier.filterRules.Write("COMMIT")
-	proxier.natRules.Write("COMMIT")
+	metrics.IptablesRulesTotal.WithLabelValues(string(utiliptables.TableFilter)).Set(float64(proxier.filterRules.Lines()))
+	metrics.IptablesRulesTotal.WithLabelValues(string(utiliptables.TableNAT)).Set(float64(proxier.natRules.Lines()))
 
 	// Sync rules.
-	// NOTE: NoFlushTables is used so we don't flush non-kubernetes chains in the table
 	proxier.iptablesData.Reset()
+	proxier.iptablesData.WriteString("*filter\n")
 	proxier.iptablesData.Write(proxier.filterChains.Bytes())
 	proxier.iptablesData.Write(proxier.filterRules.Bytes())
+	proxier.iptablesData.WriteString("COMMIT\n")
+	proxier.iptablesData.WriteString("*nat\n")
 	proxier.iptablesData.Write(proxier.natChains.Bytes())
 	proxier.iptablesData.Write(proxier.natRules.Bytes())
+	proxier.iptablesData.WriteString("COMMIT\n")
 
-	klog.V(5).InfoS("Restoring iptables", "rules", proxier.iptablesData.Bytes())
+	klog.V(2).InfoS("Reloading service iptables data",
+		"numServices", len(proxier.serviceMap),
+		"numEndpoints", proxier.endpointChainsNumber,
+		"numFilterChains", proxier.filterChains.Lines(),
+		"numFilterRules", proxier.filterRules.Lines(),
+		"numNATChains", proxier.natChains.Lines(),
+		"numNATRules", proxier.natRules.Lines(),
+	)
+	klog.V(9).InfoS("Restoring iptables", "rules", proxier.iptablesData.Bytes())
+
+	// NOTE: NoFlushTables is used so we don't flush non-kubernetes chains in the table
 	err = proxier.iptables.RestoreAll(proxier.iptablesData.Bytes(), utiliptables.NoFlushTables, utiliptables.RestoreCounters)
 	if err != nil {
 		if pErr, ok := err.(utiliptables.ParseError); ok {
@@ -1531,9 +1488,6 @@ func (proxier *Proxier) syncProxyRules() {
 			klog.ErrorS(err, "Failed to execute iptables-restore")
 		}
 		metrics.IptablesRestoreFailuresTotal.Inc()
-		// Revert new local ports.
-		klog.V(2).InfoS("Closing local ports after iptables-restore failure")
-		utilproxy.RevertPorts(replacementPortsMap, proxier.portsMap)
 		return
 	}
 	success = true
@@ -1545,14 +1499,6 @@ func (proxier *Proxier) syncProxyRules() {
 			klog.V(4).InfoS("Network programming", "endpoint", klog.KRef(name.Namespace, name.Name), "elapsed", latency)
 		}
 	}
-
-	// Close old local ports and save new ones.
-	for k, v := range proxier.portsMap {
-		if replacementPortsMap[k] == nil {
-			v.Close()
-		}
-	}
-	proxier.portsMap = replacementPortsMap
 
 	if proxier.healthzServer != nil {
 		proxier.healthzServer.Updated()
@@ -1587,36 +1533,6 @@ func (proxier *Proxier) syncProxyRules() {
 	}
 	klog.V(4).InfoS("Deleting stale endpoint connections", "endpoints", endpointUpdateResult.StaleEndpoints)
 	proxier.deleteEndpointConnections(endpointUpdateResult.StaleEndpoints)
-}
-
-func (proxier *Proxier) openPort(lp netutils.LocalPort, replacementPortsMap map[netutils.LocalPort]netutils.Closeable) {
-	// We don't open ports for SCTP services
-	if lp.Protocol == netutils.Protocol(v1.ProtocolSCTP) {
-		return
-	}
-
-	if proxier.portsMap[lp] != nil {
-		klog.V(4).InfoS("Port was open before and is still needed", "port", lp)
-		replacementPortsMap[lp] = proxier.portsMap[lp]
-		return
-	}
-
-	socket, err := proxier.portMapper.OpenLocalPort(&lp)
-	if err != nil {
-		msg := fmt.Sprintf("can't open port %s, skipping it", lp.String())
-		proxier.recorder.Eventf(
-			&v1.ObjectReference{
-				Kind:      "Node",
-				Name:      proxier.hostname,
-				UID:       types.UID(proxier.hostname),
-				Namespace: "",
-			}, nil, v1.EventTypeWarning, err.Error(), "SyncProxyRules", msg)
-		klog.ErrorS(err, "can't open port, skipping it", "port", lp)
-		return
-	}
-
-	klog.V(2).InfoS("Opened local port", "port", lp)
-	replacementPortsMap[lp] = socket
 }
 
 func (proxier *Proxier) writeServiceToEndpointRules(svcNameString string, svcInfo proxy.ServicePort, svcChain utiliptables.Chain, endpointChains []utiliptables.Chain, args []string) {
