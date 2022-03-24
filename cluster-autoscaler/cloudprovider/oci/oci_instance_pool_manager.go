@@ -254,6 +254,7 @@ func (m *InstancePoolManagerImpl) forceRefresh() error {
 	if m.cfg == nil {
 		return errors.New("instance pool manager does have a required config")
 	}
+	m.shapeGetter.Refresh()
 	err := m.instancePoolCache.rebuild(m.staticInstancePools, *m.cfg)
 	if err != nil {
 		return err
