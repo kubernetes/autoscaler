@@ -410,9 +410,8 @@ func (c *instancePoolCache) waitForRunningInstanceCount(ctx context.Context, siz
 			if err != nil {
 				klog.V(4).Infof("received an error while waiting for scale to complete on %s: %v", instancePoolID, err)
 				return err
-			} else {
-				return nil
 			}
+			return nil
 		case <-time.After(10 * time.Minute):
 			// timeout waiting for completion or update in count
 			return errors.New("timeout waiting for instance-pool " + instancePoolID + " scaling operation to make progress")
@@ -519,7 +518,7 @@ func (c *instancePoolCache) getSize(id string) (int, error) {
 
 // maxScalingWaitTime estimates the maximum amount of time, as a duration, that to scale size instances.
 // note, larger scale operations are broken up internally to smaller batches. This is an internal detail
-// and can be overriden on a tenancy basis. 20 is a good default.
+// and can be overridden on a tenancy basis. 20 is a good default.
 func maxScalingWaitTime(size, batchSize int, timePerBatch time.Duration) time.Duration {
 	buffer := 60 * time.Second
 
