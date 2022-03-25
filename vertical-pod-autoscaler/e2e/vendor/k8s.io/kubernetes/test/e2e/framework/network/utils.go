@@ -51,7 +51,7 @@ import (
 
 const (
 	// EndpointHTTPPort is an endpoint HTTP port for testing.
-	EndpointHTTPPort = 8080
+	EndpointHTTPPort = 8083
 	// EndpointUDPPort is an endpoint UDP port for testing.
 	EndpointUDPPort = 8081
 	// EndpointSCTPPort is an endpoint SCTP port for testing.
@@ -438,7 +438,7 @@ func (config *NetworkingTestConfig) GetHTTPCodeFromTestContainer(path, targetIP 
 //   (See the TODO about checking probability, which isnt implemented yet).
 // - maxTries is the maximum number of curl/echo attempts before an error is returned.  The
 //   smaller this number is, the less 'slack' there is for declaring success.
-// - if maxTries < expectedEps, this test is guaranteed to return an error, because all endpoints wont be hit.
+// - if maxTries < expectedEps, this test is guaranteed to return an error, because all endpoints won't be hit.
 // - maxTries == minTries will return as soon as all endpoints succeed (or fail once maxTries is reached without
 //   success on all endpoints).
 //   In general its prudent to have a high enough level of minTries to guarantee that all pods get a fair chance at receiving traffic.
@@ -540,13 +540,25 @@ func (config *NetworkingTestConfig) executeCurlCmd(cmd string, expected string) 
 }
 
 func (config *NetworkingTestConfig) createNetShellPodSpec(podName, hostname string) *v1.Pod {
+	netexecArgs := []string{
+		"netexec",
+		fmt.Sprintf("--http-port=%d", EndpointHTTPPort),
+		fmt.Sprintf("--udp-port=%d", EndpointUDPPort),
+	}
+	// In case of hostnetwork endpoints, we want to bind the udp listener to specific ip addresses.
+	// In order to cover legacy AND dualstack, we pass both the host ip and the two pod ips. Agnhost
+	// removes duplicates and so this will listen on both addresses (or on the single existing one).
+	if config.EndpointsHostNetwork {
+		netexecArgs = append(netexecArgs, "--udp-listen-addresses=$(HOST_IP),$(POD_IPS)")
+	}
+
 	probe := &v1.Probe{
 		InitialDelaySeconds: 10,
 		TimeoutSeconds:      30,
 		PeriodSeconds:       10,
 		SuccessThreshold:    1,
 		FailureThreshold:    3,
-		Handler: v1.Handler{
+		ProbeHandler: v1.ProbeHandler{
 			HTTPGet: &v1.HTTPGetAction{
 				Path: "/healthz",
 				Port: intstr.IntOrString{IntVal: EndpointHTTPPort},
@@ -568,11 +580,7 @@ func (config *NetworkingTestConfig) createNetShellPodSpec(podName, hostname stri
 					Name:            "webserver",
 					Image:           NetexecImageName,
 					ImagePullPolicy: v1.PullIfNotPresent,
-					Args: []string{
-						"netexec",
-						fmt.Sprintf("--http-port=%d", EndpointHTTPPort),
-						fmt.Sprintf("--udp-port=%d", EndpointUDPPort),
-					},
+					Args:            netexecArgs,
 					Ports: []v1.ContainerPort{
 						{
 							Name:          "http",
@@ -601,6 +609,27 @@ func (config *NetworkingTestConfig) createNetShellPodSpec(podName, hostname stri
 			ContainerPort: EndpointSCTPPort,
 			Protocol:      v1.ProtocolSCTP,
 		})
+	}
+
+	if config.EndpointsHostNetwork {
+		pod.Spec.Containers[0].Env = []v1.EnvVar{
+			{
+				Name: "HOST_IP",
+				ValueFrom: &v1.EnvVarSource{
+					FieldRef: &v1.ObjectFieldSelector{
+						FieldPath: "status.hostIP",
+					},
+				},
+			},
+			{
+				Name: "POD_IPS",
+				ValueFrom: &v1.EnvVarSource{
+					FieldRef: &v1.ObjectFieldSelector{
+						FieldPath: "status.podIPs",
+					},
+				},
+			},
+		}
 	}
 	return pod
 }
@@ -715,13 +744,6 @@ func (config *NetworkingTestConfig) CreateService(serviceSpec *v1.Service) *v1.S
 	framework.ExpectNoError(err, fmt.Sprintf("Failed to create %s service: %v", serviceSpec.Name, err))
 
 	err = WaitForService(config.f.ClientSet, config.Namespace, serviceSpec.Name, true, 5*time.Second, 45*time.Second)
-	// If the endpoints of the service use HostNetwork: true, they are going to try to bind on the host namespace
-	// if those ports are in use by any process in the host, the endpoints pods will fail to be deployed
-	// and the service will never be ready. We can be smarter and check directly that the ports are free
-	// but by now we Skip the test if the service is not ready and we are using endpoints with host network
-	if config.EndpointsHostNetwork && err != nil {
-		e2eskipper.Skipf("Service not ready. Pods are using hostNetwork: true, please check there is no other process on the host using the same ports: %v", err)
-	}
 	framework.ExpectNoError(err, fmt.Sprintf("error while waiting for service:%s err: %v", serviceSpec.Name, err))
 
 	createdService, err := config.getServiceClient().Get(context.TODO(), serviceSpec.Name, metav1.GetOptions{})
@@ -878,8 +900,8 @@ func (config *NetworkingTestConfig) getServiceClient() coreclientset.ServiceInte
 
 // HTTPPokeParams is a struct for HTTP poke parameters.
 type HTTPPokeParams struct {
-	Timeout        time.Duration
-	ExpectCode     int // default = 200
+	Timeout        time.Duration // default = 10 secs
+	ExpectCode     int           // default = 200
 	BodyContains   string
 	RetriableCodes []int
 	EnableHTTPS    bool
@@ -957,6 +979,10 @@ func PokeHTTP(host string, port int, path string, params *HTTPPokeParams) HTTPPo
 
 	if params.ExpectCode == 0 {
 		params.ExpectCode = http.StatusOK
+	}
+
+	if params.Timeout == 0 {
+		params.Timeout = 10 * time.Second
 	}
 
 	framework.Logf("Poking %q", url)
