@@ -171,7 +171,7 @@ Note the 3 specified instance-pools are intended to correspond to different avai
 ```yaml
 ...
       containers:
-        - image: docker.io/jlamillan/autoscaler:oci-pr-rc6
+        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           command:
             - ./cluster-autoscaler
