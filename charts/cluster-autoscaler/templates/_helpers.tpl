@@ -64,6 +64,18 @@ Return the appropriate apiVersion for deployment.
 {{- end -}}
 
 {{/*
+Return the appropriate apiVersion for poddisruptionbudget.
+*/}}
+{{- define "poddisruptionbudget.apiVersion" -}}
+{{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
+{{- if semverCompare "<1.21-0" $kubeTargetVersion -}}
+{{- print "policy/v1beta1" -}}
+{{- else -}}
+{{- print "policy/v1" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the appropriate apiVersion for podsecuritypolicy.
 */}}
 {{- define "podsecuritypolicy.apiVersion" -}}
