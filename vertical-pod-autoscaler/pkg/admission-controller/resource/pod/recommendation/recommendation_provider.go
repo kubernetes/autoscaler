@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	core "k8s.io/api/core/v1"
-	vpa_resource "k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -127,10 +126,9 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 			quant1 := pod.Spec.Containers[i].Resources.Limits["memory"]
 			quant2 := containerResource.Requests["memory"]
 
-			// Verify Limit is Enougth for Request
+			// Verify Limit is Enougth for the Request
 			if !quant1.IsZero() && !quant2.IsZero() && quant1.Cmp(quant2) < 0 {
-				q := int64(quant2.Value() * 5.0)
-				limits["memory"] = *vpa_resource.NewQuantity(q, vpa_resource.BinarySI)
+				limits["memory"] = quant2
 			}
 		}
 
@@ -145,10 +143,9 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 			quant1 := pod.Spec.Containers[i].Resources.Limits["cpu"]
 			quant2 := containerResource.Requests["cpu"]
 
-			// Verify Limit is Enougth for Request
+			// Verify Limit is Enougth for the Request
 			if !quant1.IsZero() && !quant2.IsZero() && quant1.Cmp(quant2) < 0 {
-				q := int64(quant2.MilliValue() * 5.0)
-				limits["cpu"] = *vpa_resource.NewMilliQuantity(q, vpa_resource.BinarySI)
+				limits["cpu"] = quant2
 			}
 		}
 		containerResource.Requests = requests
