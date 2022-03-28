@@ -116,41 +116,39 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		requests := core.ResourceList{}
 		limits := core.ResourceList{}
 		quant := containerResource.Requests["memory"]
-		if containerResource.Requests.Memory != nil && !quant.IsZero() {
+		if !quant.IsZero() {
 			requests["memory"] = quant
 		}
 
 		quant = containerResource.Limits["memory"]
-		if containerResource.Limits.Memory != nil && !quant.IsZero() {
+		if !quant.IsZero() {
 			limits["memory"] = quant
 		} else {
-			if containerResource.Requests.Memory != nil && pod.Spec.Containers[i].Resources.Limits.Memory != nil {
-				quant1 := pod.Spec.Containers[i].Resources.Limits["memory"]
-				quant2 := containerResource.Requests["memory"]
-				// Verify Limit is Enougth for Request
-				if quant1.Cmp(quant2) < 0 {
-					q := int64(quant2.Value() * 5.0)
-					limits["memory"] = *vpa_resource.NewQuantity(q, vpa_resource.BinarySI)
-				}
+			quant1 := pod.Spec.Containers[i].Resources.Limits["memory"]
+			quant2 := containerResource.Requests["memory"]
+
+			// Verify Limit is Enougth for Request
+			if quant1 > 0 && quant2 > 0 && quant1.Cmp(quant2) < 0 {
+				q := int64(quant2.Value() * 5.0)
+				limits["memory"] = *vpa_resource.NewQuantity(q, vpa_resource.BinarySI)
 			}
 		}
 
 		quant = containerResource.Requests["cpu"]
-		if containerResource.Requests.Cpu != nil && !quant.IsZero() {
+		if !quant.IsZero() {
 			requests["cpu"] = quant
 		}
 		quant = containerResource.Limits["cpu"]
-		if containerResource.Limits.Cpu != nil && !quant.IsZero() {
+		if !quant.IsZero() {
 			limits["cpu"] = quant
 		} else {
-			if containerResource.Requests.Cpu != nil && pod.Spec.Containers[i].Resources.Limits.Cpu != nil {
-				quant1 := pod.Spec.Containers[i].Resources.Limits["cpu"]
-				quant2 := containerResource.Requests["cpu"]
-				// Verify Limit is Enougth for Request
-				if quant1.Cmp(quant2) < 0 {
-					q := int64(quant2.MilliValue() * 5.0)
-					limits["cpu"] = *vpa_resource.NewMilliQuantity(q, vpa_resource.BinarySI)
-				}
+			quant1 := pod.Spec.Containers[i].Resources.Limits["cpu"]
+			quant2 := containerResource.Requests["cpu"]
+
+			// Verify Limit is Enougth for Request
+			if quant1 > 0 && quant2 > 0 && quant1.Cmp(quant2) < 0 {
+				q := int64(quant2.MilliValue() * 5.0)
+				limits["cpu"] = *vpa_resource.NewMilliQuantity(q, vpa_resource.BinarySI)
 			}
 		}
 		containerResource.Requests = requests
