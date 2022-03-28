@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -362,7 +363,7 @@ type ScaleDown struct {
 	unneededNodesList      []*apiv1.Node
 	unremovableNodes       map[string]time.Time
 	podLocationHints       map[string]string
-	nodeUtilizationMap     map[string]simulator.UtilizationInfo
+	nodeUtilizationMap     map[string]utilization.Info
 	usageTracker           *simulator.UsageTracker
 	nodeDeletionTracker    *NodeDeletionTracker
 	unremovableNodeReasons map[string]*simulator.UnremovableNode
@@ -377,7 +378,7 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		unneededNodes:          make(map[string]time.Time),
 		unremovableNodes:       make(map[string]time.Time),
 		podLocationHints:       make(map[string]string),
-		nodeUtilizationMap:     make(map[string]simulator.UtilizationInfo),
+		nodeUtilizationMap:     make(map[string]utilization.Info),
 		usageTracker:           simulator.NewUsageTracker(),
 		unneededNodesList:      make([]*apiv1.Node, 0),
 		nodeDeletionTracker:    NewNodeDeletionTracker(),
@@ -399,7 +400,7 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodes = make(map[string]time.Time)
 }
 
-func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *simulator.UtilizationInfo) {
+func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *utilization.Info) {
 	// Skip nodes that were recently checked.
 	if _, found := sd.unremovableNodes[node.Name]; found {
 		return simulator.RecentlyUnremovable, nil
@@ -419,7 +420,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 		return simulator.ScaleDownDisabledAnnotation, nil
 	}
 
-	utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel(), timestamp)
+	utilInfo, err := utilization.Calculate(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel(), timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
@@ -475,7 +476,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.updateUnremovableNodes(timestamp)
 
 	skipped := 0
-	utilizationMap := make(map[string]simulator.UtilizationInfo)
+	utilizationMap := make(map[string]utilization.Info)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
@@ -632,7 +633,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 }
 
 // isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
-func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo simulator.UtilizationInfo) (bool, error) {
+func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
 	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
@@ -703,7 +704,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
-	sd.nodeUtilizationMap = make(map[string]simulator.UtilizationInfo)
+	sd.nodeUtilizationMap = make(map[string]utilization.Info)
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
