@@ -26,6 +26,7 @@ cluster is located in:
 ```sh
 export EXOSCALE_API_KEY="EXOxxxxxxxxxxxxxxxxxxxxxxxx"
 export EXOSCALE_API_SECRET="xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+export EXOSCALE_ZONE="ch-gva-2"
 ```
 
 Next, run the following command from the same shell:
@@ -62,8 +63,7 @@ kubectl apply -f ./examples/cluster-autoscaler-run-on-control-plane.yaml
 * The maximum node group size is computed based on the current [Compute
   instances limit][exo-limits] of the Exoscale account the Cluster Autoscaler
   is running in.
-* It is not possible to target which Exoscale Instance Pool will be scaled. The
-  Instance Pool candidate for scaling is determined based on the Compute
+* The Instance Pool candidate for scaling is determined based on the Compute
   instance the Kubernetes node is running on, depending on cluster resource
   constraining events emitted by the Kubernetes scheduler.
 

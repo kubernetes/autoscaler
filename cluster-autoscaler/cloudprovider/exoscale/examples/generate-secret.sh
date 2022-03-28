@@ -23,4 +23,5 @@ type: Opaque
 data:
   api-key: '$(printf "%s" "$EXOSCALE_API_KEY" | base64)'
   api-secret: '$(printf "%s" "$EXOSCALE_API_SECRET" | base64)'
+  api-zone: '$(printf "%s" "$EXOSCALE_ZONE" | base64)'
 EOF
