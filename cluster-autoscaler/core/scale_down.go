@@ -632,6 +632,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	return nil
 }
 
+// NodeUtilizationMap returns the most recent mapping from node names to utilization info.
+func (sd *ScaleDown) NodeUtilizationMap() map[string]utilization.Info {
+	return sd.nodeUtilizationMap
+}
+
 // isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
 func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
@@ -695,6 +700,21 @@ func (sd *ScaleDown) getUnremovableNodesCount() map[simulator.UnremovableReason]
 	}
 
 	return reasons
+}
+
+// UnremovableNodes returns a list of nodes that cannot be removed according to
+// the scale down algorithm.
+func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
+	ns := make([]*simulator.UnremovableNode, 0, len(sd.unremovableNodeReasons))
+	for _, n := range sd.unremovableNodeReasons {
+		ns = append(ns, n)
+	}
+	return ns
+}
+
+// IsNonEmptyNodeDeleteInProgress returns true if any nodes are being deleted.
+func (sd *ScaleDown) IsNonEmptyNodeDeleteInProgress() bool {
+	return sd.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress()
 }
 
 // markSimulationError indicates a simulation error by clearing  relevant scale
