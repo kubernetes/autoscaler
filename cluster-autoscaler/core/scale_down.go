@@ -629,6 +629,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.nodeUtilizationMap = utilizationMap
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
+	if klog.V(4).Enabled() {
+		for key, val := range sd.unneededNodes {
+			klog.Infof("%s is unneeded since %s duration %s", key, val.String(), timestamp.Sub(val).String())
+		}
+	}
 	return nil
 }
 

@@ -517,12 +517,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		if klog.V(4).Enabled() {
-			for key, val := range scaleDown.unneededNodes {
-				klog.Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
-			}
-		}
-
 		scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop ||
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
