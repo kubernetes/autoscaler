@@ -22,12 +22,12 @@ import (
 	"math"
 	"reflect"
 	"strings"
-	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -81,92 +81,8 @@ const (
 	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
 )
 
-// NodeDeletionTracker keeps track of node deletions.
-type NodeDeletionTracker struct {
-	sync.Mutex
-	nonEmptyNodeDeleteInProgress bool
-	// A map of node delete results by node name. It's being constantly emptied into ScaleDownStatus
-	// objects in order to notify the ScaleDownStatusProcessor that the node drain has ended or that
-	// an error occurred during the deletion process.
-	nodeDeleteResults map[string]status.NodeDeleteResult
-	// A map which keeps track of deletions in progress for nodepools.
-	// Key is a node group id and value is a number of node deletions in progress.
-	deletionsInProgress map[string]int
-}
-
 // Get current time. Proxy for unit tests.
 var now func() time.Time = time.Now
-
-// NewNodeDeletionTracker creates new NodeDeletionTracker.
-func NewNodeDeletionTracker() *NodeDeletionTracker {
-	return &NodeDeletionTracker{
-		nodeDeleteResults:   make(map[string]status.NodeDeleteResult),
-		deletionsInProgress: make(map[string]int),
-	}
-}
-
-// IsNonEmptyNodeDeleteInProgress returns true if a non empty node is being deleted.
-func (n *NodeDeletionTracker) IsNonEmptyNodeDeleteInProgress() bool {
-	n.Lock()
-	defer n.Unlock()
-	return n.nonEmptyNodeDeleteInProgress
-}
-
-// SetNonEmptyNodeDeleteInProgress sets non empty node deletion in progress status.
-func (n *NodeDeletionTracker) SetNonEmptyNodeDeleteInProgress(status bool) {
-	n.Lock()
-	defer n.Unlock()
-	n.nonEmptyNodeDeleteInProgress = status
-}
-
-// StartDeletion increments node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) StartDeletion(nodeGroupId string) {
-	n.Lock()
-	defer n.Unlock()
-	n.deletionsInProgress[nodeGroupId]++
-}
-
-// EndDeletion decrements node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) EndDeletion(nodeGroupId string) {
-	n.Lock()
-	defer n.Unlock()
-
-	value, found := n.deletionsInProgress[nodeGroupId]
-	if !found {
-		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus wasn't found", nodeGroupId)
-		return
-	}
-	if value <= 0 {
-		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus isn't greater than 0, counter value is %d", nodeGroupId, value)
-	}
-	n.deletionsInProgress[nodeGroupId]--
-	if n.deletionsInProgress[nodeGroupId] <= 0 {
-		delete(n.deletionsInProgress, nodeGroupId)
-	}
-}
-
-// GetDeletionsInProgress returns the number of deletions in progress for the given node group.
-func (n *NodeDeletionTracker) GetDeletionsInProgress(nodeGroupId string) int {
-	n.Lock()
-	defer n.Unlock()
-	return n.deletionsInProgress[nodeGroupId]
-}
-
-// AddNodeDeleteResult adds a node delete result to the result map.
-func (n *NodeDeletionTracker) AddNodeDeleteResult(nodeName string, result status.NodeDeleteResult) {
-	n.Lock()
-	defer n.Unlock()
-	n.nodeDeleteResults[nodeName] = result
-}
-
-// GetAndClearNodeDeleteResults returns the whole result map and replaces it with a new empty one.
-func (n *NodeDeletionTracker) GetAndClearNodeDeleteResults() map[string]status.NodeDeleteResult {
-	n.Lock()
-	defer n.Unlock()
-	results := n.nodeDeleteResults
-	n.nodeDeleteResults = make(map[string]status.NodeDeleteResult)
-	return results
-}
 
 type scaleDownResourcesLimits map[string]int64
 type scaleDownResourcesDelta map[string]int64
@@ -365,7 +281,7 @@ type ScaleDown struct {
 	podLocationHints       map[string]string
 	nodeUtilizationMap     map[string]utilization.Info
 	usageTracker           *simulator.UsageTracker
-	nodeDeletionTracker    *NodeDeletionTracker
+	nodeDeletionTracker    *deletiontracker.NodeDeletionTracker
 	unremovableNodeReasons map[string]*simulator.UnremovableNode
 }
 
@@ -381,7 +297,7 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		nodeUtilizationMap:     make(map[string]utilization.Info),
 		usageTracker:           simulator.NewUsageTracker(),
 		unneededNodesList:      make([]*apiv1.Node, 0),
-		nodeDeletionTracker:    NewNodeDeletionTracker(),
+		nodeDeletionTracker:    deletiontracker.NewNodeDeletionTracker(),
 		unremovableNodeReasons: make(map[string]*simulator.UnremovableNode),
 	}
 }
