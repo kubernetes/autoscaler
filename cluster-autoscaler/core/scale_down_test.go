@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -1531,7 +1532,7 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 }
 
 func TestScaleDownEmptyMinGroupSizeLimitHitWhenOneNodeIsBeingDeleted(t *testing.T) {
-	nodeDeletionTracker := NewNodeDeletionTracker()
+	nodeDeletionTracker := deletiontracker.NewNodeDeletionTracker()
 	nodeDeletionTracker.StartDeletion("ng1")
 	nodeDeletionTracker.StartDeletion("ng1")
 	options := defaultScaleDownOptions

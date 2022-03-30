@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -86,7 +87,7 @@ type scaleTestConfig struct {
 	pods                    []podConfig
 	extraPods               []podConfig
 	options                 config.AutoscalingOptions
-	nodeDeletionTracker     *NodeDeletionTracker
+	nodeDeletionTracker     *deletiontracker.NodeDeletionTracker
 	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
 
 	expectedScaleDowns     []string
