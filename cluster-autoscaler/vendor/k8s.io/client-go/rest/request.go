@@ -504,7 +504,9 @@ func (r *Request) tryThrottleWithInfo(ctx context.Context, retryInfo string) err
 	now := time.Now()
 
 	err := r.rateLimiter.Wait(ctx)
-
+	if err != nil {
+		err = fmt.Errorf("client rate limiter Wait returned an error: %w", err)
+	}
 	latency := time.Since(now)
 
 	var message string
@@ -618,7 +620,7 @@ func (r *Request) Watch(ctx context.Context) (watch.Interface, error) {
 		}
 
 		if err := r.retry.Before(ctx, r); err != nil {
-			return nil, err
+			return nil, r.retry.WrapPreviousError(err)
 		}
 
 		resp, err := client.Do(req)
@@ -653,7 +655,7 @@ func (r *Request) Watch(ctx context.Context) (watch.Interface, error) {
 				// we need to return the error object from that.
 				err = transformErr
 			}
-			return nil, err
+			return nil, r.retry.WrapPreviousError(err)
 		}
 	}
 }
@@ -863,7 +865,7 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 		}
 
 		if err := r.retry.Before(ctx, r); err != nil {
-			return err
+			return r.retry.WrapPreviousError(err)
 		}
 		resp, err := client.Do(req)
 		updateURLMetrics(ctx, r, resp, err)
@@ -893,7 +895,7 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 			return true
 		}()
 		if done {
-			return err
+			return r.retry.WrapPreviousError(err)
 		}
 	}
 }
@@ -1049,13 +1051,13 @@ func truncateBody(body string) string {
 // allocating a new string for the body output unless necessary. Uses a simple heuristic to determine
 // whether the body is printable.
 func glogBody(prefix string, body []byte) {
-	if klog.V(8).Enabled() {
+	if klogV := klog.V(8); klogV.Enabled() {
 		if bytes.IndexFunc(body, func(r rune) bool {
 			return r < 0x0a
 		}) != -1 {
-			klog.Infof("%s:\n%s", prefix, truncateBody(hex.Dump(body)))
+			klogV.Infof("%s:\n%s", prefix, truncateBody(hex.Dump(body)))
 		} else {
-			klog.Infof("%s: %s", prefix, truncateBody(string(body)))
+			klogV.Infof("%s: %s", prefix, truncateBody(string(body)))
 		}
 	}
 }

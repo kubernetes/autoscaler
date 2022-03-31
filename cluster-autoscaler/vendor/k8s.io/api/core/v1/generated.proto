@@ -1767,6 +1767,12 @@ message HostAlias {
   repeated string hostnames = 2;
 }
 
+// HostIP address information for entries in the (plural) HostIPs field.
+message HostIP {
+  // IP is the IP address assigned to the host
+  optional string ip = 1;
+}
+
 // Represents a host path mapped into a pod.
 // Host path volumes do not support ownership management or SELinux relabeling.
 message HostPathVolumeSource {
@@ -2495,7 +2501,7 @@ message NodeSystemInfo {
   // OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
   optional string osImage = 5;
 
-  // ContainerRuntime Version reported by the node through runtime remote API (e.g. docker://1.5.0).
+  // ContainerRuntime Version reported by the node through runtime remote API (e.g. containerd://1.4.2).
   optional string containerRuntimeVersion = 6;
 
   // Kubelet Version reported by the node.
@@ -2720,7 +2726,7 @@ message PersistentVolumeClaimSpec {
   // * While DataSource ignores disallowed values (dropping them), DataSourceRef
   //   preserves all values, and generates an error if a disallowed value is
   //   specified.
-  // (Alpha) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
+  // (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
   // +optional
   optional TypedLocalObjectReference dataSourceRef = 8;
 }
@@ -3230,11 +3236,9 @@ message PodExecOptions {
   repeated string command = 6;
 }
 
-// IP address information for entries in the (plural) PodIPs field.
-// Each entry includes:
-//    IP: An IP address allocated to the pod. Routable at least within the cluster.
+// PodIP address information for entries in the (plural) PodIPs field.
 message PodIP {
-  // ip is an IP address (IPv4 or IPv6) assigned to the pod
+  // IP is the IP address assigned to the pod
   optional string ip = 1;
 }
 
@@ -3575,8 +3579,7 @@ message PodSpec {
   optional PodSecurityContext securityContext = 14;
 
   // ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-  // If specified, these secrets will be passed to individual puller implementations for them to use. For example,
-  // in the case of docker, only DockerConfig type secrets are honored.
+  // If specified, these secrets will be passed to individual puller implementations for them to use.
   // More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
   // +optional
   // +patchMergeKey=name
@@ -3720,7 +3723,7 @@ message PodSpec {
   // - spec.containers[*].securityContext.runAsUser
   // - spec.containers[*].securityContext.runAsGroup
   // +optional
-  // This is an alpha field and requires the IdentifyPodOS feature
+  // This is a beta field and requires the IdentifyPodOS feature
   optional PodOS os = 36;
 }
 
@@ -3775,11 +3778,24 @@ message PodStatus {
   // +optional
   optional string nominatedNodeName = 11;
 
-  // IP address of the host to which the pod is assigned. Empty if not yet scheduled.
+  // hostIP holds the IP address of the host to which the pod is assigned.
+  // Empty if the pod has not started yet.
+  // A pod can be assigned to a node that has a problem in kubelet which in turns mean that HostIP will
+  // not be updated even if there is node is assigned to pod
   // +optional
   optional string hostIP = 5;
 
-  // IP address allocated to the pod. Routable at least within the cluster.
+  // hostIPs holds the IP addresses allocated to the host. If this field is specified, the first entry must
+  // match the hostIP field. This list is empty if the pod has not started yet.
+  // A pod can be assigned to a node that has a problem in kubelet which in turns means that HostIPs will
+  // not be updated even if there is a node is assigned to this pod.
+  // +optional
+  // +patchStrategy=merge
+  // +patchMergeKey=ip
+  // +listType=set
+  repeated HostIP hostIPs = 14;
+
+  // podIP address allocated to the pod. Routable at least within the cluster.
   // Empty if not yet allocated.
   // +optional
   optional string podIP = 6;
@@ -4010,7 +4026,7 @@ message ProbeHandler {
   optional TCPSocketAction tcpSocket = 3;
 
   // GRPC specifies an action involving a GRPC port.
-  // This is an alpha field and requires enabling GRPCContainerProbe feature gate.
+  // This is a beta field and requires enabling GRPCContainerProbe feature gate.
   // +featureGate=GRPCContainerProbe
   // +optional
   optional GRPCAction grpc = 4;
