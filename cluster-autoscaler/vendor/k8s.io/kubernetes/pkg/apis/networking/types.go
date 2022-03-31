@@ -33,6 +33,11 @@ type NetworkPolicy struct {
 	// Specification of the desired behavior for this NetworkPolicy.
 	// +optional
 	Spec NetworkPolicySpec
+
+	// Status is the current state of the NetworkPolicy.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	// +optional
+	Status NetworkPolicyStatus
 }
 
 // PolicyType describes the NetworkPolicy type
@@ -193,6 +198,42 @@ type NetworkPolicyPeer struct {
 	// neither of the other fields can be.
 	// +optional
 	IPBlock *IPBlock
+}
+
+// NetworkPolicyConditionType is the type for status conditions on
+// a NetworkPolicy. This type should be used with the
+// NetworkPolicyStatus.Conditions field.
+type NetworkPolicyConditionType string
+
+const (
+	// NetworkPolicyConditionStatusAccepted represents status of a Network Policy that could be properly parsed by
+	// the Network Policy provider and will be implemented in the cluster
+	NetworkPolicyConditionStatusAccepted NetworkPolicyConditionType = "Accepted"
+
+	// NetworkPolicyConditionStatusPartialFailure represents status of a Network Policy that could be partially
+	// parsed by the Network Policy provider and may not be completely implemented due to a lack of a feature or some
+	// other condition
+	NetworkPolicyConditionStatusPartialFailure NetworkPolicyConditionType = "PartialFailure"
+
+	// NetworkPolicyConditionStatusFailure represents status of a Network Policy that could not be parsed by the
+	// Network Policy provider and will not be implemented in the cluster
+	NetworkPolicyConditionStatusFailure NetworkPolicyConditionType = "Failure"
+)
+
+// NetworkPolicyConditionReason defines the set of reasons that explain why a
+// particular NetworkPolicy condition type has been raised.
+type NetworkPolicyConditionReason string
+
+const (
+	// NetworkPolicyConditionReasonFeatureNotSupported represents a reason where the Network Policy may not have been
+	// implemented in the cluster due to a lack of some feature not supported by the Network Policy provider
+	NetworkPolicyConditionReasonFeatureNotSupported NetworkPolicyConditionReason = "FeatureNotSupported"
+)
+
+// NetworkPolicyStatus describe the current state of the NetworkPolicy.
+type NetworkPolicyStatus struct {
+	// Conditions holds an array of metav1.Condition that describe the state of the NetworkPolicy.
+	Conditions []metav1.Condition
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -543,4 +584,62 @@ type ServiceBackendPort struct {
 	// This is a mutually exclusive setting with "Name".
 	// +optional
 	Number int32
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ClusterCIDRConfig is the Schema for the clustercidrconfigs API.
+type ClusterCIDRConfig struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   ClusterCIDRConfigSpec
+	Status ClusterCIDRConfigStatus
+}
+
+// ClusterCIDRConfigSpec defines the desired state of ClusterCIDRConfig.
+type ClusterCIDRConfigSpec struct {
+	// NodeSelector defines which nodes the config is applicable to.
+	// An empty or nil NodeSelector functions as a default that applies to all nodes.
+	// This field is immutable.
+	// +optional
+	NodeSelector *api.NodeSelector
+
+	// PerNodeHostBits defines the number of host bits to be configured per node.
+	// A subnet mask determines how much of the address is used for network bits
+	// and host bits. For example and IPv4 address of 192.168.0.0/24, splits the
+	// address into 24 bits for the network portion and 8 bits for the host portion.
+	// For a /24 mask for IPv4 or a /120 for IPv6, configure PerNodeHostBits=8
+	// This field is immutable.
+	// +optional
+	PerNodeHostBits int32
+
+	// IPv4CIDR defines an IPv4 IP block in CIDR notation(e.g. "10.0.0.0/8").
+	// This field is immutable.
+	// +optional
+	IPv4CIDR string
+
+	// IPv6CIDR defines an IPv6 IP block in CIDR notation(e.g. "fd12:3456:789a:1::/64").
+	// This field is immutable.
+	// +optional
+	IPv6CIDR string
+}
+
+// ClusterCIDRConfigStatus defines the observed state of ClusterCIDRConfig.
+type ClusterCIDRConfigStatus struct {
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ClusterCIDRConfigList contains a list of ClusterCIDRConfigs.
+type ClusterCIDRConfigList struct {
+	metav1.TypeMeta
+
+	// +optional
+	metav1.ListMeta
+
+	// Items is the list of ClusterCIDRConfigs.
+	Items []ClusterCIDRConfig
 }

@@ -151,6 +151,7 @@ const (
 	// owner: @jiahuif
 	// kep: http://kep.k8s.io/2887
 	// alpha: v1.23
+	// beta: v1.24
 	//
 	// Enables populating "enum" field of OpenAPI schemas
 	// in the spec returned from kube-apiserver.
@@ -166,6 +167,7 @@ const (
 	// owner: @jefftree
 	// kep: http://kep.k8s.io/2896
 	// alpha: v1.23
+	// beta: v1.24
 	//
 	// Enables kubernetes to publish OpenAPI v3
 	OpenAPIV3 featuregate.Feature = "OpenAPIV3"
@@ -173,9 +175,17 @@ const (
 	// owner: @kevindelgado
 	// kep: http://kep.k8s.io/2885
 	// alpha: v1.23
+	// beta: v1.24
 	//
 	// Enables server-side field validation.
 	ServerSideFieldValidation featuregate.Feature = "ServerSideFieldValidation"
+
+	// owner: @deejross
+	// kep: http://kep.k8s.io/3140
+	// alpha: v1.24
+	//
+	// Enables support for time zones in CronJobs.
+	CronJobTimeZone featuregate.Feature = "CronJobTimeZone"
 )
 
 func init() {
@@ -201,8 +211,9 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	EfficientWatchResumption:            {Default: true, PreRelease: featuregate.GA, LockToDefault: true},
 	APIServerIdentity:                   {Default: false, PreRelease: featuregate.Alpha},
 	APIServerTracing:                    {Default: false, PreRelease: featuregate.Alpha},
-	OpenAPIEnums:                        {Default: false, PreRelease: featuregate.Alpha},
+	OpenAPIEnums:                        {Default: true, PreRelease: featuregate.Beta},
 	CustomResourceValidationExpressions: {Default: false, PreRelease: featuregate.Alpha},
-	OpenAPIV3:                           {Default: false, PreRelease: featuregate.Alpha},
-	ServerSideFieldValidation:           {Default: false, PreRelease: featuregate.Alpha},
+	OpenAPIV3:                           {Default: true, PreRelease: featuregate.Beta},
+	ServerSideFieldValidation:           {Default: true, PreRelease: featuregate.Beta},
+	CronJobTimeZone:                     {Default: false, PreRelease: featuregate.Alpha},
 }
