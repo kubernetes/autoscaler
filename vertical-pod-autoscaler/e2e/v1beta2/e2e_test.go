@@ -33,7 +33,6 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 	"k8s.io/kubernetes/test/e2e/framework/testfiles"
-	"k8s.io/kubernetes/test/e2e/generated"
 	"k8s.io/kubernetes/test/utils/image"
 )
 
@@ -68,12 +67,6 @@ func TestMain(m *testing.M) {
 	if framework.TestContext.RepoRoot != "" {
 		testfiles.AddFileSource(testfiles.RootFileSource{Root: framework.TestContext.RepoRoot})
 	}
-
-	// Enable bindata file lookup as fallback.
-	testfiles.AddFileSource(testfiles.BindataFileSource{
-		Asset:      generated.Asset,
-		AssetNames: generated.AssetNames,
-	})
 
 	rand.Seed(time.Now().UnixNano())
 	os.Exit(m.Run())
