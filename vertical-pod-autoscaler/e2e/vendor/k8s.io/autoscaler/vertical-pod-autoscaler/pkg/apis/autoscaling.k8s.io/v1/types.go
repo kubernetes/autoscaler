@@ -112,9 +112,9 @@ type PodUpdatePolicy struct {
 	// +optional
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 
-	// Overrides global '--min-replicas' flag, specifying minimal number of replicas
-	// which need to be alive for Updater to attempt pod eviction (pending other
-	// checks like PDB).
+	// Minimal number of replicas which need to be alive for Updater to attempt
+	// pod eviction (pending other checks like PDB). Only positive values are
+	// allowed. Overrides global '--min-replicas' flag.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
 }
