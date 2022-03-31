@@ -516,7 +516,7 @@ type PersistentVolumeClaimSpec struct {
 	// * While DataSource ignores disallowed values (dropping them), DataSourceRef
 	//   preserves all values, and generates an error if a disallowed value is
 	//   specified.
-	// (Alpha) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
+	// (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
 	// +optional
 	DataSourceRef *TypedLocalObjectReference `json:"dataSourceRef,omitempty" protobuf:"bytes,8,opt,name=dataSourceRef"`
 }
@@ -2461,7 +2461,7 @@ type ProbeHandler struct {
 	TCPSocket *TCPSocketAction `json:"tcpSocket,omitempty" protobuf:"bytes,3,opt,name=tcpSocket"`
 
 	// GRPC specifies an action involving a GRPC port.
-	// This is an alpha field and requires enabling GRPCContainerProbe feature gate.
+	// This is a beta field and requires enabling GRPCContainerProbe feature gate.
 	// +featureGate=GRPCContainerProbe
 	// +optional
 	GRPC *GRPCAction `json:"grpc,omitempty" protobuf:"bytes,4,opt,name=grpc"`
@@ -3169,8 +3169,7 @@ type PodSpec struct {
 	// +optional
 	SecurityContext *PodSecurityContext `json:"securityContext,omitempty" protobuf:"bytes,14,opt,name=securityContext"`
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
-	// If specified, these secrets will be passed to individual puller implementations for them to use. For example,
-	// in the case of docker, only DockerConfig type secrets are honored.
+	// If specified, these secrets will be passed to individual puller implementations for them to use.
 	// More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
 	// +optional
 	// +patchMergeKey=name
@@ -3297,7 +3296,7 @@ type PodSpec struct {
 	// - spec.containers[*].securityContext.runAsUser
 	// - spec.containers[*].securityContext.runAsGroup
 	// +optional
-	// This is an alpha field and requires the IdentifyPodOS feature
+	// This is a beta field and requires the IdentifyPodOS feature
 	OS *PodOS `json:"os,omitempty" protobuf:"bytes,36,opt,name=os"`
 }
 
@@ -3606,11 +3605,15 @@ type PodDNSConfigOption struct {
 	Value *string `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
 }
 
-// IP address information for entries in the (plural) PodIPs field.
-// Each entry includes:
-//    IP: An IP address allocated to the pod. Routable at least within the cluster.
+// PodIP address information for entries in the (plural) PodIPs field.
 type PodIP struct {
-	// ip is an IP address (IPv4 or IPv6) assigned to the pod
+	// IP is the IP address assigned to the pod
+	IP string `json:"ip,omitempty" protobuf:"bytes,1,opt,name=ip"`
+}
+
+// HostIP address information for entries in the (plural) HostIPs field.
+type HostIP struct {
+	// IP is the IP address assigned to the host
 	IP string `json:"ip,omitempty" protobuf:"bytes,1,opt,name=ip"`
 }
 
@@ -3831,10 +3834,24 @@ type PodStatus struct {
 	// +optional
 	NominatedNodeName string `json:"nominatedNodeName,omitempty" protobuf:"bytes,11,opt,name=nominatedNodeName"`
 
-	// IP address of the host to which the pod is assigned. Empty if not yet scheduled.
+	// hostIP holds the IP address of the host to which the pod is assigned.
+	// Empty if the pod has not started yet.
+	// A pod can be assigned to a node that has a problem in kubelet which in turns mean that HostIP will
+	// not be updated even if there is node is assigned to pod
 	// +optional
 	HostIP string `json:"hostIP,omitempty" protobuf:"bytes,5,opt,name=hostIP"`
-	// IP address allocated to the pod. Routable at least within the cluster.
+
+	// hostIPs holds the IP addresses allocated to the host. If this field is specified, the first entry must
+	// match the hostIP field. This list is empty if the pod has not started yet.
+	// A pod can be assigned to a node that has a problem in kubelet which in turns means that HostIPs will
+	// not be updated even if there is a node is assigned to this pod.
+	// +optional
+	// +patchStrategy=merge
+	// +patchMergeKey=ip
+	// +listType=set
+	HostIPs []HostIP `json:"hostIPs,omitempty" protobuf:"bytes,14,rep,name=hostIPs" patchStrategy:"merge" patchMergeKey:"ip"`
+
+	// podIP address allocated to the pod. Routable at least within the cluster.
 	// Empty if not yet allocated.
 	// +optional
 	PodIP string `json:"podIP,omitempty" protobuf:"bytes,6,opt,name=podIP"`
@@ -4901,7 +4918,7 @@ type NodeSystemInfo struct {
 	KernelVersion string `json:"kernelVersion" protobuf:"bytes,4,opt,name=kernelVersion"`
 	// OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
 	OSImage string `json:"osImage" protobuf:"bytes,5,opt,name=osImage"`
-	// ContainerRuntime Version reported by the node through runtime remote API (e.g. docker://1.5.0).
+	// ContainerRuntime Version reported by the node through runtime remote API (e.g. containerd://1.4.2).
 	ContainerRuntimeVersion string `json:"containerRuntimeVersion" protobuf:"bytes,6,opt,name=containerRuntimeVersion"`
 	// Kubelet Version reported by the node.
 	KubeletVersion string `json:"kubeletVersion" protobuf:"bytes,7,opt,name=kubeletVersion"`
