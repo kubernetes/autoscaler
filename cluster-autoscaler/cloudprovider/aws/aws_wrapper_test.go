@@ -80,7 +80,16 @@ type eksMock struct {
 
 func (k *eksMock) DescribeNodegroup(i *eks.DescribeNodegroupInput) (*eks.DescribeNodegroupOutput, error) {
 	args := k.Called(i)
-	return args.Get(0).(*eks.DescribeNodegroupOutput), nil
+
+	if args.Get(0) == nil && args.Get(1) == nil {
+		return nil, nil
+	} else if args.Get(0) == nil {
+		return nil, args.Get(1).(error)
+	} else if args.Get(1) == nil {
+		return args.Get(0).(*eks.DescribeNodegroupOutput), nil
+	} else {
+		return args.Get(0).(*eks.DescribeNodegroupOutput), args.Get(1).(error)
+	}
 }
 
 var testAwsService = awsWrapper{&autoScalingMock{}, &ec2Mock{}, &eksMock{}}
@@ -138,7 +147,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup})
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
@@ -188,7 +197,7 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup})
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
@@ -229,7 +238,7 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
 		NodegroupName: &nodegroupName,
-	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup})
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
 	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)

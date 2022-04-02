@@ -68,6 +68,8 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 		return nil, nil, err
 	}
 
+	klog.V(6).Infof("DescribeNodegroup output : %+v\n", r)
+
 	taints := make([]apiv1.Taint, 0)
 	labels := make(map[string]string)
 
