@@ -145,19 +145,29 @@ func TestInstancePoolFromArgs(t *testing.T) {
 }
 
 func TestGetSetInstancePoolSize(t *testing.T) {
+
 	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
-	nodePoolCache.targetSize["ocid1.instancepool.oc1.phx.aaaaaaaai"] = 5
+	nodePoolCache.targetSize["ocid1.instancepool.oc1.phx.aaaaaaaai"] = 2
 
 	manager := &InstancePoolManagerImpl{instancePoolCache: nodePoolCache}
 	size, err := manager.GetInstancePoolSize(InstancePoolNodeGroup{id: "ocid1.instancepool.oc1.phx.aaaaaaaai"})
 	if err != nil {
 		t.Fatalf("unexpected error: %+v", err)
 	}
-	if size != 5 {
+	if size != 2 {
 		t.Errorf("got size %d ; wanted size 5", size)
 	}
 
-	err = manager.SetInstancePoolSize(InstancePoolNodeGroup{id: "ocid1.instancepool.oc1.phx.aaaaaaaai"}, 6)
+	computeManagementClient.listInstancePoolInstancesResponse.Items = append(computeManagementClient.listInstancePoolInstancesResponse.Items, core.InstanceSummary{
+		Id:                 common.String("ocid1.instance.oc1.phx.newInstance"),
+		AvailabilityDomain: common.String("Uocm:PHX-AD-2"),
+		CompartmentId:      common.String("ocid1.compartment.oc1..aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+		DisplayName:        common.String("inst-1ncvn-ociinstancepool"),
+		Shape:              common.String("VM.Standard2.8"),
+		State:              common.String(string(core.InstanceLifecycleStateRunning)),
+	})
+
+	err = manager.SetInstancePoolSize(InstancePoolNodeGroup{id: "ocid1.instancepool.oc1.phx.aaaaaaaai"}, 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %+v", err)
 	}
@@ -165,7 +175,7 @@ func TestGetSetInstancePoolSize(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %+v", err)
 	}
-	if size != 6 {
+	if size != 3 {
 		t.Errorf("got size %d ; wanted size 6", size)
 	}
 
@@ -219,15 +229,15 @@ func TestGetInstancePoolForInstance(t *testing.T) {
 
 	// verify an invalid instance pool produces an error.
 	ip, err := manager.GetInstancePoolForInstance(OciRef{InstanceID: "ocid1.instance.oc1.phx.aaadne", PoolID: "ocid1.instancepool.oc1.phx.aaaaaaaadne"})
-	if err != nil {
-		t.Fatalf("unexpected error: %+v", err)
+	if err == nil {
+		t.Fatalf("expected error looking for an instance with invalid instance & pool ids")
 	}
 	if ip != nil {
 		t.Fatalf("expected nil looking for an instance with invalid instance & pool ids")
 	}
 
 	// next verify instance pool can be found when the instance pool id is specified directly.
-	_, err = manager.GetInstancePoolForInstance(OciRef{PoolID: "ocid1.instancepool.oc1.phx.aaaaaaaa1"})
+	_, err = manager.GetInstancePoolForInstance(OciRef{PoolID: "ocid1.instancepool.oc1.phx.aaaaaaaa1", PrivateIPAddress: "10.0.20.59"})
 	if err != nil {
 		t.Fatalf("unexpected error: %+v", err)
 	}
@@ -290,6 +300,7 @@ func TestGetInstancePoolNodes(t *testing.T) {
 	}
 
 	manager := &InstancePoolManagerImpl{instancePoolCache: nodePoolCache, cfg: &CloudConfig{}}
+	manager.shapeGetter = createShapeGetter(shapeClient)
 	instances, err := manager.GetInstancePoolNodes(InstancePoolNodeGroup{id: "ocid1.instancepool.oc1.phx.aaaaaaaa1"})
 	if err != nil {
 		t.Fatalf("received unexpected error; %+v", err)
@@ -399,6 +410,7 @@ func TestGetInstancePoolsAndInstances(t *testing.T) {
 	}
 
 	// Populate cache(s) (twice to increase code coverage).
+	manager.shapeGetter = createShapeGetter(shapeClient)
 	_ = manager.Refresh()
 	err := manager.Refresh()
 	if err != nil {
@@ -471,6 +483,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 		instancePoolCache: newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient),
 	}
+	manager.shapeGetter = createShapeGetter(shapeClient)
 	// Populate cache(s).
 	manager.Refresh()
 
