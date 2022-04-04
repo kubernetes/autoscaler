@@ -142,7 +142,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: docker.io/jlamillan/autoscaler:oci-pr-rc6
+        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           command:
             - ./cluster-autoscaler

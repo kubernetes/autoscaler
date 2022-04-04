@@ -41,7 +41,7 @@ import (
 )
 
 var (
-	internalPollInterval            = 1 * time.Minute
+	internalPollInterval            = 15 * time.Second
 	errInstanceInstancePoolNotFound = errors.New("instance-pool not found for instance")
 )
 
@@ -254,6 +254,7 @@ func (m *InstancePoolManagerImpl) forceRefresh() error {
 	if m.cfg == nil {
 		return errors.New("instance pool manager does have a required config")
 	}
+	m.shapeGetter.Refresh()
 	err := m.instancePoolCache.rebuild(m.staticInstancePools, *m.cfg)
 	if err != nil {
 		return err
@@ -324,17 +325,18 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 // PoolID is not set on the specified OciRef, we will look for a match.
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails OciRef) (*InstancePoolNodeGroup, error) {
 
-	if instanceDetails.PoolID != "" {
-		// It's possible that this instance belongs to an instance pool that was not specified via --nodes argument.
-		return m.staticInstancePools[instanceDetails.PoolID], nil
-	}
-
 	if instanceDetails.CompartmentID == "" {
 		// cfg.Global.CompartmentID would be set to tenancy OCID at runtime if compartment was not set.
 		instanceDetails.CompartmentID = m.cfg.Global.CompartmentID
 	}
 
-	// Details are missing from this instance - including the pool ID.
+	if instanceDetails.AvailabilityDomain != "" && instanceDetails.InstanceID != "" && instanceDetails.PoolID != "" &&
+		instanceDetails.PrivateIPAddress != "" && instanceDetails.Shape != "" {
+		// It's possible that this instance belongs to an instance pool that was not specified via --nodes argument.
+		return m.staticInstancePools[instanceDetails.PoolID], nil
+	}
+
+	// Details are missing from this instance.
 	// Try to resolve them, though it may not be a member of an instance-pool we manage.
 	resolvedInstanceDetails, err := m.instancePoolCache.findInstanceByDetails(instanceDetails)
 	if err != nil {

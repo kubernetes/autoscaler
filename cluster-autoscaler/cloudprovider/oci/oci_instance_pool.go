@@ -29,6 +29,10 @@ import (
 
 const (
 	ociInstanceIDAnnotation      = "oci.oraclecloud.com/instance-id"
+	instancePoolIDLabelPrefix    = "instancepool-id_prefix"
+	instancePoolIDLabelSuffix    = "instancepool-id_suffix"
+	instanceIDLabelPrefix        = "instance-id_prefix"
+	instanceIDLabelSuffix        = "instance-id_suffix"
 	ociInstancePoolIDAnnotation  = "oci.oraclecloud.com/instancepool-id"
 	ociInstancePoolResourceIdent = "instancepool"
 )
