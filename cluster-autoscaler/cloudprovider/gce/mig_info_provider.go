@@ -244,9 +244,6 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.Ins
 		return nil, err
 	}
 
-	c.migInfoMutex.Lock()
-	defer c.migInfoMutex.Unlock()
-
 	template, found := c.cache.GetMigInstanceTemplate(migRef)
 	if found && template.Name == templateName {
 		return template, nil
