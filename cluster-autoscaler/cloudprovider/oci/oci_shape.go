@@ -26,6 +26,7 @@ import (
 // ShapeGetter returns the oci shape attributes for the pool.
 type ShapeGetter interface {
 	GetInstancePoolShape(pool *core.InstancePool) (*Shape, error)
+	Refresh()
 }
 
 // ShapeClient is an interface around the GetInstanceConfiguration and ListShapes calls.
@@ -74,11 +75,21 @@ type shapeGetterImpl struct {
 	cache       map[string]*Shape
 }
 
+func (osf *shapeGetterImpl) Refresh() {
+	// For now, just clear the cache
+	osf.cache = map[string]*Shape{}
+}
+
 func (osf *shapeGetterImpl) GetInstancePoolShape(ip *core.InstancePool) (*Shape, error) {
 
-	shape := &Shape{}
+	// First, check instance pool shape cache
+	shape, ok := osf.cache[*ip.Id]
+	if ok {
+		return shape, nil
+	}
 
 	klog.V(5).Info("fetching shape configuration details for instance-pool " + *ip.Id)
+	shape = &Shape{}
 
 	instanceConfig, err := osf.shapeClient.GetInstanceConfiguration(context.Background(), core.GetInstanceConfigurationRequest{
 		InstanceConfigurationId: ip.InstanceConfigurationId,
@@ -132,5 +143,7 @@ func (osf *shapeGetterImpl) GetInstancePoolShape(ip *core.InstancePool) (*Shape,
 	if shape.Name == "" {
 		return nil, fmt.Errorf("shape information for instance-pool %s not found", *ip.Id)
 	}
+
+	osf.cache[*ip.Id] = shape
 	return shape, nil
 }

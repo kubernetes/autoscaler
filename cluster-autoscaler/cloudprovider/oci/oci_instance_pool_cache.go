@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/core"
 	"k8s.io/klog/v2"
+	"math"
 	"strings"
 	"sync"
 	"time"
@@ -90,21 +91,32 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 			klog.Errorf("get instance pool %s failed: %v", id, err)
 			return err
 		}
-		klog.V(5).Infof("GetInstancePool() response %v", resp.InstancePool)
+		klog.V(6).Infof("GetInstancePool() response %v", resp.InstancePool)
 
 		c.setInstancePool(&resp.InstancePool)
 
-		// OCI instance-pools do not contain individual instance objects so they must be fetched separately.
-		listInstancesResponse, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), core.ListInstancePoolInstancesRequest{
-			InstancePoolId: common.String(id),
-			CompartmentId:  common.String(cfg.Global.CompartmentID),
-		})
-		if err != nil {
-			return err
+		var instanceSummaries []core.InstanceSummary
+		var page *string
+		for {
+			// OCI instance-pools do not contain individual instance objects so they must be fetched separately.
+			listInstancePoolInstances, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), core.ListInstancePoolInstancesRequest{
+				InstancePoolId: common.String(id),
+				CompartmentId:  common.String(cfg.Global.CompartmentID),
+				Page:           page,
+			})
+			if err != nil {
+				return err
+			}
+
+			instanceSummaries = append(instanceSummaries, listInstancePoolInstances.Items...)
+
+			if page = listInstancePoolInstances.OpcNextPage; listInstancePoolInstances.OpcNextPage == nil {
+				break
+			}
 		}
-		klog.V(5).Infof("ListInstancePoolInstances() response %v", listInstancesResponse.Items)
-		c.setInstanceSummaries(*resp.InstancePool.Id, &listInstancesResponse.Items)
+		c.setInstanceSummaries(*resp.InstancePool.Id, &instanceSummaries)
 	}
+
 	// Reset unowned instances cache.
 	c.unownedInstances = make(map[OciRef]bool)
 
@@ -116,21 +128,12 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 // the instance pool.
 func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, instanceID string) bool {
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	if instanceID == "" {
 		klog.Warning("instanceID is not set - skipping removal.")
 		return false
 	}
 
-	// This instance pool must be in state RUNNING in order to detach a particular instance.
-	err := c.waitForInstancePoolState(context.Background(), instancePool.Id(), core.InstancePoolLifecycleStateRunning)
-	if err != nil {
-		return false
-	}
-
-	_, err = c.computeManagementClient.DetachInstancePoolInstance(context.Background(), core.DetachInstancePoolInstanceRequest{
+	_, err := c.computeManagementClient.DetachInstancePoolInstance(context.Background(), core.DetachInstancePoolInstanceRequest{
 		InstancePoolId: common.String(instancePool.Id()),
 		DetachInstancePoolInstanceDetails: core.DetachInstancePoolInstanceDetails{
 			InstanceId:      common.String(instanceID),
@@ -140,19 +143,20 @@ func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, i
 	})
 
 	if err == nil {
+		c.mu.Lock()
 		// Decrease pool size in cache since IsDecrementSize was true
 		c.targetSize[instancePool.Id()] -= 1
+		c.mu.Unlock()
 		return true
 	}
 
+	klog.Errorf("error detaching instance %s from pool: %v", instanceID, err)
 	return false
 }
 
 // findInstanceByDetails attempts to find the given instance by details by searching
 // through the configured instance-pools (ListInstancePoolInstances) for a match.
 func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	// Minimum amount of information we need to make a positive match
 	if ociInstance.InstanceID == "" && ociInstance.PrivateIPAddress == "" && ociInstance.PublicIPAddress == "" {
@@ -172,21 +176,45 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 			klog.V(4).Infof("skipping over instance pool %s since it is empty", *nextInstancePool.Id)
 			continue
 		}
-		// List instances in the next pool
-		listInstancePoolInstances, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), core.ListInstancePoolInstancesRequest{
-			CompartmentId:  common.String(ociInstance.CompartmentID),
-			InstancePoolId: nextInstancePool.Id,
-		})
-		if err != nil {
-			return nil, err
+		// Skip searching instance pool if we happen tp know (prior labels) the pool ID and this is not it
+		if (ociInstance.PoolID != "") && (ociInstance.PoolID != *nextInstancePool.Id) {
+			klog.V(5).Infof("skipping over instance pool %s since it is not the one we are looking for", *nextInstancePool.Id)
+			continue
 		}
 
-		for _, poolMember := range listInstancePoolInstances.Items {
+		var page *string
+		var instanceSummaries []core.InstanceSummary
+		for {
+			// List instances in the next pool
+			listInstancePoolInstancesReq := core.ListInstancePoolInstancesRequest{}
+			listInstancePoolInstancesReq.CompartmentId = common.String(ociInstance.CompartmentID)
+			listInstancePoolInstancesReq.InstancePoolId = nextInstancePool.Id
+			listInstancePoolInstancesReq.Page = page
+
+			listInstancePoolInstances, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), listInstancePoolInstancesReq)
+			if err != nil {
+				return nil, err
+			}
+
+			instanceSummaries = append(instanceSummaries, listInstancePoolInstances.Items...)
+
+			if page = listInstancePoolInstances.OpcNextPage; listInstancePoolInstances.OpcNextPage == nil {
+				break
+			}
+		}
+
+		for _, poolMember := range instanceSummaries {
 			// Skip comparing this instance if it is not in the Running state
 			if strings.ToLower(*poolMember.State) != strings.ToLower(string(core.InstanceLifecycleStateRunning)) {
 				klog.V(4).Infof("skipping over instance %s: since it is not in the running state: %s", *poolMember.Id, *poolMember.State)
 				continue
 			}
+			// Skip this instance if we happen to know (prior labels) the instance ID and this is not it
+			if (ociInstance.InstanceID != "") && (ociInstance.InstanceID != *poolMember.Id) {
+				klog.V(5).Infof("skipping over instance %s since it is not the one we are looking for", *poolMember.Id)
+				continue
+			}
+
 			listVnicAttachments, err := c.computeClient.ListVnicAttachments(context.Background(), core.ListVnicAttachmentsRequest{
 				CompartmentId: common.String(*poolMember.CompartmentId),
 				InstanceId:    poolMember.Id,
@@ -195,7 +223,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 				klog.Errorf("list vNIC attachments for %s failed: %v", *poolMember.Id, err)
 				return nil, err
 			}
-			klog.V(5).Infof("ListVnicAttachments() response for %s: %v", *poolMember.Id, listVnicAttachments.Items)
+			klog.V(6).Infof("ListVnicAttachments() response for %s: %v", *poolMember.Id, listVnicAttachments.Items)
 			for _, vnicAttachment := range listVnicAttachments.Items {
 				// Skip this attachment if the vNIC is not live
 				if core.VnicAttachmentLifecycleStateAttached != vnicAttachment.LifecycleState {
@@ -209,7 +237,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 					klog.Errorf("get vNIC for %s failed: %v", *poolMember.Id, err)
 					return nil, err
 				}
-				klog.V(5).Infof("GetVnic() response for vNIC %s: %v", *vnicAttachment.Id, getVnicResp.Vnic)
+				klog.V(6).Infof("GetVnic() response for vNIC %s: %v", *vnicAttachment.Id, getVnicResp.Vnic)
 				// Preferably we match by instanceID, but we can match by private or public IP
 				if *poolMember.Id == ociInstance.InstanceID ||
 					(getVnicResp.Vnic.PrivateIp != nil && *getVnicResp.Vnic.PrivateIp == ociInstance.PrivateIPAddress) ||
@@ -300,6 +328,8 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		return err
 	}
 
+	scaleDelta := int(math.Abs(float64(*getInstancePoolResp.Size - size)))
+
 	updateDetails := core.UpdateInstancePoolDetails{
 		Size:                    common.Int(size),
 		InstanceConfigurationId: getInstancePoolResp.InstanceConfigurationId,
@@ -313,17 +343,32 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		return err
 	}
 
+	ctx := context.Background()
+	ctx, cancelFunc := context.WithTimeout(ctx, maxScalingWaitTime(scaleDelta, 20, 10*time.Minute))
+	// Ensure this context is always canceled so channels, go routines, etc. always complete.
+	defer cancelFunc()
+
+	// Wait for the number of Running instances in this pool to reach size
+	err = c.waitForRunningInstanceCount(ctx, size, instancePoolID, *getInstancePoolResp.CompartmentId)
+	if err != nil {
+		return err
+	}
+
+	// Allow an additional time for the pool State to reach Running
+	ctx, _ = context.WithTimeout(ctx, 10*time.Minute)
+	err = c.waitForState(ctx, instancePoolID, core.InstancePoolLifecycleStateRunning)
+	if err != nil {
+		return err
+	}
+
 	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	c.targetSize[instancePoolID] = size
+	c.mu.Unlock()
 
-	return c.waitForInstancePoolState(context.Background(), instancePoolID, core.InstancePoolLifecycleStateRunning)
+	return nil
 }
 
-func (c *instancePoolCache) waitForInstancePoolState(ctx context.Context, instancePoolID string, desiredState core.InstancePoolLifecycleStateEnum) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
-	defer cancel()
+func (c *instancePoolCache) waitForState(ctx context.Context, instancePoolID string, desiredState core.InstancePoolLifecycleStateEnum) error {
 	err := wait.PollImmediateUntil(
 		// TODO we need a better implementation of this function
 		internalPollInterval,
@@ -335,19 +380,128 @@ func (c *instancePoolCache) waitForInstancePoolState(ctx context.Context, instan
 				klog.Errorf("getInstancePool failed. Retrying: %+v", err)
 				return false, err
 			} else if getInstancePoolResp.LifecycleState != desiredState {
-				klog.V(4).Infof("waiting for instance-pool %s to enter state: %s (current state: %s)", instancePoolID,
-					desiredState, getInstancePoolResp.LifecycleState)
+				deadline, _ := ctx.Deadline()
+				klog.V(4).Infof("waiting for instance-pool %s to enter state: %s (current state: %s) (remaining time %v)",
+					instancePoolID, desiredState, getInstancePoolResp.LifecycleState, deadline.Sub(time.Now()).Round(time.Second))
 				return false, nil
 			}
 			klog.V(3).Infof("instance pool %s is in desired state: %s", instancePoolID, desiredState)
 
 			return true, nil
-		}, timeoutCtx.Done())
+		}, ctx.Done()) // context timeout
 	if err != nil {
 		// may be wait.ErrWaitTimeout
 		return err
 	}
 	return nil
+}
+
+// waitForRunningInstanceCount waits for the number of instances in the instance pool reaches target.
+func (c *instancePoolCache) waitForRunningInstanceCount(ctx context.Context, size int, instancePoolID, compartmentID string) error {
+
+	progressCan, errChan := c.monitorScalingProgress(ctx, size, instancePoolID, compartmentID)
+	for {
+		// Reset progress timeout channel each time (any) progress message is received
+		select {
+		case _ = <-progressCan:
+			// received a message on progress channel
+		case err := <-errChan:
+			// received a message on error channel
+			if err != nil {
+				klog.V(4).Infof("received an error while waiting for scale to complete on %s: %v", instancePoolID, err)
+				return err
+			}
+			return nil
+		case <-time.After(10 * time.Minute):
+			// timeout waiting for completion or update in count
+			return errors.New("timeout waiting for instance-pool " + instancePoolID + " scaling operation to make progress")
+		}
+	}
+}
+
+// monitorScalingProgress monitors the progress of the scaling operation of instancePoolID and sends incremental changes
+// to the number of running instances to the int channel and errors to the error channel.
+func (c *instancePoolCache) monitorScalingProgress(ctx context.Context, target int, instancePoolID, compartmentID string) (<-chan int, <-chan error) {
+
+	errCh := make(chan error, 1)
+	progressCh := make(chan int)
+
+	go func() {
+		defer close(errCh)
+		defer close(progressCh)
+
+		previousNumInstances := 0
+		ticker := time.NewTicker(internalPollInterval)
+		sendProgress := func(p int) {
+			select {
+			case progressCh <- p:
+				// Send progress
+				break
+			default:
+				break
+			}
+		}
+
+		for {
+			select {
+			case <-ticker.C:
+				// ticker fired, recheck
+				break
+			case <-ctx.Done():
+				// max/context timeout
+				errCh <- ctx.Err()
+				return
+			}
+
+			var page *string
+			numRunningInstances := 0
+			for {
+				// List instances in the pool
+				listInstancePoolInstances, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), core.ListInstancePoolInstancesRequest{
+					InstancePoolId: common.String(instancePoolID),
+					CompartmentId:  common.String(compartmentID),
+					Page:           page,
+				})
+				if err != nil {
+					klog.Errorf("list instance pool instances for pool %s failed: %v", instancePoolID, err)
+					errCh <- err
+					return
+				}
+
+				for _, poolMember := range listInstancePoolInstances.Items {
+					if strings.ToLower(*poolMember.State) == strings.ToLower(string(core.InstanceLifecycleStateRunning)) {
+						numRunningInstances++
+					}
+				}
+
+				if page = listInstancePoolInstances.OpcNextPage; listInstancePoolInstances.OpcNextPage == nil {
+					break
+				}
+			}
+
+			if previousNumInstances == 0 {
+				previousNumInstances = numRunningInstances
+			}
+
+			if numRunningInstances == target {
+				klog.V(4).Infof("running instances in %s has reached the target of %d", instancePoolID, target)
+				sendProgress(target)
+				errCh <- nil
+				// done
+				return
+			} else if previousNumInstances != numRunningInstances {
+				deadline, _ := ctx.Deadline()
+				klog.V(4).Infof("running instances in %s has not yet reached the target of %d (current count: %d) "+
+					"(remaining time %v)", instancePoolID, target, numRunningInstances,
+					deadline.Sub(time.Now()).Round(time.Second))
+				sendProgress(numRunningInstances)
+				previousNumInstances = numRunningInstances
+				// continue
+			}
+		}
+	}()
+
+	return progressCh, errCh
 }
 
 func (c *instancePoolCache) getSize(id string) (int, error) {
@@ -360,4 +514,24 @@ func (c *instancePoolCache) getSize(id string) (int, error) {
 	}
 
 	return size, nil
+}
+
+// maxScalingWaitTime estimates the maximum amount of time, as a duration, that to scale size instances.
+// note, larger scale operations are broken up internally to smaller batches. This is an internal detail
+// and can be overridden on a tenancy basis. 20 is a good default.
+func maxScalingWaitTime(size, batchSize int, timePerBatch time.Duration) time.Duration {
+	buffer := 60 * time.Second
+
+	if size <= batchSize {
+		return timePerBatch + buffer
+	}
+
+	maxScalingWaitTime := (timePerBatch) * time.Duration(size/batchSize)
+
+	// add additional batch for any remainders
+	if size%batchSize > 0 {
+		maxScalingWaitTime = maxScalingWaitTime + timePerBatch
+	}
+
+	return maxScalingWaitTime + buffer
 }
