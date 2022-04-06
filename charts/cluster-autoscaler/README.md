@@ -287,6 +287,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 |-----|------|---------|-------------|
 | additionalLabels | object | `{}` | Labels to add to each object of the chart. |
 | affinity | object | `{}` | Affinity for pod assignment |
+| annotations | object | `{}` | Annotations to add to the Deployment object. |
 | autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`. Enable autodiscovery for `cloudProvider=clusterapi`, for groups matching `autoDiscovery.labels`. Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required. Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`. |
 | autoDiscovery.labels | list | `[]` | Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery |
 | autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |

@@ -2,6 +2,8 @@
 # affinity -- Affinity for pod assignment
 affinity: {}
 
+annotations: []
+
 autoDiscovery:
   # cloudProviders `aws`, `gce`, `magnum` and `clusterapi` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
