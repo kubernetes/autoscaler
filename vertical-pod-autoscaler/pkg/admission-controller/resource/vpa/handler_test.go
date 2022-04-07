@@ -27,7 +27,8 @@ import (
 )
 
 const (
-	cpu = apiv1.ResourceCPU
+	cpu    = apiv1.ResourceCPU
+	memory = apiv1.ResourceMemory
 )
 
 func TestValidateVPA(t *testing.T) {
@@ -36,6 +37,7 @@ func TestValidateVPA(t *testing.T) {
 	badMinReplicas := int32(0)
 	validMinReplicas := int32(1)
 	badScalingMode := vpa_types.ContainerScalingMode("bad")
+	badCPUResource := resource.MustParse("187500u")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
@@ -149,6 +151,90 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: fmt.Errorf("max resource for cpu is lower than min"),
+		},
+		{
+			name: "bad minAllowed cpu value",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("187500u"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("275m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("MinAllowed: CPU [%v] must be a whole number of milli CPUs", badCPUResource.String()),
+		},
+		{
+			name: "bad minAllowed memory value",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								MinAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("1m"),
+									memory: resource.MustParse("100m"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("275m"),
+									memory: resource.MustParse("500M"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("MinAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("100m")),
+		},
+		{
+			name: "bad maxAllowed cpu value",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								MinAllowed:    apiv1.ResourceList{},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("187500u"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("MaxAllowed: CPU [%s] must be a whole number of milli CPUs", badCPUResource.String()),
+		},
+		{
+			name: "bad maxAllowed memory value",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("1m")},
+								MaxAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("275m"),
+									memory: resource.MustParse("500m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("MaxAllowed: Memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
 		},
 		{
 			name: "scaling off with controlled values requests and limits",
