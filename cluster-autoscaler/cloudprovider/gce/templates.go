@@ -59,7 +59,8 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture,
+	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -68,7 +69,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, version)
+	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, arch, version)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -80,7 +81,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 		if ephemeralStorageLocalSSDCount > 0 {
 			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, osDistribution)
 		} else {
-			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, version)
+			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
@@ -174,6 +175,10 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	if osDistribution == OperatingSystemDistributionUnknown {
 		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
 	}
+	arch := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
+	if arch == UnknownArch {
+		return nil, fmt.Errorf("could not obtain arch from kube-env from template metadata")
+	}
 
 	var ephemeralStorage int64 = -1
 	ssdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
@@ -186,7 +191,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +323,7 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os Oper
 	}
 
 	// TODO: extract it somehow
-	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelArchStable] = string(DefaultArch)
 	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceTypeStable] = machineType
@@ -528,6 +533,40 @@ func extractOperatingSystemDistributionFromImageType(imageType string) Operating
 		return OperatingSystemDistributionCOS
 	default:
 		return OperatingSystemDistributionUnknown
+	}
+}
+
+// SystemArchitecture denotes distribution of the System Architecture used by nodes coming from node group
+type SystemArchitecture string
+
+const (
+	// UnknownArch is used if the Architecture is Unknown
+	UnknownArch SystemArchitecture = ""
+	// Amd64 is used if the Architecture is x86_64
+	Amd64 SystemArchitecture = "amd64"
+	// Arm64 is used if the Architecture is ARM
+	Arm64 SystemArchitecture = "arm64"
+	// DefaultArch is used if the Architecture is used as a fallback if not passed by AUTOSCALER_ENV_VARS
+	DefaultArch SystemArchitecture = Amd64
+)
+
+func extractSystemArchitectureFromKubeEnv(kubeEnv string) SystemArchitecture {
+	arch, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
+	if err != nil {
+		klog.Errorf("error while obtaining arch from AUTOSCALER_ENV_VARS; using default %v", err)
+		return UnknownArch
+	}
+	if !found {
+		klog.V(4).Infof("no arch defined in AUTOSCALER_ENV_VARS; using default %v", err)
+		return DefaultArch
+	}
+	switch arch {
+	case string(Arm64):
+		return Arm64
+	case string(Amd64):
+		return Amd64
+	default:
+		return UnknownArch
 	}
 }
 
