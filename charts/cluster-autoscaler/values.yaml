@@ -2,8 +2,6 @@
 # affinity -- Affinity for pod assignment
 affinity: {}
 
-annotations: []
-
 autoDiscovery:
   # cloudProviders `aws`, `gce`, `magnum` and `clusterapi` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
@@ -139,6 +137,10 @@ containerSecurityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
+
+deployment:
+  # deployment.annotations -- Annotations to add to the Deployment object.
+  annotations: {}
 
 # dnsPolicy -- Defaults to `ClusterFirst`. Valid values are:
 # `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`.
