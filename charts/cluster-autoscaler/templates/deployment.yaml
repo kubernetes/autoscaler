@@ -26,6 +26,9 @@ spec:
     {{- end }}
       labels:
 {{ include "cluster-autoscaler.instance-name" . | indent 8 }}
+      {{- if .Values.additionalLabels }}
+{{ toYaml .Values.additionalLabels | indent 8 }}
+      {{- end }}
       {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
       {{- end }}
@@ -67,7 +70,7 @@ spec:
             - --cluster-name={{ .Values.magnumClusterName }}
             {{- end }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+          {{- if eq .Values.cloudProvider "magnum" }}
             - --cloud-config={{ .Values.cloudConfigPath }}
           {{- end }}
           {{- range $key, $value := .Values.extraArgs }}
@@ -179,15 +182,25 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
           volumeMounts:
+          {{- if eq .Values.cloudProvider "magnum" }}
             - name: cloudconfig
               mountPath: {{ .Values.cloudConfigPath }}
               readOnly: true
+          {{- end }}
           {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}
             - name: ca-bundle
               mountPath: {{ .Values.magnumCABundlePath }}
               readOnly: true
+          {{- end }}
+          {{- range $key, $value := .Values.extraVolumeSecrets }}
+            - name: {{ $key }}
+              mountPath: {{ required "Must specify mountPath!" $value.mountPath }}
+              readOnly: true
+          {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
           {{- end }}
     {{- if .Values.affinity }}
@@ -205,15 +218,29 @@ spec:
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "gce") (eq .Values.cloudProvider "magnum") }}
+      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
       volumes:
+      {{- if eq .Values.cloudProvider "magnum" }}
         - name: cloudconfig
           hostPath:
             path: {{ .Values.cloudConfigPath }}
+      {{- end }}
       {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}
         - name: ca-bundle
           hostPath:
             path: {{ .Values.magnumCABundlePath }}
+      {{- end }}
+      {{- range $key, $value := .Values.extraVolumeSecrets }}
+        - name: {{ $key }}
+          secret:
+            secretName: {{ default (include "cluster-autoscaler.fullname" $) $value.name }}
+            {{- if $value.items }}
+            items:
+            {{- toYaml $value.items | nindent 14 }}
+            {{- end }}
+      {{- end }}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 10 }}
       {{- end }}
       {{- end }}
       {{- if .Values.image.pullSecrets }}

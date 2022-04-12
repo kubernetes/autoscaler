@@ -29,15 +29,11 @@ import (
 	"k8s.io/klog"
 )
 
-const (
-	// Ignore change priority that is smaller than 10%.
-	defaultUpdateThreshold = 0.10
-	// Pods that live for at least that long can be evicted even if their
-	// request is within the [MinRecommended...MaxRecommended] range.
-	podLifetimeUpdateThreshold = time.Hour * 12
-)
-
 var (
+	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore updates that have priority lower than the value of this flag")
+
+	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
+
 	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
 		`Evict pod that has only one container and it OOMed in less than
 		evict-after-oom-threshold since start.`)
@@ -72,7 +68,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	priorityProcessor PriorityProcessor) UpdatePriorityCalculator {
 	if config == nil {
-		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshold}
+		config = &UpdateConfig{MinChangePriority: *defaultUpdateThreshold}
 	}
 	return UpdatePriorityCalculator{
 		vpa:                     vpa,
@@ -129,7 +125,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			klog.V(2).Infof("not updating pod %v/%v, missing field pod.Status.StartTime", pod.Namespace, pod.Name)
 			return
 		}
-		if now.Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
+		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
 			klog.V(2).Infof("not updating a short-lived pod %v/%v, request within recommended range", pod.Namespace, pod.Name)
 			return
 		}

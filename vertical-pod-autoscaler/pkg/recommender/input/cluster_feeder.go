@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -50,6 +51,8 @@ import (
 )
 
 const (
+	evictionWatchRetryWait                     = 10 * time.Second
+	evictionWatchJitterFactor                  = 0.5
 	scaleCacheLoopPeriod         time.Duration = 7 * time.Second
 	scaleCacheEntryLifetime      time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
@@ -142,13 +145,20 @@ func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer o
 			FieldSelector: "reason=Evicted",
 		}
 
-		for {
+		watchEvictionEventsOnce := func() {
 			watchInterface, err := kubeClient.CoreV1().Events(namespace).Watch(context.TODO(), options)
 			if err != nil {
 				klog.Errorf("Cannot initialize watching events. Reason %v", err)
-				continue
+				return
 			}
 			watchEvictionEvents(watchInterface.ResultChan(), observer)
+		}
+		for {
+			watchEvictionEventsOnce()
+			// Wait between attempts, retrying too often breaks API server.
+			waitTime := wait.Jitter(evictionWatchRetryWait, evictionWatchJitterFactor)
+			klog.V(1).Infof("An attempt to watch eviction events finished. Waiting %v before the next one.", waitTime)
+			time.Sleep(waitTime)
 		}
 	}()
 }
@@ -172,6 +182,13 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
 func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.ResourceEventHandler, namespace string) v1lister.PodLister {
+	// We are interested in pods which are Running or Unknown (in case the pod is
+	// running but there are some transient errors we don't want to delete it from
+	// our model).
+	// We don't want to watch Pending pods because they didn't generate any usage
+	// yet.
+	// Succeeded and Failed failed pods don't generate any usage anymore but we
+	// don't necessarily want to immediately delete them.
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
 	indexer, controller := cache.NewIndexerInformer(

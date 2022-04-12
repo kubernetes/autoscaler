@@ -319,12 +319,13 @@ func newMachineController(
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 ) (*machineController, error) {
 	workloadInformerFactory := kubeinformers.NewSharedInformerFactory(workloadClient, 0)
-	managementInformerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(managementClient, 0, metav1.NamespaceAll, nil)
 
 	autoDiscoverySpecs, err := parseAutoDiscovery(discoveryOpts.NodeGroupAutoDiscoverySpecs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse auto discovery configuration: %v", err)
 	}
+
+	managementInformerFactory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(managementClient, 0, namespaceToWatch(autoDiscoverySpecs), nil)
 
 	CAPIGroup := getCAPIGroup()
 	CAPIVersion, err := getAPIGroupPreferredVersion(managementDiscoveryClient, CAPIGroup)

@@ -296,6 +296,12 @@ func (nodeGroup *NodeGroup) Autoprovisioned() bool {
 	return false
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (nodeGroup *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkController) (*NodeGroup, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 	if err != nil {

@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/util/uuid"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -41,7 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
@@ -147,7 +146,7 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
-	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
+	scaleDown := NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
 
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
@@ -182,7 +181,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
 		deletetaint.CleanAllToBeDeleted(readyNodes,
-			a.AutoscalingContext.ClientSet, a.Recorder)
+			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
 			deletetaint.CleanAllDeletionCandidates(readyNodes,
@@ -294,7 +293,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
-				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+				status.GetReadableString(), a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
 		}
 
 		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
@@ -526,6 +525,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(currentTime, pdbs)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
+			metrics.UpdateUnremovableNodesCount(scaleDown.getUnremovableNodesCount())
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 
@@ -618,6 +618,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 			}
 			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
 				"Removed unregistered node %v", unregisteredNode.Node.Name)
+			metrics.RegisterOldUnregisteredNodesRemoved(1)
 			removedAny = true
 		}
 	}
@@ -695,7 +696,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return
 	}
-	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
+	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, a.AutoscalingContext.StatusConfigMapName)
 
 	a.clusterStateRegistry.Stop()
 }
@@ -717,7 +718,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	// Treat those nodes as unready until GPU actually becomes available and let
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(cp.GPULabel(), allNodes, readyNodes)
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
 	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.ignoredTaints, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
@@ -760,7 +761,7 @@ func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	metrics.UpdateClusterSafeToAutoscale(false)
 	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 	if a.AutoscalingContext.WriteStatusConfigMap {
-		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
 	}
 	if emitEvent {
 		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
@@ -773,21 +774,6 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	}
 	found, oldest := core_utils.GetOldestCreateTimeWithGpu(pods)
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
-}
-
-func deepCopyNodeInfo(nodeTemplate *schedulerframework.NodeInfo, index int) *schedulerframework.NodeInfo {
-	node := nodeTemplate.Node().DeepCopy()
-	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
-	node.UID = uuid.NewUUID()
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	for _, podInfo := range nodeTemplate.Pods {
-		pod := podInfo.Pod.DeepCopy()
-		pod.Name = fmt.Sprintf("%s-%d", podInfo.Pod.Name, index)
-		pod.UID = uuid.NewUUID()
-		nodeInfo.AddPod(pod)
-	}
-	return nodeInfo
 }
 
 func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulerframework.NodeInfo) []*schedulerframework.NodeInfo {
@@ -808,7 +794,7 @@ func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			upcomingNodes = append(upcomingNodes, deepCopyNodeInfo(nodeTemplate, i))
+			upcomingNodes = append(upcomingNodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, i))
 		}
 	}
 	return upcomingNodes

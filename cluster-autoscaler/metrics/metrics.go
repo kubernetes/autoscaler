@@ -17,7 +17,10 @@ limitations under the License.
 package metrics
 
 import (
+	"fmt"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -227,11 +230,28 @@ var (
 		},
 	)
 
+	unremovableNodesCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "unremovable_nodes_count",
+			Help:      "Number of nodes currently considered unremovable by CA.",
+		},
+		[]string{"reason"},
+	)
+
 	scaleDownInCooldown = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "scale_down_in_cooldown",
 			Help:      "Whether or not the scale down is in cooldown. 1 if its, 0 otherwise.",
+		},
+	)
+
+	oldUnregisteredNodesRemovedCount = k8smetrics.NewCounter(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "old_unregistered_nodes_removed_count",
+			Help:      "Number of unregistered nodes removed by CA.",
 		},
 	)
 
@@ -279,7 +299,9 @@ func RegisterAll() {
 	legacyregistry.MustRegister(gpuScaleDownCount)
 	legacyregistry.MustRegister(evictionsCount)
 	legacyregistry.MustRegister(unneededNodesCount)
+	legacyregistry.MustRegister(unremovableNodesCount)
 	legacyregistry.MustRegister(scaleDownInCooldown)
+	legacyregistry.MustRegister(oldUnregisteredNodesRemovedCount)
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
@@ -379,6 +401,13 @@ func UpdateUnneededNodesCount(nodesCount int) {
 	unneededNodesCount.Set(float64(nodesCount))
 }
 
+// UpdateUnremovableNodesCount records number of currently unremovable nodes
+func UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int) {
+	for reason, count := range unremovableReasonCounts {
+		unremovableNodesCount.WithLabelValues(fmt.Sprintf("%v", reason)).Set(float64(count))
+	}
+}
+
 // UpdateNapEnabled records if NodeAutoprovisioning is enabled
 func UpdateNapEnabled(enabled bool) {
 	if enabled {
@@ -406,4 +435,10 @@ func UpdateScaleDownInCooldown(inCooldown bool) {
 	} else {
 		scaleDownInCooldown.Set(0.0)
 	}
+}
+
+// RegisterOldUnregisteredNodesRemoved records number of old unregistered
+// nodes that have been removed by the cluster autoscaler
+func RegisterOldUnregisteredNodesRemoved(nodesCount int) {
+	oldUnregisteredNodesRemovedCount.Add(float64(nodesCount))
 }

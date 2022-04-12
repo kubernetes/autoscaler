@@ -110,6 +110,16 @@ func TestGetNodePrice(t *testing.T) {
 			expensiveNode:              testNode(t, "2 gpus", "n1-standard-8", 8000, 30*units.GiB, "nvidia-tesla-v100", 2, false),
 			priceComparisonCoefficient: 0.7,
 		},
+		"some instance types have fixed gpu count 1": {
+			cheaperNode:                testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false),
+			expensiveNode:              testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false),
+			priceComparisonCoefficient: 1.001,
+		},
+		"some instance types have fixed gpu count 2": {
+			cheaperNode:                testNode(t, "without partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 2, false),
+			expensiveNode:              testNode(t, "with partitioning", "a2-highgpu-2g", 12000, 85*units.GiB, "nvidia-tesla-a100", 10, false),
+			priceComparisonCoefficient: 1.001,
+		},
 		// Preemptibles
 		"preemtpibles are cheap": {
 			cheaperNode:                testNode(t, "preempted_i_can_be", "n1-standard-8", 8000, 30*units.GiB, "", 0, true),

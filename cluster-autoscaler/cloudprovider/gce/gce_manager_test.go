@@ -325,7 +325,7 @@ func buildListInstanceGroupManagersResponse(listInstanceGroupManagerResponsePart
 }
 
 func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceManagerImpl {
-	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
+	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL, "")
 
 	// Override wait for op timeouts.
 	gceService.operationWaitTimeout = 50 * time.Millisecond
@@ -344,6 +344,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		migTargetSizeCache:     map[GceRef]int64{},
 		instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{},
 		migBaseNameCache:       map[GceRef]string{},
+		concurrentGceRefreshes: 1,
 	}
 	manager := &gceManagerImpl{
 		cache:                        cache,
@@ -354,6 +355,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		regional:                     regional,
 		templates:                    &GceTemplateBuilder{},
 		explicitlyConfigured:         make(map[GceRef]bool),
+		concurrentGceRefreshes:       1,
 	}
 	if regional {
 		manager.location = region

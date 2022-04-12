@@ -131,6 +131,9 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
       # Node affinity is used to force cluster-autoscaler to stick
       # to the master node. This allows the cluster to reliably downscale
       # to zero worker nodes when needed.
@@ -140,9 +143,7 @@ spec:
             nodeSelectorTerms:
             - matchExpressions:
               - key: node-role.kubernetes.io/master
-                operator: In
-                values:
-                - true
+                operator: Exists
       serviceAccountName: cluster-autoscaler
       containers:
         - name: cluster-autoscaler

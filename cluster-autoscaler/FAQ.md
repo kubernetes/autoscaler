@@ -1,3 +1,4 @@
+<!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 # Frequently Asked Questions
 
 # Older versions
@@ -638,8 +639,8 @@ The following startup parameters are supported for cluster autoscaler:
 | --- | --- | --- |
 | `cluster-name` | Autoscaled cluster name, if available | ""
 | `address` | The address to expose prometheus metrics | :8085
-| `kubernetes` | Kubernetes master location. Leave blank for default | ""
-| `kubeconfig` | Path to kubeconfig file with authorization and master location information | ""
+| `kubernetes` | Kubernetes API Server location. Leave blank for default | ""
+| `kubeconfig` | Path to kubeconfig file with authorization and API Server location information | ""
 | `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
 | `namespace` | Namespace in which cluster-autoscaler run | "kube-system"
 | `scale-down-enabled` | Should CA scale down the cluster | true
@@ -668,6 +669,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `estimator` | Type of resource estimator to be used in scale up | binpacking
 | `expander` | Type of node group expander to be used in scale up.  | random
 | `write-status-configmap` | Should CA write status information to a configmap  | true
+| `status-config-map-name` | The name of the status ConfigMap that CA writes  | cluster-autoscaler-status
 | `max-inactivity` | Maximum time from last recorded autoscaler activity before automatic restart | 10 minutes
 | `max-failing-time` | Maximum time from last recorded successful autoscaler run before automatic restart | 15 minutes
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them | false
@@ -679,7 +681,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `regional` | Cluster is regional | false
 | `leader-elect` | Start a leader election client and gain leadership before executing the main loop.<br>Enable this when running replicated components for high availability | true
 | `leader-elect-lease-duration` | The duration that non-leader candidates will wait after observing a leadership<br>renewal until attempting to acquire leadership of a led but unrenewed leader slot.<br>This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate.<br>This is only applicable if leader election is enabled | 15 seconds
-| `leader-elect-renew-deadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading.<br>This must be less than or equal to the lease duration.<br>This is only applicable if leader election is enabled | 10 seconds
+| `leader-elect-renew-deadline` | The interval between attempts by the active cluster-autoscaler to renew a leadership slot before it stops leading.<br>This must be less than or equal to the lease duration.<br>This is only applicable if leader election is enabled | 10 seconds
 | `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership.<br>This is only applicable if leader election is enabled | 2 seconds
 | `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election.<br>Supported options are `endpoints` (default) and `configmaps` | "endpoints"
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only | false
@@ -780,7 +782,7 @@ If both the cluster and CA appear healthy:
 
 * If you expect some nodes to be added to make space for pending pods, but they are not added for a long time, check [I have a couple of pending pods, but there was no scale-up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up) section.
 
-* If you have access to the master machine, check Cluster Autoscaler logs in `/var/log/cluster-autoscaler.log`. Cluster Autoscaler logs a lot of useful information, including why it considers a pod unremovable or what was its scale-up plan.
+* If you have access to the control plane (previously referred to as master) machine, check Cluster Autoscaler logs in `/var/log/cluster-autoscaler.log`. Cluster Autoscaler logs a lot of useful information, including why it considers a pod unremovable or what was its scale-up plan.
 
 * Check events added by CA to the pod object.
 
@@ -792,7 +794,7 @@ If both the cluster and CA appear healthy:
 
 There are three options:
 
-* Logs on the master node, in `/var/log/cluster-autoscaler.log`.
+* Logs on the control plane (previously referred to as master) nodes, in `/var/log/cluster-autoscaler.log`.
 * Cluster Autoscaler 0.5 and later publishes kube-system/cluster-autoscaler-status config map.
   To see it, run `kubectl get configmap cluster-autoscaler-status -n kube-system
   -o yaml`.
@@ -867,7 +869,7 @@ Depending on how long scale-ups have been failing, it may wait up to 30 minutes 
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher maximum nodes limit.
 3. Run `go run hack/e2e.go -- --verbose-commands --up` to bring up your cluster.
-4. SSH to the master node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
+4. SSH to the control plane (previously referred to as master) node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
     * If you want to test your custom changes set `image` to point at your own CA image.
     * Make sure `--scale-down-enabled` parameter in `command` is set to `true`.
 5. Run CA tests with:
@@ -922,33 +924,13 @@ Cluster Autoscaler imports a huge chunk of internal k8s code as it calls out to 
 Therefore we want to keep set of libraries used in CA as close to one used by k8s, to avoid
 unexpected problems coming from version incompatibilities.
 
-Cluster Autoscaler depends on `go modules` mechanism for dependency management, but do not use it directly
-during build process. `go.mod` file is just used to generate the `vendor` directory and further compilation
-is run against set of libraries stored in `vendor`. `vendor` directory can be regenerated using [`update-vendor.sh`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script.
-The `update-vendor.sh` script is responsible for autogenerating `go.mod` file used by Cluster Autoscaler. The base
-of the file is `go.mod` file coming from [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) repository.
-On top of that script adds modifications as defined
-locally in [`go.mod-extra`](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/go.mod-extra) file.
-
-Note: It is important that one should **never manually edit** `go.mod` file as it is regenerated
-on each `update-vendor.sh` call. Any extra libraries or version overrides should be put in `go.mod-extra` file (syntax of the file
-is same as syntax of `go.mod` file).
-
-Finally `vendor` directry is materialized and validation tests are run.
-
-If everything completes correctly a commit with updated `vendor` directory is created automatically. The pull-request with changed vendor
-must be sent out manually. The PR should include the auto-generated commit as well as commits containing any manual changes/fixes that need to
-go together.
-
-Execution of `update-vendor.sh` can be parametrized using command line argumets:
- - `-f` - kubernetes/kubernetes fork to use. On `master` it defaults to `git@github.com:kubernetes/kubernetes.git`
- - `-r` - revision in kubernetes/kubernetes which should be used to get base `go.mod` file
- - `-d` - specifies script workdir; useful to speed up execution if script needs to be run multiple times, because updating vendor resulted in some compilation errors on Cluster-Autoscaler side which need to be fixed
- - `-o` - overrides go version check, which may be useful if CA needs to use a different go version than the one in kubernetes go.mod file
+To sync the repositories' vendored k8s libraries, we have a script that takes a
+released version of k8s and updates the `replace` directives of each k8s
+sub-library.
 
 Example execution looks like this:
 ```
-./hack/update-vendor.sh -d/tmp/ca-update-vendor.ou1l -fgit@github.com:kubernetes/kubernetes.git -rmaster
+./hack/update-vendor.sh 1.20.0-alpha.1
 ```
 
 Caveats:
