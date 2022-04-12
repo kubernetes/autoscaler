@@ -1,18 +1,16 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package responses
 
@@ -21,12 +19,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"net/http"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 )
 
-// AcsResponse interface
 type AcsResponse interface {
 	IsSuccess() bool
 	GetHttpStatus() int
@@ -37,7 +35,7 @@ type AcsResponse interface {
 	parseFromHttpResponse(httpResponse *http.Response) error
 }
 
-// Unmarshal return response body
+// Unmarshal object from http response body to target Response
 func Unmarshal(response AcsResponse, httpResponse *http.Response, format string) (err error) {
 	err = response.parseFromHttpResponse(httpResponse)
 	if err != nil {
@@ -47,7 +45,8 @@ func Unmarshal(response AcsResponse, httpResponse *http.Response, format string)
 		err = errors.NewServerError(response.GetHttpStatus(), response.GetHttpContentString(), "")
 		return
 	}
-	if _, isCommonResponse := response.(CommonResponse); isCommonResponse {
+
+	if _, isCommonResponse := response.(*CommonResponse); isCommonResponse {
 		// common response need not unmarshal
 		return
 	}
@@ -57,7 +56,6 @@ func Unmarshal(response AcsResponse, httpResponse *http.Response, format string)
 	}
 
 	if strings.ToUpper(format) == "JSON" {
-		initJsonParserOnce()
 		err = jsonParser.Unmarshal(response.GetHttpContentBytes(), response)
 		if err != nil {
 			err = errors.NewClientError(errors.JsonUnmarshalErrorCode, errors.JsonUnmarshalErrorMessage, err)
@@ -68,7 +66,6 @@ func Unmarshal(response AcsResponse, httpResponse *http.Response, format string)
 	return
 }
 
-// BaseResponse wrap originHttpResponse
 type BaseResponse struct {
 	httpStatus         int
 	httpHeaders        map[string][]string
@@ -77,32 +74,26 @@ type BaseResponse struct {
 	originHttpResponse *http.Response
 }
 
-// GetHttpStatus returns httpStatus
 func (baseResponse *BaseResponse) GetHttpStatus() int {
 	return baseResponse.httpStatus
 }
 
-// GetHttpHeaders returns httpHeaders
 func (baseResponse *BaseResponse) GetHttpHeaders() map[string][]string {
 	return baseResponse.httpHeaders
 }
 
-// GetHttpContentString returns httpContentString
 func (baseResponse *BaseResponse) GetHttpContentString() string {
 	return baseResponse.httpContentString
 }
 
-// GetHttpContentBytes returns httpContentBytes
 func (baseResponse *BaseResponse) GetHttpContentBytes() []byte {
 	return baseResponse.httpContentBytes
 }
 
-// GetOriginHttpResponse returns originHttpResponse
 func (baseResponse *BaseResponse) GetOriginHttpResponse() *http.Response {
 	return baseResponse.originHttpResponse
 }
 
-// IsSuccess checks weather httpStatus is 200 or not
 func (baseResponse *BaseResponse) IsSuccess() bool {
 	if baseResponse.GetHttpStatus() >= 200 && baseResponse.GetHttpStatus() < 300 {
 		return true
@@ -125,11 +116,10 @@ func (baseResponse *BaseResponse) parseFromHttpResponse(httpResponse *http.Respo
 	return
 }
 
-// String returns base response content
 func (baseResponse *BaseResponse) String() string {
 	resultBuilder := bytes.Buffer{}
 	// statusCode
-	resultBuilder.WriteString("\n")
+	// resultBuilder.WriteString("\n")
 	resultBuilder.WriteString(fmt.Sprintf("%s %s\n", baseResponse.originHttpResponse.Proto, baseResponse.originHttpResponse.Status))
 	// httpHeaders
 	//resultBuilder.WriteString("Headers:\n")
@@ -143,12 +133,10 @@ func (baseResponse *BaseResponse) String() string {
 	return resultBuilder.String()
 }
 
-// CommonResponse wrap base response
 type CommonResponse struct {
 	*BaseResponse
 }
 
-// NewCommonResponse return common response
 func NewCommonResponse() (response *CommonResponse) {
 	return &CommonResponse{
 		BaseResponse: &BaseResponse{},

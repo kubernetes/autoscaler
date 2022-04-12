@@ -1,39 +1,48 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package auth
 
 import (
 	"bytes"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 	"sort"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 )
+
+var debug utils.Debug
+
+var hookGetDate = func(fn func() string) string {
+	return fn()
+}
+
+func init() {
+	debug = utils.Init("sdk")
+}
 
 func signRoaRequest(request requests.AcsRequest, signer Signer, regionId string) (err error) {
 	completeROASignParams(request, signer, regionId)
 	stringToSign := buildRoaStringToSign(request)
 	request.SetStringToSign(stringToSign)
-	signature := signer.Sign(stringToSign, "")
 	accessKeyId, err := signer.GetAccessKeyId()
 	if err != nil {
-		return nil
+		return err
 	}
 
+	signature := signer.Sign(stringToSign, "")
 	request.GetHeaders()["Authorization"] = "acs " + accessKeyId + ":" + signature
 
 	return
@@ -53,19 +62,24 @@ func completeROASignParams(request requests.AcsRequest, signer Signer, regionId 
 				headerParams["x-acs-security-token"] = value
 				continue
 			}
-
+			if key == "BearerToken" {
+				headerParams["x-acs-bearer-token"] = value
+				continue
+			}
 			queryParams[key] = value
 		}
 	}
 
 	// complete header params
-	headerParams["Date"] = utils.GetTimeInFormatRFC2616()
+	headerParams["Date"] = hookGetDate(utils.GetTimeInFormatRFC2616)
 	headerParams["x-acs-signature-method"] = signer.GetName()
 	headerParams["x-acs-signature-version"] = signer.GetVersion()
 	if request.GetFormParams() != nil && len(request.GetFormParams()) > 0 {
 		formString := utils.GetUrlFormedMap(request.GetFormParams())
 		request.SetContent([]byte(formString))
-		headerParams["Content-Type"] = requests.Form
+		if headerParams["Content-Type"] == "" {
+			headerParams["Content-Type"] = requests.Form
+		}
 	}
 	contentMD5 := utils.GetMD5Base64(request.GetContent())
 	headerParams["Content-MD5"] = contentMD5
@@ -112,6 +126,7 @@ func buildRoaStringToSign(request requests.AcsRequest) (stringToSign string) {
 	// append query params
 	stringToSignBuilder.WriteString(request.BuildQueries())
 	stringToSign = stringToSignBuilder.String()
+	debug("stringToSign: %s", stringToSign)
 	return
 }
 

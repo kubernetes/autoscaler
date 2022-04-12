@@ -1,39 +1,37 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package signers
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jmespath/go-jmespath"
+	"net/http"
+	"strconv"
+	"time"
+
+	jmespath "github.com/jmespath/go-jmespath"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 const (
 	defaultDurationSeconds = 3600
 )
 
-// RamRoleArnSigner is kind of signer
 type RamRoleArnSigner struct {
 	*credentialUpdater
 	roleSessionName   string
@@ -42,7 +40,6 @@ type RamRoleArnSigner struct {
 	commonApi         func(request *requests.CommonRequest, signer interface{}) (response *responses.CommonResponse, err error)
 }
 
-// NewRamRoleArnSigner returns RamRoleArnSigner
 func NewRamRoleArnSigner(credential *credentials.RamRoleArnCredential, commonApi func(request *requests.CommonRequest, signer interface{}) (response *responses.CommonResponse, err error)) (signer *RamRoleArnSigner, err error) {
 	signer = &RamRoleArnSigner{
 		credential: credential,
@@ -73,33 +70,33 @@ func NewRamRoleArnSigner(credential *credentials.RamRoleArnCredential, commonApi
 	return
 }
 
-// GetName returns "HMAC-SHA1"
 func (*RamRoleArnSigner) GetName() string {
 	return "HMAC-SHA1"
 }
 
-// GetType returns ""
 func (*RamRoleArnSigner) GetType() string {
 	return ""
 }
 
-// GetVersion returns "1.0"
 func (*RamRoleArnSigner) GetVersion() string {
 	return "1.0"
 }
 
-// GetAccessKeyId returns accessKeyId
 func (signer *RamRoleArnSigner) GetAccessKeyId() (accessKeyId string, err error) {
 	if signer.sessionCredential == nil || signer.needUpdateCredential() {
 		err = signer.updateCredential()
+		if err != nil {
+			return
+		}
 	}
-	if err != nil && (signer.sessionCredential == nil || len(signer.sessionCredential.AccessKeyId) <= 0) {
+
+	if signer.sessionCredential == nil || len(signer.sessionCredential.AccessKeyId) <= 0 {
 		return "", err
 	}
+
 	return signer.sessionCredential.AccessKeyId, nil
 }
 
-// GetExtraParam returns params
 func (signer *RamRoleArnSigner) GetExtraParam() map[string]string {
 	if signer.sessionCredential == nil || signer.needUpdateCredential() {
 		signer.updateCredential()
@@ -110,7 +107,6 @@ func (signer *RamRoleArnSigner) GetExtraParam() map[string]string {
 	return map[string]string{"SecurityToken": signer.sessionCredential.StsToken}
 }
 
-// Sign create signer
 func (signer *RamRoleArnSigner) Sign(stringToSign, secretSuffix string) string {
 	secret := signer.sessionCredential.AccessKeySecret + secretSuffix
 	return ShaHmac1(stringToSign, secret)
@@ -123,6 +119,9 @@ func (signer *RamRoleArnSigner) buildCommonRequest() (request *requests.CommonRe
 	request.ApiName = "AssumeRole"
 	request.Scheme = requests.HTTPS
 	request.QueryParams["RoleArn"] = signer.credential.RoleArn
+	if signer.credential.Policy != "" {
+		request.QueryParams["Policy"] = signer.credential.Policy
+	}
 	request.QueryParams["RoleSessionName"] = signer.credential.RoleSessionName
 	request.QueryParams["DurationSeconds"] = strconv.Itoa(signer.credentialExpiration)
 	return
@@ -133,7 +132,7 @@ func (signer *RamRoleArnSigner) refreshApi(request *requests.CommonRequest) (res
 		AccessKeyId:     signer.credential.AccessKeyId,
 		AccessKeySecret: signer.credential.AccessKeySecret,
 	}
-	signerV1, err := NewAccessKeySigner(credential)
+	signerV1 := NewAccessKeySigner(credential)
 	return signer.commonApi(request, signerV1)
 }
 
@@ -146,23 +145,19 @@ func (signer *RamRoleArnSigner) refreshCredential(response *responses.CommonResp
 	var data interface{}
 	err = json.Unmarshal(response.GetHttpContentBytes(), &data)
 	if err != nil {
-		fmt.Println("refresh RoleArn sts token err, json.Unmarshal fail", err)
-		return
+		return fmt.Errorf("refresh RoleArn sts token err, json.Unmarshal fail: %s", err.Error())
 	}
 	accessKeyId, err := jmespath.Search("Credentials.AccessKeyId", data)
 	if err != nil {
-		fmt.Println("refresh RoleArn sts token err, fail to get AccessKeyId", err)
-		return
+		return fmt.Errorf("refresh RoleArn sts token err, fail to get AccessKeyId: %s", err.Error())
 	}
 	accessKeySecret, err := jmespath.Search("Credentials.AccessKeySecret", data)
 	if err != nil {
-		fmt.Println("refresh RoleArn sts token err, fail to get AccessKeySecret", err)
-		return
+		return fmt.Errorf("refresh RoleArn sts token err, fail to get AccessKeySecret: %s", err.Error())
 	}
 	securityToken, err := jmespath.Search("Credentials.SecurityToken", data)
 	if err != nil {
-		fmt.Println("refresh RoleArn sts token err, fail to get SecurityToken", err)
-		return
+		return fmt.Errorf("refresh RoleArn sts token err, fail to get SecurityToken: %s", err.Error())
 	}
 	if accessKeyId == nil || accessKeySecret == nil || securityToken == nil {
 		return
@@ -175,10 +170,6 @@ func (signer *RamRoleArnSigner) refreshCredential(response *responses.CommonResp
 	return
 }
 
-// GetSessionCredential returns SessionCredential
 func (signer *RamRoleArnSigner) GetSessionCredential() *SessionCredential {
 	return signer.sessionCredential
 }
-
-// Shutdown doesn't implement
-func (signer *RamRoleArnSigner) Shutdown() {}

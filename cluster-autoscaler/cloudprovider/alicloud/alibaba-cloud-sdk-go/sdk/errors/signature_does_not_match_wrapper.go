@@ -1,47 +1,45 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package errors
 
-import "strings"
+import (
+	"strings"
 
-/* const code and msg prefix */
-const (
-	SignatureDostNotMatchErrorCode = "SignatureDoesNotMatch"
-	MessagePrefix                  = "Specified signature is not matched with our calculation. server string to sign is:"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 )
 
-// SignatureDostNotMatchWrapper implements tryWrap interface
-type SignatureDostNotMatchWrapper struct{}
+const SignatureDostNotMatchErrorCode = "SignatureDoesNotMatch"
+const IncompleteSignatureErrorCode = "IncompleteSignature"
+const MessageContain = "server string to sign is:"
 
-func (*SignatureDostNotMatchWrapper) tryWrap(error *ServerError, wrapInfo map[string]string) (bool, *ServerError) {
+var debug utils.Debug
+
+func init() {
+	debug = utils.Init("sdk")
+}
+
+type SignatureDostNotMatchWrapper struct {
+}
+
+func (*SignatureDostNotMatchWrapper) tryWrap(error *ServerError, wrapInfo map[string]string) (ok bool) {
 	clientStringToSign := wrapInfo["StringToSign"]
-	if error.errorCode == SignatureDostNotMatchErrorCode && clientStringToSign != "" {
+	if (error.errorCode == SignatureDostNotMatchErrorCode || error.errorCode == IncompleteSignatureErrorCode) && clientStringToSign != "" {
 		message := error.message
-		if strings.HasPrefix(message, MessagePrefix) {
-			serverStringToSign := message[len(MessagePrefix):]
+		if strings.Contains(message, MessageContain) {
+			str := strings.Split(message, MessageContain)
+			serverStringToSign := str[1]
+
 			if clientStringToSign == serverStringToSign {
 				// user secret is error
-				error.recommend = "Please check you AccessKeySecret"
+				error.recommend = "InvalidAccessKeySecret: Please check you AccessKeySecret"
 			} else {
+				debug("Client StringToSign: %s", clientStringToSign)
+				debug("Server StringToSign: %s", serverStringToSign)
 				error.recommend = "This may be a bug with the SDK and we hope you can submit this question in the " +
 					"github issue(https://github.com/aliyun/alibaba-cloud-sdk-go/issues), thanks very much"
 			}
 		}
-		return true, error
+		ok = true
+		return
 	}
-	return false, nil
+	ok = false
+	return
 }

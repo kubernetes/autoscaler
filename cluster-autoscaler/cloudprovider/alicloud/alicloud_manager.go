@@ -143,7 +143,7 @@ func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
 	for _, instanceId := range instanceIds {
 		req := ess.CreateRemoveInstancesRequest()
 		req.ScalingGroupId = commonAsg.id
-		req.InstanceId1 = instanceId
+		req.InstanceId = &[]string{instanceId}
 
 		resp, err := m.aService.RemoveInstances(req)
 		if err != nil {

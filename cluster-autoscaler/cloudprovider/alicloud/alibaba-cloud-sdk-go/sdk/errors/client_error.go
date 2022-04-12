@@ -1,24 +1,21 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package errors
 
 import "fmt"
 
-/* const code and msg */
 const (
 	DefaultClientErrorStatus = 400
 	DefaultClientErrorCode   = "SDK.ClientError"
@@ -48,14 +45,12 @@ const (
 	TimeoutErrorMessage = "The request timed out %s times(%s for retry), perhaps we should have the threshold raised a little?"
 )
 
-// ClientError wrap error
 type ClientError struct {
 	errorCode   string
 	message     string
 	originError error
 }
 
-// NewClientError returns Error
 func NewClientError(errorCode, message string, originErr error) Error {
 	return &ClientError{
 		errorCode:   errorCode,
@@ -64,39 +59,34 @@ func NewClientError(errorCode, message string, originErr error) Error {
 	}
 }
 
-// Error returns clientErrMsg
 func (err *ClientError) Error() string {
-	clientErrMsg := fmt.Sprintf("[%s] %s", err.errorCode, err.message)
+	clientErrMsg := fmt.Sprintf("[%s] %s", err.ErrorCode(), err.message)
 	if err.originError != nil {
 		return clientErrMsg + "\ncaused by:\n" + err.originError.Error()
 	}
 	return clientErrMsg
 }
 
-// OriginError returns originError
 func (err *ClientError) OriginError() error {
 	return err.originError
 }
 
-// HttpStatus returns DefaultClientErrorStatus
 func (*ClientError) HttpStatus() int {
 	return DefaultClientErrorStatus
 }
 
-// ErrorCode returns error code
 func (err *ClientError) ErrorCode() string {
 	if err.errorCode == "" {
 		return DefaultClientErrorCode
+	} else {
+		return err.errorCode
 	}
-	return err.errorCode
 }
 
-// Message returns error message
 func (err *ClientError) Message() string {
 	return err.message
 }
 
-// String returns error string
 func (err *ClientError) String() string {
 	return err.Error()
 }

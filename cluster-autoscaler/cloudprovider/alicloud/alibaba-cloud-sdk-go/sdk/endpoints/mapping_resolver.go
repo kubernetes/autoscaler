@@ -1,43 +1,49 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package endpoints
 
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
 const keyFormatter = "%s::%s"
 
-var endpointMapping = make(map[string]string)
+type EndpointMapping struct {
+	sync.RWMutex
+	endpoint map[string]string
+}
 
-// AddEndpointMapping adds endpoint to cache
+var endpointMapping = EndpointMapping{endpoint: make(map[string]string)}
+
+// AddEndpointMapping use productId and regionId as key to store the endpoint into inner map
+// when using the same productId and regionId as key, the endpoint will be covered.
 func AddEndpointMapping(regionId, productId, endpoint string) (err error) {
 	key := fmt.Sprintf(keyFormatter, strings.ToLower(regionId), strings.ToLower(productId))
-	endpointMapping[key] = endpoint
+	endpointMapping.Lock()
+	endpointMapping.endpoint[key] = endpoint
+	endpointMapping.Unlock()
 	return nil
 }
 
-// MappingResolver is kind of resolver
-type MappingResolver struct{}
-
-// TryResolve returns endpoint
-func (resolver *MappingResolver) TryResolve(param *ResolveParam) (endpoint string, support bool, err error) {
-	key := fmt.Sprintf(keyFormatter, strings.ToLower(param.RegionId), strings.ToLower(param.Product))
-	endpoint, contains := endpointMapping[key]
-	return endpoint, contains, nil
+// GetEndpointFromMap use Product and RegionId as key to find endpoint from inner map
+func GetEndpointFromMap(regionId, productId string) string {
+	key := fmt.Sprintf(keyFormatter, strings.ToLower(regionId), strings.ToLower(productId))
+	endpointMapping.RLock()
+	endpoint := endpointMapping.endpoint[key]
+	endpointMapping.RUnlock()
+	return endpoint
 }

@@ -1,34 +1,32 @@
 /*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package signers
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jmespath/go-jmespath"
+	"net/http"
+	"strconv"
+
+	jmespath "github.com/jmespath/go-jmespath"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
-	"net/http"
-	"strconv"
 )
 
-// SignerKeyPair is kind of signer
 type SignerKeyPair struct {
 	*credentialUpdater
 	sessionCredential *SessionCredential
@@ -36,7 +34,6 @@ type SignerKeyPair struct {
 	commonApi         func(request *requests.CommonRequest, signer interface{}) (response *responses.CommonResponse, err error)
 }
 
-// NewSignerKeyPair returns SignerKeyPair
 func NewSignerKeyPair(credential *credentials.RsaKeyPairCredential, commonApi func(*requests.CommonRequest, interface{}) (response *responses.CommonResponse, err error)) (signer *SignerKeyPair, err error) {
 	signer = &SignerKeyPair{
 		credential: credential,
@@ -62,46 +59,45 @@ func NewSignerKeyPair(credential *credentials.RsaKeyPairCredential, commonApi fu
 	return
 }
 
-// GetName returns "HMAC-SHA1"
 func (*SignerKeyPair) GetName() string {
 	return "HMAC-SHA1"
 }
 
-// GetType returns ""
 func (*SignerKeyPair) GetType() string {
 	return ""
 }
 
-// GetVersion returns "1.0"
 func (*SignerKeyPair) GetVersion() string {
 	return "1.0"
 }
 
-// GetAccessKeyId returns accessKeyId
-func (signer *SignerKeyPair) GetAccessKeyId() (accessKeyId string, err error) {
+func (signer *SignerKeyPair) ensureCredential() error {
 	if signer.sessionCredential == nil || signer.needUpdateCredential() {
-		err = signer.updateCredential()
+		return signer.updateCredential()
 	}
-	if err != nil && (signer.sessionCredential == nil || len(signer.sessionCredential.AccessKeyId) <= 0) {
-		return "", err
-	}
-	return signer.sessionCredential.AccessKeyId, err
+	return nil
 }
 
-// GetExtraParam returns params
-func (signer *SignerKeyPair) GetExtraParam() map[string]string {
-	if signer.sessionCredential == nil || signer.needUpdateCredential() {
-		signer.updateCredential()
+func (signer *SignerKeyPair) GetAccessKeyId() (accessKeyId string, err error) {
+	err = signer.ensureCredential()
+	if err != nil {
+		return
 	}
 	if signer.sessionCredential == nil || len(signer.sessionCredential.AccessKeyId) <= 0 {
-		return make(map[string]string)
+		accessKeyId = ""
+		return
 	}
+
+	accessKeyId = signer.sessionCredential.AccessKeyId
+	return
+}
+
+func (signer *SignerKeyPair) GetExtraParam() map[string]string {
 	return make(map[string]string)
 }
 
-// Sign create signer
 func (signer *SignerKeyPair) Sign(stringToSign, secretSuffix string) string {
-	secret := signer.sessionCredential.AccessKeyId + secretSuffix
+	secret := signer.sessionCredential.AccessKeySecret + secretSuffix
 	return ShaHmac1(stringToSign, secret)
 }
 
@@ -111,13 +107,14 @@ func (signer *SignerKeyPair) buildCommonRequest() (request *requests.CommonReque
 	request.Version = "2015-04-01"
 	request.ApiName = "GenerateSessionAccessKey"
 	request.Scheme = requests.HTTPS
+	request.SetDomain("sts.ap-northeast-1.aliyuncs.com")
 	request.QueryParams["PublicKeyId"] = signer.credential.PublicKeyId
 	request.QueryParams["DurationSeconds"] = strconv.Itoa(signer.credentialExpiration)
 	return
 }
 
 func (signer *SignerKeyPair) refreshApi(request *requests.CommonRequest) (response *responses.CommonResponse, err error) {
-	signerV2, err := NewSignerV2(signer.credential)
+	signerV2 := NewSignerV2(signer.credential)
 	return signer.commonApi(request, signerV2)
 }
 
@@ -130,18 +127,15 @@ func (signer *SignerKeyPair) refreshCredential(response *responses.CommonRespons
 	var data interface{}
 	err = json.Unmarshal(response.GetHttpContentBytes(), &data)
 	if err != nil {
-		fmt.Println("refresh KeyPair err, json.Unmarshal fail", err)
-		return
+		return fmt.Errorf("refresh KeyPair err, json.Unmarshal fail: %s", err.Error())
 	}
 	accessKeyId, err := jmespath.Search("SessionAccessKey.SessionAccessKeyId", data)
 	if err != nil {
-		fmt.Println("refresh KeyPair err, fail to get SessionAccessKeyId", err)
-		return
+		return fmt.Errorf("refresh KeyPair err, fail to get SessionAccessKeyId: %s", err.Error())
 	}
 	accessKeySecret, err := jmespath.Search("SessionAccessKey.SessionAccessKeySecret", data)
 	if err != nil {
-		fmt.Println("refresh KeyPair err, fail to get SessionAccessKeySecret", err)
-		return
+		return fmt.Errorf("refresh KeyPair err, fail to get SessionAccessKeySecret: %s", err.Error())
 	}
 	if accessKeyId == nil || accessKeySecret == nil {
 		return
@@ -152,6 +146,3 @@ func (signer *SignerKeyPair) refreshCredential(response *responses.CommonRespons
 	}
 	return
 }
-
-// Shutdown doesn't implement
-func (signer *SignerKeyPair) Shutdown() {}
