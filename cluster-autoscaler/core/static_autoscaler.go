@@ -346,8 +346,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			klog.Warningf("Failed to remove unregistered nodes: %v", err)
 		}
 		if removedAny {
-			klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
-			return nil
+			klog.V(0).Infof("Some unregistered nodes were removed")
 		}
 	}
 
