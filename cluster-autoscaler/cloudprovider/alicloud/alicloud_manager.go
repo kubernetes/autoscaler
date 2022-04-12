@@ -19,13 +19,13 @@ package alicloud
 import (
 	"errors"
 	"fmt"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ess"
 	"gopkg.in/gcfg.v1"
 	"io"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	klog "k8s.io/klog/v2"
 	"math/rand"
 	"time"
@@ -143,7 +143,7 @@ func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
 	for _, instanceId := range instanceIds {
 		req := ess.CreateRemoveInstancesRequest()
 		req.ScalingGroupId = commonAsg.id
-		req.InstanceId1 = instanceId
+		req.InstanceId = &[]string{instanceId}
 
 		resp, err := m.aService.RemoveInstances(req)
 		if err != nil {
