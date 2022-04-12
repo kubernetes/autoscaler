@@ -104,6 +104,20 @@ github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 ## explicit
 github.com/PuerkitoBio/urlesc
+# github.com/aliyun/alibaba-cloud-sdk-go v1.61.62
+## explicit
+github.com/aliyun/alibaba-cloud-sdk-go/sdk
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials/provider
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/endpoints
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
+github.com/aliyun/alibaba-cloud-sdk-go/services/ecs
+github.com/aliyun/alibaba-cloud-sdk-go/services/ess
 # github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e
 ## explicit
 github.com/armon/circbuf
@@ -956,6 +970,8 @@ gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
+# gopkg.in/ini.v1 v1.62.0
+gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 ## explicit
 gopkg.in/natefinch/lumberjack.v2
