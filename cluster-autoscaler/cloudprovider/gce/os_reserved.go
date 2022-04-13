@@ -20,9 +20,9 @@ package gce
 type OsReservedCalculator interface {
 	// CalculateKernelReserved computes how much memory OS kernel will reserve.
 	// NodeVersion parameter is optional. If empty string is passed a result calculated using default node version will be returned.
-	CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution, nodeVersion string) int64
+	CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) int64
 
 	// CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold.
 	// NodeVersion parameter is optional. If empty string is passed a result calculated using default node version will be returned.
-	CalculateOSReservedEphemeralStorage(diskSize int64, os OperatingSystem, osDistribution OperatingSystemDistribution, nodeVersion string) int64
+	CalculateOSReservedEphemeralStorage(diskSize int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) int64
 }

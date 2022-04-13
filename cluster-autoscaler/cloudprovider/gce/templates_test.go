@@ -238,7 +238,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				} else if tc.isEphemeralStorageBlocked {
 					physicalEphemeralStorageGiB = 0
 				}
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, "", &GceReserved{})
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, "", physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, "", &GceReserved{})
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -532,7 +532,7 @@ func TestBuildCapacityMemory(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
 			noAccelerators := make([]*gce.AcceleratorConfig, 0)
-			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, -1, 0, nil, "", &GceReserved{})
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, "", -1, 0, nil, "", &GceReserved{})
 			assert.NoError(t, err)
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
