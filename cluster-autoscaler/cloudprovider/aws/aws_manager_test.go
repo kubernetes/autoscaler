@@ -36,6 +36,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -70,6 +71,24 @@ func TestGetRegion(t *testing.T) {
 	}))
 	cfg := aws.NewConfig().WithEndpoint(server.URL)
 	assert.Equal(t, expected2, getRegion(cfg))
+}
+
+func TestJoinNodeLabelsChoosingUserValuesOverAPIValues(t *testing.T) {
+	extractedLabels := make(map[string]string)
+	mngLabels := make(map[string]string)
+
+	extractedLabels["key1"] = "value1extracted"
+	extractedLabels["key2"] = "value2extracted"
+
+	mngLabels["key3"] = "value3mng"
+	mngLabels["key2"] = "value2mng"
+
+	result := joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels, mngLabels)
+
+	// Make sure any duplicate keys keep the extractedLabels value
+	assert.Equal(t, result["key1"], "value1extracted")
+	assert.Equal(t, result["key2"], "value2mng")
+	assert.Equal(t, result["key3"], "value3mng")
 }
 
 func TestBuildGenericLabels(t *testing.T) {
@@ -183,6 +202,188 @@ func TestGetAsgOptions(t *testing.T) {
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
+}
+
+func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	awsManager := &AwsManager{managedNodegroupCache: mngCache}
+	asg := &asg{AwsRef: AwsRef{Name: "test-auto-scaling-group"}}
+	c5Instance := &InstanceType{
+		InstanceType: "c5.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	}
+
+	ngNameLabelValue := "nodegroup-1"
+	clusterNameLabelValue := "cluster-1"
+
+	labelKey1 := "labelKey 1"
+	labelKey2 := "labelKey 2"
+	labelValue1 := "testValue 1"
+	labelValue2 := "testValue 2"
+	labelValue3 := "testValue 3"
+
+	taintEffect1 := "effect 1"
+	taintKey1 := "key 1"
+	taintValue1 := "value 1"
+	taint1 := apiv1.Taint{
+		Effect: apiv1.TaintEffect(taintEffect1),
+		Key:    taintKey1,
+		Value:  taintValue1,
+	}
+
+	taintEffect2 := "effect 2"
+	taintKey2 := "key 2"
+	taintValue2 := "value 2"
+	taint2 := apiv1.Taint{
+		Effect: apiv1.TaintEffect(taintEffect2),
+		Key:    taintKey2,
+		Value:  taintValue2,
+	}
+
+	err := mngCache.Add(managedNodegroupCachedObject{
+		name:        ngNameLabelValue,
+		clusterName: clusterNameLabelValue,
+		taints:      []apiv1.Taint{taint1, taint2},
+		labels:      map[string]string{labelKey1: labelValue1, labelKey2: labelValue2},
+	})
+	require.NoError(t, err)
+
+	// Node with EKS labels
+	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String(ngNameLabelValue),
+			},
+			{
+				Key:   aws.String("eks:cluster-name"),
+				Value: aws.String(clusterNameLabelValue),
+			},
+			{
+				Key:   aws.String("k8s.io/cluster-autoscaler/node-template/label/" + labelKey2),
+				Value: aws.String(labelValue3),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	assert.GreaterOrEqual(t, len(observedNode.Labels), 4)
+	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
+	assert.True(t, ngLabelExist)
+	assert.Equal(t, ngNameLabelValue, ngNameValue)
+	clusterNameValue, clusterLabelExist := observedNode.Labels["cluster-name"]
+	assert.True(t, clusterLabelExist)
+	assert.Equal(t, clusterNameValue, clusterNameLabelValue)
+	labelKeyValue1, labelKeyExist1 := observedNode.Labels[labelKey1]
+	assert.True(t, labelKeyExist1)
+	assert.Equal(t, labelKeyValue1, labelValue1)
+	labelKeyValue2, labelKeyExist2 := observedNode.Labels[labelKey2]
+	assert.True(t, labelKeyExist2)
+	// Check the value specified in the ASG tag is kept, instead of the EKS API value
+	assert.Equal(t, labelKeyValue2, labelValue2)
+	assert.Equal(t, len(observedNode.Spec.Taints), 2)
+	assert.Equal(t, observedNode.Spec.Taints[0].Effect, apiv1.TaintEffect(taintEffect1))
+	assert.Equal(t, observedNode.Spec.Taints[0].Key, taintKey1)
+	assert.Equal(t, observedNode.Spec.Taints[0].Value, taintValue1)
+	assert.Equal(t, observedNode.Spec.Taints[1].Effect, apiv1.TaintEffect(taintEffect2))
+	assert.Equal(t, observedNode.Spec.Taints[1].Key, taintKey2)
+	assert.Equal(t, observedNode.Spec.Taints[1].Value, taintValue2)
+}
+
+func TestBuildNodeFromTemplateWithManagedNodegroupNoLabelsOrTaints(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	awsManager := &AwsManager{managedNodegroupCache: mngCache}
+	asg := &asg{AwsRef: AwsRef{Name: "test-auto-scaling-group"}}
+	c5Instance := &InstanceType{
+		InstanceType: "c5.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	}
+
+	ngNameLabelValue := "nodegroup-1"
+	clusterNameLabelValue := "cluster-1"
+
+	err := mngCache.Add(managedNodegroupCachedObject{
+		name:        ngNameLabelValue,
+		clusterName: clusterNameLabelValue,
+		taints:      make([]apiv1.Taint, 0),
+		labels:      make(map[string]string),
+	})
+	require.NoError(t, err)
+
+	// Node with EKS labels
+	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String(ngNameLabelValue),
+			},
+			{
+				Key:   aws.String("eks:cluster-name"),
+				Value: aws.String(clusterNameLabelValue),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	assert.GreaterOrEqual(t, len(observedNode.Labels), 2)
+	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
+	assert.True(t, ngLabelExist)
+	assert.Equal(t, ngNameLabelValue, ngNameValue)
+	clusterNameValue, clusterLabelExist := observedNode.Labels["cluster-name"]
+	assert.True(t, clusterLabelExist)
+	assert.Equal(t, clusterNameValue, clusterNameLabelValue)
+	assert.Equal(t, len(observedNode.Spec.Taints), 0)
+}
+
+func TestBuildNodeFromTemplateWithManagedNodegroupNilLabelsOrTaints(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	awsManager := &AwsManager{managedNodegroupCache: mngCache}
+	asg := &asg{AwsRef: AwsRef{Name: "test-auto-scaling-group"}}
+	c5Instance := &InstanceType{
+		InstanceType: "c5.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	}
+
+	ngNameLabelValue := "nodegroup-1"
+	clusterNameLabelValue := "cluster-1"
+
+	err := mngCache.Add(managedNodegroupCachedObject{
+		name:        ngNameLabelValue,
+		clusterName: clusterNameLabelValue,
+		taints:      nil,
+		labels:      nil,
+	})
+	require.NoError(t, err)
+
+	// Node with EKS labels
+	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
+		InstanceType: c5Instance,
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String(ngNameLabelValue),
+			},
+			{
+				Key:   aws.String("eks:cluster-name"),
+				Value: aws.String(clusterNameLabelValue),
+			},
+		},
+	})
+	assert.NoError(t, observedErr)
+	assert.GreaterOrEqual(t, len(observedNode.Labels), 2)
+	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
+	assert.True(t, ngLabelExist)
+	assert.Equal(t, ngNameLabelValue, ngNameValue)
+	clusterNameValue, clusterLabelExist := observedNode.Labels["cluster-name"]
+	assert.True(t, clusterLabelExist)
+	assert.Equal(t, clusterNameValue, clusterNameLabelValue)
+	assert.Equal(t, len(observedNode.Spec.Taints), 0)
 }
 
 func TestBuildNodeFromTemplate(t *testing.T) {
