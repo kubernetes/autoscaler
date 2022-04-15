@@ -229,7 +229,7 @@ spec:
               mountPath: {{ .Values.clusterAPIWorkloadKubeconfigPath | trimSuffix "/value" }}
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
-            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{ toYaml .Values.extraVolumeMounts | indent 12 }}
           {{- end }}
           {{- end }}
     {{- if .Values.affinity }}
