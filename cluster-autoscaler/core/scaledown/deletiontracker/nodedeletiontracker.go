@@ -24,6 +24,7 @@ import (
 )
 
 // NodeDeletionTracker keeps track of node deletions.
+// TODO: extend to implement ActuationStatus interface
 type NodeDeletionTracker struct {
 	sync.Mutex
 	nonEmptyNodeDeleteInProgress bool

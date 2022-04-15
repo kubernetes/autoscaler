@@ -30,10 +30,12 @@ import (
 	clusterstate_utils "k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -202,14 +204,15 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	processors := NewTestProcessors()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
@@ -268,7 +271,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	onScaleDownMock.On("ScaleDown", "ng1", "n2").Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(3 * time.Hour))
-	waitForDeleteToFinish(t, autoscaler.scaleDown)
+	waitForDeleteToFinish(t, autoscaler.scaleDownActuator)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -299,7 +302,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
-	waitForDeleteToFinish(t, autoscaler.scaleDown)
+	waitForDeleteToFinish(t, autoscaler.scaleDownActuator)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -394,14 +397,15 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	}
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
 
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
@@ -453,7 +457,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	onScaleDownMock.On("ScaleDown", "autoprovisioned-TN2", "n2").Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
-	waitForDeleteToFinish(t, autoscaler.scaleDown)
+	waitForDeleteToFinish(t, autoscaler.scaleDownActuator)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -539,14 +543,15 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	processors := NewTestProcessors()
 
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}
@@ -577,7 +582,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(later.Add(2 * time.Hour))
-	waitForDeleteToFinish(t, autoscaler.scaleDown)
+	waitForDeleteToFinish(t, autoscaler.scaleDownActuator)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -679,14 +684,15 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	processors := NewTestProcessors()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}
@@ -731,7 +737,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	p4.Spec.NodeName = "n2"
 
 	err = autoscaler.RunOnce(time.Now().Add(3 * time.Hour))
-	waitForDeleteToFinish(t, autoscaler.scaleDown)
+	waitForDeleteToFinish(t, autoscaler.scaleDownActuator)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -807,14 +813,15 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 
 	processors := NewTestProcessors()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}
@@ -903,14 +910,15 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	processors := NewTestProcessors()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
-	sd := legacy.NewScaleDown(&context, processors, clusterState)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:    &context,
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
-		scaleDown:             sd,
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
 		processors:            processors,
 		processorCallbacks:    processorCallbacks,
 	}
@@ -1321,11 +1329,17 @@ func nodeNames(ns []*apiv1.Node) []string {
 	return names
 }
 
-func waitForDeleteToFinish(t *testing.T, sd *legacy.ScaleDown) {
+func waitForDeleteToFinish(t *testing.T, sda scaledown.Actuator) {
 	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
-		if !sd.IsNonEmptyNodeDeleteInProgress() {
+		if len(sda.CheckStatus().DeletionsInProgress()) == 0 {
 			return
 		}
 	}
 	t.Fatalf("Node delete not finished")
+}
+
+func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContext, p *ca_processors.AutoscalingProcessors, cs *clusterstate.ClusterStateRegistry) (scaledown.Planner, scaledown.Actuator) {
+	sd := legacy.NewScaleDown(ctx, p, cs)
+	wrapper := legacy.NewScaleDownWrapper(sd)
+	return wrapper, wrapper
 }
