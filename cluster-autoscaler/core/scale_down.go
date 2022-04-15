@@ -1346,7 +1346,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, 
 		for _, pod := range pods {
 			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(ctx.TODO(), pod.Name, metav1.GetOptions{})
 			if err == nil && (podreturned == nil || podreturned.Spec.NodeName == node.Name) {
-				klog.Errorf("Not deleted yet %s/%s", pod.Namespace, pod.Name)
+				klog.V(1).Infof("Not deleted yet %s/%s", pod.Namespace, pod.Name)
 				allGone = false
 				break
 			}
