@@ -81,9 +81,6 @@ const (
 	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
 )
 
-// Get current time. Proxy for unit tests.
-var now func() time.Time = time.Now
-
 type scaleDownResourcesLimits map[string]int64
 type scaleDownResourcesDelta map[string]int64
 
@@ -315,6 +312,11 @@ func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
+}
+
+// UnneededNodes returns a list of nodes that can potentially be scaled down.
+func (sd *ScaleDown) UnneededNodes() []*apiv1.Node {
+	return sd.unneededNodesList
 }
 
 func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *utilization.Info) {
@@ -682,50 +684,6 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 		})
 	}
 	return result
-}
-
-// SoftTaintUnneededNodes manage soft taints of unneeded nodes.
-func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []error) {
-	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
-	apiCallBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintCount
-	timeBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintTime
-	skippedNodes := 0
-	startTime := now()
-	for _, node := range allNodes {
-		if deletetaint.HasToBeDeletedTaint(node) {
-			// Do not consider nodes that are scheduled to be deleted
-			continue
-		}
-		alreadyTainted := deletetaint.HasDeletionCandidateTaint(node)
-		_, unneeded := sd.unneededNodes[node.Name]
-
-		// Check if expected taints match existing taints
-		if unneeded != alreadyTainted {
-			if apiCallBudget <= 0 || now().Sub(startTime) >= timeBudget {
-				skippedNodes++
-				continue
-			}
-			apiCallBudget--
-			if unneeded && !alreadyTainted {
-				err := deletetaint.MarkDeletionCandidate(node, sd.context.ClientSet)
-				if err != nil {
-					errors = append(errors, err)
-					klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
-				}
-			}
-			if !unneeded && alreadyTainted {
-				_, err := deletetaint.CleanDeletionCandidate(node, sd.context.ClientSet)
-				if err != nil {
-					errors = append(errors, err)
-					klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
-				}
-			}
-		}
-	}
-	if skippedNodes > 0 {
-		klog.V(4).Infof("Skipped adding/removing soft taints on %v nodes - API call limit exceeded", skippedNodes)
-	}
-	return
 }
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
