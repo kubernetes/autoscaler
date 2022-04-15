@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -563,7 +564,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			if (scaleDownStatus.Result == status.ScaleDownNoNodeDeleted ||
 				scaleDownStatus.Result == status.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-				scaleDown.SoftTaintUnneededNodes(allNodes)
+				taintableNodes := a.scaleDown.UnneededNodes()
+				untaintableNodes := subtractNodes(allNodes, taintableNodes)
+				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
 			}
 
 			if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
@@ -815,4 +818,19 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	}
 
 	return coresTotal, memoryTotal
+}
+
+func subtractNodes(a []*apiv1.Node, b []*apiv1.Node) []*apiv1.Node {
+	var c []*apiv1.Node
+	namesToDrop := make(map[string]bool)
+	for _, n := range b {
+		namesToDrop[n.Name] = true
+	}
+	for _, n := range a {
+		if namesToDrop[n.Name] {
+			continue
+		}
+		c = append(c, n)
+	}
+	return c
 }

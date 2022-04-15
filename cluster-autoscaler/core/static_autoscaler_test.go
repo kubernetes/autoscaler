@@ -1271,6 +1271,56 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
 
+func TestSubtractNodes(t *testing.T) {
+	ns := make([]*apiv1.Node, 5)
+	for i := 0; i < len(ns); i++ {
+		ns[i] = BuildTestNode(fmt.Sprintf("n%d", i), 1000, 1000)
+	}
+	testCases := []struct {
+		a []*apiv1.Node
+		b []*apiv1.Node
+		c []*apiv1.Node
+	}{
+		{
+			a: ns,
+			b: nil,
+			c: ns,
+		},
+		{
+			a: nil,
+			b: ns,
+			c: nil,
+		},
+		{
+			a: ns,
+			b: []*apiv1.Node{ns[3]},
+			c: []*apiv1.Node{ns[0], ns[1], ns[2], ns[4]},
+		},
+		{
+			a: ns,
+			b: []*apiv1.Node{ns[0], ns[1], ns[2], ns[4]},
+			c: []*apiv1.Node{ns[3]},
+		},
+		{
+			a: []*apiv1.Node{ns[3]},
+			b: []*apiv1.Node{ns[0], ns[1], ns[2], ns[4]},
+			c: []*apiv1.Node{ns[3]},
+		},
+	}
+	for _, tc := range testCases {
+		got := subtractNodes(tc.a, tc.b)
+		assert.Equal(t, nodeNames(got), nodeNames(tc.c))
+	}
+}
+
+func nodeNames(ns []*apiv1.Node) []string {
+	names := make([]string, len(ns))
+	for i, node := range ns {
+		names[i] = node.Name
+	}
+	return names
+}
+
 func waitForDeleteToFinish(t *testing.T, sd *legacy.ScaleDown) {
 	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
 		if !sd.IsNonEmptyNodeDeleteInProgress() {
