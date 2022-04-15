@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package legacy
 
 import (
 	ctx "context"
@@ -135,7 +135,7 @@ func computeAboveMin(total int64, min int64) int64 {
 func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -152,7 +152,7 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -194,7 +194,8 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	return result, nil
 }
 
-func isNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
+// IsNodeBeingDeleted returns true iff a given node is being deleted.
+func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
 	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
@@ -325,7 +326,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	// Skip nodes marked to be deleted, if they were marked recently.
 	// Old-time marked nodes are again eligible for deletion - something went wrong with them
 	// and they have not been deleted.
-	if isNodeBeingDeleted(node, timestamp) {
+	if IsNodeBeingDeleted(node, timestamp) {
 		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 		return simulator.CurrentlyBeingDeleted, nil
 	}
@@ -613,7 +614,8 @@ func (sd *ScaleDown) addUnremovableNode(unremovableNode *simulator.UnremovableNo
 	sd.unremovableNodeReasons[unremovableNode.Node.Name] = unremovableNode
 }
 
-func (sd *ScaleDown) getUnremovableNodesCount() map[simulator.UnremovableReason]int {
+// UnremovableNodesCount returns a map of unremovable node counts per reason.
+func (sd *ScaleDown) UnremovableNodesCount() map[simulator.UnremovableReason]int {
 	reasons := make(map[simulator.UnremovableReason]int)
 
 	for _, node := range sd.unremovableNodeReasons {
