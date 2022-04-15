@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -69,7 +70,7 @@ type StaticAutoscaler struct {
 	lastScaleUpTime         time.Time
 	lastScaleDownDeleteTime time.Time
 	lastScaleDownFailTime   time.Time
-	scaleDown               *ScaleDown
+	scaleDown               *legacy.ScaleDown
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
@@ -79,7 +80,7 @@ type StaticAutoscaler struct {
 type staticAutoscalerProcessorCallbacks struct {
 	disableScaleDownForLoop bool
 	extraValues             map[string]interface{}
-	scaleDown               *ScaleDown
+	scaleDown               *legacy.ScaleDown
 }
 
 func (callbacks *staticAutoscalerProcessorCallbacks) ResetUnneededNodes() {
@@ -149,7 +150,7 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
-	scaleDown := NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
 	processorCallbacks.scaleDown = scaleDown
 
 	// Set the initial scale times to be less than the start time so as to
@@ -550,7 +551,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(currentTime, pdbs)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
-			metrics.UpdateUnremovableNodesCount(scaleDown.getUnremovableNodesCount())
+			metrics.UpdateUnremovableNodesCount(scaleDown.UnremovableNodesCount())
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 
@@ -803,7 +804,7 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if legacy.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
