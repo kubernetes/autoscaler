@@ -62,8 +62,8 @@ for MOD in "${MODS[@]}"; do
     go mod edit "-replace=${MOD}=${MOD}@${V}"
 done
 go get "k8s.io/kubernetes@v${VERSION}"
-go mod vendor
 go mod tidy
+go mod vendor
 git rm -r --force --ignore-unmatch kubernetes
 
 sed -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"$VERSION\"|" version/version.go
