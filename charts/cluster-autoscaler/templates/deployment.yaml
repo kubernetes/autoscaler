@@ -273,7 +273,7 @@ spec:
             {{- end }}
       {{- end }}
       {{- if .Values.extraVolumes }}
-        {{- toYaml .Values.extraVolumes | nindent 10 }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
       {{- end }}
       {{- if .Values.clusterAPIKubeconfigSecret }}
         - name: cluster-api-kubeconfig
