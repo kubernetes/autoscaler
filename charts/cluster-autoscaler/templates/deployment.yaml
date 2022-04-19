@@ -229,7 +229,7 @@ spec:
               mountPath: {{ .Values.clusterAPIWorkloadKubeconfigPath | trimSuffix "/value" }}
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
-            {{ toYaml .Values.extraVolumeMounts | indent 12 }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
           {{- end }}
     {{- if .Values.affinity }}
@@ -273,7 +273,7 @@ spec:
             {{- end }}
       {{- end }}
       {{- if .Values.extraVolumes }}
-        {{- toYaml .Values.extraVolumes | nindent 10 }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
       {{- end }}
       {{- if .Values.clusterAPIKubeconfigSecret }}
         - name: cluster-api-kubeconfig
