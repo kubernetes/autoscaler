@@ -33,7 +33,7 @@ type NodeGroupTestSuite struct {
 }
 
 func (s *NodeGroupTestSuite) SetupTest() {
-	s.manager = &MockIonosCloudManager{}
+	s.manager = NewMockIonosCloudManager(s.T())
 	s.nodePool = &nodePool{
 		id:      "test",
 		min:     1,
@@ -43,10 +43,6 @@ func (s *NodeGroupTestSuite) SetupTest() {
 	s.deleteNode = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: convertToInstanceId("testnode")}},
 	}
-}
-
-func (s *NodeGroupTestSuite) TearDownTest() {
-	s.manager.AssertExpectations(s.T())
 }
 
 func TestNodeGroup(t *testing.T) {
@@ -180,12 +176,8 @@ type CloudProviderTestSuite struct {
 }
 
 func (s *CloudProviderTestSuite) SetupTest() {
-	s.manager = &MockIonosCloudManager{}
+	s.manager = NewMockIonosCloudManager(s.T())
 	s.provider = BuildIonosCloudCloudProvider(s.manager, &cloudprovider.ResourceLimiter{})
-}
-
-func (s *CloudProviderTestSuite) TearDownTest() {
-	s.manager.AssertExpectations(s.T())
 }
 
 func TestIonosCloudCloudProvider(t *testing.T) {
