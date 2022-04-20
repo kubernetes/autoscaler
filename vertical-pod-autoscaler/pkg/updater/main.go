@@ -113,10 +113,10 @@ func main() {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
 	ticker := time.Tick(*updaterInterval)
-	ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)
-	defer cancel()
 	for range ticker {
+		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)
 		updater.RunOnce(ctx)
 		healthCheck.UpdateLastActivity()
+		cancel()
 	}
 }
