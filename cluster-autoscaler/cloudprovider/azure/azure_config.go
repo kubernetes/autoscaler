@@ -59,6 +59,9 @@ const (
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
+
+	// toggle
+	dynamicInstanceListDefault = false
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -128,6 +131,9 @@ type Config struct {
 	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty" yaml:"cloudProviderBackoffExponent,omitempty"`
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
+
+	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
+	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -210,6 +216,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse ENABLE_BACKOFF %q: %v", enableBackoff, err)
 			}
+		}
+
+		if enableDynamicInstanceList := os.Getenv("AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); enableDynamicInstanceList != "" {
+			cfg.EnableDynamicInstanceList, err = strconv.ParseBool(enableDynamicInstanceList)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ENABLE_DYNAMIC_INSTANCE_LIST %q: %v", enableDynamicInstanceList, err)
+			}
+		} else {
+			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
 		if cfg.CloudProviderBackoff {
