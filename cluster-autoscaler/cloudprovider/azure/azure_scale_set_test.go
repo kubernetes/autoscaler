@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 	"testing"
 
+	compute20190701 "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
@@ -559,9 +560,10 @@ func TestTemplateNodeInfo(t *testing.T) {
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
 	asg := ScaleSet{
-		manager: provider.azureManager,
-		minSize: 1,
-		maxSize: 5,
+		manager:                   provider.azureManager,
+		minSize:                   1,
+		maxSize:                   5,
+		enableDynamicInstanceList: true,
 	}
 	asg.Name = "test-asg"
 
@@ -569,4 +571,64 @@ func TestTemplateNodeInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeInfo)
 	assert.NotEmpty(t, nodeInfo.Pods)
+
+	t.Run("Checking dynamic workflow", func(t *testing.T) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+			vmssType := InstanceType{}
+			vmssType.VCPU = 1
+			vmssType.GPU = 2
+			vmssType.MemoryMb = 3
+			return vmssType, nil
+		}
+		nodeInfo, err := asg.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.NotNil(t, nodeInfo)
+		assert.NotEmpty(t, nodeInfo.Pods)
+	})
+
+	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+			return InstanceType{}, fmt.Errorf("dynamic error exists")
+		}
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+			vmssType := InstanceType{}
+			vmssType.VCPU = 1
+			vmssType.GPU = 2
+			vmssType.MemoryMb = 3
+			return &vmssType, nil
+		}
+		nodeInfo, err := asg.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.NotNil(t, nodeInfo)
+		assert.NotEmpty(t, nodeInfo.Pods)
+	})
+
+	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
+		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient) (InstanceType, error) {
+			return InstanceType{}, fmt.Errorf("dynamic error exists")
+		}
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+			return &InstanceType{}, fmt.Errorf("static error exists")
+		}
+		nodeInfo, err := asg.TemplateNodeInfo()
+		assert.Empty(t, nodeInfo)
+		assert.Equal(t, err, fmt.Errorf("static error exists"))
+	})
+
+	// Note: This test should be removed once enableDynamicInstanceList toggled is removed and the feature is completely enabled.
+	t.Run("Checking static workflow if enableDynamicInstanceList Toggle is false", func(t *testing.T) {
+		asg.enableDynamicInstanceList = false
+
+		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+			vmssType := InstanceType{}
+			vmssType.VCPU = 1
+			vmssType.GPU = 2
+			vmssType.MemoryMb = 3
+			return &vmssType, nil
+		}
+		nodeInfo, err := asg.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.NotNil(t, nodeInfo)
+		assert.NotEmpty(t, nodeInfo.Pods)
+	})
 }
