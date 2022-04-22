@@ -4,6 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-autoscaler-priority-expander
+  namespace: {{ .Release.Namespace }}
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   {{- if .Values.priorityConfigMapAnnotations }}
