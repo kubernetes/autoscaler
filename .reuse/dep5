@@ -202,7 +202,7 @@ Copyright: 2014 Sam Ghods
 License: MIT
 
 Files: cluster-autoscaler/vendor/github.com/go-ini/ini/**
-Copyright: 2016 Unknwon
+Copyright: 2016 Unknown
 License: Apache-2.0
 
 Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonpointer/**
