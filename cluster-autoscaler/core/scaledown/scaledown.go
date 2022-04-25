@@ -67,9 +67,10 @@ type Actuator interface {
 
 // ActuationStatus is used for feeding Actuator status back into Planner
 type ActuationStatus interface {
-	// DeletionsInProgress returns a list of nodes that are currently
-	// undergoing deletion.
-	DeletionsInProgress() (nodeNames []string)
+	// DeletionsInProgress returns two lists of node names that are
+	// currently undergoing deletion, for empty and non-empty (i.e. drained)
+	// nodes separately.
+	DeletionsInProgress() (empty, drained []string)
 	// DeletionsCount returns total number of ongoing deletions in a given
 	// node group.
 	DeletionsCount(nodeGroupId string) int
@@ -80,5 +81,7 @@ type ActuationStatus interface {
 	// DeletionResults returns a map of recent node deletion results, keyed
 	// by the node name. Note: if node deletion was scheduled more than
 	// once, only the latest result will be present.
-	DeletionResults() map[string]status.NodeDeleteResult
+	// The timestamp returned as the second value indicates the time at
+	// which the last result was collected.
+	DeletionResults() (map[string]status.NodeDeleteResult, time.Time)
 }

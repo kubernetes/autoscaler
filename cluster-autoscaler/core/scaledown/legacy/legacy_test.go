@@ -1220,7 +1220,8 @@ func TestScaleDown(t *testing.T) {
 
 func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
 	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
-		if !sd.IsNonEmptyNodeDeleteInProgress() {
+		_, drained := sd.nodeDeletionTracker.DeletionsInProgress()
+		if len(drained) == 0 {
 			return
 		}
 	}
@@ -1530,9 +1531,9 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 }
 
 func TestScaleDownEmptyMinGroupSizeLimitHitWhenOneNodeIsBeingDeleted(t *testing.T) {
-	nodeDeletionTracker := deletiontracker.NewNodeDeletionTracker()
-	nodeDeletionTracker.StartDeletion("ng1")
-	nodeDeletionTracker.StartDeletion("ng1")
+	nodeDeletionTracker := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+	nodeDeletionTracker.StartDeletion("ng1", "n1")
+	nodeDeletionTracker.StartDeletion("ng1", "n2")
 	options := defaultScaleDownOptions
 	config := &ScaleTestConfig{
 		Nodes: []NodeConfig{
@@ -1622,7 +1623,6 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	autoscalererr = scaleDown.UpdateUnneededNodes(nodes, nodes, time.Now().Add(-5*time.Minute), nil)
 	assert.NoError(t, autoscalererr)
 	scaleDownStatus, err := scaleDown.TryToScaleDown(time.Now(), nil)
-	assert.False(t, scaleDown.IsNonEmptyNodeDeleteInProgress())
 
 	assert.NoError(t, err)
 	var expectedScaleDownResult status.ScaleDownResult
@@ -1652,6 +1652,8 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 
 	assert.Equal(t, expectedScaleDownCount, len(deleted))
 	assert.Subset(t, config.ExpectedScaleDowns, deleted)
+	_, nonEmptyDeletions := scaleDown.nodeDeletionTracker.DeletionsInProgress()
+	assert.Equal(t, 0, len(nonEmptyDeletions))
 }
 
 func TestNoScaleDownUnready(t *testing.T) {
