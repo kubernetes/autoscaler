@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,49 +22,69 @@ import (
 	"fmt"
 	"os"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/k8s.io/klog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
+	exoapi "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2/api"
 )
+
+type exoscaleClient interface {
+	EvictInstancePoolMembers(context.Context, string, *egoscale.InstancePool, []string) error
+	EvictSKSNodepoolMembers(context.Context, string, *egoscale.SKSCluster, *egoscale.SKSNodepool, []string) error
+	GetInstance(context.Context, string, string) (*egoscale.Instance, error)
+	GetInstancePool(context.Context, string, string) (*egoscale.InstancePool, error)
+	GetQuota(context.Context, string, string) (*egoscale.Quota, error)
+	ListSKSClusters(context.Context, string) ([]*egoscale.SKSCluster, error)
+	ScaleInstancePool(context.Context, string, *egoscale.InstancePool, int64) error
+	ScaleSKSNodepool(context.Context, string, *egoscale.SKSCluster, *egoscale.SKSNodepool, int64) error
+}
+
+const defaultAPIEnvironment = "api"
 
 // Manager handles Exoscale communication and data caching of
 // node groups (Instance Pools).
 type Manager struct {
-	client     *egoscale.Client
-	nodeGroups []*NodeGroup
+	ctx        context.Context
+	client     exoscaleClient
+	zone       string
+	nodeGroups []cloudprovider.NodeGroup
 }
 
 func newManager() (*Manager, error) {
-	var exoscaleAPIKey, exoscaleAPISecret, exoscaleAPIEndpoint string
-
-	if exoscaleAPIKey == "" {
-		exoscaleAPIKey = os.Getenv("EXOSCALE_API_KEY")
-	}
-	if exoscaleAPISecret == "" {
-		exoscaleAPISecret = os.Getenv("EXOSCALE_API_SECRET")
-	}
-	if exoscaleAPIEndpoint == "" {
-		exoscaleAPIEndpoint = os.Getenv("EXOSCALE_API_ENDPOINT")
-	}
-
-	if exoscaleAPIKey == "" {
-		return nil, errors.New("Exoscale API key is not specified")
-	}
-	if exoscaleAPISecret == "" {
-		return nil, errors.New("Exoscale API secret is not specified")
-	}
-	if exoscaleAPIEndpoint == "" {
-		return nil, errors.New("Exoscale API endpoint is not specified")
-	}
-
-	client := egoscale.NewClient(
-		exoscaleAPIEndpoint,
-		exoscaleAPIKey,
-		exoscaleAPISecret,
+	var (
+		zone           string
+		apiKey         string
+		apiSecret      string
+		apiEnvironment string
+		err            error
 	)
 
+	if zone = os.Getenv("EXOSCALE_ZONE"); zone == "" {
+		return nil, errors.New("no Exoscale zone specified")
+	}
+
+	if apiKey = os.Getenv("EXOSCALE_API_KEY"); apiKey == "" {
+		return nil, errors.New("no Exoscale API key specified")
+	}
+
+	if apiSecret = os.Getenv("EXOSCALE_API_SECRET"); apiSecret == "" {
+		return nil, errors.New("no Exoscale API secret specified")
+	}
+
+	if apiEnvironment = os.Getenv("EXOSCALE_API_ENVIRONMENT"); apiEnvironment == "" {
+		apiEnvironment = defaultAPIEnvironment
+	}
+
+	client, err := egoscale.NewClient(apiKey, apiSecret)
+	if err != nil {
+		return nil, err
+	}
+
+	debugf("initializing manager with zone=%s environment=%s", zone, apiEnvironment)
+
 	m := &Manager{
-		client:     client,
-		nodeGroups: []*NodeGroup{},
+		ctx:    exoapi.WithEndpoint(context.Background(), exoapi.NewReqEndpoint(apiEnvironment, zone)),
+		client: client,
+		zone:   zone,
 	}
 
 	return m, nil
@@ -73,48 +93,33 @@ func newManager() (*Manager, error) {
 // Refresh refreshes the cache holding the node groups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
-	var nodeGroups []*NodeGroup
-
+	var nodeGroups []cloudprovider.NodeGroup
 	for _, ng := range m.nodeGroups {
-		_, err := m.client.Request(egoscale.GetInstancePool{
-			ID:     ng.instancePool.ID,
-			ZoneID: ng.instancePool.ZoneID,
-		})
-		if csError, ok := err.(*egoscale.ErrorResponse); ok && csError.ErrorCode == egoscale.NotFound {
-			klog.V(4).Infof("Removing node group %q", ng.id)
-			continue
-		} else if err != nil {
+		if _, err := m.client.GetInstancePool(m.ctx, m.zone, ng.Id()); err != nil {
+			if errors.Is(err, exoapi.ErrNotFound) {
+				debugf("removing node group %s from manager cache", ng.Id())
+				continue
+			}
+			errorf("unable to retrieve Instance Pool %s: %v", ng.Id(), err)
 			return err
 		}
 
 		nodeGroups = append(nodeGroups, ng)
 	}
-
 	m.nodeGroups = nodeGroups
 
 	if len(m.nodeGroups) == 0 {
-		klog.V(4).Info("cluster-autoscaler is disabled: no node groups found")
+		infof("cluster-autoscaler is disabled: no node groups found")
 	}
 
 	return nil
 }
 
-func (m *Manager) computeInstanceLimit() (int, error) {
-	limits, err := m.client.ListWithContext(
-		context.Background(),
-		&egoscale.ResourceLimit{},
-	)
+func (m *Manager) computeInstanceQuota() (int, error) {
+	instanceQuota, err := m.client.GetQuota(m.ctx, m.zone, "instance")
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("unable to retrieve Compute instances quota: %v", err)
 	}
 
-	for _, key := range limits {
-		limit := key.(*egoscale.ResourceLimit)
-
-		if limit.ResourceTypeName == "user_vm" {
-			return int(limit.Max), nil
-		}
-	}
-
-	return 0, fmt.Errorf(`resource limit "user_vm" not found`)
+	return int(*instanceQuota.Limit), nil
 }
