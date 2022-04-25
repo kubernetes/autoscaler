@@ -19,7 +19,10 @@ package vpa
 import (
 	"encoding/json"
 	"fmt"
+
 	v1 "k8s.io/api/admission/v1"
+	corev1 "k8s.io/api/core/v1"
+	apires "k8s.io/apimachinery/pkg/api/resource"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -133,9 +136,18 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				}
 			}
 			for resource, min := range policy.MinAllowed {
+				if err := validateResourceResolution(resource, min); err != nil {
+					return fmt.Errorf("MinAllowed: %v", err)
+				}
 				max, found := policy.MaxAllowed[resource]
 				if found && max.Cmp(min) < 0 {
 					return fmt.Errorf("max resource for %v is lower than min", resource)
+				}
+			}
+
+			for resource, max := range policy.MaxAllowed {
+				if err := validateResourceResolution(resource, max); err != nil {
+					return fmt.Errorf("MaxAllowed: %v", err)
 				}
 			}
 			ControlledValues := policy.ControlledValues
@@ -155,5 +167,29 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
 	}
 
+	return nil
+}
+
+func validateResourceResolution(name corev1.ResourceName, val apires.Quantity) error {
+	switch name {
+	case corev1.ResourceCPU:
+		return validateCPUResolution(val)
+	case corev1.ResourceMemory:
+		return validateMemoryResolution(val)
+	}
+	return nil
+}
+
+func validateCPUResolution(val apires.Quantity) error {
+	if _, precissionPreserved := val.AsScale(apires.Milli); !precissionPreserved {
+		return fmt.Errorf("CPU [%s] must be a whole number of milli CPUs", val.String())
+	}
+	return nil
+}
+
+func validateMemoryResolution(val apires.Quantity) error {
+	if _, precissionPreserved := val.AsScale(0); !precissionPreserved {
+		return fmt.Errorf("Memory [%v] must be a whole number of bytes", val)
+	}
 	return nil
 }
