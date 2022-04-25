@@ -295,7 +295,7 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		nodeUtilizationMap:     make(map[string]utilization.Info),
 		usageTracker:           simulator.NewUsageTracker(),
 		unneededNodesList:      make([]*apiv1.Node, 0),
-		nodeDeletionTracker:    deletiontracker.NewNodeDeletionTracker(),
+		nodeDeletionTracker:    deletiontracker.NewNodeDeletionTracker(0 * time.Second),
 		unremovableNodeReasons: make(map[string]*simulator.UnremovableNode),
 	}
 }
@@ -637,11 +637,6 @@ func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
 	return ns
 }
 
-// IsNonEmptyNodeDeleteInProgress returns true if any nodes are being deleted.
-func (sd *ScaleDown) IsNonEmptyNodeDeleteInProgress() bool {
-	return sd.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress()
-}
-
 // markSimulationError indicates a simulation error by clearing  relevant scale
 // down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
@@ -692,8 +687,8 @@ func (sd *ScaleDown) TryToScaleDown(
 	currentTime time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
 ) (*status.ScaleDownStatus, errors.AutoscalerError) {
-
-	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeletionTracker.GetAndClearNodeDeleteResults()}
+	ndr, ts := sd.nodeDeletionTracker.DeletionResults()
+	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: ndr, NodeDeleteResultsAsOf: ts}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
 	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
@@ -790,7 +785,7 @@ func (sd *ScaleDown) TryToScaleDown(
 			continue
 		}
 
-		deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
+		deletionsInProgress := sd.nodeDeletionTracker.DeletionsCount(nodeGroup.Id())
 		if size-deletionsInProgress <= nodeGroup.MinSize() {
 			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			sd.addUnremovableNodeReason(node, simulator.NodeGroupMinSizeReached)
@@ -890,19 +885,16 @@ func (sd *ScaleDown) TryToScaleDown(
 
 	// Starting deletion.
 	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
-	sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(true)
+	nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
+	if !found {
+		return scaleDownStatus, errors.NewAutoscalerError(errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)
+	}
+	sd.nodeDeletionTracker.StartDeletionWithDrain(nodeGroup.Id(), toRemove.Node.Name)
 
 	go func() {
 		// Finishing the delete process once this goroutine is over.
 		var result status.NodeDeleteResult
-		defer func() { sd.nodeDeletionTracker.AddNodeDeleteResult(toRemove.Node.Name, result) }()
-		defer sd.nodeDeletionTracker.SetNonEmptyNodeDeleteInProgress(false)
-		nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
-		if !found {
-			result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(
-				errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)}
-			return
-		}
+		defer func() { sd.nodeDeletionTracker.EndDeletion(nodeGroup.Id(), toRemove.Node.Name, result) }()
 		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, toRemove.DaemonSetPods, nodeGroup)
 		if result.ResultType != status.NodeDeleteOk {
 			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
@@ -968,7 +960,7 @@ func (sd *ScaleDown) getEmptyNodesToRemove(candidates []string, resourcesLimits 
 				klog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
 				continue
 			}
-			deletionsInProgress := sd.nodeDeletionTracker.GetDeletionsInProgress(nodeGroup.Id())
+			deletionsInProgress := sd.nodeDeletionTracker.DeletionsCount(nodeGroup.Id())
 			available = size - nodeGroup.MinSize() - deletionsInProgress
 			if available < 0 {
 				available = 0
@@ -1016,10 +1008,9 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodesToRemove []simulator.Nod
 		}
 		deletedNodes = append(deletedNodes, empty.Node)
 		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, evictByDefault bool) {
-			sd.nodeDeletionTracker.StartDeletion(nodeGroupForDeletedNode.Id())
-			defer sd.nodeDeletionTracker.EndDeletion(nodeGroupForDeletedNode.Id())
+			sd.nodeDeletionTracker.StartDeletion(nodeGroupForDeletedNode.Id(), nodeToDelete.Name)
 			var result status.NodeDeleteResult
-			defer func() { sd.nodeDeletionTracker.AddNodeDeleteResult(nodeToDelete.Name, result) }()
+			defer func() { sd.nodeDeletionTracker.EndDeletion(nodeGroupForDeletedNode.Id(), nodeToDelete.Name, result) }()
 
 			var deleteErr errors.AutoscalerError
 			// If we fail to delete the node we want to remove delete taint
@@ -1109,9 +1100,6 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 		sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
 		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToMarkToBeDeleted, Err: errors.ToAutoscalerError(errors.ApiCallError, err)}
 	}
-
-	sd.nodeDeletionTracker.StartDeletion(nodeGroup.Id())
-	defer sd.nodeDeletionTracker.EndDeletion(nodeGroup.Id())
 
 	// If we fail to evict all the pods from the node we want to remove delete taint
 	defer func() {

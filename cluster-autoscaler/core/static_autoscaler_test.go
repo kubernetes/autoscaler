@@ -1331,7 +1331,9 @@ func nodeNames(ns []*apiv1.Node) []string {
 
 func waitForDeleteToFinish(t *testing.T, sda scaledown.Actuator) {
 	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
-		if len(sda.CheckStatus().DeletionsInProgress()) == 0 {
+		_, dip := sda.CheckStatus().DeletionsInProgress()
+		klog.Infof("Non empty deletions in progress: %v", dip)
+		if len(dip) == 0 {
 			return
 		}
 	}

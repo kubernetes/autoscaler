@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -89,49 +88,11 @@ func (p *ScaleDownWrapper) StartDeletion(empty, needDrain []*apiv1.Node, current
 func (p *ScaleDownWrapper) CheckStatus() scaledown.ActuationStatus {
 	// TODO: snapshot information from the tracker instead of keeping live
 	// updated object.
-	return &actuationStatus{
-		ndt: p.sd.nodeDeletionTracker,
-	}
+	return p.sd.nodeDeletionTracker
 }
 
 // ClearResultsNotNewerThan clears old node deletion results kept by the
 // Actuator.
 func (p *ScaleDownWrapper) ClearResultsNotNewerThan(t time.Time) {
-	// TODO: implement this once results are not cleared while being
-	// fetched.
-}
-
-type actuationStatus struct {
-	ndt *deletiontracker.NodeDeletionTracker
-}
-
-// DeletionsInProgress returns node names of currently deleted nodes.
-// Current implementation is not aware of the actual nodes names, so it returns
-// a fake node name instead.
-// TODO: Return real node names
-func (a *actuationStatus) DeletionsInProgress() []string {
-	if a.ndt.IsNonEmptyNodeDeleteInProgress() {
-		return []string{"fake-node-name"}
-	}
-	return nil
-}
-
-// DeletionsCount returns total number of ongoing deletions in a given node
-// group.
-func (a *actuationStatus) DeletionsCount(nodeGroupId string) int {
-	return a.ndt.GetDeletionsInProgress(nodeGroupId)
-}
-
-// RecentEvictions should return a list of recently evicted pods. Since legacy
-// scale down logic only drains at most one node at a time, this safeguard is
-// not really needed there, so we can just return an empty list.
-func (a *actuationStatus) RecentEvictions() []*apiv1.Pod {
-	return nil
-}
-
-// DeletionResults returns a map of recent node deletion results.
-func (a *actuationStatus) DeletionResults() map[string]status.NodeDeleteResult {
-	// TODO: update nodeDeletionTracker so it doesn't get & clear in the
-	// same step.
-	return a.ndt.GetAndClearNodeDeleteResults()
+	p.sd.nodeDeletionTracker.ClearResultsNotNewerThan(t)
 }
