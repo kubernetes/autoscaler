@@ -872,7 +872,7 @@ func (sd *ScaleDown) TryToScaleDown(
 			// Unready nodes may be deleted after a different time than underutilized nodes.
 			unreadyTime, err := sd.processors.NodeGroupConfigProcessor.GetScaleDownUnreadyTime(sd.context, nodeGroup)
 			if err != nil {
-				klog.Errorf("Error trying to get ScaleDownUnnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+				klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 				continue
 			}
 			if !unneededSince.Add(unreadyTime).Before(currentTime) {
