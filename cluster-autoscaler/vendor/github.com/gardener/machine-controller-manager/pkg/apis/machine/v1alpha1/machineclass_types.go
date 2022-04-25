@@ -44,7 +44,6 @@ type MachineClass struct {
 	// NodeTemplate contains subfields to track all node resources and other node info required to scale nodegroup from zero
 	NodeTemplate *NodeTemplate `json:"nodeTemplate,omitempty"`
 
-	// +kubebuilder:validation:XPreserveUnknownFields
 	// CredentialsSecretRef can optionally store the credentials (in this case the SecretRef does not need to store them).
 	// This might be useful if multiple machine classes with the same credentials but different user-datas are used.
 	CredentialsSecretRef *corev1.SecretReference `json:"credentialsSecretRef,omitempty"`

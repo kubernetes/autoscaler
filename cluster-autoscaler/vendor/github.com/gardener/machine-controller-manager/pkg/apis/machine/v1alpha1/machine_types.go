@@ -33,6 +33,7 @@ import (
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.currentStatus.phase`,description="Current status of the machine."
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`,description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.\nPopulated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata"
+// +kubebuilder:printcolumn:name="Node",type=string,JSONPath=`.metadata.labels.node`,description="Node backing the machine object"
 
 // Machine is the representation of a physical or virtual machine.
 type Machine struct {

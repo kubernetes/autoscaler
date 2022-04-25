@@ -3,7 +3,7 @@ module k8s.io/autoscaler/cluster-autoscaler
 go 1.16
 
 require (
-	cloud.google.com/go v0.54.0
+	cloud.google.com/go v0.65.0
 	github.com/Azure/azure-sdk-for-go v50.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.17
 	github.com/Azure/go-autorest/autorest/adal v0.9.5
@@ -11,13 +11,13 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/aws/aws-sdk-go v1.36.0
 	github.com/digitalocean/godo v1.27.0
-	github.com/gardener/machine-controller-manager v0.42.0
-	github.com/gardener/machine-controller-manager-provider-aws v0.8.0
-	github.com/gardener/machine-controller-manager-provider-azure v0.5.0
+	github.com/gardener/machine-controller-manager v0.44.1
+	github.com/gardener/machine-controller-manager-provider-aws v0.9.0
+	github.com/gardener/machine-controller-manager-provider-azure v0.6.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/mock v1.4.4
 	github.com/jmespath/go-jmespath v0.4.0
-	github.com/json-iterator/go v1.1.10
+	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
@@ -25,8 +25,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	google.golang.org/api v0.20.0
+	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
+	google.golang.org/api v0.30.0
 	gopkg.in/gcfg.v1 v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.21.0
@@ -43,6 +43,8 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 )
+
+replace google.golang.org/grpc => google.golang.org/grpc v1.29.0
 
 replace github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v43.0.0+incompatible
 
