@@ -34,3 +34,7 @@
 - nodegroup interface GetOptions() trivial implementation done
 ### Others
 - [Release matrix](../README.md#releases-gardenerautoscaler) of Gardener Autoscaler updated.
+- skipped following directories for boilerplate checking in `hack/boilerplate/boilerplate.py`
+    - cluster-autoscaler/cloudprovider/builder/builder_all.go
+    - cluster-autoscaler/cloudprovider/mcm
+    - cluster-autoscaler/integration
