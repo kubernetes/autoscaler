@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,45 +18,36 @@ package exoscale
 
 import (
 	"os"
-	"testing"
 
-	"github.com/stretchr/testify/assert"
+	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
 )
 
-func TestNewManager(t *testing.T) {
-	os.Setenv("EXOSCALE_API_KEY", "KEY")
-	os.Setenv("EXOSCALE_API_SECRET", "SECRET")
-	os.Setenv("EXOSCALE_API_ENDPOINT", "url")
-
+func (ts *cloudProviderTestSuite) TestNewManager() {
 	manager, err := newManager()
-	assert.NoError(t, err)
-	assert.NotNil(t, manager)
-}
+	ts.Require().NoError(err)
+	ts.Require().NotNil(manager)
 
-func TestNewManagerFailure(t *testing.T) {
 	os.Unsetenv("EXOSCALE_API_KEY")
 	os.Unsetenv("EXOSCALE_API_SECRET")
-	os.Setenv("EXOSCALE_API_ENDPOINT", "url")
 
-	manager, err := newManager()
-	assert.Error(t, err)
-	assert.Nil(t, manager)
+	manager, err = newManager()
+	ts.Require().Error(err)
+	ts.Require().Nil(manager)
 }
 
-func TestComputeInstanceLimit(t *testing.T) {
-	ts := newTestServer(
-		testHTTPResponse{200, testMockResourceLimit},
-	)
+func (ts *cloudProviderTestSuite) TestComputeInstanceQuota() {
+	ts.p.manager.client.(*exoscaleClientMock).
+		On("GetQuota", ts.p.manager.ctx, ts.p.manager.zone, "instance").
+		Return(
+			&egoscale.Quota{
+				Resource: &testComputeInstanceQuotaName,
+				Usage:    &testComputeInstanceQuotaUsage,
+				Limit:    &testComputeInstanceQuotaLimit,
+			},
+			nil,
+		)
 
-	os.Setenv("EXOSCALE_API_KEY", "KEY")
-	os.Setenv("EXOSCALE_API_SECRET", "SECRET")
-	os.Setenv("EXOSCALE_API_ENDPOINT", ts.URL)
-
-	manager, err := newManager()
-	assert.NoError(t, err)
-	assert.NotNil(t, manager)
-
-	limit, err := manager.computeInstanceLimit()
-	assert.NoError(t, err)
-	assert.Equal(t, testMockResourceLimitMax, limit)
+	actual, err := ts.p.manager.computeInstanceQuota()
+	ts.Require().NoError(err)
+	ts.Require().Equal(int(testComputeInstanceQuotaLimit), actual)
 }
