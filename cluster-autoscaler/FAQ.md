@@ -945,7 +945,7 @@ Caveats:
 
 ### How do I rebase this fork of autoscaler with upstream? 
 
-Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the depedencies for better understanding.
+Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the dependencies for better understanding.
 
 Following are the main steps:
 
@@ -970,7 +970,7 @@ git pull origin machine-controller-manager-provider
 
 This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
 
-Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
+Disable the check of implicit-dependencies of go.mod by commenting out following code in the update-vendor script.
 
 ```
 #  if [[ "${IMPLICIT_FOUND}" == "true" ]]; then
@@ -1058,7 +1058,7 @@ Resolve the merge-conflicts by appropriately accepting the incoming changes or t
 
 This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
 
-Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
+Disable the check of implicit-dependencies of go.mod by commenting out following code in the update-vendor script.
 
 ```
 #  if [[ "${IMPLICIT_FOUND}" == "true" ]]; then
@@ -1119,22 +1119,22 @@ go run main.go --kubeconfig=kubeconfig.yaml --cloud-provider=mcm --nodes=0:3:ca-
 
 ### How do I revendor a different version of MCM in autoscaler?
 
-Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the depedencies for better understanding.
+Please consider reading the answer [above](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes) beforehand of updating the dependencies for better understanding.
 
-Autoscaler vendors the MCM as an extra-package. And both MCM and Autoscaler vendors the `k8s.io` as a depedency. To avoid the vendor-conflicts, MCM and Autosclaler need to 
-vendor a same(or compatible) versions of `k8s.io`. Few times, you might have to revendor MCM into Autoscaler only due to the change of the `k8s.io` depedency in the autoscaler. 
+Autoscaler vendors the MCM as an extra-package. And both MCM and Autoscaler vendors the `k8s.io` as a dependency. To avoid the vendor-conflicts, MCM and Autosclaler need to 
+vendor a same(or compatible) versions of `k8s.io`. Few times, you might have to revendor MCM into Autoscaler only due to the change of the `k8s.io` dependency in the autoscaler. 
 Please follow below steps to vendor new version of MCM:
 
 #### Step 1 (Optional)
 
-Vendor compatible `k8s.io` depedency into the MCM. 
+Vendor compatible `k8s.io` dependency into the MCM. 
 
 
 _Please make sure to vendor same `k8s.io` version into MCM, as the one already vendored in the autoscaler. As vendoring lower version of `k8s.io` into MCM, <b>and later into the autoscaler</b> may force entire autoscaler to use such low version of `k8s.io`. This can cause runtime issues if not build-issues._
 
 In case of not updating version of k8s used by MCM:
 
-_The go vendoring algorithm selects maximal version between the dependencies, so if MCM requries k8s v1.18.0 and CA on requires k8s v1.20.0 then k8s v1.20.0 will be used._
+_The go vendoring algorithm selects maximal version between the dependencies, so if MCM requires k8s v1.18.0 and CA on requires k8s v1.20.0 then k8s v1.20.0 will be used._
 
 Update the `go.mod` file in the MCM to reflect expected versions of `k8s.io`. Then execute following:
 ```
@@ -1188,7 +1188,7 @@ replace (
 
 This fork of the autoscaler vendors the [machine-controller-manager](https://github.com/gardener/machine-controller-manager) aka MCM from Gardener project. As the MCM itself vendors the `k8s.io` in it, we need to make following change to the [`update-vendor`](https://github.com/gardener/autoscaler/blob/master/cluster-autoscaler/hack/update-vendor.sh) script:
 
-Disable the check of implicit-depedencies of go.mod by commenting out following code in the update-vendor script.
+Disable the check of implicit-dependencies of go.mod by commenting out following code in the update-vendor script.
 
 ```
 #  if [[ "${IMPLICIT_FOUND}" == "true" ]]; then

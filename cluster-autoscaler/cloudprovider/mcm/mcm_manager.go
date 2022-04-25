@@ -352,7 +352,7 @@ func (m *McmManager) GetMachineDeploymentForMachine(machine *Ref) (*MachineDeplo
 	for _, spec := range specs {
 		s, err := dynamic.SpecFromString(spec, true)
 		if err != nil {
-			return nil, fmt.Errorf("Error occured while parsing the spec")
+			return nil, fmt.Errorf("Error occurred while parsing the spec")
 		}
 
 		str := strings.Split(s.Name, ".")
@@ -578,7 +578,7 @@ func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeploym
 				}
 			}
 			if !found {
-				// No node found - either the machine has not registered yet or AWS is unable to fufill the request.
+				// No node found - either the machine has not registered yet or AWS is unable to fulfill the request.
 				// Report a special ID so that the autoscaler can track it as an unregistered node.
 				nodes = append(nodes, fmt.Sprintf("requested://%s", machine.Name))
 			}

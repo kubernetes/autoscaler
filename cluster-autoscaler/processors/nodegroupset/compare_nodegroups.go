@@ -28,17 +28,17 @@ const (
 	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between
 	// groups in the same NodeGroupSet
 	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
-	// comparision won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxAllocatableDifferenceRatio = 0.5
 	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
 	// can differ between groups in the same NodeGroupSet
 	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
-	// comparision won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxFreeDifferenceRatio = 0.5
 	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
 	// groups in the same NodeGroupSet
 	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
-	// comparision won't be done with any other nodegroup node, done to help in balancing during scale from zero
+	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxCapacityMemoryDifferenceRatio = 0.5
 	// LabelWorkerKubernetesVersion is a constant for a label that indicates the kubernetes version of the kubelet on the node
 	LabelWorkerKubernetesVersion = "worker.gardener.cloud/kubernetes-version"

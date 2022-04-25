@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package controller is used to provide the core functionalities of machine-controller-manager
+// Package mcm is used to provide the core functionalities of machine-controller-manager
 package mcm
 
 import (

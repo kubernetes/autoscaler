@@ -27,7 +27,7 @@ import (
 	"k8s.io/klog"
 )
 
-// ClientBuilder allows you to get clients and configs for core controllers
+// CoreClientBuilder allows you to get clients and configs for core controllers
 type CoreClientBuilder interface {
 	Config(name string) (*restclient.Config, error)
 	ConfigOrDie(name string) *restclient.Config

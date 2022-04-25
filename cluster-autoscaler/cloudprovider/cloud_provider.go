@@ -54,7 +54,7 @@ const (
 	KubemarkProviderName = "kubemark"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
 	HuaweicloudProviderName = "huaweicloud"
-	// MCMProviderName gets teh provider name of machine controller manager
+	// MCMProviderName gets the provider name of machine controller manager
 	MCMProviderName = "mcm"
 	// IonoscloudProviderName gets the provider name of ionoscloud
 	IonoscloudProviderName = "ionoscloud"

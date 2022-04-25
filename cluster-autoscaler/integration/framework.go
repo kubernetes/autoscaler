@@ -106,9 +106,9 @@ func (driver *Driver) scaleAutoscaler(replicas int32) error {
 }
 
 // runAutoscaler run the machine controller and machine controller manager binary locally
-func (c *Driver) runAutoscaler() {
+func (driver *Driver) runAutoscaler() {
 
-	machineDeployments, err := c.controlCluster.MCMClient.MachineV1alpha1().MachineDeployments(controlClusterNamespace).List(context.Background(), metav1.ListOptions{})
+	machineDeployments, err := driver.controlCluster.MCMClient.MachineV1alpha1().MachineDeployments(controlClusterNamespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func (c *Driver) runAutoscaler() {
 		fmt.Sprintf(
 			"make --directory=%s start TARGET_KUBECONFIG=%s MACHINE_DEPLOYMENT_ZONE_1=%s MACHINE_DEPLOYMENT_ZONE_2=%s MACHINE_DEPLOYMENT_ZONE_3=%s LEADER_ELECT=%s",
 			"../",
-			c.targetCluster.KubeConfigFilePath,
+			driver.targetCluster.KubeConfigFilePath,
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[0].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[1].Name),
 			fmt.Sprintf("%s.%s", controlClusterNamespace, machineDeployments.Items[2].Name),
@@ -167,7 +167,7 @@ func getDeploymentObject(replicas int32) *appv1.Deployment {
 									ContainerPort: 80,
 								},
 							},
-							// TODO: this is the object to be dyamically changed based on the machine type
+							// TODO: this is the object to be dynamically changed based on the machine type
 							Resources: v1.ResourceRequirements{
 								Requests: v1.ResourceList{
 									v1.ResourceCPU:    resource.MustParse("3"),
