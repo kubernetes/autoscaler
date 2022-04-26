@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package test
 
 import (
 	"fmt"
@@ -29,6 +29,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/filteroutschedulable"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -58,63 +60,70 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type nodeConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	gpu    int64
-	ready  bool
-	group  string
+// NodeConfig is a node config used in tests
+type NodeConfig struct {
+	Name   string
+	Cpu    int64
+	Memory int64
+	Gpu    int64
+	Ready  bool
+	Group  string
 }
 
-type podConfig struct {
-	name         string
-	cpu          int64
-	memory       int64
-	gpu          int64
-	node         string
-	toleratesGpu bool
+// PodConfig is a pod config used in tests
+type PodConfig struct {
+	Name         string
+	Cpu          int64
+	Memory       int64
+	Gpu          int64
+	Node         string
+	ToleratesGpu bool
 }
 
-type groupSizeChange struct {
-	groupName  string
-	sizeChange int
+// GroupSizeChange represents a change in group size
+type GroupSizeChange struct {
+	GroupName  string
+	SizeChange int
 }
 
-type scaleTestConfig struct {
-	nodes                   []nodeConfig
-	pods                    []podConfig
-	extraPods               []podConfig
-	options                 config.AutoscalingOptions
-	nodeDeletionTracker     *NodeDeletionTracker
-	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
+// ScaleTestConfig represents a config of a scale test
+type ScaleTestConfig struct {
+	Nodes                   []NodeConfig
+	Pods                    []PodConfig
+	ExtraPods               []PodConfig
+	Options                 config.AutoscalingOptions
+	NodeDeletionTracker     *deletiontracker.NodeDeletionTracker
+	ExpansionOptionToChoose GroupSizeChange // this will be selected by assertingStrategy.BestOption
 
-	expectedScaleDowns     []string
-	expectedScaleDownCount int
+	ExpectedScaleDowns     []string
+	ExpectedScaleDownCount int
 }
 
-type scaleTestResults struct {
-	expansionOptions []groupSizeChange
-	finalOption      groupSizeChange
-	noScaleUpReason  string
-	finalScaleDowns  []string
-	events           []string
-	scaleUpStatus    scaleUpStatusInfo
+// ScaleTestResults contains results of a scale test
+type ScaleTestResults struct {
+	ExpansionOptions []GroupSizeChange
+	FinalOption      GroupSizeChange
+	NoScaleUpReason  string
+	FinalScaleDowns  []string
+	Events           []string
+	ScaleUpStatus    ScaleUpStatusInfo
 }
 
-// scaleUpStatusInfo is a simplified form of a ScaleUpStatus, to avoid mocking actual NodeGroup and Pod objects in test config.
-type scaleUpStatusInfo struct {
-	result                  status.ScaleUpResult
-	podsTriggeredScaleUp    []string
-	podsRemainUnschedulable []string
-	podsAwaitEvaluation     []string
+// ScaleUpStatusInfo is a simplified form of a ScaleUpStatus, to avoid mocking actual NodeGroup and Pod objects in test config.
+type ScaleUpStatusInfo struct {
+	Result                  status.ScaleUpResult
+	PodsTriggeredScaleUp    []string
+	PodsRemainUnschedulable []string
+	PodsAwaitEvaluation     []string
 }
 
-func (s *scaleUpStatusInfo) WasSuccessful() bool {
-	return s.result == status.ScaleUpSuccessful
+// WasSuccessful returns true iff scale up was successful
+func (s *ScaleUpStatusInfo) WasSuccessful() bool {
+	return s.Result == status.ScaleUpSuccessful
 }
 
-func extractPodNames(pods []*apiv1.Pod) []string {
+// ExtractPodNames extract pod names from a list of pods
+func ExtractPodNames(pods []*apiv1.Pod) []string {
 	podNames := []string{}
 	for _, pod := range pods {
 		podNames = append(podNames, pod.Name)
@@ -122,23 +131,10 @@ func extractPodNames(pods []*apiv1.Pod) []string {
 	return podNames
 }
 
-func simplifyScaleUpStatus(scaleUpStatus *status.ScaleUpStatus) scaleUpStatusInfo {
-	remainUnschedulable := []string{}
-	for _, nsi := range scaleUpStatus.PodsRemainUnschedulable {
-		remainUnschedulable = append(remainUnschedulable, nsi.Pod.Name)
-	}
-	return scaleUpStatusInfo{
-		result:                  scaleUpStatus.Result,
-		podsTriggeredScaleUp:    extractPodNames(scaleUpStatus.PodsTriggeredScaleUp),
-		podsRemainUnschedulable: remainUnschedulable,
-		podsAwaitEvaluation:     extractPodNames(scaleUpStatus.PodsAwaitEvaluation),
-	}
-}
-
 // NewTestProcessors returns a set of simple processors for use in tests.
 func NewTestProcessors() *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       NewFilterOutSchedulablePodListProcessor(),
+		PodListProcessor:       filteroutschedulable.NewFilterOutSchedulablePodListProcessor(),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
 		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
@@ -196,14 +192,16 @@ func NewScaleTestAutoscalingContext(
 	}, nil
 }
 
-type mockAutoprovisioningNodeGroupManager struct {
-	t           *testing.T
-	extraGroups int
+// MockAutoprovisioningNodeGroupManager is a mock node group manager to be used in tests
+type MockAutoprovisioningNodeGroupManager struct {
+	T           *testing.T
+	ExtraGroups int
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+// CreateNodeGroup creates a new node group
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
-	assert.NoError(p.t, err)
+	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
 	extraGroups := []cloudprovider.NodeGroup{}
 	testGroup, ok := nodeGroup.(*testcloudprovider.TestNodeGroup)
@@ -214,7 +212,7 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 	if !ok {
 		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test CloudProvider, found %v", reflect.TypeOf(context.CloudProvider)))
 	}
-	for i := 0; i < p.extraGroups; i++ {
+	for i := 0; i < p.ExtraGroups; i++ {
 		extraNodeGroup, err := testCloudProvider.NewNodeGroupWithId(
 			testGroup.MachineType(),
 			testGroup.Labels(),
@@ -223,9 +221,9 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 			map[string]resource.Quantity{},
 			fmt.Sprintf("%d", i+1),
 		)
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		extraGroup, err := extraNodeGroup.Create()
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		metrics.RegisterNodeGroupCreation()
 		extraGroups = append(extraGroups, extraGroup)
 	}
@@ -236,7 +234,8 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 	return result, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+// RemoveUnneededNodeGroups removes uneeded node groups
+func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
 		return nil, nil
 	}
@@ -247,50 +246,55 @@ func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context 
 			continue
 		}
 		targetSize, err := nodeGroup.TargetSize()
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		if targetSize > 0 {
 			continue
 		}
 		nodes, err := nodeGroup.Nodes()
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		if len(nodes) > 0 {
 			continue
 		}
 		err = nodeGroup.Delete()
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		removedNodeGroups = append(removedNodeGroups, nodeGroup)
 	}
 	return removedNodeGroups, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) CleanUp() {
+// CleanUp doesn't do anything; it's here to satisfy the interface
+func (p *MockAutoprovisioningNodeGroupManager) CleanUp() {
 }
 
-type mockAutoprovisioningNodeGroupListProcessor struct {
-	t *testing.T
+// MockAutoprovisioningNodeGroupListProcessor is a fake node group list processor to be used in tests
+type MockAutoprovisioningNodeGroupListProcessor struct {
+	T *testing.T
 }
 
-func (p *mockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
+// Process extends the list of node groups
+func (p *MockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo,
 	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulerframework.NodeInfo, error) {
 
 	machines, err := context.CloudProvider.GetAvailableMachineTypes()
-	assert.NoError(p.t, err)
+	assert.NoError(p.T, err)
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
 	for _, machineType := range machines {
 		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		nodeInfo, err := nodeGroup.TemplateNodeInfo()
-		assert.NoError(p.t, err)
+		assert.NoError(p.T, err)
 		nodeInfos[nodeGroup.Id()] = nodeInfo
 		nodeGroups = append(nodeGroups, nodeGroup)
 	}
 	return nodeGroups, nodeInfos, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupListProcessor) CleanUp() {
+// CleanUp doesn't do anything; it's here to satisfy the interface
+func (p *MockAutoprovisioningNodeGroupListProcessor) CleanUp() {
 }
 
-func newBackoff() backoff.Backoff {
+// NewBackoff creates a new backoff object
+func NewBackoff() backoff.Backoff {
 	return backoff.NewIdBasedExponentialBackoff(clusterstate.InitialNodeGroupBackoffDuration, clusterstate.MaxNodeGroupBackoffDuration, clusterstate.NodeGroupBackoffResetTimeout)
 }

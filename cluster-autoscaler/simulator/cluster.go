@@ -23,14 +23,11 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
@@ -97,17 +94,6 @@ const (
 	// UnexpectedError - node can't be removed because of an unexpected error.
 	UnexpectedError
 )
-
-// UtilizationInfo contains utilization information for a node.
-type UtilizationInfo struct {
-	CpuUtil float64
-	MemUtil float64
-	GpuUtil float64
-	// Resource name of highest utilization resource
-	ResourceName apiv1.ResourceName
-	// Max(CpuUtil, MemUtil) or GpuUtils
-	Utilization float64
-}
 
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
@@ -189,90 +175,6 @@ func FindEmptyNodesToRemove(snapshot ClusterSnapshot, candidates []string, times
 		}
 	}
 	return result
-}
-
-// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) or gpu utilization
-// based on if the node has GPU or not. Per resource utilization is the sum of requests for it divided by allocatable.
-// It also returns the individual cpu, memory and gpu utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string, currentTime time.Time) (utilInfo UtilizationInfo, err error) {
-	if gpu.NodeHasGpu(gpuLabel, node) {
-		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods, currentTime)
-		if err != nil {
-			klog.V(3).Infof("node %s has unready GPU", node.Name)
-			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
-			return UtilizationInfo{GpuUtil: 0, ResourceName: gpu.ResourceNvidiaGPU, Utilization: 0}, nil
-		}
-
-		// Skips cpu and memory utilization calculation for node with GPU.
-		return UtilizationInfo{GpuUtil: gpuUtil, ResourceName: gpu.ResourceNvidiaGPU, Utilization: gpuUtil}, nil
-	}
-
-	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
-	if err != nil {
-		return UtilizationInfo{}, err
-	}
-	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods, currentTime)
-	if err != nil {
-		return UtilizationInfo{}, err
-	}
-
-	utilization := UtilizationInfo{CpuUtil: cpu, MemUtil: mem}
-
-	if cpu > mem {
-		utilization.ResourceName = apiv1.ResourceCPU
-		utilization.Utilization = cpu
-	} else {
-		utilization.ResourceName = apiv1.ResourceMemory
-		utilization.Utilization = mem
-	}
-
-	return utilization, nil
-}
-
-func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool, currentTime time.Time) (float64, error) {
-	nodeAllocatable, found := node.Status.Allocatable[resourceName]
-	if !found {
-		return 0, fmt.Errorf("failed to get %v from %s", resourceName, node.Name)
-	}
-	if nodeAllocatable.MilliValue() == 0 {
-		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
-	}
-	podsRequest := resource.MustParse("0")
-
-	// if skipDaemonSetPods = True, DaemonSet pods resourses will be subtracted
-	// from the node allocatable and won't be added to pods requests
-	// the same with the Mirror pod.
-	daemonSetAndMirrorPodsUtilization := resource.MustParse("0")
-	for _, podInfo := range nodeInfo.Pods {
-		// factor daemonset pods out of the utilization calculations
-		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
-			continue
-		}
-		// factor mirror pods out of the utilization calculations
-		if skipMirrorPods && pod_util.IsMirrorPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
-			continue
-		}
-		// ignore Pods that should be terminated
-		if drain.IsPodLongTerminating(podInfo.Pod, currentTime) {
-			continue
-		}
-		for _, container := range podInfo.Pod.Spec.Containers {
-			if resourceValue, found := container.Resources.Requests[resourceName]; found {
-				podsRequest.Add(resourceValue)
-			}
-		}
-	}
-	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()-daemonSetAndMirrorPodsUtilization.MilliValue()), nil
 }
 
 func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
