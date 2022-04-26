@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package legacy
 
 import (
 	ctx "context"
@@ -22,17 +22,18 @@ import (
 	"math"
 	"reflect"
 	"strings"
-	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -79,93 +80,6 @@ const (
 	// DeamonSetTimeBetweenEvictionRetries is a time between retries to create eviction that uses for DaemonSet eviction for empty nodes
 	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
 )
-
-// NodeDeletionTracker keeps track of node deletions.
-type NodeDeletionTracker struct {
-	sync.Mutex
-	nonEmptyNodeDeleteInProgress bool
-	// A map of node delete results by node name. It's being constantly emptied into ScaleDownStatus
-	// objects in order to notify the ScaleDownStatusProcessor that the node drain has ended or that
-	// an error occurred during the deletion process.
-	nodeDeleteResults map[string]status.NodeDeleteResult
-	// A map which keeps track of deletions in progress for nodepools.
-	// Key is a node group id and value is a number of node deletions in progress.
-	deletionsInProgress map[string]int
-}
-
-// Get current time. Proxy for unit tests.
-var now func() time.Time = time.Now
-
-// NewNodeDeletionTracker creates new NodeDeletionTracker.
-func NewNodeDeletionTracker() *NodeDeletionTracker {
-	return &NodeDeletionTracker{
-		nodeDeleteResults:   make(map[string]status.NodeDeleteResult),
-		deletionsInProgress: make(map[string]int),
-	}
-}
-
-// IsNonEmptyNodeDeleteInProgress returns true if a non empty node is being deleted.
-func (n *NodeDeletionTracker) IsNonEmptyNodeDeleteInProgress() bool {
-	n.Lock()
-	defer n.Unlock()
-	return n.nonEmptyNodeDeleteInProgress
-}
-
-// SetNonEmptyNodeDeleteInProgress sets non empty node deletion in progress status.
-func (n *NodeDeletionTracker) SetNonEmptyNodeDeleteInProgress(status bool) {
-	n.Lock()
-	defer n.Unlock()
-	n.nonEmptyNodeDeleteInProgress = status
-}
-
-// StartDeletion increments node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) StartDeletion(nodeGroupId string) {
-	n.Lock()
-	defer n.Unlock()
-	n.deletionsInProgress[nodeGroupId]++
-}
-
-// EndDeletion decrements node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) EndDeletion(nodeGroupId string) {
-	n.Lock()
-	defer n.Unlock()
-
-	value, found := n.deletionsInProgress[nodeGroupId]
-	if !found {
-		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus wasn't found", nodeGroupId)
-		return
-	}
-	if value <= 0 {
-		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus isn't greater than 0, counter value is %d", nodeGroupId, value)
-	}
-	n.deletionsInProgress[nodeGroupId]--
-	if n.deletionsInProgress[nodeGroupId] <= 0 {
-		delete(n.deletionsInProgress, nodeGroupId)
-	}
-}
-
-// GetDeletionsInProgress returns the number of deletions in progress for the given node group.
-func (n *NodeDeletionTracker) GetDeletionsInProgress(nodeGroupId string) int {
-	n.Lock()
-	defer n.Unlock()
-	return n.deletionsInProgress[nodeGroupId]
-}
-
-// AddNodeDeleteResult adds a node delete result to the result map.
-func (n *NodeDeletionTracker) AddNodeDeleteResult(nodeName string, result status.NodeDeleteResult) {
-	n.Lock()
-	defer n.Unlock()
-	n.nodeDeleteResults[nodeName] = result
-}
-
-// GetAndClearNodeDeleteResults returns the whole result map and replaces it with a new empty one.
-func (n *NodeDeletionTracker) GetAndClearNodeDeleteResults() map[string]status.NodeDeleteResult {
-	n.Lock()
-	defer n.Unlock()
-	results := n.nodeDeleteResults
-	n.nodeDeleteResults = make(map[string]status.NodeDeleteResult)
-	return results
-}
 
 type scaleDownResourcesLimits map[string]int64
 type scaleDownResourcesDelta map[string]int64
@@ -218,7 +132,7 @@ func computeAboveMin(total int64, min int64) int64 {
 func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -235,7 +149,7 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
-		if isNodeBeingDeleted(node, timestamp) {
+		if IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -277,7 +191,8 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	return result, nil
 }
 
-func isNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
+// IsNodeBeingDeleted returns true iff a given node is being deleted.
+func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
 	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
@@ -362,9 +277,9 @@ type ScaleDown struct {
 	unneededNodesList      []*apiv1.Node
 	unremovableNodes       map[string]time.Time
 	podLocationHints       map[string]string
-	nodeUtilizationMap     map[string]simulator.UtilizationInfo
+	nodeUtilizationMap     map[string]utilization.Info
 	usageTracker           *simulator.UsageTracker
-	nodeDeletionTracker    *NodeDeletionTracker
+	nodeDeletionTracker    *deletiontracker.NodeDeletionTracker
 	unremovableNodeReasons map[string]*simulator.UnremovableNode
 }
 
@@ -377,10 +292,10 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		unneededNodes:          make(map[string]time.Time),
 		unremovableNodes:       make(map[string]time.Time),
 		podLocationHints:       make(map[string]string),
-		nodeUtilizationMap:     make(map[string]simulator.UtilizationInfo),
+		nodeUtilizationMap:     make(map[string]utilization.Info),
 		usageTracker:           simulator.NewUsageTracker(),
 		unneededNodesList:      make([]*apiv1.Node, 0),
-		nodeDeletionTracker:    NewNodeDeletionTracker(),
+		nodeDeletionTracker:    deletiontracker.NewNodeDeletionTracker(),
 		unremovableNodeReasons: make(map[string]*simulator.UnremovableNode),
 	}
 }
@@ -399,7 +314,12 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodes = make(map[string]time.Time)
 }
 
-func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *simulator.UtilizationInfo) {
+// UnneededNodes returns a list of nodes that can potentially be scaled down.
+func (sd *ScaleDown) UnneededNodes() []*apiv1.Node {
+	return sd.unneededNodesList
+}
+
+func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *utilization.Info) {
 	// Skip nodes that were recently checked.
 	if _, found := sd.unremovableNodes[node.Name]; found {
 		return simulator.RecentlyUnremovable, nil
@@ -408,7 +328,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	// Skip nodes marked to be deleted, if they were marked recently.
 	// Old-time marked nodes are again eligible for deletion - something went wrong with them
 	// and they have not been deleted.
-	if isNodeBeingDeleted(node, timestamp) {
+	if IsNodeBeingDeleted(node, timestamp) {
 		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 		return simulator.CurrentlyBeingDeleted, nil
 	}
@@ -419,7 +339,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 		return simulator.ScaleDownDisabledAnnotation, nil
 	}
 
-	utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel(), timestamp)
+	utilInfo, err := utilization.Calculate(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel(), timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 	}
@@ -475,7 +395,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.updateUnremovableNodes(timestamp)
 
 	skipped := 0
-	utilizationMap := make(map[string]simulator.UtilizationInfo)
+	utilizationMap := make(map[string]utilization.Info)
 	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
@@ -628,11 +548,21 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.nodeUtilizationMap = utilizationMap
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
+	if klog.V(4).Enabled() {
+		for key, val := range sd.unneededNodes {
+			klog.Infof("%s is unneeded since %s duration %s", key, val.String(), timestamp.Sub(val).String())
+		}
+	}
 	return nil
 }
 
+// NodeUtilizationMap returns the most recent mapping from node names to utilization info.
+func (sd *ScaleDown) NodeUtilizationMap() map[string]utilization.Info {
+	return sd.nodeUtilizationMap
+}
+
 // isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
-func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo simulator.UtilizationInfo) (bool, error) {
+func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
 	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
@@ -686,7 +616,8 @@ func (sd *ScaleDown) addUnremovableNode(unremovableNode *simulator.UnremovableNo
 	sd.unremovableNodeReasons[unremovableNode.Node.Name] = unremovableNode
 }
 
-func (sd *ScaleDown) getUnremovableNodesCount() map[simulator.UnremovableReason]int {
+// UnremovableNodesCount returns a map of unremovable node counts per reason.
+func (sd *ScaleDown) UnremovableNodesCount() map[simulator.UnremovableReason]int {
 	reasons := make(map[simulator.UnremovableReason]int)
 
 	for _, node := range sd.unremovableNodeReasons {
@@ -696,6 +627,21 @@ func (sd *ScaleDown) getUnremovableNodesCount() map[simulator.UnremovableReason]
 	return reasons
 }
 
+// UnremovableNodes returns a list of nodes that cannot be removed according to
+// the scale down algorithm.
+func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
+	ns := make([]*simulator.UnremovableNode, 0, len(sd.unremovableNodeReasons))
+	for _, n := range sd.unremovableNodeReasons {
+		ns = append(ns, n)
+	}
+	return ns
+}
+
+// IsNonEmptyNodeDeleteInProgress returns true if any nodes are being deleted.
+func (sd *ScaleDown) IsNonEmptyNodeDeleteInProgress() bool {
+	return sd.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress()
+}
+
 // markSimulationError indicates a simulation error by clearing  relevant scale
 // down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
@@ -703,7 +649,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
-	sd.nodeUtilizationMap = make(map[string]simulator.UtilizationInfo)
+	sd.nodeUtilizationMap = make(map[string]utilization.Info)
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
@@ -738,50 +684,6 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 		})
 	}
 	return result
-}
-
-// SoftTaintUnneededNodes manage soft taints of unneeded nodes.
-func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []error) {
-	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
-	apiCallBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintCount
-	timeBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintTime
-	skippedNodes := 0
-	startTime := now()
-	for _, node := range allNodes {
-		if deletetaint.HasToBeDeletedTaint(node) {
-			// Do not consider nodes that are scheduled to be deleted
-			continue
-		}
-		alreadyTainted := deletetaint.HasDeletionCandidateTaint(node)
-		_, unneeded := sd.unneededNodes[node.Name]
-
-		// Check if expected taints match existing taints
-		if unneeded != alreadyTainted {
-			if apiCallBudget <= 0 || now().Sub(startTime) >= timeBudget {
-				skippedNodes++
-				continue
-			}
-			apiCallBudget--
-			if unneeded && !alreadyTainted {
-				err := deletetaint.MarkDeletionCandidate(node, sd.context.ClientSet)
-				if err != nil {
-					errors = append(errors, err)
-					klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
-				}
-			}
-			if !unneeded && alreadyTainted {
-				_, err := deletetaint.CleanDeletionCandidate(node, sd.context.ClientSet)
-				if err != nil {
-					errors = append(errors, err)
-					klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
-				}
-			}
-		}
-	}
-	if skippedNodes > 0 {
-		klog.V(4).Infof("Skipped adding/removing soft taints on %v nodes - API call limit exceeded", skippedNodes)
-	}
-	return
 }
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
