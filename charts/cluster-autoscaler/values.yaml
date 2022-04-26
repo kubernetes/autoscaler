@@ -126,19 +126,22 @@ dnsPolicy: ClusterFirst
 expanderPriorities: {}
 
 # extraArgs -- Additional container arguments.
+# Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
+# parameters and their default values.
 extraArgs:
   logtostderr: true
   stderrthreshold: info
   v: 4
   # write-status-configmap: true
+  # status-config-map-name: cluster-autoscaler-status
   # leader-elect: true
-  # skip-nodes-with-local-storage: false
-  # expander: least-waste
+  # skip-nodes-with-local-storage: true
+  # expander: random
   # scale-down-enabled: true
   # balance-similar-node-groups: true
-  # min-replica-count: 2
+  # min-replica-count: 0
   # scale-down-utilization-threshold: 0.5
-  # scale-down-non-empty-candidates-count: 5
+  # scale-down-non-empty-candidates-count: 30
   # max-node-provision-time: 15m0s
   # scan-interval: 10s
   # scale-down-delay-after-add: 10m
@@ -162,14 +165,37 @@ envFromConfigMap: ""
 # envFromSecret -- Secret name to use as envFrom.
 envFromSecret: ""
 
+# extraVolumeSecrets -- Additional volumes to mount from Secrets.
+extraVolumeSecrets: {}
+  # autoscaler-vol:
+  #   mountPath: /data/autoscaler/
+  # custom-vol:
+  #   name: custom-secret
+  #   mountPath: /data/custom/
+  #   items:
+  #     - key: subkey
+  #       path: mypath
+
+# extraVolumes -- Additional volumes.
+extraVolumes: []
+  # - name: ssl-certs
+  #   hostPath:
+  #     path: /etc/ssl/certs/ca-bundle.crt
+
+# extraVolumeMounts -- Additional volumes to mount.
+extraVolumeMounts: []
+  # - name: ssl-certs
+  #   mountPath: /etc/ssl/certs/ca-certificates.crt
+  #   readOnly: true
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
 image:
   # image.repository -- Image repository
-  repository: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
+  repository: k8s.gcr.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.18.1
+  tag: v1.20.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -200,6 +226,9 @@ podDisruptionBudget:
 # podLabels -- Labels to add to each pod.
 podLabels: {}
 
+# additionalLabels -- Labels to add to each object of the chart.
+additionalLabels: {}
+
 # priorityClassName -- priorityClassName
 priorityClassName: ""
 
@@ -216,6 +245,8 @@ rbac:
     create: true
     # rbac.serviceAccount.name -- The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template.
     name: ""
+    # rbac.serviceAccount.automountServiceAccountToken -- Automount API credentials for a Service Account.
+    automountServiceAccountToken: true
 
 # replicaCount -- Desired number of pods
 replicaCount: 1
@@ -269,6 +300,21 @@ serviceMonitor:
     release: prometheus-operator
   # serviceMonitor.path -- The path to scrape for metrics; autoscaler exposes `/metrics` (this is standard)
   path: /metrics
+
+## Custom PrometheusRule to be defined
+## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
+## ref: https://github.com/coreos/prometheus-operator#customresourcedefinitions
+prometheusRule:
+  # prometheusRule.enabled -- If true, creates a Prometheus Operator PrometheusRule.
+  enabled: false
+  # prometheusRule.additionalLabels -- Additional labels to be set in metadata.
+  additionalLabels: {}
+  # prometheusRule.namespace -- Namespace which Prometheus is running in.
+  namespace: monitoring
+  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
+  interval: null
+  # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
+  rules: []
 
 # tolerations -- List of node taints to tolerate (requires Kubernetes >= 1.6).
 tolerations: []

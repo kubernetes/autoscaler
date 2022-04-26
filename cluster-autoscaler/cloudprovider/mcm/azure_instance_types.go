@@ -20,7 +20,7 @@ package mcm
 
 import "k8s.io/apimachinery/pkg/api/resource"
 
-// InstanceType is the sepc of Azure instance
+// AzureInstanceType is the sepc of Azure instance
 type AzureInstanceType struct {
 	InstanceType string
 	VCPU         resource.Quantity

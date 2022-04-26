@@ -394,6 +394,14 @@ func (machinedeployment *MachineDeployment) Nodes() ([]cloudprovider.Instance, e
 	return instances, nil
 }
 
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+// Implementation optional.
+//TODO: add proper implementation
+func (machinedeployment *MachineDeployment) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // TemplateNodeInfo returns a node template for this node group.
 func (machinedeployment *MachineDeployment) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 

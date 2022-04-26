@@ -30,10 +30,9 @@ type GpuLimits struct {
 	Max int64
 }
 
-// AutoscalingOptions contain various options to customize how autoscaling works
-type AutoscalingOptions struct {
-	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
-	MaxEmptyBulkDelete int
+// NodeGroupAutoscalingOptions contain various options to customize how autoscaling of
+// a given NodeGroup works. Different options can be used for each NodeGroup.
+type NodeGroupAutoscalingOptions struct {
 	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down if cpu or memory utilization is over threshold.
 	// Well-utilized nodes are not touched.
 	ScaleDownUtilizationThreshold float64
@@ -45,6 +44,15 @@ type AutoscalingOptions struct {
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
 	ScaleDownUnreadyTime time.Duration
+}
+
+// AutoscalingOptions contain various options to customize how autoscaling works
+type AutoscalingOptions struct {
+	// NodeGroupDefaults are default values for per NodeGroup options.
+	// They will be used any time a specific value is not provided for a given NodeGroup.
+	NodeGroupDefaults NodeGroupAutoscalingOptions
+	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
+	MaxEmptyBulkDelete int
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
 	// MaxCoresTotal sets the maximum number of cores in the whole cluster
@@ -109,6 +117,8 @@ type AutoscalingOptions struct {
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
 	WriteStatusConfigMap bool
+	// StaticConfigMapName
+	StatusConfigMapName string
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
 	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
@@ -140,9 +150,17 @@ type AutoscalingOptions struct {
 	BalancingExtraIgnoredLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
+	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	ConcurrentGceRefreshes int
 	// Path to kube configuration if available
 	KubeConfigPath string
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
+	// Enable or disable cordon nodes functionality before terminating the node during downscale process
+	CordonNodeBeforeTerminate bool
+	// DaemonSetEvictionForEmptyNodes is whether CA will gracefully terminate DaemonSet pods from empty nodes.
+	DaemonSetEvictionForEmptyNodes bool
+	// User agent to use for HTTP calls.
+	UserAgent string
 }

@@ -42,6 +42,7 @@ var (
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
+		"nvidia-tesla-t4":   {},
 	}
 )
 
@@ -213,6 +214,12 @@ func (ng *AwsNodeGroup) Autoprovisioned() bool {
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (ng *AwsNodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
+}
+
+// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
+// NodeGroup. Returning a nil will result in using default options.
+func (ng *AwsNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // IncreaseSize increases Asg size

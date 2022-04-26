@@ -20,7 +20,7 @@ package mcm
 
 import "k8s.io/apimachinery/pkg/api/resource"
 
-// InstanceType is spec of EC2 instance
+// AWSInstanceType is spec of EC2 instance
 type AWSInstanceType struct {
 	InstanceType string
 	VCPU         resource.Quantity
@@ -28,7 +28,7 @@ type AWSInstanceType struct {
 	GPU          resource.Quantity
 }
 
-// InstanceTypes is a map of ec2 resources
+// AWSInstanceTypes is a map of ec2 resources
 var AWSInstanceTypes = map[string]*AWSInstanceType{
 	"r5d.xlarge": {
 		InstanceType: "r5d.xlarge",

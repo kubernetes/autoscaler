@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -24,14 +25,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	provider_gce "k8s.io/legacy-cloud-providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
@@ -98,6 +101,7 @@ type gceManagerImpl struct {
 	cache                    *GceCache
 	lastRefresh              time.Time
 	machinesCacheLastRefresh time.Time
+	concurrentGceRefreshes   int
 
 	GceService                   AutoscalingGceClient
 	migTargetSizesProvider       MigTargetSizesProvider
@@ -113,7 +117,7 @@ type gceManagerImpl struct {
 }
 
 // CreateGceManager constructs GceManager object.
-func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GceManager, error) {
+func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool, concurrentGceRefreshes int, userAgent string) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -163,11 +167,11 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	client.Timeout = httpTimeout
-	gceService, err := NewAutoscalingGceClientV1(client, projectId)
+	gceService, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if err != nil {
 		return nil, err
 	}
-	cache := NewGceCache(gceService)
+	cache := NewGceCache(gceService, concurrentGceRefreshes)
 	manager := &gceManagerImpl{
 		cache:                        cache,
 		GceService:                   gceService,
@@ -179,6 +183,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		templates:                    &GceTemplateBuilder{},
 		interrupt:                    make(chan struct{}),
 		explicitlyConfigured:         make(map[GceRef]bool),
+		concurrentGceRefreshes:       concurrentGceRefreshes,
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -359,12 +364,15 @@ func (m *gceManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (Mig, error)
 // they no longer exist in GCE.
 func (m *gceManagerImpl) fetchAutoMigs() error {
 	exists := make(map[GceRef]bool)
-	changed := false
+	var changed int32 = 0
+
+	toRegister := make([]Mig, 0)
 	for _, cfg := range m.migAutoDiscoverySpecs {
 		links, err := m.findMigsNamed(cfg.Re)
 		if err != nil {
 			return fmt.Errorf("cannot autodiscover managed instance groups: %v", err)
 		}
+
 		for _, link := range links {
 			mig, err := m.buildMigFromAutoCfg(link, cfg)
 			if err != nil {
@@ -378,21 +386,26 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 				klog.V(3).Infof("Ignoring explicitly configured MIG %s in autodiscovery.", mig.GceRef().String())
 				continue
 			}
-			if m.registerMig(mig) {
-				klog.V(3).Infof("Autodiscovered MIG %s using regexp %s", mig.GceRef().String(), cfg.Re.String())
-				changed = true
-			}
+			toRegister = append(toRegister, mig)
 		}
 	}
+
+	workqueue.ParallelizeUntil(context.Background(), m.concurrentGceRefreshes, len(toRegister), func(piece int) {
+		mig := toRegister[piece]
+		if m.registerMig(mig) {
+			klog.V(3).Infof("Autodiscovered MIG %s", mig.GceRef().String())
+			atomic.StoreInt32(&changed, int32(1))
+		}
+	}, workqueue.WithChunkSize(m.concurrentGceRefreshes))
 
 	for _, mig := range m.GetMigs() {
 		if !exists[mig.GceRef()] && !m.explicitlyConfigured[mig.GceRef()] {
 			m.cache.UnregisterMig(mig)
-			changed = true
+			atomic.StoreInt32(&changed, int32(1))
 		}
 	}
 
-	if changed {
+	if atomic.LoadInt32(&changed) > 0 {
 		return m.cache.RegenerateInstancesCache()
 	}
 
@@ -485,7 +498,7 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem)
+	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem, nil)
 }
 
 func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {

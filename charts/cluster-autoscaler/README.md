@@ -35,16 +35,21 @@ This chart bootstraps a cluster-autoscaler deployment on a [Kubernetes](http://k
 The previous `cluster-autoscaler` Helm chart hosted at [helm/charts](https://github.com/helm/charts) has been moved to this repository in accordance with the [Deprecation timeline](https://github.com/helm/charts#deprecation-timeline). Note that a few things have changed between this version and the old version:
 
 - This repository **only** supports Helm chart installations using Helm 3+ since the `apiVersion` on the charts has been marked as `v2`.
-- Previous versions of the Helm chart have not been migrated, and the version was reset to `1.0.0` initially. If you are looking for old versions of the chart, it's best to run `helm pull stable/cluster-autoscaler --version <your-version>` until you are ready to move to this repository's version.
-- The previous versioning scheme has been returned to as of version `9.0.0` for ease of migration from the previous chart location.
+- Previous versions of the Helm chart have not been migrated
 
 ## Migration from 1.X to 9.X+ versions of this Chart
 
-On initial adoption of this chart this chart was renamed from `cluster-autoscaler` to `cluster-autoscaler-chart` due to technical limitations. This affects all `1.X` releases of the chart.
+**TL;DR:**
+You should choose to use versions >=9.0.0 of the `cluster-autoscaler` chart published from this repository; previous versions, and the `cluster-autoscaler-chart` with versioning 1.X.X published from this repository are deprecated.
 
-Releases of the chart from `9.0.0` onwards return the naming of the chart to `cluster-autoscaler` and return to following the versioning established by the chart's previous location.
+<details>
+  <summary>Previous versions of this chart - further details</summary>
+On initial migration of this chart from the `helm/charts` repository this chart was renamed from `cluster-autoscaler` to `cluster-autoscaler-chart` due to technical limitations. This affected all `1.X` releases of the chart, version 2.0.0 of this chart exists only to mark the [`cluster-autoscaler-chart` chart](https://artifacthub.io/packages/helm/cluster-autoscaler/cluster-autoscaler-chart) as deprecated.
+
+Releases of the chart from `9.0.0` onwards return the naming of the chart to `cluster-autoscaler` and return to following the versioning established by the chart's previous location at .
 
 To migrate from a 1.X release of the chart to a `9.0.0` or later release, you should first uninstall your `1.X` install of the `cluster-autoscaler-chart` chart, before performing the installation of the new `cluster-autoscaler` chart.
+</details>
 
 ## Migration from 9.0 to 9.1
 
@@ -325,6 +330,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| additionalLabels | object | `{}` | Labels to add to each object of the chart. |
 | affinity | object | `{}` | Affinity for pod assignment |
 | autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`. Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required. Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`. |
 | autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
@@ -350,15 +356,18 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
 | envFromSecret | string | `""` | Secret name to use as envFrom. |
 | expanderPriorities | object | `{}` | The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities. If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities. See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md |
-| extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. |
+| extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. |
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraVolumeMounts | list | `[]` | Additional volumes to mount. |
+| extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
+| extraVolumes | list | `[]` | Additional volumes. |
 | fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
-| image.repository | string | `"us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.18.1"` | Image tag |
+| image.repository | string | `"k8s.gcr.io/autoscaling/cluster-autoscaler"` | Image repository |
+| image.tag | string | `"v1.20.0"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
@@ -368,9 +377,15 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
 | podLabels | object | `{}` | Labels to add to each pod. |
 | priorityClassName | string | `""` | priorityClassName |
+| prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
+| prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
+| prometheusRule.interval | string | `nil` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). |
+| prometheusRule.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
+| prometheusRule.rules | list | `[]` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). |
 | rbac.create | bool | `true` | If `true`, create and use RBAC resources. |
 | rbac.pspEnabled | bool | `false` | If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. Must be used with `rbac.create` set to `true`. |
 | rbac.serviceAccount.annotations | object | `{}` | Additional Service Account annotations. |
+| rbac.serviceAccount.automountServiceAccountToken | bool | `true` | Automount API credentials for a Service Account. |
 | rbac.serviceAccount.create | bool | `true` | If `true` and `rbac.create` is also true, a Service Account will be created. |
 | rbac.serviceAccount.name | string | `""` | The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template. |
 | replicaCount | int | `1` | Desired number of pods |

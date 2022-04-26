@@ -17,7 +17,7 @@ var (
 	// path for storing log files of autoscaler process
 	targetDir = filepath.Join("logs")
 
-	// autoscaler log file
+	// CALogFile stores path to autoscaler log file
 	CALogFile = filepath.Join(targetDir, "autoscaler_processs.log")
 
 	// make processes/sessions started by gexec. available only if the controllers are running in local setup. updated during runtime

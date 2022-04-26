@@ -18,22 +18,28 @@ package core
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/component-base/metrics/legacyregistry"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -969,4 +975,36 @@ func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
 			assert.Equal(t, scaleUpLimitsCheckResult{true, test.exceededResources}, checkResult)
 		}
 	}
+}
+
+func TestAuthError(t *testing.T) {
+	metrics.RegisterAll()
+	context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, nil, nil)
+	assert.NoError(t, err)
+
+	nodeGroup := &mockprovider.NodeGroup{}
+	info := nodegroupset.ScaleUpInfo{Group: nodeGroup}
+	nodeGroup.On("Id").Return("A")
+	nodeGroup.On("IncreaseSize", 0).Return(errors.NewAutoscalerError(errors.AutoscalerErrorType("abcd"), ""))
+
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(nil, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+
+	aerr := executeScaleUp(&context, clusterStateRegistry, info, "", time.Now())
+	assert.Error(t, aerr)
+
+	req, err := http.NewRequest("GET", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(legacyregistry.Handler().ServeHTTP)
+	handler.ServeHTTP(rr, req)
+
+	// Check that the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check that the failed scale up reason is set correctly.
+	assert.Contains(t, rr.Body.String(), "cluster_autoscaler_failed_scale_ups_total{reason=\"abcd\"} 1")
 }

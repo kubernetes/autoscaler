@@ -17,10 +17,12 @@ limitations under the License.
 package gce
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -28,9 +30,9 @@ import (
 	gce_api "google.golang.org/api/compute/v1"
 )
 
-func newTestAutoscalingGceClient(t *testing.T, projectId, url string) *autoscalingGceClientV1 {
+func newTestAutoscalingGceClient(t *testing.T, projectId, url, userAgent string) *autoscalingGceClientV1 {
 	client := &http.Client{}
-	gceClient, err := NewAutoscalingGceClientV1(client, projectId)
+	gceClient, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if !assert.NoError(t, err) {
 		t.Fatalf("fatal error: %v", err)
 	}
@@ -63,7 +65,7 @@ const operationDoneResponse = `{
 func TestWaitForOp(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
-	g := newTestAutoscalingGceClient(t, "project1", server.URL)
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
 	g.operationPollInterval = 1 * time.Millisecond
 	g.operationWaitTimeout = 500 * time.Millisecond
@@ -81,7 +83,7 @@ func TestWaitForOp(t *testing.T) {
 func TestWaitForOpTimeout(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
-	g := newTestAutoscalingGceClient(t, "project1", server.URL)
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
 	// The values here are higher than in other tests since we're aiming for timeout.
 	// Lower values make this fragile and flakey.
@@ -96,4 +98,82 @@ func TestWaitForOpTimeout(t *testing.T) {
 
 	err := g.waitForOp(operation, projectId, zoneB, false)
 	assert.Error(t, err)
+}
+
+func TestErrors(t *testing.T) {
+	const instanceUrl = "https://content.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst"
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+	testCases := []struct {
+		errorCodes         []string
+		expectedErrorCode  string
+		expectedErrorClass cloudprovider.InstanceErrorClass
+	}{
+		{
+			errorCodes:         []string{"IP_SPACE_EXHAUSTED"},
+			expectedErrorCode:  "IP_SPACE_EXHAUSTED",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
+			expectedErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:         []string{"QUOTA"},
+			expectedErrorCode:  "QUOTA_EXCEEDED",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:         []string{"xyz", "abc"},
+			expectedErrorCode:  "OTHER",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+	}
+	for _, tc := range testCases {
+		for _, errorCode := range tc.errorCodes {
+			lmiResponse := gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      instanceUrl,
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{
+								Errors: []*gce_api.ManagedInstanceLastAttemptErrorsErrors{
+									{
+										Code: errorCode,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			b, err := json.Marshal(lmiResponse)
+			assert.NoError(t, err)
+			server.On("handle", "/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
+			instances, err := g.FetchMigInstances(GceRef{})
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedErrorCode, instances[0].Status.ErrorInfo.ErrorCode)
+			assert.Equal(t, tc.expectedErrorClass, instances[0].Status.ErrorInfo.ErrorClass)
+		}
+	}
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestUserAgent(t *testing.T) {
+	server := test_util.NewHttpServerMock(test_util.MockFieldUserAgent, test_util.MockFieldResponse)
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "testuseragent")
+
+	g.operationPollInterval = 10 * time.Millisecond
+	g.operationWaitTimeout = 49 * time.Millisecond
+
+	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return("testuseragent", operationRunningResponse).Maybe()
+
+	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
+
+	g.waitForOp(operation, projectId, zoneB, false)
 }
