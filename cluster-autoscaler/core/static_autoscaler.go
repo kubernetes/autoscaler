@@ -523,22 +523,23 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
-		// TODO(x13n): Move deletionsInProgress > 0 condition to the legacy scaledown implementation.
-		deletionsInProgress := len(actuationStatus.DeletionsInProgress())
+		// TODO(x13n): Move nonEmptyDeletionsCount > 0 condition to the legacy scaledown implementation.
+		_, nonEmptyDeletionsInProgress := actuationStatus.DeletionsInProgress()
+		nonEmptyDeletionsCount := len(nonEmptyDeletionsInProgress)
 		// In dry run only utilization is updated
-		calculateUnneededOnly := scaleDownInCooldown || deletionsInProgress > 0
+		calculateUnneededOnly := scaleDownInCooldown || nonEmptyDeletionsCount > 0
 
 		klog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v "+
-			"deletionsInProgress=%v scaleDownInCooldown=%v",
+			"nonEmptyDeletionsCount=%v scaleDownInCooldown=%v",
 			calculateUnneededOnly, a.lastScaleUpTime,
 			a.lastScaleDownDeleteTime, a.lastScaleDownFailTime, a.processorCallbacks.disableScaleDownForLoop,
-			deletionsInProgress, scaleDownInCooldown)
+			nonEmptyDeletionsCount, scaleDownInCooldown)
 		metrics.UpdateScaleDownInCooldown(scaleDownInCooldown)
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = status.ScaleDownInCooldown
-		} else if deletionsInProgress > 0 {
+		} else if nonEmptyDeletionsCount > 0 {
 			scaleDownStatus.Result = status.ScaleDownInProgress
 		} else {
 			klog.V(4).Infof("Starting scale down")
@@ -554,6 +555,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			empty, needDrain := a.scaleDownPlanner.NodesToDelete()
 			scaleDownStatus, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain, currentTime)
+			a.scaleDownActuator.ClearResultsNotNewerThan(scaleDownStatus.NodeDeleteResultsAsOf)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 			metrics.UpdateUnremovableNodesCount(countsByReason(a.scaleDownPlanner.UnremovableNodes()))
 
