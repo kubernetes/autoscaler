@@ -523,32 +523,28 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
-		// TODO(x13n): Move nonEmptyDeletionsCount > 0 condition to the legacy scaledown implementation.
-		_, nonEmptyDeletionsInProgress := actuationStatus.DeletionsInProgress()
-		nonEmptyDeletionsCount := len(nonEmptyDeletionsInProgress)
-		// In dry run only utilization is updated
-		calculateUnneededOnly := scaleDownInCooldown || nonEmptyDeletionsCount > 0
 
-		klog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
-			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v "+
-			"nonEmptyDeletionsCount=%v scaleDownInCooldown=%v",
-			calculateUnneededOnly, a.lastScaleUpTime,
-			a.lastScaleDownDeleteTime, a.lastScaleDownFailTime, a.processorCallbacks.disableScaleDownForLoop,
-			nonEmptyDeletionsCount, scaleDownInCooldown)
+		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
+			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
+			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
+			a.processorCallbacks.disableScaleDownForLoop, scaleDownInCooldown)
 		metrics.UpdateScaleDownInCooldown(scaleDownInCooldown)
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = status.ScaleDownInCooldown
-		} else if nonEmptyDeletionsCount > 0 {
-			scaleDownStatus.Result = status.ScaleDownInProgress
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
-			removedNodeGroups, err := a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingContext)
-			if err != nil {
-				klog.Errorf("Error while removing unneeded node groups: %v", err)
+			_, drained := actuationStatus.DeletionsInProgress()
+			var removedNodeGroups []cloudprovider.NodeGroup
+			if len(drained) == 0 {
+				var err error
+				removedNodeGroups, err = a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingContext)
+				if err != nil {
+					klog.Errorf("Error while removing unneeded node groups: %v", err)
+				}
 			}
 
 			scaleDownStart := time.Now()
