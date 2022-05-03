@@ -66,8 +66,8 @@ type EnvVar struct {
 
 // ProcessInfo contains the information about the process obtained from Procfile
 type ProcessInfo struct {
-	ProcessType  string `json:"process_type"`
-	ProcessCount int    `json:"process_count"`
+	ProcessType  string `json:"processType"`
+	ProcessCount int    `json:"processCount"`
 }
 
 // ErrAppDomainNotFound is returned when the domain is not found
@@ -191,65 +191,4 @@ func (c *Client) DeleteApplication(id string) (*SimpleResponse, error) {
 	}
 
 	return c.DecodeSimpleResponse(resp)
-}
-
-// ListAppDomains lists all domains for an application
-func (c *Client) ListAppDomains(id string) ([]string, error) {
-	resp, err := c.SendGetRequest(fmt.Sprintf("/v2/applications/%s/domains", id))
-	if err != nil {
-		return nil, decodeError(err)
-	}
-
-	appDomain := make([]string, 0)
-	if err := json.NewDecoder(bytes.NewReader(resp)).Decode(&appDomain); err != nil {
-		return nil, err
-	}
-
-	return appDomain, nil
-}
-
-//FindAppDomain finds an app domain inside an application by the domain name
-func (c *Client) FindAppDomain(search, id string) (string, error) {
-	appDomains, err := c.ListAppDomains(id)
-	if err != nil {
-		return "", decodeError(err)
-	}
-
-	for _, domain := range appDomains {
-		if domain == search {
-			return domain, nil
-		}
-	}
-	return "", ErrAppDomainNotFound
-}
-
-//DeleteAppDomain deletes an app domain from an application
-func (c *Client) DeleteAppDomain(domains []string, appID, domain string) (*SimpleResponse, error) {
-	if len(domains) == 0 {
-		err := fmt.Errorf("there is no domain to delete")
-		return nil, err
-	}
-
-	url := fmt.Sprintf("/v2/applications/%s/domains/%s", appID, domain)
-	resp, err := c.SendDeleteRequest(url)
-	if err != nil {
-		return nil, decodeError(err)
-	}
-
-	return c.DecodeSimpleResponse(resp)
-}
-
-// GetAppConfig returns the config for an application
-func (c *Client) GetAppConfig(id string) (*EnvVar, error) {
-	resp, err := c.SendGetRequest(fmt.Sprintf("/v2/applications/%s/config", id))
-	if err != nil {
-		return nil, decodeError(err)
-	}
-
-	appConfig := &EnvVar{}
-	if err := json.NewDecoder(bytes.NewReader(resp)).Decode(&appConfig); err != nil {
-		return nil, err
-	}
-
-	return appConfig, nil
 }

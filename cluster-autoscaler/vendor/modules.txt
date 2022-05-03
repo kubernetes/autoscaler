@@ -161,7 +161,7 @@ github.com/cilium/ebpf/internal
 github.com/cilium/ebpf/internal/btf
 github.com/cilium/ebpf/internal/unix
 github.com/cilium/ebpf/link
-# github.com/civo/civogo v0.2.77
+# github.com/civo/civogo v0.2.81
 ## explicit
 github.com/civo/civogo
 github.com/civo/civogo/utils
