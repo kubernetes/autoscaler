@@ -107,7 +107,7 @@ type Clienter interface {
 	GetKubernetesClusterPool(cid, pid string) (*KubernetesPool, error)
 	FindKubernetesClusterPool(cid, search string) (*KubernetesPool, error)
 	DeleteKubernetesClusterPoolInstance(cid, pid, id string) (*SimpleResponse, error)
-	UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolConfig) (*KubernetesPool, error)
+	UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolUpdateConfig) (*KubernetesPool, error)
 
 	// Networks
 	GetDefaultNetwork() (*Network, error)
@@ -1718,7 +1718,7 @@ func (c *FakeClient) DeleteKubernetesClusterPoolInstance(cid, pid, id string) (*
 }
 
 // UpdateKubernetesClusterPool implemented in a fake way for automated tests
-func (c *FakeClient) UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolConfig) (*KubernetesPool, error) {
+func (c *FakeClient) UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolUpdateConfig) (*KubernetesPool, error) {
 	clusterFound := false
 	poolFound := false
 

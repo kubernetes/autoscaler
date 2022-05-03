@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+//KubernetesClusterPoolUpdateConfig is used to create a new cluster pool
+type KubernetesClusterPoolUpdateConfig struct {
+	ID     string `json:"id,omitempty"`
+	Count  int    `json:"count,omitempty"`
+	Size   string `json:"size,omitempty"`
+	Region string `json:"region,omitempty"`
+}
+
 // ListKubernetesClusterPools returns all the pools for a kubernetes cluster
 func (c *Client) ListKubernetesClusterPools(cid string) ([]KubernetesPool, error) {
 	resp, err := c.SendGetRequest(fmt.Sprintf("/v2/kubernetes/clusters/%s/pools", cid))
@@ -82,7 +90,7 @@ func (c *Client) DeleteKubernetesClusterPoolInstance(cid, pid, id string) (*Simp
 }
 
 // UpdateKubernetesClusterPool updates a pool for a kubernetes cluster
-func (c *Client) UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolConfig) (*KubernetesPool, error) {
+func (c *Client) UpdateKubernetesClusterPool(cid, pid string, config *KubernetesClusterPoolUpdateConfig) (*KubernetesPool, error) {
 	resp, err := c.SendPutRequest(fmt.Sprintf("/v2/kubernetes/clusters/%s/pools/%s", cid, pid), config)
 	if err != nil {
 		return nil, decodeError(err)
