@@ -31,11 +31,15 @@ import (
 	"k8s.io/klog/v2"
 )
 
+var (
+	Region string
+)
+
 type nodeGroupClient interface {
 	// ListKubernetesClusterPools lists all node pools in the Kubernetes cluster.
 	ListKubernetesClusterPools(clusterID string) ([]civogo.KubernetesPool, error)
 	// UpdateKubernetesClusterPool updates an existing Kubernetes cluster pool with the Civo API.
-	UpdateKubernetesClusterPool(cid, pid string, config *civogo.KubernetesClusterPoolConfig) (*civogo.KubernetesPool, error)
+	UpdateKubernetesClusterPool(cid, pid string, config *civogo.KubernetesClusterPoolUpdateConfig) (*civogo.KubernetesPool, error)
 	// DeleteKubernetesClusterPoolInstance deletes a instance from pool
 	DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civogo.SimpleResponse, error)
 }
@@ -93,6 +97,8 @@ func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDis
 	if cfg.Region == "" {
 		return nil, errors.New("region was not provided")
 	}
+
+	Region = cfg.Region
 
 	civoClient, err := civogo.NewClientWithURL(cfg.ApiKey, cfg.ApiURL, cfg.Region)
 	if err != nil {

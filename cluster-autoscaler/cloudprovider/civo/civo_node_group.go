@@ -80,8 +80,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 			n.nodePool.Count, targetSize, n.MaxSize())
 	}
 
-	req := &civogo.KubernetesClusterPoolConfig{
-		Count: targetSize,
+	req := &civogo.KubernetesClusterPoolUpdateConfig{
+		Count:  targetSize,
+		Region: Region,
 	}
 	updatedNodePool, err := n.client.UpdateKubernetesClusterPool(n.clusterID, n.id, req)
 	if err != nil {
@@ -135,8 +136,9 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			n.nodePool.Count, targetSize, n.MinSize())
 	}
 
-	req := &civogo.KubernetesClusterPoolConfig{
-		Count: targetSize,
+	req := &civogo.KubernetesClusterPoolUpdateConfig{
+		Count:  targetSize,
+		Region: Region,
 	}
 
 	updatedNodePool, err := n.client.UpdateKubernetesClusterPool(n.clusterID, n.id, req)
@@ -241,7 +243,7 @@ func toInstanceStatus(nodeState string) *cloudprovider.InstanceStatus {
 
 	st := &cloudprovider.InstanceStatus{}
 	switch nodeState {
-	case "BUILD", "BUILD_PENDING":
+	case "BUILDING":
 		st.State = cloudprovider.InstanceCreating
 	case "ACTIVE":
 		st.State = cloudprovider.InstanceRunning
