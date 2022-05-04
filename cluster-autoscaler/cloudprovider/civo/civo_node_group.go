@@ -52,6 +52,7 @@ func (n *NodeGroup) MinSize() int {
 	return n.minSize
 }
 
+// GetOptions returns the options used to create this node group.
 func (n *NodeGroup) GetOptions(autoscaler.NodeGroupAutoscalingOptions) (*autoscaler.NodeGroupAutoscalingOptions, error) {
 	return n.getOptions, nil
 }
@@ -169,7 +170,6 @@ func (n *NodeGroup) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.  It is
 // required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	if n.nodePool == nil {
 		return nil, errors.New("node pool instance is not created")
