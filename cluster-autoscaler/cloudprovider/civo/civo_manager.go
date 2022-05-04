@@ -32,6 +32,7 @@ import (
 )
 
 var (
+	// Region is the region where the cluster is located.
 	Region string
 )
 
