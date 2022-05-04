@@ -32,6 +32,8 @@ const (
 	ErrorCodeUnknownState = "UNKNOWN_STATE"
 )
 
+var errMissingNodeID = fmt.Errorf("missing node ID")
+
 // convertToInstanceId converts an IonosCloud kubernetes node Id to a cloudprovider.Instance Id.
 func convertToInstanceId(nodeId string) string {
 	return fmt.Sprintf("%s%s", ProviderIdPrefix, nodeId)
@@ -43,29 +45,36 @@ func convertToNodeId(providerId string) string {
 }
 
 // convertToInstances converts a list IonosCloud kubernetes nodes to a list of cloudprovider.Instances.
-func convertToInstances(nodes *ionos.KubernetesNodes) []cloudprovider.Instance {
-	instances := make([]cloudprovider.Instance, 0, len(*nodes.Items))
-	for _, node := range *nodes.Items {
-		instances = append(instances, convertToInstance(node))
+func convertToInstances(nodes []ionos.KubernetesNode) ([]cloudprovider.Instance, error) {
+	instances := make([]cloudprovider.Instance, 0, len(nodes))
+	for _, node := range nodes {
+		instance, err := convertToInstance(node)
+		if err != nil {
+			return nil, err
+		}
+		instances = append(instances, instance)
 	}
-	return instances
+	return instances, nil
 }
 
 // to Instance converts an IonosCloud kubernetes node to a cloudprovider.Instance.
-func convertToInstance(node ionos.KubernetesNode) cloudprovider.Instance {
+func convertToInstance(node ionos.KubernetesNode) (cloudprovider.Instance, error) {
+	if node.Id == nil {
+		return cloudprovider.Instance{}, errMissingNodeID
+	}
 	return cloudprovider.Instance{
 		Id:     convertToInstanceId(*node.Id),
 		Status: convertToInstanceStatus(*node.Metadata.State),
-	}
+	}, nil
 }
 
 // convertToInstanceStatus converts an IonosCloud kubernetes node state to a *cloudprovider.InstanceStatus.
 func convertToInstanceStatus(nodeState string) *cloudprovider.InstanceStatus {
 	st := &cloudprovider.InstanceStatus{}
 	switch nodeState {
-	case K8sNodeStateProvisioning, K8sNodeStateProvisioned, K8sNodeStateRebuilding:
+	case K8sNodeStateProvisioning, K8sNodeStateProvisioned:
 		st.State = cloudprovider.InstanceCreating
-	case K8sNodeStateTerminating:
+	case K8sNodeStateTerminating, K8sNodeStateRebuilding:
 		st.State = cloudprovider.InstanceDeleting
 	case K8sNodeStateReady:
 		st.State = cloudprovider.InstanceRunning
