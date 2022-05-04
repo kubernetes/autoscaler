@@ -190,7 +190,7 @@ metadata:
     app: cluster-autoscaler
 type: Opaque
 stringData:
-  api-url: "http://6e1f-31-24-105-13.ngrok.io"
+  api-url: "http://api.civo.com"
   api-key: "CJoNKBnMqGSFPma1e8tSOZm9DBsKQGKUlcVfhCBiGU2kWMWnam"
   cluster-id: "43fd01e1-d063-4c32-8b35-0c94be18caac"
   region: "DEV"
