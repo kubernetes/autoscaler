@@ -19,13 +19,13 @@ package ionoscloud
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
 	"k8s.io/klog/v2"
@@ -59,18 +59,16 @@ type APIClient interface {
 	K8sNodepoolsNodesGet(ctx context.Context, k8sClusterId string, nodepoolId string) ionos.ApiK8sNodepoolsNodesGetRequest
 	K8sNodepoolsNodesGetExecute(r ionos.ApiK8sNodepoolsNodesGetRequest) (ionos.KubernetesNodes, *ionos.APIResponse, error)
 	K8sNodepoolsNodesDelete(ctx context.Context, k8sClusterId string, nodepoolId string, nodeId string) ionos.ApiK8sNodepoolsNodesDeleteRequest
-	K8sNodepoolsNodesDeleteExecute(r ionos.ApiK8sNodepoolsNodesDeleteRequest) (map[string]interface{}, *ionos.APIResponse, error)
+	K8sNodepoolsNodesDeleteExecute(r ionos.ApiK8sNodepoolsNodesDeleteRequest) (*ionos.APIResponse, error)
 	K8sNodepoolsPut(ctx context.Context, k8sClusterId string, nodepoolId string) ionos.ApiK8sNodepoolsPutRequest
-	K8sNodepoolsPutExecute(r ionos.ApiK8sNodepoolsPutRequest) (ionos.KubernetesNodePoolForPut, *ionos.APIResponse, error)
+	K8sNodepoolsPutExecute(r ionos.ApiK8sNodepoolsPutRequest) (ionos.KubernetesNodePool, *ionos.APIResponse, error)
 }
 
-var apiClientFactory = NewAPIClient
-
 // NewAPIClient creates a new IonosCloud API client.
-func NewAPIClient(token, endpoint string, insecure bool) APIClient {
-	config := ionos.NewConfiguration("", "", token)
-	if endpoint != "" {
-		config.Servers[0].URL = endpoint
+func NewAPIClient(token, endpoint, userAgent string, insecure bool) APIClient {
+	config := ionos.NewConfiguration("", "", token, endpoint)
+	if userAgent != "" {
+		config.UserAgent = userAgent
 	}
 	if insecure {
 		config.HTTPClient = &http.Client{
@@ -80,80 +78,94 @@ func NewAPIClient(token, endpoint string, insecure bool) APIClient {
 		}
 	}
 	config.Debug = klog.V(6).Enabled()
+	// Depth > 0 is only important for listing resources. All other autoscaling related requests don't need it
+	config.SetDepth(0)
 	client := ionos.NewAPIClient(config)
 	return client.KubernetesApi
 }
 
 // AutoscalingClient is a client abstraction used for autoscaling.
 type AutoscalingClient struct {
-	client       APIClient
+	clientProvider
 	clusterId    string
-	endpoint     string
-	insecure     bool
 	pollTimeout  time.Duration
 	pollInterval time.Duration
-	tokens       map[string]string
 }
 
 // NewAutoscalingClient contructs a new autoscaling client.
-func NewAutoscalingClient(config *Config) (*AutoscalingClient, error) {
+func NewAutoscalingClient(config *Config, userAgent string) (*AutoscalingClient, error) {
 	c := &AutoscalingClient{
-		clusterId:    config.ClusterId,
-		endpoint:     config.Endpoint,
-		insecure:     config.Insecure,
-		pollTimeout:  config.PollTimeout,
-		pollInterval: config.PollInterval,
-	}
-	if config.Token != "" {
-		c.client = apiClientFactory(config.Token, config.Endpoint, config.Insecure)
-	} else if config.TokensPath != "" {
-		tokens, err := loadTokensFromFilesystem(config.TokensPath)
-		if err != nil {
-			return nil, err
-		}
-		c.tokens = tokens
+		clientProvider: newClientProvider(config, userAgent),
+		clusterId:      config.ClusterId,
+		pollTimeout:    config.PollTimeout,
+		pollInterval:   config.PollInterval,
 	}
 	return c, nil
 }
 
-// loadTokensFromFilesystem loads a mapping of node pool UUIDs to JWT tokens from the given path.
-func loadTokensFromFilesystem(path string) (map[string]string, error) {
-	klog.V(3).Infof("Loading tokens from: %s", path)
-	filenames, _ := filepath.Glob(filepath.Join(path, "*"))
-	tokens := make(map[string]string)
-	for _, filename := range filenames {
-		name := filepath.Base(filename)
-		if _, err := uuid.Parse(name); err != nil {
-			continue
+func newClientProvider(config *Config, userAgent string) clientProvider {
+	if config.Token != "" {
+		return defaultClientProvider{
+			token:     config.Token,
+			userAgent: userAgent,
 		}
-		data, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return nil, err
-		}
-		tokens[name] = string(data)
 	}
-	if len(tokens) == 0 {
-		return nil, fmt.Errorf("%s did not contain any valid entries", path)
+	return customClientProvider{
+		cloudConfigDir: config.TokensPath,
+		endpoint:       config.Endpoint,
+		userAgent:      userAgent,
+		insecure:       config.Insecure,
 	}
-	return tokens, nil
 }
 
-// apiClientFor returns an IonosCloud API client for the given node pool.
-// If the cache was not initialized with a client a new one will be created using a cached token.
-func (c *AutoscalingClient) apiClientFor(id string) (APIClient, error) {
-	if c.client != nil {
-		return c.client, nil
+// clientProvider initializes an authenticated Ionos Cloud API client using pre-configured values
+type clientProvider interface {
+	GetClient() (APIClient, error)
+}
+
+type defaultClientProvider struct {
+	token     string
+	userAgent string
+}
+
+func (p defaultClientProvider) GetClient() (APIClient, error) {
+	return NewAPIClient(p.token, "", p.userAgent, false), nil
+}
+
+type customClientProvider struct {
+	cloudConfigDir string
+	endpoint       string
+	userAgent      string
+	insecure       bool
+}
+
+func (p customClientProvider) GetClient() (APIClient, error) {
+	files, err := filepath.Glob(filepath.Join(p.cloudConfigDir, "[a-zA-Z0-9]*"))
+	if err != nil {
+		return nil, err
 	}
-	token, exists := c.tokens[id]
-	if !exists {
-		return nil, fmt.Errorf("missing token for node pool %s", id)
+	if len(files) == 0 {
+		return nil, fmt.Errorf("missing cloud config")
 	}
-	return apiClientFactory(token, c.endpoint, c.insecure), nil
+	data, err := os.ReadFile(files[0])
+	if err != nil {
+		return nil, err
+	}
+	cloudConfig := struct {
+		Tokens []string `json:"tokens"`
+	}{}
+	if err := json.Unmarshal(data, &cloudConfig); err != nil {
+		return nil, err
+	}
+	if len(cloudConfig.Tokens) == 0 {
+		return nil, fmt.Errorf("missing tokens for cloud config %s", filepath.Base(files[0]))
+	}
+	return NewAPIClient(cloudConfig.Tokens[0], p.endpoint, p.userAgent, p.insecure), nil
 }
 
 // GetNodePool gets a node pool.
 func (c *AutoscalingClient) GetNodePool(id string) (*ionos.KubernetesNodePool, error) {
-	client, err := c.apiClientFor(id)
+	client, err := c.GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -165,21 +177,23 @@ func (c *AutoscalingClient) GetNodePool(id string) (*ionos.KubernetesNodePool, e
 	return &nodepool, nil
 }
 
-func resizeRequestBody(targetSize int) ionos.KubernetesNodePoolPropertiesForPut {
-	return ionos.KubernetesNodePoolPropertiesForPut{
-		NodeCount: pointer.Int32Ptr(int32(targetSize)),
+func resizeRequestBody(targetSize int) ionos.KubernetesNodePoolForPut {
+	return ionos.KubernetesNodePoolForPut{
+		Properties: &ionos.KubernetesNodePoolPropertiesForPut{
+			NodeCount: pointer.Int32Ptr(int32(targetSize)),
+		},
 	}
 }
 
 // ResizeNodePool sets the target size of a node pool and starts the resize process.
 // The node pool target size cannot be changed until this operation finishes.
 func (c *AutoscalingClient) ResizeNodePool(id string, targetSize int) error {
-	client, err := c.apiClientFor(id)
+	client, err := c.GetClient()
 	if err != nil {
 		return err
 	}
 	req := client.K8sNodepoolsPut(context.Background(), c.clusterId, id)
-	req = req.KubernetesNodePoolProperties(resizeRequestBody(targetSize))
+	req = req.KubernetesNodePool(resizeRequestBody(targetSize))
 	_, _, err = client.K8sNodepoolsPutExecute(req)
 	return err
 }
@@ -200,7 +214,7 @@ func (c *AutoscalingClient) WaitForNodePoolResize(id string, size int) error {
 
 // ListNodes lists nodes.
 func (c *AutoscalingClient) ListNodes(id string) ([]ionos.KubernetesNode, error) {
-	client, err := c.apiClientFor(id)
+	client, err := c.GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -215,11 +229,11 @@ func (c *AutoscalingClient) ListNodes(id string) ([]ionos.KubernetesNode, error)
 
 // DeleteNode starts node deletion.
 func (c *AutoscalingClient) DeleteNode(id, nodeId string) error {
-	client, err := c.apiClientFor(id)
+	client, err := c.GetClient()
 	if err != nil {
 		return err
 	}
 	req := client.K8sNodepoolsNodesDelete(context.Background(), c.clusterId, id, nodeId)
-	_, _, err = client.K8sNodepoolsNodesDeleteExecute(req)
+	_, err = client.K8sNodepoolsNodesDeleteExecute(req)
 	return err
 }
