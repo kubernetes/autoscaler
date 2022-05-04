@@ -147,7 +147,7 @@ func TestInstancePoolFromArgs(t *testing.T) {
 func TestGetSetInstancePoolSize(t *testing.T) {
 
 	nodePoolCache := newInstancePoolCache(computeManagementClient, computeClient, virtualNetworkClient)
-	nodePoolCache.targetSize["ocid1.instancepool.oc1.phx.aaaaaaaai"] = 2
+	nodePoolCache.poolCache["ocid1.instancepool.oc1.phx.aaaaaaaai"] = &core.InstancePool{Size: common.Int(2)}
 
 	manager := &InstancePoolManagerImpl{instancePoolCache: nodePoolCache}
 	size, err := manager.GetInstancePoolSize(InstancePoolNodeGroup{id: "ocid1.instancepool.oc1.phx.aaaaaaaai"})
