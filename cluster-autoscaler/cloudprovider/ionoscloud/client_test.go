@@ -17,8 +17,6 @@ limitations under the License.
 package ionoscloud
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,103 +24,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAPIClientFor(t *testing.T) {
-	apiClientFactory = func(_, _ string, _ bool) APIClient { return &MockAPIClient{} }
-	defer func() { apiClientFactory = NewAPIClient }()
+func TestCustomClientProvider(t *testing.T) {
+	tokensPath := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "..ignoreme"), []byte(`{"invalid"}`), 0644))
 
-	cases := []struct {
-		name         string
-		token        string
-		cachedTokens map[string]string
-		expectClient APIClient
-		expectError  bool
-	}{
-		{
-			name:         "from cached client",
-			token:        "token",
-			expectClient: &MockAPIClient{},
-		},
-		{
-			name:         "from token cache",
-			cachedTokens: map[string]string{"test": "token"},
-			expectClient: &MockAPIClient{},
-		},
-		{
-			name:         "not in token cache",
-			cachedTokens: map[string]string{"notfound": "token"},
-			expectError:  true,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			apiClientFactory = func(_, _ string, _ bool) APIClient { return &MockAPIClient{} }
-			defer func() { apiClientFactory = NewAPIClient }()
-
-			client, _ := NewAutoscalingClient(&Config{
-				Token:    c.token,
-				Endpoint: "https://api.cloud.ionos.com/v6",
-				Insecure: true,
-			})
-			client.tokens = c.cachedTokens
-			apiClient, err := client.apiClientFor("test")
-			require.Equalf(t, c.expectError, err != nil, "expected error: %t, got: %v", c.expectError, err)
-			require.EqualValues(t, c.expectClient, apiClient)
-		})
-	}
-}
-
-func TestLoadTokensFromFilesystem_OK(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-	defer func() { _ = os.RemoveAll(tempDir) }()
-
-	uuid1, uuid2, uuid3 := NewUUID(), NewUUID(), NewUUID()
-
-	input := map[string]string{
-		uuid1: "token1",
-		uuid2: "token2",
-		uuid3: "token3",
-	}
-	expect := map[string]string{
-		uuid1: "token1",
-		uuid2: "token2",
-		uuid3: "token3",
-	}
-
-	for name, token := range input {
-		require.NoError(t, ioutil.WriteFile(filepath.Join(tempDir, name), []byte(token), 0600))
-	}
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tempDir, "..somfile"), []byte("foobar"), 0600))
-
-	client, err := NewAutoscalingClient(&Config{TokensPath: tempDir})
-	require.NoError(t, err)
-	require.Equal(t, expect, client.tokens)
-}
-
-func TestLoadTokensFromFilesystem_ReadError(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-	defer func() { _ = os.RemoveAll(tempDir) }()
-
-	require.NoError(t, os.Mkdir(filepath.Join(tempDir, NewUUID()), 0755))
-	client, err := NewAutoscalingClient(&Config{TokensPath: tempDir})
+	// missing files
+	provider := customClientProvider{tokensPath, "https://api.ionos.com", "test", true}
+	_, err := provider.GetClient()
 	require.Error(t, err)
-	require.Nil(t, client)
+
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "a"), []byte(`{"tokens":["token1"]}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "b"), []byte(`{"tokens":["token2"]}`), 0644))
+
+	c, err := provider.GetClient()
+	require.NoError(t, err)
+	require.NotNil(t, c)
 }
 
-func TestLoadTokensFromFilesystem_NoValidToken(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-	defer func() { _ = os.RemoveAll(tempDir) }()
+type fakeClientProvider struct {
+	client *MockAPIClient
+}
 
-	for i := 0; i < 10; i++ {
-		path := filepath.Join(tempDir, fmt.Sprintf("notauuid%d", i))
-		require.NoError(t, ioutil.WriteFile(path, []byte("token"), 0600))
-		path = filepath.Join(tempDir, fmt.Sprintf("foo.bar.notauuid%d", i))
-		require.NoError(t, ioutil.WriteFile(path, []byte("token"), 0600))
-	}
-	client, err := NewAutoscalingClient(&Config{TokensPath: tempDir})
-	require.Error(t, err)
-	require.Nil(t, client)
+func (f fakeClientProvider) GetClient() (APIClient, error) {
+	return f.client, nil
 }
