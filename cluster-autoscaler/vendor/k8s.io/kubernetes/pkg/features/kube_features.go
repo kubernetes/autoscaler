@@ -412,13 +412,6 @@ const (
 	// Enables ipv6 dual stack
 	IPv6DualStack featuregate.Feature = "IPv6DualStack"
 
-	// owner: @wzshiming
-	// kep: http://kep.k8s.io/2681
-	// alpha: v1.24
-	//
-	// Adds pod.status.hostIPs and downward API
-	PodHostIPs featuregate.Feature = "PodHostIPs"
-
 	// owner: @robscott @freehan
 	// kep: http://kep.k8s.io/752
 	// alpha: v1.16
@@ -586,9 +579,10 @@ const (
 	// Allows control if NodePorts shall be created for services with "type: LoadBalancer" by defining the spec.AllocateLoadBalancerNodePorts field (bool)
 	ServiceLBNodePortControl featuregate.Feature = "ServiceLBNodePortControl"
 
-	// owner: @janosi
+	// owner: @janosi @bridgetkromhout
 	// kep: http://kep.k8s.io/1435
 	// alpha: v1.20
+	// beta: v1.24
 	//
 	// Enables the usage of different protocols in the same Service with type=LoadBalancer
 	MixedProtocolLBService featuregate.Feature = "MixedProtocolLBService"
@@ -821,7 +815,6 @@ const (
 	// owner: @deepakkinni @xing-yang
 	// kep: http://kep.k8s.io/2680
 	// alpha: v1.23
-	// beta: v1.24
 	//
 	// Honor Persistent Volume Reclaim Policy when it is "Delete" irrespective of PV-PVC
 	// deletion ordering.
@@ -882,6 +875,13 @@ const (
 	//
 	// Enables NetworkPolicy status subresource
 	NetworkPolicyStatus featuregate.Feature = "NetworkPolicyStatus"
+
+	// owner: @deejross
+	// kep: http://kep.k8s.io/3140
+	// alpha: v1.24
+	//
+	// Enables support for time zones in CronJobs.
+	CronJobTimeZone featuregate.Feature = "CronJobTimeZone"
 )
 
 func init() {
@@ -936,14 +936,13 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	ProcMountType:                                  {Default: false, PreRelease: featuregate.Alpha},
 	TTLAfterFinished:                               {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
 	IndexedJob:                                     {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.26
-	JobTrackingWithFinalizers:                      {Default: true, PreRelease: featuregate.Beta},
+	JobTrackingWithFinalizers:                      {Default: false, PreRelease: featuregate.Beta},                   // Disabled due to #109485
 	JobReadyPods:                                   {Default: true, PreRelease: featuregate.Beta},
 	KubeletPodResources:                            {Default: true, PreRelease: featuregate.Beta},
 	LocalStorageCapacityIsolationFSQuotaMonitoring: {Default: false, PreRelease: featuregate.Alpha},
 	NonPreemptingPriority:                          {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
 	PodOverhead:                                    {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.26
 	IPv6DualStack:                                  {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
-	PodHostIPs:                                     {Default: false, PreRelease: featuregate.Alpha},
 	EndpointSlice:                                  {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
 	EndpointSliceProxying:                          {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
 	EndpointSliceTerminatingCondition:              {Default: true, PreRelease: featuregate.Beta},
@@ -965,7 +964,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	GracefulNodeShutdown:                           {Default: true, PreRelease: featuregate.Beta},
 	GracefulNodeShutdownBasedOnPodPriority:         {Default: true, PreRelease: featuregate.Beta},
 	ServiceLBNodePortControl:                       {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.26
-	MixedProtocolLBService:                         {Default: false, PreRelease: featuregate.Alpha},
+	MixedProtocolLBService:                         {Default: true, PreRelease: featuregate.Beta},
 	VolumeCapacityPriority:                         {Default: false, PreRelease: featuregate.Alpha},
 	PreferNominatedNode:                            {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.25
 	ProbeTerminationGracePeriod:                    {Default: false, PreRelease: featuregate.Beta},                   // Default to false in beta 1.22, set to true in 1.24
@@ -1000,7 +999,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	JobMutableNodeSchedulingDirectives:             {Default: true, PreRelease: featuregate.Beta},
 	IdentifyPodOS:                                  {Default: true, PreRelease: featuregate.Beta},
 	PodAndContainerStatsFromCRI:                    {Default: false, PreRelease: featuregate.Alpha},
-	HonorPVReclaimPolicy:                           {Default: true, PreRelease: featuregate.Beta},
+	HonorPVReclaimPolicy:                           {Default: false, PreRelease: featuregate.Alpha},
 	RecoverVolumeExpansionFailure:                  {Default: false, PreRelease: featuregate.Alpha},
 	GRPCContainerProbe:                             {Default: true, PreRelease: featuregate.Beta},
 	LegacyServiceAccountTokenNoAutoGeneration:      {Default: true, PreRelease: featuregate.Beta},
@@ -1009,6 +1008,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	NodeOutOfServiceVolumeDetach:                   {Default: false, PreRelease: featuregate.Alpha},
 	MaxUnavailableStatefulSet:                      {Default: false, PreRelease: featuregate.Alpha},
 	NetworkPolicyStatus:                            {Default: false, PreRelease: featuregate.Alpha},
+	CronJobTimeZone:                                {Default: false, PreRelease: featuregate.Alpha},
 
 	// inherited features from generic apiserver, relisted here to get a conflict if it is changed
 	// unintentionally on either side:
@@ -1021,7 +1021,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	genericfeatures.OpenAPIEnums:                        {Default: true, PreRelease: featuregate.Beta},
 	genericfeatures.CustomResourceValidationExpressions: {Default: false, PreRelease: featuregate.Alpha},
 	genericfeatures.OpenAPIV3:                           {Default: true, PreRelease: featuregate.Beta},
-	genericfeatures.ServerSideFieldValidation:           {Default: true, PreRelease: featuregate.Beta},
+	genericfeatures.ServerSideFieldValidation:           {Default: false, PreRelease: featuregate.Alpha},
 	// features that enable backwards compatibility but are scheduled to be removed
 	// ...
 	HPAScaleToZero: {Default: false, PreRelease: featuregate.Alpha},
