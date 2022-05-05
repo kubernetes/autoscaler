@@ -685,6 +685,12 @@ func (sd *ScaleDown) TryToScaleDown(
 	currentTime time.Time,
 	pdbs []*policyv1.PodDisruptionBudget,
 ) (*status.ScaleDownStatus, errors.AutoscalerError) {
+	_, drained := sd.nodeDeletionTracker.DeletionsInProgress()
+	if len(drained) > 0 {
+		return &status.ScaleDownStatus{
+			Result: status.ScaleDownInProgress,
+		}, nil
+	}
 	ndr, ts := sd.nodeDeletionTracker.DeletionResults()
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: ndr, NodeDeleteResultsAsOf: ts}
 	nodeDeletionDuration := time.Duration(0)
