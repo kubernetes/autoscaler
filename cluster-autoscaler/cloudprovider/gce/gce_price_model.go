@@ -33,6 +33,7 @@ type GcePriceModel struct {
 	PriceInfo PriceInfo
 }
 
+// NewGcePriceModel gets a new instance of GcePriceModel
 func NewGcePriceModel() *GcePriceModel {
 	return &GcePriceModel{
 		PriceInfo: NewGcePriceInfo(),
