@@ -1,16 +1,26 @@
 package gce
 
+// PriceInfo is the interface to fetch the pricing information needed for gce pricing
 type PriceInfo interface {
+	// BaseCpuPricePerHour gets the base cpu price per hour
 	BaseCpuPricePerHour() float64
+	// BaseMemoryPricePerHourPerGb gets the base memory price per hour per Gb
 	BaseMemoryPricePerHourPerGb() float64
+	// BasePreemptibleDiscount gets the base preemptible discount applicable
 	BasePreemptibleDiscount() float64
+	// BaseGpuPricePerHour gets the base gpu price per hour
 	BaseGpuPricePerHour() float64
 
+	// PredefinedCpuPricePerHour gets the predefined cpu price per hour for machine family
 	PredefinedCpuPricePerHour() map[string]float64
+	// PredefinedMemoryPricePerHourPerGb gets the predefined memory price per hour per Gb for machine family
 	PredefinedMemoryPricePerHourPerGb() map[string]float64
+	// PredefinedPreemptibleDiscount gets the predefined preemptible discount for machine family
 	PredefinedPreemptibleDiscount() map[string]float64
 
+	// CustomCpuPricePerHour gets the cpu price per hour for custom machine of a machine family
 	CustomCpuPricePerHour() map[string]float64
+	// CustomMemoryPricePerHourPerGb gets the memory price per hour per Gb for custom machine of a machine family
 	CustomMemoryPricePerHourPerGb() map[string]float64
 	CustomPreemptibleDiscount() map[string]float64
 
@@ -18,6 +28,7 @@ type PriceInfo interface {
 	PreemptibleInstancePrices() map[string]float64
 
 	GpuPrices() map[string]float64
+	// PreemptibleGpuPrices gets the price of preemptible GPUs
 	PreemptibleGpuPrices() map[string]float64
 }
 
@@ -401,6 +412,7 @@ var (
 	}
 )
 
+// GcePriceInfo is the GCE specific implementation of the PricingInfo
 type GcePriceInfo struct {
 	baseCpuPricePerHour         float64
 	baseMemoryPricePerHourPerGb float64
@@ -422,6 +434,7 @@ type GcePriceInfo struct {
 	preemptibleGpuPrices map[string]float64
 }
 
+// NewGcePriceInfo returns a new instance of the GcePriceInfo
 func NewGcePriceInfo() *GcePriceInfo {
 	return &GcePriceInfo{
 		baseCpuPricePerHour:         cpuPricePerHour,
@@ -445,58 +458,72 @@ func NewGcePriceInfo() *GcePriceInfo {
 	}
 }
 
+// BaseCpuPricePerHour gets the base cpu price per hour
 func (g *GcePriceInfo) BaseCpuPricePerHour() float64 {
 	return g.baseCpuPricePerHour
 }
 
+// BaseMemoryPricePerHourPerGb gets the base memory price per hour per Gb
 func (g *GcePriceInfo) BaseMemoryPricePerHourPerGb() float64 {
 	return g.baseMemoryPricePerHourPerGb
 }
 
+// BasePreemptibleDiscount gets the base preemptible discount applicable
 func (g *GcePriceInfo) BasePreemptibleDiscount() float64 {
 	return g.basePreemptibleDiscount
 }
 
+// BaseGpuPricePerHour gets the base gpu price per hour
 func (g *GcePriceInfo) BaseGpuPricePerHour() float64 {
 	return g.baseGpuPricePerHour
 }
 
+// PredefinedCpuPricePerHour gets the predefined cpu price per hour for machine family
 func (g *GcePriceInfo) PredefinedCpuPricePerHour() map[string]float64 {
 	return g.predefinedCpuPricePerHour
 }
 
+// PredefinedMemoryPricePerHourPerGb gets the predefined memory price per hour per Gb for machine family
 func (g *GcePriceInfo) PredefinedMemoryPricePerHourPerGb() map[string]float64 {
 	return g.predefinedMemoryPricePerHourPerGb
 }
 
+// PredefinedPreemptibleDiscount gets the predefined preemptible discount for machine family
 func (g *GcePriceInfo) PredefinedPreemptibleDiscount() map[string]float64 {
 	return g.predefinedPreemptibleDiscount
 }
 
+// CustomCpuPricePerHour gets the cpu price per hour for custom machine of a machine family
 func (g *GcePriceInfo) CustomCpuPricePerHour() map[string]float64 {
 	return g.customCpuPricePerHour
 }
 
+// CustomMemoryPricePerHourPerGb gets the memory price per hour per Gb for custom machine of a machine family
 func (g *GcePriceInfo) CustomMemoryPricePerHourPerGb() map[string]float64 {
 	return g.customMemoryPricePerHourPerGb
 }
 
+// CustomPreemptibleDiscount gets the preemptible discount of a machine family
 func (g *GcePriceInfo) CustomPreemptibleDiscount() map[string]float64 {
 	return g.customPreemptibleDiscount
 }
 
+// InstancePrices gets the prices for standard machine types
 func (g *GcePriceInfo) InstancePrices() map[string]float64 {
 	return g.instancePrices
 }
 
+// PreemptibleInstancePrices gets the preemptible prices for standard machine types
 func (g *GcePriceInfo) PreemptibleInstancePrices() map[string]float64 {
 	return g.preemptibleInstancePrices
 }
 
+// GpuPrices gets the price of GPUs
 func (g *GcePriceInfo) GpuPrices() map[string]float64 {
 	return g.gpuPrices
 }
 
+// PreemptibleGpuPrices gets the price of preemptible GPUs
 func (g *GcePriceInfo) PreemptibleGpuPrices() map[string]float64 {
 	return g.preemptibleGpuPrices
 }
