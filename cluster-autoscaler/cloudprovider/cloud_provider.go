@@ -40,6 +40,8 @@ const (
 	BizflyCloudProviderName = "bizflycloud"
 	// BrightboxProviderName gets the provider name of brightbox
 	BrightboxProviderName = "brightbox"
+	// CherryServersProviderName gets the provider name of cherry servers
+	CherryServersProviderName = "cherryservers"
 	// CloudStackProviderName gets the provider name of cloudstack
 	CloudStackProviderName = "cloudstack"
 	// ClusterAPIProviderName gets the provider name of clusterapi
