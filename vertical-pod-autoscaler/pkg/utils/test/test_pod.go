@@ -29,6 +29,7 @@ type PodBuilder interface {
 	WithLabels(labels map[string]string) PodBuilder
 	WithAnnotations(annotations map[string]string) PodBuilder
 	WithPhase(phase apiv1.PodPhase) PodBuilder
+	WithContainerStatus(status *apiv1.ContainerStatus) PodBuilder
 	Get() *apiv1.Pod
 }
 
@@ -47,6 +48,7 @@ type podBuilderImpl struct {
 	labels            map[string]string
 	annotations       map[string]string
 	phase             apiv1.PodPhase
+	containerStatus   *apiv1.ContainerStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -83,6 +85,12 @@ func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, crea
 func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
 	r := *pb
 	r.phase = phase
+	return &r
+}
+
+func (pb *podBuilderImpl) WithContainerStatus(status *apiv1.ContainerStatus) PodBuilder {
+	r := *pb
+	r.containerStatus = status
 	return &r
 }
 
@@ -125,6 +133,10 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 	}
 	if pb.phase != "" {
 		pod.Status.Phase = pb.phase
+	}
+
+	if pb.containerStatus != nil {
+		pod.Status.ContainerStatuses = append(pod.Status.ContainerStatuses, *pb.containerStatus)
 	}
 
 	return pod

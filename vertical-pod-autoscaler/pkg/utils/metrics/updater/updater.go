@@ -59,6 +59,14 @@ var (
 		}, []string{"vpa_size_log2"},
 	)
 
+	deletedCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "deleted_pods_total",
+			Help:      "Number of Pods delete by Updater to apply a new recommendation.",
+		}, []string{"vpa_size_log2"},
+	)
+
 	vpasWithEvictablePodsCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
@@ -75,13 +83,21 @@ var (
 		}, []string{"vpa_size_log2"},
 	)
 
+	vpasWithDeletedPodsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_with_deleted_pods_total",
+			Help:      "Number of VPA objects with at least one deleted Pod.",
+		}, []string{"vpa_size_log2"},
+	)
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
 )
 
 // Register initializes all metrics for VPA Updater
 func Register() {
-	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, functionLatency)
+	prometheus.MustRegister(controlledCount, evictableCount, evictedCount, deletedCount, vpasWithEvictablePodsCount, vpasWithEvictedPodsCount, vpasWithDeletedPodsCount, functionLatency)
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
@@ -117,10 +133,21 @@ func NewVpasWithEvictedPodsCounter() *SizeBasedGauge {
 	return newSizeBasedGauge(vpasWithEvictedPodsCount)
 }
 
+// NewVpasWithDeletedPodsCounter returns a wrapper for counting VPA objects with deleted Pods
+func NewVpasWithDeletedPodsCounter() *SizeBasedGauge {
+	return newSizeBasedGauge(vpasWithDeletedPodsCount)
+}
+
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
 func AddEvictedPod(vpaSize int) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	evictedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
+}
+
+// AddDeletedPod increases the counter of pods deleted by Updater, by given VPA size
+func AddDeletedPod(vpaSize int) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	deletedCount.WithLabelValues(strconv.Itoa(log2)).Inc()
 }
 
 // Add increases the counter for the given VPA size

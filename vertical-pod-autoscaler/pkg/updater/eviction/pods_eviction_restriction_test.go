@@ -521,6 +521,105 @@ func TestEvictAtLeastOne(t *testing.T) {
 	}
 }
 
+func TestEvictViaDeleteAtLeastOne(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	cs := &apiv1.ContainerStatus{
+		RestartCount: 5,
+		LastTerminationState: apiv1.ContainerState{
+			Terminated: &apiv1.ContainerStateTerminated{
+				Reason: "OOMKilled",
+			},
+		},
+		State: apiv1.ContainerState{
+			Waiting: &apiv1.ContainerStateWaiting{
+				Reason: "CrashLoopBackOff",
+			},
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).WithContainerStatus(cs).Get()
+	}
+
+	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, tolerance)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+
+	for _, pod := range pods {
+		assert.True(t, eviction.CanEvict(pod))
+	}
+
+	for _, pod := range pods[:1] {
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		assert.Nil(t, err, "Should evict with no error")
+	}
+	for _, pod := range pods[1:] {
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		assert.Error(t, err, "Error expected")
+	}
+}
+
+func TestEvictViaDeleteWrongStatus(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1
+
+	rc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	cs := &apiv1.ContainerStatus{
+		RestartCount: 5,
+		LastTerminationState: apiv1.ContainerState{
+			Terminated: &apiv1.ContainerStateTerminated{
+				Reason: "OOMKilled",
+			},
+		},
+	}
+
+	pods := make([]*apiv1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).WithContainerStatus(cs).Get()
+	}
+
+	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, tolerance)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+
+	for _, pod := range pods {
+		assert.True(t, eviction.CanEvict(pod))
+	}
+
+	for _, pod := range pods[1:] {
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		assert.EqualError(t, err, fmt.Sprintf("cannot delete pod %v : no container matches deletion conditions", pod.Name), "Expected Error")
+	}
+}
+
 func getEvictionRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSet,
 	ss *appsv1.StatefulSet, minReplicas int,
 	evictionToleranceFraction float64) (PodsEvictionRestrictionFactory, error) {

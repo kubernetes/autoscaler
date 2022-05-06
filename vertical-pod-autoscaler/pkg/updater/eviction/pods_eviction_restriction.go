@@ -45,6 +45,9 @@ type PodsEvictionRestriction interface {
 	// Evict sends eviction instruction to the api client.
 	// Returns error if pod cannot be evicted or if client returned error.
 	Evict(pod *apiv1.Pod, eventRecorder record.EventRecorder) error
+	// EvictViaDelete sends deletion instruction to the api client.
+	// Returns error if pod cannot be deleted or if client returned error.
+	EvictViaDelete(pod *apiv1.Pod, eventRecorder record.EventRecorder, deletionThreshold int32) error
 	// CanEvict checks if pod can be safely evicted
 	CanEvict(pod *apiv1.Pod) bool
 }
@@ -143,6 +146,63 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder
 	}
 	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
 		"Pod was evicted by VPA Updater to apply resource recommendation.")
+
+	if podToEvict.Status.Phase != apiv1.PodPending {
+		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+		if !present {
+			return fmt.Errorf("Internal error - cannot find stats for replication group %v", cr)
+		}
+		singleGroupStats.evicted = singleGroupStats.evicted + 1
+		e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
+	}
+
+	return nil
+}
+
+// canDelete checks if the container has been restarted more than the threshold, and if it has been terminated
+// due to OOMKilled and is in CrashLoopBackOff state.
+func (e *podsEvictionRestrictionImpl) canDelete(containerStatus apiv1.ContainerStatus, deletionThreshold int32) bool {
+	return containerStatus.RestartCount > deletionThreshold &&
+		containerStatus.LastTerminationState.Terminated != nil &&
+		containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" &&
+		containerStatus.State.Waiting != nil &&
+		containerStatus.State.Waiting.Reason == "CrashLoopBackOff"
+}
+
+// EvictViaDelete sends deletion instruction to api client. Returns error if pod cannot be deleted or if client returned error
+// Does not check if pod was actually deleted after termination grace period.
+func (e *podsEvictionRestrictionImpl) EvictViaDelete(podToEvict *apiv1.Pod, eventRecorder record.EventRecorder, deletionThreshold int32) error {
+	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
+	if !present {
+		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
+	}
+
+	if !e.CanEvict(podToEvict) {
+		return fmt.Errorf("cannot evict pod %v : eviction budget exceeded", podToEvict.Name)
+	}
+
+	deleted := false
+	// Try to delete the Pod if it's CrashLooping because of OOM.
+	// The Pod is dead anyway so there is no reason to respect any potential PDBs.
+	for _, containerStatus := range podToEvict.Status.ContainerStatuses {
+		if e.canDelete(containerStatus, deletionThreshold) {
+
+			err := e.client.CoreV1().Pods(podToEvict.Namespace).Delete(context.TODO(), podToEvict.Name, metav1.DeleteOptions{})
+			if err != nil {
+				klog.Errorf("failed to delete pod %s/%s, after failed eviction, error: %v", podToEvict.Namespace, podToEvict.Name, err)
+				return err
+			}
+
+			deleted = true
+			eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "DeletedByVPA",
+				"Pod was deleted by VPA Updater to apply resource recommendation.")
+			break
+		}
+	}
+
+	if !deleted {
+		return fmt.Errorf("cannot delete pod %v : no container matches deletion conditions", podToEvict.Name)
+	}
 
 	if podToEvict.Status.Phase != apiv1.PodPending {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]

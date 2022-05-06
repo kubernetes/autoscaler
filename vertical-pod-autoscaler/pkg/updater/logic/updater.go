@@ -63,6 +63,12 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	experimentalDeletion         experimentalDeletion
+}
+
+type experimentalDeletion struct {
+	enabled   bool
+	threshold int32
 }
 
 // NewUpdater creates Updater with given configuration
@@ -80,6 +86,8 @@ func NewUpdater(
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
+	experimentalDeletionEnabled bool,
+	experimentalDeletionTreshold int,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -102,6 +110,10 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
+		experimentalDeletion: experimentalDeletion{
+			enabled:   experimentalDeletionEnabled,
+			threshold: int32(experimentalDeletionTreshold),
+		},
 	}, nil
 }
 
@@ -184,12 +196,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 	evictablePodsCounter := metrics_updater.NewEvictablePodsCounter()
 	vpasWithEvictablePodsCounter := metrics_updater.NewVpasWithEvictablePodsCounter()
 	vpasWithEvictedPodsCounter := metrics_updater.NewVpasWithEvictedPodsCounter()
+	vpasWithDeletedPodsCounter := metrics_updater.NewVpasWithDeletedPodsCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
 	defer evictablePodsCounter.Observe()
 	defer vpasWithEvictablePodsCounter.Observe()
 	defer vpasWithEvictedPodsCounter.Observe()
+	defer vpasWithDeletedPodsCounter.Observe()
 
 	// NOTE: this loop assumes that controlledPods are filtered
 	// to contain only Pods controlled by a VPA in auto or recreate mode
@@ -202,6 +216,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		withEvictable := false
 		withEvicted := false
+		withDeleted := false
 		for _, pod := range podsForUpdate {
 			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
@@ -216,6 +231,15 @@ func (u *updater) RunOnce(ctx context.Context) {
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
+				if u.experimentalDeletion.enabled {
+					deleteErr := evictionLimiter.EvictViaDelete(pod, u.eventRecorder, u.experimentalDeletion.threshold)
+					if deleteErr != nil {
+						klog.Warningf("deleting pod %v failed: %v", pod.Name, deleteErr)
+					} else {
+						withDeleted = true
+						metrics_updater.AddDeletedPod(vpaSize)
+					}
+				}
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize)
@@ -227,6 +251,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 		if withEvicted {
 			vpasWithEvictedPodsCounter.Add(vpaSize, 1)
+		}
+		if withDeleted {
+			vpasWithDeletedPodsCounter.Add(vpaSize, 1)
 		}
 	}
 	timer.ObserveStep("EvictPods")

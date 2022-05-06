@@ -18,6 +18,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -47,24 +48,28 @@ func TestRunOnce_Mode(t *testing.T) {
 	tests := []struct {
 		name                  string
 		updateMode            vpa_types.UpdateMode
+		failEviction          bool
 		expectFetchCalls      bool
 		expectedEvictionCount int
 	}{
 		{
 			name:                  "with Auto mode",
 			updateMode:            vpa_types.UpdateModeAuto,
+			failEviction:          false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 		},
 		{
 			name:                  "with Initial mode",
 			updateMode:            vpa_types.UpdateModeInitial,
+			failEviction:          false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 		},
 		{
 			name:                  "with Off mode",
 			updateMode:            vpa_types.UpdateModeOff,
+			failEviction:          false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 		},
@@ -75,6 +80,7 @@ func TestRunOnce_Mode(t *testing.T) {
 				t,
 				tc.updateMode,
 				newFakeValidator(true),
+				tc.failEviction,
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
 			)
@@ -86,18 +92,28 @@ func TestRunOnce_Status(t *testing.T) {
 	tests := []struct {
 		name                  string
 		statusValidator       status.Validator
+		failEviction          bool
 		expectFetchCalls      bool
 		expectedEvictionCount int
 	}{
 		{
 			name:                  "with valid status",
 			statusValidator:       newFakeValidator(true),
+			failEviction:          false,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 5,
+		},
+		{
+			name:                  "with valid status",
+			statusValidator:       newFakeValidator(true),
+			failEviction:          true,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
 		},
 		{
 			name:                  "with invalid status",
 			statusValidator:       newFakeValidator(false),
+			failEviction:          false,
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 		},
@@ -108,6 +124,7 @@ func TestRunOnce_Status(t *testing.T) {
 				t,
 				vpa_types.UpdateModeAuto,
 				tc.statusValidator,
+				tc.failEviction,
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
 			)
@@ -119,6 +136,7 @@ func testRunOnceBase(
 	t *testing.T,
 	updateMode vpa_types.UpdateMode,
 	statusValidator status.Validator,
+	failEviction bool,
 	expectFetchCalls bool,
 	expectedEvictionCount int,
 ) {
@@ -150,7 +168,13 @@ func testRunOnceBase(
 
 		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
-		eviction.On("Evict", pods[i], nil).Return(nil)
+
+		if failEviction {
+			eviction.On("Evict", pods[i], nil).Return(errors.New("Eviction error"))
+			eviction.On("EvictViaDelete", pods[i], nil, int32(3)).Return(nil)
+		} else {
+			eviction.On("Evict", pods[i], nil).Return(nil)
+		}
 	}
 
 	factory := &fakeEvictFactory{eviction}
@@ -180,6 +204,10 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
+		experimentalDeletion: experimentalDeletion{
+			enabled:   failEviction,
+			threshold: 3,
+		},
 	}
 
 	if expectFetchCalls {
@@ -187,6 +215,10 @@ func testRunOnceBase(
 	}
 	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", expectedEvictionCount)
+
+	if failEviction {
+		eviction.AssertNumberOfCalls(t, "EvictViaDelete", expectedEvictionCount)
+	}
 }
 
 func TestRunOnceNotingToProcess(t *testing.T) {

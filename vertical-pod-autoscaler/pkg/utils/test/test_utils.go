@@ -30,7 +30,7 @@ import (
 	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
-	"k8s.io/client-go/listers/core/v1"
+	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -130,6 +130,12 @@ func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record
 	return args.Error(0)
 }
 
+// EvictViaDelete is a mock implementation of PodsEvictionRestriction.EvictViaDelete
+func (m *PodsEvictionRestrictionMock) EvictViaDelete(pod *apiv1.Pod, eventRecorder record.EventRecorder, deletionThreshold int32) error {
+	args := m.Called(pod, eventRecorder, deletionThreshold)
+	return args.Error(0)
+}
+
 // CanEvict is a mock implementation of PodsEvictionRestriction.CanEvict
 func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
 	args := m.Called(pod)
@@ -142,11 +148,11 @@ type PodListerMock struct {
 }
 
 // Pods is a mock implementation of PodLister.Pods
-func (m *PodListerMock) Pods(namespace string) v1.PodNamespaceLister {
+func (m *PodListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
 	args := m.Called(namespace)
-	var returnArg v1.PodNamespaceLister
+	var returnArg v1lister.PodNamespaceLister
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).(v1.PodNamespaceLister)
+		returnArg = args.Get(0).(v1lister.PodNamespaceLister)
 	}
 	return returnArg
 }
