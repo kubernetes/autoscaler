@@ -155,6 +155,7 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
                 "cluster-autoscaler/cloudprovider/hetzner/hcloud-go",
                 "cluster-autoscaler/cloudprovider/mcm",
                 "cluster-autoscaler/integration",
+                "cluster-autoscaler/hack",
                 "cluster-autoscaler/cloudprovider/builder/builder_all.go"
                 ]
 
