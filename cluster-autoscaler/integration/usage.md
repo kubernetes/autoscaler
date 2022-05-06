@@ -23,15 +23,20 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 	cd ./cluster-autoscaler
 	```
 
-1. Export the following environment variables
+2. Export the following environment variables
 	```
 	export CONTROL_NAMESPACE=<Shoot namespace in the Seed>
 	export TARGET_KUBECONFIG=<Path to the kubeconfig file of the Shoot>
 	export CONTROL_KUBECONFIG=<Path to the kubeconfig file of the Seed (or the control plane where the Cluster Autoscaler & Machine deployment objects exists)>
 	export KUBECONFIG=<Path to the kubeconfig file of the Shoot>
+	export VOLUME_ZONE=<zone with zero nodes where the PV needs to be created to perform test>
+	export PROVIDER=<aws/gcp/azure/...>
 	```
+	
+2. Alternatively, you could use the `make download-kubeconfigs` to download and place the kubeconfigs in dev folder and follow the steps as mentioned in output of the 			command. (only to be used when working with gardenctl V2 and both the clusters are on gardener)
 
-1. Invoke integration tests using `make` command
+
+3. Invoke integration tests using `make` command
 
 	```
 	make test-integration
@@ -80,3 +85,55 @@ Cluster Autoscaler integration test suite runs a set of tests against an actual 
 		```
 
 	</details>
+
+## Tests Covered
+
+1. Deploy new workload that asks for more resources and it should create a new machine to accommodate that.
+2. Scaling to 3 instances of the above workload to increase the number of machines to 3.
+3. Removing all the above workload to remove all the newly added machines.
+4. Should not scale up above the max limit for the nodegrp
+5. Should not scale lower than the min limit for the nodegrp
+6. Should scale up on the basis of taints and not only on workload size.
+7. Should respond by shifting load if some taint is removed from a workload/node.
+8. AutoScaler scales up a node in zone where PV already present and pod is requesting that PV. CSI PV is used.
+9. Should not scale down a node with  annotation "cluster-autoscaler.kubernetes.io/scale-down-disabled": "true"
+10. Should scale down a node after the above annotation is removed from it.
+11. Should not scale if no machine in worker group can satisfy the requirements of the pod.
+
+## Planned Tests
+
+1. shouldn't scale down with underutilized nodes due to host port conflicts
+2. CA ignores unschedulable pods while scheduling schedulable pods. (line 337 need to understand reasoning for it)
+3. shouldn't increase cluster size if pending pod is too large
+4. should increase cluster size if pending pods are small
+5. should increase cluster size if pending pods are small and one node is broken
+6. shouldn't trigger additional scale-ups during processing scale-up
+7. should increase cluster size if pending pods are small and there is another node pool that is not autoscaled
+8. should disable node pool autoscaling 
+9. should increase cluster size if pods are pending due to host port conflict
+10. should increase cluster size if pod requesting EmptyDir volume is pending
+11. should scale up correct target pool
+12. should add node to the particular mig
+13. should correctly scale down after a node is not needed and one node is broken
+14. should correctly scale down after a node is not needed when there is non autoscaled pool
+15. should be able to scale down when rescheduling a pod is required and pdb allows for it
+16. shouldn't be able to scale down when rescheduling a pod is required, but pdb doesn't allow drain
+17. should be able to scale down by draining multiple pods one by one as dictated by pdb
+18. should be able to scale down by draining system pods with pdb
+19. Should be able to scale a node group up from 0
+20. Should be able to scale a node group down to 0
+21. Shouldn't perform scale up operation and should list unhealthy status if most of the cluster is broken
+22. shouldn't scale up when expendable pod is created 
+23. should scale up when non expendable pod is created
+24. shouldn't scale up when expendable pod is preempted
+25. should scale down when expendable pod is running 
+26. shouldn't scale down when non expendable pod is running
+
+### test for GPU Pool
+
+1. Should scale up GPU pool from 0
+2. Should scale up GPU pool from 1
+3. Should not scale GPU pool up if pod does not require GPUs
+4. Should scale down GPU pool from 1
+
+for further details refer : https://github.com/kubernetes/kubernetes/blob/master/test/e2e/autoscaling/cluster_size_autoscaling.go 
