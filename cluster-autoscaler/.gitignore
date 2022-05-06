@@ -12,3 +12,4 @@ main
 Session.vim
 .netrwhist
 .vscode
+/integration/logs

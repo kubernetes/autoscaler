@@ -128,6 +128,32 @@ start:
 			--leader-elect-renew-deadline="30s" \
 			--leader-elect-lease-duration="40s"
 
+
+.PHONY: download-kubeconfigs
+download-kubeconfigs:
+	@chmod +x ./hack/local_setup.sh
+	@echo "enter project name"; \
+	read PROJECT; \
+	echo "enter seed name"; \
+	read SEED; \
+	echo "enter shoot name"; \
+	read SHOOT; \
+	echo "enter cluster provider(gcp|aws|azure|vsphere|openstack|alicloud|metal|equinix-metal)"; \
+	read PROVIDER; \
+	echo "enter zone with zero nodes where the PV needs to be created to perform test"; \
+	read ZONE; \
+	. ./hack/local_setup.sh --SEED $$SEED --SHOOT $$SHOOT --PROJECT $$PROJECT; \
+	echo "###############################################" ; \
+	echo "To run the integration test run the following commands"; \
+	echo " ";\
+	echo "export CONTROL_NAMESPACE=$$CONTROL_NAMESPACE"; \
+	echo "export CONTROL_KUBECONFIG=$$CONTROL_KUBECONFIG"; \
+	echo "export TARGET_KUBECONFIG=$$TARGET_KUBECONFIG"; \
+	echo "export CLUSTER_PROVIDER=$$PROVIDER"; \
+	echo "export VOLUME_ZONE=$$ZONE"; \
+	echo " "; \
+	echo "make test-integration"
+
 .PHONY: test-integration
 test-integration:
 	../.ci/local_integration_test
