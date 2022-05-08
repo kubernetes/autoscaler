@@ -71,6 +71,7 @@ type cherryManagerNodePool struct {
 	os                string
 	cloudinit         string
 	hostnamePattern   string
+	sshKeyIDs         []int
 	waitTimeStep      time.Duration
 }
 
@@ -84,14 +85,20 @@ type cherryManagerRest struct {
 
 // ConfigNodepool options only include the project-id for now
 type ConfigNodepool struct {
-	ClusterName       string `gcfg:"cluster-name"`
-	ProjectID         int    `gcfg:"project-id"`
-	APIServerEndpoint string `gcfg:"api-server-endpoint"`
-	Region            string `gcfg:"region"`
-	Plan              string `gcfg:"plan"`
-	OS                string `gcfg:"os"`
-	CloudInit         string `gcfg:"cloudinit"`
-	HostnamePattern   string `gcfg:"hostname-pattern"`
+	ClusterName       string   `gcfg:"cluster-name"`
+	ProjectID         int      `gcfg:"project-id"`
+	APIServerEndpoint string   `gcfg:"api-server-endpoint"`
+	Region            string   `gcfg:"region"`
+	Plan              string   `gcfg:"plan"`
+	OS                string   `gcfg:"os"`
+	SSHKeys           []string `gcfg:"ssh-key-ids"`
+	CloudInit         string   `gcfg:"cloudinit"`
+	HostnamePattern   string   `gcfg:"hostname-pattern"`
+}
+
+// IsEmpty determine if this is an empty config
+func (c ConfigNodepool) IsEmpty() bool {
+	return c.ClusterName == "" && c.CloudInit == "" && c.Region == "" && c.Plan == "" && c.ProjectID == 0
 }
 
 // ConfigFile is used to read and store information from the cloud configuration file
@@ -179,7 +186,7 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		cfg.Nodegroupdef["default"] = &cfg.DefaultNodegroupdef
 	}
 
-	if *cfg.Nodegroupdef["default"] == (ConfigNodepool{}) {
+	if cfg.Nodegroupdef["default"].IsEmpty() {
 		klog.Fatalf("No \"default\" or [Global] nodepool definition was found")
 	}
 
@@ -210,6 +217,14 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		if err != nil {
 			return nil, fmt.Errorf("invalid plan %s for nodepool %s, must be integer: %v", nodepool.Plan, key, err)
 		}
+		var sshKeyIDs []int
+		for i, keyIDString := range nodepool.SSHKeys {
+			keyID, err := strconv.ParseInt(keyIDString, 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("invalid ssh-key ID at position %d: %s; it must be an integer", i, keyIDString)
+			}
+			sshKeyIDs = append(sshKeyIDs, int(keyID))
+		}
 		manager.nodePools[key] = &cherryManagerNodePool{
 			projectID:         projectID,
 			apiServerEndpoint: apiServerEndpoint,
@@ -218,6 +233,7 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 			plan:              int(plan),
 			os:                nodepool.OS,
 			cloudinit:         nodepool.CloudInit,
+			sshKeyIDs:         sshKeyIDs,
 			hostnamePattern:   nodepool.HostnamePattern,
 		}
 	}
@@ -410,7 +426,6 @@ func (mgr *cherryManagerRest) createNode(ctx context.Context, cloudinit, nodegro
 	if err != nil {
 		return fmt.Errorf("failed to create hostname from template: %w", err)
 	}
-
 	cr := &CreateServer{
 		Hostname:  hn,
 		Region:    mgr.getNodePoolDefinition(nodegroup).region,
@@ -418,6 +433,7 @@ func (mgr *cherryManagerRest) createNode(ctx context.Context, cloudinit, nodegro
 		Image:     mgr.getNodePoolDefinition(nodegroup).os,
 		ProjectID: mgr.getNodePoolDefinition(nodegroup).projectID,
 		UserData:  base64.StdEncoding.EncodeToString([]byte(ud)),
+		SSHKeys:   mgr.getNodePoolDefinition(nodegroup).sshKeyIDs,
 		Tags:      &map[string]string{"k8s-cluster": mgr.getNodePoolDefinition(nodegroup).clusterName, "k8s-nodepool": nodegroup},
 	}
 
