@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -26,6 +27,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
 type AutoScalingMock struct {
@@ -146,6 +148,23 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 
 	_, err := BuildAwsCloudProvider(testAwsManager, resourceLimiter)
 	assert.NoError(t, err)
+}
+
+func TestInstanceTypeFallback(t *testing.T) {
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
+	do := cloudprovider.NodeGroupDiscoveryOptions{}
+	opts := config.AutoscalingOptions{}
+
+	os.Setenv("AWS_REGION", "non-existent-region")
+	defer os.Unsetenv("AWS_REGION")
+
+	// This test ensures that no klog.Fatalf calls occur when constructing the AWS cloud provider.  Specifically it is
+	// intended to ensure that instance type fallback works correctly in the event of an error enumerating instance
+	// types.
+	_ = BuildAWS(opts, do, resourceLimiter)
 }
 
 func TestName(t *testing.T) {
