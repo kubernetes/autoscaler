@@ -102,7 +102,7 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return NewGcePriceModel(), nil
+	return NewGcePriceModel(NewGcePriceInfo()), nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
