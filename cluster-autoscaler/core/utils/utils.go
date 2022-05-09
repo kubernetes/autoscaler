@@ -99,8 +99,9 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			continue
 		}
 
-		// No good template, check cache of previously running nodes.
-		if nodeInfoCache != nil {
+		// No good template, check cache of previously running nodes(only when nodeGrp min size is not zero. This is to avoid scenarios where nodeGrp instanceType is updated,
+		// but still cached old nodeTemplate is used)
+		if nodeInfoCache != nil && nodeGroup.MinSize() != 0 {
 			if nodeInfo, found := nodeInfoCache[id]; found {
 				if nodeInfoCopy, err := deepCopyNodeInfo(nodeInfo); err == nil {
 					result[id] = nodeInfoCopy
