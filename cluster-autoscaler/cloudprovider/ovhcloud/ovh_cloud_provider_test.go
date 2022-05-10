@@ -21,10 +21,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
 )
@@ -45,7 +44,6 @@ func newTestProvider(t *testing.T) *OVHCloudProvider {
 		assert.FailNow(t, "failed to create manager", err)
 	}
 
-	// fill the test provider with some example
 	client := &sdk.ClientMock{}
 	ctx := context.Background()
 
@@ -72,22 +70,31 @@ func newTestProvider(t *testing.T) *OVHCloudProvider {
 		}, nil,
 	)
 
-	client.On("ListFlavors", ctx, "projectID", "clusterID").Return(
+	client.On("ListClusterFlavors", ctx, "projectID", "clusterID").Return(
 		[]sdk.Flavor{
 			{
 				Name:     "b2-7",
 				Category: "b",
 				State:    "available",
+				VCPUs:    2,
+				GPUs:     0,
+				RAM:      7,
 			},
 			{
 				Name:     "t1-45",
 				Category: "t",
 				State:    "available",
+				VCPUs:    8,
+				GPUs:     1,
+				RAM:      45,
 			},
 			{
 				Name:     "unknown",
 				Category: "",
 				State:    "unavailable",
+				VCPUs:    2,
+				GPUs:     0,
+				RAM:      7,
 			},
 		}, nil,
 	)
@@ -130,7 +137,7 @@ func TestOVHCloudProvider_NodeGroups(t *testing.T) {
 	t.Run("check default node groups length", func(t *testing.T) {
 		groups := provider.NodeGroups()
 
-		assert.Equal(t, 1, len(groups))
+		assert.Equal(t, 2, len(groups))
 	})
 
 	t.Run("check empty node groups length after reset", func(t *testing.T) {
@@ -144,13 +151,54 @@ func TestOVHCloudProvider_NodeGroups(t *testing.T) {
 func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 	provider := newTestProvider(t)
 
-	t.Run("check node group with correct label on node", func(t *testing.T) {
+	ListNodePoolNodesCall1 := provider.manager.Client.(*sdk.ClientMock).On(
+		"ListNodePoolNodes",
+		context.Background(),
+		provider.manager.ProjectID,
+		provider.manager.ClusterID,
+		"1",
+	)
+	ListNodePoolNodesCall2 := provider.manager.Client.(*sdk.ClientMock).On(
+		"ListNodePoolNodes",
+		context.Background(),
+		provider.manager.ProjectID,
+		provider.manager.ClusterID,
+		"2",
+	)
+
+	t.Run("find node group in node group associations cache", func(t *testing.T) {
+		node := &apiv1.Node{
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix + "0123",
+			},
+		}
+
+		// Set up the node group association in cache
+		ng := newTestNodeGroup(t, "b2-7")
+		provider.manager.NodeGroupPerProviderID[node.Spec.ProviderID] = ng
+		defer func() {
+			provider.manager.NodeGroupPerProviderID = make(map[string]*NodeGroup)
+		}()
+
+		group, err := provider.NodeGroupForNode(node)
+		assert.NoError(t, err)
+		assert.NotNil(t, group)
+
+		assert.Equal(t, ng.Name, group.Id())
+		assert.Equal(t, ng.MinNodes, uint32(group.MinSize()))
+		assert.Equal(t, ng.MaxNodes, uint32(group.MaxSize()))
+	})
+
+	t.Run("find node group with label on node", func(t *testing.T) {
 		node := &apiv1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "node-1",
 				Labels: map[string]string{
 					"nodepool": "pool-1",
 				},
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix + "0123",
 			},
 		}
 
@@ -163,13 +211,52 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 		assert.Equal(t, 5, group.MaxSize())
 	})
 
-	t.Run("check node group empty if label not exists", func(t *testing.T) {
+	t.Run("find node group by listing nodes", func(t *testing.T) {
 		node := &apiv1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "node-1",
-				Labels: map[string]string{
-					"nodepool": "pool-unknown",
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix + "0123",
+			},
+		}
+
+		// Mock the list nodes api call
+		ListNodePoolNodesCall1.Return(
+			[]sdk.Node{
+				{
+					Name:       "node-0",
+					InstanceID: "0",
 				},
+				{
+					Name:       "node-1",
+					InstanceID: "0123", // This corresponds to the node providerID we need
+				},
+				{
+					Name:       "node-2",
+					InstanceID: "2",
+				},
+			}, nil,
+		)
+
+		// Purge the node group associations cache afterwards for the following tests
+		defer func() {
+			provider.manager.NodeGroupPerProviderID = make(map[string]*NodeGroup)
+		}()
+
+		group, err := provider.NodeGroupForNode(node)
+		assert.NoError(t, err)
+		assert.NotNil(t, group)
+
+		assert.Equal(t, "pool-1", group.Id())
+		assert.Equal(t, 1, group.MinSize())
+		assert.Equal(t, 5, group.MaxSize())
+	})
+
+	t.Run("fail to find node group with empty providerID", func(t *testing.T) {
+		node := &apiv1.Node{
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix,
 			},
 		}
 
@@ -178,13 +265,50 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 		assert.Nil(t, group)
 	})
 
-	t.Run("check node group empty if label not present", func(t *testing.T) {
+	t.Run("fail to find node group with incorrect label", func(t *testing.T) {
+		node := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+				Labels: map[string]string{
+					"nodepool": "pool-unknown",
+				},
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix + "0123",
+			},
+		}
+
+		// Mock the list nodes api call
+		ListNodePoolNodesCall1.Return(
+			[]sdk.Node{}, nil,
+		)
+		ListNodePoolNodesCall2.Return(
+			[]sdk.Node{}, nil,
+		)
+
+		group, err := provider.NodeGroupForNode(node)
+		assert.NoError(t, err)
+		assert.Nil(t, group)
+	})
+
+	t.Run("fail to find node group with no cache, no label and no result in API call", func(t *testing.T) {
 		node := &apiv1.Node{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   "node-1",
 				Labels: map[string]string{},
 			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerIDPrefix + "0123",
+			},
 		}
+
+		// Mock the list nodes api call
+		ListNodePoolNodesCall1.Return(
+			[]sdk.Node{}, nil,
+		).Once()
+		ListNodePoolNodesCall2.Return(
+			[]sdk.Node{}, nil,
+		).Once()
 
 		group, err := provider.NodeGroupForNode(node)
 		assert.NoError(t, err)
@@ -288,6 +412,6 @@ func TestOVHCloudProvider_Refresh(t *testing.T) {
 		assert.NoError(t, err)
 
 		groups = provider.NodeGroups()
-		assert.Equal(t, 1, len(groups))
+		assert.Equal(t, 2, len(groups))
 	})
 }

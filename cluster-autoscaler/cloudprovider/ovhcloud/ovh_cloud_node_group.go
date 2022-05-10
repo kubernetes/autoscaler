@@ -19,12 +19,13 @@ package ovhcloud
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand"
-	"regexp"
 	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -32,10 +33,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
-// instanceIdRegex defines the expression used for instance's ID
-var instanceIdRegex = regexp.MustCompile(`^(.*)/(.*)$`)
+const providerIDPrefix = "openstack:///"
 
 // NodeGroup implements cloudprovider.NodeGroup interface.
 type NodeGroup struct {
@@ -73,7 +74,7 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 		return nil
 	}
 
-	klog.V(4).Infof("Increasing NodeGroup size with %d nodes", delta)
+	klog.V(4).Infof("Increasing NodeGroup size by %d node(s)", delta)
 
 	// First, verify the NodeGroup can be increased
 	if delta <= 0 {
@@ -96,16 +97,14 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 	opts := sdk.UpdateNodePoolOpts{
 		DesiredNodes: &desired,
 	}
+	klog.V(4).Infof("Upscaling node pool %s to %d desired nodes", ng.ID, desired)
 
-	// Eventually, call API to increase desired nodes number, automatically creating new nodes (wait for the pool to be READY before trying to update)
-	if ng.Status == "READY" {
-		resp, err := ng.Manager.Client.UpdateNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID, &opts)
-		if err != nil {
-			return fmt.Errorf("failed to increase node pool desired size: %w", err)
-		}
-
-		ng.Status = resp.Status
+	// Call API to increase desired nodes number, automatically creating new nodes
+	resp, err := ng.Manager.Client.UpdateNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID, &opts)
+	if err != nil {
+		return fmt.Errorf("failed to increase node pool desired size: %w", err)
 	}
+	ng.Status = resp.Status
 
 	return nil
 }
@@ -117,7 +116,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return nil
 	}
 
-	klog.V(4).Infof("Deleting %d nodes", len(nodes))
+	klog.V(4).Infof("Deleting %d node(s)", len(nodes))
 
 	// First, verify the NodeGroup can be decreased
 	size, err := ng.TargetSize()
@@ -129,36 +128,27 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size-len(nodes), ng.MinSize())
 	}
 
-	// Then, fetch node group instances and check that all nodes to remove are linked correctly,
-	// otherwise it will return an error
-	instances, err := ng.Nodes()
-	if err != nil {
-		return fmt.Errorf("failed to list current node group instances: %w", err)
+	nodeProviderIds := make([]string, 0)
+	for _, node := range nodes {
+		nodeProviderIds = append(nodeProviderIds, node.Spec.ProviderID)
 	}
 
-	nodeIds, err := extractNodeIds(nodes, instances, ng.Id())
-	if err != nil {
-		return fmt.Errorf("failed to extract node ids to remove: %w", err)
-	}
-
-	// Then, forge current size and parameters
-	ng.CurrentSize = size - len(nodes)
-
-	desired := uint32(ng.CurrentSize)
+	desired := uint32(size - len(nodes))
 	opts := sdk.UpdateNodePoolOpts{
 		DesiredNodes:  &desired,
-		NodesToRemove: nodeIds,
+		NodesToRemove: nodeProviderIds,
+	}
+	klog.V(4).Infof("Downscaling node pool %s to %d desired nodes by deleting the following nodes: %s", ng.ID, desired, nodeProviderIds)
+
+	// Call API to remove nodes from a NodeGroup
+	resp, err := ng.Manager.Client.UpdateNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID, &opts)
+	if err != nil {
+		return fmt.Errorf("failed to delete node pool nodes: %w", err)
 	}
 
-	// Eventually, call API to remove nodes from a NodeGroup (wait for the pool to be READY before trying to update)
-	if ng.Status == "READY" {
-		resp, err := ng.Manager.Client.UpdateNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID, &opts)
-		if err != nil {
-			return fmt.Errorf("failed to delete node pool nodes: %w", err)
-		}
-
-		ng.Status = resp.Status
-	}
+	// Update the node group
+	ng.Status = resp.Status
+	ng.CurrentSize = size - len(nodes)
 
 	return nil
 }
@@ -169,30 +159,8 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
 func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
-	// Do not use node group which does not support autoscaling
-	if !ng.Autoscale {
-		return nil
-	}
-
-	klog.V(4).Infof("Decreasing NodeGroup size with %d nodes", delta)
-
-	// First, verify the NodeGroup can be decreased
-	if delta >= 0 {
-		return fmt.Errorf("decrease size node group delta must be negative")
-	}
-
-	size, err := ng.TargetSize()
-	if err != nil {
-		return fmt.Errorf("failed to get NodeGroup target size")
-	}
-
-	if size+delta < ng.MinSize() {
-		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size+delta, ng.MinSize())
-	}
-
-	ng.CurrentSize = size + delta
-
-	return nil
+	// Cancellation of node provisioning is not supported yet
+	return cloudprovider.ErrNotImplemented
 }
 
 // Id returns node pool id.
@@ -214,15 +182,20 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 		return nil, fmt.Errorf("failed to list node pool nodes: %w", err)
 	}
 
+	klog.V(4).Infof("%d nodes are listed in node pool %s", len(nodes), ng.ID)
+
 	// Cast all API nodes into instance interface
 	instances := make([]cloudprovider.Instance, 0)
 	for _, node := range nodes {
 		instance := cloudprovider.Instance{
-			Id:     fmt.Sprintf("%s/%s", node.ID, node.Name),
+			Id:     fmt.Sprintf("%s%s", providerIDPrefix, node.InstanceID),
 			Status: toInstanceStatus(node.Status),
 		}
 
 		instances = append(instances, instance)
+
+		// Store the associated node group in cache for future reference
+		ng.Manager.NodeGroupPerProviderID[instance.Id] = ng
 	}
 
 	return instances, nil
@@ -245,6 +218,18 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		},
 	}
 
+	flavor, err := ng.Manager.getFlavorByName(ng.Flavor)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get specs for flavor %q: %w", ng.Flavor, err)
+	}
+
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(flavor.VCPUs), resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(flavor.GPUs), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(flavor.RAM)*int64(math.Pow(1024, 3)), resource.DecimalSI)
+
+	node.Status.Allocatable = node.Status.Capacity
+
 	// Setup node info template
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.Id()))
 	nodeInfo.SetNode(node)
@@ -260,7 +245,7 @@ func (ng *NodeGroup) Exist() bool {
 
 // Create creates the node group on the cloud provider side.
 func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
-	klog.V(4).Infof("Creating a new NodeGroup")
+	klog.V(4).Info("Creating a new NodeGroup")
 
 	// Forge create node pool parameters (defaulting b2-7 for now)
 	name := ng.Id()
@@ -339,50 +324,17 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 
 // isGpu checks if a node group is using GPU machines
 func (ng *NodeGroup) isGpu() bool {
-	return strings.HasPrefix(ng.Flavor, GPUMachineCategory)
-}
-
-// extractNodeIds find in an array of node resource their cloud instances IDs
-func extractNodeIds(nodes []*apiv1.Node, instances []cloudprovider.Instance, groupLabel string) ([]string, error) {
-	nodeIds := make([]string, 0)
-
-	// Loop through each nodes to find any un-wanted nodes to remove
-	for _, node := range nodes {
-		// First, check if node resource has correct node pool label
-		label, ok := node.Labels[NodePoolLabel]
-		if !ok || label != groupLabel {
-			return nil, fmt.Errorf("node %s without label %s, current: %s", node.Name, groupLabel, label)
-		}
-
-		// Then, loop through each group instances to find if the node is in the list
-		found := false
-		for _, instance := range instances {
-			match := instanceIdRegex.FindStringSubmatch(instance.Id)
-			if len(match) < 2 {
-				continue
-			}
-
-			id := match[1]
-			name := match[2]
-
-			if node.Name != name {
-				continue
-			}
-
-			found = true
-			nodeIds = append(nodeIds, id)
-			break
-		}
-
-		if !found {
-			return nil, fmt.Errorf("node %s not found in group instances", node.Name)
-		}
+	flavor, err := ng.Manager.getFlavorByName(ng.Flavor)
+	if err != nil {
+		// Fallback when we are unable to get the flavor: refer to the only category
+		// known to be a GPU flavor category
+		return strings.HasPrefix(ng.Flavor, GPUMachineCategory)
 	}
 
-	return nodeIds, nil
+	return flavor.GPUs > 0
 }
 
-// toInstanceStatus cast a node status into an instance status
+// toInstanceStatus casts a node status into an instance status
 func toInstanceStatus(status string) *cloudprovider.InstanceStatus {
 	state := &cloudprovider.InstanceStatus{}
 

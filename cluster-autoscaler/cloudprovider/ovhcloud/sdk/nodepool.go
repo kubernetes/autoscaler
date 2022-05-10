@@ -74,6 +74,7 @@ func (c *Client) ListNodePools(ctx context.Context, projectID, clusterID string)
 		nil,
 		&nodepools,
 		nil,
+		nil,
 		true,
 	)
 }
@@ -89,6 +90,7 @@ func (c *Client) GetNodePool(ctx context.Context, projectID string, clusterID st
 		nil,
 		&nodepool,
 		nil,
+		nil,
 		true,
 	)
 }
@@ -103,6 +105,7 @@ func (c *Client) ListNodePoolNodes(ctx context.Context, projectID string, cluste
 		fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s/nodes", projectID, clusterID, poolID),
 		nil,
 		&nodes,
+		nil,
 		nil,
 		true,
 	)
@@ -133,6 +136,7 @@ func (c *Client) CreateNodePool(ctx context.Context, projectID string, clusterID
 		opts,
 		&nodepool,
 		nil,
+		nil,
 		true,
 	)
 }
@@ -159,6 +163,7 @@ func (c *Client) UpdateNodePool(ctx context.Context, projectID string, clusterID
 		opts,
 		&nodepool,
 		nil,
+		nil,
 		true,
 	)
 }
@@ -173,6 +178,7 @@ func (c *Client) DeleteNodePool(ctx context.Context, projectID string, clusterID
 		fmt.Sprintf("/cloud/project/%s/kube/%s/nodepool/%s", projectID, clusterID, poolID),
 		nil,
 		&nodepool,
+		nil,
 		nil,
 		true,
 	)

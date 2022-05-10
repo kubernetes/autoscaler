@@ -119,7 +119,7 @@ func (ck *CkRequest) AddRecursiveRules(methods []string, path string) {
 // and return the URL the user needs to visit to validate the key
 func (ck *CkRequest) Do() (*CkValidationState, error) {
 	state := CkValidationState{}
-	err := ck.client.PostUnAuth("/auth/credential", ck, &state)
+	err := ck.client.PostUnAuth("/auth/credential", ck, &state, nil)
 
 	if err == nil {
 		ck.client.ConsumerKey = state.ConsumerKey

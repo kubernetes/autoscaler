@@ -23,9 +23,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
+	"k8s.io/klog/v2"
 )
+
+const flavorCacheDuration = time.Hour
 
 // ClientInterface defines all mandatory methods to be exposed as a client (mock or API)
 type ClientInterface interface {
@@ -44,8 +48,8 @@ type ClientInterface interface {
 	// DeleteNodePool deletes a specific pool.
 	DeleteNodePool(ctx context.Context, projectID string, clusterID string, poolID string) (*sdk.NodePool, error)
 
-	// ListFlavors list all available flavors usable in a Kubernetes cluster.
-	ListFlavors(ctx context.Context, projectID string, clusterID string) ([]sdk.Flavor, error)
+	// ListClusterFlavors list all available flavors usable in a Kubernetes cluster.
+	ListClusterFlavors(ctx context.Context, projectID string, clusterID string) ([]sdk.Flavor, error)
 }
 
 // OvhCloudManager defines current application context manager to interact
@@ -57,7 +61,11 @@ type OvhCloudManager struct {
 	ClusterID string
 	ProjectID string
 
-	NodePools []sdk.NodePool
+	NodePools              []sdk.NodePool
+	NodeGroupPerProviderID map[string]*NodeGroup
+
+	FlavorsCache               map[string]sdk.Flavor
+	FlavorsCacheExpirationTime time.Time
 }
 
 // Config is the configuration file content of OVHcloud provider
@@ -138,8 +146,50 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		ProjectID: cfg.ProjectID,
 		ClusterID: cfg.ClusterID,
 
-		NodePools: make([]sdk.NodePool, 0),
+		NodePools:              make([]sdk.NodePool, 0),
+		NodeGroupPerProviderID: make(map[string]*NodeGroup),
+
+		FlavorsCache:               make(map[string]sdk.Flavor),
+		FlavorsCacheExpirationTime: time.Time{},
 	}, nil
+}
+
+// getFlavorsByName lists available flavors from cache or from OVHCloud APIs if the cache is outdated
+func (m *OvhCloudManager) getFlavorsByName() (map[string]sdk.Flavor, error) {
+	// Update the flavors cache if expired
+	if m.FlavorsCacheExpirationTime.Before(time.Now()) {
+		newFlavorCacheExpirationTime := time.Now().Add(flavorCacheDuration)
+		klog.V(4).Infof("Listing flavors to update flavors cache (will expire at %s)", newFlavorCacheExpirationTime)
+
+		// Fetch all flavors in API
+		flavors, err := m.Client.ListClusterFlavors(context.Background(), m.ProjectID, m.ClusterID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list available flavors: %w", err)
+		}
+
+		// Update the flavors cache
+		m.FlavorsCache = make(map[string]sdk.Flavor)
+		for _, flavor := range flavors {
+			m.FlavorsCache[flavor.Name] = flavor
+			m.FlavorsCacheExpirationTime = newFlavorCacheExpirationTime
+		}
+	}
+
+	return m.FlavorsCache, nil
+}
+
+// getFlavorByName returns the given flavor from cache or API
+func (m *OvhCloudManager) getFlavorByName(flavorName string) (sdk.Flavor, error) {
+	flavorsByName, err := m.getFlavorsByName()
+	if err != nil {
+		return sdk.Flavor{}, err
+	}
+
+	if flavor, ok := flavorsByName[flavorName]; ok {
+		return flavor, nil
+	}
+
+	return sdk.Flavor{}, fmt.Errorf("flavor %s not found in available flavors", flavorName)
 }
 
 // ReAuthenticate allows OpenStack keystone token to be revoked and re-created to call API
