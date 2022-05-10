@@ -175,7 +175,7 @@ func TestGetNodePrice(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			model := NewGcePriceModel()
+			model := NewGcePriceModel(NewGcePriceInfo())
 			now := time.Now()
 
 			price1, err := model.NodePrice(tc.cheaperNode, now, now.Add(time.Hour))
@@ -193,7 +193,7 @@ func TestGetPodPrice(t *testing.T) {
 	pod1 := BuildTestPod("a1", 100, 500*units.MiB)
 	pod2 := BuildTestPod("a2", 2*100, 2*500*units.MiB)
 
-	model := NewGcePriceModel()
+	model := NewGcePriceModel(NewGcePriceInfo())
 	now := time.Now()
 
 	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
