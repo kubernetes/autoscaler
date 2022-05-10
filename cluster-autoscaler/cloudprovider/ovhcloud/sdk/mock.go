@@ -62,8 +62,8 @@ func (m *ClientMock) DeleteNodePool(ctx context.Context, projectID string, clust
 	return args.Get(0).(*NodePool), args.Error(1)
 }
 
-// ListFlavors mocks API call for listing available flavors in cluster
-func (m *ClientMock) ListFlavors(ctx context.Context, projectID string, clusterID string) ([]Flavor, error) {
+// ListClusterFlavors mocks API call for listing available flavors in cluster
+func (m *ClientMock) ListClusterFlavors(ctx context.Context, projectID string, clusterID string) ([]Flavor, error) {
 	args := m.Called(ctx, projectID, clusterID)
 
 	return args.Get(0).([]Flavor), args.Error(1)
