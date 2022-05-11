@@ -17,7 +17,6 @@ limitations under the License.
 package legacy
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"strings"
@@ -33,34 +32,29 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
-	// DelayDeletionAnnotationPrefix is the prefix of annotation marking node as it needs to wait
-	// for other K8s components before deleting node.
-	DelayDeletionAnnotationPrefix = "delay-deletion.cluster-autoscaler.kubernetes.io/"
 )
 
 const (
@@ -959,7 +953,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodesToRemove []simulator.Nod
 			if err := actuation.EvictDaemonSetPods(sd.context, nodeToDelete, time.Now(), actuation.DaemonSetEvictionEmptyNodeTimeout, actuation.DeamonSetTimeBetweenEvictionRetries); err != nil {
 				klog.Warningf("error while evicting DS pods from an empty node: %v", err)
 			}
-			deleteErr = waitForDelayDeletion(nodeToDelete, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout)
+			deleteErr = actuation.WaitForDelayDeletion(nodeToDelete, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout)
 			if deleteErr != nil {
 				klog.Errorf("Problem with empty node deletion: %v", deleteErr)
 				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
@@ -1016,7 +1010,7 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 	}
 	drainSuccessful = true
 
-	if typedErr := waitForDelayDeletion(node, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout); typedErr != nil {
+	if typedErr := actuation.WaitForDelayDeletion(node, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout); typedErr != nil {
 		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: typedErr}
 	}
 
@@ -1053,38 +1047,6 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
 	})
 	return nil
-}
-
-func waitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
-	if timeout != 0 && hasDelayDeletionAnnotation(node) {
-		klog.V(1).Infof("Wait for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
-		err := wait.Poll(5*time.Second, timeout, func() (bool, error) {
-			klog.V(5).Infof("Waiting for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
-			freshNode, err := nodeLister.Get(node.Name)
-			if err != nil || freshNode == nil {
-				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
-			}
-			return !hasDelayDeletionAnnotation(freshNode), nil
-		})
-		if err != nil && err != wait.ErrWaitTimeout {
-			return errors.ToAutoscalerError(errors.ApiCallError, err)
-		}
-		if err == wait.ErrWaitTimeout {
-			klog.Warningf("Delay node deletion timed out for node %v, delay deletion annotation wasn't removed within %v, this might slow down scale down.", node.Name, timeout)
-		} else {
-			klog.V(2).Infof("Annotation %s removed from node %v", DelayDeletionAnnotationPrefix, node.Name)
-		}
-	}
-	return nil
-}
-
-func hasDelayDeletionAnnotation(node *apiv1.Node) bool {
-	for annotation := range node.Annotations {
-		if strings.HasPrefix(annotation, DelayDeletionAnnotationPrefix) {
-			return true
-		}
-	}
-	return false
 }
 
 func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
