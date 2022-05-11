@@ -808,7 +808,7 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if legacy.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
