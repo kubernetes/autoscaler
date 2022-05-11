@@ -114,14 +114,16 @@ func (r *recommender) UpdateVPAs() {
 		vpa.UpdateConditions(hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 			klog.Warningf("%v", err)
-			klog.V(4).Infof("VPA dump")
-			klog.V(4).Infof("%+v", vpa)
-			klog.V(4).Infof("HasMatchingPods: %v", hasMatchingPods)
-			klog.V(4).Infof("PodCount: %v", vpa.PodCount)
-			pods := r.clusterState.GetMatchingPods(vpa)
-			klog.V(4).Infof("MatchingPods: %+v", pods)
-			if len(pods) != vpa.PodCount {
-				klog.Errorf("ClusterState pod count and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+			if klog.V(4).Enabled() {
+				klog.Infof("VPA dump")
+				klog.Infof("%+v", vpa)
+				klog.Infof("HasMatchingPods: %v", hasMatchingPods)
+				klog.Infof("PodCount: %v", vpa.PodCount)
+				pods := r.clusterState.GetMatchingPods(vpa)
+				klog.Infof("MatchingPods: %+v", pods)
+				if len(pods) != vpa.PodCount {
+					klog.Errorf("ClusterState pod count and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+				}
 			}
 		}
 		cnt.Add(vpa)
