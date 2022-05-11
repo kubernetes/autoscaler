@@ -19,13 +19,13 @@ package armclient
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httputil"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -43,45 +43,18 @@ import (
 
 var _ Interface = &Client{}
 
-// Singleton transport for all connections to ARM.
-var commTransport *http.Transport
-
-func init() {
-	// Use behaviour compatible with DefaultTransport, but override MaxIdleConns and MaxIdleConns
-	const maxIdleConns = 64
-	const maxIdleConnsPerHost = 64
-	defaultTransport := http.DefaultTransport.(*http.Transport)
-	commTransport = &http.Transport{
-		Proxy:                 defaultTransport.Proxy,
-		DialContext:           defaultTransport.DialContext,
-		MaxIdleConns:          maxIdleConns,
-		MaxIdleConnsPerHost:   maxIdleConnsPerHost,
-		IdleConnTimeout:       defaultTransport.IdleConnTimeout,
-		TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
-		ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
-		TLSClientConfig: &tls.Config{
-			MinVersion:    tls.VersionTLS12,
-			Renegotiation: tls.RenegotiateNever,
-		},
-	}
-}
-
 // Client implements ARM client Interface.
 type Client struct {
-	client  autorest.Client
-	backoff *retry.Backoff
-
-	baseURI      string
-	apiVersion   string
-	clientRegion string
+	client           autorest.Client
+	baseURI          string
+	apiVersion       string
+	regionalEndpoint string
 }
 
 // New creates a ARM client
-func New(authorizer autorest.Authorizer, clientConfig azureclients.ClientConfig, baseURI, apiVersion string) *Client {
+func New(authorizer autorest.Authorizer, clientConfig azureclients.ClientConfig, baseURI, apiVersion string, sendDecoraters ...autorest.SendDecorator) *Client {
 	restClient := autorest.NewClientWithUserAgent(clientConfig.UserAgent)
 	restClient.Authorizer = authorizer
-	restClient.Sender = getSender()
-	restClient.Sender = autorest.DecorateSender(restClient.Sender, autorest.DoCloseIfError())
 
 	if clientConfig.UserAgent == "" {
 		restClient.UserAgent = GetUserAgent(restClient)
@@ -114,20 +87,23 @@ func New(authorizer autorest.Authorizer, clientConfig azureclients.ClientConfig,
 		backoff.Steps = 1
 	}
 
-	return &Client{
-		client:       restClient,
-		baseURI:      baseURI,
-		backoff:      backoff,
-		apiVersion:   apiVersion,
-		clientRegion: NormalizeAzureRegion(clientConfig.Location),
-	}
-}
+	url, _ := url.Parse(baseURI)
 
-func getSender() autorest.Sender {
-	// Setup sender with singleton transport so that connections to ARM are shared.
-	// Refer https://github.com/Azure/go-autorest/blob/master/autorest/sender.go#L128 for how the sender is created.
-	j, _ := cookiejar.New(nil)
-	return &http.Client{Jar: j, Transport: commTransport}
+	client := &Client{
+		client:           restClient,
+		baseURI:          baseURI,
+		apiVersion:       apiVersion,
+		regionalEndpoint: fmt.Sprintf("%s.%s", clientConfig.Location, url.Host),
+	}
+	client.client.Sender = autorest.DecorateSender(client.client,
+		autorest.DoCloseIfError(),
+		retry.DoExponentialBackoffRetry(backoff),
+		DoHackRegionalRetryDecorator(client),
+	)
+
+	client.client.Sender = autorest.DecorateSender(client.client.Sender, sendDecoraters...)
+
+	return client
 }
 
 // GetUserAgent gets the autorest client with a user agent that
@@ -150,15 +126,77 @@ func NormalizeAzureRegion(name string) string {
 	return strings.ToLower(region)
 }
 
-// sendRequest sends a http request to ARM service.
-// Although Azure SDK supports retries per https://github.com/azure/azure-sdk-for-go#request-retry-policy, we
-// disable it since we want to fully control the retry policies.
-func (c *Client) sendRequest(ctx context.Context, request *http.Request) (*http.Response, *retry.Error) {
-	sendBackoff := *c.backoff
+// DoExponentialBackoffRetry returns an autorest.SendDecorator which performs retry with customizable backoff policy.
+func DoHackRegionalRetryDecorator(c *Client) autorest.SendDecorator {
+	return func(s autorest.Sender) autorest.Sender {
+		return autorest.SenderFunc(func(request *http.Request) (*http.Response, error) {
+			response, rerr := s.Do(request)
+			if response == nil {
+				klog.V(2).Infof("response is empty")
+				return response, rerr
+			}
+			if rerr == nil || response.StatusCode == http.StatusNotFound || c.regionalEndpoint == "" {
+				return response, rerr
+			}
+			// Hack: retry the regional ARM endpoint in case of ARM traffic split and arm resource group replication is too slow
+			bodyBytes, _ := ioutil.ReadAll(response.Body)
+			defer func() {
+				response.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+			}()
+
+			bodyString := string(bodyBytes)
+			var body map[string]interface{}
+			if e := json.Unmarshal(bodyBytes, &body); e != nil {
+				klog.Errorf("Send.sendRequest: error in parsing response body string: %s, Skip retrying regional host", e.Error())
+				return response, rerr
+			}
+			klog.V(5).Infof("Send.sendRequest original response: %s", bodyString)
+
+			if err, ok := body["error"].(map[string]interface{}); !ok ||
+				err["code"] == nil ||
+				!strings.EqualFold(err["code"].(string), "ResourceGroupNotFound") {
+				klog.V(5).Infof("Send.sendRequest: response body does not contain ResourceGroupNotFound error code. Skip retrying regional host")
+				return response, rerr
+			}
+
+			currentHost := request.URL.Host
+			if request.Host != "" {
+				currentHost = request.Host
+			}
+
+			if strings.HasPrefix(strings.ToLower(currentHost), c.regionalEndpoint) {
+				klog.V(5).Infof("Send.sendRequest: current host %s is regional host. Skip retrying regional host.", html.EscapeString(currentHost))
+				return response, rerr
+			}
+
+			request.Host = c.regionalEndpoint
+			request.URL.Host = c.regionalEndpoint
+			klog.V(5).Infof("Send.sendRegionalRequest on ResourceGroupNotFound error. Retrying regional host: %s", html.EscapeString(request.Host))
+
+			regionalResponse, regionalError := s.Do(request)
+			// only use the result if the regional request actually goes through and returns 2xx status code, for two reasons:
+			// 1. the retry on regional ARM host approach is a hack.
+			// 2. the concatenated regional uri could be wrong as the rule is not officially declared by ARM.
+			if regionalResponse == nil || regionalResponse.StatusCode > 299 {
+				regionalErrStr := ""
+				if regionalError != nil {
+					regionalErrStr = regionalError.Error()
+				}
+
+				klog.V(5).Infof("Send.sendRegionalRequest failed to get response from regional host, error: '%s'. Ignoring the result.", regionalErrStr)
+				return response, rerr
+			}
+			return regionalResponse, regionalError
+		})
+	}
+}
+
+// Send sends a http request to ARM service with possible retry to regional ARM endpoint.
+func (c *Client) Send(ctx context.Context, request *http.Request, decorators ...autorest.SendDecorator) (*http.Response, *retry.Error) {
 	response, err := autorest.SendWithSender(
 		c.client,
 		request,
-		retry.DoExponentialBackoffRetry(&sendBackoff),
+		decorators...,
 	)
 
 	if response == nil && err == nil {
@@ -166,80 +204,6 @@ func (c *Client) sendRequest(ctx context.Context, request *http.Request) (*http.
 	}
 
 	return response, retry.GetError(response, err)
-}
-
-// Send sends a http request to ARM service with possible retry to regional ARM endpoint.
-func (c *Client) Send(ctx context.Context, request *http.Request) (*http.Response, *retry.Error) {
-	response, rerr := c.sendRequest(ctx, request)
-	if rerr != nil {
-		return response, rerr
-	}
-
-	if response.StatusCode != http.StatusNotFound || c.clientRegion == "" {
-		dumpResponse(response, 10)
-		return response, rerr
-	}
-
-	bodyBytes, _ := ioutil.ReadAll(response.Body)
-	defer func() {
-		response.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	}()
-
-	bodyString := string(bodyBytes)
-	klog.V(5).Infof("Send.sendRequest original error message: %s", bodyString)
-
-	// Hack: retry the regional ARM endpoint in case of ARM traffic split and arm resource group replication is too slow
-	var body map[string]interface{}
-	if e := json.Unmarshal(bodyBytes, &body); e != nil {
-		klog.Errorf("Send.sendRequest: error in parsing response body string: %s, Skip retrying regional host", e)
-		return response, rerr
-	}
-
-	if err, ok := body["error"].(map[string]interface{}); !ok ||
-		err["code"] == nil ||
-		!strings.EqualFold(err["code"].(string), "ResourceGroupNotFound") {
-		klog.V(5).Infof("Send.sendRequest: response body does not contain ResourceGroupNotFound error code. Skip retrying regional host")
-		return response, rerr
-	}
-
-	currentHost := request.URL.Host
-	if request.Host != "" {
-		currentHost = request.Host
-	}
-
-	if strings.HasPrefix(strings.ToLower(currentHost), c.clientRegion) {
-		klog.V(5).Infof("Send.sendRequest: current host %s is regional host. Skip retrying regional host.", currentHost)
-		return response, rerr
-	}
-
-	request.Host = fmt.Sprintf("%s.%s", c.clientRegion, strings.ToLower(currentHost))
-	klog.V(5).Infof("Send.sendRegionalRequest on ResourceGroupNotFound error. Retrying regional host: %s", request.Host)
-	regionalResponse, regionalError := c.sendRequest(ctx, request)
-
-	// only use the result if the regional request actually goes through and returns 2xx status code, for two reasons:
-	// 1. the retry on regional ARM host approach is a hack.
-	// 2. the concatenated regional uri could be wrong as the rule is not officially declared by ARM.
-	if regionalResponse == nil || regionalResponse.StatusCode > 299 {
-		regionalErrStr := ""
-		if regionalError != nil {
-			regionalErrStr = regionalError.Error().Error()
-		}
-
-		klog.V(5).Infof("Send.sendRegionalRequest failed to get response from regional host, error: '%s'. Ignoring the result.", regionalErrStr)
-		return response, rerr
-	}
-
-	dumpResponse(response, 10)
-	return regionalResponse, regionalError
-}
-
-func dumpResponse(resp *http.Response, v klog.Level) {
-	responseDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		klog.Errorf("Failed to dump response: %v", err)
-	} else {
-		klog.V(v).Infof("Dumping response: %s", string(responseDump))
-	}
 }
 
 func dumpRequest(req *http.Request, v klog.Level) {
@@ -346,13 +310,7 @@ func (c *Client) WaitForAsyncOperationResult(ctx context.Context, future *azure.
 		klog.V(5).Infof("Received error in WaitForAsyncOperationCompletion: '%v'", err)
 		return nil, err
 	}
-
-	sendBackoff := *c.backoff
-	sender := autorest.DecorateSender(
-		c.client,
-		retry.DoExponentialBackoffRetry(&sendBackoff),
-	)
-	return future.GetResult(sender)
+	return future.GetResult(c.client)
 }
 
 // SendAsync send a request and return a future object representing the async result as well as the origin http response
@@ -373,31 +331,22 @@ func (c *Client) SendAsync(ctx context.Context, request *http.Request) (*azure.F
 }
 
 // GetResource get a resource by resource ID
-func (c *Client) GetResource(ctx context.Context, resourceID, expand string) (*http.Response, *retry.Error) {
-	decorators := []autorest.PrepareDecorator{
-		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-	}
+func (c *Client) GetResourceWithExpandQuery(ctx context.Context, resourceID, expand string) (*http.Response, *retry.Error) {
+	var decorators []autorest.PrepareDecorator
 	if expand != "" {
 		queryParameters := map[string]interface{}{
 			"$expand": autorest.Encode("query", expand),
 		}
 		decorators = append(decorators, autorest.WithQueryParameters(queryParameters))
 	}
-	request, err := c.PrepareGetRequest(ctx, decorators...)
-	if err != nil {
-		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "get.prepare", resourceID, err)
-		return nil, retry.NewError(false, err)
-	}
-
-	return c.Send(ctx, request)
+	return c.GetResource(ctx, resourceID, decorators...)
 }
 
 // GetResourceWithDecorators get a resource with decorators by resource ID
-func (c *Client) GetResourceWithDecorators(ctx context.Context, resourceID string, decorators []autorest.PrepareDecorator) (*http.Response, *retry.Error) {
-	getDecorators := []autorest.PrepareDecorator{
+func (c *Client) GetResource(ctx context.Context, resourceID string, decorators ...autorest.PrepareDecorator) (*http.Response, *retry.Error) {
+	getDecorators := append([]autorest.PrepareDecorator{
 		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-	}
-	getDecorators = append(getDecorators, decorators...)
+	}, decorators...)
 	request, err := c.PrepareGetRequest(ctx, getDecorators...)
 	if err != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "get.prepare", resourceID, err)
@@ -690,7 +639,7 @@ func (c *Client) PostResource(ctx context.Context, resourceID, action string, pa
 		return nil, retry.NewError(false, err)
 	}
 
-	return c.sendRequest(ctx, request)
+	return c.Send(ctx, request)
 }
 
 // DeleteResource deletes a resource by resource ID
@@ -724,7 +673,7 @@ func (c *Client) HeadResource(ctx context.Context, resourceID string) (*http.Res
 		return nil, retry.NewError(false, err)
 	}
 
-	return c.sendRequest(ctx, request)
+	return c.Send(ctx, request)
 }
 
 // DeleteResourceAsync delete a resource by resource ID and returns a future representing the async result
@@ -742,7 +691,7 @@ func (c *Client) DeleteResourceAsync(ctx context.Context, resourceID, ifMatch st
 		return nil, retry.NewError(false, err)
 	}
 
-	resp, rerr := c.sendRequest(ctx, deleteRequest)
+	resp, rerr := c.Send(ctx, deleteRequest)
 	defer c.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deleteAsync.send", resourceID, rerr.Error())

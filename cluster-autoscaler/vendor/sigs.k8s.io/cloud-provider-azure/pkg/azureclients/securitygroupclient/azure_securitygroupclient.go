@@ -126,7 +126,7 @@ func (c *Client) getSecurityGroup(ctx context.Context, resourceGroupName string,
 	)
 	result := network.SecurityGroup{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "securitygroup.get.request", resourceID, rerr.Error())
@@ -186,7 +186,7 @@ func (c *Client) listSecurityGroup(ctx context.Context, resourceGroupName string
 	page := &SecurityGroupListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "securitygroup.list.request", resourceID, rerr.Error())

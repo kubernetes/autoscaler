@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -482,12 +482,12 @@ func windowsVMNameParts(vmName string) (poolPrefix string, orch string, poolInde
 func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, error) {
 	var agentIndex int
 	var err error
-	if osType == compute.Linux {
+	if osType == compute.OperatingSystemTypesLinux {
 		_, _, agentIndex, err = k8sLinuxVMNameParts(vmName)
 		if err != nil {
 			return 0, err
 		}
-	} else if osType == compute.Windows {
+	} else if osType == compute.OperatingSystemTypesWindows {
 		_, _, _, agentIndex, err = windowsVMNameParts(vmName)
 		if err != nil {
 			return 0, err
