@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -129,7 +129,7 @@ func (c *Client) getVMSSVM(ctx context.Context, resourceGroupName string, VMScal
 	)
 	result := compute.VirtualMachineScaleSetVM{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, string(expand))
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, string(expand))
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.get.request", resourceID, rerr.Error())
@@ -192,7 +192,7 @@ func (c *Client) listVMSSVM(ctx context.Context, resourceGroupName string, virtu
 	page := &VirtualMachineScaleSetVMListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	resp, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.list.request", resourceID, rerr.Error())
@@ -299,12 +299,13 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 	mc := metrics.NewMetricContext("vmss", "wait_for_update_result", resourceGroupName, c.subscriptionID, source)
 	response, err := c.armClient.WaitForAsyncOperationResult(ctx, future, "VMSSWaitForUpdateResult")
 	mc.Observe(retry.NewErrorOrNil(false, err))
-	if response != nil && response.StatusCode != http.StatusNoContent {
-		_, rerr := c.updateResponder(response)
-		if rerr != nil {
-			klog.V(5).Infof("Received error: %s", "vmss.put.respond", rerr.Error())
-			return rerr
+	if err != nil {
+		if response != nil {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', response code %d", err.Error(), response.StatusCode)
+		} else {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', no response", err.Error())
 		}
+		return retry.GetError(response, err)
 	}
 	return nil
 }
