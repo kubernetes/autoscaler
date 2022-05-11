@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	v1 "k8s.io/api/core/v1"
@@ -123,7 +123,7 @@ func (c *ManagedDiskController) CreateManagedDisk(options *ManagedDiskOptions) (
 
 	if options.NetworkAccessPolicy != "" {
 		diskProperties.NetworkAccessPolicy = options.NetworkAccessPolicy
-		if options.NetworkAccessPolicy == compute.AllowPrivate {
+		if options.NetworkAccessPolicy == compute.NetworkAccessPolicyAllowPrivate {
 			if options.DiskAccessID == nil {
 				return "", fmt.Errorf("DiskAccessID should not be empty when NetworkAccessPolicy is AllowPrivate")
 			}
@@ -135,7 +135,7 @@ func (c *ManagedDiskController) CreateManagedDisk(options *ManagedDiskOptions) (
 		}
 	}
 
-	if diskSku == compute.UltraSSDLRS {
+	if diskSku == compute.DiskStorageAccountTypesUltraSSDLRS {
 		diskIOPSReadWrite := int64(consts.DefaultDiskIOPSReadWrite)
 		if options.DiskIOPSReadWrite != "" {
 			v, err := strconv.Atoi(options.DiskIOPSReadWrite)
@@ -339,7 +339,7 @@ func (c *ManagedDiskController) ResizeDisk(diskURI string, oldSize resource.Quan
 		return newSizeQuant, nil
 	}
 
-	if !supportOnlineResize && result.DiskProperties.DiskState != compute.Unattached {
+	if !supportOnlineResize && result.DiskProperties.DiskState != compute.DiskStateUnattached {
 		return oldSize, fmt.Errorf("azureDisk - disk resize is only supported on Unattached disk, current disk state: %s, already attached to %s", result.DiskProperties.DiskState, to.String(result.ManagedBy))
 	}
 

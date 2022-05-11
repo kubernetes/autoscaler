@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -126,7 +126,7 @@ func (c *Client) getVM(ctx context.Context, resourceGroupName string, VMName str
 	)
 	result := compute.VirtualMachine{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, string(expand))
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, string(expand))
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.get.request", resourceID, rerr.Error())
@@ -188,7 +188,7 @@ func (c *Client) listVM(ctx context.Context, resourceGroupName string) ([]comput
 	page := &VirtualMachineListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vm.list.request", resourceID, rerr.Error())
@@ -294,12 +294,13 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 	response, err := c.armClient.WaitForAsyncOperationResult(ctx, future, "VMWaitForUpdateResult")
 	mc.Observe(retry.NewErrorOrNil(false, err))
 
-	if response != nil && response.StatusCode != http.StatusNoContent {
-		_, rerr := c.updateResponder(response)
-		if rerr != nil {
-			klog.V(5).Infof("Received error: %s", "vm.put.respond", rerr.Error())
-			return rerr
+	if err != nil {
+		if response != nil {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', response code %d", err.Error(), response.StatusCode)
+		} else {
+			klog.V(5).Infof("Received error in WaitForAsyncOperationResult: '%s', no response", err.Error())
 		}
+		return retry.GetError(response, err)
 	}
 	return nil
 }

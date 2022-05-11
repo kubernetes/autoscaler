@@ -365,6 +365,25 @@ func (secret ServicePrincipalAuthorizationCodeSecret) MarshalJSON() ([]byte, err
 	})
 }
 
+// ServicePrincipalFederatedSecret implements ServicePrincipalSecret for Federated JWTs.
+type ServicePrincipalFederatedSecret struct {
+	jwt string
+}
+
+// SetAuthenticationValues is a method of the interface ServicePrincipalSecret.
+// It will populate the form submitted during OAuth Token Acquisition using a JWT signed by an OIDC issuer.
+func (secret *ServicePrincipalFederatedSecret) SetAuthenticationValues(spt *ServicePrincipalToken, v *url.Values) error {
+
+	v.Set("client_assertion", secret.jwt)
+	v.Set("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (secret ServicePrincipalFederatedSecret) MarshalJSON() ([]byte, error) {
+	return nil, errors.New("marshalling ServicePrincipalFederatedSecret is not supported")
+}
+
 // ServicePrincipalToken encapsulates a Token created for a Service Principal.
 type ServicePrincipalToken struct {
 	inner             servicePrincipalToken
@@ -419,6 +438,8 @@ func (spt *ServicePrincipalToken) UnmarshalJSON(data []byte) error {
 		spt.inner.Secret = &ServicePrincipalUsernamePasswordSecret{}
 	case "ServicePrincipalAuthorizationCodeSecret":
 		spt.inner.Secret = &ServicePrincipalAuthorizationCodeSecret{}
+	case "ServicePrincipalFederatedSecret":
+		return errors.New("unmarshalling ServicePrincipalFederatedSecret is not supported")
 	default:
 		return fmt.Errorf("unrecognized token type '%s'", secret["type"])
 	}
@@ -665,6 +686,31 @@ func NewServicePrincipalTokenFromAuthorizationCode(oauthConfig OAuthConfig, clie
 	)
 }
 
+// NewServicePrincipalTokenFromFederatedToken creates a ServicePrincipalToken from the supplied federated OIDC JWT.
+func NewServicePrincipalTokenFromFederatedToken(oauthConfig OAuthConfig, clientID string, jwt string, resource string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
+	if err := validateOAuthConfig(oauthConfig); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(clientID, "clientID"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(resource, "resource"); err != nil {
+		return nil, err
+	}
+	if jwt == "" {
+		return nil, fmt.Errorf("parameter 'jwt' cannot be empty")
+	}
+	return NewServicePrincipalTokenWithSecret(
+		oauthConfig,
+		clientID,
+		resource,
+		&ServicePrincipalFederatedSecret{
+			jwt: jwt,
+		},
+		callbacks...,
+	)
+}
+
 type msiType int
 
 const (
@@ -676,8 +722,6 @@ const (
 
 func (m msiType) String() string {
 	switch m {
-	case msiTypeUnavailable:
-		return "unavailable"
 	case msiTypeAppServiceV20170901:
 		return "AppServiceV20170901"
 	case msiTypeCloudShell:
@@ -699,13 +743,9 @@ func getMSIType() (msiType, string, error) {
 		}
 		// if ONLY the env var MSI_ENDPOINT is set the msiType is CloudShell
 		return msiTypeCloudShell, endpointEnvVar, nil
-	} else if msiAvailableHook(context.Background(), sender()) {
-		// if MSI_ENDPOINT is NOT set AND the IMDS endpoint is available the msiType is IMDS. This will timeout after 500 milliseconds
-		return msiTypeIMDS, msiEndpoint, nil
-	} else {
-		// if MSI_ENDPOINT is NOT set and IMDS endpoint is not available Managed Identity is not available
-		return msiTypeUnavailable, "", errors.New("MSI not available")
 	}
+	// if MSI_ENDPOINT is NOT set assume the msiType is IMDS
+	return msiTypeIMDS, msiEndpoint, nil
 }
 
 // GetMSIVMEndpoint gets the MSI endpoint on Virtual Machines.
@@ -1322,15 +1362,26 @@ func NewMultiTenantServicePrincipalTokenFromCertificate(multiTenantCfg MultiTena
 }
 
 // MSIAvailable returns true if the MSI endpoint is available for authentication.
-func MSIAvailable(ctx context.Context, sender Sender) bool {
-	resp, err := getMSIEndpoint(ctx, sender)
+func MSIAvailable(ctx context.Context, s Sender) bool {
+	msiType, _, err := getMSIType()
+
+	if err != nil {
+		return false
+	}
+
+	if msiType != msiTypeIMDS {
+		return true
+	}
+
+	if s == nil {
+		s = sender()
+	}
+
+	resp, err := getMSIEndpoint(ctx, s)
+
 	if err == nil {
 		resp.Body.Close()
 	}
-	return err == nil
-}
 
-// used for testing purposes
-var msiAvailableHook = func(ctx context.Context, sender Sender) bool {
-	return MSIAvailable(ctx, sender)
+	return err == nil
 }

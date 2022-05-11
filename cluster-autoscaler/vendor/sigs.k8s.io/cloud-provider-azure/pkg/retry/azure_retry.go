@@ -146,13 +146,15 @@ func jitter(duration time.Duration, maxFactor float64) time.Duration {
 func DoExponentialBackoffRetry(backoff *Backoff) autorest.SendDecorator {
 	return func(s autorest.Sender) autorest.Sender {
 		return autorest.SenderFunc(func(r *http.Request) (*http.Response, error) {
-			return doBackoffRetry(s, r, backoff)
+			return doBackoffRetry(s, r, *backoff)
 		})
 	}
 }
 
 // doBackoffRetry does the backoff retries for the request.
-func doBackoffRetry(s autorest.Sender, r *http.Request, backoff *Backoff) (resp *http.Response, err error) {
+// backoff is a retry policy here we implicitly copy the backoff policy when args is passed to function.
+
+func doBackoffRetry(s autorest.Sender, r *http.Request, backoff Backoff) (resp *http.Response, err error) {
 	rr := autorest.NewRetriableRequest(r)
 	// Increment to add the first call (attempts denotes number of retries)
 	for backoff.Steps > 0 {
@@ -176,7 +178,7 @@ func doBackoffRetry(s autorest.Sender, r *http.Request, backoff *Backoff) (resp 
 			return resp, rerr.RawError
 		}
 
-		if !delayForBackOff(backoff, r.Context().Done()) {
+		if !delayForBackOff(&backoff, r.Context().Done()) {
 			if r.Context().Err() != nil {
 				return resp, r.Context().Err()
 			}

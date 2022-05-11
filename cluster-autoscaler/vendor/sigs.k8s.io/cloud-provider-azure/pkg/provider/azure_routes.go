@@ -183,6 +183,9 @@ func (d *delayedRouteUpdater) updateRoutes() {
 				break
 			}
 		}
+		if rt.operation == routeOperationDelete && !dirty {
+			klog.Warningf("updateRoutes: route to be deleted %s does not match any of the existing route", to.String(rt.route.Name))
+		}
 
 		// Add missing routes if the operation is add.
 		if rt.operation == routeOperationAdd {
@@ -366,7 +369,7 @@ func (az *Cloud) createRouteTable() error {
 // route.Name will be ignored, although the cloud-provider may use nameHint
 // to create a more user-meaningful name.
 func (az *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint string, kubeRoute *cloudprovider.Route) error {
-	mc := metrics.NewMetricContext("routes", "create_route", az.ResourceGroup, az.SubscriptionID, "")
+	mc := metrics.NewMetricContext("routes", "create_route", az.ResourceGroup, az.SubscriptionID, string(kubeRoute.TargetNode))
 	isOperationSucceeded := false
 	defer func() {
 		mc.ObserveOperationWithResult(isOperationSucceeded)
@@ -449,7 +452,7 @@ func (az *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint s
 // DeleteRoute deletes the specified managed route
 // Route should be as returned by ListRoutes
 func (az *Cloud) DeleteRoute(ctx context.Context, clusterName string, kubeRoute *cloudprovider.Route) error {
-	mc := metrics.NewMetricContext("routes", "delete_route", az.ResourceGroup, az.SubscriptionID, "")
+	mc := metrics.NewMetricContext("routes", "delete_route", az.ResourceGroup, az.SubscriptionID, string(kubeRoute.TargetNode))
 	isOperationSucceeded := false
 	defer func() {
 		mc.ObserveOperationWithResult(isOperationSucceeded)

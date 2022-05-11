@@ -241,7 +241,7 @@ func getNodePrivateIPAddress(service *v1.Service, node *v1.Node) string {
 	for _, nodeAddress := range node.Status.Addresses {
 		if strings.EqualFold(string(nodeAddress.Type), string(v1.NodeInternalIP)) &&
 			utilnet.IsIPv6String(nodeAddress.Address) == isIPV6SVC {
-			klog.V(4).Infof("getNodePrivateIPAddress: node %s, ip %s", node.Name, nodeAddress.Address)
+			klog.V(6).Infof("getNodePrivateIPAddress: node %s, ip %s", node.Name, nodeAddress.Address)
 			return nodeAddress.Address
 		}
 	}
@@ -259,4 +259,20 @@ func getNodePrivateIPAddresses(node *v1.Node) []string {
 	}
 
 	return addresses
+}
+
+func isLBBackendPoolTypeIPConfig(service *v1.Service, lb *network.LoadBalancer, clusterName string) bool {
+	if lb == nil || lb.LoadBalancerPropertiesFormat == nil || lb.BackendAddressPools == nil {
+		klog.V(4).Infof("isLBBackendPoolTypeIPConfig: no backend pools in the LB %s", to.String(lb.Name))
+		return false
+	}
+	lbBackendPoolName := getBackendPoolName(clusterName, service)
+	for _, bp := range *lb.BackendAddressPools {
+		if strings.EqualFold(to.String(bp.Name), lbBackendPoolName) {
+			return bp.BackendAddressPoolPropertiesFormat != nil &&
+				bp.BackendIPConfigurations != nil &&
+				len(*bp.BackendIPConfigurations) != 0
+		}
+	}
+	return false
 }

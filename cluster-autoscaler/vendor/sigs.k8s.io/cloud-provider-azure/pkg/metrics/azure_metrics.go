@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
+	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
@@ -80,23 +81,35 @@ func (mc *MetricContext) ThrottledCount() {
 }
 
 // Observe observes the request latency and failed requests.
-func (mc *MetricContext) Observe(rerr *retry.Error) {
-	apiMetrics.latency.WithLabelValues(mc.attributes...).Observe(
-		time.Since(mc.start).Seconds())
+func (mc *MetricContext) Observe(rerr *retry.Error, labelAndValues ...interface{}) {
+	latency := time.Since(mc.start).Seconds()
+	apiMetrics.latency.WithLabelValues(mc.attributes...).Observe(latency)
 	if rerr != nil {
 		errorCode := rerr.ServiceErrorCode()
 		attributes := append(mc.attributes, errorCode)
 		apiMetrics.errors.WithLabelValues(attributes...).Inc()
 	}
+	mc.logLatency(6, latency, append(labelAndValues, "error_code", rerr.ServiceErrorCode())...)
 }
 
 // ObserveOperationWithResult observes the request latency and failed requests of an operation.
-func (mc *MetricContext) ObserveOperationWithResult(isOperationSucceeded bool) {
-	operationMetrics.operationLatency.WithLabelValues(mc.attributes...).Observe(
-		time.Since(mc.start).Seconds())
+func (mc *MetricContext) ObserveOperationWithResult(isOperationSucceeded bool, labelAndValues ...interface{}) {
+	latency := time.Since(mc.start).Seconds()
+	operationMetrics.operationLatency.WithLabelValues(mc.attributes...).Observe(latency)
+	resultCode := "succeeded"
 	if !isOperationSucceeded {
+		resultCode = "failed"
 		mc.CountFailedOperation()
 	}
+	mc.logLatency(3, latency, append(labelAndValues, "result_code", resultCode)...)
+}
+
+func (mc *MetricContext) logLatency(logLevel int32, latency float64, additionalKeysAndValues ...interface{}) {
+	keysAndValues := []interface{}{"latency_seconds", latency}
+	for i, label := range metricLabels {
+		keysAndValues = append(keysAndValues, label, mc.attributes[i])
+	}
+	klog.V(klog.Level(logLevel)).InfoS("Observed Request Latency", append(keysAndValues, additionalKeysAndValues...)...)
 }
 
 // CountFailedOperation increase the number of failed operations

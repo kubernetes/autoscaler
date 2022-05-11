@@ -26,10 +26,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -295,6 +296,10 @@ func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protoc
 	return fmt.Sprintf("%s-%s-%s-%d", prefix, subnetSegment, protocol, port)
 }
 
+func (az *Cloud) getloadbalancerHAmodeRuleName(service *v1.Service) string {
+	return az.getLoadBalancerRuleName(service, service.Spec.Ports[0].Protocol, service.Spec.Ports[0].Port)
+}
+
 func (az *Cloud) getSecurityRuleName(service *v1.Service, port v1.ServicePort, sourceAddrPrefix string) string {
 	if useSharedSecurityRule(service) {
 		safePrefix := strings.Replace(sourceAddrPrefix, "/", "_", -1)
@@ -330,12 +335,11 @@ func (az *Cloud) serviceOwnsRule(service *v1.Service, rule string) bool {
 // This means the name of the config can be tracked by the service UID.
 // 2. The secondary services must have their loadBalancer IP set if they want to share the same config as the primary
 // service. Hence, it can be tracked by the loadBalancer IP.
-func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, service *v1.Service) (bool, bool, error) {
+func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, service *v1.Service, pips *[]network.PublicIPAddress) (bool, bool, error) {
 	var isPrimaryService bool
 	baseName := az.GetLoadBalancerName(context.TODO(), "", service)
 	if strings.HasPrefix(to.String(fip.Name), baseName) {
-		klog.V(6).Infof("serviceOwnsFrontendIP: found primary service %s of the "+
-			"frontend IP config %s", service.Name, *fip.Name)
+		klog.V(6).Infof("serviceOwnsFrontendIP: found primary service %s of the frontend IP config %s", service.Name, *fip.Name)
 		isPrimaryService = true
 		return true, isPrimaryService, nil
 	}
@@ -349,7 +353,7 @@ func (az *Cloud) serviceOwnsFrontendIP(fip network.FrontendIPConfiguration, serv
 	// for external secondary service the public IP address should be checked
 	if !requiresInternalLoadBalancer(service) {
 		pipResourceGroup := az.getPublicIPAddressResourceGroup(service)
-		pip, err := az.findMatchedPIPByLoadBalancerIP(service, loadBalancerIP, pipResourceGroup)
+		pip, err := az.findMatchedPIPByLoadBalancerIP(service, loadBalancerIP, pipResourceGroup, pips)
 		if err != nil {
 			klog.Warningf("serviceOwnsFrontendIP: unexpected error when finding match public IP of the service %s with loadBalancerLP %s: %v", service.Name, loadBalancerIP, err)
 			return false, isPrimaryService, nil
@@ -389,6 +393,11 @@ func (az *Cloud) getDefaultFrontendIPConfigName(service *v1.Service) string {
 		// Azure lb front end configuration name must not exceed 80 characters
 		if len(ipcName) > consts.FrontendIPConfigNameMaxLength {
 			ipcName = ipcName[:consts.FrontendIPConfigNameMaxLength]
+			// Cutting the string may result in char like "-" as the string end.
+			// If the last char is not a letter or '_', replace it with "_".
+			if !unicode.IsLetter(rune(ipcName[len(ipcName)-1:][0])) && ipcName[len(ipcName)-1:] != "_" {
+				ipcName = ipcName[:len(ipcName)-1] + "_"
+			}
 		}
 		return ipcName
 	}
@@ -644,7 +653,7 @@ func (as *availabilitySet) GetIPByNodeName(name string) (string, string, error) 
 		if err != nil {
 			return "", "", fmt.Errorf("failed to publicIP name for node %q with pipID %q", name, pipID)
 		}
-		pip, existsPip, err := as.getPublicIPAddress(as.ResourceGroup, pipName)
+		pip, existsPip, err := as.getPublicIPAddress(as.ResourceGroup, pipName, azcache.CacheReadTypeDefault)
 		if err != nil {
 			return "", "", err
 		}
@@ -977,7 +986,7 @@ func (as *availabilitySet) EnsureHostInPool(service *v1.Service, nodeName types.
 // EnsureHostsInPool ensures the given Node's primary IP configurations are
 // participating in the specified LoadBalancer Backend Pool.
 func (as *availabilitySet) EnsureHostsInPool(service *v1.Service, nodes []*v1.Node, backendPoolID string, vmSetName string) error {
-	mc := metrics.NewMetricContext("services", "vmas_ensure_hosts_in_pool", as.ResourceGroup, as.SubscriptionID, service.Name)
+	mc := metrics.NewMetricContext("services", "vmas_ensure_hosts_in_pool", as.ResourceGroup, as.SubscriptionID, getServiceName(service))
 	isOperationSucceeded := false
 	defer func() {
 		mc.ObserveOperationWithResult(isOperationSucceeded)
@@ -1027,7 +1036,7 @@ func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backend
 		return nil
 	}
 
-	mc := metrics.NewMetricContext("services", "vmas_ensure_backend_pool_deleted", as.ResourceGroup, as.SubscriptionID, service.Name)
+	mc := metrics.NewMetricContext("services", "vmas_ensure_backend_pool_deleted", as.ResourceGroup, as.SubscriptionID, getServiceName(service))
 	isOperationSucceeded := false
 	defer func() {
 		mc.ObserveOperationWithResult(isOperationSucceeded)

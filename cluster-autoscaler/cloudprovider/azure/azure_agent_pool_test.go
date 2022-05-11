@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"
@@ -69,7 +69,7 @@ func getExpectedVMs() []compute.VirtualMachine {
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
 					OsDisk: &compute.OSDisk{
-						OsType: compute.Linux,
+						OsType: compute.OperatingSystemTypesLinux,
 						Vhd:    &compute.VirtualHardDisk{URI: to.StringPtr("https://foo.blob/vhds/bar.vhd")},
 					},
 				},
@@ -86,7 +86,7 @@ func getExpectedVMs() []compute.VirtualMachine {
 			Tags: map[string]*string{"poolName": to.StringPtr("as")},
 			VirtualMachineProperties: &compute.VirtualMachineProperties{
 				StorageProfile: &compute.StorageProfile{
-					OsDisk: &compute.OSDisk{OsType: compute.Windows},
+					OsDisk: &compute.OSDisk{OsType: compute.OperatingSystemTypesWindows},
 				},
 			},
 		},

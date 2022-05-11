@@ -19,14 +19,13 @@ package containerserviceclient
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
-
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice"
 )
 
 const (
 	// APIVersion is the API version for containerservice.
-	APIVersion = "2020-04-01"
+	APIVersion = "2021-10-01"
 )
 
 // Interface is the client interface for ContainerService.

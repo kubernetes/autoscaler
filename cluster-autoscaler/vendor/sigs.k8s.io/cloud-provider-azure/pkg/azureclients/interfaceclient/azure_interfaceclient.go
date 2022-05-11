@@ -128,7 +128,7 @@ func (c *Client) getNetworkInterface(ctx context.Context, resourceGroupName stri
 	)
 	result := network.Interface{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "nic.get.request", resourceID, rerr.Error())
@@ -203,7 +203,7 @@ func (c *Client) getVMSSNetworkInterface(ctx context.Context, resourceGroupName 
 	decorators := []autorest.PrepareDecorator{
 		autorest.WithQueryParameters(queryParameters),
 	}
-	response, rerr := c.armClient.GetResourceWithDecorators(ctx, resourceID, decorators)
+	response, rerr := c.armClient.GetResource(ctx, resourceID, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssnic.get.request", resourceID, rerr.Error())

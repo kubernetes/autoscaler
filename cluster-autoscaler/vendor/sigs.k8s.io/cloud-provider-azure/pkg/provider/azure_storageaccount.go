@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
@@ -468,7 +468,7 @@ func AreVNetRulesEqual(account storage.Account, accountOptions *AccountOptions) 
 }
 
 func isLargeFileSharesPropertyEqual(account storage.Account, accountOptions *AccountOptions) bool {
-	if account.Sku.Tier != storage.SkuTier(compute.PremiumLRS) && accountOptions.EnableLargeFileShare && (len(account.LargeFileSharesState) == 0 || account.LargeFileSharesState == storage.LargeFileSharesStateDisabled) {
+	if account.Sku.Tier != storage.SkuTier(compute.DiskStorageAccountTypesPremiumLRS) && accountOptions.EnableLargeFileShare && (len(account.LargeFileSharesState) == 0 || account.LargeFileSharesState == storage.LargeFileSharesStateDisabled) {
 		return false
 	}
 	return true
