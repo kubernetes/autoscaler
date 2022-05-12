@@ -124,7 +124,7 @@ func (c *Client) getRouteTable(ctx context.Context, resourceGroupName string, ro
 	)
 	result := network.RouteTable{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "routetable.get.request", resourceID, rerr.Error())

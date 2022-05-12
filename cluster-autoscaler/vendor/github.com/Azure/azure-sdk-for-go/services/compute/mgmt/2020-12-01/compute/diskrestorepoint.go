@@ -10,6 +10,7 @@ import (
 	"context"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/validation"
 	"github.com/Azure/go-autorest/tracing"
 	"net/http"
 )
@@ -108,6 +109,101 @@ func (client DiskRestorePointClient) GetResponder(resp *http.Response) (result D
 	err = autorest.Respond(
 		resp,
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// GrantAccess grants access to a diskRestorePoint.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// restorePointCollectionName - the name of the restore point collection that the disk restore point belongs.
+// Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+// VMRestorePointName - the name of the vm restore point that the disk disk restore point belongs. Supported
+// characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+// diskRestorePointName - the name of the disk restore point created. Supported characters for the name are
+// a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+// grantAccessData - access data object supplied in the body of the get disk access operation.
+func (client DiskRestorePointClient) GrantAccess(ctx context.Context, resourceGroupName string, restorePointCollectionName string, VMRestorePointName string, diskRestorePointName string, grantAccessData GrantAccessData) (result DiskRestorePointGrantAccessFuture, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/DiskRestorePointClient.GrantAccess")
+		defer func() {
+			sc := -1
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	if err := validation.Validate([]validation.Validation{
+		{TargetValue: grantAccessData,
+			Constraints: []validation.Constraint{{Target: "grantAccessData.DurationInSeconds", Name: validation.Null, Rule: true, Chain: nil}}}}); err != nil {
+		return result, validation.NewError("compute.DiskRestorePointClient", "GrantAccess", err.Error())
+	}
+
+	req, err := client.GrantAccessPreparer(ctx, resourceGroupName, restorePointCollectionName, VMRestorePointName, diskRestorePointName, grantAccessData)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "compute.DiskRestorePointClient", "GrantAccess", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.GrantAccessSender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "compute.DiskRestorePointClient", "GrantAccess", result.Response(), "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// GrantAccessPreparer prepares the GrantAccess request.
+func (client DiskRestorePointClient) GrantAccessPreparer(ctx context.Context, resourceGroupName string, restorePointCollectionName string, VMRestorePointName string, diskRestorePointName string, grantAccessData GrantAccessData) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"diskRestorePointName":       autorest.Encode("path", diskRestorePointName),
+		"resourceGroupName":          autorest.Encode("path", resourceGroupName),
+		"restorePointCollectionName": autorest.Encode("path", restorePointCollectionName),
+		"subscriptionId":             autorest.Encode("path", client.SubscriptionID),
+		"vmRestorePointName":         autorest.Encode("path", VMRestorePointName),
+	}
+
+	const APIVersion = "2020-12-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsContentType("application/json; charset=utf-8"),
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/restorePointCollections/{restorePointCollectionName}/restorePoints/{vmRestorePointName}/diskRestorePoints/{diskRestorePointName}/beginGetAccess", pathParameters),
+		autorest.WithJSON(grantAccessData),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// GrantAccessSender sends the GrantAccess request. The method will close the
+// http.Response Body if it receives an error.
+func (client DiskRestorePointClient) GrantAccessSender(req *http.Request) (future DiskRestorePointGrantAccessFuture, err error) {
+	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = future.result
+	return
+}
+
+// GrantAccessResponder handles the response to the GrantAccess request. The method always
+// closes the http.Response Body.
+func (client DiskRestorePointClient) GrantAccessResponder(resp *http.Response) (result AccessURI, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
 	result.Response = autorest.Response{Response: resp}
@@ -233,5 +329,90 @@ func (client DiskRestorePointClient) ListByRestorePointComplete(ctx context.Cont
 		}()
 	}
 	result.page, err = client.ListByRestorePoint(ctx, resourceGroupName, restorePointCollectionName, VMRestorePointName)
+	return
+}
+
+// RevokeAccess revokes access to a diskRestorePoint.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// restorePointCollectionName - the name of the restore point collection that the disk restore point belongs.
+// Supported characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+// VMRestorePointName - the name of the vm restore point that the disk disk restore point belongs. Supported
+// characters for the name are a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+// diskRestorePointName - the name of the disk restore point created. Supported characters for the name are
+// a-z, A-Z, 0-9 and _. The maximum name length is 80 characters.
+func (client DiskRestorePointClient) RevokeAccess(ctx context.Context, resourceGroupName string, restorePointCollectionName string, VMRestorePointName string, diskRestorePointName string) (result DiskRestorePointRevokeAccessFuture, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/DiskRestorePointClient.RevokeAccess")
+		defer func() {
+			sc := -1
+			if result.FutureAPI != nil && result.FutureAPI.Response() != nil {
+				sc = result.FutureAPI.Response().StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	req, err := client.RevokeAccessPreparer(ctx, resourceGroupName, restorePointCollectionName, VMRestorePointName, diskRestorePointName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "compute.DiskRestorePointClient", "RevokeAccess", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.RevokeAccessSender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "compute.DiskRestorePointClient", "RevokeAccess", result.Response(), "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// RevokeAccessPreparer prepares the RevokeAccess request.
+func (client DiskRestorePointClient) RevokeAccessPreparer(ctx context.Context, resourceGroupName string, restorePointCollectionName string, VMRestorePointName string, diskRestorePointName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"diskRestorePointName":       autorest.Encode("path", diskRestorePointName),
+		"resourceGroupName":          autorest.Encode("path", resourceGroupName),
+		"restorePointCollectionName": autorest.Encode("path", restorePointCollectionName),
+		"subscriptionId":             autorest.Encode("path", client.SubscriptionID),
+		"vmRestorePointName":         autorest.Encode("path", VMRestorePointName),
+	}
+
+	const APIVersion = "2020-12-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/restorePointCollections/{restorePointCollectionName}/restorePoints/{vmRestorePointName}/diskRestorePoints/{diskRestorePointName}/endGetAccess", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// RevokeAccessSender sends the RevokeAccess request. The method will close the
+// http.Response Body if it receives an error.
+func (client DiskRestorePointClient) RevokeAccessSender(req *http.Request) (future DiskRestorePointRevokeAccessFuture, err error) {
+	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	var azf azure.Future
+	azf, err = azure.NewFutureFromResponse(resp)
+	future.FutureAPI = &azf
+	future.Result = future.result
+	return
+}
+
+// RevokeAccessResponder handles the response to the RevokeAccess request. The method always
+// closes the http.Response Body.
+func (client DiskRestorePointClient) RevokeAccessResponder(resp *http.Response) (result autorest.Response, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
+		autorest.ByClosing())
+	result.Response = resp
 	return
 }

@@ -126,7 +126,7 @@ func (c *Client) getLB(ctx context.Context, resourceGroupName string, loadBalanc
 	)
 	result := network.LoadBalancer{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, expand)
+	response, rerr := c.armClient.GetResourceWithExpandQuery(ctx, resourceID, expand)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "loadbalancer.get.request", resourceID, rerr.Error())
@@ -186,7 +186,7 @@ func (c *Client) listLB(ctx context.Context, resourceGroupName string) ([]networ
 	page := &LoadBalancerListResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "loadbalancer.list.request", resourceID, rerr.Error())
@@ -490,6 +490,49 @@ func (c *Client) createOrUpdateLBBackendPool(ctx context.Context, resourceGroupN
 	}
 
 	return nil
+}
+
+// DeleteLBBackendPool deletes a LoadBalancer backend pool by name.
+func (c *Client) DeleteLBBackendPool(ctx context.Context, resourceGroupName, loadBalancerName, backendPoolName string) *retry.Error {
+	mc := metrics.NewMetricContext("load_balancers", "delete_backend_pool", resourceGroupName, c.subscriptionID, "")
+
+	// Report errors if the client is rate limited.
+	if !c.rateLimiterWriter.TryAccept() {
+		mc.RateLimitedCount()
+		return retry.GetRateLimitError(true, "LBDeleteBackendPool")
+	}
+
+	// Report errors if the client is throttled.
+	if c.RetryAfterWriter.After(time.Now()) {
+		mc.ThrottledCount()
+		rerr := retry.GetThrottlingError("LBDeleteBackendPool", "client throttled", c.RetryAfterWriter)
+		return rerr
+	}
+
+	rerr := c.deleteLBBackendPool(ctx, resourceGroupName, loadBalancerName, backendPoolName)
+	mc.Observe(rerr)
+	if rerr != nil {
+		if rerr.IsThrottled() {
+			// Update RetryAfterReader so that no more requests would be sent until RetryAfter expires.
+			c.RetryAfterWriter = rerr.RetryAfter
+		}
+
+		return rerr
+	}
+
+	return nil
+}
+
+func (c *Client) deleteLBBackendPool(ctx context.Context, resourceGroupName, loadBalancerName, backendPoolName string) *retry.Error {
+	resourceID := armclient.GetChildResourceID(
+		c.subscriptionID,
+		resourceGroupName,
+		"Microsoft.Network/loadBalancers",
+		loadBalancerName,
+		"backendAddressPools",
+		backendPoolName,
+	)
+	return c.armClient.DeleteResource(ctx, resourceID, "")
 }
 
 func (c *Client) createOrUpdateBackendPoolResponder(resp *http.Response) (*network.BackendAddressPool, *retry.Error) {
