@@ -26,7 +26,7 @@ import (
 
 const (
 	// APIVersion is the API version for network.
-	APIVersion = "2020-08-01"
+	APIVersion = "2021-02-01"
 	// AzureStackCloudAPIVersion is the API version for Azure Stack
 	AzureStackCloudAPIVersion = "2018-11-01"
 	// AzureStackCloudName is the cloud name of Azure Stack
@@ -50,4 +50,7 @@ type Interface interface {
 
 	// Delete deletes a LoadBalancer by name.
 	Delete(ctx context.Context, resourceGroupName string, loadBalancerName string) *retry.Error
+
+	// DeleteLBBackendPool deletes a LoadBalancer backend pool by name.
+	DeleteLBBackendPool(ctx context.Context, resourceGroupName, loadBalancerName, backendPoolName string) *retry.Error
 }
