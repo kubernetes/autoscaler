@@ -26,10 +26,13 @@ type Flavor struct {
 	Name     string `json:"name"`
 	Category string `json:"category"`
 	State    string `json:"state"`
+	VCPUs    int    `json:"vCPUs"`
+	GPUs     int    `json:"gpus"`
+	RAM      int    `json:"ram"`
 }
 
-// ListFlavors allows to display flavors available for nodes templates
-func (c *Client) ListFlavors(ctx context.Context, projectID string, clusterID string) ([]Flavor, error) {
+// ListClusterFlavors allows to display flavors available for nodes templates
+func (c *Client) ListClusterFlavors(ctx context.Context, projectID string, clusterID string) ([]Flavor, error) {
 	flavors := make([]Flavor, 0)
 
 	return flavors, c.CallAPIWithContext(
@@ -38,6 +41,7 @@ func (c *Client) ListFlavors(ctx context.Context, projectID string, clusterID st
 		fmt.Sprintf("/cloud/project/%s/kube/%s/flavors", projectID, clusterID),
 		nil,
 		&flavors,
+		nil,
 		nil,
 		true,
 	)
