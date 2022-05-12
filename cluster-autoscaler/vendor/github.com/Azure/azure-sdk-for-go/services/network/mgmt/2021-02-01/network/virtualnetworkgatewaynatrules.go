@@ -57,7 +57,7 @@ func (client VirtualNetworkGatewayNatRulesClient) CreateOrUpdate(ctx context.Con
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewayNatRulesClient", "CreateOrUpdate", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewayNatRulesClient", "CreateOrUpdate", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -94,6 +94,7 @@ func (client VirtualNetworkGatewayNatRulesClient) CreateOrUpdatePreparer(ctx con
 // http.Response Body if it receives an error.
 func (client VirtualNetworkGatewayNatRulesClient) CreateOrUpdateSender(req *http.Request) (future VirtualNetworkGatewayNatRulesCreateOrUpdateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -141,7 +142,7 @@ func (client VirtualNetworkGatewayNatRulesClient) Delete(ctx context.Context, re
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewayNatRulesClient", "Delete", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewayNatRulesClient", "Delete", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -174,6 +175,7 @@ func (client VirtualNetworkGatewayNatRulesClient) DeletePreparer(ctx context.Con
 // http.Response Body if it receives an error.
 func (client VirtualNetworkGatewayNatRulesClient) DeleteSender(req *http.Request) (future VirtualNetworkGatewayNatRulesDeleteFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return

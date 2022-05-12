@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-04-01/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -111,6 +111,13 @@ func (c *Client) Get(ctx context.Context, resourceGroupName string, managedClust
 
 // getManagedCluster gets a ManagedCluster.
 func (c *Client) getManagedCluster(ctx context.Context, resourceGroupName string, managedClusterName string) (containerservice.ManagedCluster, *retry.Error) {
+	// telemetryDecorator := armclient.WithMetricsDecoratorWrapper("managed_clusters", "get", resourceGroupName, c.subscriptionID, "", func(mc *metrics.MetricContext) []autorest.SendDecorator {
+	// 	return []autorest.SendDecorator{
+	// 		armclient.NewErrorCounterDecorator(mc),
+	// 		armclient.NewRateLimitDecorater(c.rateLimiterReader, mc),
+	// 		armclient.NewThrottledDecorater(mc),
+	// 	}
+	// })
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
@@ -119,7 +126,7 @@ func (c *Client) getManagedCluster(ctx context.Context, resourceGroupName string
 	)
 	result := containerservice.ManagedCluster{}
 
-	response, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	response, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "managedcluster.get.request", resourceID, rerr.Error())
@@ -179,7 +186,7 @@ func (c *Client) listManagedCluster(ctx context.Context, resourceGroupName strin
 	page := &ManagedClusterResultPage{}
 	page.fn = c.listNextResults
 
-	resp, rerr := c.armClient.GetResource(ctx, resourceID, "")
+	resp, rerr := c.armClient.GetResource(ctx, resourceID)
 	defer c.armClient.CloseResponse(ctx, resp)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "managedcluster.list.request", resourceID, rerr.Error())
