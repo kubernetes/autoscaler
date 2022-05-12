@@ -26,11 +26,24 @@ In the above file you can modify the following fields:
 | cluster-autoscaler-cloud-config | Global/region         | The Cherry Servers region for the servers in your nodepool (eg: EU-Nord-1)                                                                    |
 | cluster-autoscaler-cloud-config | Global/plan             | The Cherry Servers plan ID for new nodes in the nodepool (eg: `103`)                                                 |
 | cluster-autoscaler-cloud-config | Global/os               | The OS image to use for new nodes, e.g. `CentOS 6 64bit`. If you change this also update cloudinit.                               |
-| cluster-autoscaler-cloud-config | Global/cloudinit        | The base64 encoded user data submitted when provisioning servers. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly|
+| cluster-autoscaler-cloud-config | Global/cloudinit        | The base64 encoded user data submitted when provisioning servers. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly. It will use go templates to inject runtime information; see below.|
 | cluster-autoscaler-cloud-config | Global/reservation      | The values "require" or "prefer" will request the next available hardware reservation for new servers in selected region & plan. If no hardware reservations match, "require" will trigger a failure, while "prefer" will launch on-demand servers instead (default: none)  |
 | cluster-autoscaler-cloud-config | Global/hostname-pattern | The pattern for the names of new Cherry Servers servers (default: "k8s-{{.ClusterName}}-{{.NodeGroup}}-{{.RandString8}}" )                  |
 
 You can always update the secret with more nodepool definitions (with different plans etc.) as shown in the example, but you should always provide a default nodepool configuration.
+
+The userdata use the following fields to inject runtime information into userdata:
+
+* `BootstrapTokenID`: Kubernetes bootstrap token ID, 6 alphanumeric characters, e.g. `nf8atf`
+* `BootstrapTokenSecret`: Kubernetes bootstrap token secret, 16 alphanumeric characters, e.g. `kwfs1t15pjmhk7n4`
+* `APIServerEndpoint`: endpoint to connect to the Kubernetes server
+* `NodeGroup`: name of the nodegroup to which the newly deployed node belongs.
+
+For example:
+
+```sh
+kubeadm join --discovery-token-unsafe-skip-ca-verification --token {{.BootstrapTokenID}}.{{.BootstrapTokenSecret}} {{.APIServerEndpoint}}
+```
 
 ## Configure nodepool and cluster names using Cherry Servers tags
 
