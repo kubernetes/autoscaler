@@ -171,4 +171,10 @@ type AutoscalingOptions struct {
 	DaemonSetEvictionForOccupiedNodes bool
 	// User agent to use for HTTP calls.
 	UserAgent string
+	// InitialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start
+	InitialNodeGroupBackoffDuration time.Duration
+	// MaxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.
+	MaxNodeGroupBackoffDuration time.Duration
+	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
+	NodeGroupBackoffResetTimeout time.Duration
 }
