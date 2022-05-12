@@ -52,7 +52,6 @@ type instancePoolCache struct {
 	mu                   sync.Mutex
 	poolCache            map[string]*core.InstancePool
 	instanceSummaryCache map[string]*[]core.InstanceSummary
-	targetSize           map[string]int
 	unownedInstances     map[OciRef]bool
 
 	computeManagementClient ComputeMgmtClient
@@ -64,7 +63,6 @@ func newInstancePoolCache(computeManagementClient ComputeMgmtClient, computeClie
 	return &instancePoolCache{
 		poolCache:               map[string]*core.InstancePool{},
 		instanceSummaryCache:    map[string]*[]core.InstanceSummary{},
-		targetSize:              map[string]int{},
 		unownedInstances:        map[OciRef]bool{},
 		computeManagementClient: computeManagementClient,
 		computeClient:           computeClient,
@@ -145,7 +143,7 @@ func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, i
 	if err == nil {
 		c.mu.Lock()
 		// Decrease pool size in cache since IsDecrementSize was true
-		c.targetSize[instancePool.Id()] -= 1
+		c.poolCache[instancePool.Id()].Size = common.Int(*c.poolCache[instancePool.Id()].Size - 1)
 		c.mu.Unlock()
 		return true
 	}
@@ -171,11 +169,6 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance OciRef) (*OciRef, 
 
 	// Look for the instance in each of the specified pool(s)
 	for _, nextInstancePool := range c.poolCache {
-		// Skip searching instance pool if it's instance count is 0.
-		if *nextInstancePool.Size == 0 {
-			klog.V(4).Infof("skipping over instance pool %s since it is empty", *nextInstancePool.Id)
-			continue
-		}
 		// Skip searching instance pool if we happen tp know (prior labels) the pool ID and this is not it
 		if (ociInstance.PoolID != "") && (ociInstance.PoolID != *nextInstancePool.Id) {
 			klog.V(5).Infof("skipping over instance pool %s since it is not the one we are looking for", *nextInstancePool.Id)
@@ -289,7 +282,7 @@ func (c *instancePoolCache) setInstancePool(np *core.InstancePool) {
 	defer c.mu.Unlock()
 
 	c.poolCache[*np.Id] = np
-	c.targetSize[*np.Id] = *np.Size
+	c.poolCache[*np.Id].Size = np.Size
 }
 
 func (c *instancePoolCache) getInstanceSummaries(poolID string) (*[]core.InstanceSummary, error) {
@@ -362,7 +355,7 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 	}
 
 	c.mu.Lock()
-	c.targetSize[instancePoolID] = size
+	c.poolCache[instancePoolID].Size = common.Int(size)
 	c.mu.Unlock()
 
 	return nil
@@ -508,12 +501,12 @@ func (c *instancePoolCache) getSize(id string) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	size, ok := c.targetSize[id]
+	pool, ok := c.poolCache[id]
 	if !ok {
 		return -1, errors.New("target size not found")
 	}
 
-	return size, nil
+	return *pool.Size, nil
 }
 
 // maxScalingWaitTime estimates the maximum amount of time, as a duration, that to scale size instances.

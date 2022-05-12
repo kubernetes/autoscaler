@@ -118,8 +118,9 @@ Configuration via environment-variables:
 
 - `OCI_USE_INSTANCE_PRINCIPAL` - Whether to use Instance Principals for authentication rather than expecting an OCI config file to be mounted in the container. Defaults to false.
 - `OCI_REGION` - **Required** when using Instance Principals. e.g. `OCI_REGION=us-phoenix-1`. See [region list](https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm) for identifiers.
-- `OCI_COMPARTMENT_ID`  - Restrict the cluster-autoscaler to instance-pools in a single compartment. When unset, the cluster-autoscaler will manage each specified instance-pool no matter which compartment they are in.
-- `OCI_REFRESH_INTERVAL`  - Optional refresh interval to sync internal cache with OCI API defaults to `2m`.
+- `OCI_COMPARTMENT_ID` - Restrict the cluster-autoscaler to instance-pools in a single compartment. When unset, the cluster-autoscaler will manage each specified instance-pool no matter which compartment they are in.
+- `OCI_REFRESH_INTERVAL` - Optional refresh interval to sync internal cache with OCI API defaults to `2m`.
+- `OCI_USE_NON_POOL_MEMBER_ANNOTATION` - Optional. If true, the node will be annotated as non-pool-member if it doesn't belong to any instance pool and the time-consuming instance pool lookup will be skipped.
 
 ## Deployment
 
