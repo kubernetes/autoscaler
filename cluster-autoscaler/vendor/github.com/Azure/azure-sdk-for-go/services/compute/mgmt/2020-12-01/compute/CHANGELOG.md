@@ -1,53 +1,561 @@
 # Change History
 
+## Breaking Changes
+
+### Removed Constants
+
+1. AccessLevel.None
+1. AccessLevel.Read
+1. AccessLevel.Write
+1. AggregatedReplicationState.Completed
+1. AggregatedReplicationState.Failed
+1. AggregatedReplicationState.InProgress
+1. AggregatedReplicationState.Unknown
+1. AvailabilitySetSkuTypes.Aligned
+1. AvailabilitySetSkuTypes.Classic
+1. ComponentNames.MicrosoftWindowsShellSetup
+1. DiffDiskOptions.Local
+1. DiffDiskPlacement.CacheDisk
+1. DiffDiskPlacement.ResourceDisk
+1. DiskCreateOption.Attach
+1. DiskCreateOption.Copy
+1. DiskCreateOption.Empty
+1. DiskCreateOption.FromImage
+1. DiskCreateOption.Import
+1. DiskCreateOption.Restore
+1. DiskCreateOption.Upload
+1. DiskDetachOptionTypes.ForceDetach
+1. DiskEncryptionSetType.EncryptionAtRestWithCustomerKey
+1. DiskEncryptionSetType.EncryptionAtRestWithPlatformAndCustomerKeys
+1. DiskSecurityTypes.TrustedLaunch
+1. DiskState.ActiveSAS
+1. DiskState.ActiveUpload
+1. DiskState.Attached
+1. DiskState.ReadyToUpload
+1. DiskState.Reserved
+1. DiskState.Unattached
+1. DiskStorageAccountTypes.PremiumLRS
+1. DiskStorageAccountTypes.PremiumZRS
+1. DiskStorageAccountTypes.StandardLRS
+1. DiskStorageAccountTypes.StandardSSDLRS
+1. DiskStorageAccountTypes.StandardSSDZRS
+1. DiskStorageAccountTypes.UltraSSDLRS
+1. ExtendedLocationTypes.EdgeZone
+1. HyperVGeneration.V1
+1. HyperVGeneration.V2
+1. IPVersion.IPv4
+1. IPVersion.IPv6
+1. InstanceViewTypes.InstanceView
+1. IntervalInMins.FiveMins
+1. IntervalInMins.SixtyMins
+1. IntervalInMins.ThirtyMins
+1. IntervalInMins.ThreeMins
+1. LinuxVMGuestPatchMode.AutomaticByPlatform
+1. LinuxVMGuestPatchMode.ImageDefault
+1. NetworkAccessPolicy.AllowAll
+1. NetworkAccessPolicy.AllowPrivate
+1. NetworkAccessPolicy.DenyAll
+1. OperatingSystemStateTypes.Generalized
+1. OperatingSystemStateTypes.Specialized
+1. OperatingSystemTypes.Linux
+1. OperatingSystemTypes.Windows
+1. OrchestrationMode.Flexible
+1. OrchestrationMode.Uniform
+1. OrchestrationServiceNames.AutomaticRepairs
+1. OrchestrationServiceState.NotRunning
+1. OrchestrationServiceState.Running
+1. OrchestrationServiceState.Suspended
+1. OrchestrationServiceStateAction.Resume
+1. OrchestrationServiceStateAction.Suspend
+1. PassNames.OobeSystem
+1. PrivateEndpointServiceConnectionStatus.Approved
+1. PrivateEndpointServiceConnectionStatus.Pending
+1. PrivateEndpointServiceConnectionStatus.Rejected
+1. ProtocolTypes.HTTP
+1. ProtocolTypes.HTTPS
+1. ProximityPlacementGroupType.Standard
+1. ProximityPlacementGroupType.Ultra
+1. ResourceSkuRestrictionsReasonCode.NotAvailableForSubscription
+1. ResourceSkuRestrictionsReasonCode.QuotaID
+1. ResourceSkuRestrictionsType.Location
+1. ResourceSkuRestrictionsType.Zone
+1. RollingUpgradeActionType.Cancel
+1. RollingUpgradeActionType.Start
+1. SettingNames.AutoLogon
+1. SettingNames.FirstLogonCommands
+1. StatusLevelTypes.Error
+1. StatusLevelTypes.Info
+1. StatusLevelTypes.Warning
+1. UpgradeMode.Automatic
+1. UpgradeMode.Manual
+1. UpgradeMode.Rolling
+1. VMGuestPatchClassificationLinux.Critical
+1. VMGuestPatchClassificationLinux.Other
+1. VMGuestPatchClassificationLinux.Security
+1. VMGuestPatchRebootSetting.Always
+1. VMGuestPatchRebootSetting.IfRequired
+1. VMGuestPatchRebootSetting.Never
+1. VirtualMachineEvictionPolicyTypes.Deallocate
+1. VirtualMachineEvictionPolicyTypes.Delete
+1. VirtualMachinePriorityTypes.Low
+1. VirtualMachinePriorityTypes.Regular
+1. VirtualMachinePriorityTypes.Spot
+1. VirtualMachineScaleSetScaleInRules.Default
+1. VirtualMachineScaleSetScaleInRules.NewestVM
+1. VirtualMachineScaleSetScaleInRules.OldestVM
+1. VirtualMachineSizeTypes.BasicA0
+1. VirtualMachineSizeTypes.BasicA1
+1. VirtualMachineSizeTypes.BasicA2
+1. VirtualMachineSizeTypes.BasicA3
+1. VirtualMachineSizeTypes.BasicA4
+1. VirtualMachineSizeTypes.StandardA0
+1. VirtualMachineSizeTypes.StandardA1
+1. VirtualMachineSizeTypes.StandardA10
+1. VirtualMachineSizeTypes.StandardA11
+1. VirtualMachineSizeTypes.StandardA1V2
+1. VirtualMachineSizeTypes.StandardA2
+1. VirtualMachineSizeTypes.StandardA2V2
+1. VirtualMachineSizeTypes.StandardA2mV2
+1. VirtualMachineSizeTypes.StandardA3
+1. VirtualMachineSizeTypes.StandardA4
+1. VirtualMachineSizeTypes.StandardA4V2
+1. VirtualMachineSizeTypes.StandardA4mV2
+1. VirtualMachineSizeTypes.StandardA5
+1. VirtualMachineSizeTypes.StandardA6
+1. VirtualMachineSizeTypes.StandardA7
+1. VirtualMachineSizeTypes.StandardA8
+1. VirtualMachineSizeTypes.StandardA8V2
+1. VirtualMachineSizeTypes.StandardA8mV2
+1. VirtualMachineSizeTypes.StandardA9
+1. VirtualMachineSizeTypes.StandardB1ms
+1. VirtualMachineSizeTypes.StandardB1s
+1. VirtualMachineSizeTypes.StandardB2ms
+1. VirtualMachineSizeTypes.StandardB2s
+1. VirtualMachineSizeTypes.StandardB4ms
+1. VirtualMachineSizeTypes.StandardB8ms
+1. VirtualMachineSizeTypes.StandardD1
+1. VirtualMachineSizeTypes.StandardD11
+1. VirtualMachineSizeTypes.StandardD11V2
+1. VirtualMachineSizeTypes.StandardD12
+1. VirtualMachineSizeTypes.StandardD12V2
+1. VirtualMachineSizeTypes.StandardD13
+1. VirtualMachineSizeTypes.StandardD13V2
+1. VirtualMachineSizeTypes.StandardD14
+1. VirtualMachineSizeTypes.StandardD14V2
+1. VirtualMachineSizeTypes.StandardD15V2
+1. VirtualMachineSizeTypes.StandardD16V3
+1. VirtualMachineSizeTypes.StandardD16sV3
+1. VirtualMachineSizeTypes.StandardD1V2
+1. VirtualMachineSizeTypes.StandardD2
+1. VirtualMachineSizeTypes.StandardD2V2
+1. VirtualMachineSizeTypes.StandardD2V3
+1. VirtualMachineSizeTypes.StandardD2sV3
+1. VirtualMachineSizeTypes.StandardD3
+1. VirtualMachineSizeTypes.StandardD32V3
+1. VirtualMachineSizeTypes.StandardD32sV3
+1. VirtualMachineSizeTypes.StandardD3V2
+1. VirtualMachineSizeTypes.StandardD4
+1. VirtualMachineSizeTypes.StandardD4V2
+1. VirtualMachineSizeTypes.StandardD4V3
+1. VirtualMachineSizeTypes.StandardD4sV3
+1. VirtualMachineSizeTypes.StandardD5V2
+1. VirtualMachineSizeTypes.StandardD64V3
+1. VirtualMachineSizeTypes.StandardD64sV3
+1. VirtualMachineSizeTypes.StandardD8V3
+1. VirtualMachineSizeTypes.StandardD8sV3
+1. VirtualMachineSizeTypes.StandardDS1
+1. VirtualMachineSizeTypes.StandardDS11
+1. VirtualMachineSizeTypes.StandardDS11V2
+1. VirtualMachineSizeTypes.StandardDS12
+1. VirtualMachineSizeTypes.StandardDS12V2
+1. VirtualMachineSizeTypes.StandardDS13
+1. VirtualMachineSizeTypes.StandardDS132V2
+1. VirtualMachineSizeTypes.StandardDS134V2
+1. VirtualMachineSizeTypes.StandardDS13V2
+1. VirtualMachineSizeTypes.StandardDS14
+1. VirtualMachineSizeTypes.StandardDS144V2
+1. VirtualMachineSizeTypes.StandardDS148V2
+1. VirtualMachineSizeTypes.StandardDS14V2
+1. VirtualMachineSizeTypes.StandardDS15V2
+1. VirtualMachineSizeTypes.StandardDS1V2
+1. VirtualMachineSizeTypes.StandardDS2
+1. VirtualMachineSizeTypes.StandardDS2V2
+1. VirtualMachineSizeTypes.StandardDS3
+1. VirtualMachineSizeTypes.StandardDS3V2
+1. VirtualMachineSizeTypes.StandardDS4
+1. VirtualMachineSizeTypes.StandardDS4V2
+1. VirtualMachineSizeTypes.StandardDS5V2
+1. VirtualMachineSizeTypes.StandardE16V3
+1. VirtualMachineSizeTypes.StandardE16sV3
+1. VirtualMachineSizeTypes.StandardE2V3
+1. VirtualMachineSizeTypes.StandardE2sV3
+1. VirtualMachineSizeTypes.StandardE3216V3
+1. VirtualMachineSizeTypes.StandardE328sV3
+1. VirtualMachineSizeTypes.StandardE32V3
+1. VirtualMachineSizeTypes.StandardE32sV3
+1. VirtualMachineSizeTypes.StandardE4V3
+1. VirtualMachineSizeTypes.StandardE4sV3
+1. VirtualMachineSizeTypes.StandardE6416sV3
+1. VirtualMachineSizeTypes.StandardE6432sV3
+1. VirtualMachineSizeTypes.StandardE64V3
+1. VirtualMachineSizeTypes.StandardE64sV3
+1. VirtualMachineSizeTypes.StandardE8V3
+1. VirtualMachineSizeTypes.StandardE8sV3
+1. VirtualMachineSizeTypes.StandardF1
+1. VirtualMachineSizeTypes.StandardF16
+1. VirtualMachineSizeTypes.StandardF16s
+1. VirtualMachineSizeTypes.StandardF16sV2
+1. VirtualMachineSizeTypes.StandardF1s
+1. VirtualMachineSizeTypes.StandardF2
+1. VirtualMachineSizeTypes.StandardF2s
+1. VirtualMachineSizeTypes.StandardF2sV2
+1. VirtualMachineSizeTypes.StandardF32sV2
+1. VirtualMachineSizeTypes.StandardF4
+1. VirtualMachineSizeTypes.StandardF4s
+1. VirtualMachineSizeTypes.StandardF4sV2
+1. VirtualMachineSizeTypes.StandardF64sV2
+1. VirtualMachineSizeTypes.StandardF72sV2
+1. VirtualMachineSizeTypes.StandardF8
+1. VirtualMachineSizeTypes.StandardF8s
+1. VirtualMachineSizeTypes.StandardF8sV2
+1. VirtualMachineSizeTypes.StandardG1
+1. VirtualMachineSizeTypes.StandardG2
+1. VirtualMachineSizeTypes.StandardG3
+1. VirtualMachineSizeTypes.StandardG4
+1. VirtualMachineSizeTypes.StandardG5
+1. VirtualMachineSizeTypes.StandardGS1
+1. VirtualMachineSizeTypes.StandardGS2
+1. VirtualMachineSizeTypes.StandardGS3
+1. VirtualMachineSizeTypes.StandardGS4
+1. VirtualMachineSizeTypes.StandardGS44
+1. VirtualMachineSizeTypes.StandardGS48
+1. VirtualMachineSizeTypes.StandardGS5
+1. VirtualMachineSizeTypes.StandardGS516
+1. VirtualMachineSizeTypes.StandardGS58
+1. VirtualMachineSizeTypes.StandardH16
+1. VirtualMachineSizeTypes.StandardH16m
+1. VirtualMachineSizeTypes.StandardH16mr
+1. VirtualMachineSizeTypes.StandardH16r
+1. VirtualMachineSizeTypes.StandardH8
+1. VirtualMachineSizeTypes.StandardH8m
+1. VirtualMachineSizeTypes.StandardL16s
+1. VirtualMachineSizeTypes.StandardL32s
+1. VirtualMachineSizeTypes.StandardL4s
+1. VirtualMachineSizeTypes.StandardL8s
+1. VirtualMachineSizeTypes.StandardM12832ms
+1. VirtualMachineSizeTypes.StandardM12864ms
+1. VirtualMachineSizeTypes.StandardM128ms
+1. VirtualMachineSizeTypes.StandardM128s
+1. VirtualMachineSizeTypes.StandardM6416ms
+1. VirtualMachineSizeTypes.StandardM6432ms
+1. VirtualMachineSizeTypes.StandardM64ms
+1. VirtualMachineSizeTypes.StandardM64s
+1. VirtualMachineSizeTypes.StandardNC12
+1. VirtualMachineSizeTypes.StandardNC12sV2
+1. VirtualMachineSizeTypes.StandardNC12sV3
+1. VirtualMachineSizeTypes.StandardNC24
+1. VirtualMachineSizeTypes.StandardNC24r
+1. VirtualMachineSizeTypes.StandardNC24rsV2
+1. VirtualMachineSizeTypes.StandardNC24rsV3
+1. VirtualMachineSizeTypes.StandardNC24sV2
+1. VirtualMachineSizeTypes.StandardNC24sV3
+1. VirtualMachineSizeTypes.StandardNC6
+1. VirtualMachineSizeTypes.StandardNC6sV2
+1. VirtualMachineSizeTypes.StandardNC6sV3
+1. VirtualMachineSizeTypes.StandardND12s
+1. VirtualMachineSizeTypes.StandardND24rs
+1. VirtualMachineSizeTypes.StandardND24s
+1. VirtualMachineSizeTypes.StandardND6s
+1. VirtualMachineSizeTypes.StandardNV12
+1. VirtualMachineSizeTypes.StandardNV24
+1. VirtualMachineSizeTypes.StandardNV6
+
 ## Additive Changes
+
+### New Constants
+
+1. AccessLevel.AccessLevelNone
+1. AccessLevel.AccessLevelRead
+1. AccessLevel.AccessLevelWrite
+1. AggregatedReplicationState.AggregatedReplicationStateCompleted
+1. AggregatedReplicationState.AggregatedReplicationStateFailed
+1. AggregatedReplicationState.AggregatedReplicationStateInProgress
+1. AggregatedReplicationState.AggregatedReplicationStateUnknown
+1. AvailabilitySetSkuTypes.AvailabilitySetSkuTypesAligned
+1. AvailabilitySetSkuTypes.AvailabilitySetSkuTypesClassic
+1. ComponentNames.ComponentNamesMicrosoftWindowsShellSetup
+1. DiffDiskOptions.DiffDiskOptionsLocal
+1. DiffDiskPlacement.DiffDiskPlacementCacheDisk
+1. DiffDiskPlacement.DiffDiskPlacementResourceDisk
+1. DiskCreateOption.DiskCreateOptionAttach
+1. DiskCreateOption.DiskCreateOptionCopy
+1. DiskCreateOption.DiskCreateOptionEmpty
+1. DiskCreateOption.DiskCreateOptionFromImage
+1. DiskCreateOption.DiskCreateOptionImport
+1. DiskCreateOption.DiskCreateOptionRestore
+1. DiskCreateOption.DiskCreateOptionUpload
+1. DiskDetachOptionTypes.DiskDetachOptionTypesForceDetach
+1. DiskEncryptionSetType.DiskEncryptionSetTypeEncryptionAtRestWithCustomerKey
+1. DiskEncryptionSetType.DiskEncryptionSetTypeEncryptionAtRestWithPlatformAndCustomerKeys
+1. DiskSecurityTypes.DiskSecurityTypesTrustedLaunch
+1. DiskState.DiskStateActiveSAS
+1. DiskState.DiskStateActiveUpload
+1. DiskState.DiskStateAttached
+1. DiskState.DiskStateReadyToUpload
+1. DiskState.DiskStateReserved
+1. DiskState.DiskStateUnattached
+1. DiskStorageAccountTypes.DiskStorageAccountTypesPremiumLRS
+1. DiskStorageAccountTypes.DiskStorageAccountTypesPremiumZRS
+1. DiskStorageAccountTypes.DiskStorageAccountTypesStandardLRS
+1. DiskStorageAccountTypes.DiskStorageAccountTypesStandardSSDLRS
+1. DiskStorageAccountTypes.DiskStorageAccountTypesStandardSSDZRS
+1. DiskStorageAccountTypes.DiskStorageAccountTypesUltraSSDLRS
+1. ExtendedLocationTypes.ExtendedLocationTypesEdgeZone
+1. HyperVGeneration.HyperVGenerationV1
+1. HyperVGeneration.HyperVGenerationV2
+1. IPVersion.IPVersionIPv4
+1. IPVersion.IPVersionIPv6
+1. InstanceViewTypes.InstanceViewTypesInstanceView
+1. IntervalInMins.IntervalInMinsFiveMins
+1. IntervalInMins.IntervalInMinsSixtyMins
+1. IntervalInMins.IntervalInMinsThirtyMins
+1. IntervalInMins.IntervalInMinsThreeMins
+1. LinuxVMGuestPatchMode.LinuxVMGuestPatchModeAutomaticByPlatform
+1. LinuxVMGuestPatchMode.LinuxVMGuestPatchModeImageDefault
+1. NetworkAccessPolicy.NetworkAccessPolicyAllowAll
+1. NetworkAccessPolicy.NetworkAccessPolicyAllowPrivate
+1. NetworkAccessPolicy.NetworkAccessPolicyDenyAll
+1. OperatingSystemStateTypes.OperatingSystemStateTypesGeneralized
+1. OperatingSystemStateTypes.OperatingSystemStateTypesSpecialized
+1. OperatingSystemTypes.OperatingSystemTypesLinux
+1. OperatingSystemTypes.OperatingSystemTypesWindows
+1. OrchestrationMode.OrchestrationModeFlexible
+1. OrchestrationMode.OrchestrationModeUniform
+1. OrchestrationServiceNames.OrchestrationServiceNamesAutomaticRepairs
+1. OrchestrationServiceState.OrchestrationServiceStateNotRunning
+1. OrchestrationServiceState.OrchestrationServiceStateRunning
+1. OrchestrationServiceState.OrchestrationServiceStateSuspended
+1. OrchestrationServiceStateAction.OrchestrationServiceStateActionResume
+1. OrchestrationServiceStateAction.OrchestrationServiceStateActionSuspend
+1. PassNames.PassNamesOobeSystem
+1. PrivateEndpointServiceConnectionStatus.PrivateEndpointServiceConnectionStatusApproved
+1. PrivateEndpointServiceConnectionStatus.PrivateEndpointServiceConnectionStatusPending
+1. PrivateEndpointServiceConnectionStatus.PrivateEndpointServiceConnectionStatusRejected
+1. ProtocolTypes.ProtocolTypesHTTP
+1. ProtocolTypes.ProtocolTypesHTTPS
+1. ProximityPlacementGroupType.ProximityPlacementGroupTypeStandard
+1. ProximityPlacementGroupType.ProximityPlacementGroupTypeUltra
+1. ResourceSkuRestrictionsReasonCode.ResourceSkuRestrictionsReasonCodeNotAvailableForSubscription
+1. ResourceSkuRestrictionsReasonCode.ResourceSkuRestrictionsReasonCodeQuotaID
+1. ResourceSkuRestrictionsType.ResourceSkuRestrictionsTypeLocation
+1. ResourceSkuRestrictionsType.ResourceSkuRestrictionsTypeZone
+1. RollingUpgradeActionType.RollingUpgradeActionTypeCancel
+1. RollingUpgradeActionType.RollingUpgradeActionTypeStart
+1. SettingNames.SettingNamesAutoLogon
+1. SettingNames.SettingNamesFirstLogonCommands
+1. StatusLevelTypes.StatusLevelTypesError
+1. StatusLevelTypes.StatusLevelTypesInfo
+1. StatusLevelTypes.StatusLevelTypesWarning
+1. UpgradeMode.UpgradeModeAutomatic
+1. UpgradeMode.UpgradeModeManual
+1. UpgradeMode.UpgradeModeRolling
+1. VMGuestPatchClassificationLinux.VMGuestPatchClassificationLinuxCritical
+1. VMGuestPatchClassificationLinux.VMGuestPatchClassificationLinuxOther
+1. VMGuestPatchClassificationLinux.VMGuestPatchClassificationLinuxSecurity
+1. VMGuestPatchRebootSetting.VMGuestPatchRebootSettingAlways
+1. VMGuestPatchRebootSetting.VMGuestPatchRebootSettingIfRequired
+1. VMGuestPatchRebootSetting.VMGuestPatchRebootSettingNever
+1. VirtualMachineEvictionPolicyTypes.VirtualMachineEvictionPolicyTypesDeallocate
+1. VirtualMachineEvictionPolicyTypes.VirtualMachineEvictionPolicyTypesDelete
+1. VirtualMachinePriorityTypes.VirtualMachinePriorityTypesLow
+1. VirtualMachinePriorityTypes.VirtualMachinePriorityTypesRegular
+1. VirtualMachinePriorityTypes.VirtualMachinePriorityTypesSpot
+1. VirtualMachineScaleSetScaleInRules.VirtualMachineScaleSetScaleInRulesDefault
+1. VirtualMachineScaleSetScaleInRules.VirtualMachineScaleSetScaleInRulesNewestVM
+1. VirtualMachineScaleSetScaleInRules.VirtualMachineScaleSetScaleInRulesOldestVM
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesBasicA0
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesBasicA1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesBasicA2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesBasicA3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesBasicA4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA0
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA10
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA11
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA1V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA2V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA2mV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA4V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA4mV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA5
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA6
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA7
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA8
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA8V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA8mV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardA9
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB1ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB1s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB2ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB2s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB4ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardB8ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD11
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD11V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD12
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD12V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD13
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD13V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD14
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD14V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD15V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD16V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD16sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD1V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD2V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD2V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD2sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD32V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD32sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD3V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD4V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD4V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD4sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD5V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD64V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD64sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD8V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardD8sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS11
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS11V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS12
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS12V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS13
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS132V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS134V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS13V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS14
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS144V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS148V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS14V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS15V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS1V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS2V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS3V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS4V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardDS5V2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE16V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE16sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE2V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE2sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE3216V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE328sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE32V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE32sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE4V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE4sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE6416sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE6432sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE64V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE64sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE8V3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardE8sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF16
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF16s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF16sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF1s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF2s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF2sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF32sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF4s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF4sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF64sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF72sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF8
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF8s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardF8sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardG1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardG2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardG3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardG4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardG5
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS1
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS4
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS44
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS48
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS5
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS516
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardGS58
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH16
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH16m
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH16mr
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH16r
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH8
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardH8m
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardL16s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardL32s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardL4s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardL8s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM12832ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM12864ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM128ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM128s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM6416ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM6432ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM64ms
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardM64s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC12
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC12sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC12sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24r
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24rsV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24rsV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC24sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC6
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC6sV2
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNC6sV3
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardND12s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardND24rs
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardND24s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardND6s
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNV12
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNV24
+1. VirtualMachineSizeTypes.VirtualMachineSizeTypesStandardNV6
 
 ### New Funcs
 
-1. AccessURI.MarshalJSON() ([]byte, error)
-1. AvailablePatchSummary.MarshalJSON() ([]byte, error)
-1. BootDiagnosticsInstanceView.MarshalJSON() ([]byte, error)
-1. DataDiskImage.MarshalJSON() ([]byte, error)
-1. DiskAccessProperties.MarshalJSON() ([]byte, error)
-1. GalleryIdentifier.MarshalJSON() ([]byte, error)
-1. LastPatchInstallationSummary.MarshalJSON() ([]byte, error)
-1. LogAnalyticsOperationResult.MarshalJSON() ([]byte, error)
-1. LogAnalyticsOutput.MarshalJSON() ([]byte, error)
-1. OperationListResult.MarshalJSON() ([]byte, error)
-1. OperationValueDisplay.MarshalJSON() ([]byte, error)
-1. OrchestrationServiceSummary.MarshalJSON() ([]byte, error)
-1. PatchInstallationDetail.MarshalJSON() ([]byte, error)
-1. PrivateEndpoint.MarshalJSON() ([]byte, error)
-1. ProxyOnlyResource.MarshalJSON() ([]byte, error)
-1. RecoveryWalkResponse.MarshalJSON() ([]byte, error)
-1. RegionalReplicationStatus.MarshalJSON() ([]byte, error)
-1. ReplicationStatus.MarshalJSON() ([]byte, error)
-1. ResourceSku.MarshalJSON() ([]byte, error)
-1. ResourceSkuCapabilities.MarshalJSON() ([]byte, error)
-1. ResourceSkuCapacity.MarshalJSON() ([]byte, error)
-1. ResourceSkuCosts.MarshalJSON() ([]byte, error)
-1. ResourceSkuLocationInfo.MarshalJSON() ([]byte, error)
-1. ResourceSkuRestrictionInfo.MarshalJSON() ([]byte, error)
-1. ResourceSkuRestrictions.MarshalJSON() ([]byte, error)
-1. ResourceSkuZoneDetails.MarshalJSON() ([]byte, error)
-1. RetrieveBootDiagnosticsDataResult.MarshalJSON() ([]byte, error)
-1. RollbackStatusInfo.MarshalJSON() ([]byte, error)
-1. RollingUpgradeProgressInfo.MarshalJSON() ([]byte, error)
-1. RollingUpgradeRunningStatus.MarshalJSON() ([]byte, error)
-1. RollingUpgradeStatusInfoProperties.MarshalJSON() ([]byte, error)
-1. ShareInfoElement.MarshalJSON() ([]byte, error)
-1. SubResourceReadOnly.MarshalJSON() ([]byte, error)
-1. UpgradeOperationHistoricalStatusInfo.MarshalJSON() ([]byte, error)
-1. UpgradeOperationHistoricalStatusInfoProperties.MarshalJSON() ([]byte, error)
-1. UpgradeOperationHistoryStatus.MarshalJSON() ([]byte, error)
-1. VirtualMachineAssessPatchesResult.MarshalJSON() ([]byte, error)
-1. VirtualMachineHealthStatus.MarshalJSON() ([]byte, error)
-1. VirtualMachineIdentityUserAssignedIdentitiesValue.MarshalJSON() ([]byte, error)
-1. VirtualMachineInstallPatchesResult.MarshalJSON() ([]byte, error)
-1. VirtualMachineScaleSetIdentityUserAssignedIdentitiesValue.MarshalJSON() ([]byte, error)
-1. VirtualMachineScaleSetInstanceViewStatusesSummary.MarshalJSON() ([]byte, error)
-1. VirtualMachineScaleSetSku.MarshalJSON() ([]byte, error)
-1. VirtualMachineScaleSetSkuCapacity.MarshalJSON() ([]byte, error)
-1. VirtualMachineScaleSetVMExtensionsSummary.MarshalJSON() ([]byte, error)
-1. VirtualMachineSoftwarePatchProperties.MarshalJSON() ([]byte, error)
-1. VirtualMachineStatusCodeCount.MarshalJSON() ([]byte, error)
+1. *DiskRestorePointGrantAccessFuture.UnmarshalJSON([]byte) error
+1. *DiskRestorePointRevokeAccessFuture.UnmarshalJSON([]byte) error
+1. DiskRestorePointClient.GrantAccess(context.Context, string, string, string, string, GrantAccessData) (DiskRestorePointGrantAccessFuture, error)
+1. DiskRestorePointClient.GrantAccessPreparer(context.Context, string, string, string, string, GrantAccessData) (*http.Request, error)
+1. DiskRestorePointClient.GrantAccessResponder(*http.Response) (AccessURI, error)
+1. DiskRestorePointClient.GrantAccessSender(*http.Request) (DiskRestorePointGrantAccessFuture, error)
+1. DiskRestorePointClient.RevokeAccess(context.Context, string, string, string, string) (DiskRestorePointRevokeAccessFuture, error)
+1. DiskRestorePointClient.RevokeAccessPreparer(context.Context, string, string, string, string) (*http.Request, error)
+1. DiskRestorePointClient.RevokeAccessResponder(*http.Response) (autorest.Response, error)
+1. DiskRestorePointClient.RevokeAccessSender(*http.Request) (DiskRestorePointRevokeAccessFuture, error)
+
+### Struct Changes
+
+#### New Structs
+
+1. DiskRestorePointGrantAccessFuture
+1. DiskRestorePointRevokeAccessFuture

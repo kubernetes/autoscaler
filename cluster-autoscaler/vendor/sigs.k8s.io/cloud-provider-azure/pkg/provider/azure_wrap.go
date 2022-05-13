@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -41,6 +41,7 @@ var (
 	loadBalancerCacheTTLDefaultInSeconds = 120
 	nsgCacheTTLDefaultInSeconds          = 120
 	routeTableCacheTTLDefaultInSeconds   = 120
+	publicIPCacheTTLDefaultInSeconds     = 120
 
 	azureNodeProviderIDRE    = regexp.MustCompile(`^azure:///subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/(?:.*)`)
 	azureResourceGroupNameRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/(?:.*)`)
@@ -96,26 +97,27 @@ func (az *Cloud) getRouteTable(crt azcache.AzureCacheReadType) (routeTable netwo
 	return *(cachedRt.(*network.RouteTable)), true, nil
 }
 
-func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string) (network.PublicIPAddress, bool, error) {
+func (az *Cloud) getPIPCacheKey(pipResourceGroup string, pipName string) string {
 	resourceGroup := az.ResourceGroup
 	if pipResourceGroup != "" {
 		resourceGroup = pipResourceGroup
 	}
+	return fmt.Sprintf("%s%s%s", resourceGroup, consts.PIPCacheKeySeparator, pipName)
+}
 
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-	pip, err := az.PublicIPAddressesClient.Get(ctx, resourceGroup, pipName, "")
-	exists, rerr := checkResourceExistsFromError(err)
-	if rerr != nil {
-		return pip, false, rerr.Error()
+func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt azcache.AzureCacheReadType) (network.PublicIPAddress, bool, error) {
+	pip := network.PublicIPAddress{}
+	cacheKey := az.getPIPCacheKey(pipResourceGroup, pipName)
+	cachedPIP, err := az.pipCache.Get(cacheKey, crt)
+	if err != nil {
+		return pip, false, err
 	}
 
-	if !exists {
-		klog.V(2).Infof("Public IP %q not found", pipName)
+	if cachedPIP == nil {
 		return pip, false, nil
 	}
 
-	return pip, exists, nil
+	return *(cachedPIP.(*network.PublicIPAddress)), true, nil
 }
 
 func (az *Cloud) getSubnet(virtualNetworkName string, subnetName string) (network.Subnet, bool, error) {
@@ -189,7 +191,7 @@ func (az *Cloud) newVMCache() (*azcache.TimedCache, error) {
 			return nil, err
 		}
 
-		vm, verr := az.VirtualMachinesClient.Get(ctx, resourceGroup, key, compute.InstanceView)
+		vm, verr := az.VirtualMachinesClient.Get(ctx, resourceGroup, key, compute.InstanceViewTypesInstanceView)
 		exists, rerr := checkResourceExistsFromError(verr)
 		if rerr != nil {
 			return nil, rerr.Error()
@@ -286,6 +288,37 @@ func (az *Cloud) newRouteTableCache() (*azcache.TimedCache, error) {
 		az.RouteTableCacheTTLInSeconds = routeTableCacheTTLDefaultInSeconds
 	}
 	return azcache.NewTimedcache(time.Duration(az.RouteTableCacheTTLInSeconds)*time.Second, getter)
+}
+
+func (az *Cloud) newPIPCache() (*azcache.TimedCache, error) {
+	getter := func(key string) (interface{}, error) {
+		ctx, cancel := getContextWithCancel()
+		defer cancel()
+
+		parsedKey := strings.Split(strings.TrimSpace(key), consts.PIPCacheKeySeparator)
+		if len(parsedKey) != 2 {
+			return nil, fmt.Errorf("failed to parse public ip rg and name from cache key %q", key)
+		}
+		pipResourceGroup, pipName := strings.TrimSpace(parsedKey[0]), strings.TrimSpace(parsedKey[1])
+
+		pip, err := az.PublicIPAddressesClient.Get(ctx, pipResourceGroup, pipName, "")
+		exists, rerr := checkResourceExistsFromError(err)
+		if rerr != nil {
+			return nil, rerr.Error()
+		}
+
+		if !exists {
+			klog.V(2).Infof("Public IP %q in rg %q not found", pipName, pipResourceGroup)
+			return nil, nil
+		}
+
+		return &pip, nil
+	}
+
+	if az.PublicIPCacheTTLInSeconds == 0 {
+		az.PublicIPCacheTTLInSeconds = publicIPCacheTTLDefaultInSeconds
+	}
+	return azcache.NewTimedcache(time.Duration(az.PublicIPCacheTTLInSeconds)*time.Second, getter)
 }
 
 func (az *Cloud) useStandardLoadBalancer() bool {

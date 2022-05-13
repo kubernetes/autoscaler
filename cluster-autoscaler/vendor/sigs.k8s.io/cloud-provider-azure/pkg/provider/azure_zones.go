@@ -217,3 +217,20 @@ func (az *Cloud) GetZoneByNodeName(ctx context.Context, nodeName types.NodeName)
 
 	return az.VMSet.GetZoneByNodeName(string(nodeName))
 }
+
+// GetPlatformSubFaultDomain returns the PlatformSubFaultDomain from IMDS if set.
+func (az *Cloud) GetPlatformSubFaultDomain() (string, error) {
+	if az.UseInstanceMetadata {
+		metadata, err := az.Metadata.GetMetadata(azcache.CacheReadTypeUnsafe)
+		if err != nil {
+			klog.Errorf("GetPlatformSubFaultDomain: failed to GetMetadata: %s", err.Error())
+			return "", err
+		}
+		if metadata.Compute == nil {
+			_ = az.Metadata.imsCache.Delete(consts.MetadataCacheKey)
+			return "", errors.New("failure of getting compute information from instance metadata")
+		}
+		return metadata.Compute.PlatformSubFaultDomain, nil
+	}
+	return "", nil
+}

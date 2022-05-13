@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
@@ -121,7 +121,7 @@ func TestWindowsVMNameParts(t *testing.T) {
 func TestGetVMNameIndexLinux(t *testing.T) {
 	expectedAgentIndex := 65
 
-	agentIndex, err := GetVMNameIndex(compute.Linux, "k8s-agentpool1-38988164-65")
+	agentIndex, err := GetVMNameIndex(compute.OperatingSystemTypesLinux, "k8s-agentpool1-38988164-65")
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
 	}
@@ -133,7 +133,7 @@ func TestGetVMNameIndexLinux(t *testing.T) {
 func TestGetVMNameIndexWindows(t *testing.T) {
 	expectedAgentIndex := 20
 
-	agentIndex, err := GetVMNameIndex(compute.Windows, "38988k8s90320")
+	agentIndex, err := GetVMNameIndex(compute.OperatingSystemTypesWindows, "38988k8s90320")
 	if agentIndex != expectedAgentIndex {
 		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
 	}
