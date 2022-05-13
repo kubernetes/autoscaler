@@ -63,6 +63,9 @@ func newCall(t TestHelper, receiver interface{}, method string, methodType refle
 		}
 	}
 
+	// callerInfo's skip should be updated if the number of calls between the user's test
+	// and this line changes, i.e. this code is wrapped in another anonymous function.
+	// 0 is us, 1 is RecordCallWithMethodType(), 2 is the generated recorder, and 3 is the user's test.
 	origin := callerInfo(3)
 	actions := []func([]interface{}) []interface{}{func([]interface{}) []interface{} {
 		// Synthesize the zero value for each of the return args' types.
@@ -82,8 +85,8 @@ func (c *Call) AnyTimes() *Call {
 	return c
 }
 
-// MinTimes requires the call to occur at least n times. If AnyTimes or MaxTimes have not been called, MinTimes also
-// sets the maximum number of calls to infinity.
+// MinTimes requires the call to occur at least n times. If AnyTimes or MaxTimes have not been called or if MaxTimes
+// was previously called with 1, MinTimes also sets the maximum number of calls to infinity.
 func (c *Call) MinTimes(n int) *Call {
 	c.minCalls = n
 	if c.maxCalls == 1 {
@@ -92,8 +95,8 @@ func (c *Call) MinTimes(n int) *Call {
 	return c
 }
 
-// MaxTimes limits the number of calls to n times. If AnyTimes or MinTimes have not been called, MaxTimes also
-// sets the minimum number of calls to 0.
+// MaxTimes limits the number of calls to n times. If AnyTimes or MinTimes have not been called or if MinTimes was
+// previously called with 1, MaxTimes also sets the minimum number of calls to 0.
 func (c *Call) MaxTimes(n int) *Call {
 	c.maxCalls = n
 	if c.minCalls == 1 {
@@ -276,7 +279,7 @@ func (c *Call) satisfied() bool {
 	return c.numCalls >= c.minCalls
 }
 
-// Returns true iff the maximum number of calls have been made.
+// Returns true if the maximum number of calls have been made.
 func (c *Call) exhausted() bool {
 	return c.numCalls >= c.maxCalls
 }
@@ -295,27 +298,29 @@ func (c *Call) String() string {
 func (c *Call) matches(args []interface{}) error {
 	if !c.methodType.IsVariadic() {
 		if len(args) != len(c.args) {
-			return fmt.Errorf("Expected call at %s has the wrong number of arguments. Got: %d, want: %d",
+			return fmt.Errorf("expected call at %s has the wrong number of arguments. Got: %d, want: %d",
 				c.origin, len(args), len(c.args))
 		}
 
 		for i, m := range c.args {
 			if !m.Matches(args[i]) {
-				return fmt.Errorf("Expected call at %s doesn't match the argument at index %s.\nGot: %v\nWant: %v",
-					c.origin, strconv.Itoa(i), args[i], m)
+				return fmt.Errorf(
+					"expected call at %s doesn't match the argument at index %d.\nGot: %v\nWant: %v",
+					c.origin, i, formatGottenArg(m, args[i]), m,
+				)
 			}
 		}
 	} else {
 		if len(c.args) < c.methodType.NumIn()-1 {
-			return fmt.Errorf("Expected call at %s has the wrong number of matchers. Got: %d, want: %d",
+			return fmt.Errorf("expected call at %s has the wrong number of matchers. Got: %d, want: %d",
 				c.origin, len(c.args), c.methodType.NumIn()-1)
 		}
 		if len(c.args) != c.methodType.NumIn() && len(args) != len(c.args) {
-			return fmt.Errorf("Expected call at %s has the wrong number of arguments. Got: %d, want: %d",
+			return fmt.Errorf("expected call at %s has the wrong number of arguments. Got: %d, want: %d",
 				c.origin, len(args), len(c.args))
 		}
 		if len(args) < len(c.args)-1 {
-			return fmt.Errorf("Expected call at %s has the wrong number of arguments. Got: %d, want: greater than or equal to %d",
+			return fmt.Errorf("expected call at %s has the wrong number of arguments. Got: %d, want: greater than or equal to %d",
 				c.origin, len(args), len(c.args)-1)
 		}
 
@@ -323,8 +328,8 @@ func (c *Call) matches(args []interface{}) error {
 			if i < c.methodType.NumIn()-1 {
 				// Non-variadic args
 				if !m.Matches(args[i]) {
-					return fmt.Errorf("Expected call at %s doesn't match the argument at index %s.\nGot: %v\nWant: %v",
-						c.origin, strconv.Itoa(i), args[i], m)
+					return fmt.Errorf("expected call at %s doesn't match the argument at index %s.\nGot: %v\nWant: %v",
+						c.origin, strconv.Itoa(i), formatGottenArg(m, args[i]), m)
 				}
 				continue
 			}
@@ -366,9 +371,9 @@ func (c *Call) matches(args []interface{}) error {
 			// Got Foo(a, b, c, d) want Foo(matcherA, matcherB, matcherC, matcherD, matcherE)
 			// Got Foo(a, b, c, d, e) want Foo(matcherA, matcherB, matcherC, matcherD)
 			// Got Foo(a, b, c) want Foo(matcherA, matcherB)
-			return fmt.Errorf("Expected call at %s doesn't match the argument at index %s.\nGot: %v\nWant: %v",
-				c.origin, strconv.Itoa(i), args[i:], c.args[i])
 
+			return fmt.Errorf("expected call at %s doesn't match the argument at index %s.\nGot: %v\nWant: %v",
+				c.origin, strconv.Itoa(i), formatGottenArg(m, args[i:]), c.args[i])
 		}
 	}
 
@@ -382,7 +387,7 @@ func (c *Call) matches(args []interface{}) error {
 
 	// Check that the call is not exhausted.
 	if c.exhausted() {
-		return fmt.Errorf("Expected call at %s has already been called the max number of times.", c.origin)
+		return fmt.Errorf("expected call at %s has already been called the max number of times", c.origin)
 	}
 
 	return nil
@@ -396,7 +401,7 @@ func (c *Call) dropPrereqs() (preReqs []*Call) {
 	return
 }
 
-func (c *Call) call(args []interface{}) []func([]interface{}) []interface{} {
+func (c *Call) call() []func([]interface{}) []interface{} {
 	c.numCalls++
 	return c.actions
 }
@@ -417,4 +422,12 @@ func setSlice(arg interface{}, v reflect.Value) {
 
 func (c *Call) addAction(action func([]interface{}) []interface{}) {
 	c.actions = append(c.actions, action)
+}
+
+func formatGottenArg(m Matcher, arg interface{}) string {
+	got := fmt.Sprintf("%v", arg)
+	if gs, ok := m.(GotFormatter); ok {
+		got = gs.Got(arg)
+	}
+	return got
 }

@@ -23,13 +23,14 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var (
-	// ReallyCrash controls the behavior of HandleCrash and now defaults
-	// true. It's still exposed so components can optionally set to false
-	// to restore prior behavior.
+	// ReallyCrash controls the behavior of HandleCrash and defaults to
+	// true. It's exposed so components can optionally set to false
+	// to restore prior behavior. This flag is mostly used for tests to validate
+	// crash conditions.
 	ReallyCrash = true
 )
 
@@ -79,7 +80,7 @@ func logPanic(r interface{}) {
 	}
 }
 
-// ErrorHandlers is a list of functions which will be invoked when an unreturnable
+// ErrorHandlers is a list of functions which will be invoked when a nonreturnable
 // error occurs.
 // TODO(lavalamp): for testability, this and the below HandleError function
 // should be packaged up into a testable and reusable object.
@@ -165,7 +166,7 @@ func RecoverFromPanic(err *error) {
 	}
 }
 
-// Must panics on non-nil errors.  Useful to handling programmer level errors.
+// Must panics on non-nil errors. Useful to handling programmer level errors.
 func Must(err error) {
 	if err != nil {
 		panic(err)
