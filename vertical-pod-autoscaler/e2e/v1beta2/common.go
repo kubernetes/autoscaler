@@ -27,7 +27,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -208,20 +207,20 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 }
 
 // NewTestCronJob returns a CronJob for test purposes.
-func NewTestCronJob(name, schedule string) *batchv1beta1.CronJob {
+func NewTestCronJob(name, schedule string) *batchv1.CronJob {
 	replicas := defaultHamsterReplicas
 	backoffLimit := defaultHamsterBackoffLimit
-	sj := &batchv1beta1.CronJob{
+	sj := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "CronJob",
 		},
-		Spec: batchv1beta1.CronJobSpec{
+		Spec: batchv1.CronJobSpec{
 			Schedule:          schedule,
-			ConcurrencyPolicy: batchv1beta1.AllowConcurrent,
-			JobTemplate: batchv1beta1.JobTemplateSpec{
+			ConcurrencyPolicy: batchv1.AllowConcurrent,
+			JobTemplate: batchv1.JobTemplateSpec{
 				Spec: batchv1.JobSpec{
 					Parallelism:  &replicas,
 					Completions:  &replicas,
@@ -252,12 +251,12 @@ func waitForActiveJobs(c clientset.Interface, ns, cronJobName string, active int
 	})
 }
 
-func createCronJob(c clientset.Interface, ns string, cronJob *batchv1beta1.CronJob) (*batchv1beta1.CronJob, error) {
-	return c.BatchV1beta1().CronJobs(ns).Create(context.TODO(), cronJob, metav1.CreateOptions{})
+func createCronJob(c clientset.Interface, ns string, cronJob *batchv1.CronJob) (*batchv1.CronJob, error) {
+	return c.BatchV1().CronJobs(ns).Create(context.TODO(), cronJob, metav1.CreateOptions{})
 }
 
-func getCronJob(c clientset.Interface, ns, name string) (*batchv1beta1.CronJob, error) {
-	return c.BatchV1beta1().CronJobs(ns).Get(context.TODO(), name, metav1.GetOptions{})
+func getCronJob(c clientset.Interface, ns, name string) (*batchv1.CronJob, error) {
+	return c.BatchV1().CronJobs(ns).Get(context.TODO(), name, metav1.GetOptions{})
 }
 
 // SetupHamsterCronJob creates and sets up a new CronJob
