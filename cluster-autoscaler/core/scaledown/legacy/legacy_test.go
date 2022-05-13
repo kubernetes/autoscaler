@@ -39,6 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
@@ -169,14 +170,12 @@ func TestFindUnneededNodes(t *testing.T) {
 		assert.False(t, found, n)
 	}
 
-	sd.unremovableNodes = make(map[string]time.Time)
+	sd.unremovableNodes = unremovable.NewNodes()
 	sd.unneededNodes["n1"] = time.Now()
 	allNodes = []*apiv1.Node{n1, n2, n3, n4}
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, allNodes, time.Now(), nil)
 	assert.NoError(t, autoscalererr)
-
-	sd.unremovableNodes = make(map[string]time.Time)
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	addTime2, found := sd.unneededNodes["n2"]
@@ -191,7 +190,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		assert.False(t, found, n)
 	}
 
-	sd.unremovableNodes = make(map[string]time.Time)
+	sd.unremovableNodes = unremovable.NewNodes()
 	scaleDownCandidates := []*apiv1.Node{n1, n3, n4}
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{p1, p2, p3, p4})
 	autoscalererr = sd.UpdateUnneededNodes(allNodes, scaleDownCandidates, time.Now(), nil)
@@ -207,7 +206,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	assert.Equal(t, 0, len(sd.unneededNodes))
 	// Verify that no other nodes are in unremovable map.
-	assert.Equal(t, 1, len(sd.unremovableNodes))
+	assert.Equal(t, 1, len(sd.unremovableNodes.AsList()))
 
 	// But it should be checked after timeout
 	simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, []*apiv1.Pod{})
@@ -216,7 +215,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	// Verify that nodes that are no longer unremovable are removed.
-	assert.Equal(t, 0, len(sd.unremovableNodes))
+	assert.Equal(t, 0, len(sd.unremovableNodes.AsList()))
 }
 
 func TestFindUnneededGPUNodes(t *testing.T) {
