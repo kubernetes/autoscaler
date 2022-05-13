@@ -17,46 +17,49 @@ limitations under the License.
 package cache
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/clock"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/utils/buffer"
+	"k8s.io/utils/clock"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // SharedInformer provides eventually consistent linkage of its
 // clients to the authoritative state of a given collection of
 // objects.  An object is identified by its API group, kind/resource,
-// namespace, and name; the `ObjectMeta.UID` is not part of an
-// object's ID as far as this contract is concerned.  One
+// namespace (if any), and name; the `ObjectMeta.UID` is not part of
+// an object's ID as far as this contract is concerned.  One
 // SharedInformer provides linkage to objects of a particular API
 // group and kind/resource.  The linked object collection of a
-// SharedInformer may be further restricted to one namespace and/or by
-// label selector and/or field selector.
+// SharedInformer may be further restricted to one namespace (if
+// applicable) and/or by label selector and/or field selector.
 //
 // The authoritative state of an object is what apiservers provide
 // access to, and an object goes through a strict sequence of states.
-// An object state is either "absent" or present with a
-// ResourceVersion and other appropriate content.
+// An object state is either (1) present with a ResourceVersion and
+// other appropriate content or (2) "absent".
 //
-// A SharedInformer maintains a local cache, exposed by GetStore() and
-// by GetIndexer() in the case of an indexed informer, of the state of
-// each relevant object.  This cache is eventually consistent with the
-// authoritative state.  This means that, unless prevented by
-// persistent communication problems, if ever a particular object ID X
-// is authoritatively associated with a state S then for every
-// SharedInformer I whose collection includes (X, S) eventually either
-// (1) I's cache associates X with S or a later state of X, (2) I is
-// stopped, or (3) the authoritative state service for X terminates.
-// To be formally complete, we say that the absent state meets any
-// restriction by label selector or field selector.
+// A SharedInformer maintains a local cache --- exposed by GetStore(),
+// by GetIndexer() in the case of an indexed informer, and possibly by
+// machinery involved in creating and/or accessing the informer --- of
+// the state of each relevant object.  This cache is eventually
+// consistent with the authoritative state.  This means that, unless
+// prevented by persistent communication problems, if ever a
+// particular object ID X is authoritatively associated with a state S
+// then for every SharedInformer I whose collection includes (X, S)
+// eventually either (1) I's cache associates X with S or a later
+// state of X, (2) I is stopped, or (3) the authoritative state
+// service for X terminates.  To be formally complete, we say that the
+// absent state meets any restriction by label selector or field
+// selector.
 //
 // For a given informer and relevant object ID X, the sequence of
 // states that appears in the informer's cache is a subsequence of the
@@ -98,7 +101,7 @@ import (
 // added before `Run()`, eventually either the SharedInformer is
 // stopped or the client is notified of the update.  A client added
 // after `Run()` starts gets a startup batch of notifications of
-// additions of the object existing in the cache at the time that
+// additions of the objects existing in the cache at the time that
 // client was added; also, for every update to the SharedInformer's
 // local cache after that client was added, eventually either the
 // SharedInformer is stopped or that client is notified of that
@@ -163,6 +166,35 @@ type SharedInformer interface {
 	// store. The value returned is not synchronized with access to the underlying store and is not
 	// thread-safe.
 	LastSyncResourceVersion() string
+
+	// The WatchErrorHandler is called whenever ListAndWatch drops the
+	// connection with an error. After calling this handler, the informer
+	// will backoff and retry.
+	//
+	// The default implementation looks at the error type and tries to log
+	// the error message at an appropriate level.
+	//
+	// There's only one handler, so if you call this multiple times, last one
+	// wins; calling after the informer has been started returns an error.
+	//
+	// The handler is intended for visibility, not to e.g. pause the consumers.
+	// The handler should return quickly - any expensive processing should be
+	// offloaded.
+	SetWatchErrorHandler(handler WatchErrorHandler) error
+
+	// The TransformFunc is called for each object which is about to be stored.
+	//
+	// This function is intended for you to take the opportunity to
+	// remove, transform, or normalize fields. One use case is to strip unused
+	// metadata fields out of objects to save on RAM cost.
+	//
+	// Must be set before starting the informer.
+	//
+	// Note: Since the object given to the handler may be already shared with
+	//	other goroutines, it is advisable to copy the object being
+	//  transform before mutating it at all and returning the copy to prevent
+	//	data races.
+	SetTransform(handler TransformFunc) error
 }
 
 // SharedIndexInformer provides add and get Indexers ability based on SharedInformer.
@@ -227,7 +259,7 @@ func WaitForNamedCacheSync(controllerName string, stopCh <-chan struct{}, cacheS
 		return false
 	}
 
-	klog.Infof("Caches are synced for %s ", controllerName)
+	klog.Infof("Caches are synced for %s", controllerName)
 	return true
 }
 
@@ -298,6 +330,11 @@ type sharedIndexInformer struct {
 	// blockDeltas gives a way to stop all event distribution so that a late event handler
 	// can safely join the shared informer.
 	blockDeltas sync.Mutex
+
+	// Called whenever the ListAndWatch drops the connection with an error.
+	watchErrorHandler WatchErrorHandler
+
+	transform TransformFunc
 }
 
 // dummyController hides the fact that a SharedInformer is different from a dedicated one
@@ -333,9 +370,37 @@ type deleteNotification struct {
 	oldObj interface{}
 }
 
+func (s *sharedIndexInformer) SetWatchErrorHandler(handler WatchErrorHandler) error {
+	s.startedLock.Lock()
+	defer s.startedLock.Unlock()
+
+	if s.started {
+		return fmt.Errorf("informer has already started")
+	}
+
+	s.watchErrorHandler = handler
+	return nil
+}
+
+func (s *sharedIndexInformer) SetTransform(handler TransformFunc) error {
+	s.startedLock.Lock()
+	defer s.startedLock.Unlock()
+
+	if s.started {
+		return fmt.Errorf("informer has already started")
+	}
+
+	s.transform = handler
+	return nil
+}
+
 func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 
+	if s.HasStarted() {
+		klog.Warningf("The sharedIndexInformer has started, run more than once is not allowed")
+		return
+	}
 	fifo := NewDeltaFIFOWithOptions(DeltaFIFOOptions{
 		KnownObjects:          s.indexer,
 		EmitDeltaTypeReplaced: true,
@@ -349,7 +414,8 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 		RetryOnError:     false,
 		ShouldResync:     s.processor.shouldResync,
 
-		Process: s.HandleDeltas,
+		Process:           s.HandleDeltas,
+		WatchErrorHandler: s.watchErrorHandler,
 	}
 
 	func() {
@@ -375,6 +441,12 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 		s.stopped = true // Don't want any new listeners
 	}()
 	s.controller.Run(stopCh)
+}
+
+func (s *sharedIndexInformer) HasStarted() bool {
+	s.startedLock.Lock()
+	defer s.startedLock.Unlock()
+	return s.started
 }
 
 func (s *sharedIndexInformer) HasSynced() bool {
@@ -452,13 +524,13 @@ func (s *sharedIndexInformer) AddEventHandlerWithResyncPeriod(handler ResourceEv
 
 	if resyncPeriod > 0 {
 		if resyncPeriod < minimumResyncPeriod {
-			klog.Warningf("resyncPeriod %d is too small. Changing it to the minimum allowed value of %d", resyncPeriod, minimumResyncPeriod)
+			klog.Warningf("resyncPeriod %v is too small. Changing it to the minimum allowed value of %v", resyncPeriod, minimumResyncPeriod)
 			resyncPeriod = minimumResyncPeriod
 		}
 
 		if resyncPeriod < s.resyncCheckPeriod {
 			if s.started {
-				klog.Warningf("resyncPeriod %d is smaller than resyncCheckPeriod %d and the informer has already started. Changing it to %d", resyncPeriod, s.resyncCheckPeriod, s.resyncCheckPeriod)
+				klog.Warningf("resyncPeriod %v is smaller than resyncCheckPeriod %v and the informer has already started. Changing it to %v", resyncPeriod, s.resyncCheckPeriod, s.resyncCheckPeriod)
 				resyncPeriod = s.resyncCheckPeriod
 			} else {
 				// if the event handler's resyncPeriod is smaller than the current resyncCheckPeriod, update
@@ -495,45 +567,47 @@ func (s *sharedIndexInformer) HandleDeltas(obj interface{}) error {
 	s.blockDeltas.Lock()
 	defer s.blockDeltas.Unlock()
 
-	// from oldest to newest
-	for _, d := range obj.(Deltas) {
-		switch d.Type {
-		case Sync, Replaced, Added, Updated:
-			s.cacheMutationDetector.AddObject(d.Object)
-			if old, exists, err := s.indexer.Get(d.Object); err == nil && exists {
-				if err := s.indexer.Update(d.Object); err != nil {
-					return err
-				}
+	if deltas, ok := obj.(Deltas); ok {
+		return processDeltas(s, s.indexer, s.transform, deltas)
+	}
+	return errors.New("object given as Process argument is not Deltas")
+}
 
-				isSync := false
-				switch {
-				case d.Type == Sync:
-					// Sync events are only propagated to listeners that requested resync
-					isSync = true
-				case d.Type == Replaced:
-					if accessor, err := meta.Accessor(d.Object); err == nil {
-						if oldAccessor, err := meta.Accessor(old); err == nil {
-							// Replaced events that didn't change resourceVersion are treated as resync events
-							// and only propagated to listeners that requested resync
-							isSync = accessor.GetResourceVersion() == oldAccessor.GetResourceVersion()
-						}
-					}
-				}
-				s.processor.distribute(updateNotification{oldObj: old, newObj: d.Object}, isSync)
-			} else {
-				if err := s.indexer.Add(d.Object); err != nil {
-					return err
-				}
-				s.processor.distribute(addNotification{newObj: d.Object}, false)
-			}
-		case Deleted:
-			if err := s.indexer.Delete(d.Object); err != nil {
-				return err
-			}
-			s.processor.distribute(deleteNotification{oldObj: d.Object}, false)
+// Conforms to ResourceEventHandler
+func (s *sharedIndexInformer) OnAdd(obj interface{}) {
+	// Invocation of this function is locked under s.blockDeltas, so it is
+	// save to distribute the notification
+	s.cacheMutationDetector.AddObject(obj)
+	s.processor.distribute(addNotification{newObj: obj}, false)
+}
+
+// Conforms to ResourceEventHandler
+func (s *sharedIndexInformer) OnUpdate(old, new interface{}) {
+	isSync := false
+
+	// If is a Sync event, isSync should be true
+	// If is a Replaced event, isSync is true if resource version is unchanged.
+	// If RV is unchanged: this is a Sync/Replaced event, so isSync is true
+
+	if accessor, err := meta.Accessor(new); err == nil {
+		if oldAccessor, err := meta.Accessor(old); err == nil {
+			// Events that didn't change resourceVersion are treated as resync events
+			// and only propagated to listeners that requested resync
+			isSync = accessor.GetResourceVersion() == oldAccessor.GetResourceVersion()
 		}
 	}
-	return nil
+
+	// Invocation of this function is locked under s.blockDeltas, so it is
+	// save to distribute the notification
+	s.cacheMutationDetector.AddObject(new)
+	s.processor.distribute(updateNotification{oldObj: old, newObj: new}, isSync)
+}
+
+// Conforms to ResourceEventHandler
+func (s *sharedIndexInformer) OnDelete(old interface{}) {
+	// Invocation of this function is locked under s.blockDeltas, so it is
+	// save to distribute the notification
+	s.processor.distribute(deleteNotification{oldObj: old}, false)
 }
 
 // sharedProcessor has a collection of processorListener and can
@@ -661,9 +735,9 @@ type processorListener struct {
 	// full resync from the shared informer, but modified by two
 	// adjustments.  One is imposing a lower bound,
 	// `minimumResyncPeriod`.  The other is another lower bound, the
-	// sharedProcessor's `resyncCheckPeriod`, that is imposed (a) only
+	// sharedIndexInformer's `resyncCheckPeriod`, that is imposed (a) only
 	// in AddEventHandlerWithResyncPeriod invocations made after the
-	// sharedProcessor starts and (b) only if the informer does
+	// sharedIndexInformer starts and (b) only if the informer does
 	// resyncs at all.
 	requestedResyncPeriod time.Duration
 	// resyncPeriod is the threshold that will be used in the logic
