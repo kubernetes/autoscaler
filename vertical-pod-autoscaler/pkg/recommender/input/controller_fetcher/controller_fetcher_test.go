@@ -26,7 +26,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -231,7 +230,7 @@ func TestControllerFetcher(t *testing.T) {
 						},
 					},
 				},
-			}, &batchv1beta1.CronJob{
+			}, &batchv1.CronJob{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "CronJob",
 				},
@@ -248,7 +247,7 @@ func TestControllerFetcher(t *testing.T) {
 			name: "CronJob no parent",
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}},
-			objects: []runtime.Object{&batchv1beta1.CronJob{
+			objects: []runtime.Object{&batchv1.CronJob{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "CronJob",
 				},
