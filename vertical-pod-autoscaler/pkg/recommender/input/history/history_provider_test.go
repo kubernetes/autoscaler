@@ -22,7 +22,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
 	"github.com/stretchr/testify/assert"
@@ -83,15 +82,15 @@ func (m *mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) LabelNames(ctx context.Context) ([]string, error) {
+func (m *mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]string, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) LabelValues(ctx context.Context, label string) (prommodel.LabelValues, error) {
+func (m *mockPrometheusAPI) LabelValues(ctx context.Context, label string, matches []string, startTime time.Time, endTime time.Time) (prommodel.LabelValues, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, api.Warnings, error) {
+func (m *mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
@@ -111,7 +110,31 @@ func (m *mockPrometheusAPI) TargetsMetadata(ctx context.Context, _, _, _ string)
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, api.Warnings, error) {
+func (m *mockPrometheusAPI) Buildinfo(ctx context.Context) (prometheusv1.BuildinfoResult, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) Metadata(ctx context.Context, metric string, limit string) (map[string][]prometheusv1.Metadata, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) QueryExemplars(ctx context.Context, query string, startTime time.Time, endTime time.Time) ([]prometheusv1.ExemplarQueryResult, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) Runtimeinfo(ctx context.Context) (prometheusv1.RuntimeinfoResult, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) TSDB(ctx context.Context) (prometheusv1.TSDBResult, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) WalReplay(ctx context.Context) (prometheusv1.WalReplayStatus, error) {
+	panic("not implemented")
+}
+
+func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, prometheusv1.Warnings, error) {
 	args := m.Called(ctx, query, ts)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
@@ -120,7 +143,7 @@ func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Tim
 	return returnArg, nil, args.Error(1)
 }
 
-func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, api.Warnings, error) {
+func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, prometheusv1.Warnings, error) {
 	args := m.Called(ctx, query, r)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
