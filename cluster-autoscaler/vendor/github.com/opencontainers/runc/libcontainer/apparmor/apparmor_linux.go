@@ -1,42 +1,41 @@
 package apparmor
 
-<<<<<<<< HEAD:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor_linux.go
 import (
-	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
-========
-import "errors"
->>>>>>>> cluster-autoscaler-release-1.22:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor.go
+	"sync"
+
+	"github.com/opencontainers/runc/libcontainer/utils"
+)
 
 var (
-	// IsEnabled returns true if apparmor is enabled for the host.
-	IsEnabled = isEnabled
-
-	// ApplyProfile will apply the profile with the specified name to the process after
-	// the next exec. It is only supported on Linux and produces an ErrApparmorNotEnabled
-	// on other platforms.
-	ApplyProfile = applyProfile
-
-	// ErrApparmorNotEnabled indicates that AppArmor is not enabled or not supported.
-	ErrApparmorNotEnabled = errors.New("apparmor: config provided but apparmor not supported")
+	appArmorEnabled bool
+	checkAppArmor   sync.Once
 )
-<<<<<<<< HEAD:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor_linux.go
 
-// IsEnabled returns true if apparmor is enabled for the host.
-func IsEnabled() bool {
-	if _, err := os.Stat("/sys/kernel/security/apparmor"); err == nil {
-		buf, err := ioutil.ReadFile("/sys/module/apparmor/parameters/enabled")
-		return err == nil && bytes.HasPrefix(buf, []byte("Y"))
-	}
-	return false
+// isEnabled returns true if apparmor is enabled for the host.
+func isEnabled() bool {
+	checkAppArmor.Do(func() {
+		if _, err := os.Stat("/sys/kernel/security/apparmor"); err == nil {
+			buf, err := ioutil.ReadFile("/sys/module/apparmor/parameters/enabled")
+			appArmorEnabled = err == nil && len(buf) > 1 && buf[0] == 'Y'
+		}
+	})
+	return appArmorEnabled
 }
 
 func setProcAttr(attr, value string) error {
 	// Under AppArmor you can only change your own attr, so use /proc/self/
 	// instead of /proc/<tid>/ like libapparmor does
-	f, err := os.OpenFile("/proc/self/attr/"+attr, os.O_WRONLY, 0)
+	attrPath := "/proc/self/attr/apparmor/" + attr
+	if _, err := os.Stat(attrPath); errors.Is(err, os.ErrNotExist) {
+		// fall back to the old convention
+		attrPath = "/proc/self/attr/" + attr
+	}
+
+	f, err := os.OpenFile(attrPath, os.O_WRONLY, 0)
 	if err != nil {
 		return err
 	}
@@ -58,14 +57,13 @@ func changeOnExec(name string) error {
 	return nil
 }
 
-// ApplyProfile will apply the profile with the specified name to the process after
-// the next exec.
-func ApplyProfile(name string) error {
+// applyProfile will apply the profile with the specified name to the process after
+// the next exec. It is only supported on Linux and produces an error on other
+// platforms.
+func applyProfile(name string) error {
 	if name == "" {
 		return nil
 	}
 
 	return changeOnExec(name)
 }
-========
->>>>>>>> cluster-autoscaler-release-1.22:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor.go

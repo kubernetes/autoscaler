@@ -22,8 +22,3 @@ func InitSeccomp(config *configs.Seccomp) error {
 func Version() (uint, uint, uint) {
 	return 0, 0, 0
 }
-
-// Version returns major, minor, and micro.
-func Version() (uint, uint, uint) {
-	return 0, 0, 0
-}

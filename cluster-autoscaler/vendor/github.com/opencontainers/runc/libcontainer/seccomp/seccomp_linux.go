@@ -220,8 +220,3 @@ func matchCall(filter *libseccomp.ScmpFilter, call *configs.Syscall) error {
 func Version() (uint, uint, uint) {
 	return libseccomp.GetLibraryVersion()
 }
-
-// Version returns major, minor, and micro.
-func Version() (uint, uint, uint) {
-	return libseccomp.GetLibraryVersion()
-}
