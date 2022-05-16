@@ -17,4 +17,4 @@ limitations under the License.
 package version
 
 // ClusterAutoscalerVersion contains version of CA.
-const ClusterAutoscalerVersion = "1.21.0"
+const ClusterAutoscalerVersion = "1.22.0"

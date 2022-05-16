@@ -348,7 +348,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 	// Base instance price
 	if node.Labels != nil {
 		isPreemptible = node.Labels[preemptibleLabel] == "true"
-		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
+		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
 			priceMapToUse := instancePrices
 			if isPreemptible {
 				priceMapToUse = preemptiblePrices
@@ -362,8 +362,10 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		}
 	}
 	if !basePriceFound {
-		price = getBasePrice(node.Status.Capacity, node.Labels[apiv1.LabelInstanceType], startTime, endTime)
-		price = price * getPreemptibleDiscount(node)
+		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
+			price = getBasePrice(node.Status.Capacity, machineType, startTime, endTime)
+			price = price * getPreemptibleDiscount(node)
+		}
 	}
 
 	// GPUs
@@ -407,7 +409,10 @@ func getPreemptibleDiscount(node *apiv1.Node) float64 {
 	if node.Labels[preemptibleLabel] != "true" {
 		return 1.0
 	}
-	instanceType := node.Labels[apiv1.LabelInstanceType]
+	instanceType, found := getInstanceTypeFromLabels(node.Labels)
+	if !found {
+		return 1.0
+	}
 	instanceFamily := getInstanceFamily(instanceType)
 
 	discountMap := predefinedPreemptibleDiscount
@@ -475,4 +480,12 @@ func getAdditionalPrice(resources apiv1.ResourceList, startTime time.Time, endTi
 	gpu := resources[gpu.ResourceNvidiaGPU]
 	price += float64(gpu.MilliValue()) / 1000.0 * gpuPricePerHour * hours
 	return price
+}
+
+func getInstanceTypeFromLabels(labels map[string]string) (string, bool) {
+	machineType, found := labels[apiv1.LabelInstanceTypeStable]
+	if !found {
+		machineType, found = labels[apiv1.LabelInstanceType]
+	}
+	return machineType, found
 }

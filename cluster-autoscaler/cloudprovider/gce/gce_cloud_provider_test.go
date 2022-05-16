@@ -92,6 +92,11 @@ func (m *gceManagerMock) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
 
+func (m *gceManagerMock) CreateInstances(mig Mig, delta int64) error {
+	args := m.Called(mig, delta)
+	return args.Error(0)
+}
+
 func (m *gceManagerMock) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
 	args := m.Called(machineType, zone)
 	return args.Get(0).(int64), args.Get(1).(int64), args.Error(2)
@@ -266,7 +271,7 @@ func TestMig(t *testing.T) {
 
 	// Test IncreaseSize.
 	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
-	gceManagerMock.On("SetMigSize", mock.AnythingOfType("*gce.gceMig"), int64(3)).Return(nil).Once()
+	gceManagerMock.On("CreateInstances", mock.AnythingOfType("*gce.gceMig"), int64(1)).Return(nil).Once()
 	err = mig1.IncreaseSize(1)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)

@@ -17,8 +17,12 @@ limitations under the License.
 package gce
 
 import (
+	"context"
+	"fmt"
 	"sync"
 
+	gce "google.golang.org/api/compute/v1"
+	"k8s.io/client-go/util/workqueue"
 	klog "k8s.io/klog/v2"
 )
 
@@ -54,7 +58,7 @@ func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, 
 		return targetSize, nil
 	}
 
-	newTargetSizes, err := c.fillInMigTargetSizeCache()
+	newTargetSizes, err := c.fillInMigTargetSizeAndBaseNameCaches()
 
 	size, found := newTargetSizes[migRef]
 	if err != nil || !found {
@@ -71,20 +75,30 @@ func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, 
 	return size, nil
 }
 
-func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeCache() (map[GceRef]int64, error) {
-	zones := c.listAllZonesForMigs()
+func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeAndBaseNameCaches() (map[GceRef]int64, error) {
+	var zones []string
+	for zone := range c.listAllZonesForMigs() {
+		zones = append(zones, zone)
+	}
+
+	migs := make([][]*gce.InstanceGroupManager, len(zones))
+	errors := make([]error, len(zones))
+	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
+		migs[piece], errors[piece] = c.gceClient.FetchAllMigs(zones[piece])
+	})
+
+	for idx, err := range errors {
+		if err != nil {
+			klog.Errorf("Error listing migs from zone %v; err=%v", zones[idx], err)
+			return nil, fmt.Errorf("%v", errors)
+		}
+	}
 
 	newMigTargetSizeCache := map[GceRef]int64{}
-	for zone := range zones {
-		zoneMigs, err := c.gceClient.FetchAllMigs(zone)
-		if err != nil {
-			klog.Errorf("Error listing migs from zone %v; err=%v", zone, err)
-			return nil, err
-		}
-
+	newMigBasenameCache := map[GceRef]string{}
+	for idx, zone := range zones {
 		registeredMigRefs := c.getMigRefs()
-
-		for _, zoneMig := range zoneMigs {
+		for _, zoneMig := range migs[idx] {
 			zoneMigRef := GceRef{
 				c.projectId,
 				zone,
@@ -93,12 +107,17 @@ func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeCache() (map[GceRef]i
 
 			if registeredMigRefs[zoneMigRef] {
 				newMigTargetSizeCache[zoneMigRef] = zoneMig.TargetSize
+				newMigBasenameCache[zoneMigRef] = zoneMig.BaseInstanceName
 			}
 		}
 	}
 
 	for migRef, targetSize := range newMigTargetSizeCache {
 		c.cache.SetMigTargetSize(migRef, targetSize)
+	}
+
+	for migRef, baseName := range newMigBasenameCache {
+		c.cache.SetMigBasename(migRef, baseName)
 	}
 
 	return newMigTargetSizeCache, nil

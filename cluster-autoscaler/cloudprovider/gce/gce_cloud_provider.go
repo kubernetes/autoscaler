@@ -220,7 +220,7 @@ func (mig *gceMig) IncreaseSize(delta int) error {
 	if int(size)+delta > mig.MaxSize() {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, mig.MaxSize())
 	}
-	return mig.gceManager.SetMigSize(mig, size+int64(delta))
+	return mig.gceManager.CreateInstances(mig, int64(delta))
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function

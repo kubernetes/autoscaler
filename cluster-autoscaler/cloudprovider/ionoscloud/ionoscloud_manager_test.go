@@ -23,7 +23,6 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -507,7 +506,7 @@ func (s *ManagerTestSuite) TestInitExplicitNodeGroups_InvalidIDValue() {
 }
 
 func (s *ManagerTestSuite) TestInitExplicitNodeGroups_GetNodePoolError() {
-	id := uuid.NewV4().String()
+	id := NewUUID()
 	s.nodePool.id = id
 	s.OnGetKubernetesNodePool(nil, fmt.Errorf("error")).Once()
 
@@ -515,7 +514,7 @@ func (s *ManagerTestSuite) TestInitExplicitNodeGroups_GetNodePoolError() {
 }
 
 func (s *ManagerTestSuite) TestInitExplicitNodeGroups_ListNodesError() {
-	id := uuid.NewV4().String()
+	id := NewUUID()
 	s.nodePool.id = id
 	kNodePool := newKubernetesNodePool(K8sStateActive, 2)
 	s.OnGetKubernetesNodePool(kNodePool, nil).Once()
@@ -525,7 +524,7 @@ func (s *ManagerTestSuite) TestInitExplicitNodeGroups_ListNodesError() {
 }
 
 func (s *ManagerTestSuite) TestInitExplicitNodeGroups_OK() {
-	id := uuid.NewV4().String()
+	id := NewUUID()
 	s.nodePool.id = id
 	kNodePool := newKubernetesNodePool(K8sStateActive, 2)
 	s.OnGetKubernetesNodePool(kNodePool, nil).Once()

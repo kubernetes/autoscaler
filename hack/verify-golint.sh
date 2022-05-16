@@ -28,6 +28,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/magnum/gophercloud'
   'cluster-autoscaler/integration'
   'cluster-autoscaler/cloudprovider/digitalocean/godo'
+  'cluster-autoscaler/cloudprovider/bizflycloud/gobizfly'
   'cluster-autoscaler/cloudprovider/exoscale/internal'
   'cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3'
   'cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go'

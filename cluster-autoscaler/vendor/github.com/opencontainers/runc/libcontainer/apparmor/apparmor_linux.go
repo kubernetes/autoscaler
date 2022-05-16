@@ -1,13 +1,28 @@
 package apparmor
 
+<<<<<<<< HEAD:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor_linux.go
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
+========
+import "errors"
+>>>>>>>> cluster-autoscaler-release-1.22:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor.go
 
-	"github.com/opencontainers/runc/libcontainer/utils"
+var (
+	// IsEnabled returns true if apparmor is enabled for the host.
+	IsEnabled = isEnabled
+
+	// ApplyProfile will apply the profile with the specified name to the process after
+	// the next exec. It is only supported on Linux and produces an ErrApparmorNotEnabled
+	// on other platforms.
+	ApplyProfile = applyProfile
+
+	// ErrApparmorNotEnabled indicates that AppArmor is not enabled or not supported.
+	ErrApparmorNotEnabled = errors.New("apparmor: config provided but apparmor not supported")
 )
+<<<<<<<< HEAD:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor_linux.go
 
 // IsEnabled returns true if apparmor is enabled for the host.
 func IsEnabled() bool {
@@ -52,3 +67,5 @@ func ApplyProfile(name string) error {
 
 	return changeOnExec(name)
 }
+========
+>>>>>>>> cluster-autoscaler-release-1.22:cluster-autoscaler/vendor/github.com/opencontainers/runc/libcontainer/apparmor/apparmor.go

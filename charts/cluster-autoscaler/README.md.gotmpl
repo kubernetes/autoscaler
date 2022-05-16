@@ -81,10 +81,16 @@ Auto-discovery finds ASGs tags as below and automatically manages them based on 
 - Verify the [IAM Permissions](#aws---iam)
 - Set `autoDiscovery.clusterName=<YOUR CLUSTER NAME>`
 - Set `awsRegion=<YOUR AWS REGION>`
-- Set `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
+- Set (option) `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME>
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION>
+```
+
+Alternatively with your own AWS credentials
+
+```console
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION> --set awsAccessKeyID=<YOUR AWS KEY ID> --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
 ```
 
 #### Specifying groups manually

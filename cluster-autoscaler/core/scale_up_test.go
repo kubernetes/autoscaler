@@ -978,7 +978,7 @@ func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
 }
 
 func TestAuthError(t *testing.T) {
-	metrics.RegisterAll()
+	metrics.RegisterAll(false)
 	context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, nil, nil)
 	assert.NoError(t, err)
 

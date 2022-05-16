@@ -25,7 +25,7 @@ import (
 	"path/filepath"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
 	"k8s.io/klog/v2"
@@ -123,7 +123,7 @@ func loadTokensFromFilesystem(path string) (map[string]string, error) {
 	tokens := make(map[string]string)
 	for _, filename := range filenames {
 		name := filepath.Base(filename)
-		if _, err := uuid.FromString(name); err != nil {
+		if _, err := uuid.Parse(name); err != nil {
 			continue
 		}
 		data, err := ioutil.ReadFile(filename)
