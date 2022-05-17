@@ -76,6 +76,18 @@ Return the appropriate apiVersion for podsecuritypolicy.
 {{- end -}}
 
 {{/*
+Return the appropriate apiVersion for podDisruptionBudget.
+*/}}
+{{- define "podDisruptionBudget.apiVersion" -}}
+{{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
+{{- if semverCompare "<1.21-0" $kubeTargetVersion -}}
+{{- print "policy/v1beta1" -}}
+{{- else -}}
+{{- print "policy/v1" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the service account name used by the pod.
 */}}
 {{- define "cluster-autoscaler.serviceAccountName" -}}
