@@ -590,9 +590,12 @@ func TestUnregisteredNodes(t *testing.T) {
 }
 
 func TestCloudProviderDeletedNodes(t *testing.T) {
+	now := time.Now()
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	ng1_1.Spec.ProviderID = "ng1-1"
 	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
 	ng1_2.Spec.ProviderID = "ng1-2"
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -606,7 +609,8 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 		MaxNodeProvisionTime:      10 * time.Second,
 	}, fakeLogRecorder, newBackoff())
-	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, time.Now().Add(-time.Minute))
+	now.Add(time.Minute)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 
 	// Nodes are registered correctly between Kubernetes and cloud provider.
 	assert.NoError(t, err)
@@ -614,15 +618,20 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 
 	// The node was removed from Cloud Provider
 	// should be counted as Deleted by cluster state
+	nodeGroup, err := provider.NodeGroupForNode(ng1_2)
+	assert.NoError(t, err)
 	provider.DeleteNode(ng1_2)
-	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, time.Now().Add(time.Minute))
+	clusterstate.InvalidateNodeInstancesCacheEntry(nodeGroup)
+	now.Add(time.Minute)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetCloudProviderDeletedNodes()))
-	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
+	assert.Equal(t, "ng1-2", clusterstate.GetCloudProviderDeletedNodes()[0].Node.Name)
 	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Deleted)
 
 	// The node is removed from Kubernetes
-	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, time.Now().Add(time.Minute))
+	now.Add(time.Minute)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetCloudProviderDeletedNodes()))
 }
