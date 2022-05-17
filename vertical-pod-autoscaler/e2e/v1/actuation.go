@@ -24,7 +24,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -202,7 +202,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		permissiveMaxUnavailable := 7
 		// Creating new PDB and removing old one, since PDBs are immutable at the moment
 		setupPDB(f, "hamster-pdb-2", permissiveMaxUnavailable)
-		err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(context.TODO(), pdb.Name, metav1.DeleteOptions{})
+		err = c.PolicyV1().PodDisruptionBudgets(ns).Delete(context.TODO(), pdb.Name, metav1.DeleteOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, sleep for %s", VpaEvictionTimeout.String()))
@@ -570,20 +570,20 @@ func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas i
 	framework_ss.WaitForRunningAndReady(f.ClientSet, *stateful.Spec.Replicas, stateful)
 }
 
-func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1beta1.PodDisruptionBudget {
+func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1.PodDisruptionBudget {
 	maxUnavailableIntstr := intstr.FromInt(maxUnavailable)
-	pdb := &policyv1beta1.PodDisruptionBudget{
+	pdb := &policyv1.PodDisruptionBudget{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Spec: policyv1beta1.PodDisruptionBudgetSpec{
+		Spec: policyv1.PodDisruptionBudgetSpec{
 			MaxUnavailable: &maxUnavailableIntstr,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: hamsterLabels,
 			},
 		},
 	}
-	_, err := f.ClientSet.PolicyV1beta1().PodDisruptionBudgets(f.Namespace.Name).Create(context.TODO(), pdb, metav1.CreateOptions{})
+	_, err := f.ClientSet.PolicyV1().PodDisruptionBudgets(f.Namespace.Name).Create(context.TODO(), pdb, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return pdb
 }
