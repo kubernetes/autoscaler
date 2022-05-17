@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 
@@ -53,7 +54,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -296,5 +296,6 @@ func (p *MockAutoprovisioningNodeGroupListProcessor) CleanUp() {
 
 // NewBackoff creates a new backoff object
 func NewBackoff() backoff.Backoff {
-	return backoff.NewIdBasedExponentialBackoff(clusterstate.InitialNodeGroupBackoffDuration, clusterstate.MaxNodeGroupBackoffDuration, clusterstate.NodeGroupBackoffResetTimeout)
+	return backoff.NewIdBasedExponentialBackoff(5*time.Minute, /*InitialNodeGroupBackoffDuration*/
+		30*time.Minute /*MaxNodeGroupBackoffDuration*/, 3*time.Hour /*NodeGroupBackoffResetTimeout*/)
 }
