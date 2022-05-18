@@ -6,17 +6,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -180,7 +185,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 	}
 }
 
-func TestDrainNode(t *testing.T) {
+func TestDrainNodeWithPods(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
@@ -214,7 +219,7 @@ func TestDrainNode(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
+	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -227,7 +232,7 @@ func TestDrainNode(t *testing.T) {
 	assert.Equal(t, p2.Name, deleted[2])
 }
 
-func TestDrainNodeWithRescheduled(t *testing.T) {
+func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
@@ -268,7 +273,7 @@ func TestDrainNodeWithRescheduled(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
+	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -278,7 +283,7 @@ func TestDrainNodeWithRescheduled(t *testing.T) {
 	assert.Equal(t, p2.Name, deleted[1])
 }
 
-func TestDrainNodeWithRetries(t *testing.T) {
+func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	// Simulate pdb of size 1 by making the 'eviction' goroutine:
 	// - read from (at first empty) channel
@@ -326,7 +331,7 @@ func TestDrainNodeWithRetries(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2, p3}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
+	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -340,7 +345,7 @@ func TestDrainNodeWithRetries(t *testing.T) {
 	assert.Equal(t, p3.Name, deleted[3])
 }
 
-func TestDrainNodeDaemonSetEvictionFailure(t *testing.T) {
+func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
 	p1 := BuildTestPod("p1", 100, 0)
@@ -379,7 +384,7 @@ func TestDrainNodeDaemonSetEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1, d2}, 0*time.Second, PodEvictionHeadroom)
+	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1, d2}, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(evictionResults))
 	assert.Equal(t, p1, evictionResults["p1"].Pod)
@@ -392,7 +397,7 @@ func TestDrainNodeDaemonSetEvictionFailure(t *testing.T) {
 	assert.True(t, evictionResults["p2"].WasEvictionSuccessful())
 }
 
-func TestDrainNodeEvictionFailure(t *testing.T) {
+func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
 	p1 := BuildTestPod("p1", 100, 0)
@@ -430,7 +435,7 @@ func TestDrainNodeEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
+	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
@@ -451,7 +456,7 @@ func TestDrainNodeEvictionFailure(t *testing.T) {
 	assert.False(t, evictionResults["p4"].WasEvictionSuccessful())
 }
 
-func TestDrainNodeDisappearanceFailure(t *testing.T) {
+func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
 	p1 := BuildTestPod("p1", 100, 0)
@@ -486,7 +491,7 @@ func TestDrainNodeDisappearanceFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNode(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, 0*time.Second)
+	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, 0*time.Second)
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
@@ -505,4 +510,125 @@ func TestDrainNodeDisappearanceFailure(t *testing.T) {
 	assert.False(t, evictionResults["p2"].WasEvictionSuccessful())
 	assert.True(t, evictionResults["p3"].WasEvictionSuccessful())
 	assert.False(t, evictionResults["p4"].WasEvictionSuccessful())
+}
+
+func TestPodsToEvict(t *testing.T) {
+	for tn, tc := range map[string]struct {
+		pods               []*apiv1.Pod
+		nodeNameOverwrite  string
+		dsEvictionDisabled bool
+		wantDsPods         []*apiv1.Pod
+		wantNonDsPods      []*apiv1.Pod
+		wantErr            error
+	}{
+		"no pods": {
+			pods:          []*apiv1.Pod{},
+			wantDsPods:    []*apiv1.Pod{},
+			wantNonDsPods: []*apiv1.Pod{},
+		},
+		"mirror pods are never returned": {
+			pods:          []*apiv1.Pod{mirrorPod("pod-1"), mirrorPod("pod-2")},
+			wantDsPods:    []*apiv1.Pod{},
+			wantNonDsPods: []*apiv1.Pod{},
+		},
+		"non-DS pods are correctly returned": {
+			pods:          []*apiv1.Pod{regularPod("pod-1"), regularPod("pod-2")},
+			wantDsPods:    []*apiv1.Pod{},
+			wantNonDsPods: []*apiv1.Pod{regularPod("pod-1"), regularPod("pod-2")},
+		},
+		"DS pods are correctly returned when DS eviction is enabled": {
+			pods:          []*apiv1.Pod{dsPod("pod-1", false), dsPod("pod-2", false)},
+			wantDsPods:    []*apiv1.Pod{dsPod("pod-1", false), dsPod("pod-2", false)},
+			wantNonDsPods: []*apiv1.Pod{},
+		},
+		"DS pods are not returned when DS eviction is disabled and the pods are not marked as evictable": {
+			dsEvictionDisabled: true,
+			pods:               []*apiv1.Pod{dsPod("pod-1", false), dsPod("pod-2", false)},
+			wantDsPods:         []*apiv1.Pod{},
+			wantNonDsPods:      []*apiv1.Pod{},
+		},
+		"DS pods are correctly returned when DS eviction is disabled, but the pods are marked as evictable": {
+			dsEvictionDisabled: true,
+			pods:               []*apiv1.Pod{dsPod("pod-1", true), dsPod("pod-2", false), dsPod("pod-3", true)},
+			wantDsPods:         []*apiv1.Pod{dsPod("pod-1", true), dsPod("pod-3", true)},
+			wantNonDsPods:      []*apiv1.Pod{},
+		},
+		"all pod kinds are correctly handled together": {
+			pods: []*apiv1.Pod{
+				dsPod("ds-pod-1", false), dsPod("ds-pod-2", false),
+				regularPod("regular-pod-1"), regularPod("regular-pod-2"),
+				mirrorPod("mirror-pod-1"), mirrorPod("mirror-pod-2"),
+			},
+			wantDsPods:    []*apiv1.Pod{dsPod("ds-pod-1", false), dsPod("ds-pod-2", false)},
+			wantNonDsPods: []*apiv1.Pod{regularPod("regular-pod-1"), regularPod("regular-pod-2")},
+		},
+		"calling for an unknown node name is an error": {
+			pods: []*apiv1.Pod{
+				regularPod("pod-1"), regularPod("pod-2"),
+			},
+			nodeNameOverwrite: "unknown-node",
+			wantErr:           cmpopts.AnyError,
+		},
+	} {
+		t.Run(tn, func(t *testing.T) {
+			snapshot := simulator.NewBasicClusterSnapshot()
+			node := BuildTestNode("test-node", 1000, 1000)
+			err := snapshot.AddNodeWithPods(node, tc.pods)
+			if err != nil {
+				t.Errorf("AddNodeWithPods unexpected error: %v", err)
+			}
+			ctx := &acontext.AutoscalingContext{
+				ClusterSnapshot: snapshot,
+				AutoscalingOptions: config.AutoscalingOptions{
+					DaemonSetEvictionForOccupiedNodes: !tc.dsEvictionDisabled,
+				},
+			}
+			nodeName := "test-node"
+			if tc.nodeNameOverwrite != "" {
+				nodeName = tc.nodeNameOverwrite
+			}
+			gotDsPods, gotNonDsPods, err := podsToEvict(ctx, nodeName)
+			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("podsToEvict err diff (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.wantDsPods, gotDsPods, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("podsToEvict dsPods diff (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.wantNonDsPods, gotNonDsPods, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("podsToEvict nonDsPods diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func regularPod(name string) *apiv1.Pod {
+	return &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}
+}
+
+func mirrorPod(name string) *apiv1.Pod {
+	return &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Annotations: map[string]string{
+				types.ConfigMirrorAnnotationKey: "some-key",
+			},
+		},
+	}
+}
+
+func dsPod(name string, evictable bool) *apiv1.Pod {
+	pod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            name,
+			OwnerReferences: GenerateOwnerReferences(name+"-ds", "DaemonSet", "apps/v1", "some-uid"),
+		},
+	}
+	if evictable {
+		pod.Annotations = map[string]string{daemonset.EnableDsEvictionKey: "true"}
+	}
+	return pod
 }
