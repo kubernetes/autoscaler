@@ -990,7 +990,7 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPo
 	daemonSetPods = daemonset.PodsToEvict(daemonSetPods, sd.context.DaemonSetEvictionForOccupiedNodes)
 
 	// attempt drain
-	evictionResults, err := actuation.DrainNode(sd.context, node, pods, daemonSetPods, actuation.EvictionRetryTime, actuation.PodEvictionHeadroom)
+	evictionResults, err := actuation.DrainNodeWithPods(sd.context, node, pods, daemonSetPods, actuation.EvictionRetryTime, actuation.PodEvictionHeadroom)
 	if err != nil {
 		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 	}
