@@ -18,6 +18,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 const (
@@ -32,9 +33,20 @@ const (
 	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
 )
 
-// DrainNode performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
-// them up to MaxGracefulTerminationTime to finish.
-func DrainNode(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, waitBetweenRetries time.Duration, podEvictionHeadroom time.Duration) (map[string]status.PodEvictionResult, error) {
+// DrainNode works like DrainNodeWithPods, but lists of pods to evict don't have to be provided. All non-mirror, non-DS pods on the
+// node are evicted. Mirror pods are not evicted. DaemonSet pods are evicted if DaemonSetEvictionForOccupiedNodes is enabled, or
+// if they have the EnableDsEvictionKey annotation.
+func DrainNode(ctx *acontext.AutoscalingContext, node *apiv1.Node, waitBetweenRetries time.Duration, podEvictionHeadroom time.Duration) (map[string]status.PodEvictionResult, error) {
+	dsPodsToEvict, nonDsPodsToEvict, err := podsToEvict(ctx, node.Name)
+	if err != nil {
+		return nil, err
+	}
+	return DrainNodeWithPods(ctx, node, nonDsPodsToEvict, dsPodsToEvict, waitBetweenRetries, podEvictionHeadroom)
+}
+
+// DrainNodeWithPods performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
+// them up to MaxGracefulTerminationTime to finish. The list of pods to evict has to be provided.
+func DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, waitBetweenRetries time.Duration, podEvictionHeadroom time.Duration) (map[string]status.PodEvictionResult, error) {
 	evictionResults := make(map[string]status.PodEvictionResult)
 	retryUntil := time.Now().Add(ctx.MaxPodEvictionTime)
 	confirmations := make(chan status.PodEvictionResult, len(pods))
@@ -196,4 +208,22 @@ func evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, isDaemonS
 		ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
 	}
 	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
+}
+
+func podsToEvict(ctx *acontext.AutoscalingContext, nodeName string) (dsPods, nonDsPods []*apiv1.Pod, err error) {
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(nodeName)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, podInfo := range nodeInfo.Pods {
+		if pod_util.IsMirrorPod(podInfo.Pod) {
+			continue
+		} else if pod_util.IsDaemonSetPod(podInfo.Pod) {
+			dsPods = append(dsPods, podInfo.Pod)
+		} else {
+			nonDsPods = append(nonDsPods, podInfo.Pod)
+		}
+	}
+	dsPodsToEvict := daemonset.PodsToEvict(dsPods, ctx.DaemonSetEvictionForOccupiedNodes)
+	return dsPodsToEvict, nonDsPods, nil
 }
