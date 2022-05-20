@@ -1,6 +1,7 @@
 package actuation
 
 import (
+	"reflect"
 	"strings"
 	"time"
 
@@ -16,6 +17,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
 // Actuator is responsible for draining and deleting nodes.
@@ -232,8 +235,39 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 
 // deleteNode performs the deletion of the provided node. If drain is true, the node is drained before being deleted.
 func (a *Actuator) deleteNode(node *apiv1.Node, drain bool) (result status.NodeDeleteResult) {
-	// TODO: Implement.
-	return status.NodeDeleteResult{}
+	nodeGroup, err := a.ctx.CloudProvider.NodeGroupForNode(node)
+	if err != nil {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", node.Name, err)}
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", node.Name)}
+	}
+
+	defer func() { a.nodeDeletionTracker.EndDeletion(nodeGroup.Id(), node.Name, result) }()
+	if drain {
+		a.nodeDeletionTracker.StartDeletionWithDrain(nodeGroup.Id(), node.Name)
+		if evictionResults, err := DrainNode(a.ctx, node, EvictionRetryTime, PodEvictionHeadroom); err != nil {
+			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
+		}
+	} else {
+		a.nodeDeletionTracker.StartDeletion(nodeGroup.Id(), node.Name)
+		if err := EvictDaemonSetPods(a.ctx, node, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries); err != nil {
+			// Evicting DS pods is best-effort, so proceed with the deletion even if there are errors.
+			klog.Warningf("Error while evicting DS pods from an empty node %q: %v", node.Name, err)
+		}
+	}
+
+	if err := WaitForDelayDeletion(node, a.ctx.ListerRegistry.AllNodeLister(), a.ctx.AutoscalingOptions.NodeDeletionDelayTimeout); err != nil {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+	}
+
+	if err := DeleteNodeFromCloudProvider(a.ctx, node, a.clusterState); err != nil {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
+	}
+
+	metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(a.ctx.CloudProvider.GPULabel(), a.ctx.CloudProvider.GetAvailableGPUTypes(), node, nodeGroup), nodeScaleDownReason(node, drain))
+
+	return status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
 }
 
 func min(x, y int) int {
@@ -249,4 +283,20 @@ func joinPodNames(pods []*apiv1.Pod) string {
 		names = append(names, pod.Name)
 	}
 	return strings.Join(names, ",")
+}
+
+func nodeScaleDownReason(node *apiv1.Node, drain bool) metrics.NodeScaleDownReason {
+	readiness, err := kubernetes.GetNodeReadiness(node)
+	if err != nil {
+		klog.Errorf("Couldn't determine node %q readiness while scaling down - assuming unready: %v", node.Name, err)
+		return metrics.Unready
+	}
+	if !readiness.Ready {
+		return metrics.Unready
+	}
+	// Node is ready.
+	if drain {
+		return metrics.Underutilized
+	}
+	return metrics.Empty
 }
