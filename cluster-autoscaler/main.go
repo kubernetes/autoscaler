@@ -199,8 +199,9 @@ var (
 	nodeGroupBackoffResetTimeout = flag.Duration("node-group-backoff-reset-timeout", 3*time.Hour,
 		"nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.")
 
-	maxScaleDownParallelismFlag = flag.Int("max-scale-down-parallelism", 10, "Maximum number of nodes (both empty and needing drain) that can be deleted in parallel.")
-	maxDrainParallelismFlag     = flag.Int("max-drain-parallelism", 1, "Maximum number of nodes needing drain, that can be drained and deleted in parallel.")
+	maxScaleDownParallelismFlag        = flag.Int("max-scale-down-parallelism", 10, "Maximum number of nodes (both empty and needing drain) that can be deleted in parallel.")
+	maxDrainParallelismFlag            = flag.Int("max-drain-parallelism", 1, "Maximum number of nodes needing drain, that can be drained and deleted in parallel.")
+	gceExpanderEphemeralStorageSupport = flag.Bool("gce-expander-ephemeral-storage-support", false, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -286,6 +287,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeGroupBackoffResetTimeout:       *nodeGroupBackoffResetTimeout,
 		MaxScaleDownParallelism:            *maxScaleDownParallelismFlag,
 		MaxDrainParallelism:                *maxDrainParallelismFlag,
+		GceExpanderEphemeralStorageSupport: *gceExpanderEphemeralStorageSupport,
 	}
 }
 

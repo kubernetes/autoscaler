@@ -30,13 +30,15 @@ import (
 
 // GcePriceModel implements PriceModel interface for GCE.
 type GcePriceModel struct {
-	PriceInfo PriceInfo
+	PriceInfo               PriceInfo
+	EphemeralStorageSupport bool
 }
 
 // NewGcePriceModel gets a new instance of GcePriceModel
-func NewGcePriceModel(info PriceInfo) *GcePriceModel {
+func NewGcePriceModel(info PriceInfo, ephemeralStorageSupport bool) *GcePriceModel {
 	return &GcePriceModel{
-		PriceInfo: info,
+		PriceInfo:               info,
+		EphemeralStorageSupport: ephemeralStorageSupport,
 	}
 }
 
