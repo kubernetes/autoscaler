@@ -36,7 +36,7 @@ type Planner interface {
 	CleanUpUnneededNodes()
 	// NodesToDelete returns a list of nodes that can be deleted right now,
 	// according to the Planner.
-	NodesToDelete() (empty, needDrain []*apiv1.Node)
+	NodesToDelete(currentTime time.Time) (empty, needDrain []*apiv1.Node)
 	// UnneededNodes returns a list of nodes that either can be deleted
 	// right now or in a near future, assuming nothing will change in the
 	// cluster.
