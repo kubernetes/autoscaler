@@ -35,17 +35,18 @@ func TestCalculate(t *testing.T) {
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
-	nodeInfo := schedulerframework.NewNodeInfo(pod, pod, pod2)
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
+	nodeInfo := newNodeInfo(node, pod, pod, pod2)
 
-	utilInfo, err := Calculate(node, nodeInfo, false, false, gpuLabel, testTime)
+	utilInfo, err := Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	node2 := BuildTestNode("node1", 2000, -1)
+	nodeInfo = newNodeInfo(node2, pod, pod, pod2)
 
-	_, err = Calculate(node2, nodeInfo, false, false, gpuLabel, testTime)
+	_, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.Error(t, err)
 
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
@@ -55,20 +56,20 @@ func TestCalculate(t *testing.T) {
 	daemonSetPod4.OwnerReferences = GenerateOwnerReferences("ds", "CustomDaemonSet", "crd/v1", "")
 	daemonSetPod4.Annotations = map[string]string{"cluster-autoscaler.kubernetes.io/daemonset-pod": "true"}
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
-	utilInfo, err = Calculate(node, nodeInfo, true, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, pod, pod2, daemonSetPod3, daemonSetPod4)
+	utilInfo, err = Calculate(nodeInfo, true, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.5/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, daemonSetPod3)
-	utilInfo, err = Calculate(node, nodeInfo, false, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, pod2, daemonSetPod3)
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	terminatedPod := BuildTestPod("podTerminated", 100, 200000)
 	terminatedPod.DeletionTimestamp = &metav1.Time{Time: testTime.Add(-10 * time.Minute)}
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, terminatedPod)
-	utilInfo, err = Calculate(node, nodeInfo, false, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, pod, pod2, terminatedPod)
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
@@ -77,18 +78,18 @@ func TestCalculate(t *testing.T) {
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, pod2, mirrorPod)
-	utilInfo, err = Calculate(node, nodeInfo, false, true, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, pod, pod2, mirrorPod)
+	utilInfo, err = Calculate(nodeInfo, false, true, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/9.0, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod2, mirrorPod)
-	utilInfo, err = Calculate(node, nodeInfo, false, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, pod2, mirrorPod)
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulerframework.NewNodeInfo(pod, mirrorPod, daemonSetPod3)
-	utilInfo, err = Calculate(node, nodeInfo, true, true, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(node, pod, mirrorPod, daemonSetPod3)
+	utilInfo, err = Calculate(nodeInfo, true, true, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1.0/8.0, utilInfo.Utilization, 0.01)
 
@@ -97,16 +98,16 @@ func TestCalculate(t *testing.T) {
 	gpuPod := BuildTestPod("gpu_pod", 100, 200000)
 	RequestGpuForPod(gpuPod, 1)
 	TolerateGpuForPod(gpuPod)
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod, gpuPod)
-	utilInfo, err = Calculate(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(gpuNode, pod, pod, gpuPod)
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
 
 	// Node with Unready GPU
 	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
 	AddGpuLabelToNode(gpuNode)
-	nodeInfo = schedulerframework.NewNodeInfo(pod, pod)
-	utilInfo, err = Calculate(gpuNode, nodeInfo, false, false, gpuLabel, testTime)
+	nodeInfo = newNodeInfo(gpuNode, pod, pod)
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuLabel, testTime)
 	assert.NoError(t, err)
 	assert.Zero(t, utilInfo.Utilization)
 }
@@ -114,9 +115,13 @@ func TestCalculate(t *testing.T) {
 func nodeInfos(nodes []*apiv1.Node) []*schedulerframework.NodeInfo {
 	result := make([]*schedulerframework.NodeInfo, len(nodes))
 	for i, node := range nodes {
-		ni := schedulerframework.NewNodeInfo()
-		ni.SetNode(node)
-		result[i] = ni
+		result[i] = newNodeInfo(node)
 	}
 	return result
+}
+
+func newNodeInfo(node *apiv1.Node, pods ...*apiv1.Pod) *schedulerframework.NodeInfo {
+	ni := schedulerframework.NewNodeInfo(pods...)
+	ni.SetNode(node)
+	return ni
 }
