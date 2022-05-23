@@ -22,31 +22,49 @@ import (
 )
 
 const (
-	// EvictionRetryTime is the time after CA retries failed pod eviction.
-	EvictionRetryTime = 10 * time.Second
-	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
+	// DefaultEvictionRetryTime is the time after CA retries failed pod eviction.
+	DefaultEvictionRetryTime = 10 * time.Second
+	// DefaultPodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
 	// is killed with SIGKILL after MaxGracefulTerminationTime
-	PodEvictionHeadroom = 30 * time.Second
-	// DaemonSetEvictionEmptyNodeTimeout is the time to evict all DaemonSet pods on empty node
-	DaemonSetEvictionEmptyNodeTimeout = 10 * time.Second
-	// DeamonSetTimeBetweenEvictionRetries is a time between retries to create eviction that uses for DaemonSet eviction for empty nodes
-	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
+	DefaultPodEvictionHeadroom = 30 * time.Second
+	// DefaultDsEvictionEmptyNodeTimeout is the time to evict all DaemonSet pods on empty node
+	DefaultDsEvictionEmptyNodeTimeout = 10 * time.Second
+	// DefaultDsEvictionRetryTime is a time between retries to create eviction that uses for DaemonSet eviction for empty nodes
+	DefaultDsEvictionRetryTime = 3 * time.Second
 )
+
+// Evictor can be used to evict pods from nodes.
+type Evictor struct {
+	EvictionRetryTime          time.Duration
+	DsEvictionRetryTime        time.Duration
+	DsEvictionEmptyNodeTimeout time.Duration
+	PodEvictionHeadroom        time.Duration
+}
+
+// NewDefaultEvictor returns an instance of Evictor using the default parameters.
+func NewDefaultEvictor() Evictor {
+	return Evictor{
+		EvictionRetryTime:          DefaultEvictionRetryTime,
+		DsEvictionRetryTime:        DefaultDsEvictionRetryTime,
+		DsEvictionEmptyNodeTimeout: DefaultDsEvictionEmptyNodeTimeout,
+		PodEvictionHeadroom:        DefaultPodEvictionHeadroom,
+	}
+}
 
 // DrainNode works like DrainNodeWithPods, but lists of pods to evict don't have to be provided. All non-mirror, non-DS pods on the
 // node are evicted. Mirror pods are not evicted. DaemonSet pods are evicted if DaemonSetEvictionForOccupiedNodes is enabled, or
 // if they have the EnableDsEvictionKey annotation.
-func DrainNode(ctx *acontext.AutoscalingContext, node *apiv1.Node, waitBetweenRetries time.Duration, podEvictionHeadroom time.Duration) (map[string]status.PodEvictionResult, error) {
+func (e Evictor) DrainNode(ctx *acontext.AutoscalingContext, node *apiv1.Node) (map[string]status.PodEvictionResult, error) {
 	dsPodsToEvict, nonDsPodsToEvict, err := podsToEvict(ctx, node.Name)
 	if err != nil {
 		return nil, err
 	}
-	return DrainNodeWithPods(ctx, node, nonDsPodsToEvict, dsPodsToEvict, waitBetweenRetries, podEvictionHeadroom)
+	return e.DrainNodeWithPods(ctx, node, nonDsPodsToEvict, dsPodsToEvict)
 }
 
 // DrainNodeWithPods performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
 // them up to MaxGracefulTerminationTime to finish. The list of pods to evict has to be provided.
-func DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, waitBetweenRetries time.Duration, podEvictionHeadroom time.Duration) (map[string]status.PodEvictionResult, error) {
+func (e Evictor) DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod) (map[string]status.PodEvictionResult, error) {
 	evictionResults := make(map[string]status.PodEvictionResult)
 	retryUntil := time.Now().Add(ctx.MaxPodEvictionTime)
 	confirmations := make(chan status.PodEvictionResult, len(pods))
@@ -54,14 +72,14 @@ func DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods 
 	for _, pod := range pods {
 		evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		go func(podToEvict *apiv1.Pod) {
-			confirmations <- evictPod(ctx, podToEvict, false, retryUntil, waitBetweenRetries)
+			confirmations <- evictPod(ctx, podToEvict, false, retryUntil, e.EvictionRetryTime)
 		}(pod)
 	}
 
 	// Perform eviction of daemonset. We don't want to raise an error if daemonsetPod wasn't evict properly
 	for _, daemonSetPod := range daemonSetPods {
 		go func(podToEvict *apiv1.Pod) {
-			daemonSetConfirmations <- evictPod(ctx, podToEvict, true, retryUntil, waitBetweenRetries)
+			daemonSetConfirmations <- evictPod(ctx, podToEvict, true, retryUntil, e.EvictionRetryTime)
 		}(daemonSetPod)
 
 	}
@@ -97,7 +115,7 @@ func DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods 
 
 	// Evictions created successfully, wait maxGracefulTerminationSec + podEvictionHeadroom to see if pods really disappeared.
 	var allGone bool
-	for start := time.Now(); time.Now().Sub(start) < time.Duration(ctx.MaxGracefulTerminationSec)*time.Second+podEvictionHeadroom; time.Sleep(5 * time.Second) {
+	for start := time.Now(); time.Now().Sub(start) < time.Duration(ctx.MaxGracefulTerminationSec)*time.Second+e.PodEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podreturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
@@ -134,7 +152,7 @@ func DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1.Node, pods 
 }
 
 // EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
-func EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeToDelete *apiv1.Node, timeNow time.Time, dsEvictionTimeout time.Duration, waitBetweenRetries time.Duration) error {
+func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeToDelete *apiv1.Node, timeNow time.Time) error {
 	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(nodeToDelete.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get node info for %s", nodeToDelete.Name)
@@ -151,7 +169,7 @@ func EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeToDelete *apiv1.No
 	// Perform eviction of DaemonSet pods
 	for _, daemonSetPod := range daemonSetPods {
 		go func(podToEvict *apiv1.Pod) {
-			dsEviction <- evictPod(ctx, podToEvict, true, timeNow.Add(dsEvictionTimeout), waitBetweenRetries)
+			dsEviction <- evictPod(ctx, podToEvict, true, timeNow.Add(e.DsEvictionEmptyNodeTimeout), e.DsEvictionRetryTime)
 		}(daemonSetPod)
 	}
 	// Wait for creating eviction of DaemonSet pods
@@ -163,8 +181,8 @@ func EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeToDelete *apiv1.No
 				failedPodErrors = append(failedPodErrors, status.Err.Error())
 			}
 		// adding waitBetweenRetries in order to have a bigger time interval than evictPod()
-		case <-time.After(dsEvictionTimeout):
-			return fmt.Errorf("failed to create DaemonSet eviction for %v seconds on the %s", dsEvictionTimeout, nodeToDelete.Name)
+		case <-time.After(e.DsEvictionEmptyNodeTimeout):
+			return fmt.Errorf("failed to create DaemonSet eviction for %v seconds on the %s", e.DsEvictionEmptyNodeTimeout, nodeToDelete.Name)
 		}
 	}
 	if len(failedPodErrors) > 0 {
