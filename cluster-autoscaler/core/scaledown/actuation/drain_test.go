@@ -162,7 +162,11 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				simulator.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{}, []*apiv1.Pod{})
 			}
 
-			err = EvictDaemonSetPods(&context, n1, timeNow, scenario.dsEvictionTimeout, waitBetweenRetries)
+			evictor := Evictor{
+				DsEvictionEmptyNodeTimeout: scenario.dsEvictionTimeout,
+				DsEvictionRetryTime:        waitBetweenRetries,
+			}
+			err = evictor.EvictDaemonSetPods(&context, n1, timeNow)
 			if scenario.err != nil {
 				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), scenario.err.Error())
@@ -219,7 +223,8 @@ func TestDrainNodeWithPods(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1})
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -273,7 +278,8 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{})
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -331,7 +337,8 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	_, err = DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3}, []*apiv1.Pod{d1}, 0*time.Second, PodEvictionHeadroom)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3}, []*apiv1.Pod{d1})
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -384,7 +391,8 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1, d2}, 0*time.Second, PodEvictionHeadroom)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1, d2})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(evictionResults))
 	assert.Equal(t, p1, evictionResults["p1"].Pod)
@@ -435,7 +443,8 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, PodEvictionHeadroom)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
+	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
@@ -491,7 +500,8 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictionResults, err := DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{}, 0*time.Second, 0*time.Second)
+	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: 0}
+	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
