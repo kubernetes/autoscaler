@@ -41,7 +41,26 @@ func NewAnnotationNodeInfoProvider(t *time.Duration) *AnnotationNodeInfoProvider
 
 // Process returns the nodeInfos set for this cluster.
 func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, currentTime time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
-	return p.mixedTemplateNodeInfoProvider.Process(ctx, nodes, daemonsets, ignoredTaints, currentTime)
+	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(ctx, nodes, daemonsets, ignoredTaints, currentTime)
+	if err != nil {
+		return nil, err
+	}
+	for _, nodeInfo := range nodeInfos {
+		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(nodeInfo.Node())
+		if err != nil {
+			continue
+		}
+		template, err := nodeGroup.TemplateNodeInfo()
+		if err != nil {
+			continue
+		}
+		for key, val := range template.Node().Annotations {
+			if _, ok := nodeInfo.Node().Annotations[key]; !ok {
+				nodeInfo.Node().Annotations[key] = val
+			}
+		}
+	}
+	return nodeInfos, nil
 }
 
 // CleanUp cleans up processor's internal structures.
