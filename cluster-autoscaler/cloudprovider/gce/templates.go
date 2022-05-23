@@ -181,17 +181,21 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	}
 
 	var ephemeralStorage int64 = -1
-	ssdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
-	if ssdCount > 0 {
-		ephemeralStorage, err = getLocalSSDEphemeralStorageFromInstanceTemplateProperties(template.Properties, ssdCount)
-	} else if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+
+	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
 		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
 	}
+
+	localSsdCount, err := getLocalSsdCount(template.Properties)
+	ephemeralStorageLocalSsdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
+	if err == nil && ephemeralStorageLocalSsdCount > 0 {
+		ephemeralStorage, err = getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount)
+	} 
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved)
 	if err != nil {
 		return nil, err
 	}
@@ -265,11 +269,10 @@ func ephemeralStorageLocalSSDCount(kubeEnvValue string) int64 {
 	return int64(n)
 }
 
-func getLocalSSDEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties, ssdCount int64) (ephemeralStorage int64, err error) {
+func getLocalSsdCount(instanceProperties *gce.InstanceProperties) (int64, error) {
 	if instanceProperties.Disks == nil {
 		return 0, fmt.Errorf("instance properties disks is nil")
 	}
-
 	var count int64
 	for _, disk := range instanceProperties.Disks {
 		if disk != nil && disk.InitializeParams != nil {
@@ -278,12 +281,14 @@ func getLocalSSDEphemeralStorageFromInstanceTemplateProperties(instancePropertie
 			}
 		}
 	}
+	return count, nil
+}
 
-	if count < ssdCount {
+func getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount int64) (int64, error) {
+	if localSsdCount < ephemeralStorageLocalSsdCount {
 		return 0, fmt.Errorf("actual local SSD count is lower than ephemeral_storage_local_ssd_count")
 	}
-
-	return ssdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
+	return ephemeralStorageLocalSsdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
 }
 
 // isBootDiskEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
