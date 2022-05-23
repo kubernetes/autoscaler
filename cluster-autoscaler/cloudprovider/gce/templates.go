@@ -234,7 +234,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, os)
+	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName, os, arch)
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +315,7 @@ func getBootDiskEphemeralStorageFromInstanceTemplateProperties(instancePropertie
 
 // BuildGenericLabels builds basic labels that should be present on every GCE node,
 // including hostname, zone etc.
-func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os OperatingSystem) (map[string]string, error) {
+func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os OperatingSystem, arch SystemArchitecture) (map[string]string, error) {
 	result := make(map[string]string)
 
 	if os == OperatingSystemUnknown {
@@ -323,7 +323,7 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os Oper
 	}
 
 	// TODO: extract it somehow
-	result[apiv1.LabelArchStable] = string(DefaultArch)
+	result[apiv1.LabelArchStable] = arch.Name()
 	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceTypeStable] = machineType
@@ -550,6 +550,11 @@ const (
 	DefaultArch SystemArchitecture = Amd64
 )
 
+// Name returns the string value for SystemArchitecture
+func (s SystemArchitecture) Name() string {
+	return string(s)
+}
+
 func extractSystemArchitectureFromKubeEnv(kubeEnv string) SystemArchitecture {
 	arch, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
 	if err != nil {
@@ -560,6 +565,11 @@ func extractSystemArchitectureFromKubeEnv(kubeEnv string) SystemArchitecture {
 		klog.V(4).Infof("no arch defined in AUTOSCALER_ENV_VARS; using default %v", err)
 		return DefaultArch
 	}
+	return ToSystemArchitecture(arch)
+}
+
+// ToSystemArchitecture parses a string to SystemArchitecture
+func ToSystemArchitecture(arch string) SystemArchitecture {
 	switch arch {
 	case string(Arm64):
 		return Arm64
