@@ -26,6 +26,7 @@ type Actuator struct {
 	ctx                 *context.AutoscalingContext
 	clusterState        *clusterstate.ClusterStateRegistry
 	nodeDeletionTracker *deletiontracker.NodeDeletionTracker
+	evictor             Evictor
 }
 
 // NewActuator returns a new instance of Actuator.
@@ -34,6 +35,7 @@ func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterState
 		ctx:                 ctx,
 		clusterState:        csr,
 		nodeDeletionTracker: ndr,
+		evictor:             NewDefaultEvictor(),
 	}
 }
 
@@ -246,12 +248,12 @@ func (a *Actuator) deleteNode(node *apiv1.Node, drain bool) (result status.NodeD
 	defer func() { a.nodeDeletionTracker.EndDeletion(nodeGroup.Id(), node.Name, result) }()
 	if drain {
 		a.nodeDeletionTracker.StartDeletionWithDrain(nodeGroup.Id(), node.Name)
-		if evictionResults, err := DrainNode(a.ctx, node, EvictionRetryTime, PodEvictionHeadroom); err != nil {
+		if evictionResults, err := a.evictor.DrainNode(a.ctx, node); err != nil {
 			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 		}
 	} else {
 		a.nodeDeletionTracker.StartDeletion(nodeGroup.Id(), node.Name)
-		if err := EvictDaemonSetPods(a.ctx, node, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries); err != nil {
+		if err := a.evictor.EvictDaemonSetPods(a.ctx, node, time.Now()); err != nil {
 			// Evicting DS pods is best-effort, so proceed with the deletion even if there are errors.
 			klog.Warningf("Error while evicting DS pods from an empty node %q: %v", node.Name, err)
 		}
