@@ -38,7 +38,8 @@ func testNode(t *testing.T, nodeName string, instanceType string, millicpu int64
 		Zone:    "us-central1-b"},
 		instanceType,
 		nodeName,
-		OperatingSystemLinux)
+		OperatingSystemLinux,
+		DefaultArch)
 	assert.NoError(t, err)
 	if isPreemptible {
 		labels[preemptibleLabel] = "true"
