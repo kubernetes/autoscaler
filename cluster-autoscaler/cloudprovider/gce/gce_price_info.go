@@ -16,27 +16,27 @@ limitations under the License.
 
 package gce
 
-// PriceInfo is the interface to fetch the pricing information needed for gce pricing
+// PriceInfo is the interface to fetch the pricing information needed for gce pricing.
 type PriceInfo interface {
-	// BaseCpuPricePerHour gets the base cpu price per hour
+	// BaseCpuPricePerHour gets the base cpu price per hour.
 	BaseCpuPricePerHour() float64
-	// BaseMemoryPricePerHourPerGb gets the base memory price per hour per Gb
+	// BaseMemoryPricePerHourPerGb gets the base memory price per hour per Gb.
 	BaseMemoryPricePerHourPerGb() float64
-	// BasePreemptibleDiscount gets the base preemptible discount applicable
+	// BasePreemptibleDiscount gets the base preemptible discount applicable.
 	BasePreemptibleDiscount() float64
-	// BaseGpuPricePerHour gets the base gpu price per hour
+	// BaseGpuPricePerHour gets the base gpu price per hour.
 	BaseGpuPricePerHour() float64
 
-	// PredefinedCpuPricePerHour gets the predefined cpu price per hour for machine family
+	// PredefinedCpuPricePerHour gets the predefined cpu price per hour for machine family.
 	PredefinedCpuPricePerHour() map[string]float64
-	// PredefinedMemoryPricePerHourPerGb gets the predefined memory price per hour per Gb for machine family
+	// PredefinedMemoryPricePerHourPerGb gets the predefined memory price per hour per Gb for machine family.
 	PredefinedMemoryPricePerHourPerGb() map[string]float64
-	// PredefinedPreemptibleDiscount gets the predefined preemptible discount for machine family
+	// PredefinedPreemptibleDiscount gets the predefined preemptible discount for machine family.
 	PredefinedPreemptibleDiscount() map[string]float64
 
-	// CustomCpuPricePerHour gets the cpu price per hour for custom machine of a machine family
+	// CustomCpuPricePerHour gets the cpu price per hour for custom machine of a machine family.
 	CustomCpuPricePerHour() map[string]float64
-	// CustomMemoryPricePerHourPerGb gets the memory price per hour per Gb for custom machine of a machine family
+	// CustomMemoryPricePerHourPerGb gets the memory price per hour per Gb for custom machine of a machine family.
 	CustomMemoryPricePerHourPerGb() map[string]float64
 	CustomPreemptibleDiscount() map[string]float64
 
@@ -44,16 +44,27 @@ type PriceInfo interface {
 	PreemptibleInstancePrices() map[string]float64
 
 	GpuPrices() map[string]float64
-	// PreemptibleGpuPrices gets the price of preemptible GPUs
+	// PreemptibleGpuPrices gets the price of preemptible GPUs.
 	PreemptibleGpuPrices() map[string]float64
+
+	// BootDiskPricePerHour returns the map of the prices per Gb of boot disk per hour.
+	BootDiskPricePerHour() map[string]float64
+	// LocalSsdPricePerHour returns the price per Gb of local SSD per hour.
+	LocalSsdPricePerHour() float64
+	// LocalSsdPricePerHour returns the price per Gb of local SSD per hour for Spot VMs.
+	SpotLocalSsdPricePerHour() float64
 }
+
+const hoursInMonth = float64(24 * 30)
 
 const (
 	//TODO: Move it to a config file.
-	cpuPricePerHour         = 0.033174
-	memoryPricePerHourPerGb = 0.004446
-	preemptibleDiscount     = 0.00698 / 0.033174
-	gpuPricePerHour         = 0.700
+	cpuPricePerHour          = 0.033174
+	memoryPricePerHourPerGb  = 0.004446
+	preemptibleDiscount      = 0.00698 / 0.033174
+	gpuPricePerHour          = 0.700
+	localSsdPriceMonthly     = 0.08
+	spotLocalSsdPriceMonthly = 0.048
 )
 
 var (
@@ -426,14 +437,23 @@ var (
 		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 	}
+	bootDiskPricePerHour = map[string]float64{
+		"pd-standard": 0.04 / hoursInMonth,
+		"pd-balanced": 0.100 / hoursInMonth,
+		"pd-ssd":      0.170 / hoursInMonth,
+	}
+	// DefaultBootDiskType is pd-standard disk type.
+	DefaultBootDiskType = "pd-standard"
 )
 
-// GcePriceInfo is the GCE specific implementation of the PricingInfo
+// GcePriceInfo is the GCE specific implementation of the PricingInfo.
 type GcePriceInfo struct {
 	baseCpuPricePerHour         float64
 	baseMemoryPricePerHourPerGb float64
 	basePreemptibleDiscount     float64
 	baseGpuPricePerHour         float64
+	localSsdPriceMonthly        float64
+	spotLocalSsdPriceMonthly    float64
 
 	predefinedCpuPricePerHour         map[string]float64
 	predefinedMemoryPricePerHourPerGb map[string]float64
@@ -448,15 +468,18 @@ type GcePriceInfo struct {
 
 	gpuPrices            map[string]float64
 	preemptibleGpuPrices map[string]float64
+	bootDiskPricePerHour map[string]float64
 }
 
-// NewGcePriceInfo returns a new instance of the GcePriceInfo
+// NewGcePriceInfo returns a new instance of the GcePriceInfo.
 func NewGcePriceInfo() *GcePriceInfo {
 	return &GcePriceInfo{
 		baseCpuPricePerHour:         cpuPricePerHour,
 		baseMemoryPricePerHourPerGb: memoryPricePerHourPerGb,
 		basePreemptibleDiscount:     preemptibleDiscount,
 		baseGpuPricePerHour:         gpuPricePerHour,
+		localSsdPriceMonthly:        localSsdPriceMonthly,
+		spotLocalSsdPriceMonthly:    spotLocalSsdPriceMonthly,
 
 		predefinedCpuPricePerHour:         predefinedCpuPricePerHour,
 		predefinedMemoryPricePerHourPerGb: predefinedMemoryPricePerHourPerGb,
@@ -471,6 +494,7 @@ func NewGcePriceInfo() *GcePriceInfo {
 
 		gpuPrices:            gpuPrices,
 		preemptibleGpuPrices: preemptibleGpuPrices,
+		bootDiskPricePerHour: bootDiskPricePerHour,
 	}
 }
 
@@ -542,4 +566,19 @@ func (g *GcePriceInfo) GpuPrices() map[string]float64 {
 // PreemptibleGpuPrices gets the price of preemptible GPUs
 func (g *GcePriceInfo) PreemptibleGpuPrices() map[string]float64 {
 	return g.preemptibleGpuPrices
+}
+
+// BootDiskPricePerHour gets the price of boot disk.
+func (g *GcePriceInfo) BootDiskPricePerHour() map[string]float64 {
+	return g.bootDiskPricePerHour
+}
+
+// LocalSsdPricePerHour gets the price of boot disk.
+func (g *GcePriceInfo) LocalSsdPricePerHour() float64 {
+	return g.localSsdPriceMonthly / hoursInMonth
+}
+
+// SpotLocalSsdPricePerHour gets the price of boot disk.
+func (g *GcePriceInfo) SpotLocalSsdPricePerHour() float64 {
+	return g.spotLocalSsdPriceMonthly / hoursInMonth
 }
