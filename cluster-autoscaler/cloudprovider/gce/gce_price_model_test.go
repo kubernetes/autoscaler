@@ -232,16 +232,20 @@ func TestGetNodePrice(t *testing.T) {
 }
 
 func TestGetPodPrice(t *testing.T) {
-	pod1 := BuildTestPod("a1", 100, 500*units.MiB)
-	pod2 := BuildTestPod("a2", 2*100, 2*500*units.MiB)
+	pod1 := BuildTestPodWithEphemeralStorage("a1", 100, 500*units.MiB, 100*units.GiB)
+	pod2 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 2*100*units.GiB)
+	pod3 := BuildTestPodWithEphemeralStorage("a2", 2*100, 2*500*units.MiB, 100*units.GiB)
 
-	model := NewGcePriceModel(NewGcePriceInfo(), false)
+	model := NewGcePriceModel(NewGcePriceInfo(), true)
 	now := time.Now()
 
 	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	price2, err := model.PodPrice(pod2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
+	price3, err := model.PodPrice(pod3, now, now.Add(time.Hour))
+	assert.NoError(t, err)
 	// 2 times bigger pod should cost twice as much.
 	assert.True(t, math.Abs(price1*2-price2) < 0.001)
+	assert.True(t, price2 > price3)
 }

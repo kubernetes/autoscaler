@@ -197,6 +197,13 @@ func (model *GcePriceModel) getBasePrice(resources apiv1.ResourceList, instanceT
 	}
 	price += float64(mem.Value()) / float64(units.GiB) * memPrice * hours
 
+	if model.EphemeralStorageSupport {
+		ephemeralStorage := resources[apiv1.ResourceEphemeralStorage]
+		// For simplification using a fixed price for default boot disk.
+		ephemeralStoragePrice := model.PriceInfo.BootDiskPricePerHour()[DefaultBootDiskType]
+		price += float64(ephemeralStorage.Value()) / float64(units.GiB) * ephemeralStoragePrice * hours
+	}
+
 	return price
 }
 
