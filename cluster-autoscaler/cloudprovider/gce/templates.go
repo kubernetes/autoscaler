@@ -44,6 +44,18 @@ type GceTemplateBuilder struct{}
 // (cf. https://cloud.google.com/compute/docs/disks/local-ssd)
 const LocalSSDDiskSizeInGiB = 375
 
+// These annotations are used internally only to store information in node temlate and use it later in CA, the actuall nodes won't have these annotations.
+const (
+	// LocalSsdCountAnnotation is the annotation for number of attached local SSDs to the node.
+	LocalSsdCountAnnotation = "cluster-autoscaler/gce/local-ssd-count"
+	// BootDiskTypeAnnotation is the annotation for boot disk type of the node.
+	BootDiskTypeAnnotation = "cluster-autoscaler/gce/boot-disk-type"
+	// BootDiskSizeAnnotation is the annotation for boot disk sise of the node/
+	BootDiskSizeAnnotation = "cluster-autoscaler/gce/boot-disk-size"
+	// EphemeralStorageLocalSsdAnnotation is the annotation for nodes where ephemeral storage is backed up by local SSDs.
+	EphemeralStorageLocalSsdAnnotation = "cluster-autoscaler/gce/ephemeral-storage-local-ssd"
+)
+
 // TODO: This should be imported from sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/pkg/common/constants.go
 // This key is applicable to both GCE and GKE
 const gceCSITopologyKeyZone = "topology.gke.io/zone"
@@ -183,14 +195,20 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	var ephemeralStorage int64 = -1
 
 	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+		addBootDiskAnnotations(&node, template.Properties)
 		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
+	} else {
+		addAnnotation(&node, EphemeralStorageLocalSsdAnnotation, strconv.FormatBool(true))
 	}
 
 	localSsdCount, err := getLocalSsdCount(template.Properties)
+	if localSsdCount > 0 {
+		addAnnotation(&node, LocalSsdCountAnnotation, strconv.FormatInt(localSsdCount, 10))
+	}
 	ephemeralStorageLocalSsdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
 	if err == nil && ephemeralStorageLocalSsdCount > 0 {
 		ephemeralStorage, err = getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount)
-	} 
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
@@ -745,4 +763,26 @@ func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
 		})
 	}
 	return taints, nil
+}
+
+func addAnnotation(node *apiv1.Node, key, value string) {
+	if node.Annotations == nil {
+		node.Annotations = make(map[string]string)
+	}
+	node.Annotations[key] = value
+}
+
+func addBootDiskAnnotations(node *apiv1.Node, instanceProperties *gce.InstanceProperties) {
+	if instanceProperties.Disks == nil {
+		return
+	}
+
+	for _, disk := range instanceProperties.Disks {
+		if disk != nil && disk.InitializeParams != nil {
+			if disk.Boot {
+				addAnnotation(node, BootDiskSizeAnnotation, strconv.FormatInt(disk.InitializeParams.DiskSizeGb, 10))
+				addAnnotation(node, BootDiskTypeAnnotation, disk.InitializeParams.DiskType)
+			}
+		}
+	}
 }
