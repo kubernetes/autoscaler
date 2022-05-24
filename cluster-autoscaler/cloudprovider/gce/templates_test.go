@@ -22,7 +22,6 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -256,17 +255,21 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 
 func TestBuildGenericLabels(t *testing.T) {
 	type testCase struct {
-		name            string
-		os              OperatingSystem
-		expectedOsLabel string
-		expectedError   bool
+		name              string
+		os                OperatingSystem
+		arch              SystemArchitecture
+		expectedOsLabel   string
+		expectedArchLabel string
+		expectedError     bool
 	}
 	testCases := []testCase{
 		{
-			name:            "os linux",
-			os:              OperatingSystemLinux,
-			expectedOsLabel: "linux",
-			expectedError:   false,
+			name:              "os linux",
+			os:                OperatingSystemLinux,
+			arch:              Amd64,
+			expectedArchLabel: "amd64",
+			expectedOsLabel:   "linux",
+			expectedError:     false,
 		},
 		{
 			name:            "os windows",
@@ -280,6 +283,14 @@ func TestBuildGenericLabels(t *testing.T) {
 			expectedOsLabel: "",
 			expectedError:   true,
 		},
+		{
+			name:              "os linux arm",
+			os:                OperatingSystemLinux,
+			arch:              Arm64,
+			expectedArchLabel: "arm64",
+			expectedOsLabel:   "linux",
+			expectedError:     false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -290,7 +301,7 @@ func TestBuildGenericLabels(t *testing.T) {
 				gceCSITopologyKeyZone:         "us-central1-b",
 				apiv1.LabelHostname:           "sillyname",
 				apiv1.LabelInstanceTypeStable: "n1-standard-8",
-				apiv1.LabelArchStable:         cloudprovider.DefaultArch,
+				apiv1.LabelArchStable:         tc.expectedArchLabel,
 				apiv1.LabelOSStable:           tc.expectedOsLabel,
 			}
 			labels, err := BuildGenericLabels(GceRef{
@@ -299,7 +310,8 @@ func TestBuildGenericLabels(t *testing.T) {
 				Zone:    "us-central1-b"},
 				"n1-standard-8",
 				"sillyname",
-				tc.os)
+				tc.os,
+				tc.arch)
 			if tc.expectedError {
 				assert.Error(t, err)
 			} else {
