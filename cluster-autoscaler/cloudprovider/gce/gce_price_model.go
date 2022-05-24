@@ -18,6 +18,7 @@ package gce
 
 import (
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,9 +44,14 @@ func NewGcePriceModel(info PriceInfo, ephemeralStorageSupport bool) *GcePriceMod
 }
 
 const (
-	preemptibleLabel = "cloud.google.com/gke-preemptible"
-	spotLabel        = "cloud.google.com/gke-spot"
+	preemptibleLabel              = "cloud.google.com/gke-preemptible"
+	spotLabel                     = "cloud.google.com/gke-spot"
+	ephemeralStorageLocalSsdLabel = "cloud.google.com/gke-ephemeral-storage-local-ssd"
+	bootDiskTypeLabel             = "cloud.google.com/gke-boot-disk"
 )
+
+// DefaultBootDiskSize is 100 GB.
+const DefaultBootDiskSize = 100 * units.GB
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
@@ -75,6 +81,37 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		}
 	}
 
+	// Ephemeral Storage
+	if model.EphemeralStorageSupport {
+		// Local SSD price
+		if node.Labels[ephemeralStorageLocalSsdLabel] == "true" || node.Annotations[EphemeralStorageLocalSsdAnnotation] == "true" {
+			localSsdCount, _ := strconv.ParseFloat(node.Annotations[LocalSsdCountAnnotation], 64)
+			localSsdPrice := model.PriceInfo.LocalSsdPricePerHour()
+			if hasPreemptiblePricing(node) {
+				localSsdPrice = model.PriceInfo.SpotLocalSsdPricePerHour()
+			}
+			price += localSsdCount * float64(LocalSSDDiskSizeInGiB) * localSsdPrice * getHours(startTime, endTime)
+		}
+
+		// Boot disk price
+		bootDiskSize, _ := strconv.ParseInt(node.Annotations[BootDiskSizeAnnotation], 10, 64)
+		if bootDiskSize == 0 {
+			klog.Error("Boot disk size is not found for node %s, using default size %v", node.Name, DefaultBootDiskSize)
+			bootDiskSize = DefaultBootDiskSize
+		}
+		bootDiskType := node.Annotations[BootDiskTypeAnnotation]
+		if val, ok := node.Labels[bootDiskTypeLabel]; ok {
+			bootDiskType = val
+		}
+		if bootDiskType == "" {
+			klog.Error("Boot disk type is not found for node %s, using default type %s", node.Name, DefaultBootDiskType)
+			bootDiskType = DefaultBootDiskType
+		}
+		bootDiskPrice := model.PriceInfo.BootDiskPricePerHour()[bootDiskType]
+
+		price += bootDiskPrice * float64(bootDiskSize) * getHours(startTime, endTime)
+	}
+
 	// GPUs
 	if gpuRequest, found := node.Status.Capacity[gpu.ResourceNvidiaGPU]; found {
 		gpuPrice := model.PriceInfo.BaseGpuPricePerHour()
@@ -94,7 +131,6 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		price += float64(gpuRequest.MilliValue()) / 1000.0 * gpuPrice * getHours(startTime, endTime)
 	}
 
-	// TODO: handle SSDs.
 	return price, nil
 }
 

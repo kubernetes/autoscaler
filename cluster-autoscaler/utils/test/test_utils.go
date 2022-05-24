@@ -137,6 +137,15 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	return node
 }
 
+// AddEphemeralStorageToNode adds ephemeral storage capacity to a given node.
+func AddEphemeralStorageToNode(node *apiv1.Node, eph int64) *apiv1.Node {
+	if eph >= 0 {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(eph, resource.DecimalSI)
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(eph, resource.DecimalSI)
+	}
+	return node
+}
+
 // AddGpusToNode adds GPU capacity to given node. Default accelerator type is used.
 func AddGpusToNode(node *apiv1.Node, gpusCount int64) {
 	node.Spec.Taints = append(
