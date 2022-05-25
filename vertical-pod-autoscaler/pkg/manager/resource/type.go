@@ -5,7 +5,7 @@ var (
 	podUpdateModeKey    string = `vpa/update-mode`
 )
 
-// runnable interface
+// Resource is runnable interface
 type Resource interface {
 	//WaitForCacheSyncOrDir()
 	Run(stopCh <-chan struct{})

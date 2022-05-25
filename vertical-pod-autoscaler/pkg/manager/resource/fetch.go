@@ -47,6 +47,8 @@ type fetcherObject struct {
 	lock           *sync.RWMutex
 }
 
+// NewFetcherOrDie setup args and run informers, if the default update mode
+// is wrong, it panics
 func NewFetcherOrDie(kubeClient kube_client.Interface,
 	factory informers.SharedInformerFactory,
 	vpaFactory externalversions.SharedInformerFactory,
@@ -139,44 +141,42 @@ func (fetch *fetcherObject) vpaCheckExist(namespace, name string) (interface{}, 
 func (fetch *fetcherObject) VPAEnable(informer cache.SharedIndexInformer, namespace string, updateMode vpa_types.UpdateMode) {
 	objs := informer.GetStore().List()
 	klog.V(4).Infof("namespace open vpa: %s, update mode: %s", namespace, updateMode)
-	for _, obj := range objs {
+	for _, obji := range objs {
 		var vpaI interface{}
 		var exist bool
-		switch obj.(type) {
+		switch obj := obji.(type) {
 		case *appsv1.Deployment:
-			if deploy, ok := obj.(*appsv1.Deployment); ok {
-				if deploy.GetNamespace() != namespace || deploy.GetOwnerReferences() != nil {
-					continue
-				}
+			deploy := obj
+			if deploy.GetNamespace() != namespace || deploy.GetOwnerReferences() != nil {
+				continue
+			}
 
-				annotation := deploy.GetAnnotations()
-				if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
-					fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(deployment), deploy.GetName()))
-					continue
-				}
+			annotation := deploy.GetAnnotations()
+			if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
+				fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(deployment), deploy.GetName()))
+				continue
+			}
 
-				if vpaI, exist, _ = fetch.vpaCheckExist(namespace, fetch.buildVPAName(string(deployment), deploy.GetName())); !exist {
-					if _, err := fetch.vpaClient.VerticalPodAutoscalers(namespace).Create(context.Background(),
-						fetch.buildVPAObject(namespace, string(deployment), deploy.GetName(), "apps/v1", updateMode), metav1.CreateOptions{}); err != nil {
-						klog.Errorf("deploy(%s,%s) vpa create failed", namespace, deploy.GetName())
-					}
+			if vpaI, exist, _ = fetch.vpaCheckExist(namespace, fetch.buildVPAName(string(deployment), deploy.GetName())); !exist {
+				if _, err := fetch.vpaClient.VerticalPodAutoscalers(namespace).Create(context.Background(),
+					fetch.buildVPAObject(namespace, string(deployment), deploy.GetName(), "apps/v1", updateMode), metav1.CreateOptions{}); err != nil {
+					klog.Errorf("deploy(%s,%s) vpa create failed", namespace, deploy.GetName())
 				}
 			}
 		case *appsv1.StatefulSet:
-			if ss, ok := obj.(*appsv1.StatefulSet); ok {
-				if ss.GetNamespace() != namespace || ss.GetOwnerReferences() != nil {
-					continue
-				}
-				annotation := ss.GetAnnotations()
-				if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
-					fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(statefulSet), ss.GetName()))
-					continue
-				}
+			ss := obj
+			if ss.GetNamespace() != namespace || ss.GetOwnerReferences() != nil {
+				continue
+			}
+			annotation := ss.GetAnnotations()
+			if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
+				fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(statefulSet), ss.GetName()))
+				continue
+			}
 
-				if vpaI, exist, _ = fetch.vpaCheckExist(namespace, fetch.buildVPAName(string(statefulSet), ss.GetName())); !exist {
-					if _, err := fetch.vpaClient.VerticalPodAutoscalers(namespace).Create(context.Background(), fetch.buildVPAObject(namespace, string(statefulSet), ss.GetName(), "apps/v1", updateMode), metav1.CreateOptions{}); err != nil {
-						klog.Errorf("deploy(%s,%s) vpa create failed: err:%+v", namespace, ss.GetName(), err)
-					}
+			if vpaI, exist, _ = fetch.vpaCheckExist(namespace, fetch.buildVPAName(string(statefulSet), ss.GetName())); !exist {
+				if _, err := fetch.vpaClient.VerticalPodAutoscalers(namespace).Create(context.Background(), fetch.buildVPAObject(namespace, string(statefulSet), ss.GetName(), "apps/v1", updateMode), metav1.CreateOptions{}); err != nil {
+					klog.Errorf("deploy(%s,%s) vpa create failed: err:%+v", namespace, ss.GetName(), err)
 				}
 			}
 		}
@@ -220,61 +220,56 @@ func (fetch *fetcherObject) disableVPA(namespace string) {
 }
 
 func (fetch *fetcherObject) scanResources() {
-	namespaceInfomer, _ := fetch.informersMap[namespace]
+	namespaceInfomer := fetch.informersMap[namespace]
 	objs := namespaceInfomer.GetStore().List()
 	for _, obj := range objs {
-		switch obj.(type) {
+		switch namespace := obj.(type) {
 		case (*apiV1.Namespace):
-			namespace, ok := obj.(*apiV1.Namespace)
-			if ok {
-				labels := namespace.GetLabels()
-				//open vpa for the namespace
-				openVal, updateMode, found := fetch.getControlAndUpdateMode(labels)
-				if found {
-					switch openVal {
-					case "open":
-						klog.Infof("namespace open vpa: %s", namespace.GetName())
-						go fetch.enableVPA(namespace.GetName(), updateMode)
-					case "close":
-						klog.Infof("namespace close vpa: %s", namespace.GetName())
-						go fetch.disableVPA(namespace.GetName())
-					}
+			labels := namespace.GetLabels()
+			//open vpa for the namespace
+			openVal, updateMode, found := fetch.getControlAndUpdateMode(labels)
+			if found {
+				switch openVal {
+				case "open":
+					klog.Infof("namespace open vpa: %s", namespace.GetName())
+					go fetch.enableVPA(namespace.GetName(), updateMode)
+				case "close":
+					klog.Infof("namespace close vpa: %s", namespace.GetName())
+					go fetch.disableVPA(namespace.GetName())
 				}
 			}
 		}
 	}
-	vpaInformer, _ := fetch.informersMap[vpa]
+	vpaInformer := fetch.informersMap[vpa]
 	vpaObjects := vpaInformer.GetStore().List()
 	for _, obj := range vpaObjects {
-		switch obj.(type) {
+		switch scaler := obj.(type) {
 		case (*v1.VerticalPodAutoscaler):
-			if scaler, ok := obj.(*v1.VerticalPodAutoscaler); ok {
-				targetRef := scaler.Spec.TargetRef
-				switch targetRef.Kind {
-				case string(deployment):
-					informer := fetch.informersMap[deployment]
-					_, exists, err := informer.GetStore().GetByKey(scaler.GetNamespace() + "/" + targetRef.Name)
-					if err != nil {
-						klog.Errorf("getbykey(%s) error: %+v", scaler.GetNamespace()+"/"+targetRef.Name, err)
-						continue
+			targetRef := scaler.Spec.TargetRef
+			switch targetRef.Kind {
+			case string(deployment):
+				informer := fetch.informersMap[deployment]
+				_, exists, err := informer.GetStore().GetByKey(scaler.GetNamespace() + "/" + targetRef.Name)
+				if err != nil {
+					klog.Errorf("getbykey(%s) error: %+v", scaler.GetNamespace()+"/"+targetRef.Name, err)
+					continue
+				}
+				if !exists {
+					//delete resource from client
+					if err = fetch.vpaClient.VerticalPodAutoscalers(scaler.GetNamespace()).Delete(context.Background(), scaler.GetName(), metav1.DeleteOptions{}); err != nil {
+						klog.Errorf("vpa(%s,%s) delete failed: %+v", scaler.GetNamespace(), scaler.GetName(), err)
 					}
-					if !exists {
-						//delete resource from client
-						if err = fetch.vpaClient.VerticalPodAutoscalers(scaler.GetNamespace()).Delete(context.Background(), scaler.GetName(), metav1.DeleteOptions{}); err != nil {
-							klog.Errorf("vpa(%s,%s) delete failed: %+v", scaler.GetNamespace(), scaler.GetName(), err)
-						}
-					}
-				case string(statefulSet):
-					informer := fetch.informersMap[statefulSet]
-					_, exists, err := informer.GetStore().GetByKey(scaler.GetNamespace() + "/" + targetRef.Name)
-					if err != nil {
-						klog.Errorf("getbykey(%s) error: %+v", scaler.GetNamespace()+"/"+targetRef.Name, err)
-						continue
-					}
-					if !exists {
-						if err = fetch.vpaClient.VerticalPodAutoscalers(scaler.GetNamespace()).Delete(context.Background(), scaler.GetName(), metav1.DeleteOptions{}); err != nil {
-							klog.Errorf("vpa(%s,%s) delete failed: %+v", scaler.GetNamespace(), scaler.GetName(), err)
-						}
+				}
+			case string(statefulSet):
+				informer := fetch.informersMap[statefulSet]
+				_, exists, err := informer.GetStore().GetByKey(scaler.GetNamespace() + "/" + targetRef.Name)
+				if err != nil {
+					klog.Errorf("getbykey(%s) error: %+v", scaler.GetNamespace()+"/"+targetRef.Name, err)
+					continue
+				}
+				if !exists {
+					if err = fetch.vpaClient.VerticalPodAutoscalers(scaler.GetNamespace()).Delete(context.Background(), scaler.GetName(), metav1.DeleteOptions{}); err != nil {
+						klog.Errorf("vpa(%s,%s) delete failed: %+v", scaler.GetNamespace(), scaler.GetName(), err)
 					}
 				}
 			}
