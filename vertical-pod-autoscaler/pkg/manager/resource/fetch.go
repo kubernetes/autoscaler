@@ -305,7 +305,6 @@ func (fetch *fetcherObject) Run(stopCh <-chan struct{}) {
 }
 
 var lowerUpdateModeInitial = strings.ToLower(string(vpa_types.UpdateModeInitial))
-var lowerUpdateModeAuto = strings.ToLower(string(vpa_types.UpdateModeAuto))
 
 func (fetch *fetcherObject) getControlAndUpdateMode(labels map[string]string) (open string, mode vpa_types.UpdateMode, found bool) {
 	open, found = labels[resourcesControlKey]
