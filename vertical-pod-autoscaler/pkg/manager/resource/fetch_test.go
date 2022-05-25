@@ -9,8 +9,8 @@ import (
 
 func TestGetControlAndUpdateMode(t *testing.T) {
 	labels := map[string]string{
-		ResourcesControlKey: `open`,
-		PodUpdateModeKey:    string(vpa_types.UpdateModeAuto),
+		resourcesControlKey: `open`,
+		podUpdateModeKey:    string(vpa_types.UpdateModeAuto),
 	}
 	fetch := &fetcherObject{defaultUpdateMode: vpa_types.UpdateModeInitial}
 	openVal, mode, ok := fetch.getControlAndUpdateMode(labels)
@@ -19,14 +19,14 @@ func TestGetControlAndUpdateMode(t *testing.T) {
 		t.FailNow()
 	}
 
-	delete(labels, PodUpdateModeKey)
+	delete(labels, podUpdateModeKey)
 	openVal, mode, ok = fetch.getControlAndUpdateMode(labels)
 	if openVal != `open` || mode != vpa_types.UpdateModeInitial || !ok {
 		log.Println(openVal, mode, ok)
 		t.FailNow()
 	}
 
-	delete(labels, ResourcesControlKey)
+	delete(labels, resourcesControlKey)
 	openVal, mode, ok = fetch.getControlAndUpdateMode(labels)
 	if ok {
 		log.Println(openVal, mode, ok)

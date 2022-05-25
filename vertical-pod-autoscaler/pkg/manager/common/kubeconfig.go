@@ -1,9 +1,6 @@
 package common
 
 import (
-	"math/rand"
-	"time"
-
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -27,14 +24,4 @@ func CreateKubeConfigOrDie(kubeconfig string) *rest.Config {
 		}
 	}
 	return config
-}
-
-func RandString(len int) string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	bytes := make([]byte, len)
-	for i := 0; i < len; i++ {
-		b := r.Intn(26) + 65
-		bytes[i] = byte(b)
-	}
-	return string(bytes)
 }

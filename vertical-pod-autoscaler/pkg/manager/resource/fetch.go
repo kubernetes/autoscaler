@@ -150,7 +150,7 @@ func (fetch *fetcherObject) VPAEnable(informer cache.SharedIndexInformer, namesp
 				}
 
 				annotation := deploy.GetAnnotations()
-				if value, ok := annotation[ResourcesControlKey]; ok && value == "close" {
+				if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
 					fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(deployment), deploy.GetName()))
 					continue
 				}
@@ -168,7 +168,7 @@ func (fetch *fetcherObject) VPAEnable(informer cache.SharedIndexInformer, namesp
 					continue
 				}
 				annotation := ss.GetAnnotations()
-				if value, ok := annotation[ResourcesControlKey]; ok && value == "close" {
+				if value, ok := annotation[resourcesControlKey]; ok && value == "close" {
 					fetch.deleteVPAFromStore(namespace, fetch.buildVPAName(string(statefulSet), ss.GetName()))
 					continue
 				}
@@ -297,11 +297,11 @@ var lowerUpdateModeInitial = strings.ToLower(string(vpa_types.UpdateModeInitial)
 var lowerUpdateModeAuto = strings.ToLower(string(vpa_types.UpdateModeAuto))
 
 func (fetch *fetcherObject) getControlAndUpdateMode(labels map[string]string) (open string, mode vpa_types.UpdateMode, found bool) {
-	open, found = labels[ResourcesControlKey]
+	open, found = labels[resourcesControlKey]
 	if !found {
 		return ``, ``, false
 	}
-	modeStr, ok := labels[PodUpdateModeKey]
+	modeStr, ok := labels[podUpdateModeKey]
 	if !ok {
 		mode = fetch.defaultUpdateMode
 		return open, mode, true
