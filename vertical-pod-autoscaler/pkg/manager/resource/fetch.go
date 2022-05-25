@@ -129,7 +129,7 @@ func (fetch *fetcherObject) deleteVPAFromStore(namespace, name string) {
 }
 
 func (fetch *fetcherObject) vpaCheckExist(namespace, name string) (interface{}, bool, error) {
-	vpaInformer, _ := fetch.informersMap[vpa]
+	vpaInformer := fetch.informersMap[vpa]
 	vpa, exists, err := vpaInformer.GetStore().GetByKey(namespace + "/" + name)
 	if err != nil {
 		klog.Errorf("vpainformer(%s,%s) get failed(%+v)", namespace, name, err)
