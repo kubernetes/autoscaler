@@ -27,7 +27,7 @@ to open vpa functionality under xxxx namespace, use the following command:
 kubectl label ns xxxx autoscaling/vpa=open
 ```
 
-to close vpa functionlity under xxxx namespace, use the following command:
+to close vpa functionality under xxxx namespace, use the following command:
 
 ```bash
 kubectl label ns xxxx autoscaling/vpa=close
