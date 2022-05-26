@@ -115,7 +115,7 @@ func NewAutoscalingContext(
 func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient, eventsKubeClient kube_client.Interface) *AutoscalingKubeClients {
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	kubeEventRecorder := kube_util.CreateEventRecorder(eventsKubeClient)
+	kubeEventRecorder := kube_util.CreateEventRecorder(eventsKubeClient, opts.RecordDuplicatedEvents)
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap, opts.StatusConfigMapName)
 	if err != nil {
 		klog.Error("Failed to initialize status configmap, unable to write status events")

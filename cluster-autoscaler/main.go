@@ -198,10 +198,10 @@ var (
 		"maxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.")
 	nodeGroupBackoffResetTimeout = flag.Duration("node-group-backoff-reset-timeout", 3*time.Hour,
 		"nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.")
-
 	maxScaleDownParallelismFlag        = flag.Int("max-scale-down-parallelism", 10, "Maximum number of nodes (both empty and needing drain) that can be deleted in parallel.")
 	maxDrainParallelismFlag            = flag.Int("max-drain-parallelism", 1, "Maximum number of nodes needing drain, that can be drained and deleted in parallel.")
 	gceExpanderEphemeralStorageSupport = flag.Bool("gce-expander-ephemeral-storage-support", false, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider")
+	recordDuplicatedEvents             = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -288,6 +288,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxScaleDownParallelism:            *maxScaleDownParallelismFlag,
 		MaxDrainParallelism:                *maxDrainParallelismFlag,
 		GceExpanderEphemeralStorageSupport: *gceExpanderEphemeralStorageSupport,
+		RecordDuplicatedEvents:             *recordDuplicatedEvents,
 	}
 }
 
@@ -475,7 +476,7 @@ func main() {
 			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
-				EventRecorder: kube_util.CreateEventRecorder(kubeClient),
+				EventRecorder: kube_util.CreateEventRecorder(kubeClient, *recordDuplicatedEvents),
 			},
 		)
 		if err != nil {
