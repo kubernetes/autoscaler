@@ -28,6 +28,7 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I see all the events from Cluster Autoscaler?](#how-can-i-see-all-events-from-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
@@ -266,6 +267,16 @@ respectively under `/metrics` and `/health-check`.
 
 Metrics are provided in Prometheus format and their detailed description is
 available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/metrics.md).
+
+### How can I see all events from Cluster Autoscaler?
+
+By default, the Cluster Autoscaler will deduplicate similar events that occur within a 5 minute
+window. This is done to improve scalability performance where many similar events might be
+triggered in a short timespan, such as when there are too many unscheduled pods.
+
+In some cases, such as for debugging or when scalability of events is not an issue, you might
+want to see all the events coming from the Cluster Autoscaler. In these scenarios you should
+use the `--record-duplicated-events` command line flag.
 
 ### How can I scale my cluster to just 1 node?
 
@@ -760,6 +771,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `daemonset-eviction-for-occupied-nodes` | Whether DaemonSet pods will be gracefully terminated from non-empty nodes | true
 | `feature-gates` | A set of key=value pairs that describe feature gates for alpha/experimental features. | ""
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | false
+| `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
 
 # Troubleshooting:
 
