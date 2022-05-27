@@ -42,10 +42,14 @@ failing deployment, if updated/increased limits would solve the problem.
 
 ## Proposal
 
-The proposal is to add `--experimental-deletion` to the VPA to enable deletion
-of pods. Currently only as an experimental, or beta feature.
+The proposal is to add `--delete-on-eviction-error` to the VPA to enable
+deletion of pods.
+
 To add a bit of configuration an additional flag,
-`--experimental-deletion-threshold`, should be addedd.
+`--delete-on-eviction-error-threshold`, should be addedd. This value compared
+to the amount of restarts a pod has gone through. The deletion wil only be
+allowed if the amount of restarts exceeds the threshold. This is to further
+ensure that only pods get deleted that are consistently crashing.
 
 ## Design Details
 
