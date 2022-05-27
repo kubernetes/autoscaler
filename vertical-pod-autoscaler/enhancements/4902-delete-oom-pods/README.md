@@ -44,7 +44,7 @@ failing deployment, if updated/increased limits would solve the problem.
 
 The proposal is to add `--experimental-deletion` to the VPA to enable deletion
 of pods. Currently only as an experimental, or beta feature.
-To add a bit of configuration an additional an additional flag,
+To add a bit of configuration an additional flag,
 `--experimental-deletion-threshold`, should be addedd.
 
 ## Design Details
