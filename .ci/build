@@ -60,7 +60,7 @@ fi
 # If no LOCAL_BUILD environment variable is set, we configure the `go build` command
 # to build for linux OS, amd64 architectures and without CGO enablement.
 if [[ -z "$LOCAL_BUILD" ]]; then
-  go build \
+  GO111MODULE=off go build \
     -a \
     -v \
     -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler \
@@ -68,7 +68,7 @@ if [[ -z "$LOCAL_BUILD" ]]; then
 
 # If the LOCAL_BUILD environment variable is set, we simply run `go build`.
 else
-  go build \
+  GO111MODULE=off go build \
     -v \
     -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler \
     cluster-autoscaler/main.go
