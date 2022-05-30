@@ -1065,8 +1065,8 @@ Once script is successfully executed, execute following commands to confirm the 
 git status 
 
 # Try following steps to confirm the correctness.
-go test $(go list ../cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor)
-go test $(go list ../cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor)
+go test $(go list ../cluster-autoscaler/... | grep -v cloudprovider | grep -v vendor | grep -v integration)
+go test $(go list ../cluster-autoscaler/cloudprovider/mcm/... | grep -v vendor | grep -v integration)
 
 go build main.go
 go run main.go --kubeconfig=kubeconfig.yaml --cloud-provider=mcm --nodes=0:3:ca-test.test-machine-deployment
