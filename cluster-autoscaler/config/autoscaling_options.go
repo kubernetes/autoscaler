@@ -177,4 +177,8 @@ type AutoscalingOptions struct {
 	MaxNodeGroupBackoffDuration time.Duration
 	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
 	NodeGroupBackoffResetTimeout time.Duration
+	// MaxScaleDownParallelism is the maximum number of nodes (both empty and needing drain) that can be deleted in parallel.
+	MaxScaleDownParallelism int
+	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.
+	MaxDrainParallelism int
 }

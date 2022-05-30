@@ -486,3 +486,8 @@ func (tng *TestNodeGroup) Taints() []apiv1.Taint {
 func (tng *TestNodeGroup) MachineType() string {
 	return tng.machineType
 }
+
+// SetCloudProvider sets the cloud provider for the node group.
+func (tng *TestNodeGroup) SetCloudProvider(provider *TestCloudProvider) {
+	tng.cloudProvider = provider
+}
