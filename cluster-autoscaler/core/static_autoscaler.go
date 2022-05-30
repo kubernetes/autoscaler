@@ -365,7 +365,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	if a.deleteCreatedNodesWithErrors() {
+	danglingNodes, err := a.deleteCreatedNodesWithErrors()
+	if err != nil {
+		klog.Warningf("Failed to remove nodes that were created with errors, skipping iteration: %v", err)
+		return nil
+	}
+	if danglingNodes {
 		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
 		return nil
 	}
@@ -658,7 +663,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	return removedAny, nil
 }
 
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
+func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
 	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
@@ -675,6 +680,9 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 			}
 			klog.Warningf("Cannot determine nodeGroup for node %v; %v", id, err)
 			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			return false, fmt.Errorf("node %s has no known nodegroup", node.GetName())
 		}
 		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
 	}
@@ -700,7 +708,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	}
 
-	return deletedAny
+	return deletedAny, nil
 }
 
 func (a *StaticAutoscaler) nodeGroupsById() map[string]cloudprovider.NodeGroup {
