@@ -927,7 +927,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 }
 
-func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
+func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 	// setup
 	provider := &mockprovider.CloudProvider{}
@@ -1062,7 +1062,9 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	assert.True(t, autoscaler.deleteCreatedNodesWithErrors())
+	removedNodes, err := autoscaler.deleteCreatedNodesWithErrors()
+	assert.True(t, removedNodes)
+	assert.NoError(t, err)
 
 	// check delete was called on correct nodes
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
@@ -1086,7 +1088,9 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	assert.True(t, autoscaler.deleteCreatedNodesWithErrors())
+	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	assert.True(t, removedNodes)
+	assert.NoError(t, err)
 
 	// nodes should be deleted again
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
@@ -1149,10 +1153,48 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	assert.False(t, autoscaler.deleteCreatedNodesWithErrors())
+	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	assert.False(t, removedNodes)
+	assert.NoError(t, err)
 
 	// we expect no more Delete Nodes
 	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", 2)
+
+	// failed node not included by NodeGroupForNode
+	nodeGroupC := &mockprovider.NodeGroup{}
+	nodeGroupC.On("Exist").Return(true)
+	nodeGroupC.On("Autoprovisioned").Return(false)
+	nodeGroupC.On("TargetSize").Return(1, nil)
+	nodeGroupC.On("Id").Return("C")
+	nodeGroupC.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupC.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			Id: "C1",
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:  "QUOTA",
+				},
+			},
+		},
+	}, nil)
+	provider = &mockprovider.CloudProvider{}
+	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupC})
+	provider.On("NodeGroupForNode", mock.Anything).Return(nil, nil)
+
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff())
+	clusterState.RefreshCloudProviderNodeInstancesCache()
+	autoscaler.clusterStateRegistry = clusterState
+
+	// update cluster state
+	clusterState.UpdateNodes([]*apiv1.Node{}, nil, time.Now())
+
+	// return early on failed nodes without matching nodegroups
+	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	assert.False(t, removedNodes)
+	assert.Error(t, err)
+	nodeGroupC.AssertNumberOfCalls(t, "DeleteNodes", 0)
 }
 
 func TestStaticAutoscalerProcessorCallbacks(t *testing.T) {
