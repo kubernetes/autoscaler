@@ -28,7 +28,7 @@ type InstanceType struct {
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
-var StaticListLastUpdateTime = "2022-05-25"
+var StaticListLastUpdateTime = "2022-05-30"
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
@@ -769,6 +769,76 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"c6i.xlarge": {
 		InstanceType: "c6i.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.12xlarge": {
+		InstanceType: "c6id.12xlarge",
+		VCPU:         48,
+		MemoryMb:     98304,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.16xlarge": {
+		InstanceType: "c6id.16xlarge",
+		VCPU:         64,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.24xlarge": {
+		InstanceType: "c6id.24xlarge",
+		VCPU:         96,
+		MemoryMb:     196608,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.2xlarge": {
+		InstanceType: "c6id.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.32xlarge": {
+		InstanceType: "c6id.32xlarge",
+		VCPU:         128,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.4xlarge": {
+		InstanceType: "c6id.4xlarge",
+		VCPU:         16,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.8xlarge": {
+		InstanceType: "c6id.8xlarge",
+		VCPU:         32,
+		MemoryMb:     65536,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.large": {
+		InstanceType: "c6id.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.metal": {
+		InstanceType: "c6id.metal",
+		VCPU:         128,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"c6id.xlarge": {
+		InstanceType: "c6id.xlarge",
 		VCPU:         4,
 		MemoryMb:     8192,
 		GPU:          0,
@@ -2316,6 +2386,76 @@ var InstanceTypes = map[string]*InstanceType{
 	},
 	"m6i.xlarge": {
 		InstanceType: "m6i.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.12xlarge": {
+		InstanceType: "m6id.12xlarge",
+		VCPU:         48,
+		MemoryMb:     196608,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.16xlarge": {
+		InstanceType: "m6id.16xlarge",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.24xlarge": {
+		InstanceType: "m6id.24xlarge",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.2xlarge": {
+		InstanceType: "m6id.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.32xlarge": {
+		InstanceType: "m6id.32xlarge",
+		VCPU:         128,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.4xlarge": {
+		InstanceType: "m6id.4xlarge",
+		VCPU:         16,
+		MemoryMb:     65536,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.8xlarge": {
+		InstanceType: "m6id.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.large": {
+		InstanceType: "m6id.large",
+		VCPU:         2,
+		MemoryMb:     8192,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.metal": {
+		InstanceType: "m6id.metal",
+		VCPU:         128,
+		MemoryMb:     524288,
+		GPU:          0,
+		Architecture: "amd64",
+	},
+	"m6id.xlarge": {
+		InstanceType: "m6id.xlarge",
 		VCPU:         4,
 		MemoryMb:     16384,
 		GPU:          0,
