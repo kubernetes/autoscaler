@@ -25,7 +25,7 @@ For some workloads, each scaling operation introduces disruptions for users. Exa
 * Have VPA take care of dynamically changing the `UpdateMode`: Reasons and already existing mechanism achieving a similar functionality will vary widely, this is not what VPA should be concerned with
 
 ## Proposal
-Add a new `UpdateMode` called `UpscaleOnly`, which works similar to `Auto` when scaling up, allowing the VPA to evict Pods and increase their resource requests, but prevents the VPA from evicting Pods when the new recommendation is smaller than the current one. Similarly to how the `Initial` mode works, this means that a smaller recommendation can still be applied to a Pod if it is recreated due to other reasons.
+Add a new `UpdateMode` called `UpscaleOnly`, which works similar to `Auto` when scaling up, allowing the VPA to evict Pods when `target > current requests` for at least one of the `controlledResources`, but prevents the VPA from evicting Pods when `target <= current requests` for all `controlledResources`. Similarly to how the `Initial` mode works, this means that a smaller recommendation can still be applied to a Pod if it is recreated due to other reasons.
 
 Since the change is backward-compatible the suggestion is to extend `v1` version of VPA API, avoiding the hassle of introducing a new API version.
 
