@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -32,14 +33,18 @@ import (
 // ScaleDownWrapper wraps legacy scaledown logic to satisfy scaledown.Planner &
 // scaledown.Actuator interfaces.
 type ScaleDownWrapper struct {
-	sd   *ScaleDown
-	pdbs []*policyv1.PodDisruptionBudget
+	sd                      *ScaleDown
+	pdbs                    []*policyv1.PodDisruptionBudget
+	actuator                *actuation.Actuator
+	lastNodesToDeleteResult status.ScaleDownResult
+	lastNodesToDeleteErr    errors.AutoscalerError
 }
 
 // NewScaleDownWrapper returns a new ScaleDownWrapper
-func NewScaleDownWrapper(sd *ScaleDown) *ScaleDownWrapper {
+func NewScaleDownWrapper(sd *ScaleDown, actuator *actuation.Actuator) *ScaleDownWrapper {
 	return &ScaleDownWrapper{
-		sd: sd,
+		sd:       sd,
+		actuator: actuator,
 	}
 }
 
@@ -53,14 +58,6 @@ func (p *ScaleDownWrapper) UpdateClusterState(podDestinations, scaleDownCandidat
 // CleanUpUnneededNodes cleans up unneeded nodes.
 func (p *ScaleDownWrapper) CleanUpUnneededNodes() {
 	p.sd.CleanUpUnneededNodes()
-}
-
-// NodesToDelete lists nodes to delete. Current implementation is a no-op, the
-// wrapper leverages shared state instead.
-// TODO(x13n): Implement this and get rid of sharing state between planning and
-// actuation.
-func (p *ScaleDownWrapper) NodesToDelete() (empty, needDrain []*apiv1.Node) {
-	return nil, nil
 }
 
 // UnneededNodes returns a list of unneeded nodes.
@@ -79,20 +76,37 @@ func (p *ScaleDownWrapper) NodeUtilizationMap() map[string]utilization.Info {
 	return p.sd.NodeUtilizationMap()
 }
 
+// NodesToDelete lists nodes to delete.
+//
+// The legacy implementation had one status for getting nodes to delete and actually deleting them, so some of
+// status.Result values are specific to NodesToDelete. In order not to break the processors that might be depending
+// on these values, the Result is still passed between NodesToDelete and StartDeletion. The legacy implementation would
+// also short-circuit in case of any errors, while current NodesToDelete doesn't return an error. To preserve that behavior,
+// the error returned by legacy TryToScaleDown (now called NodesToDelete) is also passed to StartDeletion.
+// TODO: Evaluate if we can get rid of the last bits of shared state.
+func (p *ScaleDownWrapper) NodesToDelete(currentTime time.Time) (empty, needDrain []*apiv1.Node) {
+	empty, drain, result, err := p.sd.NodesToDelete(currentTime, p.pdbs)
+	p.lastNodesToDeleteResult = result
+	p.lastNodesToDeleteErr = err
+	return empty, drain
+}
+
 // StartDeletion triggers an actual scale down logic.
 func (p *ScaleDownWrapper) StartDeletion(empty, needDrain []*apiv1.Node, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
-	return p.sd.TryToScaleDown(currentTime, p.pdbs)
+	// Done to preserve legacy behavior, see comment on NodesToDelete.
+	if p.lastNodesToDeleteErr != nil || p.lastNodesToDeleteResult != status.ScaleDownNodeDeleteStarted {
+		return &status.ScaleDownStatus{Result: p.lastNodesToDeleteResult}, p.lastNodesToDeleteErr
+	}
+	return p.actuator.StartDeletion(empty, needDrain, currentTime)
 }
 
 // CheckStatus snapshots current deletion status
 func (p *ScaleDownWrapper) CheckStatus() scaledown.ActuationStatus {
-	// TODO: snapshot information from the tracker instead of keeping live
-	// updated object.
-	return p.sd.nodeDeletionTracker
+	return p.actuator.CheckStatus()
 }
 
 // ClearResultsNotNewerThan clears old node deletion results kept by the
 // Actuator.
 func (p *ScaleDownWrapper) ClearResultsNotNewerThan(t time.Time) {
-	p.sd.nodeDeletionTracker.ClearResultsNotNewerThan(t)
+	p.actuator.ClearResultsNotNewerThan(t)
 }

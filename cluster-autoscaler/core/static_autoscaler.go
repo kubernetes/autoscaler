@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -153,8 +154,10 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
-	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown)
+	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt)
+	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
 
 	// Set the initial scale times to be less than the start time so as to
@@ -549,7 +552,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			empty, needDrain := a.scaleDownPlanner.NodesToDelete()
+			empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
 			scaleDownStatus, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain, currentTime)
 			a.scaleDownActuator.ClearResultsNotNewerThan(scaleDownStatus.NodeDeleteResultsAsOf)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
@@ -808,7 +811,7 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if legacy.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}

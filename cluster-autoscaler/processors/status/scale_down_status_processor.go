@@ -117,6 +117,8 @@ const (
 	NodeDeleteErrorFailedToEvictPods
 	// NodeDeleteErrorFailedToDelete - failed to delete the node from the cloud provider.
 	NodeDeleteErrorFailedToDelete
+	// NodeDeleteErrorInternal - failed to delete the node because of an unexpected error.
+	NodeDeleteErrorInternal
 )
 
 // NodeDeleteResult contains information about the result of a node deletion.
