@@ -114,24 +114,6 @@ func TestUtilParseScalingBounds(t *testing.T) {
 		},
 		min: 0,
 		max: 1,
-	}, {
-		description: "deprecated min/max annotations still work, result is min 0, max 1",
-		annotations: map[string]string{
-			deprecatedNodeGroupMinSizeAnnotationKey: "0",
-			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
-		},
-		min: 0,
-		max: 1,
-	}, {
-		description: "deprecated min/max annotations do not take precedence over non-deprecated annotations, result is min 1, max 2",
-		annotations: map[string]string{
-			deprecatedNodeGroupMinSizeAnnotationKey: "0",
-			deprecatedNodeGroupMaxSizeAnnotationKey: "1",
-			nodeGroupMinSizeAnnotationKey:           "1",
-			nodeGroupMaxSizeAnnotationKey:           "2",
-		},
-		min: 1,
-		max: 2,
 	}} {
 		t.Run(tc.description, func(t *testing.T) {
 			machineSet := unstructured.Unstructured{
@@ -486,94 +468,6 @@ func Test_clusterNameFromResource(t *testing.T) {
 			},
 		},
 		want: "",
-	}, {
-		name: "cluster name set in MachineSet labels, v1alpha1 MachineSet",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineSetKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-					"labels": map[string]interface{}{
-						deprecatedClusterNameLabel: "bar",
-					},
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in MachineDeployment, v1alpha1 MachineDeployment",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineDeploymentKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-					"labels": map[string]interface{}{
-						deprecatedClusterNameLabel: "bar",
-					},
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in Machine template labels, v1alpha1 MachineSet",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineSetKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-					"template": map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"labels": map[string]interface{}{
-								deprecatedClusterNameLabel: "bar",
-							},
-						},
-					},
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
-	}, {
-		name: "cluster name set in Machine template, v1alpha1 MachineDeployment",
-		resource: &unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"kind":       machineDeploymentKind,
-				"apiVersion": "cluster.k8s.io/v1alpha1",
-				"metadata": map[string]interface{}{
-					"name":      "foo",
-					"namespace": "default",
-				},
-				"spec": map[string]interface{}{
-					"replicas": int64(1),
-					"template": map[string]interface{}{
-						"metadata": map[string]interface{}{
-							"labels": map[string]interface{}{
-								deprecatedClusterNameLabel: "bar",
-							},
-						},
-					},
-				},
-				"status": map[string]interface{}{},
-			},
-		},
-		want: "bar",
 	}, {
 		name: "cluster name not set, v1alpha2 MachineSet",
 		resource: &unstructured.Unstructured{
