@@ -306,6 +306,8 @@ securityContext: {}
   # runAsGroup: 1001
 
 service:
+  # service.create -- If `true`, a Service will be created.
+  create: true
   # service.annotations -- Annotations to add to service
   annotations: {}
   # service.labels -- Labels to add to service
