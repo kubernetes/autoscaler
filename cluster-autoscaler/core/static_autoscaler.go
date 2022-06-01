@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -153,8 +154,10 @@ func NewStaticAutoscaler(
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
-	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown)
+	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt)
+	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
 
 	// Set the initial scale times to be less than the start time so as to
@@ -362,7 +365,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	if a.deleteCreatedNodesWithErrors() {
+	danglingNodes, err := a.deleteCreatedNodesWithErrors()
+	if err != nil {
+		klog.Warningf("Failed to remove nodes that were created with errors, skipping iteration: %v", err)
+		return nil
+	}
+	if danglingNodes {
 		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
 		return nil
 	}
@@ -549,7 +557,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			empty, needDrain := a.scaleDownPlanner.NodesToDelete()
+			empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
 			scaleDownStatus, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain, currentTime)
 			a.scaleDownActuator.ClearResultsNotNewerThan(scaleDownStatus.NodeDeleteResultsAsOf)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
@@ -655,7 +663,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	return removedAny, nil
 }
 
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
+func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
 	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
@@ -672,6 +680,9 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 			}
 			klog.Warningf("Cannot determine nodeGroup for node %v; %v", id, err)
 			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			return false, fmt.Errorf("node %s has no known nodegroup", node.GetName())
 		}
 		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
 	}
@@ -697,7 +708,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	}
 
-	return deletedAny
+	return deletedAny, nil
 }
 
 func (a *StaticAutoscaler) nodeGroupsById() map[string]cloudprovider.NodeGroup {
@@ -808,7 +819,7 @@ func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64,
 	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if legacy.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
