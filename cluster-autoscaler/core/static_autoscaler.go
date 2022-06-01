@@ -148,12 +148,15 @@ func NewStaticAutoscaler(
 
 	scaleDown := NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
 
+	// Set the initial scale times to be less than the start time so as to
+	// not start in cooldown mode.
+	initialScaleTime := time.Now().Add(-time.Hour)
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
 		startTime:               time.Now(),
-		lastScaleUpTime:         time.Now(),
-		lastScaleDownDeleteTime: time.Now(),
-		lastScaleDownFailTime:   time.Now(),
+		lastScaleUpTime:         initialScaleTime,
+		lastScaleDownDeleteTime: initialScaleTime,
+		lastScaleDownFailTime:   initialScaleTime,
 		scaleDown:               scaleDown,
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
@@ -245,6 +248,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
+	// Update cluster resource usage metrics
+	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
+	metrics.UpdateClusterCPUCurrentCores(coresTotal)
+	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
+
 	daemonsets, err := a.ListerRegistry.DaemonSetLister().List(labels.Everything())
 	if err != nil {
 		klog.Errorf("Failed to get daemonset list: %v", err)
@@ -252,10 +260,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
+	refreshStart := time.Now()
 	err = a.AutoscalingContext.CloudProvider.Refresh()
+	metrics.UpdateDurationFromStart(metrics.CloudProviderRefresh, refreshStart)
 	if err != nil {
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	// Update node groups min/max after cloud provider refresh
+	for _, nodeGroup := range a.AutoscalingContext.CloudProvider.NodeGroups() {
+		metrics.UpdateNodeGroupMin(nodeGroup.Id(), nodeGroup.MinSize())
+		metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
 	}
 
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
@@ -336,7 +352,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	a.deleteCreatedNodesWithErrors()
+	if a.deleteCreatedNodesWithErrors() {
+		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
+		return nil
+	}
 
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
@@ -625,7 +644,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	return removedAny, nil
 }
 
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
+func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
 	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
@@ -646,6 +665,8 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
 	}
 
+	deletedAny := false
+
 	for nodeGroupId, nodesToBeDeleted := range nodesToBeDeletedByNodeGroupId {
 		var err error
 		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToBeDeleted), nodeGroupId)
@@ -661,8 +682,11 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
 		}
 
+		deletedAny = deletedAny || err == nil
 		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	}
+
+	return deletedAny
 }
 
 func (a *StaticAutoscaler) nodeGroupsById() map[string]cloudprovider.NodeGroup {
@@ -794,8 +818,26 @@ func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			upcomingNodes = append(upcomingNodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, i))
+			upcomingNodes = append(upcomingNodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
 		}
 	}
 	return upcomingNodes
+}
+
+func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+	// this function is essentially similar to the calculateScaleDownCoresMemoryTotal
+	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
+	var coresTotal, memoryTotal int64
+	for _, node := range nodes {
+		if isNodeBeingDeleted(node, timestamp) {
+			// Nodes being deleted do not count towards total cluster resources
+			continue
+		}
+		cores, memory := core_utils.GetNodeCoresAndMemory(node)
+
+		coresTotal += cores
+		memoryTotal += memory
+	}
+
+	return coresTotal, memoryTotal
 }

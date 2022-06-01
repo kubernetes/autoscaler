@@ -90,9 +90,10 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 
 func TestExtractAllocatableResourcesFromScaleSet(t *testing.T) {
 	tags := map[string]*string{
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "cpu"):               to.StringPtr("100m"),
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "memory"):            to.StringPtr("100M"),
-		fmt.Sprintf("%s%s", nodeResourcesTagName, "ephemeral-storage"): to.StringPtr("20G"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "cpu"):                        to.StringPtr("100m"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "memory"):                     to.StringPtr("100M"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "ephemeral-storage"):          to.StringPtr("20G"),
+		fmt.Sprintf("%s%s", nodeResourcesTagName, "nvidia.com_Tesla-P100-PCIE"): to.StringPtr("4"),
 	}
 
 	labels := extractAllocatableResourcesFromScaleSet(tags)
@@ -102,6 +103,8 @@ func TestExtractAllocatableResourcesFromScaleSet(t *testing.T) {
 	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
 	expectedEphemeralStorage := resource.MustParse("20G")
 	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+	exepectedCustomAllocatable := resource.MustParse("4")
+	assert.Equal(t, (&exepectedCustomAllocatable).String(), labels["nvidia.com/Tesla-P100-PCIE"].String())
 }
 
 func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {

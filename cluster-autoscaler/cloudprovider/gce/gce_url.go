@@ -22,33 +22,34 @@ import (
 )
 
 const (
-	gceUrlSchema        = "https"
-	gceDomainSuffix     = "googleapis.com/compute/v1/projects/"
-	gcePrefix           = gceUrlSchema + "://content." + gceDomainSuffix
+	gceUrlSchema    = "https"
+	gceDomainSuffix = "googleapis.com/compute/v1/projects/"
+	// Cluster Autoscaler previously used "content" instead of "www" here, for reasons unknown.
+	gcePrefix           = gceUrlSchema + "://www." + gceDomainSuffix
 	instanceUrlTemplate = gcePrefix + "%s/zones/%s/instances/%s"
 	migUrlTemplate      = gcePrefix + "%s/zones/%s/instanceGroups/%s"
 )
 
 // ParseMigUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroups/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroups/<name>
 func ParseMigUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instanceGroups")
 }
 
 // ParseIgmUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
 func ParseIgmUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instanceGroupManagers")
 }
 
 // ParseInstanceUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
 func ParseInstanceUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instances")
 }
 
 // ParseInstanceUrlRef expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
 // and returns a GceRef struct for it.
 func ParseInstanceUrlRef(url string) (GceRef, error) {
 	project, zone, name, err := parseGceUrl(url, "instances")
@@ -73,7 +74,7 @@ func GenerateMigUrl(ref GceRef) string {
 }
 
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
-	errMsg := fmt.Errorf("wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+	errMsg := fmt.Errorf("wrong url: expected format https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
 	if !strings.Contains(url, gceDomainSuffix) {
 		return "", "", "", errMsg
 	}

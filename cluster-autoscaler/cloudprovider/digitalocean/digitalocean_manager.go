@@ -17,6 +17,7 @@ limitations under the License.
 package digitalocean
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -26,7 +27,7 @@ import (
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -62,6 +63,10 @@ type Config struct {
 	// DigitalOcean Cluster Autoscaler is running.
 	Token string `json:"token"`
 
+	// TokenFile references the token from the given file. It cannot be specified
+	// together with Token.
+	TokenFile string `json:"token_file"`
+
 	// URL points to DigitalOcean API. If empty, defaults to
 	// https://api.digitalocean.com/
 	URL string `json:"url"`
@@ -80,11 +85,26 @@ func newManager(configReader io.Reader) (*Manager, error) {
 		}
 	}
 
-	if cfg.Token == "" {
+	if cfg.Token == "" && cfg.TokenFile == "" {
 		return nil, errors.New("access token is not provided")
+	}
+	if cfg.Token != "" && cfg.TokenFile != "" {
+		return nil, errors.New("access token literal and access token file must not be provided together")
 	}
 	if cfg.ClusterID == "" {
 		return nil, errors.New("cluster ID is not provided")
+	}
+
+	if cfg.TokenFile != "" {
+		tokenData, err := ioutil.ReadFile(cfg.TokenFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read token file: %s", err)
+		}
+		tokenData = bytes.TrimSpace(tokenData)
+		if len(tokenData) == 0 {
+			return nil, fmt.Errorf("token file %q is empty", cfg.TokenFile)
+		}
+		cfg.Token = string(tokenData)
 	}
 
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{

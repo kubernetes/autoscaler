@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/onsi/ginkgo"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -86,25 +86,25 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, ce
 	ginkgo.By("Registering the mutating pod webhook via the AdmissionRegistration API")
 
 	namespace := f.Namespace.Name
-	sideEffectsNone := admissionregistrationv1beta1.SideEffectClassNone
+	sideEffectsNone := admissionregistrationv1.SideEffectClassNone
 
-	_, err := createMutatingWebhookConfiguration(f, &admissionregistrationv1beta1.MutatingWebhookConfiguration{
+	_, err := createMutatingWebhookConfiguration(f, &admissionregistrationv1.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: configName,
 		},
-		Webhooks: []admissionregistrationv1beta1.MutatingWebhook{
+		Webhooks: []admissionregistrationv1.MutatingWebhook{
 			{
 				Name: "adding-init-container.k8s.io",
-				Rules: []admissionregistrationv1beta1.RuleWithOperations{{
-					Operations: []admissionregistrationv1beta1.OperationType{admissionregistrationv1beta1.Create},
-					Rule: admissionregistrationv1beta1.Rule{
+				Rules: []admissionregistrationv1.RuleWithOperations{{
+					Operations: []admissionregistrationv1.OperationType{admissionregistrationv1.Create},
+					Rule: admissionregistrationv1.Rule{
 						APIGroups:   []string{""},
 						APIVersions: []string{"v1"},
 						Resources:   []string{"pods"},
 					},
 				}},
-				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
-					Service: &admissionregistrationv1beta1.ServiceReference{
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: namespace,
 						Name:      WebhookServiceName,
 						Path:      strPtr("/mutating-pods-sidecar"),
@@ -129,13 +129,13 @@ func RegisterMutatingWebhookForPod(f *framework.Framework, configName string, ce
 	framework.ExpectNoError(err, "waiting for webhook configuration to be ready")
 
 	return func() {
-		client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(context.TODO(), configName, metav1.DeleteOptions{})
+		client.AdmissionregistrationV1().MutatingWebhookConfigurations().Delete(context.TODO(), configName, metav1.DeleteOptions{})
 	}
 }
 
 // createMutatingWebhookConfiguration ensures the webhook config scopes object or namespace selection
 // to avoid interfering with other tests, then creates the config.
-func createMutatingWebhookConfiguration(f *framework.Framework, config *admissionregistrationv1beta1.MutatingWebhookConfiguration) (*admissionregistrationv1beta1.MutatingWebhookConfiguration, error) {
+func createMutatingWebhookConfiguration(f *framework.Framework, config *admissionregistrationv1.MutatingWebhookConfiguration) (*admissionregistrationv1.MutatingWebhookConfiguration, error) {
 	for _, webhook := range config.Webhooks {
 		if webhook.NamespaceSelector != nil && webhook.NamespaceSelector.MatchLabels[f.UniqueName] == "true" {
 			continue
@@ -145,26 +145,26 @@ func createMutatingWebhookConfiguration(f *framework.Framework, config *admissio
 		}
 		framework.Failf(`webhook %s in config %s has no namespace or object selector with %s="true", and can interfere with other tests`, webhook.Name, config.Name, f.UniqueName)
 	}
-	return f.ClientSet.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(context.TODO(), config, metav1.CreateOptions{})
+	return f.ClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Create(context.TODO(), config, metav1.CreateOptions{})
 }
 
 // newMutatingIsReadyWebhookFixture creates a mutating webhook that can be added to a webhook configuration and then probed
 // with "marker" requests via waitWebhookConfigurationReady to wait for a webhook configuration to be ready.
-func newMutatingIsReadyWebhookFixture(f *framework.Framework, certContext *certContext, servicePort int32) admissionregistrationv1beta1.MutatingWebhook {
-	sideEffectsNone := admissionregistrationv1beta1.SideEffectClassNone
-	failOpen := admissionregistrationv1beta1.Ignore
-	return admissionregistrationv1beta1.MutatingWebhook{
+func newMutatingIsReadyWebhookFixture(f *framework.Framework, certContext *certContext, servicePort int32) admissionregistrationv1.MutatingWebhook {
+	sideEffectsNone := admissionregistrationv1.SideEffectClassNone
+	failOpen := admissionregistrationv1.Ignore
+	return admissionregistrationv1.MutatingWebhook{
 		Name: "mutating-is-webhook-configuration-ready.k8s.io",
-		Rules: []admissionregistrationv1beta1.RuleWithOperations{{
-			Operations: []admissionregistrationv1beta1.OperationType{admissionregistrationv1beta1.Create},
-			Rule: admissionregistrationv1beta1.Rule{
+		Rules: []admissionregistrationv1.RuleWithOperations{{
+			Operations: []admissionregistrationv1.OperationType{admissionregistrationv1.Create},
+			Rule: admissionregistrationv1.Rule{
 				APIGroups:   []string{""},
 				APIVersions: []string{"v1"},
 				Resources:   []string{"configmaps"},
 			},
 		}},
-		ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
-			Service: &admissionregistrationv1beta1.ServiceReference{
+		ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			Service: &admissionregistrationv1.ServiceReference{
 				Namespace: f.Namespace.Name,
 				Name:      WebhookServiceName,
 				Path:      strPtr("/always-deny"),

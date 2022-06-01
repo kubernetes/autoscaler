@@ -39,7 +39,7 @@ type hetznerManager struct {
 	nodeGroups     map[string]*hetznerNodeGroup
 	apiCallContext context.Context
 	cloudInit      string
-	image          string
+	image          *hcloud.Image
 	sshKey         *hcloud.SSHKey
 	network        *hcloud.Network
 }
@@ -55,16 +55,41 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
 	}
 
-	image := os.Getenv("HCLOUD_IMAGE")
-	if image == "" {
-		image = "ubuntu-20.04"
-	}
-
 	client := hcloud.NewClient(hcloud.WithToken(token))
 	ctx := context.Background()
 	cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
+	}
+
+	imageName := os.Getenv("HCLOUD_IMAGE")
+	if imageName == "" {
+		imageName = "ubuntu-20.04"
+	}
+
+	// Search for an image ID corresponding to the supplied HCLOUD_IMAGE env
+	// variable. This value can either be an image ID itself (an int), a name
+	// (e.g. "ubuntu-20.04"), or a label selector associated with an image
+	// snapshot. In the latter case it will use the most recent snapshot.
+	image, _, err := client.Image.Get(ctx, imageName)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find image %s: %v", imageName, err)
+	}
+	if image == nil {
+		images, err := client.Image.AllWithOpts(ctx, hcloud.ImageListOpts{
+			Type:   []hcloud.ImageType{hcloud.ImageTypeSnapshot},
+			Status: []hcloud.ImageStatus{hcloud.ImageStatusAvailable},
+			Sort:   []string{"created:desc"},
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: imageName,
+			},
+		})
+
+		if err != nil || len(images) == 0 {
+			return nil, fmt.Errorf("unable to find image %s: %v", imageName, err)
+		}
+
+		image = images[0]
 	}
 
 	var network *hcloud.Network

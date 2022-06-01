@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -173,6 +174,8 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
+	labels.UpdateDeprecatedLabels(baseNodeInfo.Node().ObjectMeta.Labels)
+
 	pods, err := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
@@ -223,9 +226,7 @@ func deepCopyNodeInfo(nodeInfo *schedulerframework.NodeInfo) (*schedulerframewor
 
 	// Build a new node info.
 	newNodeInfo := schedulerframework.NewNodeInfo(newPods...)
-	if err := newNodeInfo.SetNode(nodeInfo.Node().DeepCopy()); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	newNodeInfo.SetNode(nodeInfo.Node().DeepCopy())
 	return newNodeInfo, nil
 }
 
@@ -246,9 +247,7 @@ func sanitizeNodeInfo(nodeInfo *schedulerframework.NodeInfo, nodeGroupName strin
 
 	// Build a new node info.
 	sanitizedNodeInfo := schedulerframework.NewNodeInfo(sanitizedPods...)
-	if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	sanitizedNodeInfo.SetNode(sanitizedNode)
 	return sanitizedNodeInfo, nil
 }
 

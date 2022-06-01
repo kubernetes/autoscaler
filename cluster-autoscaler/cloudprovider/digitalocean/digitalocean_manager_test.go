@@ -24,14 +24,22 @@ import (
 
 	"github.com/digitalocean/godo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewManager(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+	t.Run("success with literal token", func(t *testing.T) {
 		cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
 		manager, err := newManager(bytes.NewBufferString(cfg))
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, manager.clusterID, "123456", "cluster ID does not match")
+	})
+	t.Run("success with token file", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "token_file": "testdata/correct_token", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
+
+		manager, err := newManager(bytes.NewBufferString(cfg))
+		require.NoError(t, err)
 		assert.Equal(t, manager.clusterID, "123456", "cluster ID does not match")
 	})
 
@@ -41,7 +49,31 @@ func TestNewManager(t *testing.T) {
 		_, err := newManager(bytes.NewBufferString(cfg))
 		assert.EqualError(t, err, errors.New("access token is not provided").Error())
 	})
+	t.Run("literal and token file", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "token": "123-123-123", "token_file": "tokendata/correct_token", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
+		_, err := newManager(bytes.NewBufferString(cfg))
+		assert.EqualError(t, err, errors.New("access token literal and access token file must not be provided together").Error())
+	})
+	t.Run("missing token file", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "token_file": "testdata/missing_token", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
+
+		_, err := newManager(bytes.NewBufferString(cfg))
+		require.NotNil(t, err)
+		assert.Contains(t, err.Error(), "failed to read token file")
+	})
+	t.Run("empty token file", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "token_file": "testdata/empty_token", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
+
+		_, err := newManager(bytes.NewBufferString(cfg))
+		assert.EqualError(t, err, errors.New(`token file "testdata/empty_token" is empty`).Error())
+	})
+	t.Run("all whitespace token file", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "token_file": "testdata/whitespace_token", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
+
+		_, err := newManager(bytes.NewBufferString(cfg))
+		assert.EqualError(t, err, errors.New(`token file "testdata/whitespace_token" is empty`).Error())
+	})
 	t.Run("empty cluster ID", func(t *testing.T) {
 		cfg := `{"cluster_id": "", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 

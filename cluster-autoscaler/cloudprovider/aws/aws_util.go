@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"io/ioutil"
 	klog "k8s.io/klog/v2"
 	"net/http"
@@ -31,10 +34,11 @@ import (
 )
 
 var (
-	ec2MetaDataServiceUrl          = "http://169.254.169.254/latest/dynamic/instance-identity/document"
+	ec2MetaDataServiceUrl          = "http://169.254.169.254"
 	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
 	staticListLastUpdateTime       = "2020-12-07"
+	ec2Arm64Processors             = []string{"AWS Graviton Processor", "AWS Graviton2 Processor"}
 )
 
 type response struct {
@@ -50,6 +54,7 @@ type productAttributes struct {
 	VCPU         string `json:"vcpu"`
 	Memory       string `json:"memory"`
 	GPU          string `json:"gpu"`
+	Architecture string `json:"physicalProcessor"`
 }
 
 // GenerateEC2InstanceTypes returns a map of ec2 resources
@@ -110,6 +115,9 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 					if attr.GPU != "" {
 						instanceTypes[attr.InstanceType].GPU = parseCPU(attr.GPU)
 					}
+					if attr.Architecture != "" {
+						instanceTypes[attr.InstanceType].Architecture = parseArchitecture(attr.Architecture)
+					}
 				}
 			}
 		}
@@ -150,31 +158,27 @@ func parseCPU(cpu string) int64 {
 	return i
 }
 
+func parseArchitecture(archName string) string {
+	for _, processor := range ec2Arm64Processors {
+		if archName == processor {
+			return "arm64"
+		}
+	}
+	return "amd64"
+}
+
 // GetCurrentAwsRegion return region of current cluster without building awsManager
 func GetCurrentAwsRegion() (string, error) {
 	region, present := os.LookupEnv("AWS_REGION")
 
 	if !present {
-		klog.V(1).Infof("fetching %s\n", ec2MetaDataServiceUrl)
-		res, err := http.Get(ec2MetaDataServiceUrl)
+		c := aws.NewConfig().
+			WithEndpoint(ec2MetaDataServiceUrl)
+		sess, err := session.NewSession()
 		if err != nil {
-			return "", fmt.Errorf("Error fetching %s", ec2MetaDataServiceUrl)
+			return "", fmt.Errorf("failed to create session")
 		}
-
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing %s", ec2MetaDataServiceUrl)
-		}
-
-		var unmarshalled = map[string]string{}
-		err = json.Unmarshal(body, &unmarshalled)
-		if err != nil {
-			klog.Warningf("Error unmarshalling %s, skip...\n", ec2MetaDataServiceUrl)
-		}
-
-		region = unmarshalled["region"]
+		return ec2metadata.New(sess, c).Region()
 	}
 
 	return region, nil

@@ -26,13 +26,11 @@ import (
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
+	"github.com/stretchr/testify/assert"
 	gce "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	quota "k8s.io/apiserver/pkg/quota/v1"
-	kubeletapis "k8s.io/kubelet/pkg/apis"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
@@ -228,18 +226,13 @@ func TestBuildGenericLabels(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			expectedLabels := map[string]string{
-				apiv1.LabelZoneRegion:              "us-central1",
-				apiv1.LabelZoneRegionStable:        "us-central1",
-				apiv1.LabelZoneFailureDomain:       "us-central1-b",
-				apiv1.LabelZoneFailureDomainStable: "us-central1-b",
-				gceCSITopologyKeyZone:              "us-central1-b",
-				apiv1.LabelHostname:                "sillyname",
-				apiv1.LabelInstanceType:            "n1-standard-8",
-				apiv1.LabelInstanceTypeStable:      "n1-standard-8",
-				kubeletapis.LabelArch:              cloudprovider.DefaultArch,
-				kubeletapis.LabelOS:                tc.expectedOsLabel,
-				apiv1.LabelArchStable:              cloudprovider.DefaultArch,
-				apiv1.LabelOSStable:                tc.expectedOsLabel,
+				apiv1.LabelTopologyRegion:     "us-central1",
+				apiv1.LabelTopologyZone:       "us-central1-b",
+				gceCSITopologyKeyZone:         "us-central1-b",
+				apiv1.LabelHostname:           "sillyname",
+				apiv1.LabelInstanceTypeStable: "n1-standard-8",
+				apiv1.LabelArchStable:         cloudprovider.DefaultArch,
+				apiv1.LabelOSStable:           tc.expectedOsLabel,
 			}
 			labels, err := BuildGenericLabels(GceRef{
 				Name:    "kubernetes-minion-group",

@@ -17,9 +17,13 @@ limitations under the License.
 package scheduler
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -49,4 +53,52 @@ func TestCreateNodeNameToInfoMap(t *testing.T) {
 	assert.Equal(t, n1, res["node1"].Node())
 	assert.Equal(t, p2, res["node2"].Pods[0].Pod)
 	assert.Equal(t, n2, res["node2"].Node())
+}
+
+func TestResourceList(t *testing.T) {
+	tests := []struct {
+		resource *schedulerframework.Resource
+		expected apiv1.ResourceList
+	}{
+		{
+			resource: &schedulerframework.Resource{},
+			expected: map[apiv1.ResourceName]resource.Quantity{
+				apiv1.ResourceCPU:              *resource.NewScaledQuantity(0, -3),
+				apiv1.ResourceMemory:           *resource.NewQuantity(0, resource.BinarySI),
+				apiv1.ResourcePods:             *resource.NewQuantity(0, resource.BinarySI),
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(0, resource.BinarySI),
+			},
+		},
+		{
+			resource: &schedulerframework.Resource{
+				MilliCPU:         4,
+				Memory:           2000,
+				EphemeralStorage: 5000,
+				AllowedPodNumber: 80,
+				ScalarResources: map[apiv1.ResourceName]int64{
+					"scalar.test/scalar1":        1,
+					"hugepages-test":             2,
+					"attachable-volumes-aws-ebs": 39,
+				},
+			},
+			expected: map[apiv1.ResourceName]resource.Quantity{
+				apiv1.ResourceCPU:                      *resource.NewScaledQuantity(4, -3),
+				apiv1.ResourceMemory:                   *resource.NewQuantity(2000, resource.BinarySI),
+				apiv1.ResourcePods:                     *resource.NewQuantity(80, resource.BinarySI),
+				apiv1.ResourceEphemeralStorage:         *resource.NewQuantity(5000, resource.BinarySI),
+				"scalar.test/" + "scalar1":             *resource.NewQuantity(1, resource.DecimalSI),
+				"attachable-volumes-aws-ebs":           *resource.NewQuantity(39, resource.DecimalSI),
+				apiv1.ResourceHugePagesPrefix + "test": *resource.NewQuantity(2, resource.BinarySI),
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			rl := ResourceToResourceList(test.resource)
+			if !reflect.DeepEqual(test.expected, rl) {
+				t.Errorf("expected: %#v, got: %#v", test.expected, rl)
+			}
+		})
+	}
 }

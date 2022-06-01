@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	kubeletapis "k8s.io/kubelet/pkg/apis"
 )
 
 var (
@@ -114,4 +115,23 @@ func calculateNodeSelectorStats(pods []*apiv1.Pod) []nodeSelectorStats {
 		}
 	}
 	return stats
+}
+
+// UpdateDeprecatedLabels updates beta and deprecated labels from stable labels
+func UpdateDeprecatedLabels(labels map[string]string) {
+	if v, ok := labels[apiv1.LabelArchStable]; ok {
+		labels[kubeletapis.LabelArch] = v
+	}
+	if v, ok := labels[apiv1.LabelOSStable]; ok {
+		labels[kubeletapis.LabelOS] = v
+	}
+	if v, ok := labels[apiv1.LabelInstanceTypeStable]; ok {
+		labels[apiv1.LabelInstanceType] = v
+	}
+	if v, ok := labels[apiv1.LabelTopologyRegion]; ok {
+		labels[apiv1.LabelZoneRegion] = v
+	}
+	if v, ok := labels[apiv1.LabelTopologyZone]; ok {
+		labels[apiv1.LabelZoneFailureDomain] = v
+	}
 }
