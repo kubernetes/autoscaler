@@ -759,6 +759,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `daemonset-eviction-for-empty-nodes` | Whether DaemonSet pods will be gracefully terminated from empty nodes | false
 | `daemonset-eviction-for-occupied-nodes` | Whether DaemonSet pods will be gracefully terminated from non-empty nodes | true
 | `feature-gates` | A set of key=value pairs that describe feature gates for alpha/experimental features. | ""
+| `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | false
 
 # Troubleshooting:
 

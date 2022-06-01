@@ -17,67 +17,39 @@ limitations under the License.
 package legacy
 
 import (
-	ctx "context"
-	"fmt"
 	"math"
 	"reflect"
-	"strings"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
-	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_record "k8s.io/client-go/tools/record"
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
-	// DelayDeletionAnnotationPrefix is the prefix of annotation marking node as it needs to wait
-	// for other K8s components before deleting node.
-	DelayDeletionAnnotationPrefix = "delay-deletion.cluster-autoscaler.kubernetes.io/"
-)
-
-const (
-	// MaxKubernetesEmptyNodeDeletionTime is the maximum time needed by Kubernetes to delete an empty node.
-	MaxKubernetesEmptyNodeDeletionTime = 3 * time.Minute
-	// MaxCloudProviderNodeDeletionTime is the maximum time needed by cloud provider to delete a node.
-	MaxCloudProviderNodeDeletionTime = 5 * time.Minute
-	// EvictionRetryTime is the time after CA retries failed pod eviction.
-	EvictionRetryTime = 10 * time.Second
-	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
-	// is killed with SIGKILL after MaxGracefulTerminationTime
-	PodEvictionHeadroom = 30 * time.Second
-	// DaemonSetEvictionEmptyNodeTimeout is the time to evict all DaemonSet pods on empty node
-	DaemonSetEvictionEmptyNodeTimeout = 10 * time.Second
-	// DeamonSetTimeBetweenEvictionRetries is a time between retries to create eviction that uses for DaemonSet eviction for empty nodes
-	DeamonSetTimeBetweenEvictionRetries = 3 * time.Second
 )
 
 type scaleDownResourcesLimits map[string]int64
@@ -131,7 +103,7 @@ func computeAboveMin(total int64, min int64) int64 {
 func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -148,7 +120,7 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
-		if IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -188,12 +160,6 @@ func (sd *ScaleDown) calculateScaleDownCustomResourcesTotal(nodes []*apiv1.Node,
 	}
 
 	return result, nil
-}
-
-// IsNodeBeingDeleted returns true iff a given node is being deleted.
-func IsNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
-	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
-	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
 
 func noScaleDownLimitsOnResources() scaleDownResourcesLimits {
@@ -283,7 +249,7 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker) *ScaleDown {
 	usageTracker := simulator.NewUsageTracker()
 	removalSimulator := simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, usageTracker)
 	return &ScaleDown{
@@ -296,7 +262,7 @@ func NewScaleDown(context *context.AutoscalingContext, processors *processors.Au
 		nodeUtilizationMap:   make(map[string]utilization.Info),
 		usageTracker:         usageTracker,
 		unneededNodesList:    make([]*apiv1.Node, 0),
-		nodeDeletionTracker:  deletiontracker.NewNodeDeletionTracker(0 * time.Second),
+		nodeDeletionTracker:  ndt,
 		removalSimulator:     removalSimulator,
 	}
 }
@@ -328,7 +294,7 @@ func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node,
 	// Skip nodes marked to be deleted, if they were marked recently.
 	// Old-time marked nodes are again eligible for deletion - something went wrong with them
 	// and they have not been deleted.
-	if IsNodeBeingDeleted(node, timestamp) {
+	if actuation.IsNodeBeingDeleted(node, timestamp) {
 		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 		return simulator.CurrentlyBeingDeleted, nil
 	}
@@ -623,28 +589,20 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 	return result
 }
 
-// TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
-// removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(
-	currentTime time.Time,
-	pdbs []*policyv1.PodDisruptionBudget,
-) (*status.ScaleDownStatus, errors.AutoscalerError) {
+// NodesToDelete selects the nodes to delete for scale down.
+func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDisruptionBudget) (empty, drain []*apiv1.Node, res status.ScaleDownResult, err errors.AutoscalerError) {
 	_, drained := sd.nodeDeletionTracker.DeletionsInProgress()
 	if len(drained) > 0 {
-		return &status.ScaleDownStatus{
-			Result: status.ScaleDownInProgress,
-		}, nil
+		return nil, nil, status.ScaleDownInProgress, nil
 	}
-	ndr, ts := sd.nodeDeletionTracker.DeletionResults()
-	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: ndr, NodeDeleteResultsAsOf: ts}
-	nodeDeletionDuration := time.Duration(0)
+
 	findNodesToRemoveDuration := time.Duration(0)
-	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
+	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration)
 
 	allNodeInfos, errSnapshot := sd.context.ClusterSnapshot.NodeInfos().List()
 	if errSnapshot != nil {
 		// This should never happen, List() returns err only because scheduler interface requires it.
-		return scaleDownStatus, errors.ToAutoscalerError(errors.InternalError, errSnapshot)
+		return nil, nil, status.ScaleDownError, errors.ToAutoscalerError(errors.InternalError, errSnapshot)
 	}
 
 	nodesWithoutMaster := filterOutMasters(allNodeInfos)
@@ -656,13 +614,10 @@ func (sd *ScaleDown) TryToScaleDown(
 	candidateNames := make([]string, 0)
 	readinessMap := make(map[string]bool)
 	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
-	gpuLabel := sd.context.CloudProvider.GPULabel()
-	availableGPUTypes := sd.context.CloudProvider.GetAvailableGPUTypes()
 
 	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
 	if errCP != nil {
-		scaleDownStatus.Result = status.ScaleDownError
-		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
+		return nil, nil, status.ScaleDownError, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
 	scaleDownResourcesLeft := sd.computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
@@ -760,8 +715,7 @@ func (sd *ScaleDown) TryToScaleDown(
 
 	if len(candidateNames) == 0 {
 		klog.V(1).Infof("No candidates for scale down")
-		scaleDownStatus.Result = status.ScaleDownNoUnneeded
-		return scaleDownStatus, nil
+		return nil, nil, status.ScaleDownNoUnneeded, nil
 	}
 
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
@@ -770,25 +724,16 @@ func (sd *ScaleDown) TryToScaleDown(
 	emptyNodesToRemove := sd.getEmptyNodesToRemove(candidateNames, scaleDownResourcesLeft, currentTime)
 	emptyNodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, emptyNodesToRemove, sd.context.MaxEmptyBulkDelete)
 	if len(emptyNodesToRemove) > 0 {
-		nodeDeletionStart := time.Now()
-		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodesToRemove, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
-		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
-
-		// TODO: Give the processor some information about the nodes that failed to be deleted.
-		scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes(deletedNodes, candidateNodeGroups, make(map[string][]*apiv1.Pod))
-		if len(deletedNodes) > 0 {
-			scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
-		} else {
-			scaleDownStatus.Result = status.ScaleDownError
+		var nodes []*apiv1.Node
+		for _, node := range emptyNodesToRemove {
+			// Nothing super-bad should happen if the node is removed from tracker prematurely.
+			simulator.RemoveNodeFromTracker(sd.usageTracker, node.Node.Name, sd.unneededNodes)
+			nodes = append(nodes, node.Node)
 		}
-		if err != nil {
-			return scaleDownStatus, err.AddPrefix("failed to delete at least one empty node: ")
-		}
-		return scaleDownStatus, nil
+		return nodes, nil, status.ScaleDownNodeDeleteStarted, nil
 	}
 
 	findNodesToRemoveStart := time.Now()
-
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := sd.removalSimulator.FindNodesToRemove(
 		candidateNames,
@@ -801,67 +746,26 @@ func (sd *ScaleDown) TryToScaleDown(
 	for _, unremovableNode := range unremovable {
 		sd.unremovableNodes.Add(unremovableNode)
 	}
-
 	if err != nil {
-		scaleDownStatus.Result = status.ScaleDownError
-		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
+		return nil, nil, status.ScaleDownError, err.AddPrefix("Find node to remove failed: ")
 	}
+
 	nodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, nodesToRemove, 1)
 	if len(nodesToRemove) == 0 {
 		klog.V(1).Infof("No node to remove")
-		scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
-		return scaleDownStatus, nil
+		return nil, nil, status.ScaleDownNoNodeDeleted, nil
 	}
 	toRemove := nodesToRemove[0]
-	utilization := sd.nodeUtilizationMap[toRemove.Node.Name]
-	podNames := make([]string, 0, len(toRemove.PodsToReschedule))
-	for _, pod := range toRemove.PodsToReschedule {
-		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
-	}
-	klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
-		strings.Join(podNames, ","))
-	sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s",
-		toRemove.Node.Name, utilization, strings.Join(podNames, ","))
-
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
 	simulator.RemoveNodeFromTracker(sd.usageTracker, toRemove.Node.Name, sd.unneededNodes)
-	nodeDeletionStart := time.Now()
-
-	// Starting deletion.
-	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
-	nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
-	if !found {
-		return scaleDownStatus, errors.NewAutoscalerError(errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)
-	}
-	sd.nodeDeletionTracker.StartDeletionWithDrain(nodeGroup.Id(), toRemove.Node.Name)
-
-	go func() {
-		// Finishing the delete process once this goroutine is over.
-		var result status.NodeDeleteResult
-		defer func() { sd.nodeDeletionTracker.EndDeletion(nodeGroup.Id(), toRemove.Node.Name, result) }()
-		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, toRemove.DaemonSetPods, nodeGroup)
-		if result.ResultType != status.NodeDeleteOk {
-			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
-			return
-		}
-		if readinessMap[toRemove.Node.Name] {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, toRemove.Node, nodeGroup), metrics.Underutilized)
-		} else {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, toRemove.Node, nodeGroup), metrics.Unready)
-		}
-	}()
-
-	scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups, map[string][]*apiv1.Pod{toRemove.Node.Name: toRemove.PodsToReschedule})
-	scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
-	return scaleDownStatus, nil
+	return nil, []*apiv1.Node{toRemove.Node}, status.ScaleDownNodeDeleteStarted, nil
 }
 
 // updateScaleDownMetrics registers duration of different parts of scale down.
 // Separates time spent on finding nodes to remove, deleting nodes and other operations.
-func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration *time.Duration, nodeDeletionDuration *time.Duration) {
+func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration *time.Duration) {
 	stop := time.Now()
-	miscDuration := stop.Sub(scaleDownStart) - *nodeDeletionDuration - *findNodesToRemoveDuration
-	metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, *nodeDeletionDuration)
+	miscDuration := stop.Sub(scaleDownStart) - *findNodesToRemoveDuration
 	metrics.UpdateDuration(metrics.ScaleDownFindNodesToRemove, *findNodesToRemoveDuration)
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
@@ -930,342 +834,6 @@ func (sd *ScaleDown) getEmptyNodesToRemove(candidates []string, resourcesLimits 
 	}
 
 	return nodesToRemove
-}
-
-func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodesToRemove []simulator.NodeToBeRemoved, client kube_client.Interface,
-	recorder kube_record.EventRecorder, readinessMap map[string]bool,
-	candidateNodeGroups map[string]cloudprovider.NodeGroup) ([]*apiv1.Node, errors.AutoscalerError) {
-	deletedNodes := []*apiv1.Node{}
-	for _, empty := range emptyNodesToRemove {
-		klog.V(0).Infof("Scale-down: removing empty node %s", empty.Node.Name)
-		sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", empty.Node.Name)
-		simulator.RemoveNodeFromTracker(sd.usageTracker, empty.Node.Name, sd.unneededNodes)
-		nodeGroup, found := candidateNodeGroups[empty.Node.Name]
-		if !found {
-			return deletedNodes, errors.NewAutoscalerError(
-				errors.CloudProviderError, "failed to find node group for %s", empty.Node.Name)
-		}
-		taintErr := deletetaint.MarkToBeDeleted(empty.Node, client, sd.context.CordonNodeBeforeTerminate)
-		if taintErr != nil {
-			recorder.Eventf(empty.Node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", taintErr)
-			return deletedNodes, errors.ToAutoscalerError(errors.ApiCallError, taintErr)
-		}
-		deletedNodes = append(deletedNodes, empty.Node)
-		go func(nodeToDelete *apiv1.Node, nodeGroupForDeletedNode cloudprovider.NodeGroup, evictByDefault bool) {
-			sd.nodeDeletionTracker.StartDeletion(nodeGroupForDeletedNode.Id(), nodeToDelete.Name)
-			var result status.NodeDeleteResult
-			defer func() { sd.nodeDeletionTracker.EndDeletion(nodeGroupForDeletedNode.Id(), nodeToDelete.Name, result) }()
-
-			var deleteErr errors.AutoscalerError
-			// If we fail to delete the node we want to remove delete taint
-			defer func() {
-				if deleteErr != nil {
-					deletetaint.CleanToBeDeleted(nodeToDelete, client, sd.context.CordonNodeBeforeTerminate)
-					recorder.Eventf(nodeToDelete, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete empty node: %v", deleteErr)
-				} else {
-					sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: empty node %s removed", nodeToDelete.Name)
-				}
-			}()
-			if err := evictDaemonSetPods(sd.context.ClusterSnapshot, nodeToDelete, client, sd.context.MaxGracefulTerminationSec, time.Now(), DaemonSetEvictionEmptyNodeTimeout, DeamonSetTimeBetweenEvictionRetries, recorder, evictByDefault); err != nil {
-				klog.Warningf("error while evicting DS pods from an empty node: %v", err)
-			}
-			deleteErr = waitForDelayDeletion(nodeToDelete, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout)
-			if deleteErr != nil {
-				klog.Errorf("Problem with empty node deletion: %v", deleteErr)
-				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
-				return
-			}
-			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
-				sd.context.Recorder, sd.clusterStateRegistry)
-			if deleteErr != nil {
-				klog.Errorf("Problem with empty node deletion: %v", deleteErr)
-				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
-				return
-			}
-			if readinessMap[nodeToDelete.Name] {
-				metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(sd.context.CloudProvider.GPULabel(), sd.context.CloudProvider.GetAvailableGPUTypes(), nodeToDelete, nodeGroupForDeletedNode), metrics.Empty)
-			} else {
-				metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(sd.context.CloudProvider.GPULabel(), sd.context.CloudProvider.GetAvailableGPUTypes(), nodeToDelete, nodeGroupForDeletedNode), metrics.Unready)
-			}
-			result = status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
-		}(empty.Node, nodeGroup, sd.context.DaemonSetEvictionForEmptyNodes)
-	}
-	return deletedNodes, nil
-}
-
-// Create eviction object for all DaemonSet pods on the node
-func evictDaemonSetPods(clusterSnapshot simulator.ClusterSnapshot, nodeToDelete *apiv1.Node, client kube_client.Interface, maxGracefulTerminationSec int, timeNow time.Time, dsEvictionTimeout time.Duration, waitBetweenRetries time.Duration,
-	recorder kube_record.EventRecorder, evictByDefault bool) error {
-	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeToDelete.Name)
-	if err != nil {
-		return fmt.Errorf("failed to get node info for %s", nodeToDelete.Name)
-	}
-	_, daemonSetPods, _, err := simulator.FastGetPodsToMove(nodeInfo, true, true, []*policyv1.PodDisruptionBudget{}, timeNow)
-	if err != nil {
-		return fmt.Errorf("failed to get DaemonSet pods for %s (error: %v)", nodeToDelete.Name, err)
-	}
-
-	daemonSetPods = daemonset.PodsToEvict(daemonSetPods, evictByDefault)
-
-	dsEviction := make(chan status.PodEvictionResult, len(daemonSetPods))
-
-	// Perform eviction of DaemonSet pods
-	for _, daemonSetPod := range daemonSetPods {
-		go func(podToEvict *apiv1.Pod) {
-			dsEviction <- evictPod(podToEvict, true, client, recorder, maxGracefulTerminationSec, timeNow.Add(dsEvictionTimeout), waitBetweenRetries)
-		}(daemonSetPod)
-	}
-	// Wait for creating eviction of DaemonSet pods
-	var failedPodErrors []string
-	for range daemonSetPods {
-		select {
-		case status := <-dsEviction:
-			if status.Err != nil {
-				failedPodErrors = append(failedPodErrors, status.Err.Error())
-			}
-		// adding waitBetweenRetries in order to have a bigger time interval than evictPod()
-		case <-time.After(dsEvictionTimeout):
-			return fmt.Errorf("failed to create DaemonSet eviction for %v seconds on the %s", dsEvictionTimeout, nodeToDelete.Name)
-		}
-	}
-	if len(failedPodErrors) > 0 {
-
-		return fmt.Errorf("following DaemonSet pod failed to evict on the %s:\n%s", nodeToDelete.Name, fmt.Errorf(strings.Join(failedPodErrors, "\n")))
-	}
-	return nil
-}
-
-func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod,
-	nodeGroup cloudprovider.NodeGroup) status.NodeDeleteResult {
-	deleteSuccessful := false
-	drainSuccessful := false
-
-	if err := deletetaint.MarkToBeDeleted(node, sd.context.ClientSet, sd.context.CordonNodeBeforeTerminate); err != nil {
-		sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
-		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToMarkToBeDeleted, Err: errors.ToAutoscalerError(errors.ApiCallError, err)}
-	}
-
-	// If we fail to evict all the pods from the node we want to remove delete taint
-	defer func() {
-		if !deleteSuccessful {
-			deletetaint.CleanToBeDeleted(node, sd.context.ClientSet, sd.context.CordonNodeBeforeTerminate)
-			if !drainSuccessful {
-				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
-			} else {
-				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete the node")
-			}
-		}
-	}()
-
-	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
-
-	daemonSetPods = daemonset.PodsToEvict(daemonSetPods, sd.context.DaemonSetEvictionForOccupiedNodes)
-
-	// attempt drain
-	evictionResults, err := drainNode(node, pods, daemonSetPods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, sd.context.AutoscalingOptions.MaxPodEvictionTime, EvictionRetryTime, PodEvictionHeadroom)
-	if err != nil {
-		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
-	}
-	drainSuccessful = true
-
-	if typedErr := waitForDelayDeletion(node, sd.context.ListerRegistry.AllNodeLister(), sd.context.AutoscalingOptions.NodeDeletionDelayTimeout); typedErr != nil {
-		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: typedErr}
-	}
-
-	// attempt delete from cloud provider
-
-	if typedErr := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry); typedErr != nil {
-		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: typedErr}
-	}
-
-	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
-	return status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
-}
-
-func evictPod(podToEvict *apiv1.Pod, isDaemonSetPod bool, client kube_client.Interface, recorder kube_record.EventRecorder,
-	maxGracefulTerminationSec int, retryUntil time.Time, waitBetweenRetries time.Duration) status.PodEvictionResult {
-	recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
-
-	maxTermination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
-	if podToEvict.Spec.TerminationGracePeriodSeconds != nil {
-		if *podToEvict.Spec.TerminationGracePeriodSeconds < int64(maxGracefulTerminationSec) {
-			maxTermination = *podToEvict.Spec.TerminationGracePeriodSeconds
-		} else {
-			maxTermination = int64(maxGracefulTerminationSec)
-		}
-	}
-
-	var lastError error
-	for first := true; first || time.Now().Before(retryUntil); time.Sleep(waitBetweenRetries) {
-		first = false
-		eviction := &policyv1.Eviction{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: podToEvict.Namespace,
-				Name:      podToEvict.Name,
-			},
-			DeleteOptions: &metav1.DeleteOptions{
-				GracePeriodSeconds: &maxTermination,
-			},
-		}
-		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(ctx.TODO(), eviction)
-		if lastError == nil || kube_errors.IsNotFound(lastError) {
-			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
-		}
-	}
-	if !isDaemonSetPod {
-		klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
-		recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
-	}
-	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
-}
-
-// Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
-// them up to MaxGracefulTerminationTime to finish.
-func drainNode(node *apiv1.Node, pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
-	maxGracefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration,
-	podEvictionHeadroom time.Duration) (evictionResults map[string]status.PodEvictionResult, err error) {
-
-	evictionResults = make(map[string]status.PodEvictionResult)
-	retryUntil := time.Now().Add(maxPodEvictionTime)
-	confirmations := make(chan status.PodEvictionResult, len(pods))
-	daemonSetConfirmations := make(chan status.PodEvictionResult, len(daemonSetPods))
-	for _, pod := range pods {
-		evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
-		go func(podToEvict *apiv1.Pod) {
-			confirmations <- evictPod(podToEvict, false, client, recorder, maxGracefulTerminationSec, retryUntil, waitBetweenRetries)
-		}(pod)
-	}
-
-	// Perform eviction of daemonset. We don't want to raise an error if daemonsetPod wasn't evict properly
-	for _, daemonSetPod := range daemonSetPods {
-		go func(podToEvict *apiv1.Pod) {
-			daemonSetConfirmations <- evictPod(podToEvict, true, client, recorder, maxGracefulTerminationSec, retryUntil, waitBetweenRetries)
-		}(daemonSetPod)
-
-	}
-
-	podsEvictionCounter := 0
-	for i := 0; i < len(pods)+len(daemonSetPods); i++ {
-		select {
-		case evictionResult := <-confirmations:
-			podsEvictionCounter++
-			evictionResults[evictionResult.Pod.Name] = evictionResult
-			if evictionResult.WasEvictionSuccessful() {
-				metrics.RegisterEvictions(1)
-			}
-		case <-daemonSetConfirmations:
-		case <-time.After(retryUntil.Sub(time.Now()) + 5*time.Second):
-			if podsEvictionCounter < len(pods) {
-				// All pods initially had results with TimedOut set to true, so the ones that didn't receive an actual result are correctly marked as timed out.
-				return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s: timeout when waiting for creating evictions", node.Namespace, node.Name)
-			}
-			klog.Infof("Timeout when waiting for creating daemonSetPods eviction")
-		}
-	}
-
-	evictionErrs := make([]error, 0)
-	for _, result := range evictionResults {
-		if !result.WasEvictionSuccessful() {
-			evictionErrs = append(evictionErrs, result.Err)
-		}
-	}
-	if len(evictionErrs) != 0 {
-		return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
-	}
-
-	// Evictions created successfully, wait maxGracefulTerminationSec + podEvictionHeadroom to see if pods really disappeared.
-	var allGone bool
-	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGracefulTerminationSec)*time.Second+podEvictionHeadroom; time.Sleep(5 * time.Second) {
-		allGone = true
-		for _, pod := range pods {
-			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(ctx.TODO(), pod.Name, metav1.GetOptions{})
-			if err == nil && (podreturned == nil || podreturned.Spec.NodeName == node.Name) {
-				klog.V(1).Infof("Not deleted yet %s/%s", pod.Namespace, pod.Name)
-				allGone = false
-				break
-			}
-			if err != nil && !kube_errors.IsNotFound(err) {
-				klog.Errorf("Failed to check pod %s/%s: %v", pod.Namespace, pod.Name, err)
-				allGone = false
-				break
-			}
-		}
-		if allGone {
-			klog.V(1).Infof("All pods removed from %s", node.Name)
-			// Let the deferred function know there is no need for cleanup
-			return evictionResults, nil
-		}
-	}
-
-	for _, pod := range pods {
-		podReturned, err := client.CoreV1().Pods(pod.Namespace).Get(ctx.TODO(), pod.Name, metav1.GetOptions{})
-		if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
-			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
-		} else if err != nil && !kube_errors.IsNotFound(err) {
-			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: err}
-		} else {
-			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: false, Err: nil}
-		}
-	}
-
-	return evictionResults, errors.NewAutoscalerError(errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
-}
-
-// Removes the given node from cloud provider. No extra pre-deletion actions are executed on
-// the Kubernetes side.
-func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider,
-	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
-	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
-	if err != nil {
-		return errors.NewAutoscalerError(
-			errors.CloudProviderError, "failed to find node group for %s: %v", node.Name, err)
-	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", node.Name)
-	}
-	if err = nodeGroup.DeleteNodes([]*apiv1.Node{node}); err != nil {
-		return errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete %s: %v", node.Name, err)
-	}
-	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
-	registry.RegisterScaleDown(&clusterstate.ScaleDownRequest{
-		NodeGroup:          nodeGroup,
-		NodeName:           node.Name,
-		Time:               time.Now(),
-		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
-	})
-	return nil
-}
-
-func waitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
-	if timeout != 0 && hasDelayDeletionAnnotation(node) {
-		klog.V(1).Infof("Wait for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
-		err := wait.Poll(5*time.Second, timeout, func() (bool, error) {
-			klog.V(5).Infof("Waiting for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
-			freshNode, err := nodeLister.Get(node.Name)
-			if err != nil || freshNode == nil {
-				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
-			}
-			return !hasDelayDeletionAnnotation(freshNode), nil
-		})
-		if err != nil && err != wait.ErrWaitTimeout {
-			return errors.ToAutoscalerError(errors.ApiCallError, err)
-		}
-		if err == wait.ErrWaitTimeout {
-			klog.Warningf("Delay node deletion timed out for node %v, delay deletion annotation wasn't removed within %v, this might slow down scale down.", node.Name, timeout)
-		} else {
-			klog.V(2).Infof("Annotation %s removed from node %v", DelayDeletionAnnotationPrefix, node.Name)
-		}
-	}
-	return nil
-}
-
-func hasDelayDeletionAnnotation(node *apiv1.Node) bool {
-	for annotation := range node.Annotations {
-		if strings.HasPrefix(annotation, DelayDeletionAnnotationPrefix) {
-			return true
-		}
-	}
-	return false
 }
 
 func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
