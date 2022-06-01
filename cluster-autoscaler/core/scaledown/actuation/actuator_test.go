@@ -18,6 +18,7 @@ package actuation
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -716,8 +717,12 @@ func TestStartDeletion(t *testing.T) {
 		},
 	} {
 		t.Run(tn, func(t *testing.T) {
+			// This is needed because the tested code starts goroutines that can technically live longer than the execution
+			// of a single test case, and the goroutines eventually access tc in fakeClient hooks below.
+			tc := tc
 			// Insert all nodes into a map to support live node updates and GETs.
 			nodesByName := make(map[string]*apiv1.Node)
+			nodesLock := sync.Mutex{}
 			for _, node := range tc.emptyNodes {
 				nodesByName[node.Name] = node
 			}
@@ -737,6 +742,8 @@ func TestStartDeletion(t *testing.T) {
 
 			// We're faking the whole k8s client, and some of the code needs to get live nodes and pods, so GET on nodes and pods has to be set up.
 			fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+				nodesLock.Lock()
+				defer nodesLock.Unlock()
 				getAction := action.(core.GetAction)
 				node, found := nodesByName[getAction.GetName()]
 				if !found {
@@ -751,6 +758,8 @@ func TestStartDeletion(t *testing.T) {
 			// Hook node update to gather all taint updates, and to fail the update for certain nodes to simulate errors.
 			fakeClient.Fake.AddReactor("update", "nodes",
 				func(action core.Action) (bool, runtime.Object, error) {
+					nodesLock.Lock()
+					defer nodesLock.Unlock()
 					update := action.(core.UpdateAction)
 					obj := update.GetObject().(*apiv1.Node)
 					if tc.failedNodeTaint[obj.Name] {
