@@ -44,6 +44,18 @@ type GceTemplateBuilder struct{}
 // (cf. https://cloud.google.com/compute/docs/disks/local-ssd)
 const LocalSSDDiskSizeInGiB = 375
 
+// These annotations are used internally only to store information in node temlate and use it later in CA, the actuall nodes won't have these annotations.
+const (
+	// LocalSsdCountAnnotation is the annotation for number of attached local SSDs to the node.
+	LocalSsdCountAnnotation = "cluster-autoscaler/gce/local-ssd-count"
+	// BootDiskTypeAnnotation is the annotation for boot disk type of the node.
+	BootDiskTypeAnnotation = "cluster-autoscaler/gce/boot-disk-type"
+	// BootDiskSizeAnnotation is the annotation for boot disk sise of the node/
+	BootDiskSizeAnnotation = "cluster-autoscaler/gce/boot-disk-size"
+	// EphemeralStorageLocalSsdAnnotation is the annotation for nodes where ephemeral storage is backed up by local SSDs.
+	EphemeralStorageLocalSsdAnnotation = "cluster-autoscaler/gce/ephemeral-storage-local-ssd"
+)
+
 // TODO: This should be imported from sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/pkg/common/constants.go
 // This key is applicable to both GCE and GKE
 const gceCSITopologyKeyZone = "topology.gke.io/zone"
@@ -181,17 +193,27 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	}
 
 	var ephemeralStorage int64 = -1
-	ssdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
-	if ssdCount > 0 {
-		ephemeralStorage, err = getLocalSSDEphemeralStorageFromInstanceTemplateProperties(template.Properties, ssdCount)
-	} else if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+
+	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+		addBootDiskAnnotations(&node, template.Properties)
 		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
+	} else {
+		addAnnotation(&node, EphemeralStorageLocalSsdAnnotation, strconv.FormatBool(true))
+	}
+
+	localSsdCount, err := getLocalSsdCount(template.Properties)
+	if localSsdCount > 0 {
+		addAnnotation(&node, LocalSsdCountAnnotation, strconv.FormatInt(localSsdCount, 10))
+	}
+	ephemeralStorageLocalSsdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
+	if err == nil && ephemeralStorageLocalSsdCount > 0 {
+		ephemeralStorage, err = getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ephemeralStorageLocalSsdCount, pods, mig.Version(), reserved)
 	if err != nil {
 		return nil, err
 	}
@@ -265,11 +287,10 @@ func ephemeralStorageLocalSSDCount(kubeEnvValue string) int64 {
 	return int64(n)
 }
 
-func getLocalSSDEphemeralStorageFromInstanceTemplateProperties(instanceProperties *gce.InstanceProperties, ssdCount int64) (ephemeralStorage int64, err error) {
+func getLocalSsdCount(instanceProperties *gce.InstanceProperties) (int64, error) {
 	if instanceProperties.Disks == nil {
 		return 0, fmt.Errorf("instance properties disks is nil")
 	}
-
 	var count int64
 	for _, disk := range instanceProperties.Disks {
 		if disk != nil && disk.InitializeParams != nil {
@@ -278,12 +299,14 @@ func getLocalSSDEphemeralStorageFromInstanceTemplateProperties(instancePropertie
 			}
 		}
 	}
+	return count, nil
+}
 
-	if count < ssdCount {
+func getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount int64) (int64, error) {
+	if localSsdCount < ephemeralStorageLocalSsdCount {
 		return 0, fmt.Errorf("actual local SSD count is lower than ephemeral_storage_local_ssd_count")
 	}
-
-	return ssdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
+	return ephemeralStorageLocalSsdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
 }
 
 // isBootDiskEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
@@ -740,4 +763,26 @@ func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
 		})
 	}
 	return taints, nil
+}
+
+func addAnnotation(node *apiv1.Node, key, value string) {
+	if node.Annotations == nil {
+		node.Annotations = make(map[string]string)
+	}
+	node.Annotations[key] = value
+}
+
+func addBootDiskAnnotations(node *apiv1.Node, instanceProperties *gce.InstanceProperties) {
+	if instanceProperties.Disks == nil {
+		return
+	}
+
+	for _, disk := range instanceProperties.Disks {
+		if disk != nil && disk.InitializeParams != nil {
+			if disk.Boot {
+				addAnnotation(node, BootDiskSizeAnnotation, strconv.FormatInt(disk.InitializeParams.DiskSizeGb, 10))
+				addAnnotation(node, BootDiskTypeAnnotation, disk.InitializeParams.DiskType)
+			}
+		}
+	}
 }
