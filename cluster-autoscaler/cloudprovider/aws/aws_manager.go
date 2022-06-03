@@ -347,7 +347,7 @@ func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscaling
 
 	if stringOpt, found := options[config.DefaultScaleDownUtilizationThresholdKey]; found {
 		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
-			klog.Warning("failed to convert asg %s %s tag to float: %v",
+			klog.Warningf("failed to convert asg %s %s tag to float: %v",
 				asg.Name, config.DefaultScaleDownUtilizationThresholdKey, err)
 		} else {
 			defaults.ScaleDownUtilizationThreshold = opt
@@ -356,7 +356,7 @@ func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscaling
 
 	if stringOpt, found := options[config.DefaultScaleDownGpuUtilizationThresholdKey]; found {
 		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
-			klog.Warning("failed to convert asg %s %s tag to float: %v",
+			klog.Warningf("failed to convert asg %s %s tag to float: %v",
 				asg.Name, config.DefaultScaleDownGpuUtilizationThresholdKey, err)
 		} else {
 			defaults.ScaleDownGpuUtilizationThreshold = opt
@@ -365,7 +365,7 @@ func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscaling
 
 	if stringOpt, found := options[config.DefaultScaleDownUnneededTimeKey]; found {
 		if opt, err := time.ParseDuration(stringOpt); err != nil {
-			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+			klog.Warningf("failed to convert asg %s %s tag to duration: %v",
 				asg.Name, config.DefaultScaleDownUnneededTimeKey, err)
 		} else {
 			defaults.ScaleDownUnneededTime = opt
@@ -374,7 +374,7 @@ func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscaling
 
 	if stringOpt, found := options[config.DefaultScaleDownUnreadyTimeKey]; found {
 		if opt, err := time.ParseDuration(stringOpt); err != nil {
-			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+			klog.Warningf("failed to convert asg %s %s tag to duration: %v",
 				asg.Name, config.DefaultScaleDownUnreadyTimeKey, err)
 		} else {
 			defaults.ScaleDownUnreadyTime = opt
