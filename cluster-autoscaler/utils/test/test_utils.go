@@ -65,6 +65,44 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	return pod
 }
 
+// BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
+func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
+	startTime := metav1.Unix(0, 0)
+	pod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			UID:         types.UID(name),
+			Namespace:   "default",
+			Name:        name,
+			SelfLink:    fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
+			Annotations: map[string]string{},
+		},
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{},
+					},
+				},
+			},
+		},
+		Status: apiv1.PodStatus{
+			StartTime: &startTime,
+		},
+	}
+
+	if cpu >= 0 {
+		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpu, resource.DecimalSI)
+	}
+	if mem >= 0 {
+		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	}
+	if ephemeralStorage >= 0 {
+		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(ephemeralStorage, resource.DecimalSI)
+	}
+
+	return pod
+}
+
 // BuildServiceTokenProjectedVolumeSource returns a ProjectedVolumeSource with SA token
 // projection
 func BuildServiceTokenProjectedVolumeSource(path string) *apiv1.ProjectedVolumeSource {
@@ -134,6 +172,15 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 		node.Status.Allocatable[k] = v
 	}
 
+	return node
+}
+
+// AddEphemeralStorageToNode adds ephemeral storage capacity to a given node.
+func AddEphemeralStorageToNode(node *apiv1.Node, eph int64) *apiv1.Node {
+	if eph >= 0 {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(eph, resource.DecimalSI)
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(eph, resource.DecimalSI)
+	}
 	return node
 }
 

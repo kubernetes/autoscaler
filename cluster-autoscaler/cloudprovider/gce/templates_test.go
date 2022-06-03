@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -229,6 +230,19 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.NotNil(t, node.Status)
 				assert.NotNil(t, node.Status.Capacity)
 				assert.NotNil(t, node.Status.Allocatable)
+				if tc.bootDiskSizeGiB > 0 && !tc.isEphemeralStorageBlocked {
+					val, ok := node.Annotations[BootDiskSizeAnnotation]
+					if !ok {
+						t.Errorf("Expected to have boot disk size annotation, have nil")
+					}
+					assert.Equal(t, val, strconv.FormatInt(tc.bootDiskSizeGiB, 10))
+				} else if tc.attachedLocalSSDCount > 0 {
+					val, ok := node.Annotations[LocalSsdCountAnnotation]
+					if !ok {
+						t.Errorf("Expected to have local SSD count annotation")
+					}
+					assert.Equal(t, val, strconv.FormatInt(tc.attachedLocalSSDCount, 10))
+				}
 				// this logic is a duplicate of logic under test and would best be captured by
 				// specifying physicalEphemeralStorageGiB in the testCase struct
 				physicalEphemeralStorageGiB := tc.bootDiskSizeGiB
