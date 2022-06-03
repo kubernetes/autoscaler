@@ -181,4 +181,6 @@ type AutoscalingOptions struct {
 	MaxScaleDownParallelism int
 	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.
 	MaxDrainParallelism int
+	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
+	GceExpanderEphemeralStorageSupport bool
 }
