@@ -362,7 +362,10 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 
 		generatedInstanceTypes, err := GenerateEC2InstanceTypes(region)
 		if err != nil {
-			klog.Fatalf("Failed to generate AWS EC2 Instance Types: %v", err)
+			klog.Errorf("Failed to generate AWS EC2 Instance Types: %v, falling back to static list with last update time: %s", err, lastUpdateTime)
+		}
+		if generatedInstanceTypes == nil {
+			generatedInstanceTypes = map[string]*InstanceType{}
 		}
 		// fallback on the static list if we miss any instance types in the generated output
 		// credits to: https://github.com/lyft/cni-ipvlan-vpc-k8s/pull/80
