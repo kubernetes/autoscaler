@@ -72,6 +72,7 @@ type cherryManagerNodePool struct {
 	cloudinit         string
 	hostnamePattern   string
 	sshKeyIDs         []int
+	osPartitionSize   int
 	waitTimeStep      time.Duration
 }
 
@@ -94,6 +95,7 @@ type ConfigNodepool struct {
 	SSHKeys           []string `gcfg:"ssh-key-ids"`
 	CloudInit         string   `gcfg:"cloudinit"`
 	HostnamePattern   string   `gcfg:"hostname-pattern"`
+	OsPartitionSize   int      `gcfg:"os-partition-size"`
 }
 
 // IsEmpty determine if this is an empty config
@@ -235,6 +237,7 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 			cloudinit:         nodepool.CloudInit,
 			sshKeyIDs:         sshKeyIDs,
 			hostnamePattern:   nodepool.HostnamePattern,
+			osPartitionSize:   nodepool.OsPartitionSize,
 		}
 	}
 
@@ -427,14 +430,15 @@ func (mgr *cherryManagerRest) createNode(ctx context.Context, cloudinit, nodegro
 		return fmt.Errorf("failed to create hostname from template: %w", err)
 	}
 	cr := &CreateServer{
-		Hostname:  hn,
-		Region:    mgr.getNodePoolDefinition(nodegroup).region,
-		PlanID:    mgr.getNodePoolDefinition(nodegroup).plan,
-		Image:     mgr.getNodePoolDefinition(nodegroup).os,
-		ProjectID: mgr.getNodePoolDefinition(nodegroup).projectID,
-		UserData:  base64.StdEncoding.EncodeToString([]byte(ud)),
-		SSHKeys:   mgr.getNodePoolDefinition(nodegroup).sshKeyIDs,
-		Tags:      &map[string]string{"k8s-cluster": mgr.getNodePoolDefinition(nodegroup).clusterName, "k8s-nodepool": nodegroup},
+		Hostname:        hn,
+		Region:          mgr.getNodePoolDefinition(nodegroup).region,
+		PlanID:          mgr.getNodePoolDefinition(nodegroup).plan,
+		Image:           mgr.getNodePoolDefinition(nodegroup).os,
+		ProjectID:       mgr.getNodePoolDefinition(nodegroup).projectID,
+		UserData:        base64.StdEncoding.EncodeToString([]byte(ud)),
+		SSHKeys:         mgr.getNodePoolDefinition(nodegroup).sshKeyIDs,
+		Tags:            &map[string]string{"k8s-cluster": mgr.getNodePoolDefinition(nodegroup).clusterName, "k8s-nodepool": nodegroup},
+		OSPartitionSize: mgr.getNodePoolDefinition(nodegroup).osPartitionSize,
 	}
 
 	if err := mgr.createServerRequest(ctx, cr, nodegroup); err != nil {
