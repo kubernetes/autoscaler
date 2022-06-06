@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: updater
-          image: k8s.gcr.io/autoscaling/vpa-updater:0.10.0
+          image: k8s.gcr.io/autoscaling/vpa-updater:0.11.0
           imagePullPolicy: Always
           env:
             - name: NAMESPACE
