@@ -138,7 +138,7 @@ func (c *ISOClient) All(ctx context.Context) ([]*ISO, error) {
 	opts := ISOListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		isos, resp, err := c.List(ctx, opts)
 		if err != nil {

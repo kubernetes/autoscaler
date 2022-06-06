@@ -27,6 +27,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 )
 
@@ -44,6 +45,7 @@ type hetznerManager struct {
 	image          *hcloud.Image
 	sshKey         *hcloud.SSHKey
 	network        *hcloud.Network
+	firewall       *hcloud.Firewall
 	createTimeout  time.Duration
 }
 
@@ -95,9 +97,6 @@ func newManager() (*hetznerManager, error) {
 		image = images[0]
 	}
 
-	var network *hcloud.Network
-	networkName := os.Getenv("HCLOUD_NETWORK")
-
 	var sshKey *hcloud.SSHKey
 	sshKeyName := os.Getenv("HCLOUD_SSH_KEY")
 	if sshKeyName != "" {
@@ -107,6 +106,8 @@ func newManager() (*hetznerManager, error) {
 		}
 	}
 
+	var network *hcloud.Network
+	networkName := os.Getenv("HCLOUD_NETWORK")
 	if networkName != "" {
 		network, _, err = client.Network.Get(ctx, networkName)
 		if err != nil {
@@ -121,6 +122,15 @@ func newManager() (*hetznerManager, error) {
 		createTimeout = time.Duration(v) * time.Minute
 	}
 
+	var firewall *hcloud.Firewall
+	firewallName := os.Getenv("HCLOUD_FIREWALL")
+	if firewallName != "" {
+		firewall, _, err = client.Firewall.Get(ctx, firewallName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get firewall error: %s", err)
+		}
+	}
+
 	m := &hetznerManager{
 		client:         client,
 		nodeGroups:     make(map[string]*hetznerNodeGroup),
@@ -128,6 +138,7 @@ func newManager() (*hetznerManager, error) {
 		image:          image,
 		sshKey:         sshKey,
 		network:        network,
+		firewall:       firewall,
 		createTimeout:  createTimeout,
 		apiCallContext: ctx,
 	}

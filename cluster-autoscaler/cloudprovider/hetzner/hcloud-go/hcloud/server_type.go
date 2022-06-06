@@ -56,7 +56,7 @@ const (
 	// CPUTypeShared is the type for shared CPU.
 	CPUTypeShared CPUType = "shared"
 
-	//CPUTypeDedicated is the type for dedicated CPU.
+	// CPUTypeDedicated is the type for dedicated CPU.
 	CPUTypeDedicated CPUType = "dedicated"
 )
 
@@ -148,7 +148,7 @@ func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
 	opts := ServerTypeListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		serverTypes, resp, err := c.List(ctx, opts)
 		if err != nil {

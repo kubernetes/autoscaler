@@ -29,17 +29,81 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
+// CertificateType is the type of available certificate types.
+type CertificateType string
+
+// Available certificate types.
+const (
+	CertificateTypeUploaded CertificateType = "uploaded"
+	CertificateTypeManaged  CertificateType = "managed"
+)
+
+// CertificateStatusType is defines the type for the various managed
+// certificate status.
+type CertificateStatusType string
+
+// Possible certificate status.
+const (
+	CertificateStatusTypePending CertificateStatusType = "pending"
+	CertificateStatusTypeFailed  CertificateStatusType = "failed"
+
+	// only in issuance
+	CertificateStatusTypeCompleted CertificateStatusType = "completed"
+
+	// only in renewal
+	CertificateStatusTypeScheduled   CertificateStatusType = "scheduled"
+	CertificateStatusTypeUnavailable CertificateStatusType = "unavailable"
+)
+
+// CertificateUsedByRefType is the type of used by references for
+// certificates.
+type CertificateUsedByRefType string
+
+// Possible users of certificates.
+const (
+	CertificateUsedByRefTypeLoadBalancer CertificateUsedByRefType = "load_balancer"
+)
+
+// CertificateUsedByRef points to a resource that uses this certificate.
+type CertificateUsedByRef struct {
+	ID   int
+	Type CertificateUsedByRefType
+}
+
+// CertificateStatus indicates the status of a managed certificate.
+type CertificateStatus struct {
+	Issuance CertificateStatusType
+	Renewal  CertificateStatusType
+	Error    *Error
+}
+
+// IsFailed returns true if either the Issuance or the Renewal of a certificate
+// failed. In this case the FailureReason field details the nature of the
+// failure.
+func (st *CertificateStatus) IsFailed() bool {
+	return st.Issuance == CertificateStatusTypeFailed || st.Renewal == CertificateStatusTypeFailed
+}
+
 // Certificate represents an certificate in the Hetzner Cloud.
 type Certificate struct {
 	ID             int
 	Name           string
 	Labels         map[string]string
+	Type           CertificateType
 	Certificate    string
 	Created        time.Time
 	NotValidBefore time.Time
 	NotValidAfter  time.Time
 	DomainNames    []string
 	Fingerprint    string
+	Status         *CertificateStatus
+	UsedBy         []CertificateUsedByRef
+}
+
+// CertificateCreateResult is the result of creating a certificate.
+type CertificateCreateResult struct {
+	Certificate *Certificate
+	Action      *Action
 }
 
 // CertificateClient is a client for the Certificates API.
@@ -130,7 +194,7 @@ func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
 	opts := CertificateListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		Certificate, resp, err := c.List(ctx, opts)
 		if err != nil {
@@ -150,7 +214,7 @@ func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
 	var allCertificates []*Certificate
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		Certificates, resp, err := c.List(ctx, opts)
 		if err != nil {
@@ -169,9 +233,11 @@ func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateLis
 // CertificateCreateOpts specifies options for creating a new Certificate.
 type CertificateCreateOpts struct {
 	Name        string
+	Type        CertificateType
 	Certificate string
 	PrivateKey  string
 	Labels      map[string]string
+	DomainNames []string
 }
 
 // Validate checks if options are valid.
@@ -179,6 +245,24 @@ func (o CertificateCreateOpts) Validate() error {
 	if o.Name == "" {
 		return errors.New("missing name")
 	}
+	switch o.Type {
+	case "", CertificateTypeUploaded:
+		return o.validateUploaded()
+	case CertificateTypeManaged:
+		return o.validateManaged()
+	default:
+		return fmt.Errorf("invalid type: %s", o.Type)
+	}
+}
+
+func (o CertificateCreateOpts) validateManaged() error {
+	if len(o.DomainNames) == 0 {
+		return errors.New("no domain names")
+	}
+	return nil
+}
+
+func (o CertificateCreateOpts) validateUploaded() error {
 	if o.Certificate == "" {
 		return errors.New("missing certificate")
 	}
@@ -188,34 +272,71 @@ func (o CertificateCreateOpts) Validate() error {
 	return nil
 }
 
-// Create creates a new certificate.
+// Create creates a new certificate uploaded certificate.
+//
+// Create returns an error for certificates of any other type. Use
+// CreateCertificate to create such certificates.
 func (c *CertificateClient) Create(ctx context.Context, opts CertificateCreateOpts) (*Certificate, *Response, error) {
+	if !(opts.Type == "" || opts.Type == CertificateTypeUploaded) {
+		return nil, nil, fmt.Errorf("invalid certificate type: %s", opts.Type)
+	}
+	result, resp, err := c.CreateCertificate(ctx, opts)
+	if err != nil {
+		return nil, resp, err
+	}
+	return result.Certificate, resp, nil
+}
+
+// CreateCertificate creates a new certificate of any type.
+func (c *CertificateClient) CreateCertificate(
+	ctx context.Context, opts CertificateCreateOpts,
+) (CertificateCreateResult, *Response, error) {
+	var (
+		action  *Action
+		reqBody schema.CertificateCreateRequest
+	)
+
 	if err := opts.Validate(); err != nil {
-		return nil, nil, err
+		return CertificateCreateResult{}, nil, err
 	}
-	reqBody := schema.CertificateCreateRequest{
-		Name:        opts.Name,
-		Certificate: opts.Certificate,
-		PrivateKey:  opts.PrivateKey,
+
+	reqBody.Name = opts.Name
+
+	switch opts.Type {
+	case "", CertificateTypeUploaded:
+		reqBody.Type = string(CertificateTypeUploaded)
+		reqBody.Certificate = opts.Certificate
+		reqBody.PrivateKey = opts.PrivateKey
+	case CertificateTypeManaged:
+		reqBody.Type = string(CertificateTypeManaged)
+		reqBody.DomainNames = opts.DomainNames
+	default:
+		return CertificateCreateResult{}, nil, fmt.Errorf("invalid certificate type: %v", opts.Type)
 	}
+
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, nil, err
+		return CertificateCreateResult{}, nil, err
 	}
 	req, err := c.client.NewRequest(ctx, "POST", "/certificates", bytes.NewReader(reqBodyData))
 	if err != nil {
-		return nil, nil, err
+		return CertificateCreateResult{}, nil, err
 	}
 
 	respBody := schema.CertificateCreateResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
-		return nil, resp, err
+		return CertificateCreateResult{}, resp, err
 	}
-	return CertificateFromSchema(respBody.Certificate), resp, nil
+	cert := CertificateFromSchema(respBody.Certificate)
+	if respBody.Action != nil {
+		action = ActionFromSchema(*respBody.Action)
+	}
+
+	return CertificateCreateResult{Certificate: cert, Action: action}, resp, nil
 }
 
 // CertificateUpdateOpts specifies options for updating a Certificate.
@@ -259,4 +380,20 @@ func (c *CertificateClient) Delete(ctx context.Context, certificate *Certificate
 		return nil, err
 	}
 	return c.client.Do(req, nil)
+}
+
+// RetryIssuance retries the issuance of a failed managed certificate.
+func (c *CertificateClient) RetryIssuance(ctx context.Context, certificate *Certificate) (*Action, *Response, error) {
+	var respBody schema.CertificateIssuanceRetryResponse
+
+	req, err := c.client.NewRequest(ctx, "POST", fmt.Sprintf("/certificates/%d/actions/retry", certificate.ID), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return nil, nil, err
+	}
+	action := ActionFromSchema(respBody.Action)
+	return action, resp, nil
 }
