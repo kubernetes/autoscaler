@@ -251,14 +251,15 @@ type IPAddressCreateRequest struct {
 
 // CreateServer represents a request to create a new Cherry Servers server. Used by createNodes
 type CreateServer struct {
-	ProjectID    int                `json:"project_id,omitempty"`
-	PlanID       int                `json:"plan_id,omitempty"`
-	Hostname     string             `json:"hostname,omitempty"`
-	Image        string             `json:"image,omitempty"`
-	Region       string             `json:"region,omitempty"`
-	SSHKeys      []int              `json:"ssh_keys"`
-	IPAddresses  []string           `json:"ip_addresses"`
-	UserData     string             `json:"user_data,omitempty"`
-	Tags         *map[string]string `json:"tags,omitempty"`
-	SpotInstance int                `json:"spot_market,omitempty"`
+	ProjectID       int                `json:"project_id,omitempty"`
+	PlanID          int                `json:"plan_id,omitempty"`
+	Hostname        string             `json:"hostname,omitempty"`
+	Image           string             `json:"image,omitempty"`
+	Region          string             `json:"region,omitempty"`
+	SSHKeys         []int              `json:"ssh_keys"`
+	IPAddresses     []string           `json:"ip_addresses"`
+	UserData        string             `json:"user_data,omitempty"`
+	Tags            *map[string]string `json:"tags,omitempty"`
+	SpotInstance    int                `json:"spot_market,omitempty"`
+	OSPartitionSize int                `json:"os_partition_size,omitempty"`
 }
