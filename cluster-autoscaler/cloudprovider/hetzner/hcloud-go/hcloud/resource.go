@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package hcloud is a library for the Hetzner Cloud API.
 package hcloud
 
-// Version is the library's version following Semantic Versioning.
-const Version = "1.32.0"
+// Resource defines the schema of a resource.
+type Resource struct {
+	ID   int
+	Type string
+}
