@@ -39,7 +39,7 @@ var (
 	ec2MetaDataServiceUrl          = "http://169.254.169.254"
 	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
-	staticListLastUpdateTime       = "2021-12-13"
+	staticListLastUpdateTime       = "2022-06-02"
 	ec2Arm64Processors             = []string{"AWS Graviton Processor", "AWS Graviton2 Processor"}
 )
 
