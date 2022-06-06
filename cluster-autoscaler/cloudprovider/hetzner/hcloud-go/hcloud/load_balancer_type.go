@@ -125,7 +125,7 @@ func (c *LoadBalancerTypeClient) All(ctx context.Context) ([]*LoadBalancerType, 
 	opts := LoadBalancerTypeListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		LoadBalancerTypes, resp, err := c.List(ctx, opts)
 		if err != nil {

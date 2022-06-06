@@ -125,7 +125,7 @@ func (c *LocationClient) All(ctx context.Context) ([]*Location, error) {
 	opts := LocationListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		locations, resp, err := c.List(ctx, opts)
 		if err != nil {

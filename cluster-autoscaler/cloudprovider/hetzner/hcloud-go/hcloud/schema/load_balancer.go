@@ -43,11 +43,13 @@ type LoadBalancerPublicNet struct {
 }
 
 type LoadBalancerPublicNetIPv4 struct {
-	IP string `json:"ip"`
+	IP     string `json:"ip"`
+	DNSPtr string `json:"dns_ptr"`
 }
 
 type LoadBalancerPublicNetIPv6 struct {
-	IP string `json:"ip"`
+	IP     string `json:"ip"`
+	DNSPtr string `json:"dns_ptr"`
 }
 
 type LoadBalancerPrivateNet struct {
@@ -398,5 +400,35 @@ type LoadBalancerActionChangeTypeRequest struct {
 }
 
 type LoadBalancerActionChangeTypeResponse struct {
+	Action Action `json:"action"`
+}
+
+// LoadBalancerGetMetricsResponse defines the schema of the response when
+// requesting metrics for a Load Balancer.
+type LoadBalancerGetMetricsResponse struct {
+	Metrics struct {
+		Start      time.Time                             `json:"start"`
+		End        time.Time                             `json:"end"`
+		Step       float64                               `json:"step"`
+		TimeSeries map[string]LoadBalancerTimeSeriesVals `json:"time_series"`
+	} `json:"metrics"`
+}
+
+// LoadBalancerTimeSeriesVals contains the values for a Load Balancer time
+// series.
+type LoadBalancerTimeSeriesVals struct {
+	Values []interface{} `json:"values"`
+}
+
+// LoadBalancerActionChangeDNSPtrRequest defines the schema for the request to
+// change a Load Balancer reverse DNS pointer.
+type LoadBalancerActionChangeDNSPtrRequest struct {
+	IP     string  `json:"ip"`
+	DNSPtr *string `json:"dns_ptr"`
+}
+
+// LoadBalancerActionChangeDNSPtrResponse defines the schema of the response when
+// creating a change_dns_ptr Floating IP action.
+type LoadBalancerActionChangeDNSPtrResponse struct {
 	Action Action `json:"action"`
 }

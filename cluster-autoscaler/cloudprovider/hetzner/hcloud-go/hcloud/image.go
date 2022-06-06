@@ -48,11 +48,17 @@ type Image struct {
 	Protection ImageProtection
 	Deprecated time.Time // The zero value denotes the image is not deprecated.
 	Labels     map[string]string
+	Deleted    time.Time
 }
 
 // IsDeprecated returns whether the image is deprecated.
 func (image *Image) IsDeprecated() bool {
 	return !image.Deprecated.IsZero()
+}
+
+// IsDeleted returns whether the image is deleted.
+func (image *Image) IsDeleted() bool {
+	return !image.Deleted.IsZero()
 }
 
 // ImageProtection represents the protection level of an image.
@@ -70,6 +76,8 @@ const (
 	ImageTypeBackup ImageType = "backup"
 	// ImageTypeSystem represents a system image.
 	ImageTypeSystem ImageType = "system"
+	// ImageTypeApp represents a one click app image.
+	ImageTypeApp ImageType = "app"
 )
 
 // ImageStatus specifies the status of an image.
@@ -192,7 +200,7 @@ func (c *ImageClient) All(ctx context.Context) ([]*Image, error) {
 func (c *ImageClient) AllWithOpts(ctx context.Context, opts ImageListOpts) ([]*Image, error) {
 	allImages := []*Image{}
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		images, resp, err := c.List(ctx, opts)
 		if err != nil {

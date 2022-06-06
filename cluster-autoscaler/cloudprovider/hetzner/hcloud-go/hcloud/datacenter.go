@@ -128,7 +128,7 @@ func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
 	opts := DatacenterListOpts{}
 	opts.PerPage = 50
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		datacenters, resp, err := c.List(ctx, opts)
 		if err != nil {

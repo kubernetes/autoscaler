@@ -365,6 +365,10 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.network != nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
+	if n.manager.firewall != nil {
+		serverCreateFirewall := &hcloud.ServerCreateFirewall{Firewall: *n.manager.firewall}
+		opts.Firewalls = []*hcloud.ServerCreateFirewall{serverCreateFirewall}
+	}
 
 	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
 	if err != nil {

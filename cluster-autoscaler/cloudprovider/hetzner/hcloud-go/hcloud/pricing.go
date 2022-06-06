@@ -26,10 +26,12 @@ import (
 type Pricing struct {
 	Image             ImagePricing
 	FloatingIP        FloatingIPPricing
+	FloatingIPs       []FloatingIPTypePricing
 	Traffic           TrafficPricing
 	ServerBackup      ServerBackupPricing
 	ServerTypes       []ServerTypePricing
 	LoadBalancerTypes []LoadBalancerTypePricing
+	Volume            VolumePricing
 }
 
 // Price represents a price. Net amount, gross amount, as well as VAT rate are
@@ -52,9 +54,27 @@ type FloatingIPPricing struct {
 	Monthly Price
 }
 
+// FloatingIPTypePricing provides pricing information for Floating IPs per Type.
+type FloatingIPTypePricing struct {
+	Type     FloatingIPType
+	Pricings []FloatingIPTypeLocationPricing
+}
+
+// FloatingIPTypeLocationPricing provides pricing information for a Floating IP type
+// at a location.
+type FloatingIPTypeLocationPricing struct {
+	Location *Location
+	Monthly  Price
+}
+
 // TrafficPricing provides pricing information for traffic.
 type TrafficPricing struct {
 	PerTB Price
+}
+
+// VolumePricing provides pricing information for a Volume.
+type VolumePricing struct {
+	PerGBMonthly Price
 }
 
 // ServerBackupPricing provides pricing information for server backups.

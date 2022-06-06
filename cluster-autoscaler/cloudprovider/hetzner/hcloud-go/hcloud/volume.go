@@ -153,7 +153,7 @@ func (c *VolumeClient) All(ctx context.Context) ([]*Volume, error) {
 func (c *VolumeClient) AllWithOpts(ctx context.Context, opts VolumeListOpts) ([]*Volume, error) {
 	allVolumes := []*Volume{}
 
-	_, err := c.client.all(func(page int) (*Response, error) {
+	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
 		volumes, resp, err := c.List(ctx, opts)
 		if err != nil {

@@ -35,6 +35,7 @@ type Image struct {
 	RapidDeploy bool              `json:"rapid_deploy"`
 	Protection  ImageProtection   `json:"protection"`
 	Deprecated  time.Time         `json:"deprecated"`
+	Deleted     time.Time         `json:"deleted"`
 	Labels      map[string]string `json:"labels"`
 }
 
