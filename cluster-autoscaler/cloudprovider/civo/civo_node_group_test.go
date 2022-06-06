@@ -56,8 +56,9 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolConfig{
-				Count: newCount,
+			&civogo.KubernetesClusterPoolUpdateConfig{
+				Count:  newCount,
+				Region: "test",
 			},
 		).Return(
 			&civogo.KubernetesPool{Count: newCount},
@@ -84,8 +85,9 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolConfig{
-				Count: newCount,
+			&civogo.KubernetesClusterPoolUpdateConfig{
+				Count:  newCount,
+				Region: "test",
 			},
 		).Return(
 			&civogo.KubernetesPool{Count: newCount},
@@ -153,8 +155,9 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolConfig{
-				Count: newCount,
+			&civogo.KubernetesClusterPoolUpdateConfig{
+				Count:  newCount,
+				Region: "test",
 			},
 		).Return(
 			&civogo.KubernetesPool{Count: newCount},
@@ -396,6 +399,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 }
 
 func testNodeGroup(client nodeGroupClient, np *civogo.KubernetesPool, min int, max int) *NodeGroup {
+	Region = "test"
 	return &NodeGroup{
 		id:        "1",
 		clusterID: "1",
