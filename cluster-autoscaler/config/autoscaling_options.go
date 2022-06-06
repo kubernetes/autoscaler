@@ -183,4 +183,6 @@ type AutoscalingOptions struct {
 	MaxDrainParallelism int
 	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
 	GceExpanderEphemeralStorageSupport bool
+	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
+	RecordDuplicatedEvents bool
 }
