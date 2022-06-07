@@ -301,7 +301,7 @@ func (m *awsWrapper) getInstanceTypesForAsgs(asgs []*asg) (map[string]string, er
 	for asgName, lt := range launchTemplatesToQuery {
 		instanceType, err := m.getInstanceTypeByLaunchTemplate(lt)
 		if err != nil {
-			klog.Errorf("Failed to query launch tempate %s: %v", lt.name, err)
+			klog.Errorf("Failed to query launch template %s: %v", lt.name, err)
 			continue
 		}
 		results[asgName] = instanceType
