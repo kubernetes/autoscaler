@@ -20,31 +20,31 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/civo/civogo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 )
 
 type civoClientMock struct {
 	mock.Mock
 }
 
-func (m *civoClientMock) ListKubernetesClusterPools(clusterID string) ([]civogo.KubernetesPool, error) {
+func (m *civoClientMock) ListKubernetesClusterPools(clusterID string) ([]civocloud.KubernetesPool, error) {
 	args := m.Called(clusterID)
-	return args.Get(0).([]civogo.KubernetesPool), args.Error(1)
+	return args.Get(0).([]civocloud.KubernetesPool), args.Error(1)
 }
 
-func (m *civoClientMock) UpdateKubernetesClusterPool(cid, pid string, config *civogo.KubernetesClusterPoolUpdateConfig) (*civogo.KubernetesPool, error) {
+func (m *civoClientMock) UpdateKubernetesClusterPool(cid, pid string, config *civocloud.KubernetesClusterPoolUpdateConfig) (*civocloud.KubernetesPool, error) {
 	args := m.Called(cid, pid, config)
-	return args.Get(0).(*civogo.KubernetesPool), args.Error(1)
+	return args.Get(0).(*civocloud.KubernetesPool), args.Error(1)
 }
 
-func (m *civoClientMock) DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civogo.SimpleResponse, error) {
+func (m *civoClientMock) DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civocloud.SimpleResponse, error) {
 	args := m.Called(clusterID, poolID, instanceID)
-	return args.Get(0).(*civogo.SimpleResponse), args.Error(1)
+	return args.Get(0).(*civocloud.SimpleResponse), args.Error(1)
 }
 
 func testCloudProvider(t *testing.T, client *civoClientMock) *civoCloudProvider {
@@ -61,13 +61,13 @@ func testCloudProvider(t *testing.T, client *civoClientMock) *civoCloudProvider 
 		client = &civoClientMock{}
 
 		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
-			[]civogo.KubernetesPool{
+			[]civocloud.KubernetesPool{
 				{
 					ID:            "1",
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "1",
 							Hostname: "test-1",
@@ -85,7 +85,7 @@ func testCloudProvider(t *testing.T, client *civoClientMock) *civoCloudProvider 
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "3",
 							Hostname: "test-3",
@@ -154,11 +154,11 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
 		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
-			[]civogo.KubernetesPool{
+			[]civocloud.KubernetesPool{
 				{
 					ID:    "1",
 					Count: 2,
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "11",
 							Hostname: "kube-node-11",
@@ -174,7 +174,7 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 				{
 					ID:    "2",
 					Count: 2,
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "111",
 							Hostname: "kube-node-111",
@@ -209,11 +209,11 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 	t.Run("node does not exist", func(t *testing.T) {
 		client := &civoClientMock{}
 		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
-			[]civogo.KubernetesPool{
+			[]civocloud.KubernetesPool{
 				{
 					ID:    "1",
 					Count: 2,
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "11",
 							Hostname: "kube-node-11",
@@ -229,7 +229,7 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 				{
 					ID:    "2",
 					Count: 2,
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "111",
 							Hostname: "kube-node-111",

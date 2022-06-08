@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 
-	"github.com/civo/civogo"
+	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 	"k8s.io/klog/v2"
 )
 
@@ -38,11 +38,11 @@ var (
 
 type nodeGroupClient interface {
 	// ListKubernetesClusterPools lists all node pools in the Kubernetes cluster.
-	ListKubernetesClusterPools(clusterID string) ([]civogo.KubernetesPool, error)
+	ListKubernetesClusterPools(clusterID string) ([]civocloud.KubernetesPool, error)
 	// UpdateKubernetesClusterPool updates an existing Kubernetes cluster pool with the Civo API.
-	UpdateKubernetesClusterPool(cid, pid string, config *civogo.KubernetesClusterPoolUpdateConfig) (*civogo.KubernetesPool, error)
+	UpdateKubernetesClusterPool(cid, pid string, config *civocloud.KubernetesClusterPoolUpdateConfig) (*civocloud.KubernetesPool, error)
 	// DeleteKubernetesClusterPoolInstance deletes a instance from pool
-	DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civogo.SimpleResponse, error)
+	DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civocloud.SimpleResponse, error)
 }
 
 // Manager handles Civo communication and data caching of
@@ -101,7 +101,7 @@ func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDis
 
 	Region = cfg.Region
 
-	civoClient, err := civogo.NewClientWithURL(cfg.ApiKey, cfg.ApiURL, cfg.Region)
+	civoClient, err := civocloud.NewClientWithURL(cfg.ApiKey, cfg.ApiURL, cfg.Region)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't initialize Civo client: %s", err)
 	}

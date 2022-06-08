@@ -161,10 +161,6 @@ github.com/cilium/ebpf/internal
 github.com/cilium/ebpf/internal/btf
 github.com/cilium/ebpf/internal/unix
 github.com/cilium/ebpf/link
-# github.com/civo/civogo v0.2.81
-## explicit
-github.com/civo/civogo
-github.com/civo/civogo/utils
 # github.com/clusterhq/flocker-go v0.0.0-20160920122132-2b8b7259d313
 github.com/clusterhq/flocker-go
 # github.com/container-storage-interface/spec v1.5.0
