@@ -1,4 +1,4 @@
-package civogo
+package civocloud
 
 import (
 	"bytes"

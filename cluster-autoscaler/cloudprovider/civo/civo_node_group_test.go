@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/civo/civogo"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 )
 
 func TestNodeGroup_TargetSize(t *testing.T) {
@@ -32,7 +32,7 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 		numberOfNodes := 3
 
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -46,7 +46,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -56,12 +56,12 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolUpdateConfig{
+			&civocloud.KubernetesClusterPoolUpdateConfig{
 				Count:  newCount,
 				Region: "test",
 			},
 		).Return(
-			&civogo.KubernetesPool{Count: newCount},
+			&civocloud.KubernetesPool{Count: newCount},
 			nil,
 		).Once()
 
@@ -75,7 +75,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		maxNodes := 3
 
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, maxNodes)
 
@@ -85,12 +85,12 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolUpdateConfig{
+			&civocloud.KubernetesClusterPoolUpdateConfig{
 				Count:  newCount,
 				Region: "test",
 			},
 		).Return(
-			&civogo.KubernetesPool{Count: newCount},
+			&civocloud.KubernetesPool{Count: newCount},
 			nil,
 		).Once()
 
@@ -101,7 +101,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("negative increase", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -114,7 +114,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("zero increase", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -129,7 +129,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		maxNodes := 100
 		delta := 10
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, maxNodes)
 
@@ -145,7 +145,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		numberOfNodes := 5
 
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -155,12 +155,12 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		client.On("UpdateKubernetesClusterPool",
 			ng.clusterID,
 			ng.id,
-			&civogo.KubernetesClusterPoolUpdateConfig{
+			&civocloud.KubernetesClusterPoolUpdateConfig{
 				Count:  newCount,
 				Region: "test",
 			},
 		).Return(
-			&civogo.KubernetesPool{Count: newCount},
+			&civocloud.KubernetesPool{Count: newCount},
 			nil,
 		).Once()
 
@@ -171,7 +171,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	t.Run("positive decrease", func(t *testing.T) {
 		numberOfNodes := 5
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -185,7 +185,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	t.Run("zero decrease", func(t *testing.T) {
 		numberOfNodes := 5
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
 
@@ -200,7 +200,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		delta := -2
 		numberOfNodes := 2
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 5)
 
@@ -214,7 +214,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 func TestNodeGroup_DeleteNodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: 3,
 		}, 1, 10)
 
@@ -230,7 +230,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			ng.id,
 			"1",
 		).Return(
-			&civogo.SimpleResponse{Result: "success"},
+			&civocloud.SimpleResponse{Result: "success"},
 			nil,
 		).Once()
 		client.On("DeleteKubernetesClusterPoolInstance",
@@ -238,7 +238,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			ng.id,
 			"2",
 		).Return(
-			&civogo.SimpleResponse{Result: "success"},
+			&civocloud.SimpleResponse{Result: "success"},
 			nil,
 		).Once()
 		client.On("DeleteKubernetesClusterPoolInstance",
@@ -246,7 +246,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			ng.id,
 			"3",
 		).Return(
-			&civogo.SimpleResponse{Result: "success"},
+			&civocloud.SimpleResponse{Result: "success"},
 			nil,
 		).Once()
 
@@ -256,7 +256,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 	t.Run("client deleting node fails", func(t *testing.T) {
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: 3,
 		}, 1, 10)
 
@@ -274,7 +274,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			ng.id,
 			"1",
 		).Return(
-			&civogo.SimpleResponse{Result: "success"},
+			&civocloud.SimpleResponse{Result: "success"},
 			nil,
 		).Once()
 		client.On("DeleteKubernetesClusterPoolInstance",
@@ -282,7 +282,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			ng.id,
 			"2",
 		).Return(
-			&civogo.SimpleResponse{},
+			&civocloud.SimpleResponse{},
 			errors.New("random error"),
 		).Once()
 
@@ -294,10 +294,10 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 func TestNodeGroup_Nodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			ID:    "1",
 			Count: 5,
-			Instances: []civogo.KubernetesInstance{
+			Instances: []civocloud.KubernetesInstance{
 				{
 					ID:       "1",
 					Hostname: "kube-node-1",
@@ -375,7 +375,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 func TestNodeGroup_Debug(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{Count: 2}, 1, 200)
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 2}, 1, 200)
 		d := ng.Debug()
 		exp := "cluster ID: 1 (min:1 max:200)"
 		assert.Equal(t, exp, d, "debug string do not match")
@@ -385,7 +385,7 @@ func TestNodeGroup_Debug(t *testing.T) {
 func TestNodeGroup_Exist(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
-		ng := testNodeGroup(client, &civogo.KubernetesPool{Count: 3}, 1, 200)
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 3}, 1, 200)
 		exist := ng.Exist()
 		assert.Equal(t, true, exist, "node group should exist")
 	})
@@ -398,7 +398,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 	})
 }
 
-func testNodeGroup(client nodeGroupClient, np *civogo.KubernetesPool, min int, max int) *NodeGroup {
+func testNodeGroup(client nodeGroupClient, np *civocloud.KubernetesPool, min int, max int) *NodeGroup {
 	Region = "test"
 	return &NodeGroup{
 		id:        "1",

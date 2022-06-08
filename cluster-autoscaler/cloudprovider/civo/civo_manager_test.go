@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 
-	"github.com/civo/civogo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,13 +66,13 @@ func TestCivoManager_Refresh(t *testing.T) {
 		client := &civoClientMock{}
 
 		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
-			[]civogo.KubernetesPool{
+			[]civocloud.KubernetesPool{
 				{
 					ID:            "1",
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "1",
 							Hostname: "test-1",
@@ -90,7 +90,7 @@ func TestCivoManager_Refresh(t *testing.T) {
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "3",
 							Hostname: "test-3",
@@ -125,13 +125,13 @@ func TestCivoManager_RefreshWithNodeSpec(t *testing.T) {
 		client := &civoClientMock{}
 
 		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
-			[]civogo.KubernetesPool{
+			[]civocloud.KubernetesPool{
 				{
 					ID:            "1",
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "1",
 							Hostname: "test-1",
@@ -149,7 +149,7 @@ func TestCivoManager_RefreshWithNodeSpec(t *testing.T) {
 					Count:         2,
 					Size:          "small",
 					InstanceNames: []string{"test-1", "test-2"},
-					Instances: []civogo.KubernetesInstance{
+					Instances: []civocloud.KubernetesInstance{
 						{
 							ID:       "3",
 							Hostname: "test-3",
