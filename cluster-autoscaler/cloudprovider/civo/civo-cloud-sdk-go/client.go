@@ -1,4 +1,4 @@
-package civogo
+package civocloud
 
 import (
 	"bytes"
@@ -12,9 +12,6 @@ import (
 	"net/url"
 	"strings"
 )
-
-// Version represents the version of the civogo lib
-const Version = "0.2.21"
 
 // Client is the means of connecting to the Civo API service
 type Client struct {
@@ -70,7 +67,7 @@ func NewClientWithURL(apiKey, civoAPIURL, region string) (*Client, error) {
 
 	client := &Client{
 		BaseURL:   parsedURL,
-		UserAgent: "civogo/" + Version,
+		UserAgent: "autoscaler",
 		APIKey:    apiKey,
 		Region:    region,
 		httpClient: &http.Client{

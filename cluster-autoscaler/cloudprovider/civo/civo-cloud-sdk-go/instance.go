@@ -1,4 +1,4 @@
-package civogo
+package civocloud
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/civo/civogo/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go/utils"
 )
 
 // Instance represents a virtual server within Civo's infrastructure

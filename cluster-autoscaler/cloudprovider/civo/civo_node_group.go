@@ -20,7 +20,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/civo/civogo"
+	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -36,7 +36,7 @@ type NodeGroup struct {
 	id         string
 	clusterID  string
 	client     nodeGroupClient
-	nodePool   *civogo.KubernetesPool
+	nodePool   *civocloud.KubernetesPool
 	minSize    int
 	maxSize    int
 	getOptions *autoscaler.NodeGroupAutoscalingOptions
@@ -81,7 +81,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 			n.nodePool.Count, targetSize, n.MaxSize())
 	}
 
-	req := &civogo.KubernetesClusterPoolUpdateConfig{
+	req := &civocloud.KubernetesClusterPoolUpdateConfig{
 		Count:  targetSize,
 		Region: Region,
 	}
@@ -137,7 +137,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			n.nodePool.Count, targetSize, n.MinSize())
 	}
 
-	req := &civogo.KubernetesClusterPoolUpdateConfig{
+	req := &civocloud.KubernetesClusterPoolUpdateConfig{
 		Count:  targetSize,
 		Region: Region,
 	}
@@ -217,7 +217,7 @@ func (n *NodeGroup) Autoprovisioned() bool {
 
 // toInstances converts a slice of civogo.KubernetesInstance to
 // cloudprovider.Instance
-func toInstances(nodes []civogo.KubernetesInstance) []cloudprovider.Instance {
+func toInstances(nodes []civocloud.KubernetesInstance) []cloudprovider.Instance {
 	instances := make([]cloudprovider.Instance, 0, len(nodes))
 	for _, nd := range nodes {
 		instances = append(instances, toInstance(nd))
@@ -227,7 +227,7 @@ func toInstances(nodes []civogo.KubernetesInstance) []cloudprovider.Instance {
 
 // toInstance converts the given civogo.KubernetesInstance to a
 // cloudprovider.Instance
-func toInstance(node civogo.KubernetesInstance) cloudprovider.Instance {
+func toInstance(node civocloud.KubernetesInstance) cloudprovider.Instance {
 	return cloudprovider.Instance{
 		Id:     toProviderID(node.ID),
 		Status: toInstanceStatus(node.Status),
