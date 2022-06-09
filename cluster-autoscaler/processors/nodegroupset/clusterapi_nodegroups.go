@@ -25,7 +25,11 @@ import (
 // even if they have different infrastructure provider-specific labels.
 func CreateClusterAPINodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator {
 	capiIgnoredLabels := map[string]bool{
-		"topology.ebs.csi.aws.com/zone": true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+		"topology.ebs.csi.aws.com/zone":                 true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
+		"topology.diskplugin.csi.alibabacloud.com/zone": true, // this is a label used by the Alibaba Cloud CSI driver as a target for Persistent Volume Node Affinity
+		"ibm-cloud.kubernetes.io/worker-id":             true, // this is a label used by the IBM Cloud Cloud Controler Manager
+		"vpc-block-csi-driver-labels":                   true, // this is a label used by the IBM Cloud CSI driver as a target for Persisten Volume Node Affinity
+
 	}
 
 	for k, v := range BasicIgnoredLabels {
