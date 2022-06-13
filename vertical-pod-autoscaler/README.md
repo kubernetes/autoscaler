@@ -108,7 +108,7 @@ please upgrade openssl to version 1.1.1 or higher (needs to support -addext opti
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
-[architecture](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview))
+[architecture](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md#architecture-overview))
 in the `kube-system` namespace. It also generates
 and uploads a secret (a CA cert) used by VPA Admission Controller when communicating
 with the API server.
@@ -224,7 +224,7 @@ kills them so that they can be recreated by their controllers with the updated r
 * [Admission Plugin](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/admission-controller/README.md) - it sets the correct resource requests on new pods (either just created
 or recreated by their controller due to Updater's activity).
 
-More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
+More on the architecture can be found [HERE](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md).
 
 ### Tear down
 
