@@ -312,7 +312,7 @@ func computeExpansionOption(context *context.AutoscalingContext, podEquivalenceG
 
 	if len(option.Pods) > 0 {
 		estimator := context.EstimatorBuilder(context.PredicateChecker, context.ClusterSnapshot)
-		option.NodeCount = estimator.Estimate(option.Pods, nodeInfo)
+		option.NodeCount, option.Pods = estimator.Estimate(option.Pods, nodeInfo, option.NodeGroup)
 	}
 
 	return option, nil

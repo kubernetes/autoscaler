@@ -112,7 +112,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.EstimatorBuilder == nil {
-		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName)
+		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName, estimator.NewFakeEstimationLimiter(0))
 		if err != nil {
 			return err
 		}
