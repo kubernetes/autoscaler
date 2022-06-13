@@ -30,89 +30,108 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func makePod(cpuPerPod, memoryPerPod int64) *apiv1.Pod {
-	return &apiv1.Pod{
+func makePods(cpuPerPod int64, memoryPerPod int64, hostport int32, podCount int) []*apiv1.Pod {
+	pod := &apiv1.Pod{
 		Spec: apiv1.PodSpec{
 			Containers: []apiv1.Container{
 				{
 					Resources: apiv1.ResourceRequirements{
 						Requests: apiv1.ResourceList{
 							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod*units.MiB, resource.DecimalSI),
 						},
 					},
 				},
 			},
 		},
 	}
+	if hostport != 0 {
+		pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
+			{
+				HostPort: hostport,
+			},
+		}
+	}
+	pods := []*apiv1.Pod{}
+	for i := 0; i < podCount; i++ {
+		pods = append(pods, pod)
+	}
+	return pods
 }
 
 func TestBinpackingEstimate(t *testing.T) {
-	estimator := newBinPackingEstimator(t)
-
-	cpuPerPod := int64(350)
-	memoryPerPod := int64(1000 * units.MiB)
-	pod := makePod(cpuPerPod, memoryPerPod)
-
-	pods := make([]*apiv1.Pod, 0)
-	for i := 0; i < 10; i++ {
-		pods = append(pods, pod)
-	}
-	node := &apiv1.Node{
-		Status: apiv1.NodeStatus{
-			Capacity: apiv1.ResourceList{
-				apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod*3-50, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
-				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
-			},
-		},
-	}
-	node.Status.Allocatable = node.Status.Capacity
-	SetNodeReadyState(node, true, time.Time{})
-
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo)
-	assert.Equal(t, 5, estimate)
-}
-
-func TestBinpackingEstimateWithPorts(t *testing.T) {
-	estimator := newBinPackingEstimator(t)
-
-	cpuPerPod := int64(200)
-	memoryPerPod := int64(1000 * units.MiB)
-	pod := makePod(cpuPerPod, memoryPerPod)
-	pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
+	testCases := []struct {
+		name            string
+		millicores      int64
+		memory          int64
+		maxNodes        int
+		pods            []*apiv1.Pod
+		expectNodeCount int
+		expectPodCount  int
+	}{
 		{
-			HostPort: 5555,
+			name:            "simple resource-based binpacking",
+			millicores:      350*3 - 50,
+			memory:          2 * 1000,
+			pods:            makePods(350, 1000, 0, 10),
+			expectNodeCount: 5,
+			expectPodCount:  10,
+		},
+		{
+			name:            "pods-per-node bound binpacking",
+			millicores:      10000,
+			memory:          20000,
+			pods:            makePods(10, 100, 0, 20),
+			expectNodeCount: 2,
+			expectPodCount:  20,
+		},
+		{
+			name:            "hostport conflict forces pod-per-node",
+			millicores:      1000,
+			memory:          5000,
+			pods:            makePods(200, 1000, 5555, 8),
+			expectNodeCount: 8,
+			expectPodCount:  8,
+		},
+		{
+			name:            "limiter cuts binpacking",
+			millicores:      1000,
+			memory:          5000,
+			pods:            makePods(500, 1000, 0, 20),
+			maxNodes:        5,
+			expectNodeCount: 5,
+			expectPodCount:  10,
 		},
 	}
-	pods := make([]*apiv1.Pod, 0)
-	for i := 0; i < 8; i++ {
-		pods = append(pods, pod)
-	}
-	node := &apiv1.Node{
-		Status: apiv1.NodeStatus{
-			Capacity: apiv1.ResourceList{
-				apiv1.ResourceCPU:    *resource.NewMilliQuantity(5*cpuPerPod, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(5*memoryPerPod, resource.DecimalSI),
-				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
-			},
-		},
-	}
-	node.Status.Allocatable = node.Status.Capacity
-	SetNodeReadyState(node, true, time.Time{})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			limiter := NewFakeEstimationLimiter(tc.maxNodes)
+			estimator := newBinPackingEstimator(t, limiter)
+			node := &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Capacity: apiv1.ResourceList{
+						apiv1.ResourceCPU:    *resource.NewMilliQuantity(tc.millicores, resource.DecimalSI),
+						apiv1.ResourceMemory: *resource.NewQuantity(tc.memory*units.MiB, resource.DecimalSI),
+						apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+					},
+				},
+			}
+			node.Status.Allocatable = node.Status.Capacity
+			SetNodeReadyState(node, true, time.Time{})
 
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo)
-	assert.Equal(t, 8, estimate)
+			nodeInfo := schedulerframework.NewNodeInfo()
+			nodeInfo.SetNode(node)
+			estimatedNodes, estimatedPods := estimator.Estimate(tc.pods, nodeInfo, nil)
+			assert.Equal(t, tc.expectNodeCount, estimatedNodes)
+			assert.Equal(t, tc.expectPodCount, len(estimatedPods))
+		})
+	}
 }
 
-func newBinPackingEstimator(t *testing.T) *BinpackingNodeEstimator {
+func newBinPackingEstimator(t *testing.T, l EstimationLimiter) *BinpackingNodeEstimator {
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	clusterSnapshot := simulator.NewBasicClusterSnapshot()
 	assert.NoError(t, err)
-	estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot)
+	estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, l)
 	return estimator
 }
