@@ -80,6 +80,8 @@ const (
 	ExternalGrpcProviderName = "externalgrpc"
 	// CivoProviderName gets the provider name of civo
 	CivoProviderName = "civo"
+	// RancherProviderName gets the provider name of rancher
+	RancherProviderName = "rancher"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
