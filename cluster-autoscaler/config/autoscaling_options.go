@@ -169,4 +169,11 @@ type AutoscalingOptions struct {
 	DaemonSetEvictionForOccupiedNodes bool
 	// User agent to use for HTTP calls.
 	UserAgent string
+	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
+	// Note that this is strictly a performance optimization aimed at limiting binpacking time, not a tool to rate-limit
+	// scale-up. There is nothing stopping CA from adding MaxNodesPerScaleUp every loop.
+	MaxNodesPerScaleUp int
+	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
+	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
+	MaxNodeGroupBinpackingDuration time.Duration
 }
