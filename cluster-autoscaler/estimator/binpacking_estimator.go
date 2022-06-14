@@ -73,6 +73,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
 	newNodeNames := make(map[string]bool)
+	newNodesWithPods := make(map[string]bool)
 
 	if err := e.clusterSnapshot.Fork(); err != nil {
 		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
@@ -86,6 +87,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 	newNodeNameIndex := 0
 	scheduledPods := []*apiv1.Pod{}
+	lastNodeName := ""
 
 	for _, podInfo := range podInfos {
 		found := false
@@ -100,6 +102,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 				return 0, nil
 			}
 			scheduledPods = append(scheduledPods, podInfo.pod)
+			newNodesWithPods[nodeName] = true
 		}
 
 		if !found {
@@ -109,6 +112,13 @@ func (e *BinpackingNodeEstimator) Estimate(
 				break
 			}
 
+			// If the last node we've added is empty and the pod couldn't schedule on it, it wouldn't be able to schedule
+			// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
+			// performance cost each extra node adds to future FitsAnyNodeMatching calls.
+			if lastNodeName != "" && !newNodesWithPods[lastNodeName] {
+				continue
+			}
+
 			// Add new node
 			newNodeName, err := e.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
 			if err != nil {
@@ -116,16 +126,25 @@ func (e *BinpackingNodeEstimator) Estimate(
 				return 0, nil
 			}
 			newNodeNameIndex++
-			// And schedule pod to it
+			newNodeNames[newNodeName] = true
+			lastNodeName = newNodeName
+
+			// And try to schedule pod to it.
+			// Note that this may still fail (ex. if topology spreading with zonal topologyKey is used);
+			// in this case we can't help the pending pod. We keep the node in clusterSnapshot to avoid
+			// adding and removing node to snapshot for each such pod.
+			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, podInfo.pod, newNodeName); err != nil {
+				continue
+			}
 			if err := e.clusterSnapshot.AddPod(podInfo.pod, newNodeName); err != nil {
 				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
 				return 0, nil
 			}
-			newNodeNames[newNodeName] = true
+			newNodesWithPods[newNodeName] = true
 			scheduledPods = append(scheduledPods, podInfo.pod)
 		}
 	}
-	return len(newNodeNames), scheduledPods
+	return len(newNodesWithPods), scheduledPods
 }
 
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
