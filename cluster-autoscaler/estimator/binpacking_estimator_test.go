@@ -105,7 +105,7 @@ func TestBinpackingEstimate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			limiter := NewFakeEstimationLimiter(tc.maxNodes)
+			limiter := NewThresholdBasedEstimationLimiter(tc.maxNodes, time.Duration(0))
 			estimator := newBinPackingEstimator(t, limiter)
 			node := &apiv1.Node{
 				Status: apiv1.NodeStatus{

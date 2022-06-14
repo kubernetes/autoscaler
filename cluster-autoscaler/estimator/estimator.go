@@ -64,11 +64,10 @@ type EstimationLimiter interface {
 	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup)
 	// EndEstimation is called at the end of estimation.
 	EndEstimation()
-	// PermissionToAddNodes is called by an estimator when it wants to add additional
+	// PermissionToAddNode is called by an estimator when it wants to add additional
 	// nodes to simulation. If permission is not granted the Estimator is expected
-	// not to add any more nodes in this simulation (though it may request a
-	// permission to add less nodes).
+	// not to add any more nodes in this simulation.
 	// There is no requirement for the Estimator to stop calculations, it's
 	// just not expected to add any more nodes.
-	PermissionToAddNodes(int) bool
+	PermissionToAddNode() bool
 }

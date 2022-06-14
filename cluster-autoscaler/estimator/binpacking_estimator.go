@@ -105,7 +105,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 		if !found {
 			// Stop binpacking if we reach the limit of nodes we can add.
 			// We return the result of the binpacking that we already performed.
-			if !e.limiter.PermissionToAddNodes(1) {
+			if !e.limiter.PermissionToAddNode() {
 				break
 			}
 
