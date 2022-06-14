@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"k8s.io/client-go/util/retry"
 	"os"
 	"os/exec"
 	"sort"
@@ -353,19 +354,18 @@ func (driver *Driver) deploySmallWorkload(replicas int32, workloadName string) e
 	return nil
 }
 
-func (driver *Driver) scaleWorkload(workloadName string, replicas int32) error {
-	deployment, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Get(context.Background(), workloadName, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+func (driver *Driver) scaleWorkload(workloadName string, replicas int32) (err error) {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		deployment, err := driver.targetCluster.Clientset.AppsV1().Deployments("default").Get(context.Background(), workloadName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
 
-	deployment.Spec.Replicas = pointer.Int32Ptr(replicas)
+		deployment.Spec.Replicas = pointer.Int32Ptr(replicas)
 
-	_, err = driver.targetCluster.Clientset.AppsV1().Deployments("default").Update(context.Background(), deployment, metav1.UpdateOptions{})
-	if err != nil {
+		_, err = driver.targetCluster.Clientset.AppsV1().Deployments("default").Update(context.Background(), deployment, metav1.UpdateOptions{})
 		return err
-	}
-	return nil
+	})
 }
 
 func (driver *Driver) getOldestAndLatestNode() (*v1.Node, *v1.Node, error) {
