@@ -1,5 +1,11 @@
+permissions:
+  contents: read
+
 jobs:
   changes:
+    permissions:
+      contents: read  # for dorny/paths-filter to fetch a list of changed files
+      pull-requests: read  # for dorny/paths-filter to read pull requests
     outputs:
       charts: ${{ steps.filter.outputs.charts }}
     runs-on: ubuntu-latest
