@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/client-go/util/retry"
 	"os"
 	"regexp"
 	"time"
@@ -145,10 +146,13 @@ func (driver *Driver) controllerTests() {
 					pollingTimeout,
 					pollingInterval).
 					Should(BeNumerically("==", initialNumberOfNodes+1))
-				By("getting the latest added node and adding annotation to it.")
-				_, latestNode, err := driver.getOldestAndLatestNode()
+				err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+					By("getting the latest added node and adding annotation to it.")
+					_, latestNode, err := driver.getOldestAndLatestNode()
+					Expect(err).To(BeNil())
+					return driver.addAnnotationToNode(latestNode)
+				})
 				Expect(err).To(BeNil())
-				Expect(driver.addAnnotationToNode(latestNode)).To(BeNil())
 				By("Scaling down workload to zero...")
 				Expect(driver.scaleWorkload(scaleUpWorkload, 0)).To(BeNil())
 				skippedRegexp, _ := regexp.Compile(` the node is marked as no scale down`)
@@ -160,9 +164,13 @@ func (driver *Driver) controllerTests() {
 
 			It("Should remove the unwanted node once scale down disable annotation is removed", func() {
 				Expect(driver.targetCluster.getNumberOfReadyNodes()).Should(BeNumerically("==", initialNumberOfNodes+1))
-				_, latestNode, err := driver.getOldestAndLatestNode()
+				err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+					By("getting the latest added node and removing annotation from it.")
+					_, latestNode, err := driver.getOldestAndLatestNode()
+					Expect(err).To(BeNil())
+					return driver.removeAnnotationFromNode(latestNode)
+				})
 				Expect(err).To(BeNil())
-				Expect(driver.removeAnnotationFromNode(latestNode)).To(BeNil())
 				By("Validating Scale down")
 				Eventually(
 					driver.targetCluster.getNumberOfReadyNodes,
