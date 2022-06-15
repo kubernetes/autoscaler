@@ -599,7 +599,7 @@ func ToSystemArchitecture(arch string) SystemArchitecture {
 	case string(Amd64):
 		return Amd64
 	default:
-		return UnknownArch
+		return DefaultArch
 	}
 }
 
