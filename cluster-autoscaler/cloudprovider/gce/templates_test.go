@@ -171,6 +171,15 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			expectedErr:                   false,
 		},
 		{
+			scenario:                      "handle empty arch gracefully",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: os_distribution=cos;arch=;os=linux;ephemeral_storage_local_ssd_count=2\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			attachedLocalSSDCount:         4,
+			expectedErr:                   false,
+		},
+		{
 			scenario:                      "ephemeral storage on local SSDs with kube-reserved",
 			kubeEnv:                       "AUTOSCALER_ENV_VARS: kube_reserved=cpu=0,memory=0,ephemeral-storage=10Gi;os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2\n",
 			physicalCpu:                   8,
