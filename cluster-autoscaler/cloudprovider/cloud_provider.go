@@ -68,6 +68,8 @@ const (
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// ScalewayProviderName gets the provider name of scaleway
+	ScalewayProviderName = "scaleway"
 	// VultrProviderName gets the provider name of vultr
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
