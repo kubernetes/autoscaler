@@ -381,7 +381,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 		}
 
 		selector, conditions := feeder.getSelector(vpaCRD)
-		klog.Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
+		klog.V(4).Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
 
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
