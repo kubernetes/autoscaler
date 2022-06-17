@@ -32,6 +32,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [BizflyCloud](./cloudprovider/bizflycloud/README.md)
 * [Vultr](./cloudprovider/vultr/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
+* [Scaleway](./cloudprovider/scaleway/README.md)
 
 # Releases
 
