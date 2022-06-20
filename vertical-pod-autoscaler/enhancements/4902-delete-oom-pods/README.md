@@ -13,6 +13,7 @@
    - [Update the eviction API](#update-the-eviction-api)
 <!-- /toc -->
 
+
 ## Summary
 
 The default behaviour of VPA Updater is to evict Pods when new resource
@@ -26,6 +27,7 @@ any further disruptions.
 This proposal addresses the problem by allowing users to enable the deletion of
 pods as a backup if the eviction fails.
 
+
 ## Motivation
 
 The motivation behind the change is to give VPA users a way to recover a
@@ -33,25 +35,42 @@ failing deployment, if updated/increased limits would solve the problem.
 
 ### Goals
 
-- Main: allow cluster administrators to enable deletion of pods
-- Secondary: configurable deletion threshold to tune the deletion behaviour
+- Main: allow cluster administrators and other users to enable deletion of pods
 
 ### Non-Goals
 
 - Get rid of or work around the existing eviction behaviour
 
+
 ## Proposal
 
-The proposal is to add `--delete-on-eviction-error` to the VPA to enable
-deletion of pods.
+The proposal is to add a new field to the VPA resource and a global flag.
 
-To add a bit of configuration an additional flag,
-`--delete-on-eviction-error-threshold`, should be addedd. This value compared
-to the amount of restarts a pod has gone through. The deletion wil only be
-allowed if the amount of restarts exceeds the threshold. This is to further
-ensure that only pods get deleted that are consistently crashing.
+A new global flag (`--delete-on-eviction-error`) shall be added to the VPA
+updater to enable the new feature globally.
+
+Additionally a new field in the VPA resource
+(`Spec.UpdatePolicy.DeleteOnEvictionError`) which takes precedence to the
+global flag. When unset the value of the flag is taken. This allows cluster
+administrators to enable the flag for all VPA resources and at the same time
+disable it again for specific deployments, or only enable it for specific
+deployments.
+
+This should give users the most flexible way of configuring this feature to
+fit their needs.
+
 
 ## Design Details
+
+When the eviction fails the pod will not just get blindy deleted, but further
+checks will occur. Which gives us the following checklist:
+- [ ] Was at least one container in the Pod terminated due to being OOM
+      (`OOMKilled`)?
+- [ ] Is at least one container in the Pod currently waiting due to being in
+      `CrashLoopBackOff`?
+
+This should make sure to not accidentally disrupt deployments as they might
+still heal to a point where eviction then might be possible.
 
 Suggested implementation is present in [PR
 4898](https://github.com/kubernetes/autoscaler/pull/4898).
@@ -60,9 +79,11 @@ Suggested implementation is present in [PR
 
 Add unit tests that cover the new code paths.
 
+
 ## Implementation History
 
 - 2022-05-19: initial version
+
 
 ## Alternatives
 
