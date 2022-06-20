@@ -67,7 +67,7 @@ type cherryManagerNodePool struct {
 	projectID         int
 	apiServerEndpoint string
 	region            string
-	plan              int
+	plan              string
 	os                string
 	cloudinit         string
 	hostnamePattern   string
@@ -80,7 +80,7 @@ type cherryManagerRest struct {
 	authToken  string
 	baseURL    *url.URL
 	nodePools  map[string]*cherryManagerNodePool
-	plans      map[int]*Plan
+	plans      map[string]*Plan
 	planUpdate time.Time
 }
 
@@ -215,10 +215,6 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 			nodepool.ClusterName = opts.ClusterName
 		}
 
-		plan, err := strconv.ParseInt(nodepool.Plan, 10, 32)
-		if err != nil {
-			return nil, fmt.Errorf("invalid plan %s for nodepool %s, must be integer: %v", nodepool.Plan, key, err)
-		}
 		var sshKeyIDs []int
 		for i, keyIDString := range nodepool.SSHKeys {
 			keyID, err := strconv.ParseInt(keyIDString, 10, 32)
@@ -232,7 +228,7 @@ func createCherryManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 			apiServerEndpoint: apiServerEndpoint,
 			clusterName:       nodepool.ClusterName,
 			region:            nodepool.Region,
-			plan:              int(plan),
+			plan:              nodepool.Plan,
 			os:                nodepool.OS,
 			cloudinit:         nodepool.CloudInit,
 			sshKeyIDs:         sshKeyIDs,
@@ -432,7 +428,7 @@ func (mgr *cherryManagerRest) createNode(ctx context.Context, cloudinit, nodegro
 	cr := &CreateServer{
 		Hostname:        hn,
 		Region:          mgr.getNodePoolDefinition(nodegroup).region,
-		PlanID:          mgr.getNodePoolDefinition(nodegroup).plan,
+		Plan:            mgr.getNodePoolDefinition(nodegroup).plan,
 		Image:           mgr.getNodePoolDefinition(nodegroup).os,
 		ProjectID:       mgr.getNodePoolDefinition(nodegroup).projectID,
 		UserData:        base64.StdEncoding.EncodeToString([]byte(ud)),
@@ -642,15 +638,15 @@ func (mgr *cherryManagerRest) templateNodeInfo(nodegroup string) (*schedulerfram
 		if err != nil {
 			return nil, fmt.Errorf("unable to update cherry plans: %v", err)
 		}
-		mgr.plans = map[int]*Plan{}
+		mgr.plans = map[string]*Plan{}
 		for _, plan := range plans {
-			mgr.plans[plan.ID] = &plan
+			mgr.plans[plan.Slug] = &plan
 		}
 	}
-	planID := mgr.getNodePoolDefinition(nodegroup).plan
-	cherryPlan, ok := mgr.plans[planID]
+	planSlug := mgr.getNodePoolDefinition(nodegroup).plan
+	cherryPlan, ok := mgr.plans[planSlug]
 	if !ok {
-		klog.V(5).Infof("no plan found for planID %d", planID)
+		klog.V(5).Infof("no plan found for planSlug %s", planSlug)
 		return nil, fmt.Errorf("cherry plan %q not supported", mgr.getNodePoolDefinition(nodegroup).plan)
 	}
 	var (
