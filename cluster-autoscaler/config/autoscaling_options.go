@@ -185,4 +185,11 @@ type AutoscalingOptions struct {
 	GceExpanderEphemeralStorageSupport bool
 	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
 	RecordDuplicatedEvents bool
+	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
+	// Note that this is strictly a performance optimization aimed at limiting binpacking time, not a tool to rate-limit
+	// scale-up. There is nothing stopping CA from adding MaxNodesPerScaleUp every loop.
+	MaxNodesPerScaleUp int
+	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
+	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
+	MaxNodeGroupBinpackingDuration time.Duration
 }

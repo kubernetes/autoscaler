@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	klog "k8s.io/klog/v2"
@@ -38,15 +39,18 @@ type podInfo struct {
 type BinpackingNodeEstimator struct {
 	predicateChecker simulator.PredicateChecker
 	clusterSnapshot  simulator.ClusterSnapshot
+	limiter          EstimationLimiter
 }
 
 // NewBinpackingNodeEstimator builds a new BinpackingNodeEstimator.
 func NewBinpackingNodeEstimator(
 	predicateChecker simulator.PredicateChecker,
-	clusterSnapshot simulator.ClusterSnapshot) *BinpackingNodeEstimator {
+	clusterSnapshot simulator.ClusterSnapshot,
+	limiter EstimationLimiter) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
 		predicateChecker: predicateChecker,
 		clusterSnapshot:  clusterSnapshot,
+		limiter:          limiter,
 	}
 }
 
@@ -57,69 +61,102 @@ func NewBinpackingNodeEstimator(
 // still be maintained.
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
-func (estimator *BinpackingNodeEstimator) Estimate(
+func (e *BinpackingNodeEstimator) Estimate(
 	pods []*apiv1.Pod,
-	nodeTemplate *schedulerframework.NodeInfo) int {
+	nodeTemplate *schedulerframework.NodeInfo,
+	nodeGroup cloudprovider.NodeGroup) (int, []*apiv1.Pod) {
+
+	e.limiter.StartEstimation(pods, nodeGroup)
+	defer e.limiter.EndEstimation()
+
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
 	newNodeNames := make(map[string]bool)
+	newNodesWithPods := make(map[string]bool)
 
-	if err := estimator.clusterSnapshot.Fork(); err != nil {
+	if err := e.clusterSnapshot.Fork(); err != nil {
 		klog.Errorf("Error while calling ClusterSnapshot.Fork; %v", err)
-		return 0
+		return 0, nil
 	}
 	defer func() {
-		if err := estimator.clusterSnapshot.Revert(); err != nil {
+		if err := e.clusterSnapshot.Revert(); err != nil {
 			klog.Fatalf("Error while calling ClusterSnapshot.Revert; %v", err)
 		}
 	}()
 
 	newNodeNameIndex := 0
+	scheduledPods := []*apiv1.Pod{}
+	lastNodeName := ""
 
 	for _, podInfo := range podInfos {
 		found := false
 
-		nodeName, err := estimator.predicateChecker.FitsAnyNodeMatching(estimator.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, podInfo.pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
 			return newNodeNames[nodeInfo.Node().Name]
 		})
 		if err == nil {
 			found = true
-			if err := estimator.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
+			if err := e.clusterSnapshot.AddPod(podInfo.pod, nodeName); err != nil {
 				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, nodeName, err)
-				return 0
+				return 0, nil
 			}
+			scheduledPods = append(scheduledPods, podInfo.pod)
+			newNodesWithPods[nodeName] = true
 		}
 
 		if !found {
+			// Stop binpacking if we reach the limit of nodes we can add.
+			// We return the result of the binpacking that we already performed.
+			if !e.limiter.PermissionToAddNode() {
+				break
+			}
+
+			// If the last node we've added is empty and the pod couldn't schedule on it, it wouldn't be able to schedule
+			// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
+			// performance cost each extra node adds to future FitsAnyNodeMatching calls.
+			if lastNodeName != "" && !newNodesWithPods[lastNodeName] {
+				continue
+			}
+
 			// Add new node
-			newNodeName, err := estimator.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
+			newNodeName, err := e.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
 			if err != nil {
 				klog.Errorf("Error while adding new node for template to ClusterSnapshot; %v", err)
-				return 0
+				return 0, nil
 			}
 			newNodeNameIndex++
-			// And schedule pod to it
-			if err := estimator.clusterSnapshot.AddPod(podInfo.pod, newNodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
-				return 0
-			}
 			newNodeNames[newNodeName] = true
+			lastNodeName = newNodeName
+
+			// And try to schedule pod to it.
+			// Note that this may still fail (ex. if topology spreading with zonal topologyKey is used);
+			// in this case we can't help the pending pod. We keep the node in clusterSnapshot to avoid
+			// adding and removing node to snapshot for each such pod.
+			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, podInfo.pod, newNodeName); err != nil {
+				continue
+			}
+			if err := e.clusterSnapshot.AddPod(podInfo.pod, newNodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", podInfo.pod.Namespace, podInfo.pod.Name, newNodeName, err)
+				return 0, nil
+			}
+			newNodesWithPods[newNodeName] = true
+			scheduledPods = append(scheduledPods, podInfo.pod)
 		}
 	}
-	return len(newNodeNames)
+	return len(newNodesWithPods), scheduledPods
 }
 
-func (estimator *BinpackingNodeEstimator) addNewNodeToSnapshot(
+func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	template *schedulerframework.NodeInfo,
 	nameIndex int) (string, error) {
 
-	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("estimator-%d", nameIndex))
+	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", nameIndex))
 	var pods []*apiv1.Pod
 	for _, podInfo := range newNodeInfo.Pods {
 		pods = append(pods, podInfo.Pod)
 	}
-	if err := estimator.clusterSnapshot.AddNodeWithPods(newNodeInfo.Node(), pods); err != nil {
+	if err := e.clusterSnapshot.AddNodeWithPods(newNodeInfo.Node(), pods); err != nil {
 		return "", err
 	}
 	return newNodeInfo.Node().Name, nil
