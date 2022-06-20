@@ -14,15 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# See: https://cloud.google.com/container-registry/docs/support/deprecation-notices#gcloud-docker
+MAX_DOCKER_MAJOR_VERSION_FOR_GCLOUD=18
+MAX_DOCKER_MINOR_VERSION_FOR_GCLOUD=03
+
 IMAGE_TO_PUSH=$1
 if [ -z $IMAGE_TO_PUSH ]; then
   echo No image passed
   exit 1
 fi
 
+docker_client_version=$(docker version -f "{{.Client.Version}}")
+docker_client_major_version=$(echo "$docker_client_version" | cut -d'.' -f 1)
+docker_client_minor_version=$(echo "$docker_client_version" | cut -d'.' -f 2)
+
 docker_push_cmd=("docker")
 if [[ "${IMAGE_TO_PUSH}" == "gcr.io/"* ]] || [[ "${IMAGE_TO_PUSH}" == "staging-k8s.gcr.io/"* ]] ; then
-    docker_push_cmd=("gcloud" "docker" "--")
+    if [[ "$docker_client_major_version" -lt "$MAX_DOCKER_MAJOR_VERSION_FOR_GCLOUD" ]] || [[ "$docker_client_major_version" -eq "$MAX_DOCKER_MAJOR_VERSION_FOR_GCLOUD" && "$docker_client_minor_version" -le "$MAX_DOCKER_MINOR_VERSION_FOR_GCLOUD" ]]; then
+      echo "Docker version  <= $MAX_DOCKER_MAJOR_VERSION_FOR_GCLOUD.$MAX_DOCKER_MINOR_VERSION_FOR_GCLOUD, using gcloud command"
+      docker_push_cmd=("gcloud" "docker" "--")
+    else
+      echo "Docker version > $MAX_DOCKER_MAJOR_VERSION_FOR_GCLOUD.$MAX_DOCKER_MINOR_VERSION_FOR_GCLOUD, ensure you have run gcloud auth configure-docker"
+    fi
 fi
 
 echo "About to push image $IMAGE_TO_PUSH"
