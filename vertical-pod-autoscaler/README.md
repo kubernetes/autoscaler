@@ -302,6 +302,6 @@ VPA will set RAM request to 2 GB (following the resource policy) and RAM limit t
 
 * [FAQ](FAQ.md)
 * [Design
-  proposal](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md)
+  proposal](https://github.com/kubernetes/design-proposals-archive/blob/main/autoscaling/vertical-pod-autoscaler.md)
 * [API
   definition](pkg/apis/autoscaling.k8s.io/v1/types.go)
