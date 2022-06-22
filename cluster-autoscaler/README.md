@@ -177,3 +177,5 @@ Supported cloud providers:
 * Cluster API https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
 * Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
+* BaiduCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/baiducloud/README.md
+* Huawei Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/huaweicloud/README.md
