@@ -117,6 +117,11 @@ type PodUpdatePolicy struct {
 	// allowed. Overrides global '--min-replicas' flag.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minReplicas"`
+
+	// Wheather to try to delete the pod when eviction fails or not.
+	// Overrides global '--delete-on-eviction-error' flag.
+	// +optional
+	DeleteOnEvictionError *bool `json:"deleteOnEcivtionError,omitempty" protobuf:"varint,2,opt,name=deleteOnEcivtionError"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resoures.

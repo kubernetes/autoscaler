@@ -566,11 +566,11 @@ func TestEvictViaDeleteAtLeastOne(t *testing.T) {
 	}
 
 	for _, pod := range pods[:1] {
-		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[1:] {
-		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -615,7 +615,7 @@ func TestEvictViaDeleteWrongStatus(t *testing.T) {
 	}
 
 	for _, pod := range pods[1:] {
-		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder(), 3)
+		err := eviction.EvictViaDelete(pod, test.FakeEventRecorder())
 		assert.EqualError(t, err, fmt.Sprintf("cannot delete pod %v : no container matches deletion conditions", pod.Name), "Expected Error")
 	}
 }

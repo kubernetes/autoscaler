@@ -131,8 +131,8 @@ func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record
 }
 
 // EvictViaDelete is a mock implementation of PodsEvictionRestriction.EvictViaDelete
-func (m *PodsEvictionRestrictionMock) EvictViaDelete(pod *apiv1.Pod, eventRecorder record.EventRecorder, deletionThreshold int32) error {
-	args := m.Called(pod, eventRecorder, deletionThreshold)
+func (m *PodsEvictionRestrictionMock) EvictViaDelete(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }
 

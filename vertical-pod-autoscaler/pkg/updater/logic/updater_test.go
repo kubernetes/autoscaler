@@ -171,7 +171,7 @@ func testRunOnceBase(
 
 		if failEviction {
 			eviction.On("Evict", pods[i], nil).Return(errors.New("Eviction error"))
-			eviction.On("EvictViaDelete", pods[i], nil, int32(3)).Return(nil)
+			eviction.On("EvictViaDelete", pods[i], nil).Return(nil)
 		} else {
 			eviction.On("Evict", pods[i], nil).Return(nil)
 		}
@@ -204,10 +204,7 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
-		experimentalDeletion: experimentalDeletion{
-			enabled:   failEviction,
-			threshold: 3,
-		},
+		deleteOnEvictionError:        failEviction,
 	}
 
 	if expectFetchCalls {

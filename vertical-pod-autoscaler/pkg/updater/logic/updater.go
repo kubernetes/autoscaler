@@ -63,12 +63,7 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
-	experimentalDeletion         experimentalDeletion
-}
-
-type experimentalDeletion struct {
-	enabled   bool
-	threshold int32
+	deleteOnEvictionError        bool
 }
 
 // NewUpdater creates Updater with given configuration
@@ -86,8 +81,7 @@ func NewUpdater(
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
-	experimentalDeletionEnabled bool,
-	experimentalDeletionTreshold int,
+	deleteOnEvictionError bool,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -110,10 +104,7 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		experimentalDeletion: experimentalDeletion{
-			enabled:   experimentalDeletionEnabled,
-			threshold: int32(experimentalDeletionTreshold),
-		},
+		deleteOnEvictionError: deleteOnEvictionError,
 	}, nil
 }
 
@@ -231,8 +222,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
-				if u.experimentalDeletion.enabled {
-					deleteErr := evictionLimiter.EvictViaDelete(pod, u.eventRecorder, u.experimentalDeletion.threshold)
+
+				var deleteOnEvictionError bool
+				if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.DeleteOnEvictionError != nil {
+					deleteOnEvictionError = *vpa.Spec.UpdatePolicy.DeleteOnEvictionError
+				} else {
+					deleteOnEvictionError = u.deleteOnEvictionError
+				}
+
+				if deleteOnEvictionError {
+					deleteErr := evictionLimiter.EvictViaDelete(pod, u.eventRecorder)
 					if deleteErr != nil {
 						klog.Warningf("deleting pod %v failed: %v", pod.Name, deleteErr)
 					} else {
