@@ -33,7 +33,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -483,8 +482,7 @@ func (m *gceManagerImpl) clearMachinesCache() {
 		return
 	}
 
-	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
-	m.cache.SetMachinesCache(machinesCache)
+	m.cache.InvalidateAllMachines()
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
 	klog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
@@ -584,45 +582,14 @@ func (m *gceManagerImpl) GetMigOptions(mig Mig, defaults config.NodeGroupAutosca
 // GetMigTemplateNode constructs a node from GCE instance template of the given MIG.
 func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
-
 	if err != nil {
 		return nil, err
 	}
-	cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef().Zone)
+	machineType, err := m.migInfoProvider.GetMigMachineType(mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem, nil, m.reserved)
-}
-
-func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
-	if strings.HasPrefix(machineType, "custom-") {
-		return parseCustomMachineType(machineType)
-	}
-	machine, _ := m.cache.GetMachineFromCache(machineType, zone)
-	if machine == nil {
-		machine, err = m.GceService.FetchMachineType(zone, machineType)
-		if err != nil {
-			return 0, 0, err
-		}
-		m.cache.AddMachineToCache(machineType, zone, machine)
-	}
-	return machine.GuestCpus, machine.MemoryMb * units.MiB, nil
-}
-
-func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
-	// example custom-2-2816
-	var count int
-	count, err = fmt.Sscanf(machineType, "custom-%d-%d", &cpu, &mem)
-	if err != nil {
-		return
-	}
-	if count != 2 {
-		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
-	}
-	// Mb to bytes
-	mem = mem * units.MiB
-	return
+	return m.templates.BuildNodeFromTemplate(mig, template, machineType.CPU, machineType.Memory, nil, m.reserved)
 }
 
 // parseMIGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
