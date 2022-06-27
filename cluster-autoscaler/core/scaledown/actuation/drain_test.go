@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1beta1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -151,7 +151,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				if createAction == nil {
 					return false, nil, nil
 				}
-				eviction := createAction.GetObject().(*policyv1.Eviction)
+				eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 				if eviction == nil {
 					return false, nil, nil
 				}
@@ -224,7 +224,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 		if createAction == nil {
 			return false, nil, nil
 		}
-		eviction := createAction.GetObject().(*policyv1.Eviction)
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 		if eviction == nil {
 			return false, nil, nil
 		}
@@ -279,7 +279,7 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 		if createAction == nil {
 			return false, nil, nil
 		}
-		eviction := createAction.GetObject().(*policyv1.Eviction)
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 		if eviction == nil {
 			return false, nil, nil
 		}
@@ -329,7 +329,7 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 		if createAction == nil {
 			return false, nil, nil
 		}
-		eviction := createAction.GetObject().(*policyv1.Eviction)
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 		if eviction == nil {
 			return false, nil, nil
 		}
@@ -387,7 +387,7 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 		if createAction == nil {
 			return false, nil, nil
 		}
-		eviction := createAction.GetObject().(*policyv1.Eviction)
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 		if eviction == nil {
 			return false, nil, nil
 		}
@@ -438,7 +438,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 		if createAction == nil {
 			return false, nil, nil
 		}
-		eviction := createAction.GetObject().(*policyv1.Eviction)
+		eviction := createAction.GetObject().(*policyv1beta1.Eviction)
 		if eviction == nil {
 			return false, nil, nil
 		}
