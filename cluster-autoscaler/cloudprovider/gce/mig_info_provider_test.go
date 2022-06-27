@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 var (
@@ -34,6 +35,7 @@ var (
 	errFetchMigBaseName     = errors.New("fetch mig basename error")
 	errFetchMigTemplateName = errors.New("fetch mig template name error")
 	errFetchMigTemplate     = errors.New("fetch mig template error")
+	errFetchMachineType     = errors.New("fetch machine type error")
 
 	mig = &gceMig{
 		gceRef: GceRef{
@@ -51,10 +53,11 @@ type mockAutoscalingGceClient struct {
 	fetchMigInstances    func(GceRef) ([]cloudprovider.Instance, error)
 	fetchMigTemplateName func(GceRef) (string, error)
 	fetchMigTemplate     func(GceRef, string) (*gce.InstanceTemplate, error)
+	fetchMachineType     func(string, string) (*gce.MachineType, error)
 }
 
-func (client *mockAutoscalingGceClient) FetchMachineType(_, _ string) (*gce.MachineType, error) {
-	return nil, nil
+func (client *mockAutoscalingGceClient) FetchMachineType(zone, machineName string) (*gce.MachineType, error) {
+	return client.fetchMachineType(zone, machineName)
 }
 
 func (client *mockAutoscalingGceClient) FetchMachineTypes(_ string) ([]*gce.MachineType, error) {
@@ -835,6 +838,96 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 	}
 }
 
+func TestGetMigMachineType(t *testing.T) {
+	knownZone := "us-cache1-a"
+	unknownZone := "us-nocache42-c"
+	testCases := []struct {
+		name             string
+		machine          string
+		zone             string
+		fetchMachineType func(string, string) (*gce.MachineType, error)
+		cpu              int64
+		memory           int64
+		expectCpu        int64
+		expectMemory     int64
+		expectError      bool
+	}{
+		{
+			name:         "custom machine",
+			machine:      "custom-8-2",
+			zone:         unknownZone,
+			expectCpu:    8,
+			expectMemory: 2 * units.MiB,
+		},
+		{
+			name:         "machine in cache",
+			machine:      "n1-standard-1",
+			zone:         knownZone,
+			cpu:          1,
+			memory:       2,
+			expectCpu:    1,
+			expectMemory: 2 * units.MiB,
+		},
+		{
+			name:             "machine not in cache",
+			machine:          "n1-standard-2",
+			zone:             unknownZone,
+			fetchMachineType: fetchMachineTypeConst("n1-standard-2", 2, 3840),
+			expectCpu:        2,
+			expectMemory:     3840 * units.MiB,
+		},
+		{
+			name:             "machine not in cache, request error",
+			machine:          "n1-standard-1",
+			zone:             unknownZone,
+			fetchMachineType: fetchMachineTypeFail,
+			expectError:      true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mig := &gceMig{
+				gceRef: GceRef{
+					Project: "project",
+					Zone:    tc.zone,
+					Name:    "mig",
+				},
+			}
+			cache := &GceCache{
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): "template"},
+				instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{
+					mig.GceRef(): {
+						Name: "template",
+						Properties: &gce.InstanceProperties{
+							MachineType: tc.machine,
+						},
+					},
+				},
+				machinesCache: map[MachineTypeKey]MachineType{
+					{knownZone, tc.machine}: {
+						Name:   tc.machine,
+						CPU:    tc.cpu,
+						Memory: tc.memory * units.MiB,
+					},
+				},
+			}
+			client := &mockAutoscalingGceClient{
+				fetchMachineType: tc.fetchMachineType,
+			}
+			migLister := NewMigLister(cache)
+			provider := NewCachingMigInfoProvider(cache, migLister, client, mig.GceRef().Project, 1)
+			machine, err := provider.GetMigMachineType(mig.GceRef())
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectCpu, machine.CPU)
+				assert.Equal(t, tc.expectMemory, machine.Memory)
+			}
+		})
+	}
+}
+
 func emptyCache() *GceCache {
 	return &GceCache{
 		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
@@ -909,5 +1002,19 @@ func fetchMigTemplateFail(_ GceRef, _ string) (*gce.InstanceTemplate, error) {
 func fetchMigTemplateConst(template *gce.InstanceTemplate) func(GceRef, string) (*gce.InstanceTemplate, error) {
 	return func(GceRef, string) (*gce.InstanceTemplate, error) {
 		return template, nil
+	}
+}
+
+func fetchMachineTypeFail(_, _ string) (*gce.MachineType, error) {
+	return nil, errFetchMachineType
+}
+
+func fetchMachineTypeConst(name string, cpu int64, mem int64) func(string, string) (*gce.MachineType, error) {
+	return func(string, string) (*gce.MachineType, error) {
+		return &gce.MachineType{
+			Name:      name,
+			GuestCpus: cpu,
+			MemoryMb:  mem,
+		}, nil
 	}
 }
