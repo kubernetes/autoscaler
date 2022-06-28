@@ -41,6 +41,7 @@ import (
 	framework_rs "k8s.io/kubernetes/test/e2e/framework/replicaset"
 	framework_ss "k8s.io/kubernetes/test/e2e/framework/statefulset"
 	testutils "k8s.io/kubernetes/test/utils"
+	podsecurity "k8s.io/pod-security-admission/api"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -48,6 +49,7 @@ import (
 
 var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("stops when pods get pending", func() {
 
