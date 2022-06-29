@@ -46,6 +46,10 @@ type MigInfoProvider interface {
 	GetMigInstanceTemplateName(migRef GceRef) (string, error)
 	// GetMigInstanceTemplate returns instance template for given MIG ref
 	GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error)
+	// GetMigMachineType returns machine type used by a MIG.
+	// For custom machines cpu and memory information is based on parsing
+	// machine name. For standard types it's retrieved from GCE API.
+	GetMigMachineType(migRef GceRef) (MachineType, error)
 }
 
 type cachingMigInfoProvider struct {
@@ -317,4 +321,31 @@ func (c *cachingMigInfoProvider) listAllZonesWithMigs() map[string]bool {
 		zones[mig.GceRef().Zone] = true
 	}
 	return zones
+}
+
+func (c *cachingMigInfoProvider) GetMigMachineType(migRef GceRef) (MachineType, error) {
+	template, err := c.GetMigInstanceTemplate(migRef)
+	if err != nil {
+		return MachineType{}, err
+	}
+	machineName := template.Properties.MachineType
+	if IsCustomMachine(machineName) {
+		return NewCustomMachineType(machineName)
+	}
+	zone := migRef.Zone
+	machine, found := c.cache.GetMachine(machineName, zone)
+	if !found {
+		rawMachine, err := c.gceClient.FetchMachineType(zone, machineName)
+		if err != nil {
+			c.migLister.HandleMigIssue(migRef, err)
+			return MachineType{}, err
+		}
+		machine, err = NewMachineTypeFromAPI(machineName, rawMachine)
+		if err != nil {
+			c.migLister.HandleMigIssue(migRef, err)
+			return MachineType{}, err
+		}
+		c.cache.AddMachine(machine, zone)
+	}
+	return machine, nil
 }
