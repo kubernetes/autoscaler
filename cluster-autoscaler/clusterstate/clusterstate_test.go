@@ -653,7 +653,7 @@ func TestUpdateLastTransitionTimes(t *testing.T) {
 		}
 	}
 
-	expectedNgTimestamps := make(map[string](map[api.ClusterAutoscalerConditionType]metav1.Time), 0)
+	expectedNgTimestamps := make(map[string]map[api.ClusterAutoscalerConditionType]metav1.Time, 0)
 	// Same as cluster-wide
 	expectedNgTimestamps["ng1"] = map[api.ClusterAutoscalerConditionType]metav1.Time{
 		api.ClusterAutoscalerHealth:    now,
@@ -710,7 +710,7 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	// Backoff should expire after timeout
-	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
+	now = now.Add(5 * time.Minute /*InitialNodeGroupBackoffDuration*/).Add(time.Second)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
@@ -724,7 +724,7 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
-	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
+	now = now.Add(5 * time.Minute /*InitialNodeGroupBackoffDuration*/).Add(time.Second)
 	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	// The backoff should be cleared after a successful scale-up
@@ -873,5 +873,6 @@ func TestScaleUpFailures(t *testing.T) {
 }
 
 func newBackoff() backoff.Backoff {
-	return backoff.NewIdBasedExponentialBackoff(InitialNodeGroupBackoffDuration, MaxNodeGroupBackoffDuration, NodeGroupBackoffResetTimeout)
+	return backoff.NewIdBasedExponentialBackoff(5*time.Minute, /*InitialNodeGroupBackoffDuration*/
+		30*time.Minute /*MaxNodeGroupBackoffDuration*/, 3*time.Hour /*NodeGroupBackoffResetTimeout*/)
 }

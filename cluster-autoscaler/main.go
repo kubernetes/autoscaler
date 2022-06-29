@@ -183,6 +183,12 @@ var (
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
 
 	emitPerNodeGroupMetrics = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
+	initialNodeGroupBackoffDuration = flag.Duration("initial-node-group-backoff-duration", 5*time.Minute,
+		"initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start.")
+	maxNodeGroupBackoffDuration = flag.Duration("max-node-group-backoff-duration", 30*time.Minute,
+		"maxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start.")
+	nodeGroupBackoffResetTimeout = flag.Duration("node-group-backoff-reset-timeout", 3*time.Hour,
+		"nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -260,6 +266,9 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DaemonSetEvictionForEmptyNodes:     *daemonSetEvictionForEmptyNodes,
 		DaemonSetEvictionForOccupiedNodes:  *daemonSetEvictionForOccupiedNodes,
 		UserAgent:                          *userAgent,
+		InitialNodeGroupBackoffDuration:    *initialNodeGroupBackoffDuration,
+		MaxNodeGroupBackoffDuration:        *maxNodeGroupBackoffDuration,
+		NodeGroupBackoffResetTimeout:       *nodeGroupBackoffResetTimeout,
 	}
 }
 
