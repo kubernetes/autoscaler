@@ -54,6 +54,8 @@ k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
 k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
 ```
 
+> **_NOTE_**: GPU autoscaling consideration on VMSS : In case of scale set of GPU nodes, kubelet node label `accelerator` have to be added to node provisionned to make GPU scaling works.
+
 #### Autoscaling options
 
 Some autoscaling options can be defined per VM Scale Set, with tags.
