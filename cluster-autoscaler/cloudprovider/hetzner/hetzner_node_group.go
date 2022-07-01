@@ -358,6 +358,10 @@ func createServer(n *hetznerNodeGroup) error {
 		Labels: map[string]string{
 			nodeGroupLabel: n.id,
 		},
+		PublicNet: &hcloud.ServerCreatePublicNet{
+			EnableIPv4: n.manager.publicIPv4,
+			EnableIPv6: n.manager.publicIPv6,
+		},
 	}
 	if n.manager.sshKey != nil {
 		opts.SSHKeys = []*hcloud.SSHKey{n.manager.sshKey}
