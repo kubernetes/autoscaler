@@ -193,12 +193,13 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		klog.Errorf("Couldn't extract architecture from kube-env for MIG %q, falling back to %q. Error: %v", mig.Id(), arch, err)
 	}
 
+	addBootDiskAnnotations(&node, template.Properties)
 	var ephemeralStorage int64 = -1
-
 	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
-		addBootDiskAnnotations(&node, template.Properties)
+		// ephemeral storage is backed up by boot disk
 		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
 	} else {
+		// ephemeral storage is backed up by local ssd
 		addAnnotation(&node, EphemeralStorageLocalSsdAnnotation, strconv.FormatBool(true))
 	}
 
@@ -780,7 +781,6 @@ func addBootDiskAnnotations(node *apiv1.Node, instanceProperties *gce.InstancePr
 	if instanceProperties.Disks == nil {
 		return
 	}
-
 	for _, disk := range instanceProperties.Disks {
 		if disk != nil && disk.InitializeParams != nil {
 			if disk.Boot {

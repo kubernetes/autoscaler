@@ -159,6 +159,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			kubeEnv:                       "AUTOSCALER_ENV_VARS: os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2\n",
 			physicalCpu:                   8,
 			physicalMemory:                200 * units.MiB,
+			bootDiskSizeGiB:               300,
 			ephemeralStorageLocalSSDCount: 2,
 			attachedLocalSSDCount:         2,
 			expectedErr:                   false,
