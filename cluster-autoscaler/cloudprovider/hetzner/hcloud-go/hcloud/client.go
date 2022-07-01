@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,10 +32,9 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/internal/instrumentation"
-
 	"github.com/prometheus/client_golang/prometheus"
-
+	"golang.org/x/net/http/httpguts"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/internal/instrumentation"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/schema"
 )
 
@@ -70,6 +70,7 @@ func ExponentialBackoff(b float64, d time.Duration) BackoffFunc {
 type Client struct {
 	endpoint                string
 	token                   string
+	tokenValid              bool
 	pollInterval            time.Duration
 	backoffFunc             BackoffFunc
 	httpClient              *http.Client
@@ -97,6 +98,7 @@ type Client struct {
 	Volume           VolumeClient
 	PlacementGroup   PlacementGroupClient
 	RDNS             RDNSClient
+	PrimaryIP        PrimaryIPClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -113,6 +115,7 @@ func WithEndpoint(endpoint string) ClientOption {
 func WithToken(token string) ClientOption {
 	return func(client *Client) {
 		client.token = token
+		client.tokenValid = httpguts.ValidHeaderFieldValue(token)
 	}
 }
 
@@ -167,6 +170,7 @@ func WithInstrumentation(registry *prometheus.Registry) ClientOption {
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
 		endpoint:     Endpoint,
+		tokenValid:   true,
 		httpClient:   &http.Client{},
 		backoffFunc:  ExponentialBackoff(2, 500*time.Millisecond),
 		pollInterval: 500 * time.Millisecond,
@@ -200,6 +204,7 @@ func NewClient(options ...ClientOption) *Client {
 	client.Firewall = FirewallClient{client: client}
 	client.PlacementGroup = PlacementGroupClient{client: client}
 	client.RDNS = RDNSClient{client: client}
+	client.PrimaryIP = PrimaryIPClient{client: client}
 
 	return client
 }
@@ -213,9 +218,13 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 		return nil, err
 	}
 	req.Header.Set("User-Agent", c.userAgent)
-	if c.token != "" {
+
+	if !c.tokenValid {
+		return nil, errors.New("Authorization token contains invalid characters")
+	} else if c.token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
