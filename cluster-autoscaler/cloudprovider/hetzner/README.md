@@ -16,6 +16,10 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_SSH_KEY` Default empty , This SSH Key will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
 
+`HCLOUD_PUBLIC_IPV4` Default true , Whether the server is created with a public IPv4 address or not, @see https://docs.hetzner.cloud/#primary-ips
+
+`HCLOUD_PUBLIC_IPV6` Default true , Whether the server is created with a public IPv6 address or not, @see https://docs.hetzner.cloud/#primary-ips
+
 Node groups must be defined with the `--nodes=<min-servers>:<max-servers>:<instance-type>:<region>:<name>` flag.
 
 Multiple flags will create multiple node pools. For example:
