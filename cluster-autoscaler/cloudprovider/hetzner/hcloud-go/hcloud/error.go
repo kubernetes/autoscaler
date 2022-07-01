@@ -41,7 +41,8 @@ const (
 	ErrorCodeMaintenance           ErrorCode = "maintenance"             // Cannot perform operation due to maintenance
 	ErrorCodeConflict              ErrorCode = "conflict"                // The resource has changed during the request, please retry
 	ErrorCodeRobotUnavailable      ErrorCode = "robot_unavailable"       // Robot was not available. The caller may retry the operation after a short delay
-	ErrorUnsupportedError          ErrorCode = "unsupported_error"       // The gives resource does not support this
+	ErrorCodeResourceLocked        ErrorCode = "resource_locked"         // The resource is locked. The caller should contact support
+	ErrorUnsupportedError          ErrorCode = "unsupported_error"       // The given resource does not support this
 
 	// Server related error codes
 	ErrorCodeInvalidServerType     ErrorCode = "invalid_server_type"     // The server type does not fit for the given server or is deprecated
