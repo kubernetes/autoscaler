@@ -187,9 +187,10 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	if osDistribution == OperatingSystemDistributionUnknown {
 		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
 	}
-	arch := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
-	if arch == UnknownArch {
-		return nil, fmt.Errorf("could not obtain arch from kube-env from template metadata")
+	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
+	if err != nil {
+		arch = DefaultArch
+		klog.Errorf("Couldn't extract architecture from kube-env for MIG %q, falling back to %q. Error: %v", mig.Id(), arch, err)
 	}
 
 	var ephemeralStorage int64 = -1
@@ -578,20 +579,23 @@ func (s SystemArchitecture) Name() string {
 	return string(s)
 }
 
-func extractSystemArchitectureFromKubeEnv(kubeEnv string) SystemArchitecture {
-	arch, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
+func extractSystemArchitectureFromKubeEnv(kubeEnv string) (SystemArchitecture, error) {
+	archName, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
 	if err != nil {
-		klog.Errorf("error while obtaining arch from AUTOSCALER_ENV_VARS; using default %v", err)
-		return UnknownArch
+		return UnknownArch, fmt.Errorf("error while obtaining arch from AUTOSCALER_ENV_VARS: %v", err)
 	}
 	if !found {
-		klog.V(4).Infof("no arch defined in AUTOSCALER_ENV_VARS; using default %v", err)
-		return DefaultArch
+		return UnknownArch, fmt.Errorf("no arch defined in AUTOSCALER_ENV_VARS")
 	}
-	return ToSystemArchitecture(arch)
+	arch := ToSystemArchitecture(archName)
+	if arch == UnknownArch {
+		return UnknownArch, fmt.Errorf("unknown arch %q defined in AUTOSCALER_ENV_VARS", archName)
+	}
+	return arch, nil
 }
 
-// ToSystemArchitecture parses a string to SystemArchitecture
+// ToSystemArchitecture parses a string to SystemArchitecture. Returns UnknownArch if the string doesn't represent a
+// valid architecture.
 func ToSystemArchitecture(arch string) SystemArchitecture {
 	switch arch {
 	case string(Arm64):
@@ -599,7 +603,7 @@ func ToSystemArchitecture(arch string) SystemArchitecture {
 	case string(Amd64):
 		return Amd64
 	default:
-		return DefaultArch
+		return UnknownArch
 	}
 }
 
