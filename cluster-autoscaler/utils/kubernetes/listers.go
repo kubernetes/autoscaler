@@ -22,14 +22,14 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	client "k8s.io/client-go/kubernetes"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
-	v1policylister "k8s.io/client-go/listers/policy/v1beta1"
+	v1policylister "k8s.io/client-go/listers/policy/v1"
 	"k8s.io/client-go/tools/cache"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 )
@@ -305,7 +305,7 @@ func (lister *PodDisruptionBudgetListerImpl) List() ([]*policyv1.PodDisruptionBu
 
 // NewPodDisruptionBudgetLister builds a pod disruption budget lister.
 func NewPodDisruptionBudgetLister(kubeClient client.Interface, stopchannel <-chan struct{}) PodDisruptionBudgetLister {
-	listWatcher := cache.NewListWatchFromClient(kubeClient.PolicyV1beta1().RESTClient(), "poddisruptionbudgets", apiv1.NamespaceAll, fields.Everything())
+	listWatcher := cache.NewListWatchFromClient(kubeClient.PolicyV1().RESTClient(), "poddisruptionbudgets", apiv1.NamespaceAll, fields.Everything())
 	store, reflector := cache.NewNamespaceKeyedIndexerAndReflector(listWatcher, &policyv1.PodDisruptionBudget{}, time.Hour)
 	pdbLister := v1policylister.NewPodDisruptionBudgetLister(store)
 	go reflector.Run(stopchannel)
