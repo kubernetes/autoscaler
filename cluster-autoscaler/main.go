@@ -202,6 +202,8 @@ var (
 	maxDrainParallelismFlag            = flag.Int("max-drain-parallelism", 1, "Maximum number of nodes needing drain, that can be drained and deleted in parallel.")
 	gceExpanderEphemeralStorageSupport = flag.Bool("gce-expander-ephemeral-storage-support", false, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider")
 	recordDuplicatedEvents             = flag.Bool("record-duplicated-events", false, "enable duplication of similar events within a 5 minute window.")
+	maxNodesPerScaleUp                 = flag.Int("max-nodes-per-scaleup", 1000, "Max nodes added in a single scale-up. This is intended strictly for optimizing CA algorithm latency and not a tool to rate-limit scale-up throughput.")
+	maxNodeGroupBinpackingDuration     = flag.Duration("max-nodegroup-binpacking-duration", 10*time.Second, "Maximum time that will be spent in binpacking simulation for each NodeGroup.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -289,6 +291,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxDrainParallelism:                *maxDrainParallelismFlag,
 		GceExpanderEphemeralStorageSupport: *gceExpanderEphemeralStorageSupport,
 		RecordDuplicatedEvents:             *recordDuplicatedEvents,
+		MaxNodesPerScaleUp:                 *maxNodesPerScaleUp,
+		MaxNodeGroupBinpackingDuration:     *maxNodeGroupBinpackingDuration,
 	}
 }
 

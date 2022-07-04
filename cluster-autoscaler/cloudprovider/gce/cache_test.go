@@ -17,67 +17,48 @@ limitations under the License.
 package gce
 
 import (
-	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	gce "google.golang.org/api/compute/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 func TestMachineCache(t *testing.T) {
 	type CacheQuery struct {
-		machineType string
-		zone        string
-		machine     *gce.MachineType
-		err         error
+		zone    string
+		machine MachineType
 	}
 	testCases := []struct {
-		desc     string
-		machines []CacheQuery
-		want     map[MachineTypeKey]uint64
-		wantErr  []MachineTypeKey
+		desc        string
+		machines    []CacheQuery
+		wantCPU     map[MachineTypeKey]int64
+		wantMissing []MachineTypeKey
 	}{
 		{
 			desc: "replacement",
 			machines: []CacheQuery{
 				{
-					machineType: "e2-standard-2",
-					zone:        "myzone",
-					machine:     &gce.MachineType{Id: 1},
+					zone: "myzone",
+					machine: MachineType{
+						Name: "e2-standard-2",
+						CPU:  1,
+					},
 				},
 				{
-					machineType: "e2-standard-2",
-					zone:        "myzone",
-					machine:     &gce.MachineType{Id: 1},
-				},
-				{
-					machineType: "e2-standard-2",
-					zone:        "myzone",
-					machine:     &gce.MachineType{Id: 2},
-				},
-				{
-					machineType: "e2-standard-2",
-					zone:        "myzone",
-					machine:     &gce.MachineType{Id: 2},
-				},
-				{
-					machineType: "e2-standard-4",
-					zone:        "myzone2",
-					err:         errors.New("error"),
+					zone: "myzone",
+					machine: MachineType{
+						Name: "e2-standard-2",
+						CPU:  2,
+					},
 				},
 			},
-			want: map[MachineTypeKey]uint64{
+			wantCPU: map[MachineTypeKey]int64{
 				{
-					MachineType: "e2-standard-2",
-					Zone:        "myzone",
+					MachineTypeName: "e2-standard-2",
+					Zone:            "myzone",
 				}: 2,
 			},
-			wantErr: []MachineTypeKey{
+			wantMissing: []MachineTypeKey{
 				{
-					Zone:        "myzone2",
-					MachineType: "e2-standard-4",
+					Zone:            "myzone2",
+					MachineTypeName: "e2-standard-4",
 				},
 			},
 		},
@@ -86,36 +67,23 @@ func TestMachineCache(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			for _, m := range tc.machines {
-				if m.err != nil {
-					c.AddMachineToCacheWithError(m.machineType, m.zone, m.err)
-					continue
-				}
-				c.AddMachineToCache(m.machineType, m.zone, m.machine)
+				c.AddMachine(m.machine, m.zone)
 			}
-			for mt, wantId := range tc.want {
-				m, err := c.GetMachineFromCache(mt.MachineType, mt.Zone)
-				if err != nil {
-					t.Errorf("Did not expect error for machine type = %q, zone = %q", mt.MachineType, mt.Zone)
+			for mt, wantCPU := range tc.wantCPU {
+				m, found := c.GetMachine(mt.MachineTypeName, mt.Zone)
+				if !found {
+					t.Errorf("Expected to find machine in cache type = %q, zone = %q", mt.MachineTypeName, mt.Zone)
 				}
-				if m.Id != wantId {
-					t.Errorf("Wanted id %d but got id %d for machine type = %q, zone = %q", wantId, m.Id, mt.MachineType, mt.Zone)
+				if m.CPU != wantCPU {
+					t.Errorf("Wanted CPU %d but got CPU %d for machine type = %q, zone = %q", wantCPU, m.CPU, mt.MachineTypeName, mt.Zone)
 				}
 			}
-			for _, mt := range tc.wantErr {
-				_, err := c.GetMachineFromCache(mt.MachineType, mt.Zone)
-				if err == nil {
-					t.Errorf("Wanted an error but got no error for machine type = %q, zone = %q", mt.MachineType, mt.Zone)
+			for _, mt := range tc.wantMissing {
+				_, found := c.GetMachine(mt.MachineTypeName, mt.Zone)
+				if found {
+					t.Errorf("Didn't expect to find in cache machine type = %q, zone = %q", mt.MachineTypeName, mt.Zone)
 				}
 			}
 		})
 	}
-	gceManagerMock := &gceManagerMock{}
-	gce := &GceCloudProvider{
-		gceManager: gceManagerMock,
-	}
-	mig := &gceMig{gceRef: GceRef{Name: "ng1"}}
-	gceManagerMock.On("GetMigs").Return([]Mig{mig}).Once()
-	result := gce.NodeGroups()
-	assert.Equal(t, []cloudprovider.NodeGroup{mig}, result)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
