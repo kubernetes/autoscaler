@@ -64,7 +64,7 @@ The VPA objects in this version will no longer receive recommendations and
 existing recommendations will be removed. The objects will remain present though
 and a ConfigUnsupported condition will be set on them.
 
-This doc is for installing latest VPA. For instructions on migration from older versions see Migration Doc [Migration Doc](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/MIGRATE.md)
+This doc is for installing latest VPA. For instructions on migration from older versions see [Migration Doc](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/MIGRATE.md).
 
 
 ### Prerequisites
