@@ -96,7 +96,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		// Boot disk price
 		bootDiskSize, _ := strconv.ParseInt(node.Annotations[BootDiskSizeAnnotation], 10, 64)
 		if bootDiskSize == 0 {
-			klog.Error("Boot disk size is not found for node %s, using default size %v", node.Name, DefaultBootDiskSize)
+			klog.Errorf("Boot disk size is not found for node %s, using default size %v", node.Name, DefaultBootDiskSize)
 			bootDiskSize = DefaultBootDiskSize
 		}
 		bootDiskType := node.Annotations[BootDiskTypeAnnotation]
@@ -104,7 +104,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 			bootDiskType = val
 		}
 		if bootDiskType == "" {
-			klog.Error("Boot disk type is not found for node %s, using default type %s", node.Name, DefaultBootDiskType)
+			klog.Errorf("Boot disk type is not found for node %s, using default type %s", node.Name, DefaultBootDiskType)
 			bootDiskType = DefaultBootDiskType
 		}
 		bootDiskPrice := model.PriceInfo.BootDiskPricePerHour()[bootDiskType]
