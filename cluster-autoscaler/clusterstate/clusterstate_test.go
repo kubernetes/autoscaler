@@ -626,7 +626,7 @@ func TestCloudProviderDeletedNodes(t *testing.T) {
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetCloudProviderDeletedNodes()))
-	assert.Equal(t, "ng1-2", clusterstate.GetCloudProviderDeletedNodes()[0].Node.Name)
+	assert.Equal(t, "ng1-2", clusterstate.GetCloudProviderDeletedNodes()[0].Name)
 	assert.Equal(t, 1, clusterstate.GetClusterReadiness().Deleted)
 
 	// The node is removed from Kubernetes
