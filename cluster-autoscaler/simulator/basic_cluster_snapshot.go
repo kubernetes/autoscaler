@@ -227,10 +227,16 @@ func (snapshot *BasicClusterSnapshot) Clear() {
 // implementation of SharedLister interface
 
 type basicClusterSnapshotNodeLister BasicClusterSnapshot
+type basicClusterSnapshotStorageLister BasicClusterSnapshot
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicClusterSnapshot) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*basicClusterSnapshotNodeLister)(snapshot)
+}
+
+// StorageInfos exposes snapshot as StorageInfoLister.
+func (snapshot *BasicClusterSnapshot) StorageInfos() schedulerframework.StorageInfoLister {
+	return (*basicClusterSnapshotStorageLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
@@ -251,4 +257,9 @@ func (snapshot *basicClusterSnapshotNodeLister) HavePodsWithRequiredAntiAffinity
 // Returns the NodeInfo of the given node name.
 func (snapshot *basicClusterSnapshotNodeLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().getNodeInfo(nodeName)
+}
+
+// Returns the IsPVCUsedByPods in a given key.
+func (snapshot *basicClusterSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
+	return false
 }
