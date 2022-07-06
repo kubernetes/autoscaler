@@ -26,6 +26,7 @@ import (
 // DeltaClusterSnapshot is an implementation of ClusterSnapshot optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
 //
 // Complexity of some notable operations:
+//
 //	fork - O(1)
 //	revert - O(1)
 //	commit - O(n)
@@ -34,16 +35,17 @@ import (
 //	list node infos - O(n), cached
 //
 // Watch out for:
+//
 //	node deletions, pod additions & deletions - invalidates cache of current snapshot
 //		(when forked affects delta, but not base.)
 //	pod affinity - causes scheduler framework to list pods with non-empty selector,
 //		so basic caching doesn't help.
-//
 type DeltaClusterSnapshot struct {
 	data *internalDeltaSnapshotData
 }
 
 type deltaSnapshotNodeLister DeltaClusterSnapshot
+type deltaSnapshotStorageLister DeltaClusterSnapshot
 
 type internalDeltaSnapshotData struct {
 	baseData *internalDeltaSnapshotData
@@ -349,6 +351,11 @@ func (snapshot *deltaSnapshotNodeLister) Get(nodeName string) (*schedulerframewo
 	return (*DeltaClusterSnapshot)(snapshot).getNodeInfo(nodeName)
 }
 
+// IsPVCUsedByPods returns if PVC is used by pods
+func (snapshot *deltaSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
+	return false
+}
+
 func (snapshot *DeltaClusterSnapshot) getNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
 	data := snapshot.data
 	node, found := data.getNodeInfo(nodeName)
@@ -361,6 +368,11 @@ func (snapshot *DeltaClusterSnapshot) getNodeInfo(nodeName string) (*schedulerfr
 // NodeInfos returns node lister.
 func (snapshot *DeltaClusterSnapshot) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*deltaSnapshotNodeLister)(snapshot)
+}
+
+// StorageInfos returns storage lister
+func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageInfoLister {
+	return (*deltaSnapshotStorageLister)(snapshot)
 }
 
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
