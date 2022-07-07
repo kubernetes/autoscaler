@@ -57,6 +57,7 @@ type internalDeltaSnapshotData struct {
 	nodeInfoList                     []*schedulerframework.NodeInfo
 	havePodsWithAffinity             []*schedulerframework.NodeInfo
 	havePodsWithRequiredAntiAffinity []*schedulerframework.NodeInfo
+	pvcNamespaceMap                  map[string]int
 }
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
@@ -180,6 +181,8 @@ func (data *internalDeltaSnapshotData) clearCaches() {
 func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.havePodsWithAffinity = nil
 	data.havePodsWithRequiredAntiAffinity = nil
+	// TODO: update the cache when adding/removing pods instead of invalidating the whole cache
+	data.pvcNamespaceMap = nil
 }
 
 func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
@@ -273,6 +276,21 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 	return nil
 }
 
+func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
+	if data.pvcNamespaceMap != nil {
+		return data.pvcNamespaceMap[key] > 0
+	}
+	nodeInfos := data.getNodeInfoList()
+	pvcNamespaceMap := make(map[string]int)
+	for _, v := range nodeInfos {
+		for k, i := range v.PVCRefCounts {
+			pvcNamespaceMap[k] += i
+		}
+	}
+	data.pvcNamespaceMap = pvcNamespaceMap
+	return data.pvcNamespaceMap[key] > 0
+}
+
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
 	forkedData := newInternalDeltaSnapshotData()
 	forkedData.baseData = data
@@ -353,7 +371,7 @@ func (snapshot *deltaSnapshotNodeLister) Get(nodeName string) (*schedulerframewo
 
 // IsPVCUsedByPods returns if PVC is used by pods
 func (snapshot *deltaSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
-	return false
+	return (*DeltaClusterSnapshot)(snapshot).IsPVCUsedByPods(key)
 }
 
 func (snapshot *DeltaClusterSnapshot) getNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
@@ -418,6 +436,11 @@ func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) er
 // RemovePod removes pod from the snapshot.
 func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
+}
+
+// IsPVCUsedByPods returns if the pvc is used by any pod
+func (snapshot *DeltaClusterSnapshot) IsPVCUsedByPods(key string) bool {
+	return snapshot.data.isPVCUsedByPods(key)
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
