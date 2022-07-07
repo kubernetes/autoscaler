@@ -18,12 +18,11 @@ package loadbalancerclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -38,6 +37,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const lbResourceType = "Microsoft.Network/loadBalancers"
 
 // Client implements LoadBalancer client Interface.
 type Client struct {
@@ -121,7 +122,7 @@ func (c *Client) getLB(ctx context.Context, resourceGroupName string, loadBalanc
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/loadBalancers",
+		lbResourceType,
 		loadBalancerName,
 	)
 	result := network.LoadBalancer{}
@@ -179,9 +180,7 @@ func (c *Client) List(ctx context.Context, resourceGroupName string) ([]network.
 
 // listLB gets a list of LoadBalancers in the resource group.
 func (c *Client) listLB(ctx context.Context, resourceGroupName string) ([]network.LoadBalancer, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadBalancers",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName))
+	resourceID := armclient.GetResourceListID(c.subscriptionID, resourceGroupName, "Microsoft.Network/loadBalancers")
 	result := make([]network.LoadBalancer, 0)
 	page := &LoadBalancerListResultPage{}
 	page.fn = c.listNextResults
@@ -253,18 +252,15 @@ func (c *Client) createOrUpdateLB(ctx context.Context, resourceGroupName string,
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/loadBalancers",
+		lbResourceType,
 		loadBalancerName,
 	)
-	decorators := []autorest.PrepareDecorator{
-		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-		autorest.WithJSON(parameters),
-	}
+	decorators := []autorest.PrepareDecorator{}
 	if etag != "" {
 		decorators = append(decorators, autorest.WithHeader("If-Match", autorest.String(etag)))
 	}
 
-	response, rerr := c.armClient.PutResourceWithDecorators(ctx, resourceID, parameters, decorators)
+	response, rerr := c.armClient.PutResource(ctx, resourceID, parameters, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "loadbalancer.put.request", resourceID, rerr.Error())
@@ -328,11 +324,11 @@ func (c *Client) deleteLB(ctx context.Context, resourceGroupName string, loadBal
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/loadBalancers",
+		lbResourceType,
 		loadBalancerName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 func (c *Client) listResponder(resp *http.Response) (result network.LoadBalancerListResult, err error) {
@@ -461,20 +457,17 @@ func (c *Client) createOrUpdateLBBackendPool(ctx context.Context, resourceGroupN
 	resourceID := armclient.GetChildResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/loadBalancers",
+		lbResourceType,
 		loadBalancerName,
 		"backendAddressPools",
 		backendPoolName,
 	)
-	decorators := []autorest.PrepareDecorator{
-		autorest.WithPathParameters("{resourceID}", map[string]interface{}{"resourceID": resourceID}),
-		autorest.WithJSON(parameters),
-	}
+	decorators := []autorest.PrepareDecorator{}
 	if etag != "" {
 		decorators = append(decorators, autorest.WithHeader("If-Match", autorest.String(etag)))
 	}
 
-	response, rerr := c.armClient.PutResourceWithDecorators(ctx, resourceID, parameters, decorators)
+	response, rerr := c.armClient.PutResource(ctx, resourceID, parameters, decorators...)
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "loadbalancerbackendpool.put.request", resourceID, rerr.Error())
@@ -527,12 +520,12 @@ func (c *Client) deleteLBBackendPool(ctx context.Context, resourceGroupName, loa
 	resourceID := armclient.GetChildResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/loadBalancers",
+		lbResourceType,
 		loadBalancerName,
 		"backendAddressPools",
 		backendPoolName,
 	)
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 func (c *Client) createOrUpdateBackendPoolResponder(resp *http.Response) (*network.BackendAddressPool, *retry.Error) {

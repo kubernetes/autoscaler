@@ -1104,8 +1104,8 @@ func (spt *ServicePrincipalToken) refreshInternal(ctx context.Context, resource 
 
 		// AAD returns expires_in as a string, ADFS returns it as an int
 		ExpiresIn json.Number `json:"expires_in"`
-		// expires_on can be in two formats, a UTC time stamp or the number of seconds.
-		ExpiresOn string      `json:"expires_on"`
+		// expires_on can be in three formats, a UTC time stamp, or the number of seconds as a string *or* int.
+		ExpiresOn interface{} `json:"expires_on"`
 		NotBefore json.Number `json:"not_before"`
 
 		Resource string `json:"resource"`
@@ -1118,7 +1118,7 @@ func (spt *ServicePrincipalToken) refreshInternal(ctx context.Context, resource 
 	}
 	expiresOn := json.Number("")
 	// ADFS doesn't include the expires_on field
-	if token.ExpiresOn != "" {
+	if token.ExpiresOn != nil {
 		if expiresOn, err = parseExpiresOn(token.ExpiresOn); err != nil {
 			return newTokenRefreshError(fmt.Sprintf("adal: failed to parse expires_on: %v value '%s'", err, token.ExpiresOn), resp)
 		}
@@ -1135,18 +1135,27 @@ func (spt *ServicePrincipalToken) refreshInternal(ctx context.Context, resource 
 }
 
 // converts expires_on to the number of seconds
-func parseExpiresOn(s string) (json.Number, error) {
-	// convert the expiration date to the number of seconds from now
-	timeToDuration := func(t time.Time) json.Number {
-		dur := t.Sub(time.Now().UTC())
-		return json.Number(strconv.FormatInt(int64(dur.Round(time.Second).Seconds()), 10))
+func parseExpiresOn(s interface{}) (json.Number, error) {
+	// the JSON unmarshaler treats JSON numbers unmarshaled into an interface{} as float64
+	asFloat64, ok := s.(float64)
+	if ok {
+		// this is the number of seconds as int case
+		return json.Number(strconv.FormatInt(int64(asFloat64), 10)), nil
 	}
-	if _, err := strconv.ParseInt(s, 10, 64); err == nil {
+	asStr, ok := s.(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected expires_on type %T", s)
+	}
+	// convert the expiration date to the number of seconds from the unix epoch
+	timeToDuration := func(t time.Time) json.Number {
+		return json.Number(strconv.FormatInt(t.UTC().Unix(), 10))
+	}
+	if _, err := json.Number(asStr).Int64(); err == nil {
 		// this is the number of seconds case, no conversion required
-		return json.Number(s), nil
-	} else if eo, err := time.Parse(expiresOnDateFormatPM, s); err == nil {
+		return json.Number(asStr), nil
+	} else if eo, err := time.Parse(expiresOnDateFormatPM, asStr); err == nil {
 		return timeToDuration(eo), nil
-	} else if eo, err := time.Parse(expiresOnDateFormat, s); err == nil {
+	} else if eo, err := time.Parse(expiresOnDateFormat, asStr); err == nil {
 		return timeToDuration(eo), nil
 	} else {
 		// unknown format
