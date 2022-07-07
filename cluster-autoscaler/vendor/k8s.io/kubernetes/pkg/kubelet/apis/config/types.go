@@ -19,7 +19,7 @@ package config
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	componentbaseconfig "k8s.io/component-base/config"
+	logsapi "k8s.io/component-base/logs/api/v1"
 )
 
 // HairpinMode denotes how the kubelet should configure networking to handle
@@ -352,14 +352,14 @@ type KubeletConfiguration struct {
 
 	/* the following fields are meant for Node Allocatable */
 
-	// A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G,pid=100) pairs
+	// A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G,ephemeral-storage=1G,pid=100) pairs
 	// that describe resources reserved for non-kubernetes components.
-	// Currently only cpu and memory are supported.
+	// Currently only cpu, memory and local ephemeral storage for root file system are supported.
 	// See http://kubernetes.io/docs/user-guide/compute-resources for more detail.
 	SystemReserved map[string]string
-	// A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G,pid=100) pairs
+	// A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G,ephemeral-storage=1G,pid=100) pairs
 	// that describe resources reserved for kubernetes system components.
-	// Currently cpu, memory and local ephemeral storage for root file system are supported.
+	// Currently only cpu, memory and local ephemeral storage for root file system are supported.
 	// See http://kubernetes.io/docs/user-guide/compute-resources for more detail.
 	KubeReserved map[string]string
 	// This flag helps kubelet identify absolute name of top level cgroup used to enforce `SystemReserved` compute resource reservation for OS system daemons.
@@ -384,7 +384,7 @@ type KubeletConfiguration struct {
 	ShowHiddenMetricsForVersion string
 	// Logging specifies the options of logging.
 	// Refer [Logs Options](https://github.com/kubernetes/component-base/blob/master/logs/options.go) for more information.
-	Logging componentbaseconfig.LoggingConfiguration
+	Logging logsapi.LoggingConfiguration
 	// EnableSystemLogHandler enables /logs handler.
 	EnableSystemLogHandler bool
 	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown and total grace period for pod termination during a node shutdown.
