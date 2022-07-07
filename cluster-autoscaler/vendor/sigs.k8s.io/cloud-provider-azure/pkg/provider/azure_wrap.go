@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -42,6 +42,7 @@ var (
 	nsgCacheTTLDefaultInSeconds          = 120
 	routeTableCacheTTLDefaultInSeconds   = 120
 	publicIPCacheTTLDefaultInSeconds     = 120
+	plsCacheTTLDefaultInSeconds          = 120
 
 	azureNodeProviderIDRE    = regexp.MustCompile(`^azure:///subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/(?:.*)`)
 	azureResourceGroupNameRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/(?:.*)`)
@@ -173,6 +174,14 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 	}
 
 	return *(securityGroup.(*network.SecurityGroup)), nil
+}
+
+func (az *Cloud) getPrivateLinkService(frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
+	cachedPLS, err := az.plsCache.Get(*frontendIPConfigID, crt)
+	if err != nil {
+		return pls, err
+	}
+	return *(cachedPLS.(*network.PrivateLinkService)), nil
 }
 
 func (az *Cloud) newVMCache() (*azcache.TimedCache, error) {
@@ -319,6 +328,47 @@ func (az *Cloud) newPIPCache() (*azcache.TimedCache, error) {
 		az.PublicIPCacheTTLInSeconds = publicIPCacheTTLDefaultInSeconds
 	}
 	return azcache.NewTimedcache(time.Duration(az.PublicIPCacheTTLInSeconds)*time.Second, getter)
+}
+
+func (az *Cloud) newPLSCache() (*azcache.TimedCache, error) {
+	// for PLS cache, key is LBFrontendIPConfiguration ID
+	getter := func(key string) (interface{}, error) {
+		ctx, cancel := getContextWithCancel()
+		defer cancel()
+		plsList, err := az.PrivateLinkServiceClient.List(ctx, az.PrivateLinkServiceResourceGroup)
+		exists, rerr := checkResourceExistsFromError(err)
+		if rerr != nil {
+			return nil, rerr.Error()
+		}
+
+		if exists {
+			for i := range plsList {
+				pls := plsList[i]
+				if pls.PrivateLinkServiceProperties == nil {
+					continue
+				}
+				fipConfigs := pls.PrivateLinkServiceProperties.LoadBalancerFrontendIPConfigurations
+				if fipConfigs == nil {
+					continue
+				}
+				for _, fipConfig := range *fipConfigs {
+					if strings.EqualFold(*fipConfig.ID, key) {
+						return &pls, nil
+					}
+				}
+
+			}
+		}
+
+		klog.V(2).Infof("No privateLinkService found for frontendIPConfig %q", key)
+		plsNotExistID := consts.PrivateLinkServiceNotExistID
+		return &network.PrivateLinkService{ID: &plsNotExistID}, nil
+	}
+
+	if az.PlsCacheTTLInSeconds == 0 {
+		az.PlsCacheTTLInSeconds = plsCacheTTLDefaultInSeconds
+	}
+	return azcache.NewTimedcache(time.Duration(az.PlsCacheTTLInSeconds)*time.Second, getter)
 }
 
 func (az *Cloud) useStandardLoadBalancer() bool {

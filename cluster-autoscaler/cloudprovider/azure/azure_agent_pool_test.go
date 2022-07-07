@@ -409,7 +409,7 @@ func TestDeleteInstances(t *testing.T) {
 	}
 	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
 	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
+	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
 		Keys: &[]storage.AccountKey{
 			{Value: to.StringPtr("dmFsdWUK")},
 		},
@@ -458,7 +458,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
 	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0", gomock.Any()).Return(getExpectedVMs()[0], nil)
 	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, "as-vm-0").Return(nil)
-	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
+	mockSAClient.EXPECT().ListKeys(gomock.Any(), as.manager.config.SubscriptionID, as.manager.config.ResourceGroup, "foo").Return(storage.AccountListKeysResult{
 		Keys: &[]storage.AccountKey{
 			{Value: to.StringPtr("dmFsdWUK")},
 		},

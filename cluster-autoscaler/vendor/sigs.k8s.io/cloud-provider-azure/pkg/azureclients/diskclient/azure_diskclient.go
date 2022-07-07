@@ -18,7 +18,6 @@ package diskclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -38,6 +37,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const diskResourceType = "Microsoft.Compute/disks"
 
 // Client implements Disk client Interface.
 type Client struct {
@@ -89,8 +90,11 @@ func New(config *azclients.ClientConfig) *Client {
 }
 
 // Get gets a Disk.
-func (c *Client) Get(ctx context.Context, resourceGroupName string, diskName string) (compute.Disk, *retry.Error) {
-	mc := metrics.NewMetricContext("disks", "get", resourceGroupName, c.subscriptionID, "")
+func (c *Client) Get(ctx context.Context, subsID, resourceGroupName, diskName string) (compute.Disk, *retry.Error) {
+	if subsID == "" {
+		subsID = c.subscriptionID
+	}
+	mc := metrics.NewMetricContext("disks", "get", resourceGroupName, subsID, "")
 
 	// Report errors if the client is rate limited.
 	if !c.rateLimiterReader.TryAccept() {
@@ -105,7 +109,7 @@ func (c *Client) Get(ctx context.Context, resourceGroupName string, diskName str
 		return compute.Disk{}, rerr
 	}
 
-	result, rerr := c.getDisk(ctx, resourceGroupName, diskName)
+	result, rerr := c.getDisk(ctx, subsID, resourceGroupName, diskName)
 	mc.Observe(rerr)
 	if rerr != nil {
 		if rerr.IsThrottled() {
@@ -120,11 +124,11 @@ func (c *Client) Get(ctx context.Context, resourceGroupName string, diskName str
 }
 
 // getDisk gets a Disk.
-func (c *Client) getDisk(ctx context.Context, resourceGroupName string, diskName string) (compute.Disk, *retry.Error) {
+func (c *Client) getDisk(ctx context.Context, subsID, resourceGroupName, diskName string) (compute.Disk, *retry.Error) {
 	resourceID := armclient.GetResourceID(
-		c.subscriptionID,
+		subsID,
 		resourceGroupName,
-		"Microsoft.Compute/disks",
+		diskResourceType,
 		diskName,
 	)
 	result := compute.Disk{}
@@ -150,8 +154,11 @@ func (c *Client) getDisk(ctx context.Context, resourceGroupName string, diskName
 }
 
 // CreateOrUpdate creates or updates a Disk.
-func (c *Client) CreateOrUpdate(ctx context.Context, resourceGroupName string, diskName string, diskParameter compute.Disk) *retry.Error {
-	mc := metrics.NewMetricContext("disks", "create_or_update", resourceGroupName, c.subscriptionID, "")
+func (c *Client) CreateOrUpdate(ctx context.Context, subsID, resourceGroupName, diskName string, diskParameter compute.Disk) *retry.Error {
+	if subsID == "" {
+		subsID = c.subscriptionID
+	}
+	mc := metrics.NewMetricContext("disks", "create_or_update", resourceGroupName, subsID, "")
 
 	// Report errors if the client is rate limited.
 	if !c.rateLimiterWriter.TryAccept() {
@@ -166,7 +173,7 @@ func (c *Client) CreateOrUpdate(ctx context.Context, resourceGroupName string, d
 		return rerr
 	}
 
-	rerr := c.createOrUpdateDisk(ctx, resourceGroupName, diskName, diskParameter)
+	rerr := c.createOrUpdateDisk(ctx, subsID, resourceGroupName, diskName, diskParameter)
 	mc.Observe(rerr)
 	if rerr != nil {
 		if rerr.IsThrottled() {
@@ -181,11 +188,11 @@ func (c *Client) CreateOrUpdate(ctx context.Context, resourceGroupName string, d
 }
 
 // createOrUpdateDisk creates or updates a Disk.
-func (c *Client) createOrUpdateDisk(ctx context.Context, resourceGroupName string, diskName string, diskParameter compute.Disk) *retry.Error {
+func (c *Client) createOrUpdateDisk(ctx context.Context, subsID, resourceGroupName, diskName string, diskParameter compute.Disk) *retry.Error {
 	resourceID := armclient.GetResourceID(
-		c.subscriptionID,
+		subsID,
 		resourceGroupName,
-		"Microsoft.Compute/disks",
+		diskResourceType,
 		diskName,
 	)
 
@@ -218,8 +225,11 @@ func (c *Client) createOrUpdateResponder(resp *http.Response) (*compute.Disk, *r
 }
 
 // Update creates or updates a Disk.
-func (c *Client) Update(ctx context.Context, resourceGroupName string, diskName string, diskParameter compute.DiskUpdate) *retry.Error {
-	mc := metrics.NewMetricContext("disks", "update", resourceGroupName, c.subscriptionID, "")
+func (c *Client) Update(ctx context.Context, subsID, resourceGroupName, diskName string, diskParameter compute.DiskUpdate) *retry.Error {
+	if subsID == "" {
+		subsID = c.subscriptionID
+	}
+	mc := metrics.NewMetricContext("disks", "update", resourceGroupName, subsID, "")
 
 	// Report errors if the client is rate limited.
 	if !c.rateLimiterWriter.TryAccept() {
@@ -234,7 +244,7 @@ func (c *Client) Update(ctx context.Context, resourceGroupName string, diskName 
 		return rerr
 	}
 
-	rerr := c.updateDisk(ctx, resourceGroupName, diskName, diskParameter)
+	rerr := c.updateDisk(ctx, subsID, resourceGroupName, diskName, diskParameter)
 	mc.Observe(rerr)
 	if rerr != nil {
 		if rerr.IsThrottled() {
@@ -249,11 +259,11 @@ func (c *Client) Update(ctx context.Context, resourceGroupName string, diskName 
 }
 
 // updateDisk updates a Disk.
-func (c *Client) updateDisk(ctx context.Context, resourceGroupName string, diskName string, diskParameter compute.DiskUpdate) *retry.Error {
+func (c *Client) updateDisk(ctx context.Context, subsID, resourceGroupName, diskName string, diskParameter compute.DiskUpdate) *retry.Error {
 	resourceID := armclient.GetResourceID(
-		c.subscriptionID,
+		subsID,
 		resourceGroupName,
-		"Microsoft.Compute/disks",
+		diskResourceType,
 		diskName,
 	)
 
@@ -286,8 +296,11 @@ func (c *Client) updateResponder(resp *http.Response) (*compute.Disk, *retry.Err
 }
 
 // Delete deletes a Disk by name.
-func (c *Client) Delete(ctx context.Context, resourceGroupName string, diskName string) *retry.Error {
-	mc := metrics.NewMetricContext("disks", "delete", resourceGroupName, c.subscriptionID, "")
+func (c *Client) Delete(ctx context.Context, subsID, resourceGroupName, diskName string) *retry.Error {
+	if subsID == "" {
+		subsID = c.subscriptionID
+	}
+	mc := metrics.NewMetricContext("disks", "delete", resourceGroupName, subsID, "")
 
 	// Report errors if the client is rate limited.
 	if !c.rateLimiterWriter.TryAccept() {
@@ -302,7 +315,7 @@ func (c *Client) Delete(ctx context.Context, resourceGroupName string, diskName 
 		return rerr
 	}
 
-	rerr := c.deleteDisk(ctx, resourceGroupName, diskName)
+	rerr := c.deleteDisk(ctx, subsID, resourceGroupName, diskName)
 	mc.Observe(rerr)
 	if rerr != nil {
 		if rerr.IsThrottled() {
@@ -317,22 +330,23 @@ func (c *Client) Delete(ctx context.Context, resourceGroupName string, diskName 
 }
 
 // deleteDisk deletes a PublicIPAddress by name.
-func (c *Client) deleteDisk(ctx context.Context, resourceGroupName string, diskName string) *retry.Error {
+func (c *Client) deleteDisk(ctx context.Context, subsID, resourceGroupName string, diskName string) *retry.Error {
 	resourceID := armclient.GetResourceID(
-		c.subscriptionID,
+		subsID,
 		resourceGroupName,
-		"Microsoft.Compute/disks",
+		diskResourceType,
 		diskName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 // ListByResourceGroup lists all the disks under a resource group.
-func (c *Client) ListByResourceGroup(ctx context.Context, resourceGroupName string) ([]compute.Disk, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/disks",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName))
+func (c *Client) ListByResourceGroup(ctx context.Context, subsID, resourceGroupName string) ([]compute.Disk, *retry.Error) {
+	if subsID == "" {
+		subsID = c.subscriptionID
+	}
+	resourceID := armclient.GetResourceListID(subsID, resourceGroupName, diskResourceType)
 
 	result := make([]compute.Disk, 0)
 	page := &DiskListPage{}
