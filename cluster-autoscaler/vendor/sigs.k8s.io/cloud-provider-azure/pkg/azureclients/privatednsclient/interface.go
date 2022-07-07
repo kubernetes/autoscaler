@@ -20,15 +20,23 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+)
+
+const (
+	// APIVersion is the API version.
+	APIVersion = "2018-09-01"
+	// AzureStackCloudName is the cloud name of Azure Stack
+	AzureStackCloudName = "AZURESTACKCLOUD"
 )
 
 // Interface is the client interface for Private DNS Zones
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
+	// Get gets a private DNS zone
+	Get(ctx context.Context, resourceGroupName, privateZoneName string) (privatedns.PrivateZone, *retry.Error)
 
-	//Get gets the PrivateDNSZone
-	Get(ctx context.Context, resourceGroupName string, privateZoneName string) (result privatedns.PrivateZone, err error)
-
-	// CreateOrUpdate creates or updates a private dns zone.
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, privateZoneName string, parameters privatedns.PrivateZone, waitForCompletion bool) error
+	// CreateOrUpdate creates or updates a private DNS zone.
+	CreateOrUpdate(ctx context.Context, resourceGroupName, privateZoneName string, parameters privatedns.PrivateZone, etag string, waitForCompletion bool) *retry.Error
 }

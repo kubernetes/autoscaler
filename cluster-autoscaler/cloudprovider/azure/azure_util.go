@@ -103,7 +103,7 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	storageKeysResult, rerr := util.manager.azClient.storageAccountsClient.ListKeys(ctx, util.manager.config.ResourceGroup, accountName)
+	storageKeysResult, rerr := util.manager.azClient.storageAccountsClient.ListKeys(ctx, util.manager.config.SubscriptionID, util.manager.config.ResourceGroup, accountName)
 	if rerr != nil {
 		return rerr.Error()
 	}
@@ -206,7 +206,7 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 			klog.Infof("deleting managed disk: %s/%s", rg, *osDiskName)
 			disksCtx, disksCancel := getContextWithCancel()
 			defer disksCancel()
-			diskErr := util.manager.azClient.disksClient.Delete(disksCtx, rg, *osDiskName)
+			diskErr := util.manager.azClient.disksClient.Delete(disksCtx, util.manager.config.SubscriptionID, rg, *osDiskName)
 			_, realErr := checkResourceExistsFromRetryError(diskErr)
 			if realErr != nil {
 				return realErr
