@@ -27,6 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/addon-resizer/nanny"
 
+	"path/filepath"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -35,7 +37,6 @@ import (
 	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"path/filepath"
 )
 
 var (
@@ -61,6 +62,8 @@ var (
 	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
 	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
 	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.")
+	// Flag to disable scaling up & down of the requests
+	ignoreResourceRequests = flag.Bool("ignore-resource-requests", false, "If this is true, then resource requests will be ignored for scale up or down.")
 )
 
 func main() {
@@ -84,6 +87,9 @@ func main() {
 
 	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
 	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerNode)
+	if *ignoreResourceRequests {
+		glog.Infof("Resource requests are not scaled up or down since ignore-resource-requests is set true")
+	}
 
 	// Set up work objects.
 	config, err := rest.InClusterConfig()
@@ -101,7 +107,7 @@ func main() {
 	// Use protobufs to improve performance.
 	config.ContentType = "application/vnd.kubernetes.protobuf"
 
-	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics)
+	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics, *ignoreResourceRequests)
 
 	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
 		BaseCPU:       *baseCPU,
@@ -160,7 +166,7 @@ func main() {
 	}
 
 	// Begin nannying.
-	nanny.PollAPIServer(k8s, est, time.Duration(*pollPeriod)*time.Millisecond, *scaleDownDelay, *scaleUpDelay, uint64(*threshold))
+	nanny.PollAPIServer(k8s, est, time.Duration(*pollPeriod)*time.Millisecond, *scaleDownDelay, *scaleUpDelay, uint64(*threshold), *ignoreResourceRequests)
 }
 
 func userAgent() string {

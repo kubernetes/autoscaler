@@ -70,15 +70,17 @@ func checkResource(threshold int64, actual, expected corev1.ResourceList, res co
 // shouldOverwriteResources determines if we should over-write the container's resource limits and determines type of the operation.
 // We'll over-write the resource limits if the limited resources are different, or if any limit is violated by a threshold.
 // Returned operation type (scale up/down or unknown) is calculated based on values taken from the first resource which requires overwrite.
-func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs corev1.ResourceList) (bool, operation) {
+func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs corev1.ResourceList, ignoreResourceRequests bool) (bool, operation) {
 	for _, resourceType := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory, corev1.ResourceStorage} {
 		overwrite, op := checkResource(threshold, limits, expLimits, resourceType)
 		if overwrite {
 			return true, op
 		}
-		overwrite, op = checkResource(threshold, reqs, expReqs, resourceType)
-		if overwrite {
-			return true, op
+		if !ignoreResourceRequests {
+			overwrite, op = checkResource(threshold, reqs, expReqs, resourceType)
+			if overwrite {
+				return true, op
+			}
 		}
 	}
 	return false, unknown
@@ -99,7 +101,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, ignoreResourceRequests bool) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -109,7 +111,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 			time.Sleep(pollPeriod)
 		}
 
-		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult); lastResult == overwrite {
+		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult, ignoreResourceRequests); lastResult == overwrite {
 			lastChange = time.Now()
 		}
 	}
@@ -121,7 +123,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 // It returns overwrite if deployment has been updated, postpone if the change
 // could not be applied due to scale up/down delay and noChange if the estimated
 // expected ResourceRequirements are in line with the actual ResourceRequirements.
-func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, prevResult updateResult) updateResult {
+func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, prevResult updateResult, ignoreResourceRequests bool) updateResult {
 	// Query the apiserver for the number of nodes.
 	num, err := k8s.CountNodes()
 	if err != nil {
@@ -141,7 +143,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	expResources := est.scaleWithNodes(num)
 
 	// If there's a difference, go ahead and set the new values.
-	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)
+	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests, ignoreResourceRequests)
 	if !overwriteRes {
 		if log.V(4) {
 			log.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))

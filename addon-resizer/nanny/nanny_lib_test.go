@@ -219,7 +219,7 @@ func TestShouldOverwriteResources(t *testing.T) {
 	}
 	for i, tc := range testCases {
 
-		gotOverwrite, gotOp := shouldOverwriteResources(tc.th, tc.x, tc.x, tc.y, tc.x)
+		gotOverwrite, gotOp := shouldOverwriteResources(tc.th, tc.x, tc.x, tc.y, tc.x, false)
 		if tc.wantOverwrite != gotOverwrite || tc.wantOp != gotOp {
 			t.Errorf("shouldOverwriteResources got (%t, %v), want (%t, %v) for test case %d.", gotOverwrite, gotOp, tc.wantOverwrite, tc.wantOp, i)
 		}
@@ -259,7 +259,7 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange)
+		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, false)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}

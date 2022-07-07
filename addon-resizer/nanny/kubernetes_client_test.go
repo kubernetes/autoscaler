@@ -97,7 +97,7 @@ func TestMergeResources(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := mergeResources(tc.current, tc.new)
+			got := mergeResources(tc.current, tc.new, false)
 			verifyResources(t, "limits", got.Limits, tc.want.Limits)
 			verifyResources(t, "requests", got.Requests, tc.want.Requests)
 		})

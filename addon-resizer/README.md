@@ -28,6 +28,7 @@ Usage of pod_nanny:
       --storage="MISSING": The base storage resource requirement.
       --threshold=0: A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.
       --use-metrics=false: Whether to use apiserver metrics to detect cluster size instead of the default method of listing node objects from the Kubernetes API.
+      --ignoreResourceRequests=false: ignoring scaling up or down of the resource requests if this flag is true.
 ```
 
 ## Example deployment file

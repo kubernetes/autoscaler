@@ -44,12 +44,13 @@ const (
 )
 
 type kubernetesClient struct {
-	namespace  string
-	deployment string
-	pod        string
-	container  string
-	clientset  *kubernetes.Clientset
-	useMetrics bool
+	namespace              string
+	deployment             string
+	pod                    string
+	container              string
+	clientset              *kubernetes.Clientset
+	useMetrics             bool
+	ignoreResourceRequests bool
 }
 
 // CountNodes returns the number of nodes in the cluster:
@@ -177,7 +178,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequiremen
 	// Modify the Deployment object with our ResourceRequirements.
 	for i, container := range dep.Spec.Template.Spec.Containers {
 		if container.Name == k.container {
-			return k.patchDeployment(getContainerResourcesPatch(i, mergeResources(&container.Resources, resources)))
+			return k.patchDeployment(getContainerResourcesPatch(i, mergeResources(&container.Resources, resources, k.ignoreResourceRequests)))
 		}
 	}
 
@@ -208,32 +209,36 @@ func getContainerResourcesPatch(index int, resources *corev1.ResourceRequirement
 	}
 }
 
-func mergeResources(current, new *corev1.ResourceRequirements) *corev1.ResourceRequirements {
+func mergeResources(current, new *corev1.ResourceRequirements, ignoreResourceRequests bool) *corev1.ResourceRequirements {
 	res := current.DeepCopy()
 	if res.Limits == nil {
 		res.Limits = corev1.ResourceList{}
 	}
-	if res.Requests == nil {
-		res.Requests = corev1.ResourceList{}
-	}
 	for resource, value := range new.Limits {
 		res.Limits[resource] = value
 	}
-	for resource, value := range new.Requests {
-		res.Requests[resource] = value
+
+	if !ignoreResourceRequests {
+		if res.Requests == nil {
+			res.Requests = corev1.ResourceList{}
+		}
+		for resource, value := range new.Requests {
+			res.Requests[resource] = value
+		}
 	}
 	return res
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
-func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset, useMetrics bool) KubernetesClient {
+func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset, useMetrics bool, ignoreResourceRequests bool) KubernetesClient {
 	result := &kubernetesClient{
-		namespace:  namespace,
-		deployment: deployment,
-		pod:        pod,
-		container:  container,
-		clientset:  clientset,
-		useMetrics: useMetrics,
+		namespace:              namespace,
+		deployment:             deployment,
+		pod:                    pod,
+		container:              container,
+		clientset:              clientset,
+		useMetrics:             useMetrics,
+		ignoreResourceRequests: ignoreResourceRequests,
 	}
 	return result
 }
