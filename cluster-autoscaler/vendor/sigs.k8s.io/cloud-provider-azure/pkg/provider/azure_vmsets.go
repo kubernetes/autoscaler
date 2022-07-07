@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	v1 "k8s.io/api/core/v1"
@@ -76,9 +76,9 @@ type VMSet interface {
 	EnsureBackendPoolDeletedFromVMSets(vmSetNamesMap map[string]bool, backendPoolID string) error
 
 	// AttachDisk attaches a disk to vm
-	AttachDisk(nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error)
+	AttachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error)
 	// DetachDisk detaches a disk from vm
-	DetachDisk(nodeName types.NodeName, diskMap map[string]string) error
+	DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error
 	// WaitForUpdateResult waits for the response of the update request
 	WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) error
 
@@ -86,7 +86,7 @@ type VMSet interface {
 	GetDataDisks(nodeName types.NodeName, crt azcache.AzureCacheReadType) ([]compute.DataDisk, *string, error)
 
 	// UpdateVM updates a vm
-	UpdateVM(nodeName types.NodeName) error
+	UpdateVM(ctx context.Context, nodeName types.NodeName) error
 
 	// GetPowerStatusByNodeName returns the powerState for the specified node.
 	GetPowerStatusByNodeName(name string) (string, error)
