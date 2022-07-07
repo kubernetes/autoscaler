@@ -217,7 +217,10 @@ type Store struct {
 	// If the StorageVersioner is nil, apiserver will leave the
 	// storageVersionHash as empty in the discovery document.
 	StorageVersioner runtime.GroupVersioner
-	// Called to cleanup clients used by the underlying Storage; optional.
+
+	// DestroyFunc cleans up clients used by the underlying Storage; optional.
+	// If set, DestroyFunc has to be implemented in thread-safe way and
+	// be prepared for being called more than once.
 	DestroyFunc func()
 }
 
@@ -277,6 +280,13 @@ func NoNamespaceKeyFunc(ctx context.Context, prefix string, name string) (string
 // New implements RESTStorage.New.
 func (e *Store) New() runtime.Object {
 	return e.NewFunc()
+}
+
+// Destroy cleans up its resources on shutdown.
+func (e *Store) Destroy() {
+	if e.DestroyFunc != nil {
+		e.DestroyFunc()
+	}
 }
 
 // NewList implements rest.Lister.
@@ -371,6 +381,13 @@ func finishNothing(context.Context, bool) {}
 // be able to examine the input and output objects for differences.
 func (e *Store) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
 	var finishCreate FinishFunc = finishNothing
+
+	// Init metadata as early as possible.
+	if objectMeta, err := meta.Accessor(obj); err != nil {
+		return nil, err
+	} else {
+		rest.FillObjectMetaSystemFields(objectMeta)
+	}
 
 	if e.BeginCreate != nil {
 		fn, err := e.BeginCreate(ctx, obj, options)
@@ -548,6 +565,13 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 		doUnconditionalUpdate := newResourceVersion == 0 && e.UpdateStrategy.AllowUnconditionalUpdate()
 
 		if existingResourceVersion == 0 {
+			// Init metadata as early as possible.
+			if objectMeta, err := meta.Accessor(obj); err != nil {
+				return nil, nil, err
+			} else {
+				rest.FillObjectMetaSystemFields(objectMeta)
+			}
+
 			var finishCreate FinishFunc = finishNothing
 
 			if e.BeginCreate != nil {
@@ -1433,11 +1457,14 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 		if opts.CountMetricPollPeriod > 0 {
 			stopFunc := e.startObservingCount(opts.CountMetricPollPeriod, opts.StorageObjectCountTracker)
 			previousDestroy := e.DestroyFunc
+			var once sync.Once
 			e.DestroyFunc = func() {
-				stopFunc()
-				if previousDestroy != nil {
-					previousDestroy()
-				}
+				once.Do(func() {
+					stopFunc()
+					if previousDestroy != nil {
+						previousDestroy()
+					}
+				})
 			}
 		}
 	}
