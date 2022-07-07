@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	v1 "k8s.io/api/core/v1"
@@ -584,6 +584,89 @@ func (az *Cloud) CreateOrUpdateVMSS(resourceGroupName string, VMScaleSetName str
 	if rerr != nil {
 		klog.Errorf("CreateOrUpdateVMSS: error CreateOrUpdate vmss(%s): %v", VMScaleSetName, rerr)
 		return rerr
+	}
+
+	return nil
+}
+
+func (az *Cloud) CreateOrUpdatePLS(service *v1.Service, pls network.PrivateLinkService) error {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	rerr := az.PrivateLinkServiceClient.CreateOrUpdate(ctx, az.PrivateLinkServiceResourceGroup, to.String(pls.Name), pls, to.String(pls.Etag))
+	if rerr == nil {
+		// Invalidate the cache right after updating
+		_ = az.plsCache.Delete(to.String((*pls.LoadBalancerFrontendIPConfigurations)[0].ID))
+		return nil
+	}
+
+	rtJSON, _ := json.Marshal(pls)
+	klog.Warningf("PrivateLinkServiceClient.CreateOrUpdate(%s) failed: %v, PrivateLinkService request: %s", to.String(pls.Name), rerr.Error(), string(rtJSON))
+
+	// Invalidate the cache because etag mismatch.
+	if rerr.HTTPStatusCode == http.StatusPreconditionFailed {
+		klog.V(3).Infof("Private link service cache for %s is cleanup because of http.StatusPreconditionFailed", to.String(pls.Name))
+		_ = az.plsCache.Delete(to.String((*pls.LoadBalancerFrontendIPConfigurations)[0].ID))
+	}
+	// Invalidate the cache because another new operation has canceled the current request.
+	if strings.Contains(strings.ToLower(rerr.Error().Error()), consts.OperationCanceledErrorMessage) {
+		klog.V(3).Infof("Private link service for %s is cleanup because CreateOrUpdatePrivateLinkService is canceled by another operation", to.String(pls.Name))
+		_ = az.plsCache.Delete(to.String((*pls.LoadBalancerFrontendIPConfigurations)[0].ID))
+	}
+	klog.Errorf("PrivateLinkServiceClient.CreateOrUpdate(%s) failed: %v", to.String(pls.Name), rerr.Error())
+	return rerr.Error()
+}
+
+// DeletePLS invokes az.PrivateLinkServiceClient.Delete with exponential backoff retry
+func (az *Cloud) DeletePLS(service *v1.Service, plsName string, plsLBFrontendID string) *retry.Error {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	rerr := az.PrivateLinkServiceClient.Delete(ctx, az.PrivateLinkServiceResourceGroup, plsName)
+	if rerr == nil {
+		// Invalidate the cache right after deleting
+		_ = az.plsCache.Delete(plsLBFrontendID)
+		return nil
+	}
+
+	klog.Errorf("PrivateLinkServiceClient.DeletePLS(%s) failed: %s", plsName, rerr.Error().Error())
+	az.Event(service, v1.EventTypeWarning, "DeletePrivateLinkService", rerr.Error().Error())
+	return rerr
+}
+
+// DeletePEConn invokes az.PrivateLinkServiceClient.DeletePEConnection with exponential backoff retry
+func (az *Cloud) DeletePEConn(service *v1.Service, plsName string, peConnName string) *retry.Error {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	rerr := az.PrivateLinkServiceClient.DeletePEConnection(ctx, az.PrivateLinkServiceResourceGroup, plsName, peConnName)
+	if rerr == nil {
+		return nil
+	}
+
+	klog.Errorf("PrivateLinkServiceClient.DeletePEConnection(%s-%s) failed: %s", plsName, peConnName, rerr.Error().Error())
+	az.Event(service, v1.EventTypeWarning, "DeletePrivateEndpointConnection", rerr.Error().Error())
+	return rerr
+}
+
+// CreateOrUpdateSubnet invokes az.SubnetClient.CreateOrUpdate with exponential backoff retry
+func (az *Cloud) CreateOrUpdateSubnet(service *v1.Service, subnet network.Subnet) error {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	var rg string
+	if len(az.VnetResourceGroup) > 0 {
+		rg = az.VnetResourceGroup
+	} else {
+		rg = az.ResourceGroup
+	}
+
+	rerr := az.SubnetsClient.CreateOrUpdate(ctx, rg, az.VnetName, *subnet.Name, subnet)
+	klog.V(10).Infof("SubnetClient.CreateOrUpdate(%s): end", *subnet.Name)
+	if rerr != nil {
+		klog.Errorf("SubnetClient.CreateOrUpdate(%s) failed: %s", *subnet.Name, rerr.Error().Error())
+		az.Event(service, v1.EventTypeWarning, "CreateOrUpdateSubnet", rerr.Error().Error())
+		return rerr.Error()
 	}
 
 	return nil

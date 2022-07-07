@@ -18,7 +18,6 @@ package zoneclient
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -33,6 +32,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const computeResourceProvider = "Microsoft.Compute"
 
 type resourceTypeMetadata struct {
 	ResourceType string         `json:"resourceType"`
@@ -112,7 +113,10 @@ func (c *Client) getZones(ctx context.Context, subscriptionID string) (map[strin
 	}
 
 	regionZoneMap := make(map[string][]string)
-	expectedID := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Compute", subscriptionID)
+	expectedID := armclient.GetProviderResourceID(
+		subscriptionID,
+		computeResourceProvider,
+	)
 	if len(result.ProviderListDataProperties) != 0 {
 		for _, property := range result.ProviderListDataProperties {
 			if strings.EqualFold(property.ID, expectedID) {

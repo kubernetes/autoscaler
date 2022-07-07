@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -38,6 +38,8 @@ import (
 )
 
 var _ Interface = &Client{}
+
+const publicIPResourceType = "Microsoft.Network/publicIPAddresses"
 
 // Client implements PublicIPAddress client Interface.
 type Client struct {
@@ -123,7 +125,7 @@ func (c *Client) getPublicIPAddress(ctx context.Context, resourceGroupName strin
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/publicIPAddresses",
+		publicIPResourceType,
 		publicIPAddressName,
 	)
 	result := network.PublicIPAddress{}
@@ -258,9 +260,7 @@ func (c *Client) List(ctx context.Context, resourceGroupName string) ([]network.
 
 // listPublicIPAddress gets a list of PublicIPAddress in the resource group.
 func (c *Client) listPublicIPAddress(ctx context.Context, resourceGroupName string) ([]network.PublicIPAddress, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/publicIPAddresses",
-		autorest.Encode("path", c.subscriptionID),
-		autorest.Encode("path", resourceGroupName))
+	resourceID := armclient.GetResourceListID(c.subscriptionID, resourceGroupName, publicIPResourceType)
 	result := make([]network.PublicIPAddress, 0)
 	page := &PublicIPAddressListResultPage{}
 	page.fn = c.listNextResults
@@ -332,7 +332,7 @@ func (c *Client) createOrUpdatePublicIP(ctx context.Context, resourceGroupName s
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/publicIPAddresses",
+		publicIPResourceType,
 		publicIPAddressName,
 	)
 
@@ -400,11 +400,11 @@ func (c *Client) deletePublicIP(ctx context.Context, resourceGroupName string, p
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
-		"Microsoft.Network/publicIPAddresses",
+		publicIPResourceType,
 		publicIPAddressName,
 	)
 
-	return c.armClient.DeleteResource(ctx, resourceID, "")
+	return c.armClient.DeleteResource(ctx, resourceID)
 }
 
 func (c *Client) listResponder(resp *http.Response) (result network.PublicIPAddressListResult, err error) {
@@ -525,8 +525,7 @@ func (c *Client) ListAll(ctx context.Context) ([]network.PublicIPAddress, *retry
 
 // listAllPublicIPAddress gets all of PublicIPAddress in the subscription.
 func (c *Client) listAllPublicIPAddress(ctx context.Context) ([]network.PublicIPAddress, *retry.Error) {
-	resourceID := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Network/publicIPAddresses",
-		autorest.Encode("path", c.subscriptionID))
+	resourceID := armclient.GetProviderResourceID(c.subscriptionID, publicIPResourceType)
 	result := make([]network.PublicIPAddress, 0)
 	page := &PublicIPAddressListResultPage{}
 	page.fn = c.listNextResults
