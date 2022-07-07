@@ -19,16 +19,24 @@ package privatednszonegroupclient
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+)
+
+const (
+	// APIVersion is the API version.
+	APIVersion = "2021-08-01"
+	// AzureStackCloudName is the cloud name of Azure Stack
+	AzureStackCloudName = "AZURESTACKCLOUD"
 )
 
 // Interface is the client interface for Private DNS Zone Group.
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
-
 	// Get gets the private dns zone group
-	Get(ctx context.Context, resourceGroupName string, privateEndpointName string, privateDNSZoneGroupName string) (result network.PrivateDNSZoneGroup, err error)
+	Get(ctx context.Context, resourceGroupName, privateEndpointName, privateDNSZoneGroupName string) (network.PrivateDNSZoneGroup, *retry.Error)
 
-	// CreateOrUpdate creates or updates a private dns zone group endpoint.
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, privateEndpointName string, privateDNSZoneGroupName string, parameters network.PrivateDNSZoneGroup, waitForCompletion bool) error
+	// CreateOrUpdate creates or updates a private dns zone group.
+	CreateOrUpdate(ctx context.Context, resourceGroupName, privateEndpointName, privateDNSZoneGroupName string, parameters network.PrivateDNSZoneGroup, etag string, waitForCompletion bool) *retry.Error
 }

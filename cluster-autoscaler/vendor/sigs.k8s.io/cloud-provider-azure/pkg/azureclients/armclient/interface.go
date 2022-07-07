@@ -63,27 +63,19 @@ type Interface interface {
 	SendAsync(ctx context.Context, request *http.Request) (*azure.Future, *http.Response, *retry.Error)
 
 	// PutResource puts a resource by resource ID
-	PutResource(ctx context.Context, resourceID string, parameters interface{}) (*http.Response, *retry.Error)
+	PutResource(ctx context.Context, resourceID string, parameters interface{}, decorators ...autorest.PrepareDecorator) (*http.Response, *retry.Error)
 
-	// PutResources puts a list of resources from resources map[resourceID]parameters.
-	// Those resources sync requests are sequential while async requests are concurrent. It 's especially
-	// useful when the ARM API doesn't support concurrent requests.
-	PutResources(ctx context.Context, resources map[string]interface{}) map[string]*PutResourcesResponse
+	// PutResourceAsync puts a resource by resource ID in async mode
+	PutResourceAsync(ctx context.Context, resourceID string, parameters interface{}, decorators ...autorest.PrepareDecorator) (*azure.Future, *retry.Error)
 
 	// PutResourcesInBatches is similar with PutResources, but it sends sync request concurrently in batches.
 	PutResourcesInBatches(ctx context.Context, resources map[string]interface{}, batchSize int) map[string]*PutResourcesResponse
 
-	// PutResourceWithDecorators puts a resource with decorators by resource ID
-	PutResourceWithDecorators(ctx context.Context, resourceID string, parameters interface{}, decorators []autorest.PrepareDecorator) (*http.Response, *retry.Error)
-
 	// PatchResource patches a resource by resource ID
-	PatchResource(ctx context.Context, resourceID string, parameters interface{}) (*http.Response, *retry.Error)
+	PatchResource(ctx context.Context, resourceID string, parameters interface{}, decorators ...autorest.PrepareDecorator) (*http.Response, *retry.Error)
 
 	// PatchResourceAsync patches a resource by resource ID asynchronously
-	PatchResourceAsync(ctx context.Context, resourceID string, parameters interface{}) (*azure.Future, *retry.Error)
-
-	// PutResourceAsync puts a resource by resource ID in async mode
-	PutResourceAsync(ctx context.Context, resourceID string, parameters interface{}) (*azure.Future, *retry.Error)
+	PatchResourceAsync(ctx context.Context, resourceID string, parameters interface{}, decorators ...autorest.PrepareDecorator) (*azure.Future, *retry.Error)
 
 	// HeadResource heads a resource by resource ID
 	HeadResource(ctx context.Context, resourceID string) (*http.Response, *retry.Error)
@@ -98,10 +90,10 @@ type Interface interface {
 	PostResource(ctx context.Context, resourceID, action string, parameters interface{}, queryParameters map[string]interface{}) (*http.Response, *retry.Error)
 
 	// DeleteResource deletes a resource by resource ID
-	DeleteResource(ctx context.Context, resourceID, ifMatch string) *retry.Error
+	DeleteResource(ctx context.Context, resourceID string, decorators ...autorest.PrepareDecorator) *retry.Error
 
 	// DeleteResourceAsync delete a resource by resource ID and returns a future representing the async result
-	DeleteResourceAsync(ctx context.Context, resourceID, ifMatch string) (*azure.Future, *retry.Error)
+	DeleteResourceAsync(ctx context.Context, resourceID string, decorators ...autorest.PrepareDecorator) (*azure.Future, *retry.Error)
 
 	// CloseResponse closes a response
 	CloseResponse(ctx context.Context, response *http.Response)

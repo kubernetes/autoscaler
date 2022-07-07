@@ -21,7 +21,7 @@ import (
 	reflect "reflect"
 
 	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	azure "github.com/Azure/go-autorest/autorest/azure"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
@@ -249,7 +249,7 @@ func (mr *MockVMSetMockRecorder) EnsureBackendPoolDeletedFromVMSets(vmSetNamesMa
 }
 
 // AttachDisk mocks base method
-func (m *MockVMSet) AttachDisk(nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error) {
+func (m *MockVMSet) AttachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AttachDisk", nodeName, diskMap)
 	ret0, _ := ret[0].(*azure.Future)
@@ -258,13 +258,13 @@ func (m *MockVMSet) AttachDisk(nodeName types.NodeName, diskMap map[string]*Atta
 }
 
 // AttachDisk indicates an expected call of AttachDisk
-func (mr *MockVMSetMockRecorder) AttachDisk(nodeName, diskMap interface{}) *gomock.Call {
+func (mr *MockVMSetMockRecorder) AttachDisk(ctx, nodeName, diskMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachDisk", reflect.TypeOf((*MockVMSet)(nil).AttachDisk), nodeName, diskMap)
 }
 
 // DetachDisk mocks base method
-func (m *MockVMSet) DetachDisk(nodeName types.NodeName, diskMap map[string]string) error {
+func (m *MockVMSet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DetachDisk", nodeName, diskMap)
 	ret0, _ := ret[0].(error)
@@ -272,7 +272,7 @@ func (m *MockVMSet) DetachDisk(nodeName types.NodeName, diskMap map[string]strin
 }
 
 // DetachDisk indicates an expected call of DetachDisk
-func (mr *MockVMSetMockRecorder) DetachDisk(nodeName, diskMap interface{}) *gomock.Call {
+func (mr *MockVMSetMockRecorder) DetachDisk(ctx, nodeName, diskMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachDisk", reflect.TypeOf((*MockVMSet)(nil).DetachDisk), nodeName, diskMap)
 }
@@ -308,7 +308,7 @@ func (mr *MockVMSetMockRecorder) GetDataDisks(nodeName, crt interface{}) *gomock
 }
 
 // UpdateVM mocks base method
-func (m *MockVMSet) UpdateVM(nodeName types.NodeName) error {
+func (m *MockVMSet) UpdateVM(ctx context.Context, nodeName types.NodeName) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVM", nodeName)
 	ret0, _ := ret[0].(error)
@@ -316,7 +316,7 @@ func (m *MockVMSet) UpdateVM(nodeName types.NodeName) error {
 }
 
 // UpdateVM indicates an expected call of UpdateVM
-func (mr *MockVMSetMockRecorder) UpdateVM(nodeName interface{}) *gomock.Call {
+func (mr *MockVMSetMockRecorder) UpdateVM(ctx, nodeName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVM", reflect.TypeOf((*MockVMSet)(nil).UpdateVM), nodeName)
 }

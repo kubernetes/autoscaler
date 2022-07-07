@@ -20,15 +20,23 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+)
+
+const (
+	// APIVersion is the API version.
+	// 2020-06-01 is the latest supported version
+	APIVersion = "2020-06-01"
+	// AzureStackCloudName is the cloud name of Azure Stack
+	AzureStackCloudName = "AZURESTACKCLOUD"
 )
 
 // Interface is the client interface for Virtual Network Link.
 // Don't forget to run "hack/update-mock-clients.sh" command to generate the mock client.
 type Interface interface {
-
 	// Get gets a virtual network link
-	Get(ctx context.Context, resourceGroupName string, privateZoneName string, virtualNetworkLinkName string) (result privatedns.VirtualNetworkLink, err error)
+	Get(ctx context.Context, resourceGroupName string, privateZoneName string, virtualNetworkLinkName string) (privatedns.VirtualNetworkLink, *retry.Error)
 
-	// CreateOrUpdate creates or updates a private dns zone.
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, privateZoneName string, virtualNetworkLinkName string, parameters privatedns.VirtualNetworkLink, waitForCompletion bool) error
+	// CreateOrUpdate creates or updates a virtual network link.
+	CreateOrUpdate(ctx context.Context, resourceGroupName string, privateZoneName string, virtualNetworkLinkName string, parameters privatedns.VirtualNetworkLink, etag string, waitForCompletion bool) *retry.Error
 }

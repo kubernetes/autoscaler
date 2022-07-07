@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-02-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	v1 "k8s.io/api/core/v1"
@@ -286,6 +286,7 @@ func (bi *backendPoolTypeNodeIP) EnsureHostsInPool(service *v1.Service, nodes []
 					if strings.EqualFold(lbNamePrefix, clusterName) &&
 						strings.EqualFold(bi.LoadBalancerSku, consts.LoadBalancerSkuStandard) &&
 						bi.getVMSetNamesSharingPrimarySLB().Has(vmSetName) {
+						klog.V(4).Infof("bi.EnsureHostsInPool: the node %s in VMSet %s is supposed to share the primary SLB", node.Name, vmSetName)
 						shouldSkip = false
 					}
 				}
