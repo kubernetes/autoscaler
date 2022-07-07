@@ -40,6 +40,7 @@ func (lister *DelegatingSchedulerSharedLister) NodeInfos() schedulerframework.No
 	return lister.delegate.NodeInfos()
 }
 
+// StorageInfos returns a StorageInfoLister
 func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
 	return lister.delegate.StorageInfos()
 }
