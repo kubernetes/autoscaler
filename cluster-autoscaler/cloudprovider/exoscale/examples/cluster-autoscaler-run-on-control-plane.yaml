@@ -157,8 +157,8 @@ spec:
             - --cloud-provider=exoscale
             - --stderrthreshold=info
             - --cordon-node-before-terminating
-            #- --scale-down-delay-after-add=30s
-            #- --scale-down-unneeded-time=30s
+            - --scale-down-delay-after-add=30s
+            - --scale-down-unneeded-time=30s
             #- --unremovable-node-recheck-timeout=30s
           env:
           - name: EXOSCALE_API_KEY
@@ -180,6 +180,11 @@ spec:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ''
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: "NoSchedule"
       volumes:
         - name: ssl-certs
           hostPath:
