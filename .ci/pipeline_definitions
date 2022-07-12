@@ -21,9 +21,9 @@ autoscaler:
             dir: 'cluster-autoscaler'
     steps:
       test:
-        image: 'golang:1.16.0'
+        image: 'golang:1.18.3'
       build:
-        image: 'golang:1.16.0'
+        image: 'golang:1.18.3'
         output_dir: 'binary'
   jobs:
     head-update:
