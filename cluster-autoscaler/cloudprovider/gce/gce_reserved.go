@@ -87,7 +87,7 @@ type GceReserved struct{}
 
 // CalculateKernelReserved computes how much memory Linux kernel will reserve.
 // TODO(jkaniuk): account for crashkernel reservation on RHEL / CentOS
-func (r *GceReserved) CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) int64 {
+func (r *GceReserved) CalculateKernelReserved(physicalMemory int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) (int64, error) {
 	switch os {
 	case OperatingSystemLinux:
 		// Account for memory reserved by kernel
@@ -115,12 +115,12 @@ func (r *GceReserved) CalculateKernelReserved(physicalMemory int64, os Operating
 			reserved += ubuntuSpecificOffset
 		}
 
-		return reserved
+		return reserved, nil
 	case OperatingSystemWindows:
-		return 0
+		return 0, nil
 	default:
 		klog.Errorf("CalculateKernelReserved called for unknown operating system %v", os)
-		return 0
+		return 0, nil
 	}
 }
 
@@ -267,7 +267,7 @@ func EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(diskCount int64, osDist
 }
 
 // CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold
-func (r *GceReserved) CalculateOSReservedEphemeralStorage(diskSize int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) int64 {
+func (r *GceReserved) CalculateOSReservedEphemeralStorage(diskSize int64, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture, nodeVersion string) (int64, error) {
 	switch osDistribution {
 	case OperatingSystemDistributionCOS:
 		storage := int64(math.Ceil(0.015635*float64(diskSize))) + int64(math.Ceil(4.148*GiB)) // os partition estimation
@@ -275,17 +275,17 @@ func (r *GceReserved) CalculateOSReservedEphemeralStorage(diskSize int64, os Ope
 		if arch == Arm64 {
 			storage += 65536 * KiB
 		}
-		return storage
+		return storage, nil
 	case OperatingSystemDistributionUbuntu:
 		storage := int64(math.Ceil(0.03083*float64(diskSize))) + int64(math.Ceil(0.171*GiB)) // os partition estimation
 		storage += int64(math.Min(100*MiB, math.Ceil(0.001*float64(diskSize))))              // over-provisioning buffer
-		return storage
+		return storage, nil
 	case OperatingSystemDistributionWindowsLTSC, OperatingSystemDistributionWindowsSAC:
 		storage := int64(math.Ceil(0.1133 * GiB)) // os partition estimation
 		storage += int64(math.Ceil(0.010 * GiB))  // over-provisioning buffer
-		return storage
+		return storage, nil
 	default:
 		klog.Errorf("CalculateReservedAndEvictionEphemeralStorage called for unknown os distribution %v", osDistribution)
-		return 0
+		return 0, nil
 	}
 }

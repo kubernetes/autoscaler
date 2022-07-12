@@ -81,7 +81,11 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, arch, version)
+	memReserved, err := r.CalculateKernelReserved(mem, os, osDistribution, arch, version)
+	if err != nil {
+		return nil, err
+	}
+	memTotal := mem - memReserved
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -93,7 +97,11 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 		if ephemeralStorageLocalSSDCount > 0 {
 			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, osDistribution)
 		} else {
-			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
+			ephStrReserved, err := r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
+			if err != nil {
+				return nil, err
+			}
+			storageTotal = ephemeralStorage - ephStrReserved
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
