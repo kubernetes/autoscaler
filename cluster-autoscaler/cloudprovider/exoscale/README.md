@@ -46,16 +46,21 @@ Finally, a `EXOSCALE_ZONE` variable must be set to the target Kubernetes
 cluster zone along with the API credentials in the CA *Deployment* shell
 environment.
 
-
 ### Deploying the Cluster Autoscaler
 
-To deploy the CA on your Kubernetes cluster, you can use the manifest provided
-as example:
+To deploy the CA on your Kubernetes cluster, you can use the manifest provided as example:
 
-```
+```bash
 kubectl apply -f ./examples/cluster-autoscaler-run-on-control-plane.yaml
 ```
 
+This manifest contains a deployment which is designed to schedule the CA Pod on control-plane nodes.
+If you want to deploy the CA Pod on regular Nodes (not on the control-plane) or in SKS, you can
+use this manifest instead:
+
+```bash
+kubectl apply -f ./examples/cluster-autoscaler.yaml
+```
 
 ## ⚠️  Important Notes
 
