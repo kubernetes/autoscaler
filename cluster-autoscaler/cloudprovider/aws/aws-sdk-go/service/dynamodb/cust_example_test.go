@@ -3,8 +3,8 @@ package dynamodb_test
 import (
 	"log"
 
-	"github.com/aws/aws-sdk-go/awstesting/unit"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/awstesting/unit"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/dynamodb"
 )
 
 func ExampleDynamoDB_TransactWriteItems_transactionCanceledException() {

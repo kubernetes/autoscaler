@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/aws/aws-sdk-go/service/glacier"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/glacier"
 )
 
 func ExampleComputeHashes() {

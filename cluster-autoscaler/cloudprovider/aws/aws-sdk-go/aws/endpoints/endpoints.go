@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awserr"
 )
 
 // A Logger is a minimalistic interface for the SDK to log messages to.

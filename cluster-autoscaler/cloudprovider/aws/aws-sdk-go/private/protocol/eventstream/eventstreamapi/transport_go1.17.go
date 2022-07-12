@@ -3,7 +3,7 @@
 
 package eventstreamapi
 
-import "github.com/aws/aws-sdk-go/aws/request"
+import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 
 // ApplyHTTPTransportFixes applies fixes to the HTTP request for proper event
 // stream functionality. Go 1.15 through 1.17 HTTP client could hang forever

@@ -9,9 +9,9 @@
 package awsendpointdiscoverytestiface
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/private/model/api/codegentest/service/awsendpointdiscoverytest"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/model/api/codegentest/service/awsendpointdiscoverytest"
 )
 
 // AwsEndpointDiscoveryTestAPI provides an interface to enable mocking the

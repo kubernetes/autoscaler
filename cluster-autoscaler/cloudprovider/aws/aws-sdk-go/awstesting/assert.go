@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/internal/smithytesting"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/smithytesting"
 )
 
 // Match is a testing helper to test for testing error by comparing expected

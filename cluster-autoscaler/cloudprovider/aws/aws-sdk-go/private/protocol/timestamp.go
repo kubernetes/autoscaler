@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go/internal/sdkmath"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/sdkmath"
 )
 
 // Names of time formats supported by the SDK

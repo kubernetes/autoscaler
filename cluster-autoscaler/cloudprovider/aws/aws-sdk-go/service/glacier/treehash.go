@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"io"
 
-	"github.com/aws/aws-sdk-go/internal/sdkio"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/sdkio"
 )
 
 const bufsize = 1024 * 1024
