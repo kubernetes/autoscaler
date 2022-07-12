@@ -6,7 +6,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
 )
 
 type examplesBuilder interface {

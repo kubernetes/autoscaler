@@ -16,7 +16,7 @@ import (
 )
 
 // SDKImportRoot is the root import path of the SDK.
-const SDKImportRoot = "github.com/aws/aws-sdk-go"
+const SDKImportRoot = "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go"
 
 // An API defines a service API's definition. and logic to serialize the definition.
 type API struct {

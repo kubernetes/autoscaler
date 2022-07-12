@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3/s3crypto"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/s3/s3crypto"
 )
 
 func TestCryptoReadCloserRead(t *testing.T) {
