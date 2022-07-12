@@ -46,6 +46,34 @@ Finally, a `EXOSCALE_ZONE` variable must be set to the target Kubernetes
 cluster zone along with the API credentials in the CA *Deployment* shell
 environment.
 
+You can restrict API operation your IAM key can perform:
+
+* When deploying the Cluster Autoscaler in SKS, your can restrict your IAM access key
+to these API operations : 
+
+```
+evict-sks-nodepool-members
+get-instance
+get-instance-pool
+get-operation
+get-quota
+list-sks-clusters
+scale-sks-nodepool
+```
+
+* When deploying the Cluster Autoscaler in an unmanaged cluster, the cluster needs to have
+nodes belonging to at least an instance-pool. In this case, you can rather restrict your
+IAM key to these API operations:
+
+```
+evict-instance-pool-members
+get-instance
+get-instance-pool
+get-operation
+get-quota
+scale-instance-pool
+```
+
 ### Deploying the Cluster Autoscaler
 
 To deploy the CA on your Kubernetes cluster, you can use the manifest provided as example:
