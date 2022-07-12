@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/awstesting"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/awstesting"
 )
 
 func TestReadCloserClose(t *testing.T) {

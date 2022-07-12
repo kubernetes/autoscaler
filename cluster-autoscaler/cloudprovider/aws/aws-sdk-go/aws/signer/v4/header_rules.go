@@ -1,7 +1,7 @@
 package v4
 
 import (
-	"github.com/aws/aws-sdk-go/internal/strings"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/strings"
 )
 
 // validator houses a set of rule needed for validation of a

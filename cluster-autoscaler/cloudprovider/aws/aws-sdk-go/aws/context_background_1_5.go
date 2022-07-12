@@ -4,7 +4,7 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/internal/context"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/context"
 )
 
 // BackgroundContext returns a context that will never be canceled, has no

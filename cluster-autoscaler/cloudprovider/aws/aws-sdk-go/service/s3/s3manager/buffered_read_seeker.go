@@ -3,7 +3,7 @@ package s3manager
 import (
 	"io"
 
-	"github.com/aws/aws-sdk-go/internal/sdkio"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/sdkio"
 )
 
 // BufferedReadSeeker is buffered io.ReadSeeker

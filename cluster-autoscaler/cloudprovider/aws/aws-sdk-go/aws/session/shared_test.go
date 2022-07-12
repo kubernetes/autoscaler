@@ -3,7 +3,7 @@ package session
 import (
 	"os"
 
-	"github.com/aws/aws-sdk-go/internal/sdktesting"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/sdktesting"
 )
 
 func initSessionTestEnv() (oldEnv func()) {

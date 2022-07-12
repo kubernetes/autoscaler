@@ -3,7 +3,7 @@ package s3crypto
 import (
 	"io"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 )
 
 // ContentCipherBuilder is a builder interface that builds
