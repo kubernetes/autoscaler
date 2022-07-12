@@ -404,6 +404,18 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 `cluster-autoscaler/cloudprovider/aws/` and update `staticListLastUpdateTime` in
 `aws_util.go`
 
+## Using the AWS SDK vendored in the AWS cloudprovider
+
+If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider. 
+
+The current version vendored is `v1.44.24`.
+
+If you want to update the vendored AWS SDK to a newer version, please make sure of the following:
+
+1. Place the copy of the new desired version of the AWS SDK under the `aws-sdk-go` directory.
+2. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`).
+3. Update the version number above to indicate the new vendored version.
+
 ## Common Notes and Gotchas:
 
 - The `/etc/ssl/certs/ca-bundle.crt` should exist by default on ec2 instance in

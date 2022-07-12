@@ -2,7 +2,7 @@ package s3manager
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/arn"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/arn"
 )
 
 func validateSupportedARNType(bucket string) error {

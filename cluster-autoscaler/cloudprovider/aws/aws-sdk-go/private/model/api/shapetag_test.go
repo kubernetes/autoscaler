@@ -6,7 +6,7 @@ package api_test
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go/private/model/api"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/model/api"
 )
 
 func TestShapeTagJoin(t *testing.T) {
