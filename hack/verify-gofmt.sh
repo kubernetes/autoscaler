@@ -35,6 +35,7 @@ find_files() {
         -o -wholename '*/Godeps/*' \
         -o -wholename '*/vendor/*' \
         -o -wholename '*/zz_generated.deepcopy.go' \
+        -o -wholename './cluster-autoscaler/cloudprovider/aws/aws-sdk-go/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/magnum/gophercloud/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/digitalocean/godo/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/bizflycloud/gobizfly/*' \
