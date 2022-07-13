@@ -5,6 +5,8 @@
 - [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-CPU-or-memory-settings)
 - [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
 - [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
+- [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
+- [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
@@ -145,7 +147,7 @@ spec:
 
 and then deploy it manually if your vpa is already configured.
 
-## What are the parameters to Recommender?
+### What are the parameters to VPA recommender?
 
 The following startup parameters are supported for VPA recommender:
 
@@ -182,7 +184,7 @@ Name | Type | Description | Default
 `memory-histogram-decay-half-life` | Duration | The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. | model.DefaultMemoryHistogramDecayHalfLife
 `cpu-histogram-decay-half-life` | Duration | The amount of time it takes a historical CPU usage sample to lose half of its weight. | model.DefaultCPUHistogramDecayHalfLife
 
-## What are the parameters to Updater?
+### What are the parameters to VPA updater?
 
 The following startup parameters are supported for VPA updater:
 
