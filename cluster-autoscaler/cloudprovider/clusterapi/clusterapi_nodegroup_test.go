@@ -1072,7 +1072,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 		ng = nodegroups[0]
 
 		// Check the nodegroup is at the expected size
-		actualSize, err := ng.TargetSize()
+		actualSize, err := ng.scalableResource.Replicas()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
