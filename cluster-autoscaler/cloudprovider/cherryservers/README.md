@@ -23,11 +23,10 @@ In the above file you can modify the following fields:
 | cluster-autoscaler-cherry       | authtoken               | Your Cherry Servers API token. It must be base64 encoded.                                                                                 |
 | cluster-autoscaler-cloud-config | Global/project-id       | Your Cherry Servers project id                                                                                                             |
 | cluster-autoscaler-cloud-config | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
-| cluster-autoscaler-cloud-config | Global/region         | The Cherry Servers region for the servers in your nodepool (eg: EU-Nord-1)                                                                    |
-| cluster-autoscaler-cloud-config | Global/plan             | The Cherry Servers plan ID for new nodes in the nodepool (eg: `103`)                                                 |
-| cluster-autoscaler-cloud-config | Global/os               | The OS image to use for new nodes, e.g. `CentOS 6 64bit`. If you change this also update cloudinit.                               |
+| cluster-autoscaler-cloud-config | Global/region         | The Cherry Servers region slug for the servers in your nodepool (eg: `eu_nord_1`)                                                                    |
+| cluster-autoscaler-cloud-config | Global/plan             | The Cherry Servers plan slug for new nodes in the nodepool (eg: `e5_1620v4`)                                                 |
+| cluster-autoscaler-cloud-config | Global/os               | The OS image slug to use for new nodes, e.g. `ubuntu_18_04`. If you change this also update cloudinit.                               |
 | cluster-autoscaler-cloud-config | Global/cloudinit        | The base64 encoded user data submitted when provisioning servers. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly. It will use go templates to inject runtime information; see below.|
-| cluster-autoscaler-cloud-config | Global/reservation      | The values "require" or "prefer" will request the next available hardware reservation for new servers in selected region & plan. If no hardware reservations match, "require" will trigger a failure, while "prefer" will launch on-demand servers instead (default: none)  |
 | cluster-autoscaler-cloud-config | Global/hostname-pattern | The pattern for the names of new Cherry Servers servers (default: "k8s-{{.ClusterName}}-{{.NodeGroup}}-{{.RandString8}}" )                  |
 | cluster-autoscaler-cloud-config | Global/os-partition-size | The OS partition size in gigabytes for new nodes in the nodepool (eg: `60`, default: `none`)                 |
 
@@ -92,7 +91,7 @@ affinity:
         - key: beta.kubernetes.io/instance-type
           operator: In
           values:
-          - 103
+          - e5_1620v4
 ```
 
 ## CCM and Controller node labels
