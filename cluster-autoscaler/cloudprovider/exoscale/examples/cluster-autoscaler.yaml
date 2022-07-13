@@ -180,11 +180,6 @@ spec:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: ''
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          effect: "NoSchedule"
       volumes:
         - name: ssl-certs
           hostPath:
