@@ -49,6 +49,7 @@ type Project struct {
 // Region a CherryServers region
 type Region struct {
 	ID         int       `json:"id,omitempty"`
+	Slug       string    `json:"slug,omitempty"`
 	Name       string    `json:"name,omitempty"`
 	RegionIso2 string    `json:"region_iso_2,omitempty"`
 	BGP        RegionBGP `json:"bgp,omitempty"`
@@ -70,6 +71,7 @@ type ProjectBGP struct {
 // Plan a server plan
 type Plan struct {
 	ID               int                `json:"id,omitempty"`
+	Slug             string             `json:"slug,omitempty"`
 	Name             string             `json:"name,omitempty"`
 	Custom           bool               `json:"custom,omitempty"`
 	Specs            Specs              `json:"specs,omitempty"`
@@ -252,7 +254,7 @@ type IPAddressCreateRequest struct {
 // CreateServer represents a request to create a new Cherry Servers server. Used by createNodes
 type CreateServer struct {
 	ProjectID       int                `json:"project_id,omitempty"`
-	PlanID          int                `json:"plan_id,omitempty"`
+	Plan            string             `json:"plan,omitempty"`
 	Hostname        string             `json:"hostname,omitempty"`
 	Image           string             `json:"image,omitempty"`
 	Region          string             `json:"region,omitempty"`
