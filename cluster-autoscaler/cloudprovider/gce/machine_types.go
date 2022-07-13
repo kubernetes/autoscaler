@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -37,8 +38,29 @@ type MachineType struct {
 }
 
 // IsCustomMachine checks if a machine type is custom or predefined.
-func IsCustomMachine(name string) bool {
-	return strings.HasPrefix(name, "custom-")
+func IsCustomMachine(machineType string) bool {
+	// Custom types are in the form "<family>-custom-<num_cpu>-<memory_mb>", with the "<family>-" prefix being optional for the N1
+	// family. Examples: n2-custom-48-184320, custom-48-184320 (equivalent to n1-custom-48-184320).
+	// Docs: https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type#gcloud.
+	parts := strings.Split(machineType, "-")
+	if len(parts) < 2 {
+		return false
+	}
+	return parts[0] == "custom" || parts[1] == "custom"
+}
+
+// GetMachineFamily gets the machine family from the machine type. Machine family is determined as everything before the first
+// dash character, unless this first part is "custom", which actually means "n1":
+// https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type#gcloud.
+func GetMachineFamily(machineType string) (string, error) {
+	parts := strings.Split(machineType, "-")
+	if len(parts) < 2 {
+		return "", fmt.Errorf("unable to parse machine type %q", machineType)
+	}
+	if parts[0] == "custom" {
+		return "n1", nil
+	}
+	return parts[0], nil
 }
 
 // NewMachineTypeFromAPI creates a MachineType object based on machine type representation
@@ -57,20 +79,34 @@ func NewMachineTypeFromAPI(name string, mt *gce_api.MachineType) (MachineType, e
 // NewCustomMachineType creates a MachineType object describing a custom GCE machine.
 // CPU and Memory are based on parsing custom machine name.
 func NewCustomMachineType(name string) (MachineType, error) {
-	// example custom-2-2816
-	var cpu, mem int64
-	var count int
-	count, err := fmt.Sscanf(name, "custom-%d-%d", &cpu, &mem)
+	if !IsCustomMachine(name) {
+		return MachineType{}, fmt.Errorf("%q is not a valid custom machine type", name)
+	}
+
+	parts := strings.Split(name, "-")
+	var cpuPart, memPart string
+	if len(parts) == 3 {
+		cpuPart = parts[1]
+		memPart = parts[2]
+	} else if len(parts) == 4 {
+		cpuPart = parts[2]
+		memPart = parts[3]
+	} else {
+		return MachineType{}, fmt.Errorf("unable to parse custom machine type %q", name)
+	}
+
+	cpu, err := strconv.ParseInt(cpuPart, 10, 64)
 	if err != nil {
-		return MachineType{}, err
+		return MachineType{}, fmt.Errorf("unable to parse CPU %q from machine type %q: %v", cpuPart, name, err)
 	}
-	if count != 2 {
-		return MachineType{}, fmt.Errorf("failed to parse all params in %s", name)
+	memBytes, err := strconv.ParseInt(memPart, 10, 64)
+	if err != nil {
+		return MachineType{}, fmt.Errorf("unable to parse memory %q from machine type %q: %v", memPart, name, err)
 	}
-	mem = mem * units.MiB
+
 	return MachineType{
 		Name:   name,
 		CPU:    cpu,
-		Memory: mem,
+		Memory: memBytes * units.MiB,
 	}, nil
 }

@@ -21,6 +21,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,6 +35,12 @@ func TestNewCustomMachineType(t *testing.T) {
 	}{
 		{
 			name:         "custom-2-2816",
+			expectCustom: true,
+			expectCPU:    2,
+			expectMemory: 2816 * units.MiB,
+		},
+		{
+			name:         "n2-custom-2-2816",
 			expectCustom: true,
 			expectCPU:    2,
 			expectMemory: 2816 * units.MiB,
@@ -58,6 +66,45 @@ func TestNewCustomMachineType(t *testing.T) {
 				assert.Equal(t, tc.expectMemory, m.Memory)
 			} else {
 				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestGetMachineFamily(t *testing.T) {
+	for tn, tc := range map[string]struct {
+		machineType string
+		wantFamily  string
+		wantErr     error
+	}{
+		"predefined machine type": {
+			machineType: "n1-standard-8",
+			wantFamily:  "n1",
+		},
+		"predefined short machine type": {
+			machineType: "e2-small",
+			wantFamily:  "e2",
+		},
+		"custom machine type with family prefix": {
+			machineType: "n2-custom-2-2816",
+			wantFamily:  "n2",
+		},
+		"custom machine type without family prefix": {
+			machineType: "custom-2-2816",
+			wantFamily:  "n1",
+		},
+		"invalid machine type": {
+			machineType: "nodashes",
+			wantErr:     cmpopts.AnyError,
+		},
+	} {
+		t.Run(tn, func(t *testing.T) {
+			gotFamily, gotErr := GetMachineFamily(tc.machineType)
+			if diff := cmp.Diff(tc.wantFamily, gotFamily); diff != "" {
+				t.Errorf("GetMachineFamily(%q): diff (-want +got):\n%s", tc.machineType, diff)
+			}
+			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
+				t.Errorf("GetMachineFamily(%q): err diff (-want +got):\n%s", tc.machineType, diff)
 			}
 		})
 	}
