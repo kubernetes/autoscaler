@@ -60,6 +60,17 @@ func TestSetSize(t *testing.T) {
 		if s.Spec.Replicas != int32(updatedReplicas) {
 			t.Errorf("expected %v, got: %v", updatedReplicas, s.Spec.Replicas)
 		}
+
+		replicas, found, err := unstructured.NestedInt64(sr.unstructured.Object, "spec", "replicas")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !found {
+			t.Fatal("replicas = 0")
+		}
+		if replicas != int64(updatedReplicas) {
+			t.Errorf("expected %v, got: %v", updatedReplicas, replicas)
+		}
 	}
 
 	t.Run("MachineSet", func(t *testing.T) {
