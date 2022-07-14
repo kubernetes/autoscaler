@@ -22,7 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"k8s.io/api/admission/v1beta1"
+	"k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
@@ -56,16 +56,18 @@ func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handl
 	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
 }
 
-func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
+func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
 	// we don't block the admission by default, even on unparsable JSON
-	response := v1beta1.AdmissionResponse{}
+	response := v1.AdmissionResponse{}
 	response.Allowed = true
 
-	ar := v1beta1.AdmissionReview{}
+	ar := v1.AdmissionReview{}
 	if err := json.Unmarshal(data, &ar); err != nil {
 		klog.Error(err)
 		return &response, metrics_admission.Error, metrics_admission.Unknown
 	}
+
+	response.UID = ar.Request.UID
 
 	var patches []resource.PatchRecord
 	var err error
@@ -104,7 +106,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 			klog.Errorf("Cannot marshal the patch %v: %v", patches, err)
 			return &response, metrics_admission.Error, resource
 		}
-		patchType := v1beta1.PatchTypeJSONPatch
+		patchType := v1.PatchTypeJSONPatch
 		response.PatchType = &patchType
 		response.Patch = patch
 		klog.V(4).Infof("Sending patches: %v", patches)
@@ -143,8 +145,12 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	reviewResponse, status, resource := s.admit(body)
-	ar := v1beta1.AdmissionReview{
+	ar := v1.AdmissionReview{
 		Response: reviewResponse,
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AdmissionReview",
+			APIVersion: "admission.k8s.io/v1",
+		},
 	}
 
 	resp, err := json.Marshal(ar)

@@ -34,6 +34,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -149,8 +150,7 @@ var (
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
 
-	expanderFlag = flag.String("expander", expander.RandomExpanderName,
-		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
+	expanderFlag = flag.String("expander", expander.RandomExpanderName, "Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly.")
 
 	ignoreDaemonSetsUtilization = flag.Bool("ignore-daemonsets-utilization", false,
 		"Should CA ignore DaemonSet pods when calculating resource utilization for scaling down")
@@ -215,7 +215,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:                *okTotalUnreadyCount,
 		ScaleUpFromZero:                    *scaleUpFromZero,
 		EstimatorName:                      *estimatorFlag,
-		ExpanderName:                       *expanderFlag,
+		ExpanderNames:                      *expanderFlag,
 		IgnoreDaemonSetsUtilization:        *ignoreDaemonSetsUtilization,
 		IgnoreMirrorPodsUtilization:        *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:              *maxBulkSoftTaintCount,
@@ -327,6 +327,8 @@ func buildAutoscaler() (core.Autoscaler, error) {
 		nodeInfoComparatorBuilder = nodegroupset.CreateAwsNodeInfoComparator
 	} else if autoscalingOptions.CloudProviderName == cloudprovider.GceProviderName {
 		nodeInfoComparatorBuilder = nodegroupset.CreateGceNodeInfoComparator
+	} else if autoscalingOptions.CloudProviderName == cloudprovider.ClusterAPIProviderName {
+		nodeInfoComparatorBuilder = nodegroupset.CreateClusterAPINodeInfoComparator
 	}
 
 	opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
@@ -391,7 +393,9 @@ func main() {
 	leaderElection.LeaderElect = true
 
 	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+	utilfeature.DefaultMutableFeatureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
+
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
 	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)

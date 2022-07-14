@@ -25,6 +25,7 @@ import (
 	"math/rand"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,11 +35,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/eks"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
@@ -48,19 +51,19 @@ const (
 	operationWaitTimeout    = 5 * time.Second
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
-	maxAsgNamesPerDescribe  = 50
+	maxAsgNamesPerDescribe  = 100
 	refreshInterval         = 1 * time.Minute
 	autoDiscovererTypeASG   = "asg"
 	asgAutoDiscovererKeyTag = "tag"
+	optionsTagsPrefix       = "k8s.io/cluster-autoscaler/node-template/autoscaling-options/"
 )
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	autoScalingService autoScalingWrapper
-	ec2Service         ec2Wrapper
-	asgCache           *asgCache
-	lastRefresh        time.Time
-	instanceTypes      map[string]*InstanceType
+	awsService    awsWrapper
+	asgCache      *asgCache
+	lastRefresh   time.Time
+	instanceTypes map[string]*InstanceType
 }
 
 type asgTemplate struct {
@@ -161,7 +164,7 @@ func getRegion(cfg ...*aws.Config) string {
 	return region
 }
 
-// createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
+// createAwsManagerInternal allows for custom objects to be passed in by tests
 //
 // #1449 If running tests outside of AWS without AWS_REGION among environment
 // variables, avoid a 5+ second EC2 Metadata lookup timeout in getRegion by
@@ -172,8 +175,7 @@ func getRegion(cfg ...*aws.Config) string {
 func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
-	autoScalingService *autoScalingWrapper,
-	ec2Service *ec2Wrapper,
+	awsService *awsWrapper,
 	instanceTypes map[string]*InstanceType,
 ) (*AwsManager, error) {
 
@@ -188,7 +190,7 @@ func createAWSManagerInternal(
 		return nil, err
 	}
 
-	if autoScalingService == nil || ec2Service == nil {
+	if awsService == nil {
 		awsSdkProvider := newAWSSDKProvider(cfg)
 		sess, err := session.NewSession(aws.NewConfig().WithRegion(getRegion()).
 			WithEndpointResolver(getResolver(awsSdkProvider.cfg)))
@@ -196,14 +198,7 @@ func createAWSManagerInternal(
 			return nil, err
 		}
 
-		if autoScalingService == nil {
-			c := newLaunchConfigurationInstanceTypeCache()
-			autoScalingService = &autoScalingWrapper{autoscaling.New(sess), c}
-		}
-
-		if ec2Service == nil {
-			ec2Service = &ec2Wrapper{ec2.New(sess)}
-		}
+		awsService = &awsWrapper{autoscaling.New(sess), ec2.New(sess), eks.New(sess)}
 	}
 
 	specs, err := parseASGAutoDiscoverySpecs(discoveryOpts)
@@ -211,16 +206,15 @@ func createAWSManagerInternal(
 		return nil, err
 	}
 
-	cache, err := newASGCache(*autoScalingService, discoveryOpts.NodeGroupSpecs, specs)
+	cache, err := newASGCache(awsService, discoveryOpts.NodeGroupSpecs, specs)
 	if err != nil {
 		return nil, err
 	}
 
 	manager := &AwsManager{
-		autoScalingService: *autoScalingService,
-		ec2Service:         *ec2Service,
-		asgCache:           cache,
-		instanceTypes:      instanceTypes,
+		awsService:    *awsService,
+		asgCache:      cache,
+		instanceTypes: instanceTypes,
 	}
 
 	if err := manager.forceRefresh(); err != nil {
@@ -247,7 +241,7 @@ func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
 
 // CreateAwsManager constructs awsManager object.
 func CreateAwsManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, instanceTypes map[string]*InstanceType) (*AwsManager, error) {
-	return createAWSManagerInternal(configReader, discoveryOpts, nil, nil, instanceTypes)
+	return createAWSManagerInternal(configReader, discoveryOpts, nil, instanceTypes)
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
@@ -283,6 +277,10 @@ func (m *AwsManager) getAsgs() []*asg {
 	return m.asgCache.Get()
 }
 
+func (m *AwsManager) getAutoscalingOptions(ref AwsRef) map[string]string {
+	return m.asgCache.GetAutoscalingOptions(ref)
+}
+
 // SetAsgSize sets ASG size.
 func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
 	return m.asgCache.SetAsgSize(asg, size)
@@ -312,10 +310,10 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
-		klog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
+		klog.V(4).Infof("Found multiple availability zones for ASG %q; using %s for %s label\n", asg.Name, az, apiv1.LabelZoneFailureDomain)
 	}
 
-	instanceTypeName, err := m.buildInstanceType(asg)
+	instanceTypeName, err := getInstanceTypeForAsg(m.asgCache, asg)
 	if err != nil {
 		return nil, err
 	}
@@ -331,21 +329,50 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
 }
 
-func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
-	if asg.LaunchConfigurationName != "" {
-		return m.autoScalingService.getInstanceTypeByLCName(asg.LaunchConfigurationName)
-	} else if asg.LaunchTemplate != nil {
-		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplate)
-	} else if asg.MixedInstancesPolicy != nil {
-		// always use first instance
-		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 {
-			return asg.MixedInstancesPolicy.instanceTypesOverrides[0], nil
-		}
-
-		return m.ec2Service.getInstanceTypeByLT(asg.MixedInstancesPolicy.launchTemplate)
+// GetAsgOptions parse options extracted from ASG tags and merges them with provided defaults
+func (m *AwsManager) GetAsgOptions(asg asg, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
+	options := m.getAutoscalingOptions(asg.AwsRef)
+	if options == nil || len(options) == 0 {
+		return &defaults
 	}
 
-	return "", errors.New("Unable to get instance type from launch config or launch template")
+	if stringOpt, found := options[config.DefaultScaleDownUtilizationThresholdKey]; found {
+		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to float: %v",
+				asg.Name, config.DefaultScaleDownUtilizationThresholdKey, err)
+		} else {
+			defaults.ScaleDownUtilizationThreshold = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownGpuUtilizationThresholdKey]; found {
+		if opt, err := strconv.ParseFloat(stringOpt, 64); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to float: %v",
+				asg.Name, config.DefaultScaleDownGpuUtilizationThresholdKey, err)
+		} else {
+			defaults.ScaleDownGpuUtilizationThreshold = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownUnneededTimeKey]; found {
+		if opt, err := time.ParseDuration(stringOpt); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+				asg.Name, config.DefaultScaleDownUnneededTimeKey, err)
+		} else {
+			defaults.ScaleDownUnneededTime = opt
+		}
+	}
+
+	if stringOpt, found := options[config.DefaultScaleDownUnreadyTimeKey]; found {
+		if opt, err := time.ParseDuration(stringOpt); err != nil {
+			klog.Warning("failed to convert asg %s %s tag to duration: %v",
+				asg.Name, config.DefaultScaleDownUnreadyTimeKey, err)
+		} else {
+			defaults.ScaleDownUnreadyTime = opt
+		}
+	}
+
+	return &defaults
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {
@@ -381,6 +408,11 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// NodeLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
+	if nodegroupName, clusterName := node.Labels["nodegroup-name"], node.Labels["cluster-name"]; nodegroupName != "" && clusterName != "" {
+		klog.V(5).Infof("Nodegroup %s in cluster %s is an EKS managed nodegroup.", nodegroupName, clusterName)
+		// TODO: Call AWS EKS DescribeNodegroup API, check if keys already exist in Labels and do NOT overwrite
+	}
+
 	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
@@ -408,6 +440,10 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 		k := *tag.Key
 		v := *tag.Value
 		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/label/")
+		// Extract EKS labels from ASG
+		if len(splits) <= 1 {
+			splits = strings.Split(k, "eks:")
+		}
 		if len(splits) > 1 {
 			label := splits[1]
 			if label != "" {
@@ -417,6 +453,21 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 	}
 
 	return result
+}
+
+func extractAutoscalingOptionsFromTags(tags []*autoscaling.TagDescription) map[string]string {
+	options := make(map[string]string)
+	for _, tag := range tags {
+		if !strings.HasPrefix(aws.StringValue(tag.Key), optionsTagsPrefix) {
+			continue
+		}
+		splits := strings.Split(aws.StringValue(tag.Key), optionsTagsPrefix)
+		if len(splits) != 2 || splits[1] == "" {
+			continue
+		}
+		options[splits[1]] = aws.StringValue(tag.Value)
+	}
+	return options
 }
 
 func extractAllocatableResourcesFromAsg(tags []*autoscaling.TagDescription) map[string]*resource.Quantity {

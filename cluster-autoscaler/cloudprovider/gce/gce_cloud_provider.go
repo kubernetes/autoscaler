@@ -176,6 +176,7 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
+	Version() string
 }
 
 type gceMig struct {
@@ -184,6 +185,11 @@ type gceMig struct {
 	gceManager GceManager
 	minSize    int
 	maxSize    int
+}
+
+// Version return the Mig version.
+func (mig *gceMig) Version() string {
+	return ""
 }
 
 // GceRef returns Mig's GceRef
@@ -330,7 +336,7 @@ func (mig *gceMig) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (mig *gceMig) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return mig.gceManager.GetMigOptions(mig, defaults), nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.

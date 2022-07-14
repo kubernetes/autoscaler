@@ -375,7 +375,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 				ContainerName: "container",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("1000m"),
-					apiv1.ResourceMemory: resource.MustParse("500000000000m"),
+					apiv1.ResourceMemory: resource.MustParse("500000000"),
 				},
 			},
 		},
@@ -895,13 +895,13 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 					{
 						ContainerName: "container-1",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewQuantity(1431655766, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(1431655765, resource.BinarySI),
 						},
 					},
 					{
 						ContainerName: "container-2",
 						Target: apiv1.ResourceList{
-							apiv1.ResourceMemory: *resource.NewQuantity(2863311531, resource.BinarySI),
+							apiv1.ResourceMemory: *resource.NewQuantity(2863311530, resource.BinarySI),
 						},
 					},
 				},

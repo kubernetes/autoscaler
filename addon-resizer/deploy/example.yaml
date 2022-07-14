@@ -41,7 +41,7 @@ spec:
     spec:
       serviceAccountName: pod-nanny
       containers:
-        - image: k8s.gcr.io/addon-resizer:1.8.7
+        - image: k8s.gcr.io/autoscaling/addon-resizer:1.8.14
           imagePullPolicy: Always
           name: pod-nanny
           resources:
@@ -81,33 +81,24 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: default:pod-nanny
-  namespace: default
 rules:
+### --use-metrics=false
 - apiGroups:
   - ""
   resources:
-  - pods
   - nodes
   verbs:
-  - get
   - list
-  - watch
-- apiGroups:
-  - "apps"
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - update
-  - watch
-  - patch
+### --use-metrics=true
+# - nonResourceURLs:
+#   - /metrics
+#   verbs:
+#   - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: pod-nanny-binding
-  namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -116,4 +107,39 @@ subjects:
 - kind: ServiceAccount
   name: pod-nanny
   namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: default:pod-nanny
+  namespace: default
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  resourceNames:
+  - nanny-v1
+  verbs:
+  - get
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-nanny-binding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: default:pod-nanny
+subjects:
+- kind: ServiceAccount
+  name: pod-nanny
 ---

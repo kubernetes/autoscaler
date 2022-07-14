@@ -17,12 +17,14 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strconv"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetStaticEC2InstanceTypes(t *testing.T) {
@@ -30,65 +32,49 @@ func TestGetStaticEC2InstanceTypes(t *testing.T) {
 	assert.True(t, len(result) != 0)
 }
 
-func TestParseMemory(t *testing.T) {
-	expectedResultInMiB := int64(3.75 * 1024)
-	tests := []struct {
-		input  string
-		expect int64
-	}{
-		{
-			input:  "3.75 GiB",
-			expect: expectedResultInMiB,
+func TestInstanceTypeTransform(t *testing.T) {
+	rawInstanceType := ec2.InstanceTypeInfo{
+		InstanceType: aws.String("c4.xlarge"),
+		ProcessorInfo: &ec2.ProcessorInfo{
+			SupportedArchitectures: []*string{aws.String("x86_64")},
 		},
-		{
-			input:  "3.75 Gib",
-			expect: expectedResultInMiB,
+		VCpuInfo: &ec2.VCpuInfo{
+			DefaultVCpus: aws.Int64(4),
 		},
-		{
-			input:  "3.75GiB",
-			expect: expectedResultInMiB,
-		},
-		{
-			input:  "3.75",
-			expect: expectedResultInMiB,
+		MemoryInfo: &ec2.MemoryInfo{
+			SizeInMiB: aws.Int64(7680),
 		},
 	}
 
-	for _, test := range tests {
-		got := parseMemory(test.input)
-		assert.Equal(t, test.expect, got)
-	}
+	instanceType := transformInstanceType(&rawInstanceType)
+
+	assert.Equal(t, "c4.xlarge", instanceType.InstanceType)
+	assert.Equal(t, int64(4), instanceType.VCPU)
+	assert.Equal(t, int64(7680), instanceType.MemoryMb)
+	assert.Equal(t, int64(0), instanceType.GPU)
+	assert.Equal(t, "amd64", instanceType.Architecture)
 }
 
-func TestParseCPU(t *testing.T) {
-	tests := []struct {
-		input  string
-		expect int64
-	}{
-		{
-			input:  strconv.FormatInt(8, 10),
-			expect: int64(8),
-		},
-	}
-
-	for _, test := range tests {
-		got := parseCPU(test.input)
-		assert.Equal(t, test.expect, got)
-	}
-}
-
-func TestParseArchitecture(t *testing.T) {
+func TestInterpretEc2SupportedArchitecure(t *testing.T) {
 	tests := []struct {
 		input  string
 		expect string
 	}{
 		{
-			input:  "Intel Xeon Platinum 8259 (Cascade Lake)",
+			input:  "arm64",
+			expect: "arm64",
+		},
+		{
+			input:  "i386",
 			expect: "amd64",
 		},
 		{
-			input:  "AWS Graviton2 Processor",
-			expect: "arm64",
+			input:  "x86_64",
+			expect: "amd64",
+		},
+		{
+			input:  "x86_64_mac",
+			expect: "amd64",
 		},
 		{
 			input:  "anything default",
@@ -97,9 +83,21 @@ func TestParseArchitecture(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		got := parseArchitecture(test.input)
+		got := interpretEc2SupportedArchitecure(test.input)
 		assert.Equal(t, test.expect, got)
 	}
+}
+
+func TestGetGpuCount(t *testing.T) {
+	gpuDeviceInfos := []*ec2.GpuDeviceInfo{
+		{Count: aws.Int64(8)},
+		{Count: aws.Int64(4)},
+		{Count: aws.Int64(0)},
+	}
+
+	gpuInfo := ec2.GpuInfo{Gpus: gpuDeviceInfos}
+
+	assert.Equal(t, int64(12), getGpuCount(&gpuInfo))
 }
 
 func TestGetCurrentAwsRegion(t *testing.T) {

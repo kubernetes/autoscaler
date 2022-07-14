@@ -85,7 +85,15 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 		result := *recommendedRequest
 		return &result, ""
 	}
-	result, capped := scaleQuantityProportionally( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+	if resourceName == core.ResourceCPU {
+		result, capped := scaleQuantityProportionallyCPU( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
+		if !capped {
+			return result, ""
+		}
+		return result, fmt.Sprintf(
+			"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
+	}
+	result, capped := scaleQuantityProportionallyMem( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest, noRounding)
 	if !capped {
 		return result, ""
 	}
@@ -95,7 +103,7 @@ func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit,
 
 // GetBoundaryRequest returns the boundary (min/max) request that can be specified with
 // preserving the original limit to request ratio. Returns nil if no boundary exists
-func GetBoundaryRequest(originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
+func GetBoundaryRequest(resourceName core.ResourceName, originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -107,7 +115,14 @@ func GetBoundaryRequest(originalRequest, originalLimit, boundaryLimit, defaultLi
 	if originalRequest == nil || originalRequest.Value() == 0 {
 		return boundaryLimit
 	}
-	result, _ := scaleQuantityProportionally(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
+
+	// Determine which scaling function to use based on resource type.
+	var result *resource.Quantity
+	if resourceName == core.ResourceCPU {
+		result, _ = scaleQuantityProportionallyCPU(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
+		return result
+	}
+	result, _ = scaleQuantityProportionallyMem(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/, noRounding)
 	return result
 }
 
@@ -119,9 +134,9 @@ const (
 	roundDownToFullUnit
 )
 
-// scaleQuantityProportionally returns value which has the same proportion to scaledQuantity as scaleResult has to scaleBase
+// scaleQuantityProportionallyCPU returns a value in milliunits which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
 // It also returns a bool indicating if it had to cap result to MaxInt64 milliunits.
-func scaleQuantityProportionally(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
 	originalMilli := big.NewInt(scaledQuantity.MilliValue())
 	scaleBaseMilli := big.NewInt(scaleBase.MilliValue())
 	scaleResultMilli := big.NewInt(scaleResult.MilliValue())
@@ -140,4 +155,27 @@ func scaleQuantityProportionally(scaledQuantity, scaleBase, scaleResult *resourc
 		return result, false
 	}
 	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
+}
+
+// scaleQuantityProportionallyMem returns a value in whole units which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
+// It also returns a bool indicating if it had to cap result to MaxInt64 units.
+func scaleQuantityProportionallyMem(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+	originalValue := big.NewInt(scaledQuantity.Value())
+	scaleBaseValue := big.NewInt(scaleBase.Value())
+	scaleResultValue := big.NewInt(scaleResult.Value())
+	var scaledOriginal big.Int
+	scaledOriginal.Mul(originalValue, scaleResultValue)
+	scaledOriginal.Div(&scaledOriginal, scaleBaseValue)
+	if scaledOriginal.IsInt64() {
+		result := resource.NewQuantity(scaledOriginal.Int64(), scaledQuantity.Format)
+		if rounding == roundUpToFullUnit {
+			result.RoundUp(resource.Scale(0))
+		}
+		if rounding == roundDownToFullUnit {
+			result.Sub(*resource.NewMilliQuantity(999, result.Format))
+			result.RoundUp(resource.Scale(0))
+		}
+		return result, false
+	}
+	return resource.NewQuantity(math.MaxInt64, scaledQuantity.Format), true
 }

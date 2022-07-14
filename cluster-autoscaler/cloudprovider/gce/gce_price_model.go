@@ -40,35 +40,42 @@ const (
 	gpuPricePerHour         = 0.700
 
 	preemptibleLabel = "cloud.google.com/gke-preemptible"
+	spotLabel        = "cloud.google.com/gke-spot"
 )
 
 var (
 	predefinedCpuPricePerHour = map[string]float64{
 		"a2":  0.031611,
 		"c2":  0.03398,
+		"c2d": 0.029563,
 		"e2":  0.021811,
 		"m1":  0.0348,
 		"n1":  0.031611,
 		"n2":  0.031611,
 		"n2d": 0.027502,
+		"t2d": 0.027502,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
 		"c2":  0.00455,
+		"c2d": 0.003959,
 		"e2":  0.002923,
 		"m1":  0.0051,
 		"n1":  0.004237,
 		"n2":  0.004237,
 		"n2d": 0.003686,
+		"t2d": 0.003686,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
 		"c2":  0.00822 / 0.03398,
+		"c2d": 0.007154 / 0.029563,
 		"e2":  0.006543 / 0.021811,
 		"m1":  0.00733 / 0.0348,
 		"n1":  0.006655 / 0.031611,
 		"n2":  0.007650 / 0.031611,
-		"n2d": 0.006655 / 0.027502,
+		"n2d": 0.002773 / 0.027502,
+		"t2d": 0.006655 / 0.027502,
 	}
 
 	customCpuPricePerHour = map[string]float64{
@@ -87,7 +94,7 @@ var (
 		"e2":  0.006867 / 0.022890,
 		"n1":  0.00698 / 0.033174,
 		"n2":  0.00802 / 0.033174,
-		"n2d": 0.006980 / 0.028877,
+		"n2d": 0.002908 / 0.028877,
 	}
 
 	// e2-micro and e2-small have allocatable set too high resulting in
@@ -105,6 +112,27 @@ var (
 		"c2-standard-16":   0.8352,
 		"c2-standard-30":   1.5660,
 		"c2-standard-60":   3.1321,
+		"c2d-highcpu-2":    0.0750,
+		"c2d-highcpu-4":    0.1499,
+		"c2d-highcpu-8":    0.2998,
+		"c2d-highcpu-16":   0.5997,
+		"c2d-highcpu-32":   1.1994,
+		"c2d-highcpu-56":   2.0989,
+		"c2d-highcpu-112":  4.1979,
+		"c2d-highmem-2":    0.1225,
+		"c2d-highmem-4":    0.2449,
+		"c2d-highmem-8":    0.4899,
+		"c2d-highmem-16":   0.9798,
+		"c2d-highmem-32":   1.9595,
+		"c2d-highmem-56":   3.4292,
+		"c2d-highmem-112":  6.8583,
+		"c2d-standard-2":   0.0908,
+		"c2d-standard-4":   0.1816,
+		"c2d-standard-8":   0.3632,
+		"c2d-standard-16":  0.7264,
+		"c2d-standard-32":  1.4528,
+		"c2d-standard-56":  2.5423,
+		"c2d-standard-112": 5.0847,
 		"e2-highcpu-2":     0.04947,
 		"e2-highcpu-4":     0.09894,
 		"e2-highcpu-8":     0.19788,
@@ -160,6 +188,8 @@ var (
 		"n2-highcpu-48":    1.7207,
 		"n2-highcpu-64":    2.2943,
 		"n2-highcpu-80":    2.8678,
+		"n2-highcpu-96":    3.4414,
+		"n2-highcpu-128":   4.5886,
 		"n2-highmem-2":     0.1310,
 		"n2-highmem-4":     0.2620,
 		"n2-highmem-8":     0.5241,
@@ -168,6 +198,8 @@ var (
 		"n2-highmem-48":    3.1443,
 		"n2-highmem-64":    4.1924,
 		"n2-highmem-80":    5.2406,
+		"n2-highmem-96":    6.2886,
+		"n2-highmem-128":   8.3848,
 		"n2-standard-2":    0.0971,
 		"n2-standard-4":    0.1942,
 		"n2-standard-8":    0.3885,
@@ -176,6 +208,8 @@ var (
 		"n2-standard-48":   2.3308,
 		"n2-standard-64":   3.1078,
 		"n2-standard-80":   3.8847,
+		"n2-standard-96":   4.6616,
+		"n2-standard-128":  6.2156,
 		"n2d-highcpu-2":    0.0624,
 		"n2d-highcpu-4":    0.1248,
 		"n2d-highcpu-8":    0.2495,
@@ -207,6 +241,14 @@ var (
 		"n2d-standard-96":  4.0556,
 		"n2d-standard-128": 5.4075,
 		"n2d-standard-224": 9.4632,
+		"t2d-standard-1":   0.0422,
+		"t2d-standard-2":   0.0845,
+		"t2d-standard-4":   0.1690,
+		"t2d-standard-8":   0.3380,
+		"t2d-standard-16":  0.6759,
+		"t2d-standard-32":  1.3519,
+		"t2d-standard-48":  2.0278,
+		"t2d-standard-60":  2.5348,
 	}
 	preemptiblePrices = map[string]float64{
 		"a2-highgpu-1g":    1.102016,
@@ -219,6 +261,27 @@ var (
 		"c2-standard-16":   0.2021,
 		"c2-standard-30":   0.3790,
 		"c2-standard-60":   0.7579,
+		"c2d-highcpu-2":    0.0181,
+		"c2d-highcpu-4":    0.0363,
+		"c2d-highcpu-8":    0.0726,
+		"c2d-highcpu-16":   0.1451,
+		"c2d-highcpu-32":   0.2902,
+		"c2d-highcpu-56":   0.5079,
+		"c2d-highcpu-112":  1.0158,
+		"c2d-highmem-2":    0.0296,
+		"c2d-highmem-4":    0.0593,
+		"c2d-highmem-8":    0.1185,
+		"c2d-highmem-16":   0.2371,
+		"c2d-highmem-32":   0.4742,
+		"c2d-highmem-56":   0.8298,
+		"c2d-highmem-112":  1.6596,
+		"c2d-standard-2":   0.0220,
+		"c2d-standard-4":   0.0439,
+		"c2d-standard-8":   0.0879,
+		"c2d-standard-16":  0.1758,
+		"c2d-standard-32":  0.3516,
+		"c2d-standard-56":  0.6152,
+		"c2d-standard-112": 1.2304,
 		"e2-highcpu-2":     0.01484,
 		"e2-highcpu-4":     0.02968,
 		"e2-highcpu-8":     0.05936,
@@ -272,6 +335,8 @@ var (
 		"n2-highcpu-48":    0.4164,
 		"n2-highcpu-64":    0.5552,
 		"n2-highcpu-80":    0.6940,
+		"n2-highcpu-96":    0.8328,
+		"n2-highcpu-128":   1.1104,
 		"n2-highmem-2":     0.0317,
 		"n2-highmem-4":     0.0634,
 		"n2-highmem-8":     0.1268,
@@ -280,6 +345,8 @@ var (
 		"n2-highmem-48":    0.7609,
 		"n2-highmem-64":    1.0145,
 		"n2-highmem-80":    1.2681,
+		"n2-highmem-96":    1.5218,
+		"n2-highmem-128":   2.029,
 		"n2-standard-2":    0.0235,
 		"n2-standard-4":    0.0470,
 		"n2-standard-8":    0.0940,
@@ -288,6 +355,8 @@ var (
 		"n2-standard-48":   0.5640,
 		"n2-standard-64":   0.7520,
 		"n2-standard-80":   0.9400,
+		"n2-standard-96":   1.128,
+		"n2-standard-128":  1.504,
 		"n2d-highcpu-2":    0.0151,
 		"n2d-highcpu-4":    0.0302,
 		"n2d-highcpu-8":    0.0604,
@@ -319,6 +388,14 @@ var (
 		"n2d-standard-96":  0.9814,
 		"n2d-standard-128": 1.3085,
 		"n2d-standard-224": 2.2900,
+		"t2d-standard-1":   0.0102,
+		"t2d-standard-2":   0.0204,
+		"t2d-standard-4":   0.0409,
+		"t2d-standard-8":   0.0818,
+		"t2d-standard-16":  0.1636,
+		"t2d-standard-32":  0.3271,
+		"t2d-standard-48":  0.4907,
+		"t2d-standard-60":  0.6134,
 	}
 	gpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.35,
@@ -333,7 +410,7 @@ var (
 		"nvidia-tesla-p4":   0.216,
 		"nvidia-tesla-v100": 0.74,
 		"nvidia-tesla-p100": 0.43,
-		"nvidia-tesla-k80":  0.135,
+		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 	}
 )
@@ -343,14 +420,12 @@ var (
 func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	basePriceFound := false
-	isPreemptible := false
 
 	// Base instance price
 	if node.Labels != nil {
-		isPreemptible = node.Labels[preemptibleLabel] == "true"
 		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
 			priceMapToUse := instancePrices
-			if isPreemptible {
+			if hasPreemptiblePricing(node) {
 				priceMapToUse = preemptiblePrices
 			}
 			if basePricePerHour, found := priceMapToUse[machineType]; found {
@@ -373,7 +448,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		gpuPrice := gpuPricePerHour
 		if node.Labels != nil {
 			priceMapToUse := gpuPrices
-			if isPreemptible {
+			if hasPreemptiblePricing(node) {
 				priceMapToUse = preemptibleGpuPrices
 			}
 			if gpuType, found := node.Labels[GPULabel]; found {
@@ -405,8 +480,20 @@ func isInstanceCustom(instanceType string) bool {
 	return strings.Contains(instanceType, "custom")
 }
 
+// hasPreemptiblePricing returns whether we should use preemptible pricing for a node, based on labels. Spot VMs have
+// dynamic pricing, which is different than the static pricing for Preemptible VMs we use here. However it should be close
+// enough in practice and we really only look at prices in comparison with each other. Spot VMs will always be cheaper
+// than corresponding non-preemptible VMs. So for the purposes of pricing, Spot VMs are treated the same as
+// Preemptible VMs.
+func hasPreemptiblePricing(node *apiv1.Node) bool {
+	if node.Labels == nil {
+		return false
+	}
+	return node.Labels[preemptibleLabel] == "true" || node.Labels[spotLabel] == "true"
+}
+
 func getPreemptibleDiscount(node *apiv1.Node) float64 {
-	if node.Labels[preemptibleLabel] != "true" {
+	if !hasPreemptiblePricing(node) {
 		return 1.0
 	}
 	instanceType, found := getInstanceTypeFromLabels(node.Labels)

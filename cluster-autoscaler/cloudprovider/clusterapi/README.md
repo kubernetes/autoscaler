@@ -66,30 +66,80 @@ To specify the kubeconfig path for the management cluster to monitor, use the
 `--cloud-config` option is not specified it will fall back to using the kubeconfig
 that was provided with the `--kubeconfig` option.
 
+### Autoscaler running in a joined cluster using service account credentials
+```
++-----------------+
+| mgmt / workload |
+| --------------- |
+|    autoscaler   |
++-----------------+
+```
 Use in-cluster config for both management and workload cluster:
 ```
 cluster-autoscaler --cloud-provider=clusterapi
 ```
 
+### Autoscaler running in workload cluster using service account credentials, with separate management cluster
+```
++--------+              +------------+
+|  mgmt  |              |  workload  |
+|        | cloud-config | ---------- |
+|        |<-------------+ autoscaler |
++--------+              +------------+
+```
+
 Use in-cluster config for workload cluster, specify kubeconfig for management cluster:
 ```
-cluster-autoscaler --cloud-provider=clusterapi --cloud-config=/mnt/kubeconfig
+cluster-autoscaler --cloud-provider=clusterapi \
+                   --cloud-config=/mnt/kubeconfig
+```
+
+### Autoscaler running in management cluster using service account credentials, with separate workload cluster
+```
++------------+             +----------+
+|    mgmt    |             | workload |
+| ---------- | kubeconfig  |          |
+| autoscaler +------------>|          |
++------------+             +----------+
 ```
 
 Use in-cluster config for management cluster, specify kubeconfig for workload cluster:
 ```
-cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/kubeconfig --clusterapi-cloud-config-authoritative
+cluster-autoscaler --cloud-provider=clusterapi \
+                   --kubeconfig=/mnt/kubeconfig \
+                   --clusterapi-cloud-config-authoritative
+```
+
+### Autoscaler running anywhere, with separate kubeconfigs for management and workload clusters
+```
++--------+               +------------+             +----------+
+|  mgmt  |               |     ?      |             | workload |
+|        |  cloud-config | ---------- | kubeconfig  |          |
+|        |<--------------+ autoscaler +------------>|          |
++--------+               +------------+             +----------+
 ```
 
 Use separate kubeconfigs for both management and workload cluster:
 ```
-cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/workload.kubeconfig --cloud-config=/mnt/management.kubeconfig
+cluster-autoscaler --cloud-provider=clusterapi \
+                   --kubeconfig=/mnt/workload.kubeconfig \
+                   --cloud-config=/mnt/management.kubeconfig
+```
+
+### Autoscaler running anywhere, with a common kubeconfig for management and workload clusters
+```
++---------------+             +------------+
+| mgmt/workload |             |     ?      |
+|               |  kubeconfig | ---------- |
+|               |<------------+ autoscaler |
++---------------+             +------------+
 ```
 
 Use a single provided kubeconfig for both management and workload cluster:
 ```
-cluster-autoscaler --cloud-provider=clusterapi --kubeconfig=/mnt/workload.kubeconfig
-``` 
+cluster-autoscaler --cloud-provider=clusterapi \
+                   --kubeconfig=/mnt/workload.kubeconfig
+```
 
 ## Enabling Autoscaling
 
@@ -120,6 +170,15 @@ use the group `cluster.x-k8s.io`, with a dynamically acquired version. In
 some situations, such as testing or prototyping, you may wish to change this
 group variable. For these situations you may use the environment variable
 `CAPI_GROUP` to change the group that the provider will use.
+
+Please note that setting the `CAPI_GROUP` environment variable will also cause the
+annotations for minimum and maximum size to change.
+This behavior will also affect the machine annotation on nodes, the machine deletion annotation,
+and the cluster name label. For example, if `CAPI_GROUP=test.k8s.io`
+then the minimum size annotation key will be `test.k8s.io/cluster-api-autoscaler-node-group-min-size`,
+the machine annotation on nodes will be `test.8s.io/machine`, the machine deletion
+annotation will be `test.k8s.io/delete-machine`, and the cluster name label will be
+`test.k8s.io/cluster-name`.
 
 ## Sample manifest
 

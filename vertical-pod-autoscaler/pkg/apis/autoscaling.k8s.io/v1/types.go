@@ -62,6 +62,13 @@ type VerticalPodAutoscaler struct {
 	Status VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
+// VerticalPodAutoscalerRecommenderSelector points to a specific Vertical Pod Autoscaler recommender
+// in the future it might pass parameters to the recommender.
+type VerticalPodAutoscalerRecommenderSelector struct {
+	// Name of the recommender responsible for generating recommendation for this object.
+	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
+}
+
 // VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
 type VerticalPodAutoscalerSpec struct {
 
@@ -90,6 +97,12 @@ type VerticalPodAutoscalerSpec struct {
 	// resources for all containers in the pod, without additional constraints.
 	// +optional
 	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+
+	// Recommender responsible for generating recommendation for this object.
+	// List should be empty (then the default recommender will generate the
+	// recommendation) or contain exactly one recommender.
+	// +optional
+	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 }
 
 // PodUpdatePolicy describes the rules on how changes are applied to the pods.

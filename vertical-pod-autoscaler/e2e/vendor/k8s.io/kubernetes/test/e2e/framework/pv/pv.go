@@ -19,6 +19,7 @@ package framework
 import (
 	"context"
 	"fmt"
+	"k8s.io/kubernetes/test/e2e/storage/utils"
 	"time"
 
 	"github.com/onsi/ginkgo"
@@ -29,8 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
-	storageutil "k8s.io/kubernetes/pkg/apis/storage/v1/util"
-	"k8s.io/kubernetes/pkg/volume/util"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2eskipper "k8s.io/kubernetes/test/e2e/framework/skipper"
 )
@@ -53,6 +52,19 @@ const (
 
 	// VolumeSelectorKey is the key for volume selector.
 	VolumeSelectorKey = "e2e-pv-pool"
+
+	// isDefaultStorageClassAnnotation represents a StorageClass annotation that
+	// marks a class as the default StorageClass
+	isDefaultStorageClassAnnotation = "storageclass.kubernetes.io/is-default-class"
+
+	// betaIsDefaultStorageClassAnnotation is the beta version of IsDefaultStorageClassAnnotation.
+	// TODO: remove Beta when no longer used
+	betaIsDefaultStorageClassAnnotation = "storageclass.beta.kubernetes.io/is-default-class"
+
+	// volumeGidAnnotationKey is the of the annotation on the PersistentVolume
+	// object that specifies a supplemental GID.
+	// it is copied from k8s.io/kubernetes/pkg/volume/util VolumeGidAnnotationKey
+	volumeGidAnnotationKey = "pv.beta.kubernetes.io/gid"
 )
 
 var (
@@ -117,6 +129,8 @@ type PersistentVolumeConfig struct {
 // PersistentVolumeClaimConfig is consumed by MakePersistentVolumeClaim() to
 // generate a PVC object.
 type PersistentVolumeClaimConfig struct {
+	// Name of the PVC. If set, overrides NamePrefix
+	Name string
 	// NamePrefix defaults to "pvc-" if unspecified
 	NamePrefix string
 	// ClaimSize must be specified in the Quantity format. Defaults to 2Gi if
@@ -570,7 +584,7 @@ func MakePersistentVolume(pvConfig PersistentVolumeConfig) *v1.PersistentVolume 
 			GenerateName: pvConfig.NamePrefix,
 			Labels:       pvConfig.Labels,
 			Annotations: map[string]string{
-				util.VolumeGidAnnotationKey: "777",
+				volumeGidAnnotationKey: "777",
 			},
 		},
 		Spec: v1.PersistentVolumeSpec{
@@ -610,6 +624,7 @@ func MakePersistentVolumeClaim(cfg PersistentVolumeClaimConfig, ns string) *v1.P
 
 	return &v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:         cfg.Name,
 			GenerateName: cfg.NamePrefix,
 			Namespace:    ns,
 			Annotations:  cfg.Annotations,
@@ -703,12 +718,12 @@ func WaitForPVClaimBoundPhase(client clientset.Interface, pvclaims []*v1.Persist
 }
 
 // WaitForPersistentVolumePhase waits for a PersistentVolume to be in a specific phase or until timeout occurs, whichever comes first.
-func WaitForPersistentVolumePhase(phase v1.PersistentVolumePhase, c clientset.Interface, pvName string, Poll, timeout time.Duration) error {
+func WaitForPersistentVolumePhase(phase v1.PersistentVolumePhase, c clientset.Interface, pvName string, poll, timeout time.Duration) error {
 	framework.Logf("Waiting up to %v for PersistentVolume %s to have phase %s", timeout, pvName, phase)
-	for start := time.Now(); time.Since(start) < timeout; time.Sleep(Poll) {
+	for start := time.Now(); time.Since(start) < timeout; time.Sleep(poll) {
 		pv, err := c.CoreV1().PersistentVolumes().Get(context.TODO(), pvName, metav1.GetOptions{})
 		if err != nil {
-			framework.Logf("Get persistent volume %s in failed, ignoring for %v: %v", pvName, Poll, err)
+			framework.Logf("Get persistent volume %s in failed, ignoring for %v: %v", pvName, poll, err)
 			continue
 		}
 		if pv.Status.Phase == phase {
@@ -721,24 +736,25 @@ func WaitForPersistentVolumePhase(phase v1.PersistentVolumePhase, c clientset.In
 }
 
 // WaitForPersistentVolumeClaimPhase waits for a PersistentVolumeClaim to be in a specific phase or until timeout occurs, whichever comes first.
-func WaitForPersistentVolumeClaimPhase(phase v1.PersistentVolumeClaimPhase, c clientset.Interface, ns string, pvcName string, Poll, timeout time.Duration) error {
-	return WaitForPersistentVolumeClaimsPhase(phase, c, ns, []string{pvcName}, Poll, timeout, true)
+func WaitForPersistentVolumeClaimPhase(phase v1.PersistentVolumeClaimPhase, c clientset.Interface, ns string, pvcName string, poll, timeout time.Duration) error {
+	return WaitForPersistentVolumeClaimsPhase(phase, c, ns, []string{pvcName}, poll, timeout, true)
 }
 
 // WaitForPersistentVolumeClaimsPhase waits for any (if matchAny is true) or all (if matchAny is false) PersistentVolumeClaims
 // to be in a specific phase or until timeout occurs, whichever comes first.
-func WaitForPersistentVolumeClaimsPhase(phase v1.PersistentVolumeClaimPhase, c clientset.Interface, ns string, pvcNames []string, Poll, timeout time.Duration, matchAny bool) error {
+func WaitForPersistentVolumeClaimsPhase(phase v1.PersistentVolumeClaimPhase, c clientset.Interface, ns string, pvcNames []string, poll, timeout time.Duration, matchAny bool) error {
 	if len(pvcNames) == 0 {
 		return fmt.Errorf("Incorrect parameter: Need at least one PVC to track. Found 0")
 	}
 	framework.Logf("Waiting up to %v for PersistentVolumeClaims %v to have phase %s", timeout, pvcNames, phase)
-	for start := time.Now(); time.Since(start) < timeout; time.Sleep(Poll) {
+	for start := time.Now(); time.Since(start) < timeout; time.Sleep(poll) {
 		phaseFoundInAllClaims := true
 		for _, pvcName := range pvcNames {
 			pvc, err := c.CoreV1().PersistentVolumeClaims(ns).Get(context.TODO(), pvcName, metav1.GetOptions{})
 			if err != nil {
-				framework.Logf("Failed to get claim %q, retrying in %v. Error: %v", pvcName, Poll, err)
-				continue
+				framework.Logf("Failed to get claim %q, retrying in %v. Error: %v", pvcName, poll, err)
+				phaseFoundInAllClaims = false
+				break
 			}
 			if pvc.Status.Phase == phase {
 				framework.Logf("PersistentVolumeClaim %s found and phase=%s (%v)", pvcName, phase, time.Since(start))
@@ -779,7 +795,7 @@ func GetDefaultStorageClassName(c clientset.Interface) (string, error) {
 	}
 	var scName string
 	for _, sc := range list.Items {
-		if storageutil.IsDefaultAnnotation(sc.ObjectMeta) {
+		if isDefaultAnnotation(sc.ObjectMeta) {
 			if len(scName) != 0 {
 				return "", fmt.Errorf("Multiple default storage classes found: %q and %q", scName, sc.Name)
 			}
@@ -793,10 +809,70 @@ func GetDefaultStorageClassName(c clientset.Interface) (string, error) {
 	return scName, nil
 }
 
+// isDefaultAnnotation returns a boolean if the default storage class
+// annotation is set
+// TODO: remove Beta when no longer needed
+func isDefaultAnnotation(obj metav1.ObjectMeta) bool {
+	if obj.Annotations[isDefaultStorageClassAnnotation] == "true" {
+		return true
+	}
+	if obj.Annotations[betaIsDefaultStorageClassAnnotation] == "true" {
+		return true
+	}
+
+	return false
+}
+
 // SkipIfNoDefaultStorageClass skips tests if no default SC can be found.
 func SkipIfNoDefaultStorageClass(c clientset.Interface) {
 	_, err := GetDefaultStorageClassName(c)
 	if err != nil {
 		e2eskipper.Skipf("error finding default storageClass : %v", err)
 	}
+}
+
+// WaitForPersistentVolumeDeleted waits for a PersistentVolume to get deleted or until timeout occurs, whichever comes first.
+func WaitForPersistentVolumeDeleted(c clientset.Interface, pvName string, poll, timeout time.Duration) error {
+	framework.Logf("Waiting up to %v for PersistentVolume %s to get deleted", timeout, pvName)
+	for start := time.Now(); time.Since(start) < timeout; time.Sleep(poll) {
+		pv, err := c.CoreV1().PersistentVolumes().Get(context.TODO(), pvName, metav1.GetOptions{})
+		if err == nil {
+			framework.Logf("PersistentVolume %s found and phase=%s (%v)", pvName, pv.Status.Phase, time.Since(start))
+			continue
+		}
+		if apierrors.IsNotFound(err) {
+			framework.Logf("PersistentVolume %s was removed", pvName)
+			return nil
+		}
+		framework.Logf("Get persistent volume %s in failed, ignoring for %v: %v", pvName, poll, err)
+	}
+	return fmt.Errorf("PersistentVolume %s still exists within %v", pvName, timeout)
+}
+
+// WaitForPVCFinalizer waits for a finalizer to be added to a PVC in a given namespace.
+func WaitForPVCFinalizer(ctx context.Context, cs clientset.Interface, name, namespace, finalizer string, poll, timeout time.Duration) error {
+	var (
+		err error
+		pvc *v1.PersistentVolumeClaim
+	)
+	framework.Logf("Waiting up to %v for PersistentVolumeClaim %s/%s to contain finalizer %s", timeout, namespace, name, finalizer)
+	if successful := utils.WaitUntil(poll, timeout, func() bool {
+		pvc, err = cs.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			framework.Logf("Failed to get PersistentVolumeClaim %s/%s with err: %v. Will retry in %v", name, namespace, err, timeout)
+			return false
+		}
+		for _, f := range pvc.Finalizers {
+			if f == finalizer {
+				return true
+			}
+		}
+		return false
+	}); successful {
+		return nil
+	}
+	if err == nil {
+		err = fmt.Errorf("finalizer %s not added to pvc %s/%s", finalizer, namespace, name)
+	}
+	return err
 }

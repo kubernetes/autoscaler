@@ -18,7 +18,7 @@ package azure
 
 import (
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,8 +28,12 @@ import (
 	"k8s.io/klog/v2"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
+
+const azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
 
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 	instanceOS := cloudprovider.DefaultOS
@@ -56,8 +60,10 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 		}
 
 		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
+		result[azureDiskTopologyKey] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
 		result[apiv1.LabelTopologyZone] = "0"
+		result[azureDiskTopologyKey] = ""
 	}
 
 	result[apiv1.LabelHostname] = nodeName
@@ -181,6 +187,53 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 	}
 
 	return taints
+}
+
+func extractAutoscalingOptionsFromScaleSetTags(tags map[string]*string) map[string]string {
+	options := make(map[string]string)
+	for tagName, tagValue := range tags {
+		if !strings.HasPrefix(tagName, nodeOptionsTagName) {
+			continue
+		}
+		resourceName := strings.Split(tagName, nodeOptionsTagName)
+		if len(resourceName) < 2 || resourceName[1] == "" || tagValue == nil {
+			continue
+		}
+		options[resourceName[1]] = strings.ToLower(*tagValue)
+	}
+	return options
+}
+
+func getFloat64Option(options map[string]string, vmssName, name string) (float64, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to float: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func getDurationOption(options map[string]string, vmssName, name string) (time.Duration, bool) {
+	raw, ok := options[strings.ToLower(name)]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := time.ParseDuration(raw)
+	if err != nil {
+		klog.Warningf("failed to convert VMSS %q tag %s_%s value %q to duration: %v",
+			vmssName, nodeOptionsTagName, name, raw, err)
+		return 0, false
+	}
+
+	return option, true
 }
 
 func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string]*resource.Quantity {

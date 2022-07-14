@@ -1,3 +1,4 @@
+//go:build digitalocean
 // +build digitalocean
 
 /*

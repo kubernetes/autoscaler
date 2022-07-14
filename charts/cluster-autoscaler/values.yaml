@@ -125,6 +125,11 @@ dnsPolicy: ClusterFirst
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
 
+# priorityConfigMapAnnotations -- Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap.
+priorityConfigMapAnnotations: {}
+  # key1: "value1"
+  # key2: "value2"
+
 # extraArgs -- Additional container arguments.
 # Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
 # parameters and their default values.
@@ -136,6 +141,7 @@ extraArgs:
   # write-status-configmap: true
   # status-config-map-name: cluster-autoscaler-status
   # leader-elect: true
+  # leader-elect-resource-lock: endpoints
   # skip-nodes-with-local-storage: true
   # expander: random
   # scale-down-enabled: true
@@ -198,7 +204,7 @@ image:
   # image.repository -- Image repository
   repository: k8s.gcr.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.21.0
+  tag: v1.21.1
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -233,7 +239,7 @@ podLabels: {}
 additionalLabels: {}
 
 # priorityClassName -- priorityClassName
-priorityClassName: ""
+priorityClassName: "system-cluster-critical"
 
 rbac:
   # rbac.create -- If `true`, create and use RBAC resources.

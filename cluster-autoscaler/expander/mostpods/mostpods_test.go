@@ -26,18 +26,18 @@ import (
 )
 
 func TestMostPods(t *testing.T) {
-	e := NewStrategy()
+	e := NewFilter()
 
 	eo0 := expander.Option{Debug: "EO0"}
-	ret := e.BestOption([]expander.Option{eo0}, nil)
-	assert.Equal(t, *ret, eo0)
+	ret := e.BestOptions([]expander.Option{eo0}, nil)
+	assert.Equal(t, ret, []expander.Option{eo0})
 
 	eo1 := expander.Option{Debug: "EO1", Pods: []*apiv1.Pod{nil}}
-	ret = e.BestOption([]expander.Option{eo0, eo1}, nil)
-	assert.Equal(t, *ret, eo1)
+	ret = e.BestOptions([]expander.Option{eo0, eo1}, nil)
+	assert.Equal(t, ret, []expander.Option{eo1})
 
 	eo1b := expander.Option{Debug: "EO1b", Pods: []*apiv1.Pod{nil}}
-	ret = e.BestOption([]expander.Option{eo0, eo1, eo1b}, nil)
-	assert.NotEqual(t, *ret, eo0)
-	assert.True(t, assert.ObjectsAreEqual(*ret, eo1) || assert.ObjectsAreEqual(*ret, eo1b))
+	ret = e.BestOptions([]expander.Option{eo0, eo1, eo1b}, nil)
+	assert.NotEqual(t, ret, []expander.Option{eo0})
+	assert.ObjectsAreEqual(ret, []expander.Option{eo1, eo1b})
 }

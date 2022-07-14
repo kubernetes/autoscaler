@@ -39,7 +39,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
+	"k8s.io/component-helpers/storage/ephemeral"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"k8s.io/klog/v2"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"k8s.io/kubernetes/pkg/api/v1/resource"
@@ -92,12 +93,17 @@ func (kl *Kubelet) listPodsFromDisk() ([]types.UID, error) {
 	return pods, nil
 }
 
-// GetActivePods returns pods that may have a running container (a
-// terminated pod is one that is known to have no running containers and
-// will not get any more).
+// GetActivePods returns pods that have been admitted to the kubelet that
+// are not fully terminated. This is mapped to the "desired state" of the
+// kubelet - what pods should be running.
+//
+// WARNING: Currently this list does not include pods that have been force
+// deleted but may still be terminating, which means resources assigned to
+// those pods during admission may still be in use. See
+// https://github.com/kubernetes/kubernetes/issues/104824
 func (kl *Kubelet) GetActivePods() []*v1.Pod {
 	allPods := kl.podManager.GetPods()
-	activePods := kl.filterOutTerminatedPods(allPods)
+	activePods := kl.filterOutInactivePods(allPods)
 	return activePods
 }
 
@@ -181,10 +187,6 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 
 		subPath := mount.SubPath
 		if mount.SubPathExpr != "" {
-			if !utilfeature.DefaultFeatureGate.Enabled(features.VolumeSubpath) {
-				return nil, cleanupAction, fmt.Errorf("volume subpaths are disabled")
-			}
-
 			subPath, err = kubecontainer.ExpandContainerVolumeMounts(mount, expandEnvs)
 
 			if err != nil {
@@ -193,10 +195,6 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 		}
 
 		if subPath != "" {
-			if !utilfeature.DefaultFeatureGate.Enabled(features.VolumeSubpath) {
-				return nil, cleanupAction, fmt.Errorf("volume subpaths are disabled")
-			}
-
 			if filepath.IsAbs(subPath) {
 				return nil, cleanupAction, fmt.Errorf("error SubPath `%s` must not be an absolute path", subPath)
 			}
@@ -964,17 +962,49 @@ func (kl *Kubelet) podResourcesAreReclaimed(pod *v1.Pod) bool {
 	return kl.PodResourcesAreReclaimed(pod, status)
 }
 
-// filterOutTerminatedPods returns the pods that could still have running
-// containers
-func (kl *Kubelet) filterOutTerminatedPods(pods []*v1.Pod) []*v1.Pod {
-	var filteredPods []*v1.Pod
+// filterOutInactivePods returns pods that are not in a terminal phase
+// or are known to be fully terminated. This method should only be used
+// when the set of pods being filtered is upstream of the pod worker, i.e.
+// the pods the pod manager is aware of.
+func (kl *Kubelet) filterOutInactivePods(pods []*v1.Pod) []*v1.Pod {
+	filteredPods := make([]*v1.Pod, 0, len(pods))
 	for _, p := range pods {
-		if !kl.podWorkers.CouldHaveRunningContainers(p.UID) {
+		// if a pod is fully terminated by UID, it should be excluded from the
+		// list of pods
+		if kl.podWorkers.IsPodKnownTerminated(p.UID) {
 			continue
 		}
+
+		// terminal pods are considered inactive UNLESS they are actively terminating
+		if kl.isAdmittedPodTerminal(p) && !kl.podWorkers.IsPodTerminationRequested(p.UID) {
+			continue
+		}
+
 		filteredPods = append(filteredPods, p)
 	}
 	return filteredPods
+}
+
+// isAdmittedPodTerminal returns true if the provided config source pod is in
+// a terminal phase, or if the Kubelet has already indicated the pod has reached
+// a terminal phase but the config source has not accepted it yet. This method
+// should only be used within the pod configuration loops that notify the pod
+// worker, other components should treat the pod worker as authoritative.
+func (kl *Kubelet) isAdmittedPodTerminal(pod *v1.Pod) bool {
+	// pods are considered inactive if the config source has observed a
+	// terminal phase (if the Kubelet recorded that the pod reached a terminal
+	// phase the pod should never be restarted)
+	if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
+		return true
+	}
+	// a pod that has been marked terminal within the Kubelet is considered
+	// inactive (may have been rejected by Kubelet admision)
+	if status, ok := kl.statusManager.GetPodStatus(pod.UID); ok {
+		if status.Phase == v1.PodSucceeded || status.Phase == v1.PodFailed {
+			return true
+		}
+	}
+	return false
 }
 
 // removeOrphanedPodStatuses removes obsolete entries in podStatus where
@@ -1058,13 +1088,16 @@ func (kl *Kubelet) HandlePodCleanups() error {
 	// cleanup of pod cgroups.
 	runningPods := make(map[types.UID]sets.Empty)
 	possiblyRunningPods := make(map[types.UID]sets.Empty)
+	restartablePods := make(map[types.UID]sets.Empty)
 	for uid, sync := range workingPods {
 		switch sync {
-		case SyncPodWork:
+		case SyncPod:
 			runningPods[uid] = struct{}{}
 			possiblyRunningPods[uid] = struct{}{}
-		case TerminatingPodWork:
+		case TerminatingPod:
 			possiblyRunningPods[uid] = struct{}{}
+		case TerminatedAndRecreatedPod:
+			restartablePods[uid] = struct{}{}
 		}
 	}
 
@@ -1080,8 +1113,8 @@ func (kl *Kubelet) HandlePodCleanups() error {
 		return err
 	}
 	for _, runningPod := range runningRuntimePods {
-		switch workType, ok := workingPods[runningPod.ID]; {
-		case ok && workType == SyncPodWork, ok && workType == TerminatingPodWork:
+		switch workerState, ok := workingPods[runningPod.ID]; {
+		case ok && workerState == SyncPod, ok && workerState == TerminatingPod:
 			// if the pod worker is already in charge of this pod, we don't need to do anything
 			continue
 		default:
@@ -1148,6 +1181,32 @@ func (kl *Kubelet) HandlePodCleanups() error {
 	}
 
 	kl.backOff.GC()
+
+	// If two pods with the same UID are observed in rapid succession, we need to
+	// resynchronize the pod worker after the first pod completes and decide whether
+	// to restart the pod. This happens last to avoid confusing the desired state
+	// in other components and to increase the likelihood transient OS failures during
+	// container start are mitigated. In general only static pods will ever reuse UIDs
+	// since the apiserver uses randomly generated UUIDv4 UIDs with a very low
+	// probability of collision.
+	for uid := range restartablePods {
+		pod, ok := allPodsByUID[uid]
+		if !ok {
+			continue
+		}
+		if kl.isAdmittedPodTerminal(pod) {
+			klog.V(3).InfoS("Pod is restartable after termination due to UID reuse, but pod phase is terminal", "pod", klog.KObj(pod), "podUID", pod.UID)
+			continue
+		}
+		start := kl.clock.Now()
+		mirrorPod, _ := kl.podManager.GetMirrorPodByPod(pod)
+		klog.V(3).InfoS("Pod is restartable after termination due to UID reuse", "pod", klog.KObj(pod), "podUID", pod.UID)
+		kl.dispatchWork(pod, kubetypes.SyncPodCreate, mirrorPod, start)
+		// TODO: move inside syncPod and make reentrant
+		// https://github.com/kubernetes/kubernetes/issues/105014
+		kl.probeManager.AddPod(pod)
+	}
+
 	return nil
 }
 
@@ -1389,6 +1448,20 @@ func (kl *Kubelet) generateAPIPodStatus(pod *v1.Pod, podStatus *kubecontainer.Po
 	allStatus := append(append([]v1.ContainerStatus{}, s.ContainerStatuses...), s.InitContainerStatuses...)
 	s.Phase = getPhase(&pod.Spec, allStatus)
 	klog.V(4).InfoS("Got phase for pod", "pod", klog.KObj(pod), "oldPhase", oldPodStatus.Phase, "phase", s.Phase)
+
+	// Perform a three-way merge between the statuses from the status manager,
+	// runtime, and generated status to ensure terminal status is correctly set.
+	if s.Phase != v1.PodFailed && s.Phase != v1.PodSucceeded {
+		switch {
+		case oldPodStatus.Phase == v1.PodFailed || oldPodStatus.Phase == v1.PodSucceeded:
+			klog.V(4).InfoS("Status manager phase was terminal, updating phase to match", "pod", klog.KObj(pod), "phase", oldPodStatus.Phase)
+			s.Phase = oldPodStatus.Phase
+		case pod.Status.Phase == v1.PodFailed || pod.Status.Phase == v1.PodSucceeded:
+			klog.V(4).InfoS("API phase was terminal, updating phase to match", "pod", klog.KObj(pod), "phase", pod.Status.Phase)
+			s.Phase = pod.Status.Phase
+		}
+	}
+
 	if s.Phase == oldPodStatus.Phase {
 		// preserve the reason and message which is associated with the phase
 		s.Reason = oldPodStatus.Reason
@@ -1450,7 +1523,7 @@ func (kl *Kubelet) generateAPIPodStatus(pod *v1.Pod, podStatus *kubecontainer.Po
 			if kubecontainer.IsHostNetworkPod(pod) && s.PodIP == "" {
 				s.PodIP = hostIPs[0].String()
 				s.PodIPs = []v1.PodIP{{IP: s.PodIP}}
-				if utilfeature.DefaultFeatureGate.Enabled(features.IPv6DualStack) && len(hostIPs) == 2 {
+				if len(hostIPs) == 2 {
 					s.PodIPs = append(s.PodIPs, v1.PodIP{IP: hostIPs[1].String()})
 				}
 			}
@@ -1791,7 +1864,7 @@ func (kl *Kubelet) convertToAPIContainerStatuses(pod *v1.Pod, podStatus *kubecon
 
 // ServeLogs returns logs of current machine.
 func (kl *Kubelet) ServeLogs(w http.ResponseWriter, req *http.Request) {
-	// TODO: whitelist logs we are willing to serve
+	// TODO: allowlist logs we are willing to serve
 	kl.logServer.ServeHTTP(w, req)
 }
 
@@ -1960,21 +2033,28 @@ func hasHostNamespace(pod *v1.Pod) bool {
 // hasHostMountPVC returns true if a PVC is referencing a HostPath volume.
 func (kl *Kubelet) hasHostMountPVC(pod *v1.Pod) bool {
 	for _, volume := range pod.Spec.Volumes {
-		if volume.PersistentVolumeClaim != nil {
-			pvc, err := kl.kubeClient.CoreV1().PersistentVolumeClaims(pod.Namespace).Get(context.TODO(), volume.PersistentVolumeClaim.ClaimName, metav1.GetOptions{})
+		pvcName := ""
+		switch {
+		case volume.PersistentVolumeClaim != nil:
+			pvcName = volume.PersistentVolumeClaim.ClaimName
+		case volume.Ephemeral != nil:
+			pvcName = ephemeral.VolumeClaimName(pod, &volume)
+		default:
+			continue
+		}
+		pvc, err := kl.kubeClient.CoreV1().PersistentVolumeClaims(pod.Namespace).Get(context.TODO(), pvcName, metav1.GetOptions{})
+		if err != nil {
+			klog.InfoS("Unable to retrieve pvc", "pvc", klog.KRef(pod.Namespace, pvcName), "err", err)
+			continue
+		}
+		if pvc != nil {
+			referencedVolume, err := kl.kubeClient.CoreV1().PersistentVolumes().Get(context.TODO(), pvc.Spec.VolumeName, metav1.GetOptions{})
 			if err != nil {
-				klog.InfoS("Unable to retrieve pvc", "pvc", klog.KRef(pod.Namespace, volume.PersistentVolumeClaim.ClaimName), "err", err)
+				klog.InfoS("Unable to retrieve pv", "pvName", pvc.Spec.VolumeName, "err", err)
 				continue
 			}
-			if pvc != nil {
-				referencedVolume, err := kl.kubeClient.CoreV1().PersistentVolumes().Get(context.TODO(), pvc.Spec.VolumeName, metav1.GetOptions{})
-				if err != nil {
-					klog.InfoS("Unable to retrieve pv", "pvName", pvc.Spec.VolumeName, "err", err)
-					continue
-				}
-				if referencedVolume != nil && referencedVolume.Spec.HostPath != nil {
-					return true
-				}
+			if referencedVolume != nil && referencedVolume.Spec.HostPath != nil {
+				return true
 			}
 		}
 	}

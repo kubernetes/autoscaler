@@ -16,6 +16,8 @@ using the cluster autoscaler v1.18 or lower.
 
 ## Updates
 
+* CA 1.22
+  * Allow scaling node groups to 0 nodes, if supported (requires Magnum Wallaby).
 * CA 1.19
   * Update to support Magnum node groups (introduced in Magnum Train).
     * Add node group autodiscovery based on the group's role property.

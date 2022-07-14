@@ -24,6 +24,11 @@ type TestProcessorCallbacks struct {
 	ExtraValues map[string]interface{}
 }
 
+// ResetUnneededNodes is test implementation, which takes no action
+func (callbacks *TestProcessorCallbacks) ResetUnneededNodes() {
+	return
+}
+
 // NewTestProcessorCallbacks creates new instance of TestProcessorCallbacks
 func NewTestProcessorCallbacks() *TestProcessorCallbacks {
 	callbacks := &TestProcessorCallbacks{}

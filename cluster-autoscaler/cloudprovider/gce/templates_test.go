@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -33,23 +34,35 @@ import (
 	quota "k8s.io/apiserver/pkg/quota/v1"
 )
 
+// TestBuildNodeFromTemplateSetsResources tests that capacity and allocatable
+// are loaded into the node template status, a few error scenarios, and physical
+// ephemeral storage (an intermediate result), but it doesn't test that capacity
+// and allocatable are computed correctly, (the test itself calls
+// GceTemplateBuilder.BuildCapacity, GceTemplateBuilder.CalculateAllocatable,
+// and ParseEvictionHardOrGetDefault to compute expected values); computations
+// are tested separately.
 func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 	var thirtyPodsPerNode int64 = 30
 	type testCase struct {
-		scenario                  string
-		kubeEnv                   string
-		accelerators              []*gce.AcceleratorConfig
-		mig                       Mig
-		physicalCpu               int64
-		physicalMemory            int64
-		physicalEphemeralStorage  int64
-		kubeReserved              bool
-		reservedCpu               string
-		reservedMemory            string
-		reservedEphemeralStorage  string
-		isEphemeralStorageBlocked bool
-		expectedErr               bool
-		pods                      *int64
+		scenario string
+		// test inputs
+		kubeEnv               string
+		accelerators          []*gce.AcceleratorConfig
+		attachedLocalSSDCount int64
+		pods                  *int64
+		// other test inputs (constant across test cases, because they are test invariants for now)
+		physicalCpu     int64
+		physicalMemory  int64
+		bootDiskSizeGiB int64
+		// dependent inputs, should match kubeEnv, used to compute expected capacity and allocatable, out of test scope
+		kubeReserved                  bool
+		reservedCpu                   string
+		reservedMemory                string
+		reservedEphemeralStorage      string
+		isEphemeralStorageBlocked     bool
+		ephemeralStorageLocalSSDCount int64
+		// test outputs
+		expectedErr bool
 	}
 	testCases := []testCase{
 		{
@@ -65,7 +78,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			},
 			physicalCpu:              8,
 			physicalMemory:           200 * units.MiB,
-			physicalEphemeralStorage: 300,
+			bootDiskSizeGiB:          300,
 			kubeReserved:             true,
 			reservedCpu:              "1000m",
 			reservedMemory:           fmt.Sprintf("%v", 1*units.MiB),
@@ -111,7 +124,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
 			physicalCpu:               8,
 			physicalMemory:            200 * units.MiB,
-			physicalEphemeralStorage:  300,
+			bootDiskSizeGiB:           300,
 			reservedCpu:               "0m",
 			reservedMemory:            fmt.Sprintf("%v", 0*units.MiB),
 			reservedEphemeralStorage:  "0Gi",
@@ -126,15 +139,49 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"AUTOSCALER_ENV_VARS: os_distribution=cos;os=linux;kube_reserved=cpu=0,memory=0,ephemeral-storage=0;BLOCK_EPH_STORAGE_BOOT_DISK=false\n" +
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-			physicalCpu:               8,
-			physicalMemory:            200 * units.MiB,
-			physicalEphemeralStorage:  300,
-			reservedCpu:               "0m",
-			reservedMemory:            fmt.Sprintf("%v", 0*units.MiB),
-			reservedEphemeralStorage:  "0Gi",
-			kubeReserved:              true,
-			isEphemeralStorageBlocked: false,
-			expectedErr:               false,
+			reservedCpu:              "0m",
+			reservedMemory:           fmt.Sprintf("%v", 0*units.MiB),
+			reservedEphemeralStorage: "0Gi",
+			kubeReserved:             true,
+			expectedErr:              false,
+		},
+		{
+			scenario:                      "more local SSDs requested for ephemeral storage than attached",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=1\n",
+			ephemeralStorageLocalSSDCount: 1,
+			attachedLocalSSDCount:         0,
+			expectedErr:                   true,
+		},
+		{
+			scenario:                      "all attached local SSDs requested for ephemeral storage",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			attachedLocalSSDCount:         2,
+			expectedErr:                   false,
+		},
+		{
+			scenario:                      "more local SSDs attached than requested for ephemeral storage",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			attachedLocalSSDCount:         4,
+			expectedErr:                   false,
+		},
+		{
+			scenario:                      "ephemeral storage on local SSDs with kube-reserved",
+			kubeEnv:                       "AUTOSCALER_ENV_VARS: kube_reserved=cpu=0,memory=0,ephemeral-storage=10Gi;os_distribution=cos;os=linux;ephemeral_storage_local_ssd_count=2\n",
+			physicalCpu:                   8,
+			physicalMemory:                200 * units.MiB,
+			ephemeralStorageLocalSSDCount: 2,
+			kubeReserved:                  true,
+			reservedCpu:                   "0m",
+			reservedMemory:                fmt.Sprintf("%v", 0*units.MiB),
+			reservedEphemeralStorage:      "10Gi",
+			attachedLocalSSDCount:         4,
+			expectedErr:                   false,
 		},
 	}
 	for _, tc := range testCases {
@@ -157,16 +204,24 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 						{
 							Boot: true,
 							InitializeParams: &gce.AttachedDiskInitializeParams{
-								DiskSizeGb: tc.physicalEphemeralStorage,
+								DiskSizeGb: tc.bootDiskSizeGiB,
 							},
 						},
 					},
 				},
 			}
+			for i := int64(0); i < tc.attachedLocalSSDCount; i++ {
+				template.Properties.Disks = append(template.Properties.Disks, &gce.AttachedDisk{
+					Type: "SCRATCH",
+					InitializeParams: &gce.AttachedDiskInitializeParams{
+						DiskType: "local-ssd",
+					},
+				})
+			}
 			if tc.kubeEnv != "" {
 				template.Properties.Metadata.Items = []*gce.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}}
 			}
-			node, err := tb.BuildNodeFromTemplate(mig, template, tc.physicalCpu, tc.physicalMemory, tc.pods)
+			node, err := tb.BuildNodeFromTemplate(mig, template, tc.physicalCpu, tc.physicalMemory, tc.pods, &GceReserved{})
 			if tc.expectedErr {
 				assert.Error(t, err)
 			} else {
@@ -175,11 +230,15 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.NotNil(t, node.Status)
 				assert.NotNil(t, node.Status.Capacity)
 				assert.NotNil(t, node.Status.Allocatable)
-				physicalEphemeralStorage := tc.physicalEphemeralStorage
-				if tc.isEphemeralStorageBlocked {
-					physicalEphemeralStorage = 0
+				// this logic is a duplicate of logic under test and would best be captured by
+				// specifying physicalEphemeralStorageGiB in the testCase struct
+				physicalEphemeralStorageGiB := tc.bootDiskSizeGiB
+				if tc.ephemeralStorageLocalSSDCount > 0 {
+					physicalEphemeralStorageGiB = tc.ephemeralStorageLocalSSDCount * LocalSSDDiskSizeInGiB
+				} else if tc.isEphemeralStorageBlocked {
+					physicalEphemeralStorageGiB = 0
 				}
-				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, physicalEphemeralStorage*units.GiB, tc.pods)
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators, OperatingSystemLinux, OperatingSystemDistributionCOS, physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, "", &GceReserved{})
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -370,17 +429,17 @@ func TestParseEvictionHard(t *testing.T) {
 	testCases := []testCase{{
 		memory:                        "200Mi",
 		ephemeralStorage:              "15%",
-		memoryExpected:                200 * 1024 * 1024,
+		memoryExpected:                200 * MiB,
 		ephemeralStorageRatioExpected: 0.15,
 	}, {
 		memory:                        "2Gi",
 		ephemeralStorage:              "11.5%",
-		memoryExpected:                2 * 1024 * 1024 * 1024,
+		memoryExpected:                2 * GiB,
 		ephemeralStorageRatioExpected: 0.115,
 	}, {
 		memory:                        "",
 		ephemeralStorage:              "", // empty string, fallback to default
-		memoryExpected:                100 * 1024 * 1024,
+		memoryExpected:                100 * MiB,
 		ephemeralStorageRatioExpected: 0.1,
 	}, {
 		memory:                        "110292",
@@ -390,7 +449,7 @@ func TestParseEvictionHard(t *testing.T) {
 	}, {
 		memory:                        "abcb12", // unparsable, fallback to default
 		ephemeralStorage:              "-11%",   // negative percentage, should fallback to default
-		memoryExpected:                100 * 1024 * 1024,
+		memoryExpected:                100 * MiB,
 		ephemeralStorageRatioExpected: 0.1,
 	}}
 	for _, tc := range testCases {
@@ -473,11 +532,69 @@ func TestBuildCapacityMemory(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
 			tb := GceTemplateBuilder{}
 			noAccelerators := make([]*gce.AcceleratorConfig, 0)
-			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, -1, nil)
+			buildCapacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, noAccelerators, tc.os, OperatingSystemDistributionCOS, -1, 0, nil, "", &GceReserved{})
 			assert.NoError(t, err)
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
 			assertEqualResourceLists(t, "Capacity", expectedCapacity, buildCapacity)
+		})
+	}
+}
+
+func TestExtractAutoscalingOptionsFromKubeEnv(t *testing.T) {
+	cases := []struct {
+		desc          string
+		env           string
+		expectedValue map[string]string
+		expectedErr   bool
+	}{
+		{
+			desc:          "autoscaling_options not specified",
+			env:           "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expectedValue: map[string]string{},
+			expectedErr:   false,
+		},
+		{
+			desc:          "empty KubeEnv",
+			env:           "",
+			expectedValue: map[string]string{},
+			expectedErr:   false,
+		},
+		{
+			desc:          "unparsable KubeEnv",
+			env:           "AUTOSCALER_ENV_VARS",
+			expectedValue: nil,
+			expectedErr:   true,
+		},
+		{
+			desc: "partial option set",
+			env:  "AUTOSCALER_ENV_VARS: node_labels=a=b;autoscaling_options=scaledownunreadytime=1h",
+			expectedValue: map[string]string{
+				config.DefaultScaleDownUnreadyTimeKey: "1h",
+			},
+			expectedErr: false,
+		},
+		{
+			desc: "full option set",
+			env:  "AUTOSCALER_ENV_VARS: node_labels=a,b;autoscaling_options=scaledownutilizationthreshold=0.4,scaledowngpuutilizationthreshold=0.5,scaledownunneededtime=30m,scaledownunreadytime=1h",
+			expectedValue: map[string]string{
+				config.DefaultScaleDownUtilizationThresholdKey:    "0.4",
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.5",
+				config.DefaultScaleDownUnneededTimeKey:            "30m",
+				config.DefaultScaleDownUnreadyTimeKey:             "1h",
+			},
+			expectedErr: false,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			value, err := extractAutoscalingOptionsFromKubeEnv(c.env)
+			assert.Equal(t, c.expectedValue, value)
+			if c.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
@@ -591,6 +708,26 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 				return
 			}
 			assert.Equal(t, c.expect, labels)
+
+			template := &gce.InstanceTemplate{
+				Properties: &gce.InstanceProperties{
+					Metadata: &gce.Metadata{
+						Items: []*gce.MetadataItems{
+							{
+								Key:   "kube-env",
+								Value: &c.env,
+							},
+						},
+					},
+				},
+			}
+
+			labels, err = GetLabelsFromTemplate(template)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, labels)
 		})
 	}
 }
@@ -656,6 +793,26 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
 			taints, err := extractTaintsFromKubeEnv(c.env)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, makeTaintSet(taints))
+
+			template := &gce.InstanceTemplate{
+				Properties: &gce.InstanceProperties{
+					Metadata: &gce.Metadata{
+						Items: []*gce.MetadataItems{
+							{
+								Key:   "kube-env",
+								Value: &c.env,
+							},
+						},
+					},
+				},
+			}
+
+			taints, err = GetTaintsFromTemplate(template)
 			assert.Equal(t, c.err, err)
 			if c.err != nil {
 				return

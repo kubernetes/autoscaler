@@ -30,19 +30,21 @@ import (
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilversion "k8s.io/apimachinery/pkg/util/version"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/pkg/features"
+	"k8s.io/component-base/featuregate"
 	"k8s.io/kubernetes/test/e2e/framework"
+	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 	e2essh "k8s.io/kubernetes/test/e2e/framework/ssh"
 )
 
-// TestContext should be used by all tests to access common context data.
-var TestContext framework.TestContextType
+// New local storage types to support local storage capacity isolation
+var localStorageCapacityIsolation featuregate.Feature = "LocalStorageCapacityIsolation"
 
 func skipInternalf(caller int, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
@@ -130,8 +132,8 @@ func SkipUnlessAtLeast(value int, minValue int, message string) {
 
 // SkipUnlessLocalEphemeralStorageEnabled skips if the LocalStorageCapacityIsolation is not enabled.
 func SkipUnlessLocalEphemeralStorageEnabled() {
-	if !utilfeature.DefaultFeatureGate.Enabled(features.LocalStorageCapacityIsolation) {
-		skipInternalf(1, "Only supported when %v feature is enabled", features.LocalStorageCapacityIsolation)
+	if !utilfeature.DefaultFeatureGate.Enabled(localStorageCapacityIsolation) {
+		skipInternalf(1, "Only supported when %v feature is enabled", localStorageCapacityIsolation)
 	}
 }
 
@@ -150,35 +152,35 @@ func SkipIfMissingResource(dynamicClient dynamic.Interface, gvr schema.GroupVers
 
 // SkipUnlessNodeCountIsAtLeast skips if the number of nodes is less than the minNodeCount.
 func SkipUnlessNodeCountIsAtLeast(minNodeCount int) {
-	if TestContext.CloudConfig.NumNodes < minNodeCount {
-		skipInternalf(1, "Requires at least %d nodes (not %d)", minNodeCount, TestContext.CloudConfig.NumNodes)
+	if framework.TestContext.CloudConfig.NumNodes < minNodeCount {
+		skipInternalf(1, "Requires at least %d nodes (not %d)", minNodeCount, framework.TestContext.CloudConfig.NumNodes)
 	}
 }
 
 // SkipUnlessNodeCountIsAtMost skips if the number of nodes is greater than the maxNodeCount.
 func SkipUnlessNodeCountIsAtMost(maxNodeCount int) {
-	if TestContext.CloudConfig.NumNodes > maxNodeCount {
-		skipInternalf(1, "Requires at most %d nodes (not %d)", maxNodeCount, TestContext.CloudConfig.NumNodes)
+	if framework.TestContext.CloudConfig.NumNodes > maxNodeCount {
+		skipInternalf(1, "Requires at most %d nodes (not %d)", maxNodeCount, framework.TestContext.CloudConfig.NumNodes)
 	}
 }
 
 // SkipIfProviderIs skips if the provider is included in the unsupportedProviders.
 func SkipIfProviderIs(unsupportedProviders ...string) {
 	if framework.ProviderIs(unsupportedProviders...) {
-		skipInternalf(1, "Not supported for providers %v (found %s)", unsupportedProviders, TestContext.Provider)
+		skipInternalf(1, "Not supported for providers %v (found %s)", unsupportedProviders, framework.TestContext.Provider)
 	}
 }
 
 // SkipUnlessProviderIs skips if the provider is not included in the supportedProviders.
 func SkipUnlessProviderIs(supportedProviders ...string) {
 	if !framework.ProviderIs(supportedProviders...) {
-		skipInternalf(1, "Only supported for providers %v (not %s)", supportedProviders, TestContext.Provider)
+		skipInternalf(1, "Only supported for providers %v (not %s)", supportedProviders, framework.TestContext.Provider)
 	}
 }
 
 // SkipUnlessMultizone skips if the cluster does not have multizone.
 func SkipUnlessMultizone(c clientset.Interface) {
-	zones, err := framework.GetClusterZones(c)
+	zones, err := e2enode.GetClusterZones(c)
 	if err != nil {
 		skipInternalf(1, "Error listing cluster zones")
 	}
@@ -189,7 +191,7 @@ func SkipUnlessMultizone(c clientset.Interface) {
 
 // SkipIfMultizone skips if the cluster has multizone.
 func SkipIfMultizone(c clientset.Interface) {
-	zones, err := framework.GetClusterZones(c)
+	zones, err := e2enode.GetClusterZones(c)
 	if err != nil {
 		skipInternalf(1, "Error listing cluster zones")
 	}
@@ -201,21 +203,28 @@ func SkipIfMultizone(c clientset.Interface) {
 // SkipUnlessMasterOSDistroIs skips if the master OS distro is not included in the supportedMasterOsDistros.
 func SkipUnlessMasterOSDistroIs(supportedMasterOsDistros ...string) {
 	if !framework.MasterOSDistroIs(supportedMasterOsDistros...) {
-		skipInternalf(1, "Only supported for master OS distro %v (not %s)", supportedMasterOsDistros, TestContext.MasterOSDistro)
+		skipInternalf(1, "Only supported for master OS distro %v (not %s)", supportedMasterOsDistros, framework.TestContext.MasterOSDistro)
 	}
 }
 
 // SkipUnlessNodeOSDistroIs skips if the node OS distro is not included in the supportedNodeOsDistros.
 func SkipUnlessNodeOSDistroIs(supportedNodeOsDistros ...string) {
 	if !framework.NodeOSDistroIs(supportedNodeOsDistros...) {
-		skipInternalf(1, "Only supported for node OS distro %v (not %s)", supportedNodeOsDistros, TestContext.NodeOSDistro)
+		skipInternalf(1, "Only supported for node OS distro %v (not %s)", supportedNodeOsDistros, framework.TestContext.NodeOSDistro)
+	}
+}
+
+// SkipUnlessNodeOSArchIs skips if the node OS distro is not included in the supportedNodeOsArchs.
+func SkipUnlessNodeOSArchIs(supportedNodeOsArchs ...string) {
+	if !framework.NodeOSArchIs(supportedNodeOsArchs...) {
+		skipInternalf(1, "Only supported for node OS arch %v (not %s)", supportedNodeOsArchs, framework.TestContext.NodeOSArch)
 	}
 }
 
 // SkipIfNodeOSDistroIs skips if the node OS distro is included in the unsupportedNodeOsDistros.
 func SkipIfNodeOSDistroIs(unsupportedNodeOsDistros ...string) {
 	if framework.NodeOSDistroIs(unsupportedNodeOsDistros...) {
-		skipInternalf(1, "Not supported for node OS distro %v (is %s)", unsupportedNodeOsDistros, TestContext.NodeOSDistro)
+		skipInternalf(1, "Not supported for node OS distro %v (is %s)", unsupportedNodeOsDistros, framework.TestContext.NodeOSDistro)
 	}
 }
 
@@ -232,8 +241,8 @@ func SkipUnlessServerVersionGTE(v *utilversion.Version, c discovery.ServerVersio
 
 // SkipUnlessSSHKeyPresent skips if no SSH key is found.
 func SkipUnlessSSHKeyPresent() {
-	if _, err := e2essh.GetSigner(TestContext.Provider); err != nil {
-		skipInternalf(1, "No SSH Key for provider %s: '%v'", TestContext.Provider, err)
+	if _, err := e2essh.GetSigner(framework.TestContext.Provider); err != nil {
+		skipInternalf(1, "No SSH Key for provider %s: '%v'", framework.TestContext.Provider, err)
 	}
 }
 
@@ -261,19 +270,41 @@ func SkipIfAppArmorNotSupported() {
 // RunIfContainerRuntimeIs runs if the container runtime is included in the runtimes.
 func RunIfContainerRuntimeIs(runtimes ...string) {
 	for _, containerRuntime := range runtimes {
-		if containerRuntime == TestContext.ContainerRuntime {
+		if containerRuntime == framework.TestContext.ContainerRuntime {
 			return
 		}
 	}
-	skipInternalf(1, "Skipped because container runtime %q is not in %s", TestContext.ContainerRuntime, runtimes)
+	skipInternalf(1, "Skipped because container runtime %q is not in %s", framework.TestContext.ContainerRuntime, runtimes)
 }
 
 // RunIfSystemSpecNameIs runs if the system spec name is included in the names.
 func RunIfSystemSpecNameIs(names ...string) {
 	for _, name := range names {
-		if name == TestContext.SystemSpecName {
+		if name == framework.TestContext.SystemSpecName {
 			return
 		}
 	}
-	skipInternalf(1, "Skipped because system spec name %q is not in %v", TestContext.SystemSpecName, names)
+	skipInternalf(1, "Skipped because system spec name %q is not in %v", framework.TestContext.SystemSpecName, names)
+}
+
+// SkipUnlessComponentRunsAsPodsAndClientCanDeleteThem run if the component run as pods and client can delete them
+func SkipUnlessComponentRunsAsPodsAndClientCanDeleteThem(componentName string, c clientset.Interface, ns string, labelSet labels.Set) {
+	// verify if component run as pod
+	label := labels.SelectorFromSet(labelSet)
+	listOpts := metav1.ListOptions{LabelSelector: label.String()}
+	pods, err := c.CoreV1().Pods(ns).List(context.TODO(), listOpts)
+	framework.Logf("SkipUnlessComponentRunsAsPodsAndClientCanDeleteThem: %v, %v", pods, err)
+	if err != nil {
+		skipInternalf(1, "Skipped because client failed to get component:%s pod err:%v", componentName, err)
+	}
+
+	if len(pods.Items) == 0 {
+		skipInternalf(1, "Skipped because component:%s is not running as pod.", componentName)
+	}
+
+	// verify if client can delete pod
+	pod := pods.Items[0]
+	if err := c.CoreV1().Pods(ns).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{DryRun: []string{metav1.DryRunAll}}); err != nil {
+		skipInternalf(1, "Skipped because client failed to delete component:%s pod, err:%v", componentName, err)
+	}
 }

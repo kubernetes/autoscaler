@@ -19,13 +19,13 @@ package vpa
 import (
 	"encoding/json"
 	"fmt"
+	v1 "k8s.io/api/admission/v1"
 
-	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -68,8 +68,8 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *resourceHandler) GetPatches(ar *v1beta1.AdmissionRequest) ([]resource.PatchRecord, error) {
-	raw, isCreate := ar.Object.Raw, ar.Operation == v1beta1.Create
+func (h *resourceHandler) GetPatches(ar *v1.AdmissionRequest) ([]resource.PatchRecord, error) {
+	raw, isCreate := ar.Object.Raw, ar.Operation == v1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
 		return nil, err
@@ -145,6 +145,10 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 	if isCreate && vpa.Spec.TargetRef == nil {
 		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
+	}
+
+	if len(vpa.Spec.Recommenders) > 1 {
+		return fmt.Errorf("The current version of VPA object shouldn't specify more than one recommenders.")
 	}
 
 	return nil

@@ -21,6 +21,11 @@ type ProcessorCallbacks interface {
 	// DisableScaleDownForLoop disables scale down for current loop iteration
 	DisableScaleDownForLoop()
 
+	// ResetUnneededNodes resets information about any nodes that were previously considered unneeded by scale-down logic.
+	// CA will only delete a node if it's unneeded (meets criteria for scale-down) for time specified
+	// via --scale-down-unneeded-time. This call resets the timer for all the nodes in the cluster.
+	ResetUnneededNodes()
+
 	// SetExtraValue sets arbitrary value for given key. Value storage will be reset at the beginning of each loop iteration.
 	// Arbitrary value storage is used to pass information between processors used in extension points.
 	SetExtraValue(key string, value interface{})

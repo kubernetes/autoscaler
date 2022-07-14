@@ -47,6 +47,7 @@ rules:
   - apiGroups:
     - ""
     resources:
+      - namespaces
       - pods
       - services
       - replicationcontrollers

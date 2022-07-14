@@ -24,19 +24,21 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	klog "k8s.io/klog/v2"
-	"k8s.io/legacy-cloud-providers/azure/clients/containerserviceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/diskclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/interfaceclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/storageaccountclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssclient"
-	"k8s.io/legacy-cloud-providers/azure/clients/vmssvmclient"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient"
 )
 
 // DeploymentsClient defines needed functions for azure network.DeploymentsClient.
@@ -52,10 +54,10 @@ type azDeploymentsClient struct {
 	client resources.DeploymentsClient
 }
 
-func newAzDeploymentsClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azDeploymentsClient {
+func newAzDeploymentsClient(subscriptionID, endpoint string, authorizer autorest.Authorizer) *azDeploymentsClient {
 	deploymentsClient := resources.NewDeploymentsClient(subscriptionID)
 	deploymentsClient.BaseURI = endpoint
-	deploymentsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+	deploymentsClient.Authorizer = authorizer
 	deploymentsClient.PollingDelay = 5 * time.Second
 	configureUserAgent(&deploymentsClient.Client)
 
@@ -206,13 +208,28 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 	return nil, fmt.Errorf("no credentials provided for AAD application %s", config.AADClientID)
 }
 
+func newAuthorizer(config *Config, env *azure.Environment) (autorest.Authorizer, error) {
+	switch config.AuthMethod {
+	case authMethodCLI:
+		return auth.NewAuthorizerFromCLI()
+	case "", authMethodPrincipal:
+		token, err := newServicePrincipalTokenFromCredentials(config, env)
+		if err != nil {
+			return nil, fmt.Errorf("retrieve service principal token: %v", err)
+		}
+		return autorest.NewBearerAuthorizer(token), nil
+	default:
+		return nil, fmt.Errorf("unsupported authorization method: %s", config.AuthMethod)
+	}
+}
+
 func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
-	spt, err := newServicePrincipalTokenFromCredentials(cfg, env)
+	authorizer, err := newAuthorizer(cfg, env)
 	if err != nil {
 		return nil, err
 	}
 
-	azClientConfig := cfg.getAzureClientConfig(spt, env)
+	azClientConfig := cfg.getAzureClientConfig(authorizer, env)
 	azClientConfig.UserAgent = getUserAgentExtension()
 
 	vmssClientConfig := azClientConfig.WithRateLimiter(cfg.VirtualMachineScaleSetRateLimit)
@@ -227,7 +244,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	virtualMachinesClient := vmclient.New(vmClientConfig)
 	klog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
 
-	deploymentsClient := newAzDeploymentsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
+	deploymentsClient := newAzDeploymentsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, authorizer)
 	klog.V(5).Infof("Created deployments client with authorizer: %v", deploymentsClient)
 
 	interfaceClientConfig := azClientConfig.WithRateLimiter(cfg.InterfaceRateLimit)

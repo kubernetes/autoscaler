@@ -65,3 +65,5 @@ go get "k8s.io/kubernetes@v${VERSION}"
 go mod vendor
 go mod tidy
 git rm -r --force --ignore-unmatch kubernetes
+
+sed -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"$VERSION\"|" version/version.go

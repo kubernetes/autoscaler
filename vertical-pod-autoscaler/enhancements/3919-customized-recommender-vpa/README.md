@@ -23,10 +23,10 @@
 
 Today, the current VPA recommends CPU/Mem requests based on one recommender, 
 which recommends the future requests based on the historical usage observed in a 
-rolling time window. As there is no universal recommendation policy that applies to all 
-types of workload, this KEP suggests supporting multiple customized recommenders in VPA.  
-Thus, users can run different recommenders for different workloads, as they may exhibit 
-very distinct resource usage behaviors.
+rolling time window. As there is no universal recommendation policy that applies
+to all types of workloads, this KEP suggests supporting multiple customized
+recommenders in VPA. Thus, users can run different recommenders for different
+workloads, as they may exhibit very distinct resource usage behaviors.
 
 ## Motivation
 
@@ -48,6 +48,7 @@ behaviors for workloads and applying different algorithms to improve resource ut
 
 - Allow the VPA object to specify a customized recommender to use. 
 - Allow the VPA object to use the default recommender when no recommender is specified.
+- Don't block future changes that will allow a VPA object to use multiple recommenders at the same time.
 
 ### Non-Goals
 
@@ -84,9 +85,12 @@ VPA adopts a reactive approach so a more proactive recommender is needed for the
 
 ### Implementation Details
 
-The following describes the details of implementing a first-citizen approach to support the customized 
-recommender. Namely, a dedicated field `recommenderName` is added to the VPA crd definition in 
-`deploy/vpa-v1.crd.yaml`.
+The following describes the details of implementing a first-citizen approach to
+support the customized recommender. Namely, a dedicated field `recommenders` is
+added to the VPA crd definition in `deploy/vpa-v1.crd.yaml`. We identify
+recommender to use with a struct containing name of the recommender rather than
+using a plain string to identify the recommender. This will allow us to pass
+parameters to recommenders if we need to do that in the future.
 
 ```yaml
 validation:
@@ -98,8 +102,14 @@ validation:
        type: object
        required: []
        properties:
-         recommenderName:
-           type: string
+         recommenders:
+           type: array
+           items:
+             properties:
+               name:
+                 description: Name of the recommmender
+                 type: string
+             type: object
          targetRef:
            type: object
          updatePolicy:
@@ -107,9 +117,17 @@ validation:
 ```
 
 Correspondingly, the `VerticalPodAutoscalerSpec` in `pkg/apis/autoscaling.k8s.io/v1/types.go` 
-should be updated to include the `recommenderName` field.
+should be updated to include the `recommenders` field.
 
 ```golang
+
+// VerticalPodAutoscalerRecommenderSelector points to a specificic Vertical Pod Autoscaler recommender
+// in the future it might pass parameters to the recommender.
+type VerticalPodAutoscalerRecommenderSelector struct {
+  // Name of the recommender responsible for generating recommendation for this object.
+  Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
+}
+
 // VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
 type VerticalPodAutoscalerSpec struct {
 	// TargetRef points to the controller managing the set of pods for the
@@ -137,9 +155,11 @@ type VerticalPodAutoscalerSpec struct {
 	// resources for all containers in the pod, without additional constraints.
 	// +optional
 	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
-  
-  // Name of the recommender responsible for generating recommendation for this object.
-  RecommenderName []string `json:"recommenderName,omitempty" protobuf:"bytes,4,opt,name=recommenderName"`
+	// Recommender responsible for generating recommendation for this object.
+	// List should be empty (then the default recommender will generate the
+	// recommendation) or contain exactly one recommender.
+	// +optional
+	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
 }
 ```
 
@@ -152,7 +172,7 @@ const RecommenderName = "default"
 recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, RecommenderName, *vpaObjectNamespace)
 ```
 
-where the routines.NewRecommender can pass the `RecommenderName` to the clusterState object.
+where the `routines.NewRecommender` can pass the `RecommenderName` to the `clusterState` object.
 
 ```golang
 // NewRecommender creates a new recommender instance.
@@ -185,9 +205,24 @@ func NewClusterState(recommender_name string) *ClusterState {
 }
 ```
 
-Therefore, when loading VPA objects to the `clusterStateFeeder`, it can use the field selector to select VPA CRDs that 
-have `recommenderName` equal to the current clusterState’s `RecommenderName`.
+Therefore, when loading VPA objects to the `clusterStateFeeder`, it should
+ignore VPA objects that don't have an item in the `recommenders` field with
+`name` equal to the current clusterState’s `RecommenderName`.
+
 ```golang
+func implicitDefaultRecommender(selectors[]*VerticalPodAutoscalerRecommenderSelector) bool {
+	return len(selectors) == 0
+}
+
+func selectsRecommender(selectors[]*VerticalPodAutoscalerRecommenderSelector, name *string) bool {
+	for _, s := range(selectors) {
+		if s.Name == *name {
+			return true
+		}
+	}
+	return false
+}
+
 // Fetch VPA objects and load them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
   // List VPA API objects.
@@ -200,8 +235,8 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
   var vpaCRDs []*vpa_types.VerticalPodAutoscaler
   for _, vpaCRD := range allVpaCRDs {
      currentRecommenderName := feeder.clusterState.RecommenderName
-     if (vpaCRD.Spec.RecommenderName != currentRecommenderName) && (vpaCRD.Spec.RecommenderName != "") {
-        klog.V(6).Infof("Ignoring the vpaCRD as its name %v is not equal to the current recommender's name %v", vpaCRD.Spec.RecommenderName, currentRecommenderName)
+     if (!implicitDefaultRecommender(vpaCRD.Spec.Recommenders) && !selectsRecommender(vpaCRD.Spec.Recommenders, currentRecommenderName)) {
+        klog.V(6).Infof("Ignoring the vpaCRD as current recommender's name %v doesn't appear among its recommenders", currentRecommenderName)
         continue
      }
      vpaCRDs = append(vpaCRDs, vpaCRD)
@@ -216,37 +251,34 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 }
 ```
 
-Accordingly, the VPA object yaml should include the `recommenderName` as the default `RecommenderName`.
-```yaml
-apiVersion: "autoscaling.k8s.io/v1"
-kind: VerticalPodAutoscaler
-metadata:
- name: hamster-vpa
-Spec:
- recommenderName: default
- targetRef:
-   apiVersion: "apps/v1"
-   ... ... 
-```
-
 ### Deployment Details
-The customized recommender is supposed to be deployed as a separate deployment that is chosen 
-by different sets of VPA objects.Each VPA object is supposed to choose only one recommender at a time.
-The way how the default recommender and the customized recommender are running and interacting with VPA objects 
-are shown in the following drawing.
+The customized recommender is supposed to be deployed as a separate deployment
+that is chosen by different sets of VPA objects. Each VPA object is supposed to
+choose only one recommender at a time.
+The way how the default recommender and the customized recommender are running
+and interacting with VPA objects are shown in the following drawing.
 
 <img src="images/deployment.png" alt="deployment" width="720" height="360"/>
 
-Though we do not support a VPA object to use multiple recommenders in this proposal, we leave the possibility of necessary  
-changes of using multiple recommenders in the future. Namely, we define `recommenderName` to be an array instead of a string, but we support one element only in this proposal. We modify the admission controller to validate that the array has <= 1 elements.
+Though we do not support a VPA object to use multiple recommenders in this
+proposal, we leave the possibility of necessary changes of using multiple
+recommenders in the future. Namely, we define `recommenders` to be an array
+instead of an object, but we support one element only in this proposal. We
+modify the admission controller to validate that the array has <= 1 elements.
 
-We will add the following check in the `func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool)` function. 
-```
-	if len(vpa.Spec.RecommenderName) > 1 {
-		return fmt.Errorf("VPA object shouldn't specify more than one recommenderNames.")
+We will add the following check in the
+`func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool)`
+function.
+
+```golang
+	if len(vpa.Spec.Recommenders) > 1 {
+		return fmt.Errorf("VPA object shouldn't specify more than one recommender.")
 	}
 ```
 
+For now we don't allow users to pass any parameters to recommenders but we leave
+that as a possibility for the future. We do this by using a struct (which can be
+extended if we need to) rather than a string.
 
 ## Design Details
 

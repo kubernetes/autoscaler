@@ -26,7 +26,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // ExecutionTimer measures execution time of a computation, split into major steps

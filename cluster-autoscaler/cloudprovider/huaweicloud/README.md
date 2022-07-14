@@ -120,9 +120,70 @@ For example:
     ```
 
 ### 3. Initialize Cluster
-```bash
-kubeadm init
+Create a Kubeadm.yaml file with the following content:
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 1.2.3.4
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  imagePullPolicy: IfNotPresent
+  name: node
+  taints: null
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: k8s.gcr.io
+kind: ClusterConfiguration
+kubernetesVersion: 1.22.0
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 10.244.0.0/16
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+cgroupDriver: cgroupfs
 
+```
+
+**note: replace the advertiseAddress to your ECS ip address**
+
+```bash
+kubeadm init --config kubeadm.yaml
+```
+
+Modify these two files, Comment out line  `- --port=0`:
+```sh
+sudo vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+sudo vim /etc/kubernetes/manifests/kube-scheduler.yaml
+```
+
+Restart Kubelet service
+```sh
+systemctl restart kubelet.service
+```
+
+```sh
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -134,7 +195,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 ```
 ### 5. Generate Token
 ```bash
-kubeadm token create -ttl 0
+kubeadm token create --ttl 0
 ```
 Generate a token that never expires. Remember this token since it will be used later.
 
@@ -145,6 +206,27 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
 
 ### 6. Create OS Image with K8S Tools
 - Launch a new ECS instance, and install Kubeadm, Kubectl and docker.
+    ```sh
+    cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+    [kubernetes]
+    name=Kubernetes
+    baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+    enabled=1
+    gpgcheck=1
+    repo_gpgcheck=1
+    gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+    EOF
+
+    sudo yum install -y kubeadm kubectl --disableexcludes=kubernetes
+
+    sudo yum install -y yum-utils
+
+    sudo yum-config-manager \
+        --add-repo \
+        http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+    sudo yum install docker-ce docker-ce-cli containerd.io
+    ```
 - Create a script to join the new instance into the k8s cluster.
     ```bash
     cat <<EOF >/etc/rc.d/init.d/init-k8s.sh
@@ -152,18 +234,29 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
     #chkconfig: 2345 80 90
     setenforce 0
     swapoff -a
-
+    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
     yum install -y kubelet
-    systemctl start docker
+    sudo systemctl enable --now kubelet
 
-    kubeadm join --token $TOKEN $API_Server_EndPoint --discovery-token-ca-cert-hash $HASHKEY
+    systemctl start docker
+    systemctl enable docker.service
+    kubeadm join --token $TOKEN $API_Server_EndPoint --discovery-token-ca-cert-hash sha256:$HASHKEY
     EOF
     ```
+    Replace the $TOKEN with the one created above.
+
+    Replace the $API_Server_EndPoint, this could be find in the context file.
+    ```sh
+    cat ~./.kube/config
+
+    # server: https://192.168.0.239:6443
+    # the API_Server_EndPoint is 192.168.0.239:6443
+    ```
+
 - Add this script into chkconfig, to let it run automatically after the instance is started.
     ```
     chmod +x /etc/rc.d/init.d/init-k8s.sh
     chkconfig --add /etc/rc.d/init.d/init-k8s.sh
-    chkconfig /etc/rc.d/init.d/init-k8s.sh on
     ```
 <!--TODO: Remove "previously referred to as master" references from this doc once this terminology is fully removed from k8s-->
 - Copy `~/.kube/config` from a control plane (previously referred to as master) node to this ECS `~./kube/config` to setup kubectl on this instance.
@@ -174,7 +267,7 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
 
 ### 7. Create AS Group
 - Follow the Huawei cloud instruction to create an AS Group.
-- Create an AS Configuration, and select private image which we just created.
+- Create an AS Configuration, and select private image which we just created. Make sure the AS Configuration with EIP automatically assign.
 - While creating the `AS Configuration`, add the following script into `Advanced Settings`.
     ```bash
     #!bin/bash
@@ -191,6 +284,7 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
     sleep 30
     done
     ```
+    Replace the $ECS_INSTANCE_ID
  - Bind the AS Group with this AS Configuration
 
 ### Deploy Cluster Autoscaler
@@ -203,16 +297,6 @@ and [examples/cluster-autoscaler-secret.yaml](examples/cluster-autoscaler-secret
 object yaml file with your credentials.
 
 The following parameters are required in the Secret object yaml file:
-
-- `identity-endpoint`
-
-    Find the identity endpoint for different regions [here](https://support.huaweicloud.com/en-us/api-iam/iam_01_0001.html), 
-    and fill in this field with `https://{Identity Endpoint}/v3.0`.
-        
-    For example, for region `cn-north-4`, fill in the `identity-endpoint` as
-    ```
-    identity-endpoint=https://iam.cn-north-4.myhuaweicloud.com/v3.0
-    ```
 
 - `as-endpoint`
 
@@ -242,16 +326,6 @@ The following parameters are required in the Secret object yaml file:
 required by the Secret object yaml file by referring to [Access Keys](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0003.html)
 and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0001.html).
 
-- `region`
-
-    Fill in the region of the cluster here. For example, for region `Beijing4`:
-    ```
-    region=cn-north-4
-    ```
-
-- `domain-id`
-
-    The required domain-id is the Huawei cloud [Account ID](https://support.huaweicloud.com/en-us/api-servicestage/servicestage_api_0048.html).
 
 #### Configure deployment
    An example deployment file is provided at [examples/cluster-autoscaler-deployment.yaml](examples/cluster-autoscaler-deployment.yaml). 
@@ -301,10 +375,10 @@ A simple testing method is like this:
     * Install [metrics server](https://github.com/kubernetes-sigs/metrics-server) by yourself and create an HPA policy
     by executing something like this:
         ```
-        kubectl autoscale deployment [Deployment name] --cpu-percent=50 --min=1 --max=10
+        kubectl autoscale deployment [Deployment name] --cpu-percent=10 --min=1 --max=20
         ```  
-        The above command creates an HPA policy on the deployment with target average cpu usage of 50%. The number of 
-        pods will grow if average cpu usage is above 50%, and will shrink otherwise. The `min` and `max` parameters set
+        The above command creates an HPA policy on the deployment with target average cpu usage of 10%. The number of 
+        pods will grow if average cpu usage is above 10%, and will shrink otherwise. The `min` and `max` parameters set
         the minimum and maximum number of pods of this deployment.
 - Generate load to the above service
 
@@ -337,4 +411,4 @@ and will be removed by the cluster autoscaler
 
 Interested in Cluster Autoscaler on Huawei Cloud? Want to talk? Have questions, concerns or great ideas?
 
-Please reach out to us at `shiyu.yuan@huawei.com`.
+Please reach out to us at `shiqi.wang1@huawei.com`.

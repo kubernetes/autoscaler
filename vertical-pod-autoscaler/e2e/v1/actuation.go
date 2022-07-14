@@ -321,7 +321,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		hamsterResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("100m")}
 		sidecarResourceList := apiv1.ResourceList{apiv1.ResourceCPU: ParseQuantityOrDie("5000m")}
 
-		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 		vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
@@ -561,9 +561,6 @@ func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *a
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
 		}
-		if testutils.IsRetryableAPIError(err) {
-			return false, nil
-		}
 		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
 	return testutils.RetryWithExponentialBackOff(createFunc)
@@ -577,9 +574,6 @@ func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, ob
 		_, err := c.AppsV1().StatefulSets(namespace).Create(context.TODO(), obj, metav1.CreateOptions{})
 		if err == nil || apierrs.IsAlreadyExists(err) {
 			return true, nil
-		}
-		if testutils.IsRetryableAPIError(err) {
-			return false, nil
 		}
 		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}

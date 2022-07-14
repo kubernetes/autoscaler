@@ -30,6 +30,7 @@ func CreateAwsNodeInfoComparator(extraIgnoredLabels []string) NodeInfoComparator
 		"eks.amazonaws.com/nodegroup":    true, // this is a label used by eks to identify "node group".
 		"k8s.amazonaws.com/eniConfig":    true, // this is a label used by the AWS CNI for custom networking.
 		"lifecycle":                      true, // this is a label used by the AWS for spot.
+		"topology.ebs.csi.aws.com/zone":  true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
 	}
 
 	for k, v := range BasicIgnoredLabels {

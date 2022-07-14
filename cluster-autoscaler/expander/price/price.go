@@ -74,11 +74,11 @@ var (
 	gpuUnfitnessOverride = 1000.0
 )
 
-// NewStrategy returns an expansion strategy that picks nodes based on price and preferred node type.
-func NewStrategy(cloudProvider cloudprovider.CloudProvider,
+// NewFilter returns an expansion filter that picks nodes based on price and preferred node type.
+func NewFilter(cloudProvider cloudprovider.CloudProvider,
 	preferredNodeProvider PreferredNodeProvider,
 	nodeUnfitness NodeUnfitness,
-) expander.Strategy {
+) expander.Filter {
 	return &priceBased{
 		cloudProvider:         cloudProvider,
 		preferredNodeProvider: preferredNodeProvider,
@@ -87,8 +87,8 @@ func NewStrategy(cloudProvider cloudprovider.CloudProvider,
 }
 
 // BestOption selects option based on cost and preferred node type.
-func (p *priceBased) BestOption(expansionOptions []expander.Option, nodeInfos map[string]*schedulerframework.NodeInfo) *expander.Option {
-	var bestOption *expander.Option
+func (p *priceBased) BestOptions(expansionOptions []expander.Option, nodeInfos map[string]*schedulerframework.NodeInfo) []expander.Option {
+	var bestOptions []expander.Option
 	bestOptionScore := 0.0
 	now := time.Now()
 	then := now.Add(time.Hour)
@@ -169,17 +169,21 @@ nextoption:
 
 		klog.V(5).Infof("Price expander for %s: %s", option.NodeGroup.Id(), debug)
 
-		if bestOption == nil || bestOptionScore > optionScore {
-			bestOption = &expander.Option{
-				NodeGroup: option.NodeGroup,
-				NodeCount: option.NodeCount,
-				Debug:     fmt.Sprintf("%s | price-expander: %s", option.Debug, debug),
-				Pods:      option.Pods,
-			}
+		maybeBestOption := expander.Option{
+			NodeGroup: option.NodeGroup,
+			NodeCount: option.NodeCount,
+			Debug:     fmt.Sprintf("%s | price-expander: %s", option.Debug, debug),
+			Pods:      option.Pods,
+		}
+		if len(bestOptions) == 0 || bestOptionScore == optionScore {
+			bestOptions = append(bestOptions, maybeBestOption)
+			bestOptionScore = optionScore
+		} else if bestOptionScore > optionScore {
+			bestOptions = []expander.Option{maybeBestOption}
 			bestOptionScore = optionScore
 		}
 	}
-	return bestOption
+	return bestOptions
 }
 
 // buildPod creates a pod with specified resources.

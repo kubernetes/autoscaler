@@ -24,8 +24,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
-	caserrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -45,21 +43,19 @@ type priorities map[int][]*regexp.Regexp
 
 type priority struct {
 	logRecorder      record.EventRecorder
-	fallbackStrategy expander.Strategy
 	okConfigUpdates  int
 	badConfigUpdates int
 	configMapLister  v1lister.ConfigMapNamespaceLister
 }
 
-// NewStrategy returns an expansion strategy that picks node groups based on user-defined priorities
-func NewStrategy(configMapLister v1lister.ConfigMapNamespaceLister,
-	logRecorder record.EventRecorder) (expander.Strategy, caserrors.AutoscalerError) {
+// NewFilter returns an expansion filter that picks node groups based on user-defined priorities
+func NewFilter(configMapLister v1lister.ConfigMapNamespaceLister,
+	logRecorder record.EventRecorder) expander.Filter {
 	res := &priority{
-		logRecorder:      logRecorder,
-		fallbackStrategy: random.NewStrategy(),
-		configMapLister:  configMapLister,
+		logRecorder:     logRecorder,
+		configMapLister: configMapLister,
 	}
-	return res, nil
+	return res
 }
 
 func (p *priority) reloadConfigMap() (priorities, *apiv1.ConfigMap, error) {
@@ -120,7 +116,7 @@ func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) (priorities,
 	return newPriorities, nil
 }
 
-func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
+func (p *priority) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
 	if len(expansionOptions) <= 0 {
 		return nil
 	}
@@ -158,15 +154,15 @@ func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[s
 	}
 
 	if len(best) == 0 {
-		msg := "Priority expander: no priorities info found for any of the expansion options. Falling back to random choice."
+		msg := "Priority expander: no priorities info found for any of the expansion options. No options filtered."
 		p.logConfigWarning(cm, "PriorityConfigMapNoGroupMatched", msg)
-		return p.fallbackStrategy.BestOption(expansionOptions, nodeInfo)
+		return expansionOptions
 	}
 
 	for _, opt := range best {
 		klog.V(2).Infof("priority expander: %s chosen as the highest available", opt.NodeGroup.Id())
 	}
-	return p.fallbackStrategy.BestOption(best, nodeInfo)
+	return best
 }
 
 func (p *priority) groupIDMatchesList(id string, nameRegexpList []*regexp.Regexp) bool {

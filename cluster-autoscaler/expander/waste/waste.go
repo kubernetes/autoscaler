@@ -20,22 +20,20 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type leastwaste struct {
-	fallbackStrategy expander.Strategy
 }
 
-// NewStrategy returns a strategy that selects the best scale up option based on which node group returns the least waste
-func NewStrategy() expander.Strategy {
-	return &leastwaste{random.NewStrategy()}
+// NewFilter returns a filter that selects the best scale up option based on which node group returns the least waste
+func NewFilter() expander.Filter {
+	return &leastwaste{}
 }
 
 // BestOption Finds the option that wastes the least fraction of CPU and Memory
-func (l *leastwaste) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
+func (l *leastwaste) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
 	var leastWastedScore float64
 	var leastWastedOptions []expander.Option
 
@@ -70,7 +68,7 @@ func (l *leastwaste) BestOption(expansionOptions []expander.Option, nodeInfo map
 		return nil
 	}
 
-	return l.fallbackStrategy.BestOption(leastWastedOptions, nodeInfo)
+	return leastWastedOptions
 }
 
 func resourcesForPods(pods []*apiv1.Pod) (cpu resource.Quantity, memory resource.Quantity) {

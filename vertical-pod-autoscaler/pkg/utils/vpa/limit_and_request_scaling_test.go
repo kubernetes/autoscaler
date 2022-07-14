@@ -31,7 +31,7 @@ func mustParseToPointer(str string) *resource.Quantity {
 	return &val
 }
 
-func TestGetProportionalResourceLimit(t *testing.T) {
+func TestGetProportionalResourceLimitCPU(t *testing.T) {
 	tests := []struct {
 		name               string
 		originalLimit      *resource.Quantity
@@ -82,6 +82,13 @@ func TestGetProportionalResourceLimit(t *testing.T) {
 			expectLimit:        mustParseToPointer("10"),
 		},
 		{
+			name:               "handle non-integer ratios",
+			originalLimit:      mustParseToPointer("2"),
+			originalRequest:    mustParseToPointer("1.50"),
+			recommendedRequest: mustParseToPointer("1"),
+			expectLimit:        mustParseToPointer("1.333"),
+		},
+		{
 			name:               "go over milli cap",
 			originalLimit:      mustParseToPointer("10G"),
 			originalRequest:    mustParseToPointer("1m"),
@@ -93,6 +100,87 @@ func TestGetProportionalResourceLimit(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			gotLimit, gotAnnotation := getProportionalResourceLimit(core.ResourceCPU, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			if tc.expectLimit == nil {
+				assert.Nil(t, gotLimit)
+			} else {
+				if assert.NotNil(t, gotLimit) {
+					assert.Equal(t, gotLimit.MilliValue(), tc.expectLimit.MilliValue())
+				}
+			}
+			assert.Equal(t, gotAnnotation != "", tc.expectAnnotation)
+		})
+	}
+}
+
+func TestGetProportionalResourceLimitMem(t *testing.T) {
+	tests := []struct {
+		name               string
+		originalLimit      *resource.Quantity
+		originalRequest    *resource.Quantity
+		recommendedRequest *resource.Quantity
+		defaultLimit       *resource.Quantity
+		expectLimit        *resource.Quantity
+		expectAnnotation   bool
+	}{
+		{
+			name:               "scale proportionally",
+			originalLimit:      mustParseToPointer("2"),
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			expectLimit:        mustParseToPointer("20"),
+		},
+		{
+			name:               "scale proportionally with default",
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        mustParseToPointer("20"),
+		},
+		{
+			name:               "no original limit",
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			expectLimit:        nil,
+		},
+		{
+			name:               "no original request",
+			originalLimit:      mustParseToPointer("2"),
+			recommendedRequest: mustParseToPointer("10"),
+			expectLimit:        mustParseToPointer("10"),
+		},
+		{
+			name:               "no recommendation",
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("0"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        nil,
+		},
+		{
+			name:               "limit equal to request",
+			originalLimit:      mustParseToPointer("1"),
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			expectLimit:        mustParseToPointer("10"),
+		},
+		{
+			name:               "handle non-integer ratios",
+			originalLimit:      mustParseToPointer("200"),
+			originalRequest:    mustParseToPointer("150"),
+			recommendedRequest: mustParseToPointer("100"),
+			expectLimit:        mustParseToPointer("133"),
+		},
+		{
+			name:               "go over milli cap",
+			originalLimit:      mustParseToPointer("10G"),
+			originalRequest:    mustParseToPointer("1m"),
+			recommendedRequest: mustParseToPointer("10G"),
+			expectLimit:        resource.NewQuantity(math.MaxInt64, resource.DecimalExponent),
+			expectAnnotation:   true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotLimit, gotAnnotation := getProportionalResourceLimit(core.ResourceMemory, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {

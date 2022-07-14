@@ -29,6 +29,10 @@ import (
 const (
 	// Magnum microversion that must be requested to use the node groups API.
 	microversionNodeGroups = "1.9"
+	// Magnum microversion that must be requested to support scaling node groups to 0 nodes.
+	microversionScaleToZero = "1.10"
+	// Magnum interprets "latest" to mean the highest available microversion.
+	microversionLatest = "latest"
 )
 
 // magnumManager is an interface for the basic interactions with the cluster.
@@ -61,7 +65,7 @@ func createMagnumManager(configReader io.Reader, discoverOpts cloudprovider.Node
 		return nil, err
 	}
 
-	clusterClient.Microversion = microversionNodeGroups
+	clusterClient.Microversion = microversionLatest
 
 	// This replaces the cluster name with a UUID if the name was given in the parameters.
 	err = checkClusterUUID(provider, clusterClient, opts)

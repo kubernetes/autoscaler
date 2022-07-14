@@ -17,110 +17,40 @@ limitations under the License.
 package aws
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"io/ioutil"
-	klog "k8s.io/klog/v2"
-	"net/http"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 var (
-	ec2MetaDataServiceUrl          = "http://169.254.169.254"
-	ec2PricingServiceUrlTemplate   = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
-	ec2PricingServiceUrlTemplateCN = "https://pricing.cn-north-1.amazonaws.com.cn/offers/v1.0/cn/AmazonEC2/current/%s/index.json"
-	staticListLastUpdateTime       = "2020-12-07"
-	ec2Arm64Processors             = []string{"AWS Graviton Processor", "AWS Graviton2 Processor"}
+	ec2MetaDataServiceUrl = "http://169.254.169.254"
 )
-
-type response struct {
-	Products map[string]product `json:"products"`
-}
-
-type product struct {
-	Attributes productAttributes `json:"attributes"`
-}
-
-type productAttributes struct {
-	InstanceType string `json:"instanceType"`
-	VCPU         string `json:"vcpu"`
-	Memory       string `json:"memory"`
-	GPU          string `json:"gpu"`
-	Architecture string `json:"physicalProcessor"`
-}
 
 // GenerateEC2InstanceTypes returns a map of ec2 resources
 func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
-	var pricingUrlTemplate string
-	if strings.HasPrefix(region, "cn-") {
-		pricingUrlTemplate = ec2PricingServiceUrlTemplateCN
-	} else {
-		pricingUrlTemplate = ec2PricingServiceUrlTemplate
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
+	if err != nil {
+		return nil, err
 	}
 
+	ec2Client := ec2.New(sess)
+	input := ec2.DescribeInstanceTypesInput{}
 	instanceTypes := make(map[string]*InstanceType)
 
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-
-	for _, p := range partitions {
-		for _, r := range p.Regions() {
-			if region != "" && region != r.ID() {
-				continue
-			}
-
-			url := fmt.Sprintf(pricingUrlTemplate, r.ID())
-			klog.V(1).Infof("fetching %s\n", url)
-			res, err := http.Get(url)
-			if err != nil {
-				klog.Warningf("Error fetching %s skipping...\n%s\n", url, err)
-				continue
-			}
-
-			defer res.Body.Close()
-
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				klog.Warningf("Error parsing %s skipping...\n", url)
-				continue
-			}
-
-			var unmarshalled = response{}
-			err = json.Unmarshal(body, &unmarshalled)
-			if err != nil {
-				klog.Warningf("Error unmarshalling %s, skip...\n", url)
-				continue
-			}
-
-			for _, product := range unmarshalled.Products {
-				attr := product.Attributes
-				if attr.InstanceType != "" {
-					instanceTypes[attr.InstanceType] = &InstanceType{
-						InstanceType: attr.InstanceType,
-					}
-					if attr.Memory != "" && attr.Memory != "NA" {
-						instanceTypes[attr.InstanceType].MemoryMb = parseMemory(attr.Memory)
-					}
-					if attr.VCPU != "" {
-						instanceTypes[attr.InstanceType].VCPU = parseCPU(attr.VCPU)
-					}
-					if attr.GPU != "" {
-						instanceTypes[attr.InstanceType].GPU = parseCPU(attr.GPU)
-					}
-					if attr.Architecture != "" {
-						instanceTypes[attr.InstanceType].Architecture = parseArchitecture(attr.Architecture)
-					}
-				}
-			}
+	if err = ec2Client.DescribeInstanceTypesPages(&input, func(page *ec2.DescribeInstanceTypesOutput, isLastPage bool) bool {
+		for _, rawInstanceType := range page.InstanceTypes {
+			instanceTypes[*rawInstanceType.InstanceType] = transformInstanceType(rawInstanceType)
 		}
+		return !isLastPage
+	}); err != nil {
+		return nil, err
 	}
 
 	if len(instanceTypes) == 0 {
@@ -132,39 +62,51 @@ func GenerateEC2InstanceTypes(region string) (map[string]*InstanceType, error) {
 
 // GetStaticEC2InstanceTypes return pregenerated ec2 instance type list
 func GetStaticEC2InstanceTypes() (map[string]*InstanceType, string) {
-	return InstanceTypes, staticListLastUpdateTime
+	return InstanceTypes, StaticListLastUpdateTime
 }
 
-func parseMemory(memory string) int64 {
-	reg, err := regexp.Compile("[^0-9\\.]+")
-	if err != nil {
-		klog.Fatal(err)
+func transformInstanceType(rawInstanceType *ec2.InstanceTypeInfo) *InstanceType {
+	instanceType := &InstanceType{
+		InstanceType: *rawInstanceType.InstanceType,
 	}
-
-	parsed := strings.TrimSpace(reg.ReplaceAllString(memory, ""))
-	mem, err := strconv.ParseFloat(parsed, 64)
-	if err != nil {
-		klog.Fatal(err)
+	if rawInstanceType.MemoryInfo != nil && rawInstanceType.MemoryInfo.SizeInMiB != nil {
+		instanceType.MemoryMb = *rawInstanceType.MemoryInfo.SizeInMiB
 	}
-
-	return int64(mem * float64(1024))
+	if rawInstanceType.VCpuInfo != nil && rawInstanceType.VCpuInfo.DefaultVCpus != nil {
+		instanceType.VCPU = *rawInstanceType.VCpuInfo.DefaultVCpus
+	}
+	if rawInstanceType.GpuInfo != nil && len(rawInstanceType.GpuInfo.Gpus) > 0 {
+		instanceType.GPU = getGpuCount(rawInstanceType.GpuInfo)
+	}
+	if rawInstanceType.ProcessorInfo != nil && len(rawInstanceType.ProcessorInfo.SupportedArchitectures) > 0 {
+		instanceType.Architecture = interpretEc2SupportedArchitecure(*rawInstanceType.ProcessorInfo.SupportedArchitectures[0])
+	}
+	return instanceType
 }
 
-func parseCPU(cpu string) int64 {
-	i, err := strconv.ParseInt(cpu, 10, 64)
-	if err != nil {
-		klog.Fatal(err)
-	}
-	return i
-}
-
-func parseArchitecture(archName string) string {
-	for _, processor := range ec2Arm64Processors {
-		if archName == processor {
-			return "arm64"
+func getGpuCount(gpuInfo *ec2.GpuInfo) int64 {
+	var gpuCountSum int64
+	for _, gpu := range gpuInfo.Gpus {
+		if gpu.Count != nil {
+			gpuCountSum += *gpu.Count
 		}
 	}
-	return "amd64"
+	return gpuCountSum
+}
+
+func interpretEc2SupportedArchitecure(archName string) string {
+	switch archName {
+	case "arm64":
+		return "arm64"
+	case "i386":
+		return "amd64"
+	case "x86_64":
+		return "amd64"
+	case "x86_64_mac":
+		return "amd64"
+	default:
+		return "amd64"
+	}
 }
 
 // GetCurrentAwsRegion return region of current cluster without building awsManager

@@ -259,10 +259,7 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 		return nil, nil
 	}
 
-	machineID, ok := node.Annotations[machineAnnotationKey]
-	if !ok {
-		machineID = node.Annotations[deprecatedMachineAnnotationKey]
-	}
+	machineID, _ := node.Annotations[machineAnnotationKey]
 	return c.findMachine(machineID)
 }
 

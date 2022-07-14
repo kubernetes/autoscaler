@@ -17,6 +17,8 @@ limitations under the License.
 package kubernetes
 
 import (
+	"strings"
+
 	clientv1 "k8s.io/api/core/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -57,5 +59,31 @@ func getCorrelationOptions() kube_record.CorrelatorOptions {
 		QPS:          defaultQPS,
 		BurstSize:    defaultBurstSize,
 		LRUCacheSize: defaultLRUCache,
+		SpamKeyFunc:  getCustomSpamKeyFunc(),
+	}
+}
+
+// getCustomSpamKeyFunc returns EventSpamKeyFunc to be used by EventBroadcaster.
+// By default only defaultBurstSize events are allowed to be sent per each
+// event.Source-event.InvolvedObject combination. We want to emit defaultBurstSize events per each
+// Reason-Source-InvolvedObject combination and for cluster-autoscaler-status ConfigMap we
+// want to emit all of the events, thus we provide custom SpamKeyFunc
+func getCustomSpamKeyFunc() kube_record.EventSpamKeyFunc {
+	return func(event *clientv1.Event) string {
+		elementsToJoin := []string{
+			event.Reason,
+			event.Source.Component,
+			event.Source.Host,
+			event.InvolvedObject.Kind,
+			event.InvolvedObject.Namespace,
+			event.InvolvedObject.Name,
+			string(event.InvolvedObject.UID),
+			event.InvolvedObject.APIVersion,
+		}
+		// In case of cluster-autoscaler-status config map we want to emit all of the events, so we use event.Message as a key.
+		if event.InvolvedObject.Name == "cluster-autoscaler-status" && event.InvolvedObject.Namespace == "kube-system" && event.InvolvedObject.Kind == "ConfigMap" {
+			elementsToJoin = []string{event.Message}
+		}
+		return strings.Join(elementsToJoin, "")
 	}
 }

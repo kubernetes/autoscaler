@@ -23,7 +23,7 @@ import (
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Allows tests to inject their time.
@@ -130,7 +130,7 @@ func (cc *controllerCacheStorage) Insert(namespace string, groupResource schema.
 
 // Removes entries which we didn't read in a while from the cache.
 func (cc *controllerCacheStorage) RemoveExpired() {
-	klog.V(1).Info("Removing entries from controllerCacheStorage")
+	klog.V(5).Info("Removing entries from controllerCacheStorage")
 	cc.mux.Lock()
 	defer cc.mux.Unlock()
 	now := now()
@@ -141,7 +141,7 @@ func (cc *controllerCacheStorage) RemoveExpired() {
 			delete(cc.cache, k)
 		}
 	}
-	klog.V(1).Infof("Removed %d entries from controllerCacheStorage", removed)
+	klog.V(5).Infof("Removed %d entries from controllerCacheStorage", removed)
 }
 
 // Returns a list of keys for which values need to be refreshed

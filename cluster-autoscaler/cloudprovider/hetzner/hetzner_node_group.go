@@ -410,7 +410,7 @@ func waitForServerAction(m *hetznerManager, serverName string, action *hcloud.Ac
 			return fmt.Errorf("error while waiting for server action: %s: %v", serverName, err)
 		}
 		return nil
-	case <-time.After(serverCreateTimeout):
+	case <-time.After(m.createTimeout):
 		return fmt.Errorf("timeout waiting for server %s", serverName)
 	}
 

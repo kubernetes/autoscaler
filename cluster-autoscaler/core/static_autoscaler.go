@@ -54,8 +54,6 @@ const (
 	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
 	// a bit more latency to wait for more pods and make a more informed scale-up decision.
 	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
-	// How long should Cluster Autoscaler wait for nodes to become ready after start.
-	nodesNotReadyAfterStartTimeout = 10 * time.Minute
 
 	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
 	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
@@ -67,7 +65,6 @@ type StaticAutoscaler struct {
 	*context.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
 	clusterStateRegistry    *clusterstate.ClusterStateRegistry
-	startTime               time.Time
 	lastScaleUpTime         time.Time
 	lastScaleDownDeleteTime time.Time
 	lastScaleDownFailTime   time.Time
@@ -75,14 +72,17 @@ type StaticAutoscaler struct {
 	processors              *ca_processors.AutoscalingProcessors
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
-	// Caches nodeInfo computed for previously seen nodes
-	nodeInfoCache map[string]*schedulerframework.NodeInfo
-	ignoredTaints taints.TaintKeySet
+	ignoredTaints           taints.TaintKeySet
 }
 
 type staticAutoscalerProcessorCallbacks struct {
 	disableScaleDownForLoop bool
 	extraValues             map[string]interface{}
+	scaleDown               *ScaleDown
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) ResetUnneededNodes() {
+	callbacks.scaleDown.CleanUpUnneededNodes()
 }
 
 func newStaticAutoscalerProcessorCallbacks() *staticAutoscalerProcessorCallbacks {
@@ -147,13 +147,13 @@ func NewStaticAutoscaler(
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
 	scaleDown := NewScaleDown(autoscalingContext, processors, clusterStateRegistry)
+	processorCallbacks.scaleDown = scaleDown
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
 	initialScaleTime := time.Now().Add(-time.Hour)
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
-		startTime:               time.Now(),
 		lastScaleUpTime:         initialScaleTime,
 		lastScaleDownDeleteTime: initialScaleTime,
 		lastScaleDownFailTime:   initialScaleTime,
@@ -161,7 +161,6 @@ func NewStaticAutoscaler(
 		processors:              processors,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
-		nodeInfoCache:           make(map[string]*schedulerframework.NodeInfo),
 		ignoredTaints:           ignoredTaints,
 	}
 }
@@ -244,8 +243,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
-		return nil
+	if abortLoop, err := a.processors.ActionableClusterProcessor.ShouldAbort(
+		a.AutoscalingContext, allNodes, readyNodes, currentTime); abortLoop {
+		return err
 	}
 
 	// Update cluster resource usage metrics
@@ -280,8 +280,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return typedErr.AddPrefix("Initialize ClusterSnapshot")
 	}
 
-	nodeInfosForGroups, autoscalerError := core_utils.GetNodeInfosForGroups(
-		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker, a.ignoredTaints)
+	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingContext, readyNodes, daemonsets, a.ignoredTaints)
 	if autoscalerError != nil {
 		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
@@ -747,25 +746,6 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	return allNodes, readyNodes, nil
 }
 
-// actOnEmptyCluster returns true if the cluster was empty and thus acted upon
-func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
-	if a.AutoscalingContext.AutoscalingOptions.ScaleUpFromZero {
-		return false
-	}
-	if len(allNodes) == 0 {
-		a.onEmptyCluster("Cluster has no nodes.", true)
-		return true
-	}
-	if len(readyNodes) == 0 {
-		// Cluster Autoscaler may start running before nodes are ready.
-		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
-		return true
-	}
-	// the cluster is not empty
-	return false
-}
-
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) errors.AutoscalerError {
 	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
 	if err != nil {
@@ -776,20 +756,6 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosF
 	core_utils.UpdateClusterStateMetrics(a.clusterStateRegistry)
 
 	return nil
-}
-
-func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
-	klog.Warningf(status)
-	a.scaleDown.CleanUpUnneededNodes()
-	// updates metrics related to empty cluster's state.
-	metrics.UpdateClusterSafeToAutoscale(false)
-	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
-	if a.AutoscalingContext.WriteStatusConfigMap {
-		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder, a.AutoscalingContext.StatusConfigMapName)
-	}
-	if emitEvent {
-		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
-	}
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {

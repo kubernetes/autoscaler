@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -85,7 +85,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
 				Name:                    "vpa.k8s.io",
-				AdmissionReviewVersions: []string{"v1beta1"},
+				AdmissionReviewVersions: []string{"v1"},
 				Rules: []admissionregistration.RuleWithOperations{
 					{
 						Operations: []admissionregistration.OperationType{admissionregistration.Create},

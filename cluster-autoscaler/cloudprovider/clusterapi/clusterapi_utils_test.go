@@ -17,6 +17,8 @@ limitations under the License.
 package clusterapi
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -686,6 +688,92 @@ func Test_clusterNameFromResource(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := clusterNameFromResource(tc.resource); got != tc.want {
 				t.Errorf("clusterNameFromResource() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+
+}
+
+func Test_getKeyHelpers(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		expected string
+		testfunc func() string
+	}{
+		{
+			name:     "default group, min size annotation key",
+			expected: fmt.Sprintf("%s/cluster-api-autoscaler-node-group-min-size", defaultCAPIGroup),
+			testfunc: getNodeGroupMinSizeAnnotationKey,
+		},
+		{
+			name:     "default group, max size annotation key",
+			expected: fmt.Sprintf("%s/cluster-api-autoscaler-node-group-max-size", defaultCAPIGroup),
+			testfunc: getNodeGroupMaxSizeAnnotationKey,
+		},
+		{
+			name:     "default group, machine delete annotation key",
+			expected: fmt.Sprintf("%s/delete-machine", defaultCAPIGroup),
+			testfunc: getMachineDeleteAnnotationKey,
+		},
+		{
+			name:     "default group, machine annotation key",
+			expected: fmt.Sprintf("%s/machine", defaultCAPIGroup),
+			testfunc: getMachineAnnotationKey,
+		},
+		{
+			name:     "default group, cluster name label",
+			expected: fmt.Sprintf("%s/cluster-name", defaultCAPIGroup),
+			testfunc: getClusterNameLabel,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			observed := tc.testfunc()
+			if observed != tc.expected {
+				t.Errorf("%s, mismatch, expected=%s, observed=%s", tc.name, observed, tc.expected)
+			}
+		})
+	}
+
+	testgroup := "test.k8s.io"
+	if err := os.Setenv(CAPIGroupEnvVar, testgroup); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, tc := range []struct {
+		name     string
+		expected string
+		testfunc func() string
+	}{
+		{
+			name:     "test group, min size annotation key",
+			expected: fmt.Sprintf("%s/cluster-api-autoscaler-node-group-min-size", testgroup),
+			testfunc: getNodeGroupMinSizeAnnotationKey,
+		},
+		{
+			name:     "test group, max size annotation key",
+			expected: fmt.Sprintf("%s/cluster-api-autoscaler-node-group-max-size", testgroup),
+			testfunc: getNodeGroupMaxSizeAnnotationKey,
+		},
+		{
+			name:     "test group, machine delete annotation key",
+			expected: fmt.Sprintf("%s/delete-machine", testgroup),
+			testfunc: getMachineDeleteAnnotationKey,
+		},
+		{
+			name:     "test group, machine annotation key",
+			expected: fmt.Sprintf("%s/machine", testgroup),
+			testfunc: getMachineAnnotationKey,
+		},
+		{
+			name:     "test group, cluster name label",
+			expected: fmt.Sprintf("%s/cluster-name", testgroup),
+			testfunc: getClusterNameLabel,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			observed := tc.testfunc()
+			if observed != tc.expected {
+				t.Errorf("%s, mismatch, expected=%s, observed=%s", tc.name, observed, tc.expected)
 			}
 		})
 	}

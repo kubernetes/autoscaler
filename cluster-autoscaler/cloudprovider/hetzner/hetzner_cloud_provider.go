@@ -18,31 +18,32 @@ package hetzner
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel               = hcloudLabelNamespace + "/gpu-node"
-	providerIDPrefix       = "hcloud://"
-	nodeGroupLabel         = hcloudLabelNamespace + "/node-group"
-	hcloudLabelNamespace   = "hcloud"
-	drainingNodePoolId     = "draining-node-pool"
-	serverCreateTimeout    = 1 * time.Minute
-	serverRegisterTimeout  = 10 * time.Minute
-	defaultPodAmountsLimit = 110
+	GPULabel                   = hcloudLabelNamespace + "/gpu-node"
+	providerIDPrefix           = "hcloud://"
+	nodeGroupLabel             = hcloudLabelNamespace + "/node-group"
+	hcloudLabelNamespace       = "hcloud"
+	drainingNodePoolId         = "draining-node-pool"
+	serverCreateTimeoutDefault = 5 * time.Minute
+	serverRegisterTimeout      = 10 * time.Minute
+	defaultPodAmountsLimit     = 110
 )
 
 // HetznerCloudProvider implements CloudProvider interface.

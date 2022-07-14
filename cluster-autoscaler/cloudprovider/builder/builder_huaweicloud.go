@@ -1,3 +1,4 @@
+//go:build huaweicloud
 // +build huaweicloud
 
 /*

@@ -47,11 +47,31 @@ You can also use forward slashes in taints by setting them as an underscore in t
 
 #### Resources
 
-When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided presources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
+When scaling from an empty VM Scale Set (0 instances), Cluster Autoscaler will evaluate the provided resources (cpu, memory, ephemeral-storage) based on that VM Scale Set's backing instance type.
 This can be overridden (for instance, to account for system reserved resources) by specifying capacities with VMSS tags, formated as: `k8s.io_cluster-autoscaler_node-template_resources_<resource name>: <resource value>`. For instance:
 ```
 k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
 k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
+```
+
+#### Autoscaling options
+
+Some autoscaling options can be defined per VM Scale Set, with tags.
+Those tags values have the format as the respective cluster-autoscaler flags they override: floats or durations encoded as strings.
+
+Supported options tags (with example values) are:
+```
+# overrides --scale-down-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownutilizationthreshold: "0.5"
+
+# overrides --scale-down-gpu-utilization-threshold global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledowngpuutilizationthreshold: "0.5"
+
+# overrides --scale-down-unneeded-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunneededtime: "10m0s"
+
+# overrides --scale-down-unready-time global value for that specific VM Scale Set
+k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunreadytime: "20m0s"
 ```
 
 ## Deployment manifests
@@ -313,4 +333,4 @@ The new version of [Azure client][] supports rate limit and back-off retries whe
 [Releases]: ../../README.md#releases
 [service principal]: https://docs.microsoft.com/azure/active-directory/develop/app-objects-and-service-principals
 [helm installation tutorial]: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler#azure-aks
-[Azure client]: https://github.com/kubernetes/kubernetes/tree/master/staging/src/k8s.io/legacy-cloud-providers/azure/clients
+[Azure client]: https://github.com/kubernetes-sigs/cloud-provider-azure/tree/master/pkg/azureclients

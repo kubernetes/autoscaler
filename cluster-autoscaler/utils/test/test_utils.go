@@ -65,6 +65,20 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	return pod
 }
 
+// BuildServiceTokenProjectedVolumeSource returns a ProjectedVolumeSource with SA token
+// projection
+func BuildServiceTokenProjectedVolumeSource(path string) *apiv1.ProjectedVolumeSource {
+	return &apiv1.ProjectedVolumeSource{
+		Sources: []apiv1.VolumeProjection{
+			{
+				ServiceAccountToken: &apiv1.ServiceAccountTokenProjection{
+					Path: path,
+				},
+			},
+		},
+	}
+}
+
 const (
 	// cannot use constants from gpu module due to cyclic package import
 	resourceNvidiaGPU = "nvidia.com/gpu"

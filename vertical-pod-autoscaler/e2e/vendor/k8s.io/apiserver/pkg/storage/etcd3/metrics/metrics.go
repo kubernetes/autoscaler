@@ -35,8 +35,10 @@ import (
 var (
 	etcdRequestLatency = compbasemetrics.NewHistogramVec(
 		&compbasemetrics.HistogramOpts{
-			Name:           "etcd_request_duration_seconds",
-			Help:           "Etcd request latency in seconds for each operation and object type.",
+			Name: "etcd_request_duration_seconds",
+			Help: "Etcd request latency in seconds for each operation and object type.",
+			// Etcd request latency in seconds for each operation and object type.
+			Buckets:        []float64{0.005, 0.025, 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 15.0, 30.0, 60.0},
 			StabilityLevel: compbasemetrics.ALPHA,
 		},
 		[]string{"operation", "type"},
@@ -45,6 +47,22 @@ var (
 		&compbasemetrics.GaugeOpts{
 			Name:           "etcd_object_counts",
 			Help:           "Number of stored objects at the time of last check split by kind.",
+			StabilityLevel: compbasemetrics.ALPHA,
+		},
+		[]string{"resource"},
+	)
+	dbTotalSize = compbasemetrics.NewGaugeVec(
+		&compbasemetrics.GaugeOpts{
+			Name:           "etcd_db_total_size_in_bytes",
+			Help:           "Total size of the etcd database file physically allocated in bytes.",
+			StabilityLevel: compbasemetrics.ALPHA,
+		},
+		[]string{"endpoint"},
+	)
+	etcdBookmarkCounts = compbasemetrics.NewGaugeVec(
+		&compbasemetrics.GaugeOpts{
+			Name:           "etcd_bookmark_counts",
+			Help:           "Number of etcd bookmarks (progress notify events) split by kind.",
 			StabilityLevel: compbasemetrics.ALPHA,
 		},
 		[]string{"resource"},
@@ -59,6 +77,8 @@ func Register() {
 	registerMetrics.Do(func() {
 		legacyregistry.MustRegister(etcdRequestLatency)
 		legacyregistry.MustRegister(objectCounts)
+		legacyregistry.MustRegister(dbTotalSize)
+		legacyregistry.MustRegister(etcdBookmarkCounts)
 	})
 }
 
@@ -72,6 +92,11 @@ func RecordEtcdRequestLatency(verb, resource string, startTime time.Time) {
 	etcdRequestLatency.WithLabelValues(verb, resource).Observe(sinceInSeconds(startTime))
 }
 
+// RecordEtcdBookmark updates the etcd_bookmark_counts metric.
+func RecordEtcdBookmark(resource string) {
+	etcdBookmarkCounts.WithLabelValues(resource).Inc()
+}
+
 // Reset resets the etcd_request_duration_seconds metric.
 func Reset() {
 	etcdRequestLatency.Reset()
@@ -80,4 +105,9 @@ func Reset() {
 // sinceInSeconds gets the time since the specified start in seconds.
 func sinceInSeconds(start time.Time) float64 {
 	return time.Since(start).Seconds()
+}
+
+// UpdateEtcdDbSize sets the etcd_db_total_size_in_bytes metric.
+func UpdateEtcdDbSize(ep string, size int64) {
+	dbTotalSize.WithLabelValues(ep).Set(float64(size))
 }

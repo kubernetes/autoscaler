@@ -69,6 +69,7 @@ rules:
   - apiGroups:
     - ""
     resources:
+    - namespaces
     - persistentvolumeclaims
     - persistentvolumes
     - pods
@@ -105,6 +106,8 @@ rules:
     resources:
     - csinodes
     - storageclasses
+    - csidrivers
+    - csistoragecapacities
     verbs:
     - get
     - list
