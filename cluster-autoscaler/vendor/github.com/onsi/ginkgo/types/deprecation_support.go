@@ -46,9 +46,17 @@ func (d deprecations) Async() Deprecation {
 
 func (d deprecations) Measure() Deprecation {
 	return Deprecation{
-		Message: "Measure is deprecated in Ginkgo V2",
+		Message: "Measure is deprecated and will be removed in Ginkgo V2.  Please migrate to gomega/gmeasure.",
 		DocLink: "removed-measure",
-		Version: "1.16.0",
+		Version: "1.16.3",
+	}
+}
+
+func (d deprecations) ParallelNode() Deprecation {
+	return Deprecation{
+		Message: "GinkgoParallelNode is deprecated and will be removed in Ginkgo V2.  Please use GinkgoParallelProcess instead.",
+		DocLink: "renamed-ginkgoparallelnode",
+		Version: "1.16.5",
 	}
 }
 
@@ -99,16 +107,18 @@ func (d *DeprecationTracker) DidTrackDeprecations() bool {
 }
 
 func (d *DeprecationTracker) DeprecationsReport() string {
-	out := formatter.F("{{light-yellow}}You're using deprecated Ginkgo functionality:{{/}}\n")
+	out := formatter.F("\n{{light-yellow}}You're using deprecated Ginkgo functionality:{{/}}\n")
 	out += formatter.F("{{light-yellow}}============================================={{/}}\n")
-	out += formatter.F("Ginkgo 2.0 is under active development and will introduce (a small number of) breaking changes.\n")
-	out += formatter.F("To learn more, view the migration guide at {{cyan}}{{underline}}https://github.com/onsi/ginkgo/blob/v2/docs/MIGRATING_TO_V2.md{{/}}\n")
-	out += formatter.F("To comment, chime in at {{cyan}}{{underline}}https://github.com/onsi/ginkgo/issues/711{{/}}\n\n")
+	out += formatter.F("{{bold}}{{green}}Ginkgo 2.0{{/}} is under active development and will introduce several new features, improvements, and a small handful of breaking changes.\n")
+	out += formatter.F("A release candidate for 2.0 is now available and 2.0 should GA in Fall 2021.  {{bold}}Please give the RC a try and send us feedback!{{/}}\n")
+	out += formatter.F("  - To learn more, view the migration guide at {{cyan}}{{underline}}https://github.com/onsi/ginkgo/blob/ver2/docs/MIGRATING_TO_V2.md{{/}}\n")
+	out += formatter.F("  - For instructions on using the Release Candidate visit {{cyan}}{{underline}}https://github.com/onsi/ginkgo/blob/ver2/docs/MIGRATING_TO_V2.md#using-the-beta{{/}}\n")
+	out += formatter.F("  - To comment, chime in at {{cyan}}{{underline}}https://github.com/onsi/ginkgo/issues/711{{/}}\n\n")
 
 	for deprecation, locations := range d.deprecations {
 		out += formatter.Fi(1, "{{yellow}}"+deprecation.Message+"{{/}}\n")
 		if deprecation.DocLink != "" {
-			out += formatter.Fi(1, "{{bold}}Learn more at:{{/}} {{cyan}}{{underline}}https://github.com/onsi/ginkgo/blob/v2/docs/MIGRATING_TO_V2.md#%s{{/}}\n", deprecation.DocLink)
+			out += formatter.Fi(1, "{{bold}}Learn more at:{{/}} {{cyan}}{{underline}}https://github.com/onsi/ginkgo/blob/ver2/docs/MIGRATING_TO_V2.md#%s{{/}}\n", deprecation.DocLink)
 		}
 		for _, location := range locations {
 			out += formatter.Fi(2, "{{gray}}%s{{/}}\n", location)

@@ -95,13 +95,13 @@ type AlicloudMachineClassSpec struct {
 }
 
 type AlicloudDataDisk struct {
-	Name     string `json:"name,omitEmpty"`
-	Category string `json:"category,omitEmpty"`
+	Name     string `json:"name,omitempty"`
+	Category string `json:"category,omitempty"`
 	// +optional
-	Description        string `json:"description,omitEmpty"`
-	Encrypted          bool   `json:"encrypted,omitEmpty"`
-	DeleteWithInstance *bool  `json:"deleteWithInstance,omitEmpty"`
-	Size               int    `json:"size,omitEmpty"`
+	Description        string `json:"description,omitempty"`
+	Encrypted          bool   `json:"encrypted,omitempty"`
+	DeleteWithInstance *bool  `json:"deleteWithInstance,omitempty"`
+	Size               int    `json:"size,omitempty"`
 }
 
 // AlicloudSystemDisk describes SystemDisk for Alicloud.
