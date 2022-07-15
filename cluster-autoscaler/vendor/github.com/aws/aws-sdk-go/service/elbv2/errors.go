@@ -183,8 +183,7 @@ const (
 	// ErrCodeTooManyLoadBalancersException for service response error code
 	// "TooManyLoadBalancers".
 	//
-	// You've reached the limit on the number of load balancers for your Amazon
-	// Web Services account.
+	// You've reached the limit on the number of load balancers for your AWS account.
 	ErrCodeTooManyLoadBalancersException = "TooManyLoadBalancers"
 
 	// ErrCodeTooManyRegistrationsForTargetIdException for service response error code
@@ -209,8 +208,7 @@ const (
 	// ErrCodeTooManyTargetGroupsException for service response error code
 	// "TooManyTargetGroups".
 	//
-	// You've reached the limit on the number of target groups for your Amazon Web
-	// Services account.
+	// You've reached the limit on the number of target groups for your AWS account.
 	ErrCodeTooManyTargetGroupsException = "TooManyTargetGroups"
 
 	// ErrCodeTooManyTargetsException for service response error code
