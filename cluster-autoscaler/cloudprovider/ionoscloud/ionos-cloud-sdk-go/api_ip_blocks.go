@@ -27,11 +27,11 @@ var (
 type IPBlocksApiService service
 
 type ApiIpblocksDeleteRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	ipblockId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	ipblockId       string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -62,8 +62,8 @@ func (r ApiIpblocksDeleteRequest) Execute() (map[string]interface{}, *APIRespons
 func (a *IPBlocksApiService) IpblocksDelete(ctx _context.Context, ipblockId string) ApiIpblocksDeleteRequest {
 	return ApiIpblocksDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -140,11 +140,11 @@ func (a *IPBlocksApiService) IpblocksDeleteExecute(r ApiIpblocksDeleteRequest) (
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksDelete",
+		Operation:  "IpblocksDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *IPBlocksApiService) IpblocksDeleteExecute(r ApiIpblocksDeleteRequest) (
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,11 +186,11 @@ func (a *IPBlocksApiService) IpblocksDeleteExecute(r ApiIpblocksDeleteRequest) (
 }
 
 type ApiIpblocksFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	ipblockId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	ipblockId       string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -221,8 +221,8 @@ func (r ApiIpblocksFindByIdRequest) Execute() (IpBlock, *APIResponse, error) {
 func (a *IPBlocksApiService) IpblocksFindById(ctx _context.Context, ipblockId string) ApiIpblocksFindByIdRequest {
 	return ApiIpblocksFindByIdRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -299,11 +299,11 @@ func (a *IPBlocksApiService) IpblocksFindByIdExecute(r ApiIpblocksFindByIdReques
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksFindById",
+		Operation:  "IpblocksFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -322,13 +322,13 @@ func (a *IPBlocksApiService) IpblocksFindByIdExecute(r ApiIpblocksFindByIdReques
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -345,10 +345,10 @@ func (a *IPBlocksApiService) IpblocksFindByIdExecute(r ApiIpblocksFindByIdReques
 }
 
 type ApiIpblocksGetRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -370,7 +370,7 @@ func (r ApiIpblocksGetRequest) Execute() (IpBlocks, *APIResponse, error) {
 }
 
 /*
- * IpblocksGet List IP Blocks 
+ * IpblocksGet List IP Blocks
  * Retrieve a list of all reserved IP Blocks
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiIpblocksGetRequest
@@ -378,7 +378,7 @@ func (r ApiIpblocksGetRequest) Execute() (IpBlocks, *APIResponse, error) {
 func (a *IPBlocksApiService) IpblocksGet(ctx _context.Context) ApiIpblocksGetRequest {
 	return ApiIpblocksGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -454,11 +454,11 @@ func (a *IPBlocksApiService) IpblocksGetExecute(r ApiIpblocksGetRequest) (IpBloc
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksGet",
+		Operation:  "IpblocksGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -477,13 +477,13 @@ func (a *IPBlocksApiService) IpblocksGetExecute(r ApiIpblocksGetRequest) (IpBloc
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -500,12 +500,12 @@ func (a *IPBlocksApiService) IpblocksGetExecute(r ApiIpblocksGetRequest) (IpBloc
 }
 
 type ApiIpblocksPatchRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	ipblockId string
-	ipblock *IpBlockProperties
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	ipblockId       string
+	ipblock         *IpBlockProperties
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -540,8 +540,8 @@ func (r ApiIpblocksPatchRequest) Execute() (IpBlock, *APIResponse, error) {
 func (a *IPBlocksApiService) IpblocksPatch(ctx _context.Context, ipblockId string) ApiIpblocksPatchRequest {
 	return ApiIpblocksPatchRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -623,11 +623,11 @@ func (a *IPBlocksApiService) IpblocksPatchExecute(r ApiIpblocksPatchRequest) (Ip
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksPatch",
+		Operation:  "IpblocksPatch",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -646,13 +646,13 @@ func (a *IPBlocksApiService) IpblocksPatchExecute(r ApiIpblocksPatchRequest) (Ip
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -669,11 +669,11 @@ func (a *IPBlocksApiService) IpblocksPatchExecute(r ApiIpblocksPatchRequest) (Ip
 }
 
 type ApiIpblocksPostRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	ipblock *IpBlock
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	ipblock         *IpBlock
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -707,7 +707,7 @@ func (r ApiIpblocksPostRequest) Execute() (IpBlock, *APIResponse, error) {
 func (a *IPBlocksApiService) IpblocksPost(ctx _context.Context) ApiIpblocksPostRequest {
 	return ApiIpblocksPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -788,11 +788,11 @@ func (a *IPBlocksApiService) IpblocksPostExecute(r ApiIpblocksPostRequest) (IpBl
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksPost",
+		Operation:  "IpblocksPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -811,13 +811,13 @@ func (a *IPBlocksApiService) IpblocksPostExecute(r ApiIpblocksPostRequest) (IpBl
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -834,12 +834,12 @@ func (a *IPBlocksApiService) IpblocksPostExecute(r ApiIpblocksPostRequest) (IpBl
 }
 
 type ApiIpblocksPutRequest struct {
-	ctx _context.Context
-	ApiService *IPBlocksApiService
-	ipblockId string
-	ipblock *IpBlock
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *IPBlocksApiService
+	ipblockId       string
+	ipblock         *IpBlock
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -874,8 +874,8 @@ func (r ApiIpblocksPutRequest) Execute() (IpBlock, *APIResponse, error) {
 func (a *IPBlocksApiService) IpblocksPut(ctx _context.Context, ipblockId string) ApiIpblocksPutRequest {
 	return ApiIpblocksPutRequest{
 		ApiService: a,
-		ctx: ctx,
-		ipblockId: ipblockId,
+		ctx:        ctx,
+		ipblockId:  ipblockId,
 	}
 }
 
@@ -957,11 +957,11 @@ func (a *IPBlocksApiService) IpblocksPutExecute(r ApiIpblocksPutRequest) (IpBloc
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "IpblocksPut",
+		Operation:  "IpblocksPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -980,13 +980,13 @@ func (a *IPBlocksApiService) IpblocksPutExecute(r ApiIpblocksPutRequest) (IpBloc
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

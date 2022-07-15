@@ -19,8 +19,6 @@ type KubernetesClusterEntities struct {
 	Nodepools *KubernetesNodePools `json:"nodepools,omitempty"`
 }
 
-
-
 // GetNodepools returns the Nodepools field value
 // If the value is explicit nil, the zero value for KubernetesNodePools will be returned
 func (o *KubernetesClusterEntities) GetNodepools() *KubernetesNodePools {
@@ -55,14 +53,13 @@ func (o *KubernetesClusterEntities) HasNodepools() bool {
 	return false
 }
 
-
 func (o KubernetesClusterEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Nodepools != nil {
 		toSerialize["nodepools"] = o.Nodepools
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -101,5 +98,3 @@ func (v *NullableKubernetesClusterEntities) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

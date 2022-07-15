@@ -26,8 +26,6 @@ type KubernetesNodePools struct {
 	Items *[]KubernetesNodePool `json:"items,omitempty"`
 }
 
-
-
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePools) GetId() *string {
@@ -61,8 +59,6 @@ func (o *KubernetesNodePools) HasId() bool {
 
 	return false
 }
-
-
 
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -98,8 +94,6 @@ func (o *KubernetesNodePools) HasType() bool {
 	return false
 }
 
-
-
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePools) GetHref() *string {
@@ -133,8 +127,6 @@ func (o *KubernetesNodePools) HasHref() bool {
 
 	return false
 }
-
-
 
 // GetItems returns the Items field value
 // If the value is explicit nil, the zero value for []KubernetesNodePool will be returned
@@ -170,29 +162,25 @@ func (o *KubernetesNodePools) HasItems() bool {
 	return false
 }
 
-
 func (o KubernetesNodePools) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Items != nil {
 		toSerialize["items"] = o.Items
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -231,5 +219,3 @@ func (v *NullableKubernetesNodePools) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

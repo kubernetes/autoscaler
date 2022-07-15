@@ -16,13 +16,11 @@ import (
 
 // DatacenterEntities struct for DatacenterEntities
 type DatacenterEntities struct {
-	Servers *Servers `json:"servers,omitempty"`
-	Volumes *Volumes `json:"volumes,omitempty"`
+	Servers       *Servers       `json:"servers,omitempty"`
+	Volumes       *Volumes       `json:"volumes,omitempty"`
 	Loadbalancers *Loadbalancers `json:"loadbalancers,omitempty"`
-	Lans *Lans `json:"lans,omitempty"`
+	Lans          *Lans          `json:"lans,omitempty"`
 }
-
-
 
 // GetServers returns the Servers field value
 // If the value is explicit nil, the zero value for Servers will be returned
@@ -58,8 +56,6 @@ func (o *DatacenterEntities) HasServers() bool {
 	return false
 }
 
-
-
 // GetVolumes returns the Volumes field value
 // If the value is explicit nil, the zero value for Volumes will be returned
 func (o *DatacenterEntities) GetVolumes() *Volumes {
@@ -93,8 +89,6 @@ func (o *DatacenterEntities) HasVolumes() bool {
 
 	return false
 }
-
-
 
 // GetLoadbalancers returns the Loadbalancers field value
 // If the value is explicit nil, the zero value for Loadbalancers will be returned
@@ -130,8 +124,6 @@ func (o *DatacenterEntities) HasLoadbalancers() bool {
 	return false
 }
 
-
-
 // GetLans returns the Lans field value
 // If the value is explicit nil, the zero value for Lans will be returned
 func (o *DatacenterEntities) GetLans() *Lans {
@@ -166,29 +158,25 @@ func (o *DatacenterEntities) HasLans() bool {
 	return false
 }
 
-
 func (o DatacenterEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Servers != nil {
 		toSerialize["servers"] = o.Servers
 	}
-	
 
 	if o.Volumes != nil {
 		toSerialize["volumes"] = o.Volumes
 	}
-	
 
 	if o.Loadbalancers != nil {
 		toSerialize["loadbalancers"] = o.Loadbalancers
 	}
-	
 
 	if o.Lans != nil {
 		toSerialize["lans"] = o.Lans
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -227,5 +215,3 @@ func (v *NullableDatacenterEntities) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

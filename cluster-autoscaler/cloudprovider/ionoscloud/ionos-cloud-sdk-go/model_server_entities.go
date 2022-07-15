@@ -16,12 +16,10 @@ import (
 
 // ServerEntities struct for ServerEntities
 type ServerEntities struct {
-	Cdroms *Cdroms `json:"cdroms,omitempty"`
+	Cdroms  *Cdroms          `json:"cdroms,omitempty"`
 	Volumes *AttachedVolumes `json:"volumes,omitempty"`
-	Nics *Nics `json:"nics,omitempty"`
+	Nics    *Nics            `json:"nics,omitempty"`
 }
-
-
 
 // GetCdroms returns the Cdroms field value
 // If the value is explicit nil, the zero value for Cdroms will be returned
@@ -57,8 +55,6 @@ func (o *ServerEntities) HasCdroms() bool {
 	return false
 }
 
-
-
 // GetVolumes returns the Volumes field value
 // If the value is explicit nil, the zero value for AttachedVolumes will be returned
 func (o *ServerEntities) GetVolumes() *AttachedVolumes {
@@ -92,8 +88,6 @@ func (o *ServerEntities) HasVolumes() bool {
 
 	return false
 }
-
-
 
 // GetNics returns the Nics field value
 // If the value is explicit nil, the zero value for Nics will be returned
@@ -129,24 +123,21 @@ func (o *ServerEntities) HasNics() bool {
 	return false
 }
 
-
 func (o ServerEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Cdroms != nil {
 		toSerialize["cdroms"] = o.Cdroms
 	}
-	
 
 	if o.Volumes != nil {
 		toSerialize["volumes"] = o.Volumes
 	}
-	
 
 	if o.Nics != nil {
 		toSerialize["nics"] = o.Nics
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -185,5 +176,3 @@ func (v *NullableServerEntities) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

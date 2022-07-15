@@ -26,8 +26,6 @@ type PrivateCrossConnectProperties struct {
 	ConnectableDatacenters *[]ConnectableDatacenter `json:"connectableDatacenters,omitempty"`
 }
 
-
-
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *PrivateCrossConnectProperties) GetName() *string {
@@ -61,8 +59,6 @@ func (o *PrivateCrossConnectProperties) HasName() bool {
 
 	return false
 }
-
-
 
 // GetDescription returns the Description field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -98,8 +94,6 @@ func (o *PrivateCrossConnectProperties) HasDescription() bool {
 	return false
 }
 
-
-
 // GetPeers returns the Peers field value
 // If the value is explicit nil, the zero value for []Peer will be returned
 func (o *PrivateCrossConnectProperties) GetPeers() *[]Peer {
@@ -133,8 +127,6 @@ func (o *PrivateCrossConnectProperties) HasPeers() bool {
 
 	return false
 }
-
-
 
 // GetConnectableDatacenters returns the ConnectableDatacenters field value
 // If the value is explicit nil, the zero value for []ConnectableDatacenter will be returned
@@ -170,29 +162,25 @@ func (o *PrivateCrossConnectProperties) HasConnectableDatacenters() bool {
 	return false
 }
 
-
 func (o PrivateCrossConnectProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.Description != nil {
 		toSerialize["description"] = o.Description
 	}
-	
 
 	if o.Peers != nil {
 		toSerialize["peers"] = o.Peers
 	}
-	
 
 	if o.ConnectableDatacenters != nil {
 		toSerialize["connectableDatacenters"] = o.ConnectableDatacenters
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -231,5 +219,3 @@ func (v *NullablePrivateCrossConnectProperties) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

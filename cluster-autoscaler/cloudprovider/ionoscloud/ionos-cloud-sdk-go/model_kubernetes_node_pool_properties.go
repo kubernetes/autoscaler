@@ -35,16 +35,14 @@ type KubernetesNodePoolProperties struct {
 	// The size of the volume in GB. The size should be greater than 10GB.
 	StorageSize *int32 `json:"storageSize"`
 	// The kubernetes version in which a nodepool is running. This imposes restrictions on what kubernetes versions can be run in a cluster's nodepools. Additionally, not all kubernetes versions are viable upgrade targets for all prior versions.
-	K8sVersion *string `json:"k8sVersion,omitempty"`
+	K8sVersion        *string                      `json:"k8sVersion,omitempty"`
 	MaintenanceWindow *KubernetesMaintenanceWindow `json:"maintenanceWindow,omitempty"`
-	AutoScaling *KubernetesAutoScaling `json:"autoScaling,omitempty"`
+	AutoScaling       *KubernetesAutoScaling       `json:"autoScaling,omitempty"`
 	// array of additional LANs attached to worker nodes
-	Lans *[]KubernetesNodePoolLan `json:"lans,omitempty"`
-	Labels *KubernetesNodePoolLabel `json:"labels,omitempty"`
+	Lans        *[]KubernetesNodePoolLan      `json:"lans,omitempty"`
+	Labels      *KubernetesNodePoolLabel      `json:"labels,omitempty"`
 	Annotations *KubernetesNodePoolAnnotation `json:"annotations,omitempty"`
 }
-
-
 
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -80,8 +78,6 @@ func (o *KubernetesNodePoolProperties) HasName() bool {
 	return false
 }
 
-
-
 // GetDatacenterId returns the DatacenterId field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePoolProperties) GetDatacenterId() *string {
@@ -115,8 +111,6 @@ func (o *KubernetesNodePoolProperties) HasDatacenterId() bool {
 
 	return false
 }
-
-
 
 // GetNodeCount returns the NodeCount field value
 // If the value is explicit nil, the zero value for int32 will be returned
@@ -152,8 +146,6 @@ func (o *KubernetesNodePoolProperties) HasNodeCount() bool {
 	return false
 }
 
-
-
 // GetCpuFamily returns the CpuFamily field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePoolProperties) GetCpuFamily() *string {
@@ -187,8 +179,6 @@ func (o *KubernetesNodePoolProperties) HasCpuFamily() bool {
 
 	return false
 }
-
-
 
 // GetCoresCount returns the CoresCount field value
 // If the value is explicit nil, the zero value for int32 will be returned
@@ -224,8 +214,6 @@ func (o *KubernetesNodePoolProperties) HasCoresCount() bool {
 	return false
 }
 
-
-
 // GetRamSize returns the RamSize field value
 // If the value is explicit nil, the zero value for int32 will be returned
 func (o *KubernetesNodePoolProperties) GetRamSize() *int32 {
@@ -259,8 +247,6 @@ func (o *KubernetesNodePoolProperties) HasRamSize() bool {
 
 	return false
 }
-
-
 
 // GetAvailabilityZone returns the AvailabilityZone field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -296,8 +282,6 @@ func (o *KubernetesNodePoolProperties) HasAvailabilityZone() bool {
 	return false
 }
 
-
-
 // GetStorageType returns the StorageType field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePoolProperties) GetStorageType() *string {
@@ -331,8 +315,6 @@ func (o *KubernetesNodePoolProperties) HasStorageType() bool {
 
 	return false
 }
-
-
 
 // GetStorageSize returns the StorageSize field value
 // If the value is explicit nil, the zero value for int32 will be returned
@@ -368,8 +350,6 @@ func (o *KubernetesNodePoolProperties) HasStorageSize() bool {
 	return false
 }
 
-
-
 // GetK8sVersion returns the K8sVersion field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *KubernetesNodePoolProperties) GetK8sVersion() *string {
@@ -403,8 +383,6 @@ func (o *KubernetesNodePoolProperties) HasK8sVersion() bool {
 
 	return false
 }
-
-
 
 // GetMaintenanceWindow returns the MaintenanceWindow field value
 // If the value is explicit nil, the zero value for KubernetesMaintenanceWindow will be returned
@@ -440,8 +418,6 @@ func (o *KubernetesNodePoolProperties) HasMaintenanceWindow() bool {
 	return false
 }
 
-
-
 // GetAutoScaling returns the AutoScaling field value
 // If the value is explicit nil, the zero value for KubernetesAutoScaling will be returned
 func (o *KubernetesNodePoolProperties) GetAutoScaling() *KubernetesAutoScaling {
@@ -475,8 +451,6 @@ func (o *KubernetesNodePoolProperties) HasAutoScaling() bool {
 
 	return false
 }
-
-
 
 // GetLans returns the Lans field value
 // If the value is explicit nil, the zero value for []KubernetesNodePoolLan will be returned
@@ -512,8 +486,6 @@ func (o *KubernetesNodePoolProperties) HasLans() bool {
 	return false
 }
 
-
-
 // GetLabels returns the Labels field value
 // If the value is explicit nil, the zero value for KubernetesNodePoolLabel will be returned
 func (o *KubernetesNodePoolProperties) GetLabels() *KubernetesNodePoolLabel {
@@ -547,8 +519,6 @@ func (o *KubernetesNodePoolProperties) HasLabels() bool {
 
 	return false
 }
-
-
 
 // GetAnnotations returns the Annotations field value
 // If the value is explicit nil, the zero value for KubernetesNodePoolAnnotation will be returned
@@ -584,84 +554,69 @@ func (o *KubernetesNodePoolProperties) HasAnnotations() bool {
 	return false
 }
 
-
 func (o KubernetesNodePoolProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.DatacenterId != nil {
 		toSerialize["datacenterId"] = o.DatacenterId
 	}
-	
 
 	if o.NodeCount != nil {
 		toSerialize["nodeCount"] = o.NodeCount
 	}
-	
 
 	if o.CpuFamily != nil {
 		toSerialize["cpuFamily"] = o.CpuFamily
 	}
-	
 
 	if o.CoresCount != nil {
 		toSerialize["coresCount"] = o.CoresCount
 	}
-	
 
 	if o.RamSize != nil {
 		toSerialize["ramSize"] = o.RamSize
 	}
-	
 
 	if o.AvailabilityZone != nil {
 		toSerialize["availabilityZone"] = o.AvailabilityZone
 	}
-	
 
 	if o.StorageType != nil {
 		toSerialize["storageType"] = o.StorageType
 	}
-	
 
 	if o.StorageSize != nil {
 		toSerialize["storageSize"] = o.StorageSize
 	}
-	
 
 	if o.K8sVersion != nil {
 		toSerialize["k8sVersion"] = o.K8sVersion
 	}
-	
 
 	if o.MaintenanceWindow != nil {
 		toSerialize["maintenanceWindow"] = o.MaintenanceWindow
 	}
-	
 
 	if o.AutoScaling != nil {
 		toSerialize["autoScaling"] = o.AutoScaling
 	}
-	
 
 	if o.Lans != nil {
 		toSerialize["lans"] = o.Lans
 	}
-	
 
 	if o.Labels != nil {
 		toSerialize["labels"] = o.Labels
 	}
-	
 
 	if o.Annotations != nil {
 		toSerialize["annotations"] = o.Annotations
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -700,5 +655,3 @@ func (v *NullableKubernetesNodePoolProperties) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

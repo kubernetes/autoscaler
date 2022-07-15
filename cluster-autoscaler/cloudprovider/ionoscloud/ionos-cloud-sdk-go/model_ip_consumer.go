@@ -16,16 +16,14 @@ import (
 
 // IpConsumer struct for IpConsumer
 type IpConsumer struct {
-	Ip *string `json:"ip,omitempty"`
-	Mac *string `json:"mac,omitempty"`
-	NicId *string `json:"nicId,omitempty"`
-	ServerId *string `json:"serverId,omitempty"`
-	ServerName *string `json:"serverName,omitempty"`
-	DatacenterId *string `json:"datacenterId,omitempty"`
+	Ip             *string `json:"ip,omitempty"`
+	Mac            *string `json:"mac,omitempty"`
+	NicId          *string `json:"nicId,omitempty"`
+	ServerId       *string `json:"serverId,omitempty"`
+	ServerName     *string `json:"serverName,omitempty"`
+	DatacenterId   *string `json:"datacenterId,omitempty"`
 	DatacenterName *string `json:"datacenterName,omitempty"`
 }
-
-
 
 // GetIp returns the Ip field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -61,8 +59,6 @@ func (o *IpConsumer) HasIp() bool {
 	return false
 }
 
-
-
 // GetMac returns the Mac field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *IpConsumer) GetMac() *string {
@@ -96,8 +92,6 @@ func (o *IpConsumer) HasMac() bool {
 
 	return false
 }
-
-
 
 // GetNicId returns the NicId field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -133,8 +127,6 @@ func (o *IpConsumer) HasNicId() bool {
 	return false
 }
 
-
-
 // GetServerId returns the ServerId field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *IpConsumer) GetServerId() *string {
@@ -168,8 +160,6 @@ func (o *IpConsumer) HasServerId() bool {
 
 	return false
 }
-
-
 
 // GetServerName returns the ServerName field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -205,8 +195,6 @@ func (o *IpConsumer) HasServerName() bool {
 	return false
 }
 
-
-
 // GetDatacenterId returns the DatacenterId field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *IpConsumer) GetDatacenterId() *string {
@@ -240,8 +228,6 @@ func (o *IpConsumer) HasDatacenterId() bool {
 
 	return false
 }
-
-
 
 // GetDatacenterName returns the DatacenterName field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -277,44 +263,37 @@ func (o *IpConsumer) HasDatacenterName() bool {
 	return false
 }
 
-
 func (o IpConsumer) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Ip != nil {
 		toSerialize["ip"] = o.Ip
 	}
-	
 
 	if o.Mac != nil {
 		toSerialize["mac"] = o.Mac
 	}
-	
 
 	if o.NicId != nil {
 		toSerialize["nicId"] = o.NicId
 	}
-	
 
 	if o.ServerId != nil {
 		toSerialize["serverId"] = o.ServerId
 	}
-	
 
 	if o.ServerName != nil {
 		toSerialize["serverName"] = o.ServerName
 	}
-	
 
 	if o.DatacenterId != nil {
 		toSerialize["datacenterId"] = o.DatacenterId
 	}
-	
 
 	if o.DatacenterName != nil {
 		toSerialize["datacenterName"] = o.DatacenterName
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -353,5 +332,3 @@ func (v *NullableIpConsumer) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

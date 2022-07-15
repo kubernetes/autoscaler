@@ -22,8 +22,6 @@ type S3KeyProperties struct {
 	Active *bool `json:"active,omitempty"`
 }
 
-
-
 // GetSecretKey returns the SecretKey field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *S3KeyProperties) GetSecretKey() *string {
@@ -57,8 +55,6 @@ func (o *S3KeyProperties) HasSecretKey() bool {
 
 	return false
 }
-
-
 
 // GetActive returns the Active field value
 // If the value is explicit nil, the zero value for bool will be returned
@@ -94,19 +90,17 @@ func (o *S3KeyProperties) HasActive() bool {
 	return false
 }
 
-
 func (o S3KeyProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.SecretKey != nil {
 		toSerialize["secretKey"] = o.SecretKey
 	}
-	
 
 	if o.Active != nil {
 		toSerialize["active"] = o.Active
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -145,5 +139,3 @@ func (v *NullableS3KeyProperties) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

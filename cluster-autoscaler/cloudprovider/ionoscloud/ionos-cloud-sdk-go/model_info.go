@@ -24,8 +24,6 @@ type Info struct {
 	Version *string `json:"version,omitempty"`
 }
 
-
-
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *Info) GetHref() *string {
@@ -59,8 +57,6 @@ func (o *Info) HasHref() bool {
 
 	return false
 }
-
-
 
 // GetName returns the Name field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -96,8 +92,6 @@ func (o *Info) HasName() bool {
 	return false
 }
 
-
-
 // GetVersion returns the Version field value
 // If the value is explicit nil, the zero value for string will be returned
 func (o *Info) GetVersion() *string {
@@ -132,24 +126,21 @@ func (o *Info) HasVersion() bool {
 	return false
 }
 
-
 func (o Info) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Name != nil {
 		toSerialize["name"] = o.Name
 	}
-	
 
 	if o.Version != nil {
 		toSerialize["version"] = o.Version
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -188,5 +179,3 @@ func (v *NullableInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

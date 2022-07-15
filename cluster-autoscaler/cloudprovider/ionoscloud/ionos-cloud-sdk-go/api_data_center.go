@@ -27,11 +27,11 @@ var (
 type DataCenterApiService service
 
 type ApiDatacentersDeleteRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	datacenterId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	datacenterId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -61,8 +61,8 @@ func (r ApiDatacentersDeleteRequest) Execute() (map[string]interface{}, *APIResp
  */
 func (a *DataCenterApiService) DatacentersDelete(ctx _context.Context, datacenterId string) ApiDatacentersDeleteRequest {
 	return ApiDatacentersDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -140,11 +140,11 @@ func (a *DataCenterApiService) DatacentersDeleteExecute(r ApiDatacentersDeleteRe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersDelete",
+		Operation:  "DatacentersDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *DataCenterApiService) DatacentersDeleteExecute(r ApiDatacentersDeleteRe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,11 +186,11 @@ func (a *DataCenterApiService) DatacentersDeleteExecute(r ApiDatacentersDeleteRe
 }
 
 type ApiDatacentersFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	datacenterId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	datacenterId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -220,8 +220,8 @@ func (r ApiDatacentersFindByIdRequest) Execute() (Datacenter, *APIResponse, erro
  */
 func (a *DataCenterApiService) DatacentersFindById(ctx _context.Context, datacenterId string) ApiDatacentersFindByIdRequest {
 	return ApiDatacentersFindByIdRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -299,11 +299,11 @@ func (a *DataCenterApiService) DatacentersFindByIdExecute(r ApiDatacentersFindBy
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersFindById",
+		Operation:  "DatacentersFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -322,13 +322,13 @@ func (a *DataCenterApiService) DatacentersFindByIdExecute(r ApiDatacentersFindBy
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -345,10 +345,10 @@ func (a *DataCenterApiService) DatacentersFindByIdExecute(r ApiDatacentersFindBy
 }
 
 type ApiDatacentersGetRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -378,7 +378,7 @@ func (r ApiDatacentersGetRequest) Execute() (Datacenters, *APIResponse, error) {
 func (a *DataCenterApiService) DatacentersGet(ctx _context.Context) ApiDatacentersGetRequest {
 	return ApiDatacentersGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -454,11 +454,11 @@ func (a *DataCenterApiService) DatacentersGetExecute(r ApiDatacentersGetRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersGet",
+		Operation:  "DatacentersGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -477,13 +477,13 @@ func (a *DataCenterApiService) DatacentersGetExecute(r ApiDatacentersGetRequest)
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -500,12 +500,12 @@ func (a *DataCenterApiService) DatacentersGetExecute(r ApiDatacentersGetRequest)
 }
 
 type ApiDatacentersPatchRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	datacenterId string
-	datacenter *DatacenterProperties
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	datacenterId    string
+	datacenter      *DatacenterProperties
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -539,8 +539,8 @@ func (r ApiDatacentersPatchRequest) Execute() (Datacenter, *APIResponse, error) 
  */
 func (a *DataCenterApiService) DatacentersPatch(ctx _context.Context, datacenterId string) ApiDatacentersPatchRequest {
 	return ApiDatacentersPatchRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -623,11 +623,11 @@ func (a *DataCenterApiService) DatacentersPatchExecute(r ApiDatacentersPatchRequ
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersPatch",
+		Operation:  "DatacentersPatch",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -646,13 +646,13 @@ func (a *DataCenterApiService) DatacentersPatchExecute(r ApiDatacentersPatchRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -669,11 +669,11 @@ func (a *DataCenterApiService) DatacentersPatchExecute(r ApiDatacentersPatchRequ
 }
 
 type ApiDatacentersPostRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	datacenter *Datacenter
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	datacenter      *Datacenter
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -707,7 +707,7 @@ func (r ApiDatacentersPostRequest) Execute() (Datacenter, *APIResponse, error) {
 func (a *DataCenterApiService) DatacentersPost(ctx _context.Context) ApiDatacentersPostRequest {
 	return ApiDatacentersPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -788,11 +788,11 @@ func (a *DataCenterApiService) DatacentersPostExecute(r ApiDatacentersPostReques
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersPost",
+		Operation:  "DatacentersPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -811,13 +811,13 @@ func (a *DataCenterApiService) DatacentersPostExecute(r ApiDatacentersPostReques
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -834,12 +834,12 @@ func (a *DataCenterApiService) DatacentersPostExecute(r ApiDatacentersPostReques
 }
 
 type ApiDatacentersPutRequest struct {
-	ctx _context.Context
-	ApiService *DataCenterApiService
-	datacenterId string
-	datacenter *Datacenter
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *DataCenterApiService
+	datacenterId    string
+	datacenter      *Datacenter
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -873,8 +873,8 @@ func (r ApiDatacentersPutRequest) Execute() (Datacenter, *APIResponse, error) {
  */
 func (a *DataCenterApiService) DatacentersPut(ctx _context.Context, datacenterId string) ApiDatacentersPutRequest {
 	return ApiDatacentersPutRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		datacenterId: datacenterId,
 	}
 }
@@ -957,11 +957,11 @@ func (a *DataCenterApiService) DatacentersPutExecute(r ApiDatacentersPutRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "DatacentersPut",
+		Operation:  "DatacentersPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -980,13 +980,13 @@ func (a *DataCenterApiService) DatacentersPutExecute(r ApiDatacentersPutRequest)
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

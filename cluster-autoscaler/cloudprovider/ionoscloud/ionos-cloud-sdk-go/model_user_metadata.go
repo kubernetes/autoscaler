@@ -17,15 +17,13 @@ import (
 
 // UserMetadata struct for UserMetadata
 type UserMetadata struct {
-	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11 . Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter. 
+	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11 . Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter.
 	Etag *string `json:"etag,omitempty"`
 	// time of creation of the user
 	CreatedDate *time.Time `json:"createdDate,omitempty"`
 	// time of last login by the user
 	LastLogin *time.Time `json:"lastLogin,omitempty"`
 }
-
-
 
 // GetEtag returns the Etag field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -61,8 +59,6 @@ func (o *UserMetadata) HasEtag() bool {
 	return false
 }
 
-
-
 // GetCreatedDate returns the CreatedDate field value
 // If the value is explicit nil, the zero value for time.Time will be returned
 func (o *UserMetadata) GetCreatedDate() *time.Time {
@@ -96,8 +92,6 @@ func (o *UserMetadata) HasCreatedDate() bool {
 
 	return false
 }
-
-
 
 // GetLastLogin returns the LastLogin field value
 // If the value is explicit nil, the zero value for time.Time will be returned
@@ -133,24 +127,21 @@ func (o *UserMetadata) HasLastLogin() bool {
 	return false
 }
 
-
 func (o UserMetadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Etag != nil {
 		toSerialize["etag"] = o.Etag
 	}
-	
 
 	if o.CreatedDate != nil {
 		toSerialize["createdDate"] = o.CreatedDate
 	}
-	
 
 	if o.LastLogin != nil {
 		toSerialize["lastLogin"] = o.LastLogin
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -189,5 +180,3 @@ func (v *NullableUserMetadata) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

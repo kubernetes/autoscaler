@@ -27,11 +27,11 @@ var (
 type BackupUnitApiService service
 
 type ApiBackupunitsDeleteRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupunitId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	backupunitId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -61,8 +61,8 @@ func (r ApiBackupunitsDeleteRequest) Execute() (map[string]interface{}, *APIResp
  */
 func (a *BackupUnitApiService) BackupunitsDelete(ctx _context.Context, backupunitId string) ApiBackupunitsDeleteRequest {
 	return ApiBackupunitsDeleteRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		backupunitId: backupunitId,
 	}
 }
@@ -140,11 +140,11 @@ func (a *BackupUnitApiService) BackupunitsDeleteExecute(r ApiBackupunitsDeleteRe
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsDelete",
+		Operation:  "BackupunitsDelete",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -163,13 +163,13 @@ func (a *BackupUnitApiService) BackupunitsDeleteExecute(r ApiBackupunitsDeleteRe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -186,11 +186,11 @@ func (a *BackupUnitApiService) BackupunitsDeleteExecute(r ApiBackupunitsDeleteRe
 }
 
 type ApiBackupunitsFindByIdRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupunitId string
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	backupunitId    string
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -220,8 +220,8 @@ func (r ApiBackupunitsFindByIdRequest) Execute() (BackupUnit, *APIResponse, erro
  */
 func (a *BackupUnitApiService) BackupunitsFindById(ctx _context.Context, backupunitId string) ApiBackupunitsFindByIdRequest {
 	return ApiBackupunitsFindByIdRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		backupunitId: backupunitId,
 	}
 }
@@ -299,11 +299,11 @@ func (a *BackupUnitApiService) BackupunitsFindByIdExecute(r ApiBackupunitsFindBy
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsFindById",
+		Operation:  "BackupunitsFindById",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -322,13 +322,13 @@ func (a *BackupUnitApiService) BackupunitsFindByIdExecute(r ApiBackupunitsFindBy
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -345,10 +345,10 @@ func (a *BackupUnitApiService) BackupunitsFindByIdExecute(r ApiBackupunitsFindBy
 }
 
 type ApiBackupunitsGetRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -370,7 +370,7 @@ func (r ApiBackupunitsGetRequest) Execute() (BackupUnits, *APIResponse, error) {
 }
 
 /*
- * BackupunitsGet List Backup Units 
+ * BackupunitsGet List Backup Units
  * You can retrieve a complete list of backup Units that you have access to.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiBackupunitsGetRequest
@@ -378,7 +378,7 @@ func (r ApiBackupunitsGetRequest) Execute() (BackupUnits, *APIResponse, error) {
 func (a *BackupUnitApiService) BackupunitsGet(ctx _context.Context) ApiBackupunitsGetRequest {
 	return ApiBackupunitsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -454,11 +454,11 @@ func (a *BackupUnitApiService) BackupunitsGetExecute(r ApiBackupunitsGetRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsGet",
+		Operation:  "BackupunitsGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -477,13 +477,13 @@ func (a *BackupUnitApiService) BackupunitsGetExecute(r ApiBackupunitsGetRequest)
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -500,13 +500,13 @@ func (a *BackupUnitApiService) BackupunitsGetExecute(r ApiBackupunitsGetRequest)
 }
 
 type ApiBackupunitsPatchRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupunitId string
+	ctx                  _context.Context
+	ApiService           *BackupUnitApiService
+	backupunitId         string
 	backupUnitProperties *BackupUnitProperties
-	pretty *bool
-	depth *int32
-	xContractNumber *int32
+	pretty               *bool
+	depth                *int32
+	xContractNumber      *int32
 }
 
 func (r ApiBackupunitsPatchRequest) BackupUnitProperties(backupUnitProperties BackupUnitProperties) ApiBackupunitsPatchRequest {
@@ -539,8 +539,8 @@ func (r ApiBackupunitsPatchRequest) Execute() (BackupUnit, *APIResponse, error) 
  */
 func (a *BackupUnitApiService) BackupunitsPatch(ctx _context.Context, backupunitId string) ApiBackupunitsPatchRequest {
 	return ApiBackupunitsPatchRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		backupunitId: backupunitId,
 	}
 }
@@ -623,11 +623,11 @@ func (a *BackupUnitApiService) BackupunitsPatchExecute(r ApiBackupunitsPatchRequ
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsPatch",
+		Operation:  "BackupunitsPatch",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -646,13 +646,13 @@ func (a *BackupUnitApiService) BackupunitsPatchExecute(r ApiBackupunitsPatchRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -669,11 +669,11 @@ func (a *BackupUnitApiService) BackupunitsPatchExecute(r ApiBackupunitsPatchRequ
 }
 
 type ApiBackupunitsPostRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupUnit *BackupUnit
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	backupUnit      *BackupUnit
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -700,14 +700,14 @@ func (r ApiBackupunitsPostRequest) Execute() (BackupUnit, *APIResponse, error) {
 
 /*
  * BackupunitsPost Create a Backup Unit
- * Create a Backup Unit. A Backup Unit is considered a resource like a virtual datacenter, IP Block, snapshot, etc. It shall be shareable via groups inside our User Management Feature 
+ * Create a Backup Unit. A Backup Unit is considered a resource like a virtual datacenter, IP Block, snapshot, etc. It shall be shareable via groups inside our User Management Feature
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiBackupunitsPostRequest
  */
 func (a *BackupUnitApiService) BackupunitsPost(ctx _context.Context) ApiBackupunitsPostRequest {
 	return ApiBackupunitsPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -788,11 +788,11 @@ func (a *BackupUnitApiService) BackupunitsPostExecute(r ApiBackupunitsPostReques
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsPost",
+		Operation:  "BackupunitsPost",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -811,13 +811,13 @@ func (a *BackupUnitApiService) BackupunitsPostExecute(r ApiBackupunitsPostReques
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -834,12 +834,12 @@ func (a *BackupUnitApiService) BackupunitsPostExecute(r ApiBackupunitsPostReques
 }
 
 type ApiBackupunitsPutRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupunitId string
-	backupUnit *BackupUnit
-	pretty *bool
-	depth *int32
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	backupunitId    string
+	backupUnit      *BackupUnit
+	pretty          *bool
+	depth           *int32
 	xContractNumber *int32
 }
 
@@ -873,8 +873,8 @@ func (r ApiBackupunitsPutRequest) Execute() (BackupUnit, *APIResponse, error) {
  */
 func (a *BackupUnitApiService) BackupunitsPut(ctx _context.Context, backupunitId string) ApiBackupunitsPutRequest {
 	return ApiBackupunitsPutRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		backupunitId: backupunitId,
 	}
 }
@@ -957,11 +957,11 @@ func (a *BackupUnitApiService) BackupunitsPutExecute(r ApiBackupunitsPutRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsPut",
+		Operation:  "BackupunitsPut",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -980,13 +980,13 @@ func (a *BackupUnitApiService) BackupunitsPutExecute(r ApiBackupunitsPutRequest)
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 
@@ -1003,10 +1003,10 @@ func (a *BackupUnitApiService) BackupunitsPutExecute(r ApiBackupunitsPutRequest)
 }
 
 type ApiBackupunitsSsourlGetRequest struct {
-	ctx _context.Context
-	ApiService *BackupUnitApiService
-	backupunitId string
-	pretty *bool
+	ctx             _context.Context
+	ApiService      *BackupUnitApiService
+	backupunitId    string
+	pretty          *bool
 	xContractNumber *int32
 }
 
@@ -1032,8 +1032,8 @@ func (r ApiBackupunitsSsourlGetRequest) Execute() (BackupUnitSSO, *APIResponse, 
  */
 func (a *BackupUnitApiService) BackupunitsSsourlGet(ctx _context.Context, backupunitId string) ApiBackupunitsSsourlGetRequest {
 	return ApiBackupunitsSsourlGetRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:   a,
+		ctx:          ctx,
 		backupunitId: backupunitId,
 	}
 }
@@ -1108,11 +1108,11 @@ func (a *BackupUnitApiService) BackupunitsSsourlGetExecute(r ApiBackupunitsSsour
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 
-	localVarAPIResponse := &APIResponse {
-		Response: localVarHTTPResponse,
-		Method: localVarHTTPMethod,
+	localVarAPIResponse := &APIResponse{
+		Response:   localVarHTTPResponse,
+		Method:     localVarHTTPMethod,
 		RequestURL: localVarPath,
-		Operation: "BackupunitsSsourlGet",
+		Operation:  "BackupunitsSsourlGet",
 	}
 
 	if err != nil || localVarHTTPResponse == nil {
@@ -1131,13 +1131,13 @@ func (a *BackupUnitApiService) BackupunitsSsourlGetExecute(r ApiBackupunitsSsour
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v Error
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarAPIResponse, newErr
-			}
-			newErr.model = v
+		var v Error
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarAPIResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarAPIResponse, newErr
 	}
 

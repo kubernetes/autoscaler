@@ -21,13 +21,11 @@ type LanPost struct {
 	// The type of object that has been created
 	Type *Type `json:"type,omitempty"`
 	// URL to the object representation (absolute path)
-	Href *string `json:"href,omitempty"`
-	Metadata *DatacenterElementMetadata `json:"metadata,omitempty"`
-	Entities *LanEntities `json:"entities,omitempty"`
-	Properties *LanPropertiesPost `json:"properties"`
+	Href       *string                    `json:"href,omitempty"`
+	Metadata   *DatacenterElementMetadata `json:"metadata,omitempty"`
+	Entities   *LanEntities               `json:"entities,omitempty"`
+	Properties *LanPropertiesPost         `json:"properties"`
 }
-
-
 
 // GetId returns the Id field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -63,8 +61,6 @@ func (o *LanPost) HasId() bool {
 	return false
 }
 
-
-
 // GetType returns the Type field value
 // If the value is explicit nil, the zero value for Type will be returned
 func (o *LanPost) GetType() *Type {
@@ -98,8 +94,6 @@ func (o *LanPost) HasType() bool {
 
 	return false
 }
-
-
 
 // GetHref returns the Href field value
 // If the value is explicit nil, the zero value for string will be returned
@@ -135,8 +129,6 @@ func (o *LanPost) HasHref() bool {
 	return false
 }
 
-
-
 // GetMetadata returns the Metadata field value
 // If the value is explicit nil, the zero value for DatacenterElementMetadata will be returned
 func (o *LanPost) GetMetadata() *DatacenterElementMetadata {
@@ -170,8 +162,6 @@ func (o *LanPost) HasMetadata() bool {
 
 	return false
 }
-
-
 
 // GetEntities returns the Entities field value
 // If the value is explicit nil, the zero value for LanEntities will be returned
@@ -207,8 +197,6 @@ func (o *LanPost) HasEntities() bool {
 	return false
 }
 
-
-
 // GetProperties returns the Properties field value
 // If the value is explicit nil, the zero value for LanPropertiesPost will be returned
 func (o *LanPost) GetProperties() *LanPropertiesPost {
@@ -243,39 +231,33 @@ func (o *LanPost) HasProperties() bool {
 	return false
 }
 
-
 func (o LanPost) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
-	
 
 	if o.Type != nil {
 		toSerialize["type"] = o.Type
 	}
-	
 
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
-	
 
 	if o.Metadata != nil {
 		toSerialize["metadata"] = o.Metadata
 	}
-	
 
 	if o.Entities != nil {
 		toSerialize["entities"] = o.Entities
 	}
-	
 
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
-	
+
 	return json.Marshal(toSerialize)
 }
 
@@ -314,5 +296,3 @@ func (v *NullableLanPost) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

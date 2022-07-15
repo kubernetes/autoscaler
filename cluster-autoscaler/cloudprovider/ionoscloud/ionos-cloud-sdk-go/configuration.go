@@ -21,12 +21,12 @@ import (
 )
 
 const (
-   IonosUsernameEnvVar = "IONOS_USERNAME"
-   IonosPasswordEnvVar = "IONOS_PASSWORD"
-   IonosTokenEnvVar    = "IONOS_TOKEN"
-   defaultMaxRetries  = 3
-   defaultWaitTime    = time.Duration(100) * time.Millisecond
-   defaultMaxWaitTime = time.Duration(2000) * time.Millisecond
+	IonosUsernameEnvVar = "IONOS_USERNAME"
+	IonosPasswordEnvVar = "IONOS_PASSWORD"
+	IonosTokenEnvVar    = "IONOS_TOKEN"
+	defaultMaxRetries   = 3
+	defaultWaitTime     = time.Duration(100) * time.Millisecond
+	defaultMaxWaitTime  = time.Duration(2000) * time.Millisecond
 )
 
 // contextKeys are used to identify the type of value in the context.
@@ -89,9 +89,9 @@ type ServerVariable struct {
 
 // ServerConfiguration stores the information about a server
 type ServerConfiguration struct {
-	URL string
+	URL         string
 	Description string
-	Variables map[string]ServerVariable
+	Variables   map[string]ServerVariable
 }
 
 // ServerConfigurations stores multiple ServerConfiguration items
@@ -99,50 +99,49 @@ type ServerConfigurations []ServerConfiguration
 
 // Configuration stores the configuration of the API client
 type Configuration struct {
-	Host             string            	`json:"host,omitempty"`
-	Scheme           string            	`json:"scheme,omitempty"`
-	DefaultHeader    map[string]string 	`json:"defaultHeader,omitempty"`
-	DefaultQueryParams url.Values  		`json:"defaultQueryParams,omitempty"`
-	UserAgent        string            	`json:"userAgent,omitempty"`
-	Debug            bool              	`json:"debug,omitempty"`
-	Servers          ServerConfigurations
-	OperationServers map[string]ServerConfigurations
-	HTTPClient       *http.Client
-    Username      string            	`json:"username,omitempty"`
-    Password      string            	`json:"password,omitempty"`
-    Token         string            	`json:"token,omitempty"`
-    MaxRetries      int             	`json:"maxRetries,omitempty"`
-    WaitTime        time.Duration   	`json:"waitTime,omitempty"`
-    MaxWaitTime     time.Duration   	`json:"maxWaitTime,omitempty"`
+	Host               string            `json:"host,omitempty"`
+	Scheme             string            `json:"scheme,omitempty"`
+	DefaultHeader      map[string]string `json:"defaultHeader,omitempty"`
+	DefaultQueryParams url.Values        `json:"defaultQueryParams,omitempty"`
+	UserAgent          string            `json:"userAgent,omitempty"`
+	Debug              bool              `json:"debug,omitempty"`
+	Servers            ServerConfigurations
+	OperationServers   map[string]ServerConfigurations
+	HTTPClient         *http.Client
+	Username           string        `json:"username,omitempty"`
+	Password           string        `json:"password,omitempty"`
+	Token              string        `json:"token,omitempty"`
+	MaxRetries         int           `json:"maxRetries,omitempty"`
+	WaitTime           time.Duration `json:"waitTime,omitempty"`
+	MaxWaitTime        time.Duration `json:"maxWaitTime,omitempty"`
 }
 
 // NewConfiguration returns a new Configuration object
 func NewConfiguration(username string, password string, token string) *Configuration {
 	cfg := &Configuration{
-		DefaultHeader:    make(map[string]string),
+		DefaultHeader:      make(map[string]string),
 		DefaultQueryParams: url.Values{},
-		UserAgent:        "ionos-cloud-sdk-go/v5",
-		Debug:            false,
-		Username:      username,
-        Password:      password,
-        Token:         token,
-        MaxRetries:    defaultMaxRetries,
-        MaxWaitTime:   defaultMaxWaitTime,
-        WaitTime:      defaultWaitTime,
-		Servers:          ServerConfigurations{
+		UserAgent:          "ionos-cloud-sdk-go/v5",
+		Debug:              false,
+		Username:           username,
+		Password:           password,
+		Token:              token,
+		MaxRetries:         defaultMaxRetries,
+		MaxWaitTime:        defaultMaxWaitTime,
+		WaitTime:           defaultWaitTime,
+		Servers: ServerConfigurations{
 			{
-				URL: "https://api.ionos.com/cloudapi/v5",
+				URL:         "https://api.ionos.com/cloudapi/v5",
 				Description: "No description provided",
 			},
 		},
-		OperationServers: map[string]ServerConfigurations{
-		},
+		OperationServers: map[string]ServerConfigurations{},
 	}
 	return cfg
 }
 
 func NewConfigurationFromEnv() *Configuration {
-   return NewConfiguration(os.Getenv(IonosUsernameEnvVar), os.Getenv(IonosPasswordEnvVar), os.Getenv(IonosTokenEnvVar))
+	return NewConfiguration(os.Getenv(IonosUsernameEnvVar), os.Getenv(IonosPasswordEnvVar), os.Getenv(IonosTokenEnvVar))
 }
 
 // AddDefaultHeader adds a new HTTP header to the default header in the request
@@ -151,11 +150,11 @@ func (c *Configuration) AddDefaultHeader(key string, value string) {
 }
 
 func (c *Configuration) AddDefaultQueryParam(key string, value string) {
-   if _, ok := c.DefaultQueryParams[key]; ok {
-       c.DefaultQueryParams[key] = append(c.DefaultQueryParams[key], value)
-   } else {
-       c.DefaultQueryParams[key] = []string{value}
-   }
+	if _, ok := c.DefaultQueryParams[key]; ok {
+		c.DefaultQueryParams[key] = append(c.DefaultQueryParams[key], value)
+	} else {
+		c.DefaultQueryParams[key] = []string{value}
+	}
 }
 
 // URL formats template on a index using given variables
