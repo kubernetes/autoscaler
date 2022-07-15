@@ -49,8 +49,9 @@ func Build(req *request.Request) {
 		buf = emptyJSON
 	}
 
-	// Always serialize the body, don't suppress it.
-	req.SetBufferBody(buf)
+	if req.ClientInfo.TargetPrefix != "" || string(buf) != "{}" {
+		req.SetBufferBody(buf)
+	}
 
 	if req.ClientInfo.TargetPrefix != "" {
 		target := req.ClientInfo.TargetPrefix + "." + req.Operation.Name

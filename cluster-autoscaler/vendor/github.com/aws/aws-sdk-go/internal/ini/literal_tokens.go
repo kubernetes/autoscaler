@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 var (
@@ -19,7 +18,7 @@ var literalValues = [][]rune{
 
 func isBoolValue(b []rune) bool {
 	for _, lv := range literalValues {
-		if isCaselessLitValue(lv, b) {
+		if isLitValue(lv, b) {
 			return true
 		}
 	}
@@ -33,21 +32,6 @@ func isLitValue(want, have []rune) bool {
 
 	for i := 0; i < len(want); i++ {
 		if want[i] != have[i] {
-			return false
-		}
-	}
-
-	return true
-}
-
-// isCaselessLitValue is a caseless value comparison, assumes want is already lower-cased for efficiency.
-func isCaselessLitValue(want, have []rune) bool {
-	if len(have) < len(want) {
-		return false
-	}
-
-	for i := 0; i < len(want); i++ {
-		if want[i] != unicode.ToLower(have[i]) {
 			return false
 		}
 	}
@@ -193,7 +177,7 @@ func newValue(t ValueType, base int, raw []rune) (Value, error) {
 	case QuotedStringType:
 		v.str = string(raw[1 : len(raw)-1])
 	case BoolType:
-		v.boolean = isCaselessLitValue(runesTrue, v.raw)
+		v.boolean = runeCompare(v.raw, runesTrue)
 	}
 
 	// issue 2253
