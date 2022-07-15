@@ -58,7 +58,7 @@ If none of those approvers are still appropriate, then changes to that list
 should be approved by the remaining approvers and/or the owning SIG (or
 SIG Architecture for cross-cutting KEPs).
 -->
-# KEP-NNNN: VPA manager for easily creating/deleting vpas for workloads pods by namespace scope
+# KEP-5030: VPA manager for easily creating/deleting vpas for workloads pods by namespace scope
 
 <!--
 This is the title of your KEP. Keep it short, simple, and descriptive. A good
@@ -77,7 +77,7 @@ tags, and then generate with `hack/update-toc.sh`.
 -->
 
 <!-- toc -->
-- [KEP-NNNN: VPA manager for easily creating/deleting vpas for workloads pods by namespace scope](#kep-nnnn-vpa-manager-for-easily-creatingdeleting-vpas-for-workloads-pods-by-namespace-scope)
+- [KEP-5030: VPA manager for easily creating/deleting vpas for workloads pods by namespace scope](#kep-5030-vpa-manager-for-easily-creatingdeleting-vpas-for-workloads-pods-by-namespace-scope)
   - [Release Signoff Checklist](#release-signoff-checklist)
   - [Summary](#summary)
   - [Motivation](#motivation)
