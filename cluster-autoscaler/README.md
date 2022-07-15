@@ -64,6 +64,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 
 | Kubernetes Version | CA Version | Gardener CA Version | 
 |--------------------|------------|---------------------|
+| 1.23.X             | 1.23.X     | 1.23.X              |
 | 1.22.X             | 1.22.X     | 1.22.X              |
 | 1.21.X             | 1.21.X     | 1.21.X              |
 | 1.20.X             | 1.20.X     | 1.20.X              |
