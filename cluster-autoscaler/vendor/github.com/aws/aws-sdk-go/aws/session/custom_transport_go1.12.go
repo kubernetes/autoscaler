@@ -1,4 +1,3 @@
-//go:build !go1.13 && go1.7
 // +build !go1.13,go1.7
 
 package session
