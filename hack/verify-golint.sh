@@ -25,6 +25,7 @@ GOLINT=${GOLINT:-"golint"}
 excluded_packages=(
   '/vendor/'
   'vertical-pod-autoscaler/pkg/client'
+  'cluster-autoscaler/cloudprovider/aws/aws-sdk-go'
   'cluster-autoscaler/cloudprovider/magnum/gophercloud'
   'cluster-autoscaler/cloudprovider/digitalocean/godo'
   'cluster-autoscaler/cloudprovider/bizflycloud/gobizfly'
