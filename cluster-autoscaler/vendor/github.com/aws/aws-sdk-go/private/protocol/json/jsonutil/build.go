@@ -82,17 +82,13 @@ func buildStruct(value reflect.Value, buf *bytes.Buffer, tag reflect.StructTag) 
 		field, _ := value.Type().FieldByName(payload)
 		tag = field.Tag
 		value = elemOf(value.FieldByName(payload))
-		if !value.IsValid() && tag.Get("type") != "structure" {
+
+		if !value.IsValid() {
 			return nil
 		}
 	}
 
 	buf.WriteByte('{')
-	defer buf.WriteString("}")
-
-	if !value.IsValid() {
-		return nil
-	}
 
 	t := value.Type()
 	first := true
@@ -147,6 +143,8 @@ func buildStruct(value reflect.Value, buf *bytes.Buffer, tag reflect.StructTag) 
 		}
 
 	}
+
+	buf.WriteString("}")
 
 	return nil
 }

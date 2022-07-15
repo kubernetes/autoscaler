@@ -8,16 +8,6 @@ import (
 
 const (
 
-	// ErrCodeAccessDeniedException for service response error code
-	// "AccessDeniedException".
-	//
-	// You don't have permissions to perform the requested operation. The user or
-	// role that is making the request must have at least one IAM permissions policy
-	// attached that grants the required permissions. For more information, see
-	// Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-	// in the IAM User Guide.
-	ErrCodeAccessDeniedException = "AccessDeniedException"
-
 	// ErrCodeBadRequestException for service response error code
 	// "BadRequestException".
 	//
@@ -74,13 +64,6 @@ const (
 	// Amazon EKS clusters and node groups are Region-specific.
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
-	// ErrCodeResourcePropagationDelayException for service response error code
-	// "ResourcePropagationDelayException".
-	//
-	// Required resources (such as Service Linked Roles) were created and are still
-	// propagating. Retry later.
-	ErrCodeResourcePropagationDelayException = "ResourcePropagationDelayException"
-
 	// ErrCodeServerException for service response error code
 	// "ServerException".
 	//
@@ -104,7 +87,6 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"AccessDeniedException":                newErrorAccessDeniedException,
 	"BadRequestException":                  newErrorBadRequestException,
 	"ClientException":                      newErrorClientException,
 	"InvalidParameterException":            newErrorInvalidParameterException,
@@ -113,7 +95,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ResourceInUseException":               newErrorResourceInUseException,
 	"ResourceLimitExceededException":       newErrorResourceLimitExceededException,
 	"ResourceNotFoundException":            newErrorResourceNotFoundException,
-	"ResourcePropagationDelayException":    newErrorResourcePropagationDelayException,
 	"ServerException":                      newErrorServerException,
 	"ServiceUnavailableException":          newErrorServiceUnavailableException,
 	"UnsupportedAvailabilityZoneException": newErrorUnsupportedAvailabilityZoneException,
