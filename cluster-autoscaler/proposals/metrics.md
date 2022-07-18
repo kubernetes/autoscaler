@@ -85,6 +85,7 @@ This metrics describe internal state and actions taken by Cluster Autoscaler.
 | evicted_pods_total | Counter | | Number of pods evicted by CA. |
 | unneeded_nodes_count | Gauge | | Number of nodes currently considered unneeded by CA. |
 | old_unregistered_nodes_removed_count | Counter | | Number of unregistered nodes removed by CA. |
+| skipped_scale_events_count | Counter | `direction`=&lt;scaling-direction&gt;, `reason`=&lt;skipped-scale-reason&gt; | Number of times scaling has been skipped due to a resource limit being reached, or similar event. |
 
 * `errors_total` counter increases every time main CA loop encounters an error.
   * Growing `errors_total` count signifies an internal error in CA or a problem
@@ -120,6 +121,12 @@ scale down reasons are `empty`, `underutilized`, `unready`.
 * `scaled_down_gpu_nodes_total` counts the number of nodes removed by CA. Scale
   down reasons are identical to `scaled_down_nodes_total`, `gpu_name` to
   `scaled_up_gpu_nodes_total`.
+* `skipped_scale_events_count` counts the number of times that the
+  autoscaler has declined to scale a node group because of a resource limit being reached or
+  similar internal event. Scale direction can be either `up` or `down`, and the reason explains
+  why the scaling was skipped (eg `CPULimitReached`, `MemoryLimitReached`). This is
+  different than failed scaling events in that the autoscaler is choosing not to perform
+  a scaling action.
 
 ### Node Autoprovisioning operations
 
