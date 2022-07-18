@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -52,7 +53,14 @@ func (ng *nodegroup) MaxSize() int {
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
 func (ng *nodegroup) TargetSize() (int, error) {
-	return ng.scalableResource.Replicas()
+	replicas, found, err := unstructured.NestedInt64(ng.scalableResource.unstructured.Object, "spec", "replicas")
+	if err != nil {
+		return 0, errors.Wrap(err, "error getting replica count")
+	}
+	if !found {
+		return 0, fmt.Errorf("unable to find replicas")
+	}
+	return int(replicas), nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
@@ -163,7 +171,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("size decrease must be negative")
 	}
 
-	size, err := ng.TargetSize()
+	size, err := ng.scalableResource.Replicas()
 	if err != nil {
 		return err
 	}
