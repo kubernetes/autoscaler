@@ -66,6 +66,16 @@ const (
 	// Timeout was encountered when trying to scale-up
 	Timeout FailedScaleUpReason = "timeout"
 
+	// DirectionScaleDown is the direction of skipped scaling event when scaling in (shrinking)
+	DirectionScaleDown string = "down"
+	// DirectionScaleUp is the direction of skipped scaling event when scaling out (growing)
+	DirectionScaleUp string = "up"
+
+	// CpuResourceLimit minimum or maximum reached, check the direction label to determine min or max
+	CpuResourceLimit string = "CpuResourceLimit"
+	// MemoryResourceLimit minimum or maximum reached, check the direction label to determine min or max
+	MemoryResourceLimit string = "MemoryResourceLimit"
+
 	// autoscaledGroup is managed by CA
 	autoscaledGroup NodeGroupType = "autoscaled"
 	// autoprovisionedGroup have been created by CA (Node Autoprovisioning),
@@ -312,6 +322,15 @@ var (
 		},
 	)
 
+	skippedScaleEventsCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "skipped_scale_events_count",
+			Help:      "Count of scaling events that the CA has chosen to skip.",
+		},
+		[]string{"direction", "reason"},
+	)
+
 	/**** Metrics related to NodeAutoprovisioning ****/
 	napEnabled = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
@@ -364,6 +383,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(scaleDownInCooldown)
 	legacyregistry.MustRegister(oldUnregisteredNodesRemovedCount)
 	legacyregistry.MustRegister(overflowingControllersCount)
+	legacyregistry.MustRegister(skippedScaleEventsCount)
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
@@ -546,4 +566,24 @@ func RegisterOldUnregisteredNodesRemoved(nodesCount int) {
 // have their pods cached.
 func UpdateOverflowingControllers(count int) {
 	overflowingControllersCount.Set(float64(count))
+}
+
+// RegisterSkippedScaleDownCPU increases the count of skipped scale outs because of CPU resource limits
+func RegisterSkippedScaleDownCPU() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, CpuResourceLimit).Add(1.0)
+}
+
+// RegisterSkippedScaleDownMemory increases the count of skipped scale outs because of Memory resource limits
+func RegisterSkippedScaleDownMemory() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleDown, MemoryResourceLimit).Add(1.0)
+}
+
+// RegisterSkippedScaleUpCPU increases the count of skipped scale outs because of CPU resource limits
+func RegisterSkippedScaleUpCPU() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, CpuResourceLimit).Add(1.0)
+}
+
+// RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
+func RegisterSkippedScaleUpMemory() {
+	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit).Add(1.0)
 }
