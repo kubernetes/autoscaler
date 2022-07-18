@@ -286,8 +286,8 @@ VPA will set RAM request to 2 GB (following the resource policy) and RAM limit t
   be restarted. The pod may be recreated on a different node.
 * VPA does not evict pods which are not run under a controller. For such pods
   `Auto` mode is currently equivalent to `Initial`.
-* Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) on CPU or memory** at this moment.
-  However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics).
+* Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
+  However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-on-custom-metrics).
 * The VPA admission controller is an admission webhook. If you add other admission webhooks
   to you cluster, it is important to analyze how they interact and whether they may conflict
   with each other. The order of admission controllers is defined by a flag on APIserver.
