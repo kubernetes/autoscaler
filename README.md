@@ -4,7 +4,7 @@
 
 This repository contains autoscaling-related components for Kubernetes.
 
-## What's inside
+## What's inside:
 
 [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) - a component that automatically adjusts the size of a Kubernetes
 Cluster so that all pods have a place to run and there are no unneeded nodes. Works with GCP, AWS and Azure. Version 1.0 (GA) was released with kubernetes 1.8.
