@@ -112,7 +112,7 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
 	targetEstimator = WithMargin(*safetyMarginFraction, targetEstimator)
-	lowerBoundEstimator = WithMargin(*safetyMarginFraction, lowerBoundEstimator)
+	lowerBoundEstimator = WithMargin(-*safetyMarginFraction, lowerBoundEstimator)
 	upperBoundEstimator = WithMargin(*safetyMarginFraction, upperBoundEstimator)
 
 	// Apply confidence multiplier to the upper bound estimator. This means
