@@ -17,7 +17,6 @@ limitations under the License.
 package core
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"strings"
@@ -575,14 +574,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				}
 			}
 			if len(targetNodeGroups) > 1 {
-				var buffer bytes.Buffer
-				for i, ng := range targetNodeGroups {
-					if i > 0 {
-						buffer.WriteString(", ")
-					}
-					buffer.WriteString(ng.Id())
+				var names = []string{}
+				for _, ng := range targetNodeGroups {
+					names = append(names, ng.Id())
 				}
-				klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), buffer.String())
+				klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
 			}
 		}
 		scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
