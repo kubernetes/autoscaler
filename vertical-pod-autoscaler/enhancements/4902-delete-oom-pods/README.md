@@ -13,7 +13,6 @@
    - [Update the eviction API](#update-the-eviction-api)
 <!-- /toc -->
 
-
 ## Summary
 
 The default behaviour of VPA Updater is to evict Pods when new resource
@@ -25,8 +24,7 @@ limit and get killed they will never recover as the eviciton API will not allow
 any further disruptions.
 
 This proposal addresses the problem by allowing users to enable the deletion of
-pods as a backup if the eviction fails.
-
+OOMing pods as a backup if the eviction fails.
 
 ## Motivation
 
@@ -41,24 +39,22 @@ failing deployment, if updated/increased limits would solve the problem.
 
 - Get rid of or work around the existing eviction behaviour
 
-
 ## Proposal
 
 The proposal is to add a new field to the VPA resource and a global flag.
 
-A new global flag (`--delete-on-eviction-error`) shall be added to the VPA
-updater to enable the new feature globally.
+A new global flag (`--delete-ooming-on-eviction-error`) shall be added to the
+VPA updater to enable the new feature globally.
 
 Additionally a new field in the VPA resource
-(`Spec.UpdatePolicy.DeleteOnEvictionError`) which takes precedence to the
-global flag. When unset the value of the flag is taken. This allows cluster
+(`Spec.UpdatePolicy.DeleteOomingOnEvictionError `) which takes precedence to
+the global flag. When unset the value of the flag is taken. This allows cluster
 administrators to enable the flag for all VPA resources and at the same time
 disable it again for specific deployments, or only enable it for specific
 deployments.
 
 This should give users the most flexible way of configuring this feature to
 fit their needs.
-
 
 ## Design Details
 
@@ -68,6 +64,10 @@ checks will occur. Which gives us the following checklist:
       (`OOMKilled`)?
 - [ ] Is at least one container in the Pod currently waiting due to being in
       `CrashLoopBackOff`?
+
+Additionally deletion should only occur when an OOM event was recorded and if
+it is planned to actually increase the memory limit. Those information are
+already present in the updater, they just need to be made available.
 
 This should make sure to not accidentally disrupt deployments as they might
 still heal to a point where eviction then might be possible.
@@ -84,7 +84,6 @@ Add unit tests that cover the new code paths.
 
 - 2022-05-19: initial version
 
-
 ## Alternatives
 
 ### Update the eviction API
@@ -93,6 +92,12 @@ Instead of implementing this change on the client side, the VPA in this case,
 it could be implemented on the API side. This would have the advantage that it
 would work for all clients. On the other hand this would introduce breaking
 behaviour and most likely would result in a new api version.
+
+Another possibility would be to allow the eviction of disrupted workloads, but
+this might be hard to decide for the API.
+It would need to allow the eviction if the container is currently not running.
+This could be introduced as an additional flag in the PDB, to allow this
+behaviour.
 
 Also according to some discussions the general stance seems to be:
 If you don't like the drain/evict behaviour, just use delete.
