@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kamatera"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci"
@@ -69,6 +70,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.OVHcloudProviderName,
 	cloudprovider.ClusterAPIProviderName,
 	cloudprovider.IonoscloudProviderName,
+	cloudprovider.KamateraProviderName,
 	cloudprovider.LinodeProviderName,
 	cloudprovider.BizflyCloudProviderName,
 	cloudprovider.BrightboxProviderName,
@@ -123,6 +125,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return clusterapi.BuildClusterAPI(opts, do, rl)
 	case cloudprovider.IonoscloudProviderName:
 		return ionoscloud.BuildIonosCloud(opts, do, rl)
+	case cloudprovider.KamateraProviderName:
+		return kamatera.BuildKamatera(opts, do, rl)
 	case cloudprovider.LinodeProviderName:
 		return linode.BuildLinode(opts, do, rl)
 	case cloudprovider.OracleCloudProviderName:
