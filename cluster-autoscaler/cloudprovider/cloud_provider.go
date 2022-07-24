@@ -56,6 +56,8 @@ const (
 	HetznerProviderName = "hetzner"
 	// MagnumProviderName gets the provider name of magnum
 	MagnumProviderName = "magnum"
+	// KamateraProviderName gets the provider name of kamatera
+	KamateraProviderName = "kamatera"
 	// KubemarkProviderName gets the provider name of kubemark
 	KubemarkProviderName = "kubemark"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
