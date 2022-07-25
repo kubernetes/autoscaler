@@ -46,7 +46,7 @@ var (
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
 	vpa                     *vpa_types.VerticalPodAutoscaler
-	pods                    []prioritizedPod
+	pods                    []PrioritizedPod
 	config                  *UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	priorityProcessor       PriorityProcessor
@@ -141,22 +141,22 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		return
 	}
 	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)
-	calc.pods = append(calc.pods, prioritizedPod{
-		pod:            pod,
-		priority:       updatePriority,
-		recommendation: processedRecommendation})
+	calc.pods = append(calc.pods, PrioritizedPod{
+		Pod:            pod,
+		Priority:       updatePriority,
+		Recommendation: processedRecommendation})
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
-func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
+func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []PrioritizedPod {
 	sort.Sort(byPriorityDesc(calc.pods))
 
-	result := []*apiv1.Pod{}
+	result := []PrioritizedPod{}
 	for _, podPrio := range calc.pods {
-		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
-			result = append(result, podPrio.pod)
+		if admission == nil || admission.Admit(podPrio.Pod, podPrio.Recommendation) {
+			result = append(result, podPrio)
 		} else {
-			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
+			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.Pod.Name)
 		}
 	}
 
@@ -177,10 +177,10 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	return hasObservedContainers, vpaContainerSet
 }
 
-type prioritizedPod struct {
-	pod            *apiv1.Pod
-	priority       PodPriority
-	recommendation *vpa_types.RecommendedPodResources
+type PrioritizedPod struct {
+	Pod            *apiv1.Pod
+	Priority       PodPriority
+	Recommendation *vpa_types.RecommendedPodResources
 }
 
 // PodPriority contains data for a pod update that can be used to prioritize between updates.
@@ -193,7 +193,7 @@ type PodPriority struct {
 	ResourceDiff float64
 }
 
-type byPriorityDesc []prioritizedPod
+type byPriorityDesc []PrioritizedPod
 
 func (list byPriorityDesc) Len() int {
 	return len(list)
@@ -205,7 +205,7 @@ func (list byPriorityDesc) Swap(i, j int) {
 // Less implements reverse ordering by priority (highest priority first).
 // This means we return true if priority at index j is lower than at index i.
 func (list byPriorityDesc) Less(i, j int) bool {
-	return list[j].priority.Less(list[i].priority)
+	return list[j].Priority.Less(list[i].Priority)
 }
 
 // Less returns true if p is lower than other.

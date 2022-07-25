@@ -63,7 +63,7 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
-	deleteOnEvictionError        bool
+	deleteOomingOnEvictionError  bool
 }
 
 // NewUpdater creates Updater with given configuration
@@ -81,7 +81,7 @@ func NewUpdater(
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
-	deleteOnEvictionError bool,
+	DeleteOomingOnEvictionError bool,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -104,7 +104,7 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
-		deleteOnEvictionError: deleteOnEvictionError,
+		deleteOomingOnEvictionError: DeleteOomingOnEvictionError,
 	}, nil
 }
 
@@ -208,7 +208,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvictable := false
 		withEvicted := false
 		withDeleted := false
-		for _, pod := range podsForUpdate {
+		for _, prioritizedPod := range podsForUpdate {
+			pod := prioritizedPod.Pod
+			priority := prioritizedPod.Priority
+
 			withEvictable = true
 			if !evictionLimiter.CanEvict(pod) {
 				continue
@@ -223,14 +226,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 			if evictErr != nil {
 				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 
-				var deleteOnEvictionError bool
-				if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.DeleteOnEvictionError != nil {
-					deleteOnEvictionError = *vpa.Spec.UpdatePolicy.DeleteOnEvictionError
+				var DeleteOomingOnEvictionError bool
+				if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.DeleteOomingOnEvictionError != nil {
+					DeleteOomingOnEvictionError = *vpa.Spec.UpdatePolicy.DeleteOomingOnEvictionError
 				} else {
-					deleteOnEvictionError = u.deleteOnEvictionError
+					DeleteOomingOnEvictionError = u.deleteOomingOnEvictionError
 				}
 
-				if deleteOnEvictionError {
+				// only try to delete the pod if the feature is enabled and if we would increase
+				// the resource requests or limits
+				if priority.ScaleUp && DeleteOomingOnEvictionError {
 					deleteErr := evictionLimiter.EvictViaDelete(pod, u.eventRecorder)
 					if deleteErr != nil {
 						klog.Warningf("deleting pod %v failed: %v", pod.Name, deleteErr)
@@ -272,7 +277,7 @@ func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []priority.PrioritizedPod {
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
 		nil,

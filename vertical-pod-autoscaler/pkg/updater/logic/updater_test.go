@@ -204,7 +204,7 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
-		deleteOnEvictionError:        failEviction,
+		deleteOomingOnEvictionError:  failEviction,
 	}
 
 	if expectFetchCalls {

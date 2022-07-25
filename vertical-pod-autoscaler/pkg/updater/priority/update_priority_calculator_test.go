@@ -35,6 +35,16 @@ const (
 	containerName = "container1"
 )
 
+func getPods(pods []PrioritizedPod) []*apiv1.Pod {
+	result := []*apiv1.Pod{}
+
+	for _, podPrio := range pods {
+		result = append(result, podPrio.Pod)
+	}
+
+	return result
+}
+
 // TODO(bskiba): Refactor the SortPriority tests as a testcase list test.
 func TestSortPriority(t *testing.T) {
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get()
@@ -58,7 +68,7 @@ func TestSortPriority(t *testing.T) {
 	calculator.AddPod(pod3, timestampNow)
 	calculator.AddPod(pod4, timestampNow)
 
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{pod3, pod1, pod4, pod2}, result, "Wrong priority order")
 }
 
@@ -85,7 +95,7 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	// 1. pod1 - wants to grow by 1 unit.
 	// 2. pod3 - can reclaim 5 units.
 	// 3. pod2 - can reclaim 3 units.
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{pod1, pod3, pod2}, result, "Wrong priority order")
 }
 
@@ -102,7 +112,7 @@ func TestUpdateNotRequired(t *testing.T) {
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, timestampNow)
 
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
 
@@ -124,7 +134,7 @@ func TestUseProcessor(t *testing.T) {
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, timestampNow)
 
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
 
@@ -159,7 +169,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		calculator.AddPod(pods[i], timestampNow)
 	}
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{pods[1], pods[2]}, result, "Exactly POD2 and POD3 should be updated")
 }
 
@@ -193,7 +203,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		calculator.AddPod(pods[i], timestampNow)
 	}
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{pods[2]}, result, "Only POD3 should be updated")
 }
 
@@ -229,7 +239,7 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 		vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	calculator.AddPod(pod, timestampNow)
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{pod}, result, "Pod should be updated")
 }
 
@@ -265,7 +275,7 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 		vpa, &UpdateConfig{MinChangePriority: 0.1}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	calculator.AddPod(pod, timestampNow)
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
 
@@ -300,7 +310,7 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 		vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 	calculator.AddPod(pod, timestampNow)
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
 }
 
@@ -361,7 +371,7 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 			calculator.AddPod(pod, timestampNow)
-			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+			result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
 		})
@@ -451,7 +461,7 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 				vpa, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{}, priorityProcessor)
 
 			calculator.AddPod(pod, timestampNow)
-			result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+			result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 			isUpdate := len(result) != 0
 			assert.Equal(t, tc.want, isUpdate)
 		})
@@ -461,7 +471,7 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 func TestNoPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{},
 		NewFakeProcessor(map[string]PodPriority{}))
-	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	result := getPods(calculator.GetSortedPods(NewDefaultPodEvictionAdmission()))
 	assert.Exactly(t, []*apiv1.Pod{}, result)
 }
 
@@ -496,7 +506,7 @@ func TestAdmission(t *testing.T) {
 	calculator.AddPod(pod3, timestampNow)
 	calculator.AddPod(pod4, timestampNow)
 
-	result := calculator.GetSortedPods(&pod1Admission{})
+	result := getPods(calculator.GetSortedPods(&pod1Admission{}))
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Wrong priority order")
 }
 
