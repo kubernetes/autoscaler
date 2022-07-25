@@ -156,7 +156,7 @@ func NewStaticAutoscaler(
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, clusterStateRegistry, ndt)
-	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, opts.NodeDeletionBatcherInterval)
 	scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
 	processorCallbacks.scaleDownPlanner = scaleDownWrapper
 
