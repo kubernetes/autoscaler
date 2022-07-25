@@ -135,8 +135,8 @@ func (in *PodUpdatePolicy) DeepCopyInto(out *PodUpdatePolicy) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.DeleteOnEvictionError != nil {
-		in, out := &in.DeleteOnEvictionError, &out.DeleteOnEvictionError
+	if in.DeleteOomingOnEvictionError != nil {
+		in, out := &in.DeleteOomingOnEvictionError, &out.DeleteOomingOnEvictionError
 		*out = new(bool)
 		**out = **in
 	}

@@ -383,9 +383,10 @@ spec:
                   pods. If not specified, all fields in the `PodUpdatePolicy` are
                   set to their default values.
                 properties:
-                  deleteOnEcivtionError:
+                  deleteOomingOnEvictionError:
                     description: Wheather to try to delete the pod when eviction fails
-                      or not. Overrides global '--delete-on-eviction-error' flag.
+                      or not. Overrides global '--delete-ooming-on-eviction-error'
+                      flag.
                     type: boolean
                   minReplicas:
                     description: Minimal number of replicas which need to be alive

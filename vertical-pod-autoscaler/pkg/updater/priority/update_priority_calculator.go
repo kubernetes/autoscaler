@@ -177,9 +177,13 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	return hasObservedContainers, vpaContainerSet
 }
 
+// PrioritizedPod contains data about a pod and its priority that can be used to prioritize between updates.
 type PrioritizedPod struct {
-	Pod            *apiv1.Pod
-	Priority       PodPriority
+	// The pod itself.
+	Pod *apiv1.Pod
+	// The calculated priority for the pod.
+	Priority PodPriority
+	// The calculated recommendation for the containers inside the pod.
 	Recommendation *vpa_types.RecommendedPodResources
 }
 
