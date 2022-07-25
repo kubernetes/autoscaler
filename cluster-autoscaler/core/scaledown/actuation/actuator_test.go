@@ -230,7 +230,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 			for i := 0; i < tc.drainDeletionsInProgress; i++ {
 				ndr.StartDeletionWithDrain("ng2", fmt.Sprintf("drain-node-%d", i))
 			}
-			actuator := NewActuator(ctx, nil, ndr)
+			actuator := NewActuator(ctx, nil, ndr, 0*time.Second)
 			gotEmpty, gotDrain := actuator.cropNodesToBudgets(tc.emptyNodes, tc.drainNodes)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
@@ -843,9 +843,11 @@ func TestStartDeletion(t *testing.T) {
 			}
 
 			// Create Actuator, run StartDeletion, and verify the error.
+			ndt := deletiontracker.NewNodeDeletionTracker(0)
 			actuator := Actuator{
-				ctx: &ctx, clusterState: csr, nodeDeletionTracker: deletiontracker.NewNodeDeletionTracker(0),
-				evictor: Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
+				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
+				nodeDeletionBatcher: NewNodeDeletionBatcher(&ctx, csr, ndt, 0*time.Second),
+				evictor:             Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
 			}
 			gotStatus, gotErr := actuator.StartDeletion(tc.emptyNodes, tc.drainNodes, time.Now())
 			if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
@@ -937,6 +939,166 @@ func TestStartDeletion(t *testing.T) {
 	}
 }
 
+func TestStartDeletionInBatchBasic(t *testing.T) {
+	testNg1 := testprovider.NewTestNodeGroup("test-ng-1", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+	testNg2 := testprovider.NewTestNodeGroup("test-ng-2", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+	testNg3 := testprovider.NewTestNodeGroup("test-ng-3", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
+	deleteInterval := 1 * time.Second
+
+	for _, test := range []struct {
+		name                   string
+		deleteCalls            int
+		numNodesToDelete       map[*testprovider.TestNodeGroup][]int //per node group and per call
+		failedRequests         map[string]bool                       //per node group
+		wantSuccessfulDeletion map[string]int                        //per node group
+	}{
+		{
+			name:        "Succesfull deletion for all node group",
+			deleteCalls: 1,
+			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
+				testNg1: {4},
+				testNg2: {5},
+				testNg3: {1},
+			},
+			wantSuccessfulDeletion: map[string]int{
+				"test-ng-1": 4,
+				"test-ng-2": 5,
+				"test-ng-3": 1,
+			},
+		},
+		{
+			name:        "Node deletion failed for one group",
+			deleteCalls: 1,
+			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
+				testNg1: {4},
+				testNg2: {5},
+				testNg3: {1},
+			},
+			failedRequests: map[string]bool{
+				"test-ng-1": true,
+			},
+			wantSuccessfulDeletion: map[string]int{
+				"test-ng-1": 0,
+				"test-ng-2": 5,
+				"test-ng-3": 1,
+			},
+		},
+		{
+			name:        "Node deletion failed for one group two times",
+			deleteCalls: 2,
+			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
+				testNg1: {4, 3},
+				testNg2: {5},
+				testNg3: {1},
+			},
+			failedRequests: map[string]bool{
+				"test-ng-1": true,
+			},
+			wantSuccessfulDeletion: map[string]int{
+				"test-ng-1": 0,
+				"test-ng-2": 5,
+				"test-ng-3": 1,
+			},
+		},
+		{
+			name:        "Node deletion failed for all groups",
+			deleteCalls: 2,
+			numNodesToDelete: map[*testprovider.TestNodeGroup][]int{
+				testNg1: {4, 3},
+				testNg2: {5},
+				testNg3: {1},
+			},
+			failedRequests: map[string]bool{
+				"test-ng-1": true,
+				"test-ng-2": true,
+				"test-ng-3": true,
+			},
+			wantSuccessfulDeletion: map[string]int{
+				"test-ng-1": 0,
+				"test-ng-2": 0,
+				"test-ng-3": 0,
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			test := test
+			gotFailedRequest := func(nodeGroupId string) bool {
+				val, _ := test.failedRequests[nodeGroupId]
+				return val
+			}
+			deletedResult := make(chan string)
+			fakeClient := &fake.Clientset{}
+			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroupId string, node string) error {
+				if gotFailedRequest(nodeGroupId) {
+					return fmt.Errorf("SIMULATED ERROR: won't remove node")
+				}
+				deletedResult <- nodeGroupId
+				return nil
+			})
+			// 2d array represent the waves of pushing nodes to delete.
+			deleteNodes := [][]*apiv1.Node{}
+
+			for i := 0; i < test.deleteCalls; i++ {
+				deleteNodes = append(deleteNodes, []*apiv1.Node{})
+			}
+			for ng, numNodes := range test.numNodesToDelete {
+				provider.InsertNodeGroup(ng)
+				ng.SetCloudProvider(provider)
+				for i, num := range numNodes {
+					nodes := generateNodes(num, ng.Id())
+					deleteNodes[i] = append(deleteNodes[i], nodes...)
+					for _, node := range nodes {
+						provider.AddNode(ng.Id(), node)
+					}
+				}
+			}
+			opts := config.AutoscalingOptions{
+				MaxScaleDownParallelism:        10,
+				MaxDrainParallelism:            5,
+				MaxPodEvictionTime:             0,
+				DaemonSetEvictionForEmptyNodes: true,
+			}
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
+			if err != nil {
+				t.Fatalf("Couldn't set up autoscaling context: %v", err)
+			}
+			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff())
+			ndt := deletiontracker.NewNodeDeletionTracker(0)
+			actuator := Actuator{
+				ctx: &ctx, clusterState: csr, nodeDeletionTracker: ndt,
+				nodeDeletionBatcher: NewNodeDeletionBatcher(&ctx, csr, ndt, deleteInterval),
+				evictor:             Evictor{EvictionRetryTime: 0, DsEvictionRetryTime: 0, DsEvictionEmptyNodeTimeout: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom},
+			}
+			for _, nodes := range deleteNodes {
+				actuator.StartDeletion(nodes, []*apiv1.Node{}, time.Now())
+				time.Sleep(deleteInterval)
+			}
+			wantDeletedNodes := 0
+			for _, num := range test.wantSuccessfulDeletion {
+				wantDeletedNodes += num
+			}
+			gotDeletedNodes := map[string]int{
+				"test-ng-1": 0,
+				"test-ng-2": 0,
+				"test-ng-3": 0,
+			}
+			for i := 0; i < wantDeletedNodes; i++ {
+				select {
+				case ngId := <-deletedResult:
+					gotDeletedNodes[ngId]++
+				case <-time.After(1 * time.Second):
+					t.Errorf("Timeout while waiting for deleted nodes.")
+					break
+				}
+			}
+			if diff := cmp.Diff(test.wantSuccessfulDeletion, gotDeletedNodes); diff != "" {
+				t.Errorf("Successful deleteions per node group diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func generateNodes(count int, prefix string) []*apiv1.Node {
 	var result []*apiv1.Node
 	for i := 0; i < count; i++ {
@@ -945,6 +1107,20 @@ func generateNodes(count int, prefix string) []*apiv1.Node {
 			name = prefix + "-" + name
 		}
 		result = append(result, generateNode(name))
+	}
+	return result
+}
+
+func generateNodesAndNodeGroupMap(count int, prefix string) map[string]*testprovider.TestNodeGroup {
+	result := make(map[string]*testprovider.TestNodeGroup)
+	for i := 0; i < count; i++ {
+		name := fmt.Sprintf("node-%d", i)
+		ngName := fmt.Sprintf("test-ng-%v", i)
+		if prefix != "" {
+			name = prefix + "-" + name
+			ngName = prefix + "-" + ngName
+		}
+		result[name] = testprovider.NewTestNodeGroup(ngName, 0, 100, 3, true, false, "n1-standard-2", nil, nil)
 	}
 	return result
 }
