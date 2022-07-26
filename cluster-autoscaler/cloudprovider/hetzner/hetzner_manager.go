@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -32,7 +33,10 @@ import (
 )
 
 var (
-	version = "dev"
+	version    = "dev"
+	httpClient = &http.Client{
+		Transport: instrumentedRoundTripper(),
+	}
 )
 
 // hetznerManager handles Hetzner communication and data caching of
@@ -62,7 +66,11 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
 	}
 
-	client := hcloud.NewClient(hcloud.WithToken(token))
+	client := hcloud.NewClient(
+		hcloud.WithToken(token),
+		hcloud.WithHTTPClient(httpClient),
+	)
+
 	ctx := context.Background()
 	cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
 	if err != nil {
