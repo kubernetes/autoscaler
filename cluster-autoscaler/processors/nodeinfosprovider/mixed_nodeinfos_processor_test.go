@@ -224,7 +224,9 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assertEqualNodeCapacities(t, ready2, info.Node())
 	info, found = res["ng4"]
 	assert.True(t, found)
-	assertEqualNodeCapacities(t, ready6, info.Node())
+	/* FORK-CHANGE: The below line is commented , as now the nodeTemplate is not formed from previously ready node of nodegrp
+	if nodeGrp has min size 0 */
+	// assertEqualNodeCapacities(t, ready6, info.Node())
 }
 
 func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {

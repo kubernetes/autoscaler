@@ -28,17 +28,17 @@ import (
 const (
 	// MaxAllocatableDifferenceRatio describes how Node.Status.Allocatable can differ between
 	// groups in the same NodeGroupSet
-	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
 	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxAllocatableDifferenceRatio = 0.5
 	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
 	// can differ between groups in the same NodeGroupSet
-	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
 	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxFreeDifferenceRatio = 0.5
 	// MaxCapacityMemoryDifferenceRatio describes how Node.Status.Capacity.Memory can differ between
 	// groups in the same NodeGroupSet
-	// changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
+	// FORK-CHANGE: changing to 50% or any very high %age as gardener nodegroups have similar node group label and so
 	// comparison won't be done with any other nodegroup node, done to help in balancing during scale from zero
 	MaxCapacityMemoryDifferenceRatio = 0.5
 	// LabelWorkerKubernetesVersion is a constant for a label that indicates the kubernetes version of the kubelet on the node
@@ -67,7 +67,7 @@ var BasicIgnoredLabels = map[string]bool{
 	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
 	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify "instance group" names. it's value is variable, defeating check of similar node groups
 
-	// Ignore gardener specific labels except worker pool labels
+	// FORK-CHANGE: Ignore gardener specific labels except worker pool labels
 	LabelWorkerPool:              false,
 	LabelWorkerPoolDeprecated:    false,
 	LabelWorkerKubernetesVersion: true,

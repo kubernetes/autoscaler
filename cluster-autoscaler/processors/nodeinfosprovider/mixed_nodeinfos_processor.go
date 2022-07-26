@@ -110,8 +110,9 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			continue
 		}
 
-		// No good template, check cache of previously running nodes.
-		if p.nodeInfoCache != nil {
+		// FORK-CHANGE: No good template, check cache of previously running nodes(only when nodeGrp min size is not zero. This is to avoid scenarios where nodeGrp instanceType is updated,
+		// but still cached old nodeTemplate is used)
+		if p.nodeInfoCache != nil && nodeGroup.MinSize() != 0 {
 			if nodeInfo, found := p.nodeInfoCache[id]; found {
 				if nodeInfoCopy, err := utils.DeepCopyNodeInfo(nodeInfo); err == nil {
 					result[id] = nodeInfoCopy
