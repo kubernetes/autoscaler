@@ -91,6 +91,10 @@ spec:
             {{- else if eq .Values.clusterAPIMode "single-kubeconfig"}}
             - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
             {{- end }}
+          {{- else if eq .Values.cloudProvider "azure" }}
+            {{- if .Values.autoDiscovery.clusterName }}
+            - --node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name={{ .Values.autoDiscovery.clusterName }}
+            {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "magnum" }}
             - --cloud-config={{ .Values.cloudConfigPath }}
