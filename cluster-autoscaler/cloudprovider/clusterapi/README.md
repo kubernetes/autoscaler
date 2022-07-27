@@ -214,3 +214,39 @@ The `cluster-autoscaler-management` role for accessing cluster api scalable reso
 This may not be ideal for all environments (eg. Multi tenant environments).
 In such cases, it is recommended to scope it to a `Role` mapped to a specific namespace.
 
+
+## Autoscaling with ClusterClass and Managed Topologies
+
+For users using [ClusterClass and Managed Topologies](https://cluster-api.sigs.k8s.io/tasks/experimental-features/cluster-class/index.html) the Cluster Topology controller attempts to set MachineDeployment replicas based on the `spec.topology.workers.machineDeployments[].replicas` field. In order to use the Cluster Autoscaler this field can be left unset in the Cluster definition.
+
+The below Cluster definition shows which field to leave unset:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: "my-cluster"
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.128.0.0/12"]
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    serviceDomain: "cluster.local"
+  topology:
+    class: "quick-start"
+    version: v1.24.0
+    controlPlane:
+      replicas: 1 
+    workers:
+      machineDeployments:
+        - class: default-worker
+          name: linux
+       ## replicas field is not set. 
+       ## replicas: 1
+```
+
+**Warning**: If the Autoscaler is enabled **and** the replicas field is set for a `MachineDeployment` or `MachineSet` the Cluster may enter a broken state where replicas become unpredictable.
+
+If the replica field is unset in the Cluster definition Autoscaling can be enabled [as described above](#enabling-autoscaling)
