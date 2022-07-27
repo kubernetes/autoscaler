@@ -253,6 +253,14 @@ func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	tcp.nodes[node.Name] = nodeGroupId
 }
 
+// DeleteNode delete the given node from the provider.
+func (tcp *TestCloudProvider) DeleteNode(node *apiv1.Node) {
+	tcp.Lock()
+	defer tcp.Unlock()
+
+	delete(tcp.nodes, node.Name)
+}
+
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 func (tcp *TestCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
 	return tcp.resourceLimiter, nil
