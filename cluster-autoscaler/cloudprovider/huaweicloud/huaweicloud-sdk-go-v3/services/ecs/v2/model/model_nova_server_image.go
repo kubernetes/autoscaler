@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,12 +9,18 @@ import (
 //
 type NovaServerImage struct {
 	// 镜像ID。
+
 	Id string `json:"id"`
 	// 云服务器类型相关标记快捷链接信息。
+
 	Links []NovaLink `json:"links"`
 }
 
 func (o NovaServerImage) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaServerImage struct{}"
+	}
+
 	return strings.Join([]string{"NovaServerImage", string(data)}, " ")
 }

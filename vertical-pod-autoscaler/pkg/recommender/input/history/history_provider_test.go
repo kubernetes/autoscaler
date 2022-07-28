@@ -59,59 +59,59 @@ type mockPrometheusAPI struct {
 	mock.Mock
 }
 
-func (m mockPrometheusAPI) AlertManagers(ctx context.Context) (prometheusv1.AlertManagersResult, error) {
+func (m *mockPrometheusAPI) AlertManagers(ctx context.Context) (prometheusv1.AlertManagersResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Alerts(ctx context.Context) (prometheusv1.AlertsResult, error) {
+func (m *mockPrometheusAPI) Alerts(ctx context.Context) (prometheusv1.AlertsResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) CleanTombstones(ctx context.Context) error {
+func (m *mockPrometheusAPI) CleanTombstones(ctx context.Context) error {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Config(ctx context.Context) (prometheusv1.ConfigResult, error) {
+func (m *mockPrometheusAPI) Config(ctx context.Context) (prometheusv1.ConfigResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) DeleteSeries(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) error {
+func (m *mockPrometheusAPI) DeleteSeries(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) error {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult, error) {
+func (m *mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) LabelNames(ctx context.Context) ([]string, error) {
+func (m *mockPrometheusAPI) LabelNames(ctx context.Context) ([]string, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) LabelValues(ctx context.Context, label string) (prommodel.LabelValues, error) {
+func (m *mockPrometheusAPI) LabelValues(ctx context.Context, label string) (prommodel.LabelValues, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, api.Warnings, error) {
+func (m *mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]prommodel.LabelSet, api.Warnings, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Rules(ctx context.Context) (prometheusv1.RulesResult, error) {
+func (m *mockPrometheusAPI) Rules(ctx context.Context) (prometheusv1.RulesResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Snapshot(ctx context.Context, skipHead bool) (prometheusv1.SnapshotResult, error) {
+func (m *mockPrometheusAPI) Snapshot(ctx context.Context, skipHead bool) (prometheusv1.SnapshotResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Targets(ctx context.Context) (prometheusv1.TargetsResult, error) {
+func (m *mockPrometheusAPI) Targets(ctx context.Context) (prometheusv1.TargetsResult, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) TargetsMetadata(ctx context.Context, _, _, _ string) ([]prometheusv1.MetricMetadata, error) {
+func (m *mockPrometheusAPI) TargetsMetadata(ctx context.Context, _, _, _ string) ([]prometheusv1.MetricMetadata, error) {
 	panic("not implemented")
 }
 
-func (m mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, api.Warnings, error) {
+func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time) (prommodel.Value, api.Warnings, error) {
 	args := m.Called(ctx, query, ts)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
@@ -120,7 +120,7 @@ func (m mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time
 	return returnArg, nil, args.Error(1)
 }
 
-func (m mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, api.Warnings, error) {
+func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range) (prommodel.Value, api.Warnings, error) {
 	args := m.Called(ctx, query, r)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {

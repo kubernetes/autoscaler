@@ -19,7 +19,23 @@ the EC2 instance on which the Cluster Autoscaler pod runs.
 
 ### IAM Policy
 
-The following policy provides the minimum privileges necessary for Cluster Autoscaler to run:
+There are a number of ways to run the autoscaler in AWS, which can significantly
+impact the range of IAM permissions required for the Cluster Autoscaler to function
+properly. Two options are provided below, one which will allow use of all of the
+features of the Cluster Autoscaler, the second with a more limited range of IAM
+actions enabled, which enforces using certain configuration options in the
+Cluster Autoscaler binary.
+
+It is strongly recommended to restrict the target resources for the autoscaling actions
+by either [specifying Auto Scaling Group ARNs](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources) in the `Resource` list of the policy or
+[using tag based conditionals](https://docs.aws.amazon.com/autoscaling/ec2/userguide/control-access-using-iam.html#security_iam_service-with-iam-tags). The [minimal policy](#minimal-iam-permissions-policy)
+includes an example of restricting by ASG ARN.
+
+#### Full Cluster Autoscaler Features Policy (Recommended)
+
+Permissions required when using [ASG Autodiscovery](#Auto-discovery-setup) and
+Dynamic EC2 List Generation (the default behaviour). In this example, only the second block of actions
+should be updated to restrict the resources/add conditionals:
 
 ```json
 {
@@ -31,9 +47,19 @@ The following policy provides the minimum privileges necessary for Cluster Autos
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeTags",
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeLaunchTemplateVersions"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "ec2:DescribeInstanceTypes"
+        "ec2:DescribeInstanceTypes",
+        "eks:DescribeNodegroup"
       ],
       "Resource": ["*"]
     }
@@ -41,17 +67,48 @@ The following policy provides the minimum privileges necessary for Cluster Autos
 }
 ```
 
-If you'd like Cluster Autoscaler to [automatically
-discover](#auto-discovery-setup) EC2 Auto Scaling Groups **(recommended)**, add
-`autoscaling:DescribeTags` to the `Action` list. Also add
-`autoscaling:DescribeLaunchConfigurations` (if you created your ASG using a
-Launch Configuration) and/or `ec2:DescribeLaunchTemplateVersions` (if you
-created your ASG using a Launch Template) to the `Action` list.
+#### Minimal IAM Permissions Policy
 
-If you prefer, you can restrict the target resources for the autoscaling actions
-by specifying Auto Scaling Group ARNs in the `Resource` list of the policy. More
-information can be found
-[here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
+*NOTE:* The below policies/arguments to the Cluster Autoscaler need to be modified as appropriate
+for the names of your ASGs, as well as account ID and AWS region before being used.
+
+The following policy provides the minimum privileges necessary for Cluster Autoscaler to run.
+When using this policy, you cannot use autodiscovery of ASGs. In addition, it restricts the
+IAM permissions to the node groups the Cluster Autoscaler is configured to scale.
+
+This in turn means that you must pass the following arguments to the Cluster Autoscaler
+binary, replacing min and max node counts and the ASG:
+
+```bash
+--aws-use-static-instance-list=false
+--nodes=1:100:exampleASG1
+--nodes=1:100:exampleASG2
+```
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup",
+        "eks:DescribeNodegroup"
+      ],
+      "Resource": ["arn:aws:autoscaling:${YOUR_CLUSTER_AWS_REGION}:${YOUR_AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${YOUR_ASG_NAME}"]
+    }
+  ]
+}
+```
+
+The `"eks:DescribeNodegroup"` permission allows Cluster Autoscaler to pull labels and taints from the EKS DescribeNodegroup API for EKS managed nodegroups. (Note: When an EKS DescribeNodegroup API label and a tag on the underlying autoscaling group have the same key, the EKS DescribeNodegroup API label value will be saved by the Cluster Autoscaler over the autoscaling group tag value.) Currently the Cluster Autoscaler will only call the EKS DescribeNodegroup API when a managed nodegroup is created with 0 nodes and has never had any nodes added to it. Once nodes are added, even if the managed nodegroup is scaled back to 0 nodes, this functionality will not be called anymore. In the case of a Cluster Autoscaler restart, the Cluster Autoscaler will need to repopulate caches so it will call this functionality again if the managed nodegroup is at 0 nodes. Enabling this functionality any time there are 0 nodes in a managed nodegroup (even after a scale-up then scale-down) would require changes to the general shared Cluster Autoscaler code which could happen in the future.
+
+NOTE: PrivateLink is not yet supported by EKS APIs so the EKS DescribeNodegroup API call will not work in a private cluster.
 
 ### Using OIDC Federated Authentication
 
@@ -106,9 +163,9 @@ Auto-Discovery Setup is the preferred method to configure Cluster Autoscaler.
 
 To enable this, provide the `--node-group-auto-discovery` flag as an argument
 whose value is a list of tag keys that should be looked for. For example,
-`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>`
-will find the ASGs where those tag keys _exist_. It does not matter what value
-the tags have.
+`--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<cluster-name>,my-custom-tag=custom-value`
+will find the ASGs that have the given tags. Optionally, a value can be provided
+for each tag as well.
 
 Example deployment:
 

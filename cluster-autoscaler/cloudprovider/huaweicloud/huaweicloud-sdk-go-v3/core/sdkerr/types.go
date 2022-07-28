@@ -21,11 +21,13 @@ package sdkerr
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/http"
+
+	jsoniter "github.com/json-iterator/go"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 )
 
 type CredentialsTypeError struct {
@@ -94,11 +96,12 @@ func NewServiceResponseError(resp *http.Response) *ServiceResponseError {
 			dataBuf := make(map[string]map[string]string)
 			err := jsoniter.Unmarshal(data, &dataBuf)
 			for _, value := range dataBuf {
-				if err == nil && value["code"] != "" {
+				if err == nil && value["code"] != "" && value["message"] != "" {
 					sr.ErrorCode = value["code"]
-				}
-				if err == nil && value["message"] != "" {
 					sr.ErrorMessage = value["message"]
+				} else if err == nil && value["error_code"] != "" && value["error_msg"] != "" {
+					sr.ErrorCode = value["error_code"]
+					sr.ErrorMessage = value["error_msg"]
 				}
 			}
 		} else {
@@ -126,7 +129,7 @@ func NewServiceResponseError(resp *http.Response) *ServiceResponseError {
 }
 
 func (sr ServiceResponseError) Error() string {
-	data, err := json.Marshal(sr)
+	data, err := utils.Marshal(sr)
 	if err != nil {
 		return fmt.Sprintf("{\"ErrorMessage\": \"%s\",\"ErrorCode\": \"%s\"}", sr.ErrorMessage, sr.ErrorCode)
 	}

@@ -185,7 +185,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -291,8 +291,10 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
+	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng2", "n3").Return(nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
@@ -376,7 +378,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -511,7 +513,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -567,8 +569,10 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
+	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng1", "broken").Return(nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	err = autoscaler.RunOnce(later.Add(2 * time.Hour))
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
@@ -658,7 +662,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -786,7 +790,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -882,7 +886,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodMock,
@@ -944,7 +948,7 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{

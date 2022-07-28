@@ -304,6 +304,14 @@ var (
 		},
 	)
 
+	overflowingControllersCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "overflowing_controllers_count",
+			Help:      "Number of controllers that own a large set of heterogenous pods, preventing CA from treating these pods as equivalent.",
+		},
+	)
+
 	/**** Metrics related to NodeAutoprovisioning ****/
 	napEnabled = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
@@ -355,6 +363,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(unremovableNodesCount)
 	legacyregistry.MustRegister(scaleDownInCooldown)
 	legacyregistry.MustRegister(oldUnregisteredNodesRemovedCount)
+	legacyregistry.MustRegister(overflowingControllersCount)
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
@@ -531,4 +540,10 @@ func UpdateScaleDownInCooldown(inCooldown bool) {
 // nodes that have been removed by the cluster autoscaler
 func RegisterOldUnregisteredNodesRemoved(nodesCount int) {
 	oldUnregisteredNodesRemovedCount.Add(float64(nodesCount))
+}
+
+// UpdateOverflowingControllers sets the number of controllers that could not
+// have their pods cached.
+func UpdateOverflowingControllers(count int) {
+	overflowingControllersCount.Set(float64(count))
 }

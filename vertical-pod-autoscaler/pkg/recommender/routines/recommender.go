@@ -151,7 +151,9 @@ func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodRe
 			UncappedTarget: model.ResourcesAsResourceList(res.Target),
 		})
 	}
-	recommendation := &vpa_types.RecommendedPodResources{containerResources}
+	recommendation := &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: containerResources,
+	}
 	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, policy)
 	if err != nil {
 		klog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpaID.Namespace, vpaID.VpaName, err)
@@ -166,7 +168,7 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 		if err := r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun); err != nil {
 			klog.Warningf("Failed to store checkpoints. Reason: %+v", err)
 		}
-		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
+		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
 			r.clusterStateFeeder.GarbageCollectCheckpoints()
 		}

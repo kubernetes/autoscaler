@@ -122,22 +122,22 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
-			klog.V(2).Infof("not updating pod %v/%v, missing field pod.Status.StartTime", pod.Namespace, pod.Name)
+			klog.V(4).Infof("not updating pod %v/%v, missing field pod.Status.StartTime", pod.Namespace, pod.Name)
 			return
 		}
 		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
-			klog.V(2).Infof("not updating a short-lived pod %v/%v, request within recommended range", pod.Namespace, pod.Name)
+			klog.V(4).Infof("not updating a short-lived pod %v/%v, request within recommended range", pod.Namespace, pod.Name)
 			return
 		}
 		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
-			klog.V(2).Infof("not updating pod %v/%v, resource diff too low: %v", pod.Namespace, pod.Name, updatePriority)
+			klog.V(4).Infof("not updating pod %v/%v, resource diff too low: %v", pod.Namespace, pod.Name, updatePriority)
 			return
 		}
 	}
 
 	// If the pod has quick OOMed then evict only if the resources will change
 	if quickOOM && updatePriority.ResourceDiff == 0 {
-		klog.V(2).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
+		klog.V(4).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
 	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)

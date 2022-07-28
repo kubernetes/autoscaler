@@ -163,7 +163,8 @@ func TestDecayingHistogramLoadFromCheckpoint(t *testing.T) {
 		halfLife:           time.Hour,
 		referenceTimestamp: time.Time{},
 	}
-	d.LoadFromCheckpoint(&checkpoint)
+	err := d.LoadFromCheckpoint(&checkpoint)
+	assert.NoError(t, err)
 
 	assert.False(t, d.histogram.IsEmpty())
 	assert.Equal(t, timestamp, d.referenceTimestamp)

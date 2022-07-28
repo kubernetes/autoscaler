@@ -21,34 +21,43 @@ package core
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/impl"
 	"reflect"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/auth/env"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/impl"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/region"
 )
 
 type HcHttpClientBuilder struct {
-	credentialsType []string
+	CredentialsType []string
 	credentials     auth.ICredential
 	endpoint        string
 	httpConfig      *config.HttpConfig
+	region          *region.Region
 }
 
 func NewHcHttpClientBuilder() *HcHttpClientBuilder {
 	hcHttpClientBuilder := &HcHttpClientBuilder{
-		credentialsType: []string{"basic.Credentials"},
+		CredentialsType: []string{"basic.Credentials"},
 	}
 	return hcHttpClientBuilder
 }
 
 func (builder *HcHttpClientBuilder) WithCredentialsType(credentialsType string) *HcHttpClientBuilder {
-	builder.credentialsType = strings.Split(credentialsType, ",")
+	builder.CredentialsType = strings.Split(credentialsType, ",")
 	return builder
 }
 
 func (builder *HcHttpClientBuilder) WithEndpoint(endpoint string) *HcHttpClientBuilder {
 	builder.endpoint = endpoint
+	return builder
+}
+
+func (builder *HcHttpClientBuilder) WithRegion(region *region.Region) *HcHttpClientBuilder {
+	builder.region = region
 	return builder
 }
 
@@ -68,12 +77,12 @@ func (builder *HcHttpClientBuilder) Build() *HcHttpClient {
 	}
 
 	if builder.credentials == nil {
-		builder.credentials = auth.LoadCredentialFromEnv(builder.credentialsType[0])
+		builder.credentials = env.LoadCredentialFromEnv(builder.CredentialsType[0])
 	}
 
 	match := false
 	givenCredentialsType := reflect.TypeOf(builder.credentials).String()
-	for _, credentialsType := range builder.credentialsType {
+	for _, credentialsType := range builder.CredentialsType {
 		if credentialsType == givenCredentialsType {
 			match = true
 			break
@@ -81,10 +90,19 @@ func (builder *HcHttpClientBuilder) Build() *HcHttpClient {
 	}
 
 	if !match {
-		panic(fmt.Sprintf("Need credential type is %s, actually is %s", builder.credentialsType, reflect.TypeOf(builder.credentials).String()))
+		panic(fmt.Sprintf("Need credential type is %s, actually is %s", builder.CredentialsType, reflect.TypeOf(builder.credentials).String()))
 	}
 
 	defaultHttpClient := impl.NewDefaultHttpClient(builder.httpConfig)
+
+	if builder.region != nil {
+		builder.endpoint = builder.region.Endpoint
+		builder.credentials = builder.credentials.ProcessAuthParams(defaultHttpClient, builder.region.Id)
+	}
+
+	if !strings.HasPrefix(builder.endpoint, "http") {
+		builder.endpoint = "https://" + builder.endpoint
+	}
 
 	hcHttpClient := NewHcHttpClient(defaultHttpClient).WithEndpoint(builder.endpoint).WithCredential(builder.credentials)
 	return hcHttpClient

@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,12 +9,18 @@ import (
 //
 type NovaServerVolume struct {
 	// 云磁盘ID。
+
 	Id string `json:"id"`
 	// 一个标志，指示在删除服务器时是否删除附加的卷。、  默认情况下，这是False  微版本2.3后支持
+
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
 }
 
 func (o NovaServerVolume) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaServerVolume struct{}"
+	}
+
 	return strings.Join([]string{"NovaServerVolume", string(data)}, " ")
 }

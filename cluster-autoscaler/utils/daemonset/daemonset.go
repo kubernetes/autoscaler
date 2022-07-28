@@ -24,6 +24,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/kubernetes/pkg/controller/daemon"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -51,26 +52,14 @@ func GetDaemonSetPodsForNode(nodeInfo *schedulerframework.NodeInfo, daemonsets [
 	}
 
 	for _, ds := range daemonsets {
-		pod := newPod(ds, nodeInfo.Node().Name)
-		err := predicateChecker.CheckPredicates(clusterSnapshot, pod, nodeInfo.Node().Name)
-		if err == nil {
+		shouldRun, _ := daemon.NodeShouldRunDaemonPod(nodeInfo.Node(), ds)
+		if shouldRun {
+			pod := daemon.NewPod(ds, nodeInfo.Node().Name)
+			pod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())
 			result = append(result, pod)
-		} else if err.ErrorType() == simulator.NotSchedulablePredicateError {
-			// ok; we are just skipping this daemonset
-		} else {
-			// unexpected error
-			return nil, fmt.Errorf("unexpected error while calling PredicateChecker; %v", err)
 		}
 	}
 	return result, nil
-}
-
-func newPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
-	newPod := &apiv1.Pod{Spec: ds.Spec.Template.Spec, ObjectMeta: ds.Spec.Template.ObjectMeta}
-	newPod.Namespace = ds.Namespace
-	newPod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())
-	newPod.Spec.NodeName = nodeName
-	return newPod
 }
 
 // PodsToEvict returns a list of DaemonSet pods that should be evicted during scale down.

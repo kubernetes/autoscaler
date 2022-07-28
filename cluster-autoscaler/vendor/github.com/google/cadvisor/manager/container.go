@@ -64,6 +64,7 @@ type containerInfo struct {
 }
 
 type containerData struct {
+	oomEvents                uint64
 	handler                  container.ContainerHandler
 	info                     containerInfo
 	memoryCache              *memory.InMemoryCache

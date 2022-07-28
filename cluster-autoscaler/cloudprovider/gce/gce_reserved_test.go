@@ -95,7 +95,7 @@ func TestCalculateKernelReservedLinux(t *testing.T) {
 	for idx, tc := range testCases {
 		r := &GceReserved{}
 		t.Run(fmt.Sprintf("%v", idx), func(t *testing.T) {
-			reserved := r.CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux, tc.osDistribution, "")
+			reserved := r.CalculateKernelReserved(tc.physicalMemory, OperatingSystemLinux, tc.osDistribution, "", "")
 			if tc.osDistribution == OperatingSystemDistributionUbuntu {
 				assert.Equal(t, tc.reservedMemory+int64(math.Min(correctionConstant*float64(tc.physicalMemory), maximumCorrectionValue)+ubuntuSpecificOffset), reserved)
 			} else if tc.osDistribution == OperatingSystemDistributionCOS {
@@ -120,22 +120,10 @@ func TestEphemeralStorageOnLocalSSDFilesystemOverheadInBytes(t *testing.T) {
 			expected:       7289472 * KiB,
 		},
 		{
-			scenario:       "measured disk count but OS with different container runtime (cos_containerd)",
-			diskCount:      1,
-			osDistribution: OperatingSystemDistributionCOSContainerd,
-			expected:       7289472 * KiB, // same as COS
-		},
-		{
 			scenario:       "measured disk count and OS (ubuntu)",
 			diskCount:      1,
 			osDistribution: OperatingSystemDistributionUbuntu,
 			expected:       7219840 * KiB,
-		},
-		{
-			scenario:       "measured disk count but OS with different container runtime (ubuntu_containerd)",
-			diskCount:      1,
-			osDistribution: OperatingSystemDistributionUbuntuContainerd,
-			expected:       7219840 * KiB, // same as Ubuntu
 		},
 		{
 			scenario:       "mapped disk count",

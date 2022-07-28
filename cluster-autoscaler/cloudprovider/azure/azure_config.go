@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/klog/v2"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -38,7 +40,7 @@ const (
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
 
-	metadataURL = "http://169.254.169.254/metadata/instance"
+	imdsServerURL = "http://169.254.169.254"
 
 	// backoff
 	backoffRetriesDefault  = 6
@@ -57,6 +59,9 @@ const (
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
+
+	// toggle
+	dynamicInstanceListDefault = false
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -126,6 +131,9 @@ type Config struct {
 	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty" yaml:"cloudProviderBackoffExponent,omitempty"`
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
+
+	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
+	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -146,7 +154,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
-		cfg.SubscriptionID = os.Getenv("ARM_SUBSCRIPTION_ID")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
@@ -156,6 +163,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
 		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
+
+		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -203,6 +216,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse ENABLE_BACKOFF %q: %v", enableBackoff, err)
 			}
+		}
+
+		if enableDynamicInstanceList := os.Getenv("AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); enableDynamicInstanceList != "" {
+			cfg.EnableDynamicInstanceList, err = strconv.ParseBool(enableDynamicInstanceList)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ENABLE_DYNAMIC_INSTANCE_LIST %q: %v", enableDynamicInstanceList, err)
+			}
+		} else {
+			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
 		if cfg.CloudProviderBackoff {
@@ -381,12 +403,16 @@ func overrideDefaultRateLimitConfig(defaults, config *azclients.RateLimitConfig)
 }
 
 func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azure.Environment) *azclients.ClientConfig {
+	pollingDelay := 30 * time.Second
 	azClientConfig := &azclients.ClientConfig{
 		Location:                cfg.Location,
 		SubscriptionID:          cfg.SubscriptionID,
 		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
 		Authorizer:              authorizer,
 		Backoff:                 &retry.Backoff{Steps: 1},
+		RestClientConfig: azclients.RestClientConfig{
+			PollingDelay: &pollingDelay,
+		},
 	}
 
 	if cfg.CloudProviderBackoff {
@@ -468,4 +494,23 @@ func (cfg *Config) validate() error {
 	}
 
 	return nil
+}
+
+// getSubscriptionId reads the Subscription ID from the instance metadata.
+func getSubscriptionIdFromInstanceMetadata() (string, error) {
+	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
+	if !present {
+		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)
+		if err != nil {
+			return "", err
+		}
+
+		metadata, err := metadataService.GetMetadata(0)
+		if err != nil {
+			return "", err
+		}
+
+		return metadata.Compute.SubscriptionID, nil
+	}
+	return subscriptionID, nil
 }

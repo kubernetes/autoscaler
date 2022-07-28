@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-K8S_TAG=${K8S_TAG:-v1.18.3}
+K8S_TAG=${K8S_TAG:-v1.23.5}
 K8S_TAG=${K8S_TAG#v}
 K8S_FORK="git@github.com:kubernetes/kubernetes.git"
 
@@ -45,26 +45,6 @@ function update_deps() {
     done
 }
 
-function generate_bindata() {
-    WORK_DIR="$(mktemp -d /tmp/vpa-bindata.XXXX)"
-    echo "operating in ${WORK_DIR}"
-    echo Getting k8s
-    K8S_REPO=${WORK_DIR}/kubernetes
-    pushd ${WORK_DIR}
-    git clone ${K8S_FORK} ${K8S_REPO}
-
-    pushd ${K8S_REPO}
-    echo "Syncing k8s to ${K8S_TAG}"
-    git checkout "v${K8S_TAG}"
-    echo "Generating k8s bindata"
-    hack/generate-bindata.sh
-    popd
-    popd
-
-    cp ${WORK_DIR}/kubernetes/test/e2e/generated/* ./vendor/k8s.io/kubernetes/test/e2e/generated
-}
-
-
 # execute in subshell to keep CWD even in case of failures
 (
     # find script directory invariantly of CWD
@@ -83,7 +63,4 @@ function generate_bindata() {
     # tidy and vendor modules
     go mod tidy
     go mod vendor
-
-    echo "Generating k8s bindata"
-    generate_bindata
 )

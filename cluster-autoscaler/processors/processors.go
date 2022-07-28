@@ -42,6 +42,8 @@ type AutoscalingProcessors struct {
 	ScaleUpStatusProcessor status.ScaleUpStatusProcessor
 	// ScaleDownNodeProcessor is used to process the nodes of the cluster before scale-down.
 	ScaleDownNodeProcessor nodes.ScaleDownNodeProcessor
+	// ScaleDownSetProcessor is used to make final selection of nodes to scale-down.
+	ScaleDownSetProcessor nodes.ScaleDownSetProcessor
 	// ScaleDownStatusProcessor is used to process the state of the cluster after a scale-down.
 	ScaleDownStatusProcessor status.ScaleDownStatusProcessor
 	// AutoscalingStatusProcessor is used to process the state of the cluster after each autoscaling iteration.
@@ -68,14 +70,15 @@ func DefaultProcessors() *AutoscalingProcessors {
 		NodeGroupSetProcessor:      nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}),
 		ScaleUpStatusProcessor:     status.NewDefaultScaleUpStatusProcessor(),
 		ScaleDownNodeProcessor:     nodes.NewPreFilteringScaleDownNodeProcessor(),
+		ScaleDownSetProcessor:      nodes.NewPostFilteringScaleDownNodeProcessor(),
 		ScaleDownStatusProcessor:   status.NewDefaultScaleDownStatusProcessor(),
 		AutoscalingStatusProcessor: status.NewDefaultAutoscalingStatusProcessor(),
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
 		NodeInfoProcessor:          nodeinfos.NewDefaultNodeInfoProcessor(),
 		NodeGroupConfigProcessor:   nodegroupconfig.NewDefaultNodeGroupConfigProcessor(),
 		CustomResourcesProcessor:   customresources.NewDefaultCustomResourcesProcessor(),
-		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(),
 		ActionableClusterProcessor: actionablecluster.NewDefaultActionableClusterProcessor(),
+		TemplateNodeInfoProvider:   nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil),
 	}
 }
 
@@ -85,6 +88,7 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.NodeGroupListProcessor.CleanUp()
 	ap.NodeGroupSetProcessor.CleanUp()
 	ap.ScaleUpStatusProcessor.CleanUp()
+	ap.ScaleDownSetProcessor.CleanUp()
 	ap.ScaleDownStatusProcessor.CleanUp()
 	ap.AutoscalingStatusProcessor.CleanUp()
 	ap.NodeGroupManager.CleanUp()

@@ -117,21 +117,13 @@ func FindNodesToRemove(
 	listers kube_util.ListerRegistry,
 	clusterSnapshot ClusterSnapshot,
 	predicateChecker PredicateChecker,
-	maxCount int,
-	fastCheck bool,
 	oldHints map[string]string,
 	usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
-
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
-
-	evaluationType := "Detailed evaluation"
-	if fastCheck {
-		evaluationType = "Fast evaluation"
-	}
 	newHints := make(map[string]string, len(oldHints))
 
 	destinationMap := make(map[string]bool, len(destinations))
@@ -139,57 +131,42 @@ func FindNodesToRemove(
 		destinationMap[destination] = true
 	}
 
-candidateloop:
 	for _, nodeName := range candidates {
 		nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
 		if err != nil {
 			klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
 		}
-		klog.V(2).Infof("%s: %s for removal", evaluationType, nodeName)
-
-		var podsToRemove []*apiv1.Pod
-		var daemonSetPods []*apiv1.Pod
-		var blockingPod *drain.BlockingPod
+		klog.V(2).Infof("%s for removal", nodeName)
 
 		if _, found := destinationMap[nodeName]; !found {
-			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, nodeName)
+			klog.V(2).Infof("nodeInfo for %s not found", nodeName)
 			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
-			continue candidateloop
+			continue
 		}
 
-		if fastCheck {
-			podsToRemove, daemonSetPods, blockingPod, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
-				podDisruptionBudgets, timestamp)
-		} else {
-			podsToRemove, daemonSetPods, blockingPod, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
-				podDisruptionBudgets, timestamp)
-		}
-
+		podsToRemove, daemonSetPods, blockingPod, err := DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods,
+			*skipNodesWithLocalStorage, listers, int32(*minReplicaCount), podDisruptionBudgets, timestamp)
 		if err != nil {
-			klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, nodeName, err)
+			klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
 			if blockingPod != nil {
 				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod})
 			} else {
 				unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError})
 			}
-			continue candidateloop
+			continue
 		}
 
 		findProblems := findPlaceFor(nodeName, podsToRemove, destinationMap, clusterSnapshot,
 			predicateChecker, oldHints, newHints, usageTracker, timestamp)
-
 		if findProblems == nil {
 			result = append(result, NodeToBeRemoved{
 				Node:             nodeInfo.Node(),
 				PodsToReschedule: podsToRemove,
 				DaemonSetPods:    daemonSetPods,
 			})
-			klog.V(2).Infof("%s: node %s may be removed", evaluationType, nodeName)
-			if len(result) >= maxCount {
-				break candidateloop
-			}
+			klog.V(2).Infof("node %s may be removed", nodeName)
 		} else {
-			klog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, nodeName, findProblems)
+			klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, findProblems)
 			unremovable = append(unremovable, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods})
 		}
 	}

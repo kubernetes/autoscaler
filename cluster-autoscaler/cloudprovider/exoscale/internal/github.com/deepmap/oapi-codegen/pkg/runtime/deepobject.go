@@ -1,5 +1,21 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/*
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -228,26 +244,52 @@ func assignPathValues(dst interface{}, pathValues fieldOrValue) error {
 		return nil
 	case reflect.Struct:
 		// Some special types we care about are structs. Handle them
-		// here.
-		if _, isDate := iv.Interface().(types.Date); isDate {
+		// here. They may be redefined, so we need to do some hoop
+		// jumping. If the types are aliased, we need to type convert
+		// the pointer, then set the value of the dereference pointer.
+
+		// We check to see if the object implements the Binder interface first.
+		if dst, isBinder := v.Interface().(Binder); isBinder {
+			return dst.Bind(pathValues.value)
+		}
+		// Then check the legacy types
+		if it.ConvertibleTo(reflect.TypeOf(types.Date{})) {
 			var date types.Date
 			var err error
 			date.Time, err = time.Parse(types.DateFormat, pathValues.value)
 			if err != nil {
 				return errors.Wrap(err, "invalid date format")
 			}
-			iv.Set(reflect.ValueOf(date))
+			dst := iv
+			if it != reflect.TypeOf(types.Date{}) {
+				// Types are aliased, convert the pointers.
+				ivPtr := iv.Addr()
+				aPtr := ivPtr.Convert(reflect.TypeOf(&types.Date{}))
+				dst = reflect.Indirect(aPtr)
+			}
+			dst.Set(reflect.ValueOf(date))
 		}
-		if _, isTime := iv.Interface().(time.Time); isTime {
+		if it.ConvertibleTo(reflect.TypeOf(time.Time{})) {
 			var tm time.Time
 			var err error
-			tm, err = time.Parse(types.DateFormat, pathValues.value)
+			tm, err = time.Parse(time.RFC3339Nano, pathValues.value)
 			if err != nil {
+				// Fall back to parsing it as a date.
+				tm, err = time.Parse(types.DateFormat, pathValues.value)
+				if err != nil {
+					return fmt.Errorf("error parsing tim as RFC3339 or 2006-01-02 time: %s", err)
+				}
 				return errors.Wrap(err, "invalid date format")
 			}
-			iv.Set(reflect.ValueOf(tm))
+			dst := iv
+			if it != reflect.TypeOf(time.Time{}) {
+				// Types are aliased, convert the pointers.
+				ivPtr := iv.Addr()
+				aPtr := ivPtr.Convert(reflect.TypeOf(&time.Time{}))
+				dst = reflect.Indirect(aPtr)
+			}
+			dst.Set(reflect.ValueOf(tm))
 		}
-
 		fieldMap, err := fieldIndicesByJsonTag(iv.Interface())
 		if err != nil {
 			return errors.Wrap(err, "failed enumerating fields")

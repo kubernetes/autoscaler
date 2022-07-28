@@ -31,13 +31,6 @@ type ContainerResources struct {
 	Requests core.ResourceList
 }
 
-func newContainerResources() ContainerResources {
-	return ContainerResources{
-		Requests: core.ResourceList{},
-		Limits:   core.ResourceList{},
-	}
-}
-
 // GetProportionalLimit returns limit that will be in the same proportion to recommended request as original limit had to original request.
 func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit core.ResourceList) (core.ResourceList, []string) {
 	annotations := []string{}

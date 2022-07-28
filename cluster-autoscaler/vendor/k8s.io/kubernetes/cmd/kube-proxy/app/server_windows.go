@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	goruntime "runtime"
+	"strconv"
 
 	// Enable pprof HTTP handlers.
 	_ "net/http/pprof"
@@ -97,8 +98,11 @@ func newProxyServer(config *proxyconfigapi.KubeProxyConfiguration, cleanupAndExi
 	}
 
 	var healthzServer healthcheck.ProxierHealthUpdater
+	var healthzPort int
 	if len(config.HealthzBindAddress) > 0 {
 		healthzServer = healthcheck.NewProxierHealthServer(config.HealthzBindAddress, 2*config.IPTables.SyncPeriod.Duration, recorder, nodeRef)
+		_, port, _ := net.SplitHostPort(config.HealthzBindAddress)
+		healthzPort, _ = strconv.Atoi(port)
 	}
 
 	var proxier proxy.Provider
@@ -120,6 +124,7 @@ func newProxyServer(config *proxyconfigapi.KubeProxyConfiguration, cleanupAndExi
 				recorder,
 				healthzServer,
 				config.Winkernel,
+				healthzPort,
 			)
 		} else {
 
@@ -134,6 +139,7 @@ func newProxyServer(config *proxyconfigapi.KubeProxyConfiguration, cleanupAndExi
 				recorder,
 				healthzServer,
 				config.Winkernel,
+				healthzPort,
 			)
 
 		}
@@ -141,6 +147,8 @@ func newProxyServer(config *proxyconfigapi.KubeProxyConfiguration, cleanupAndExi
 		if err != nil {
 			return nil, fmt.Errorf("unable to create proxier: %v", err)
 		}
+
+		winkernel.RegisterMetrics()
 	} else {
 		klog.V(0).InfoS("Using userspace Proxier.")
 		klog.V(0).InfoS("The userspace proxier is now deprecated and will be removed in a future release, please use 'kernelspace' instead")

@@ -28,7 +28,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/sdktime"
 	huaweicloudsdkas "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1"
 	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	huaweicloudsdkecs "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
@@ -243,17 +242,18 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
 	asClient := csm.getASClientFunc()
 
-	instanceDelete := "yes"
-	opts := &huaweicloudsdkasmodel.UpdateScalingGroupInstanceRequest{
+	instanceDeleteBatchRemoveInstancesOption := huaweicloudsdkasmodel.GetBatchRemoveInstancesOptionInstanceDeleteEnum().YES
+
+	opts := &huaweicloudsdkasmodel.BatchRemoveScalingInstancesRequest{
 		ScalingGroupId: groupID,
-		Body: &huaweicloudsdkasmodel.UpdateScalingGroupInstanceRequestBody{
+		Body: &huaweicloudsdkasmodel.BatchRemoveInstancesOption{
 			InstancesId:    instanceIds,
-			InstanceDelete: &instanceDelete,
-			Action:         huaweicloudsdkasmodel.GetUpdateScalingGroupInstanceRequestBodyActionEnum().REMOVE,
+			InstanceDelete: &instanceDeleteBatchRemoveInstancesOption,
+			Action:         huaweicloudsdkasmodel.GetBatchRemoveInstancesOptionActionEnum().REMOVE,
 		},
 	}
 
-	_, err := asClient.UpdateScalingGroupInstance(opts)
+	_, err := asClient.BatchRemoveScalingInstances(opts)
 
 	if err != nil {
 		klog.Errorf("failed to delete scaling instances. group: %s, error: %v", groupID, err)
@@ -275,19 +275,18 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	}
 
 	// create a scaling policy
-	launchTime := sdktime.SdkTime(time.Now().Add(time.Hour))
-	addOperation := huaweicloudsdkasmodel.GetScalingPolicyActionOperationEnum().ADD
+	addOperation := huaweicloudsdkasmodel.GetScalingPolicyActionV1OperationEnum().ADD
 	instanceNum := int32(delta)
 	opts := &huaweicloudsdkasmodel.CreateScalingPolicyRequest{
-		Body: &huaweicloudsdkasmodel.CreateScalingPolicyRequestBody{
+		Body: &huaweicloudsdkasmodel.CreateScalingPolicyOption{
 			// It's not mandatory for AS service to set a unique policy name.
 			ScalingPolicyName: "huaweicloudautoscaler",
 			ScalingGroupId:    groupID,
-			ScalingPolicyType: huaweicloudsdkasmodel.GetCreateScalingPolicyRequestBodyScalingPolicyTypeEnum().SCHEDULED,
+			ScalingPolicyType: huaweicloudsdkasmodel.GetCreateScalingPolicyOptionScalingPolicyTypeEnum().SCHEDULED,
 			ScheduledPolicy: &huaweicloudsdkasmodel.ScheduledPolicy{
-				LaunchTime: &launchTime,
+				LaunchTime: time.Now().Add(time.Hour).UTC().Format("2006-01-02T15:04Z"),
 			},
-			ScalingPolicyAction: &huaweicloudsdkasmodel.ScalingPolicyAction{
+			ScalingPolicyAction: &huaweicloudsdkasmodel.ScalingPolicyActionV1{
 				Operation:      &addOperation,
 				InstanceNumber: &instanceNum,
 			},
@@ -306,11 +305,11 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	defer csm.deleteScalingPolicy(deletePolicyOps)
 
 	// execute policy immediately
-	executeAction := huaweicloudsdkasmodel.GetExecuteScalingPolicyRequestBodyActionEnum()
+	executeAction := huaweicloudsdkasmodel.GetExecuteScalingPolicyOptionActionEnum().EXECUTE
 	executeOpts := &huaweicloudsdkasmodel.ExecuteScalingPolicyRequest{
 		ScalingPolicyId: spID,
-		Body: &huaweicloudsdkasmodel.ExecuteScalingPolicyRequestBody{
-			Action: &executeAction.EXECUTE,
+		Body: &huaweicloudsdkasmodel.ExecuteScalingPolicyOption{
+			Action: executeAction,
 		},
 	}
 	err = csm.executeScalingPolicy(executeOpts)

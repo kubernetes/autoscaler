@@ -115,7 +115,7 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 			_, hasIgnoredTaint := ignoredTaints[t.Key]
 			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
 				ready = false
-				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node)
+				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.IgnoreTaint)
 				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
 				break
 			}

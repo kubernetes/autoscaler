@@ -26,6 +26,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -40,9 +41,9 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 
 	predicateChecker, err := simulator.NewTestPredicateChecker()
 	assert.NoError(t, err)
-	ds1 := newDaemonSet("ds1")
-	ds2 := newDaemonSet("ds2")
-	ds2.Spec.Template.Spec.NodeSelector = map[string]string{"foo": "bar"}
+	ds1 := newDaemonSet("ds1", "0.1", "100M", nil)
+	ds2 := newDaemonSet("ds2", "0.1", "100M", map[string]string{"foo": "bar"})
+	ds3 := newDaemonSet("ds1", "4", "4000M", nil)
 
 	{
 		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds1, ds2}, predicateChecker)
@@ -60,6 +61,11 @@ func TestGetDaemonSetPodsForNode(t *testing.T) {
 		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds2}, predicateChecker)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(daemonSets))
+	}
+	{
+		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{ds3}, predicateChecker)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(daemonSets))
 	}
 	{
 		daemonSets, err := GetDaemonSetPodsForNode(nodeInfo, []*appsv1.DaemonSet{}, predicateChecker)
@@ -138,7 +144,7 @@ func TestEvictedPodsFilter(t *testing.T) {
 	}
 }
 
-func newDaemonSet(name string) *appsv1.DaemonSet {
+func newDaemonSet(name, cpu, memory string, selector map[string]string) *appsv1.DaemonSet {
 	return &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -151,9 +157,16 @@ func newDaemonSet(name string) *appsv1.DaemonSet {
 					Labels: map[string]string{"name": "simple-daemon", "type": "production"},
 				},
 				Spec: apiv1.PodSpec{
+					NodeSelector: selector,
 					Containers: []apiv1.Container{
 						{
 							Image: "foo/bar",
+							Resources: apiv1.ResourceRequirements{
+								Requests: apiv1.ResourceList{
+									apiv1.ResourceCPU:    resource.MustParse(cpu),
+									apiv1.ResourceMemory: resource.MustParse(memory),
+								},
+							},
 						},
 					},
 				},

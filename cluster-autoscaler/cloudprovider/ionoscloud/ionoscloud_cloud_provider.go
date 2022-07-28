@@ -207,10 +207,10 @@ func (ic *IonosCloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
 	if nodeGroup := ic.manager.GetNodeGroupForNode(node); nodeGroup != nil {
-		klog.V(4).Infof("Node %s found in cache", providerID)
+		klog.V(5).Infof("Found cached node group entry %s for node %s", nodeGroup.Id(), providerID)
 		return nodeGroup, nil
 	}
-	klog.V(4).Infof("Node %s not found in cache", providerID)
+	klog.V(4).Infof("No cached node group entry found for node %s", providerID)
 
 	for _, nodeGroup := range ic.manager.GetNodeGroups() {
 		klog.V(5).Infof("Checking node group %s", nodeGroup.Id())
@@ -223,7 +223,7 @@ func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 			if node.Id != providerID {
 				continue
 			}
-			klog.V(4).Infof("Node %s found after refresh in node group %s", providerID, nodeGroup.Id())
+			klog.V(4).Infof("Found node group %s for node %s after refresh", nodeGroup.Id(), providerID)
 			return nodeGroup, nil
 		}
 	}
@@ -294,7 +294,7 @@ func BuildIonosCloud(
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {
-	manager, err := CreateIonosCloudManager(opts.NodeGroups)
+	manager, err := CreateIonosCloudManager(opts.NodeGroups, opts.UserAgent)
 	if err != nil {
 		klog.Fatalf("Failed to create IonosCloud cloud provider: %v", err)
 	}

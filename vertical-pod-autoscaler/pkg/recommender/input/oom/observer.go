@@ -138,11 +138,11 @@ func (*observer) OnAdd(obj interface{}) {}
 // passess it to the ObservedOomsChannel
 func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
-	if oldPod == nil || !ok {
+	if !ok {
 		klog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
 	}
 	newPod, ok := newObj.(*apiv1.Pod)
-	if newPod == nil || !ok {
+	if !ok {
 		klog.Errorf("OOM observer received invalid newObj: %v", newObj)
 	}
 

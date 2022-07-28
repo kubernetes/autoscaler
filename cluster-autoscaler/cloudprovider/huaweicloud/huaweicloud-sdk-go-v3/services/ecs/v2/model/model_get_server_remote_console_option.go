@@ -1,28 +1,30 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
+
 	"strings"
 )
 
 type GetServerRemoteConsoleOption struct {
 	// 远程登录协议，请将protocol配置为“vnc”。
+
 	Protocol GetServerRemoteConsoleOptionProtocol `json:"protocol"`
 	// 远程登录的类型，请将type配置为“novnc”。
+
 	Type GetServerRemoteConsoleOptionType `json:"type"`
 }
 
 func (o GetServerRemoteConsoleOption) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "GetServerRemoteConsoleOption struct{}"
+	}
+
 	return strings.Join([]string{"GetServerRemoteConsoleOption", string(data)}, " ")
 }
 
@@ -43,7 +45,7 @@ func GetGetServerRemoteConsoleOptionProtocolEnum() GetServerRemoteConsoleOptionP
 }
 
 func (c GetServerRemoteConsoleOptionProtocol) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *GetServerRemoteConsoleOptionProtocol) UnmarshalJSON(b []byte) error {
@@ -77,7 +79,7 @@ func GetGetServerRemoteConsoleOptionTypeEnum() GetServerRemoteConsoleOptionTypeE
 }
 
 func (c GetServerRemoteConsoleOptionType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *GetServerRemoteConsoleOptionType) UnmarshalJSON(b []byte) error {

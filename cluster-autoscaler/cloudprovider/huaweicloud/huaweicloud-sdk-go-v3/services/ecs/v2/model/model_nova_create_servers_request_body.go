@@ -1,25 +1,23 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // This is a auto create Body Object
 type NovaCreateServersRequestBody struct {
-	Server           *NovaCreateServersOption        `json:"server"`
+	Server *NovaCreateServersOption `json:"server"`
+
 	OsschedulerHints *NovaCreateServersSchedulerHint `json:"os:scheduler_hints,omitempty"`
 }
 
 func (o NovaCreateServersRequestBody) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaCreateServersRequestBody struct{}"
+	}
+
 	return strings.Join([]string{"NovaCreateServersRequestBody", string(data)}, " ")
 }

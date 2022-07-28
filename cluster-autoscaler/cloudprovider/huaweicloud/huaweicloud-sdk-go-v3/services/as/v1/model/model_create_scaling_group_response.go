@@ -1,14 +1,7 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,16 @@ import (
 // Response Object
 type CreateScalingGroupResponse struct {
 	// 伸缩组ID
+
 	ScalingGroupId *string `json:"scaling_group_id,omitempty"`
+	HttpStatusCode int     `json:"-"`
 }
 
 func (o CreateScalingGroupResponse) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "CreateScalingGroupResponse struct{}"
+	}
+
 	return strings.Join([]string{"CreateScalingGroupResponse", string(data)}, " ")
 }

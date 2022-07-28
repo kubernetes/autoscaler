@@ -1,14 +1,7 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 // 配额列表
 type AllQuotas struct {
 	// 配额详情资源列表。
+
 	Resources *[]AllResources `json:"resources,omitempty"`
 }
 
 func (o AllQuotas) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "AllQuotas struct{}"
+	}
+
 	return strings.Join([]string{"AllQuotas", string(data)}, " ")
 }

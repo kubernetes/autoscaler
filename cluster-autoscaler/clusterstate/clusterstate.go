@@ -537,6 +537,10 @@ type Readiness struct {
 	Unregistered int
 	// Time when the readiness was measured.
 	Time time.Time
+	// Number of nodes that are Unready due to missing resources.
+	// This field is only used for exposing information externally and
+	// doesn't influence CA behavior.
+	ResourceUnready int
 }
 
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
@@ -544,23 +548,26 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	perNodeGroup := make(map[string]Readiness)
 	total := Readiness{Time: currentTime}
 
-	update := func(current Readiness, node *apiv1.Node, ready bool) Readiness {
+	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
 		current.Registered++
 		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
-		} else if ready {
+		} else if nr.Ready {
 			current.Ready++
 		} else if node.CreationTimestamp.Time.Add(MaxNodeStartupTime).After(currentTime) {
 			current.NotStarted++
 		} else {
 			current.Unready++
+			if nr.Reason == kube_util.ResourceUnready {
+				current.ResourceUnready++
+			}
 		}
 		return current
 	}
 
 	for _, node := range csr.nodes {
 		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
-		ready, _, errReady := kube_util.GetReadinessState(node)
+		nr, errReady := kube_util.GetNodeReadiness(node)
 
 		// Node is most likely not autoscaled, however check the errors.
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
@@ -571,9 +578,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 				klog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
 			}
 		} else {
-			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, ready)
+			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, nr)
 		}
-		total = update(total, node, ready)
+		total = update(total, node, nr)
 	}
 
 	var longUnregisteredNodeNames []string
@@ -740,9 +747,10 @@ func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {
 func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
+		Message: fmt.Sprintf("ready=%d unready=%d (resourceUnready=%d) notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
 			readiness.Ready,
 			readiness.Unready,
+			readiness.ResourceUnready,
 			readiness.NotStarted,
 			readiness.Registered,
 			readiness.LongUnregistered,
@@ -794,9 +802,10 @@ func buildScaleDownStatusNodeGroup(candidates []string, lastProbed time.Time) ap
 func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d",
+		Message: fmt.Sprintf("ready=%d unready=%d (resourceUnready=%d) notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d",
 			readiness.Ready,
 			readiness.Unready,
+			readiness.ResourceUnready,
 			readiness.NotStarted,
 			readiness.Registered,
 			readiness.LongUnregistered,

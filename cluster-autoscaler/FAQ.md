@@ -31,6 +31,7 @@ this document:
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
+  * [How can I prevent Cluster Autoscaler from scaling down non-empty nodes?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-non-empty-nodes)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
@@ -54,8 +55,10 @@ this document:
   * [CA doesn’t work, but it used to work yesterday. Why?](#ca-doesnt-work-but-it-used-to-work-yesterday-why)
   * [How can I check what is going on in CA ?](#how-can-i-check-what-is-going-on-in-ca-)
   * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
+  * [My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?](#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
 * [Developer](#developer)
+  * [What go version should be used to compile CA?](#what-go-version-should-be-used-to-compile-ca)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
   * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
@@ -100,7 +103,7 @@ matching anti-affinity, etc)
 "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
 ```
 
-__Or__ you have have overridden this behaviour with one of the relevant flags. [See below for more information on these flags.](#what-are-the-parameters-to-ca)
+__Or__ you have overridden this behaviour with one of the relevant flags. [See below for more information on these flags.](#what-are-the-parameters-to-ca)
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
@@ -315,6 +318,13 @@ It can be added to (or removed from) a node using kubectl:
 kubectl annotate node <nodename> cluster-autoscaler.kubernetes.io/scale-down-disabled=true
 ```
 
+### How can I prevent Cluster Autoscaler from scaling down non-empty nodes?
+
+CA might scale down non-empty nodes with utilization below a threshold
+(configurable with `--scale-down-utilization-threshold` flag).
+
+To prevent this behavior, set the utilization threshold to `0`.
+
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
 Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
@@ -362,10 +372,10 @@ globalDefault: false
 description: "Priority class used by overprovisioning."
 ```
 
-**For 1.11:**
+**For 1.11+:**
 
 ```yaml
-apiVersion: scheduling.k8s.io/v1beta1
+apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: overprovisioning
@@ -674,12 +684,11 @@ after scale-up. This is useful when you have different classes of nodes, for exa
 
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details
-[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE, GKE and Packet (patches welcome.)
+[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE, GKE and Equinix Metal (patches welcome.)
 
 * `priority` - selects the node group that has the highest priority assigned by the user. It's configuration is described in more details [here](expander/priority/readme.md)
 
-
-Multiple expanders may be passed, i.e.
+From 1.23.0 onwards, multiple expanders may be passed, i.e.
 `.cluster-autoscaler --expander=priority,least-waste`
 
 This will cause the `least-waste` expander to be used as a fallback in the event that the priority expander selects multiple node groups. In general, a list of expanders can be used, where the output of one is passed to the next and the final decision by randomly selecting one. An expander must not appear in the list more than once.
@@ -839,7 +848,7 @@ Most likely it's due to a problem with the cluster. Steps to debug:
 
 * Check if cluster autoscaler is up and running. In version 0.5 and later, it periodically publishes the kube-system/cluster-autoscaler-status config map. Check last update time annotation. It should be no more than 3 min (usually 10 sec old).
 
-* Check in the above config map if cluster and node groups are in the healthy state. If not, check if there are unready nodes.
+* Check in the above config map if cluster and node groups are in the healthy state. If not, check if there are unready nodes. If some nodes appear unready despite being Ready in the Node object, check `resourceUnready` count. If there are any nodes marked as `resourceUnready`, it is most likely a problem with the device driver failing to install a new resource (e.g. GPU). `resourceUnready` count is only available in CA version 1.24 and later.
 
 If both the cluster and CA appear healthy:
 
@@ -923,6 +932,21 @@ From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group af
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
 
 # Developer:
+
+### What go version should be used to compile CA?
+
+Cluster Autoscaler generally tries to use the same go version that is used by embedded Kubernetes code.
+For example CA 1.21 will use the same go version as Kubernetes 1.21. Only the officially used go
+version is supported and CA may not compile using other versions.
+
+The source of truth for the used go version is builder/Dockerfile.
+
+Warning: do NOT rely on go version specified in go.mod file. It is only meant to control go mod
+behavior and is not indicative of the go version actually used by CA. In particular go 1.17 changes go mod
+behavior in a way that is incompatible with existing Kubernetes tooling.
+Following [Kubernetes example](https://github.com/kubernetes/kubernetes/pull/105563#issuecomment-960915506)
+we have decided to pin version specified in go.mod to 1.16 for now (even though both Kubernetes
+and CA no longer compile using go 1.16).
 
 ### How can I run e2e tests?
 

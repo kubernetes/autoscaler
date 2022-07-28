@@ -12,9 +12,9 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/aws/aws-sdk-go v1.38.49
 	github.com/digitalocean/godo v1.27.0
-	github.com/gardener/machine-controller-manager v0.45.0
-	github.com/gardener/machine-controller-manager-provider-aws v0.11.0
-	github.com/gardener/machine-controller-manager-provider-azure v0.7.0
+	github.com/gardener/machine-controller-manager v0.46.0
+	github.com/gardener/machine-controller-manager-provider-aws v0.12.0
+	github.com/gardener/machine-controller-manager-provider-azure v0.8.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.1.2

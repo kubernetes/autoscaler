@@ -73,6 +73,16 @@ func TestPodSpecSemanticallyEqual(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "two pods with different hostnames",
+			p1Spec: apiv1.PodSpec{
+				Hostname: "foo",
+			},
+			p2Spec: apiv1.PodSpec{
+				Hostname: "bar",
+			},
+			result: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -83,7 +93,7 @@ func TestPodSpecSemanticallyEqual(t *testing.T) {
 	}
 }
 
-func TestSanitizeProjectedVolumesAndMounts(t *testing.T) {
+func TestSanitizePodSpec(t *testing.T) {
 	projectedSAVol := test.BuildServiceTokenProjectedVolumeSource("path")
 
 	tests := []struct {
@@ -170,7 +180,7 @@ func TestSanitizeProjectedVolumesAndMounts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := sanitizeProjectedVolumesAndMounts(tt.inputPodSpec)
+			got := sanitizePodSpec(tt.inputPodSpec)
 			assert.True(t, assert.ObjectsAreEqualValues(tt.outputPodSpec, got), "\ngot: %#v\nwant: %#v", got, tt.outputPodSpec)
 		})
 	}

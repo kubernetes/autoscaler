@@ -17,6 +17,7 @@ limitations under the License.
 package ionoscloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -127,7 +128,7 @@ func TestCreateIonosCloudManager(t *testing.T) {
 		os.Unsetenv(envKeyToken)
 	}()
 
-	manager, err := CreateIonosCloudManager(nil)
+	manager, err := CreateIonosCloudManager(nil, "ua")
 	require.Nil(t, manager)
 	require.Error(t, err)
 }
@@ -175,14 +176,14 @@ type ManagerTestSuite struct {
 }
 
 func (s *ManagerTestSuite) SetupTest() {
-	s.client = &MockAPIClient{}
-	apiClientFactory = func(_, _ string, _ bool) APIClient { return s.client }
+	s.client = NewMockAPIClient(s.T())
 	client, err := NewAutoscalingClient(&Config{
 		ClusterId:    "cluster",
 		Token:        "token",
 		PollInterval: pollInterval,
 		PollTimeout:  pollTimeout,
-	})
+	}, "ua")
+	client.clientProvider = fakeClientProvider{s.client}
 	s.Require().NoError(err)
 
 	s.manager = newManager(client)
@@ -192,11 +193,6 @@ func (s *ManagerTestSuite) SetupTest() {
 		max:     3,
 		manager: s.manager,
 	}
-}
-
-func (s *ManagerTestSuite) TearDownTest() {
-	apiClientFactory = NewAPIClient
-	s.client.AssertExpectations(s.T())
 }
 
 func (s *ManagerTestSuite) OnGetKubernetesNodePool(retval *ionos.KubernetesNodePool, reterr error) *mock.Call {
@@ -211,11 +207,13 @@ func (s *ManagerTestSuite) OnGetKubernetesNodePool(retval *ionos.KubernetesNodeP
 }
 
 func (s *ManagerTestSuite) OnUpdateKubernetesNodePool(size int, reterr error) *mock.Call {
-	origReq := ionos.ApiK8sNodepoolsPutRequest{}
-	req := ionos.ApiK8sNodepoolsPutRequest{}.KubernetesNodePoolProperties(resizeRequestBody(size))
+	// use actual client here to fill in private fields
+	cl := ionos.APIClient{}.KubernetesApi
+	origReq := cl.K8sNodepoolsPut(context.Background(), s.manager.client.clusterId, s.nodePool.id)
+	expect := origReq.KubernetesNodePool(resizeRequestBody(size))
 	return s.client.
 		On("K8sNodepoolsPut", mock.Anything, s.manager.client.clusterId, s.nodePool.id).Return(origReq).
-		On("K8sNodepoolsPutExecute", req).Return(ionos.KubernetesNodePoolForPut{}, nil, reterr)
+		On("K8sNodepoolsPutExecute", expect).Return(ionos.KubernetesNodePool{}, nil, reterr)
 }
 
 func (s *ManagerTestSuite) OnListKubernetesNodes(retval *ionos.KubernetesNodes, reterr error) *mock.Call {
@@ -234,7 +232,7 @@ func (s *ManagerTestSuite) OnDeleteKubernetesNode(id string, reterr error) *mock
 	req := ionos.ApiK8sNodepoolsNodesDeleteRequest{}
 	return s.client.
 		On("K8sNodepoolsNodesDelete", mock.Anything, s.manager.client.clusterId, s.nodePool.id, id).Return(req).
-		On("K8sNodepoolsNodesDeleteExecute", req).Return(nil, nil, reterr)
+		On("K8sNodepoolsNodesDeleteExecute", req).Return(nil, reterr)
 }
 
 func TestIonosCloudManager(t *testing.T) {
@@ -298,7 +296,6 @@ func (s *ManagerTestSuite) TestSetNodeGroupSize_WaitGetError() {
 	s.Error(err)
 	s.False(errors.Is(err, wait.ErrWaitTimeout))
 	s.Empty(s.manager.cache.GetNodeGroups())
-	s.Empty(s.manager.cache.GetInstancesForNodeGroup(s.nodePool.Id()))
 }
 
 func (s *ManagerTestSuite) TestSetNodeGroupSize_WaitTimeout() {
@@ -315,7 +312,6 @@ func (s *ManagerTestSuite) TestSetNodeGroupSize_WaitTimeout() {
 	// The poll count may vary, so just do this to prevent flakes.
 	s.True(pollCount > int(pollTimeout/pollInterval))
 	s.Empty(s.manager.cache.GetNodeGroups())
-	s.Empty(s.manager.cache.GetInstancesForNodeGroup(s.nodePool.Id()))
 }
 
 func (s *ManagerTestSuite) TestSetNodeGroupSize_RefreshNodesError() {
@@ -326,7 +322,6 @@ func (s *ManagerTestSuite) TestSetNodeGroupSize_RefreshNodesError() {
 
 	s.Error(s.manager.SetNodeGroupSize(s.nodePool, 2))
 	s.Empty(s.manager.cache.GetNodeGroups())
-	s.Empty(s.manager.cache.GetInstancesForNodeGroup(s.nodePool.Id()))
 }
 
 func (s *ManagerTestSuite) TestSetNodeGroupSize_OK() {
@@ -346,11 +341,6 @@ func (s *ManagerTestSuite) TestSetNodeGroupSize_OK() {
 	size, found := s.manager.cache.GetNodeGroupSize(s.nodePool.Id())
 	s.True(found)
 	s.Equal(2, size)
-	expectInstances := []cloudprovider.Instance{
-		convertToInstance(newKubernetesNode("node-1", K8sNodeStateReady)),
-		convertToInstance(newKubernetesNode("node-2", K8sNodeStateReady)),
-	}
-	s.ElementsMatch(expectInstances, s.manager.cache.GetInstancesForNodeGroup(s.nodePool.Id()))
 }
 
 func (s *ManagerTestSuite) TestGetInstancesForNodeGroup_Error() {
@@ -370,24 +360,6 @@ func (s *ManagerTestSuite) TestGetInstancesForNodeGroup_RefreshOK() {
 			newKubernetesNode("node-3", K8sNodeStateProvisioning),
 		},
 	}, nil).Once()
-
-	expectInstances := []cloudprovider.Instance{
-		newInstanceWithState("node-1", cloudprovider.InstanceRunning),
-		newInstanceWithState("node-2", cloudprovider.InstanceRunning),
-		newInstanceWithState("node-3", cloudprovider.InstanceCreating),
-	}
-	instances, err := s.manager.GetInstancesForNodeGroup(s.nodePool)
-	s.NoError(err)
-	s.ElementsMatch(expectInstances, instances)
-}
-
-func (s *ManagerTestSuite) TestGetInstancesForNodeGroup_CachedOK() {
-	s.manager.cache.AddNodeGroup(s.nodePool)
-	s.manager.cache.SetInstancesCacheForNodeGroup(s.nodePool.Id(), []cloudprovider.Instance{
-		newInstanceWithState("node-1", cloudprovider.InstanceRunning),
-		newInstanceWithState("node-2", cloudprovider.InstanceRunning),
-		newInstanceWithState("node-3", cloudprovider.InstanceCreating),
-	})
 
 	expectInstances := []cloudprovider.Instance{
 		newInstanceWithState("node-1", cloudprovider.InstanceRunning),
@@ -548,10 +520,6 @@ func (s *ManagerTestSuite) TestInitExplicitNodeGroups_OK() {
 	size, found = s.manager.cache.GetNodeGroupSize(id)
 	s.True(found)
 	s.Equal(2, size)
-	s.ElementsMatch([]cloudprovider.Instance{
-		newInstanceWithState("node-1", cloudprovider.InstanceRunning),
-		newInstanceWithState("node-2", cloudprovider.InstanceRunning),
-	}, s.manager.cache.GetInstances())
 }
 
 func (s *ManagerTestSuite) TestRefresh_Error() {
@@ -570,10 +538,5 @@ func (s *ManagerTestSuite) TestRefresh_OK() {
 	}, nil).Once()
 
 	s.manager.cache.AddNodeGroup(&nodePool{id: "test", min: 1, max: 3})
-	s.Empty(s.manager.cache.GetInstances())
 	s.NoError(s.manager.Refresh())
-	s.ElementsMatch([]cloudprovider.Instance{
-		newInstanceWithState("1", cloudprovider.InstanceRunning),
-		newInstanceWithState("2", cloudprovider.InstanceCreating),
-	}, s.manager.cache.GetInstances())
 }

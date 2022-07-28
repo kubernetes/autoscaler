@@ -26,11 +26,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
-var (
-	requestsAndLimits vpa_types.ContainerControlledValues = vpa_types.ContainerControlledValuesRequestsAndLimits
-	requestsOnly      vpa_types.ContainerControlledValues = vpa_types.ContainerControlledValuesRequestsOnly
-)
-
 func TestRecommendationNotAvailable(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
 	podRecommendation := vpa_types.RecommendedPodResources{

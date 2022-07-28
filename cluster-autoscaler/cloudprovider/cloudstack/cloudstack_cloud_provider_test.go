@@ -17,11 +17,13 @@ limitations under the License.
 package cloudstack
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
@@ -86,12 +88,10 @@ func TestNodeGroups(t *testing.T) {
 	assert.Equal(t, testConfig.minSize, asgs[0].MinSize())
 }
 
-func testNodeExists(t *testing.T) {
+func testNodeExistsWithName(t *testing.T) {
 	node := &v1.Node{
-		Status: v1.NodeStatus{
-			NodeInfo: v1.NodeSystemInfo{
-				SystemUUID: "vm1",
-			},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "vm1",
 		},
 	}
 	asg, err := provider.NodeGroupForNode(node)
@@ -101,7 +101,32 @@ func testNodeExists(t *testing.T) {
 	assert.Equal(t, testConfig.minSize, asg.MinSize())
 }
 
-func testNodeNotExist(t *testing.T) {
+func testNodeExistsWithoutName(t *testing.T) {
+	node := &v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "vm1",
+		},
+	}
+	asg, err := provider.NodeGroupForNode(node)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, testConfig.clusterID, asg.Id())
+	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
+	assert.Equal(t, testConfig.minSize, asg.MinSize())
+}
+
+func testNodeNotExistWithName(t *testing.T) {
+	node := &v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "vm5",
+		},
+	}
+	_, err := provider.NodeGroupForNode(node)
+	fmt.Println(provider.manager.asg.cluster)
+	fmt.Println(err)
+	assert.NotEqual(t, nil, err)
+}
+
+func testNodeNotExistWithoutName(t *testing.T) {
 	node := &v1.Node{
 		Status: v1.NodeStatus{
 			NodeInfo: v1.NodeSystemInfo{
@@ -110,12 +135,16 @@ func testNodeNotExist(t *testing.T) {
 		},
 	}
 	_, err := provider.NodeGroupForNode(node)
+	fmt.Println(provider.manager.asg.cluster)
+	fmt.Println(err)
 	assert.NotEqual(t, nil, err)
 }
 
 func TestNodeGroupForNode(t *testing.T) {
-	t.Run("testNodeExists", testNodeExists)
-	t.Run("testNodeNotExist", testNodeNotExist)
+	t.Run("testNodeExistsWithName", testNodeExistsWithName)
+	t.Run("testNodeExistsWithoutName", testNodeExistsWithoutName)
+	t.Run("testNodeNotExistWithName", testNodeNotExistWithName)
+	t.Run("testNodeNotExistWithoutName", testNodeNotExistWithoutName)
 }
 
 func TestGetAvailableMachineTypes(t *testing.T) {

@@ -1,23 +1,21 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Response Object
 type BatchCreateServerTagsResponse struct {
+	HttpStatusCode int `json:"-"`
 }
 
 func (o BatchCreateServerTagsResponse) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "BatchCreateServerTagsResponse struct{}"
+	}
+
 	return strings.Join([]string{"BatchCreateServerTagsResponse", string(data)}, " ")
 }

@@ -18,6 +18,7 @@ package azure
 
 import (
 	"fmt"
+	compute20190701 "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,7 +34,9 @@ import (
 	"time"
 )
 
-const azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
+const (
+	azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
+)
 
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 	instanceOS := cloudprovider.DefaultOS
@@ -70,7 +73,8 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 	return result
 }
 
-func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineScaleSet) (*apiv1.Node, error) {
+func buildNodeFromTemplate(scaleSetName string,
+	template compute.VirtualMachineScaleSet, skuClient compute20190701.ResourceSkusClient, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", scaleSetName, rand.Int63())
 
@@ -84,36 +88,46 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 		Capacity: apiv1.ResourceList{},
 	}
 
-	var vmssType *InstanceType
-	for k := range InstanceTypes {
-		if strings.EqualFold(k, *template.Sku.Name) {
-			vmssType = InstanceTypes[k]
-			break
+	var vcpu, gpuCount, memoryMb int64
+
+	// Fetching SKU information from SKU API if enableDynamicInstanceList is true.
+	var dynamicErr error
+	if enableDynamicInstanceList {
+		var vmssTypeDynamic InstanceType
+		klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", *template.Sku.Name)
+		vmssTypeDynamic, dynamicErr = GetVMSSTypeDynamically(template, skuClient)
+		if dynamicErr == nil {
+			vcpu = vmssTypeDynamic.VCPU
+			gpuCount = vmssTypeDynamic.GPU
+			memoryMb = vmssTypeDynamic.MemoryMb
+		} else {
+			klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
+		}
+	}
+	if !enableDynamicInstanceList || dynamicErr != nil {
+		klog.V(1).Infof("Falling back to static SKU list for SKU: %s", *template.Sku.Name)
+		// fall-back on static list of vmss if dynamic workflow fails.
+		vmssTypeStatic, staticErr := GetVMSSTypeStatically(template)
+		if staticErr == nil {
+			vcpu = vmssTypeStatic.VCPU
+			gpuCount = vmssTypeStatic.GPU
+			memoryMb = vmssTypeStatic.MemoryMb
+		} else {
+			// return error if neither of the workflows results with vmss data.
+			klog.V(1).Infof("Instance type %q not supported, err: %v", *template.Sku.Name, staticErr)
+			return nil, staticErr
 		}
 	}
 
-	promoRe := regexp.MustCompile(`(?i)_promo`)
-	if promoRe.MatchString(*template.Sku.Name) {
-		if vmssType == nil {
-			// We didn't find an exact match but this is a promo type, check for matching standard
-			klog.V(1).Infof("No exact match found for %s, checking standard types", *template.Sku.Name)
-			skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
-			for k := range InstanceTypes {
-				if strings.EqualFold(k, skuName) {
-					vmssType = InstanceTypes[k]
-					break
-				}
-			}
-		}
-	}
-
-	if vmssType == nil {
-		return nil, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
-	}
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmssType.VCPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmssType.MemoryMb*1024*1024, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vcpu, resource.DecimalSI)
+	// isNPSeries returns if a SKU is an NP-series SKU
+	// SKU API reports GPUs for NP-series but it's actually FPGAs
+	if !isNPSeries(*template.Sku.Name) {
+		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+	}
+
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memoryMb*1024*1024, resource.DecimalSI)
 
 	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
 	for resourceName, val := range resourcesFromTags {
@@ -254,4 +268,10 @@ func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string
 	}
 
 	return resources
+}
+
+// isNPSeries returns if a SKU is an NP-series SKU
+// SKU API reports GPUs for NP-series but it's actually FPGAs
+func isNPSeries(name string) bool {
+	return strings.HasPrefix(strings.ToLower(name), "standard_np")
 }

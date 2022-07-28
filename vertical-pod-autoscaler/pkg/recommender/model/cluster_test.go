@@ -236,7 +236,7 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
 	pod := addTestPod(cluster)
-	addTestContainer(cluster)
+	addTestContainer(t, cluster)
 
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
 	usageSample := makeTestUsageSample()
@@ -352,8 +352,9 @@ func addTestPod(cluster *ClusterState) *PodState {
 	return cluster.Pods[testPodID]
 }
 
-func addTestContainer(cluster *ClusterState) *ContainerState {
-	cluster.AddOrUpdateContainer(testContainerID, testRequest)
+func addTestContainer(t *testing.T, cluster *ClusterState) *ContainerState {
+	err := cluster.AddOrUpdateContainer(testContainerID, testRequest)
+	assert.NoError(t, err)
 	return cluster.GetContainer(testContainerID)
 }
 
@@ -364,7 +365,7 @@ func TestAddVpaThenAddPod(t *testing.T) {
 	vpa := addTestVpa(cluster)
 	assert.Empty(t, vpa.aggregateContainerStates)
 	addTestPod(cluster)
-	addTestContainer(cluster)
+	addTestContainer(t, cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
 }
@@ -374,7 +375,7 @@ func TestAddVpaThenAddPod(t *testing.T) {
 func TestAddPodThenAddVpa(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	addTestPod(cluster)
-	addTestContainer(cluster)
+	addTestContainer(t, cluster)
 	vpa := addTestVpa(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
@@ -387,7 +388,7 @@ func TestChangePodLabels(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
 	addTestPod(cluster)
-	addTestContainer(cluster)
+	addTestContainer(t, cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
 	// Update Pod labels to no longer match the VPA.
@@ -418,12 +419,11 @@ func TestUpdateAnnotations(t *testing.T) {
 // between the pod and the VPA are updated correctly each time.
 func TestUpdatePodSelector(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
-	vpa := addTestVpa(cluster)
 	addTestPod(cluster)
-	addTestContainer(cluster)
+	addTestContainer(t, cluster)
 
 	// Update the VPA selector such that it still matches the Pod.
-	vpa = addVpa(cluster, testVpaID, testAnnotations, "label-1 in (value-1,value-2)", testTargetRef)
+	vpa := addVpa(cluster, testVpaID, testAnnotations, "label-1 in (value-1,value-2)", testTargetRef)
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 
 	// Update the VPA selector to no longer match the Pod.
@@ -549,7 +549,7 @@ func TestAddOrUpdateVPAPolicies(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cluster := NewClusterState(testGcPeriod)
 			addTestPod(cluster)
-			addTestContainer(cluster)
+			addTestContainer(t, cluster)
 			if tc.oldVpa != nil {
 				oldVpa := addVpaObject(cluster, testVpaID, tc.oldVpa, testSelectorStr)
 				if !assert.Contains(t, cluster.Vpas, testVpaID) {
@@ -596,8 +596,10 @@ func TestTwoPodsWithSameLabels(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	cluster.AddOrUpdatePod(podID1, testLabels, apiv1.PodRunning)
 	cluster.AddOrUpdatePod(podID2, testLabels, apiv1.PodRunning)
-	cluster.AddOrUpdateContainer(containerID1, testRequest)
-	cluster.AddOrUpdateContainer(containerID2, testRequest)
+	err := cluster.AddOrUpdateContainer(containerID1, testRequest)
+	assert.NoError(t, err)
+	err = cluster.AddOrUpdateContainer(containerID2, testRequest)
+	assert.NoError(t, err)
 
 	// Expect only one aggregation to be created.
 	assert.Equal(t, 1, len(cluster.aggregateStateMap))
@@ -613,8 +615,10 @@ func TestTwoPodsWithDifferentNamespaces(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	cluster.AddOrUpdatePod(podID1, testLabels, apiv1.PodRunning)
 	cluster.AddOrUpdatePod(podID2, testLabels, apiv1.PodRunning)
-	cluster.AddOrUpdateContainer(containerID1, testRequest)
-	cluster.AddOrUpdateContainer(containerID2, testRequest)
+	err := cluster.AddOrUpdateContainer(containerID1, testRequest)
+	assert.NoError(t, err)
+	err = cluster.AddOrUpdateContainer(containerID2, testRequest)
+	assert.NoError(t, err)
 
 	// Expect two separate aggregations to be created.
 	assert.Equal(t, 2, len(cluster.aggregateStateMap))

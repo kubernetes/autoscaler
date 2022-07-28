@@ -77,7 +77,12 @@ func (p *filterOutSchedulablePodListProcessor) Process(
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		klog.V(2).Info("Schedulable pods present")
-		context.ProcessorCallbacks.DisableScaleDownForLoop()
+
+		if context.DebuggingSnapshotter.IsDataCollectionAllowed() {
+			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
+			context.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
+		}
+
 	} else {
 		klog.V(4).Info("No schedulable pods")
 	}
@@ -95,7 +100,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 	unschedulableCandidates []*apiv1.Pod,
 	clusterSnapshot simulator.ClusterSnapshot,
 	predicateChecker simulator.PredicateChecker) ([]*apiv1.Pod, error) {
-	unschedulablePodsCache := make(utils.PodSchedulableMap)
+	unschedulablePodsCache := utils.NewPodSchedulableMap()
 
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
@@ -167,6 +172,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(
 			unschedulablePodsCache.Set(pod, nil)
 		}
 	}
+	metrics.UpdateOverflowingControllers(unschedulablePodsCache.OverflowingControllerCount())
 	klog.V(4).Infof("%v pods were kept as unschedulable based on caching", unschedulePodsCacheHitCounter)
 	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
 	return unschedulablePods, nil
@@ -178,4 +184,18 @@ func moreImportantPod(pod1, pod2 *apiv1.Pod) bool {
 	p1 := corev1helpers.PodPriority(pod1)
 	p2 := corev1helpers.PodPriority(pod2)
 	return p1 > p2
+}
+
+func findSchedulablePods(allUnschedulablePods, podsStillUnschedulable []*apiv1.Pod) []*apiv1.Pod {
+	podsStillUnschedulableMap := make(map[*apiv1.Pod]struct{}, len(podsStillUnschedulable))
+	for _, x := range podsStillUnschedulable {
+		podsStillUnschedulableMap[x] = struct{}{}
+	}
+	var schedulablePods []*apiv1.Pod
+	for _, x := range allUnschedulablePods {
+		if _, found := podsStillUnschedulableMap[x]; !found {
+			schedulablePods = append(schedulablePods, x)
+		}
+	}
+	return schedulablePods
 }

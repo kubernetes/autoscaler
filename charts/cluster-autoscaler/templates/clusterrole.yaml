@@ -1,4 +1,4 @@
-{{- if .Values.rbac.create -}}
+{{- if and .Values.rbac.create .Values.rbac.clusterScoped -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -146,5 +146,18 @@ rules:
     verbs:
     - use
 {{- end -}}
-
+{{- if and ( and ( eq .Values.cloudProvider "clusterapi" ) ( .Values.rbac.clusterScoped ) ( or ( eq .Values.clusterAPIMode "incluster-incluster" ) ( eq .Values.clusterAPIMode "kubeconfig-incluster" ) ))}}
+  - apiGroups:
+    - cluster.x-k8s.io
+    resources:
+    - machinedeployments
+    - machinedeployments/scale
+    - machines
+    - machinesets
+    verbs:
+    - get
+    - list
+    - update
+    - watch
+{{- end }}
 {{- end -}}
