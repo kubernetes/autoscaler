@@ -108,7 +108,7 @@ func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Aut
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
 func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
-	serverTypes, err := d.manager.client.ServerType.All(d.manager.apiCallContext)
+	serverTypes, err := d.manager.cachedServerType.getAllServerTypes()
 	if err != nil {
 		return nil, err
 	}
