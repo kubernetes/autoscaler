@@ -25,10 +25,11 @@ package mockrouteclient
 
 import (
 	context "context"
+	reflect "reflect"
+
 	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-06-01/network"
 	gomock "github.com/golang/mock/gomock"
 	retry "k8s.io/legacy-cloud-providers/azure/retry"
-	reflect "reflect"
 )
 
 // MockInterface is a mock of Interface interface.

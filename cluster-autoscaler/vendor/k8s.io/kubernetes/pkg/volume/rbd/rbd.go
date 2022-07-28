@@ -19,8 +19,6 @@ package rbd
 import (
 	"context"
 	"fmt"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/kubernetes/pkg/features"
 	"os"
 	"path/filepath"
 	"regexp"

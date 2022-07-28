@@ -153,18 +153,18 @@ type AWSEbsBlockDeviceSpec struct {
 	Encrypted bool `json:"encrypted,omitempty"`
 
 	// The number of I/O operations per second (IOPS) that the volume supports.
-	// For io1, this represents the number of IOPS that are provisioned for the
+	// For io1 and gp3, this represents the number of IOPS that are provisioned for the
 	// volume. For gp2, this represents the baseline performance of the volume and
 	// the rate at which the volume accumulates I/O credits for bursting. For more
 	// information about General Purpose SSD baseline performance, I/O credits,
 	// and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	//
-	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
-	// gp2 volumes.
+	// Constraint: IOPS should be a positive value.
+	// Validation of IOPS (i.e. whether it is allowed and is in the specified range for a particular volume type) is done on aws side.
 	//
 	// Condition: This parameter is required for requests to create io1 volumes;
-	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
+	// Do not specify it in requests to create gp2, st1, sc1, or standard volumes.
 	Iops int64 `json:"iops,omitempty"`
 
 	// Identifier (key ID, key alias, ID ARN, or alias ARN) for a customer managed
@@ -191,7 +191,7 @@ type AWSEbsBlockDeviceSpec struct {
 	// a volume size, the default is the snapshot size.
 	VolumeSize int64 `json:"volumeSize,omitempty"`
 
-	// The volume type: gp2, io1, st1, sc1, or standard.
+	// The volume type: gp2, gp3, io1, st1, sc1, or standard.
 	//
 	// Default: standard
 	VolumeType string `json:"volumeType,omitempty"`

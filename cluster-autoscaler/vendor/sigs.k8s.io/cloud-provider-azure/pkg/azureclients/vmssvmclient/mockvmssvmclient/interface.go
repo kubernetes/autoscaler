@@ -23,38 +23,37 @@ package mockvmssvmclient
 
 import (
 	context "context"
-	reflect "reflect"
-
 	compute "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	azure "github.com/Azure/go-autorest/autorest/azure"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 	retry "sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
-// MockInterface is a mock of Interface interface.
+// MockInterface is a mock of Interface interface
 type MockInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockInterfaceMockRecorder
 }
 
-// MockInterfaceMockRecorder is the mock recorder for MockInterface.
+// MockInterfaceMockRecorder is the mock recorder for MockInterface
 type MockInterfaceMockRecorder struct {
 	mock *MockInterface
 }
 
-// NewMockInterface creates a new mock instance.
+// NewMockInterface creates a new mock instance
 func NewMockInterface(ctrl *gomock.Controller) *MockInterface {
 	mock := &MockInterface{ctrl: ctrl}
 	mock.recorder = &MockInterfaceMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method.
+// Get mocks base method
 func (m *MockInterface) Get(ctx context.Context, resourceGroupName, VMScaleSetName, instanceID string, expand compute.InstanceViewTypes) (compute.VirtualMachineScaleSetVM, *retry.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, resourceGroupName, VMScaleSetName, instanceID, expand)
@@ -63,13 +62,13 @@ func (m *MockInterface) Get(ctx context.Context, resourceGroupName, VMScaleSetNa
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
+// Get indicates an expected call of Get
 func (mr *MockInterfaceMockRecorder) Get(ctx, resourceGroupName, VMScaleSetName, instanceID, expand interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockInterface)(nil).Get), ctx, resourceGroupName, VMScaleSetName, instanceID, expand)
 }
 
-// List mocks base method.
+// List mocks base method
 func (m *MockInterface) List(ctx context.Context, resourceGroupName, virtualMachineScaleSetName, expand string) ([]compute.VirtualMachineScaleSetVM, *retry.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, resourceGroupName, virtualMachineScaleSetName, expand)
@@ -78,13 +77,13 @@ func (m *MockInterface) List(ctx context.Context, resourceGroupName, virtualMach
 	return ret0, ret1
 }
 
-// List indicates an expected call of List.
+// List indicates an expected call of List
 func (mr *MockInterfaceMockRecorder) List(ctx, resourceGroupName, virtualMachineScaleSetName, expand interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockInterface)(nil).List), ctx, resourceGroupName, virtualMachineScaleSetName, expand)
 }
 
-// Update mocks base method.
+// Update mocks base method
 func (m *MockInterface) Update(ctx context.Context, resourceGroupName, VMScaleSetName, instanceID string, parameters compute.VirtualMachineScaleSetVM, source string) *retry.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source)
@@ -92,13 +91,13 @@ func (m *MockInterface) Update(ctx context.Context, resourceGroupName, VMScaleSe
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// Update indicates an expected call of Update
 func (mr *MockInterfaceMockRecorder) Update(ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockInterface)(nil).Update), ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source)
 }
 
-// UpdateAsync mocks base method.
+// UpdateAsync mocks base method
 func (m *MockInterface) UpdateAsync(ctx context.Context, resourceGroupName, VMScaleSetName, instanceID string, parameters compute.VirtualMachineScaleSetVM, source string) (*azure.Future, *retry.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAsync", ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source)
@@ -107,13 +106,13 @@ func (m *MockInterface) UpdateAsync(ctx context.Context, resourceGroupName, VMSc
 	return ret0, ret1
 }
 
-// UpdateAsync indicates an expected call of UpdateAsync.
+// UpdateAsync indicates an expected call of UpdateAsync
 func (mr *MockInterfaceMockRecorder) UpdateAsync(ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAsync", reflect.TypeOf((*MockInterface)(nil).UpdateAsync), ctx, resourceGroupName, VMScaleSetName, instanceID, parameters, source)
 }
 
-// WaitForUpdateResult mocks base method.
+// WaitForUpdateResult mocks base method
 func (m *MockInterface) WaitForUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName, source string) *retry.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WaitForUpdateResult", ctx, future, resourceGroupName, source)
@@ -121,22 +120,22 @@ func (m *MockInterface) WaitForUpdateResult(ctx context.Context, future *azure.F
 	return ret0
 }
 
-// WaitForUpdateResult indicates an expected call of WaitForUpdateResult.
+// WaitForUpdateResult indicates an expected call of WaitForUpdateResult
 func (mr *MockInterfaceMockRecorder) WaitForUpdateResult(ctx, future, resourceGroupName, source interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForUpdateResult", reflect.TypeOf((*MockInterface)(nil).WaitForUpdateResult), ctx, future, resourceGroupName, source)
 }
 
-// UpdateVMs mocks base method.
-func (m *MockInterface) UpdateVMs(ctx context.Context, resourceGroupName, VMScaleSetName string, instances map[string]compute.VirtualMachineScaleSetVM, source string) *retry.Error {
+// UpdateVMs mocks base method
+func (m *MockInterface) UpdateVMs(ctx context.Context, resourceGroupName, VMScaleSetName string, instances map[string]compute.VirtualMachineScaleSetVM, source string, batchSize int) *retry.Error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVMs", ctx, resourceGroupName, VMScaleSetName, instances, source)
+	ret := m.ctrl.Call(m, "UpdateVMs", ctx, resourceGroupName, VMScaleSetName, instances, source, batchSize)
 	ret0, _ := ret[0].(*retry.Error)
 	return ret0
 }
 
-// UpdateVMs indicates an expected call of UpdateVMs.
-func (mr *MockInterfaceMockRecorder) UpdateVMs(ctx, resourceGroupName, VMScaleSetName, instances, source interface{}) *gomock.Call {
+// UpdateVMs indicates an expected call of UpdateVMs
+func (mr *MockInterfaceMockRecorder) UpdateVMs(ctx, resourceGroupName, VMScaleSetName, instances, source, batchSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVMs", reflect.TypeOf((*MockInterface)(nil).UpdateVMs), ctx, resourceGroupName, VMScaleSetName, instances, source)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVMs", reflect.TypeOf((*MockInterface)(nil).UpdateVMs), ctx, resourceGroupName, VMScaleSetName, instances, source, batchSize)
 }

@@ -57,7 +57,7 @@ type Interface interface {
 	DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) *retry.Error
 
 	// DeleteInstancesAsync sends the delete request to the ARM client and DOEST NOT wait on the future
-	DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (*azure.Future, *retry.Error)
+	DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, forceDelete bool) (*azure.Future, *retry.Error)
 
 	// WaitForCreateOrUpdateResult waits for the response of the create or update request
 	WaitForCreateOrUpdateResult(ctx context.Context, future *azure.Future, resourceGroupName string) (*http.Response, error)

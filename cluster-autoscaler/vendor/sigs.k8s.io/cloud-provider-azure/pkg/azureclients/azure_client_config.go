@@ -17,6 +17,8 @@ limitations under the License.
 package azureclients
 
 import (
+	"time"
+
 	"github.com/Azure/go-autorest/autorest"
 	"k8s.io/client-go/util/flowcontrol"
 
@@ -32,6 +34,7 @@ type ClientConfig struct {
 	ResourceManagerEndpoint string
 	Authorizer              autorest.Authorizer
 	RateLimitConfig         *RateLimitConfig
+	RestClientConfig        RestClientConfig
 	Backoff                 *retry.Backoff
 	UserAgent               string
 	DisableAzureStackCloud  bool
@@ -56,6 +59,12 @@ type RateLimitConfig struct {
 	CloudProviderRateLimitQPSWrite float32 `json:"cloudProviderRateLimitQPSWrite,omitempty" yaml:"cloudProviderRateLimitQPSWrite,omitempty"`
 	// Rate limit Bucket Size
 	CloudProviderRateLimitBucketWrite int `json:"cloudProviderRateLimitBucketWrite,omitempty" yaml:"cloudProviderRateLimitBucketWrite,omitempty"`
+}
+
+type RestClientConfig struct {
+	PollingDelay  *time.Duration
+	RetryAttempts *int
+	RetryDuration *time.Duration
 }
 
 // ExtendedLocation contains additional info about the location of resources.

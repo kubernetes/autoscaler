@@ -104,8 +104,6 @@ type containerData struct {
 
 	// resctrlCollector updates stats for resctrl controller.
 	resctrlCollector stats.Collector
-
-	oomEvents uint64
 }
 
 // jitter returns a time.Duration between duration and duration + maxFactor * duration,
