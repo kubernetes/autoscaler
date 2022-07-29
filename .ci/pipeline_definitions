@@ -17,7 +17,7 @@ autoscaler:
                 build: ~
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/cluster-autoscaler'
-            dockerfile: 'Dockerfile'
+            dockerfile: 'Dockerfile.amd64'
             dir: 'cluster-autoscaler'
     steps:
       test:
