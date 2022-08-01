@@ -100,6 +100,7 @@ func newScalewayCloudProvider(configFile io.Reader, defaultUserAgent string, rl 
 	}
 }
 
+// BuildScaleway returns CloudProvider implementation for Scaleway.
 func BuildScaleway(
 	opts config.AutoscalingOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
