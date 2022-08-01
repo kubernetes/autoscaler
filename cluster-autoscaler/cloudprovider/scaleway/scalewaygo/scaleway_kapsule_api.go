@@ -39,15 +39,25 @@ const (
 )
 
 var (
+	// ErrMissingClusterID is returned when no cluster id has been found
+	// either in env variables or in config file
 	ErrMissingClusterID = errors.New("cluster ID is not provided")
+	// ErrMissingSecretKey is returned  when no secret key has been found
+	// either in env variables or in config file
 	ErrMissingSecretKey = errors.New("scaleway secret key is not provided")
-	ErrMissingRegion    = errors.New("region is not provided")
+	// ErrMissingRegion is returned when no region has been found
+	// either in env variables or in config file
+	ErrMissingRegion = errors.New("region is not provided")
 
+	// ErrClientSide indicates an error on user side
 	ErrClientSide = errors.New("400 error type")
+	// ErrServerSide indicates an error on server side
 	ErrServerSide = errors.New("500 error type")
-	ErrOther      = errors.New("generic error type")
+	// ErrOther indicates a generic HTTP error
+	ErrOther = errors.New("generic error type")
 )
 
+// Config is used to deserialize config file passed with flag `cloud-config`
 type Config struct {
 	ClusterID string `json:"cluster_id"`
 	SecretKey string `json:"secret_key"`
@@ -100,6 +110,7 @@ type scalewayRequest struct {
 // Listing queries default to `fetch all resources` if no `page` is provided
 // as CA needs access to all nodes and pools
 
+// Client is used to talk to Scaleway Kapsule API
 type Client interface {
 	GetPool(ctx context.Context, req *GetPoolRequest) (*Pool, error)
 	ListPools(ctx context.Context, req *ListPoolsRequest) (*ListPoolsResponse, error)
@@ -108,7 +119,7 @@ type Client interface {
 	DeleteNode(ctx context.Context, req *DeleteNodeRequest) (*Node, error)
 }
 
-// client is the struct to perform API calls
+// client contains necessary information to perform API calls
 type client struct {
 	httpClient *http.Client
 	apiURL     string
@@ -202,21 +213,35 @@ func (c *client) do(ctx context.Context, req *scalewayRequest, res interface{}) 
 	return fmt.Errorf("%d %v %v: %w", httpResponse.StatusCode, httpRequest.Method, httpRequest.URL, err)
 }
 
+// NodeStatus is the state in which a node might be
 type NodeStatus string
 
 const (
-	NodeStatusUnknown       = NodeStatus("unknown")
-	NodeStatusCreating      = NodeStatus("creating")
-	NodeStatusNotReady      = NodeStatus("not_ready")
-	NodeStatusReady         = NodeStatus("ready")
-	NodeStatusDeleting      = NodeStatus("deleting")
-	NodeStatusDeleted       = NodeStatus("deleted")
-	NodeStatusLocked        = NodeStatus("locked")
-	NodeStatusRebooting     = NodeStatus("rebooting")
+	// NodeStatusCreating indicates that node is provisioning the underlying instance/BM
+	NodeStatusCreating = NodeStatus("creating")
+	// NodeStatusStarting indicates that node is being configured and/or booting
+	NodeStatusStarting = NodeStatus("starting")
+	// NodeStatusRegistering indicates that underlying node has booted and k8s services are starting
+	NodeStatusRegistering = NodeStatus("registering")
+	// NodeStatusNotReady indicates that k8s has marked this node as `NotReady`
+	NodeStatusNotReady = NodeStatus("not_ready")
+	// NodeStatusReady indicates that node is ready for use
+	NodeStatusReady = NodeStatus("ready")
+	// NodeStatusDeleting indicates that node is being deleted
+	NodeStatusDeleting = NodeStatus("deleting")
+	// NodeStatusDeleted indicates that node is deleted
+	NodeStatusDeleted = NodeStatus("deleted")
+	// NodeStatusLocked indicates that node has been locked for legal reasons
+	NodeStatusLocked = NodeStatus("locked")
+	// NodeStatusRebooting indicates that node is rebooting
+	NodeStatusRebooting = NodeStatus("rebooting")
+	// NodeStatusCreationError indicates that node failed to create
 	NodeStatusCreationError = NodeStatus("creation_error")
-	NodeStatusUpgrading     = NodeStatus("upgrading")
+	// NodeStatusUpgrading indicates that this node CP is currently upgrading k8s version
+	NodeStatusUpgrading = NodeStatus("upgrading")
 )
 
+// Node represents an instance running in a scaleway pool
 type Node struct {
 	// ID: the ID of the node
 	ID string `json:"id"`
@@ -236,10 +261,11 @@ type Node struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+// PoolStatus is the state in which a pool might be (unused)
 type PoolStatus string
 
+// These are possible statuses for a scaleway pool
 const (
-	PoolStatusUnknown   = PoolStatus("unknown")
 	PoolStatusReady     = PoolStatus("ready")
 	PoolStatusDeleting  = PoolStatus("deleting")
 	PoolStatusDeleted   = PoolStatus("deleted")
@@ -249,6 +275,7 @@ const (
 	PoolStatusUpgrading = PoolStatus("upgrading")
 )
 
+// Pool is the abstraction used to gather nodes with the same specs
 type Pool struct {
 	// ID: the ID of the pool
 	ID string `json:"id"`
@@ -278,11 +305,13 @@ type Pool struct {
 	Zone string `json:"zone"`
 }
 
+// GetPoolRequest is passed to `GetPool` method
 type GetPoolRequest struct {
 	// PoolID: the ID of the requested pool
 	PoolID string `json:"-"`
 }
 
+// GetPool is used to request a Pool by its id
 func (c *client) GetPool(ctx context.Context, req *GetPoolRequest) (*Pool, error) {
 	var err error
 
@@ -306,6 +335,8 @@ func (c *client) GetPool(ctx context.Context, req *GetPoolRequest) (*Pool, error
 	return &resp, nil
 }
 
+// ListPoolsRequest is passed to `ListPools` method
+// it can be used for optional pagination
 type ListPoolsRequest struct {
 	// the ID of the cluster from which the pools will be listed from
 	ClusterID string `json:"-"`
@@ -315,6 +346,8 @@ type ListPoolsRequest struct {
 	PageSize *uint32 `json:"-"`
 }
 
+// GenericNodeSpecs represents NodeType specs used for scale-up simulations.
+// it is used to select the appropriate pool to scale-up.
 type GenericNodeSpecs struct {
 	NodePricePerHour        float32           `json:"node_price_per_hour"`
 	MaxPods                 uint32            `json:"max_pods"`
@@ -329,11 +362,13 @@ type GenericNodeSpecs struct {
 	Taints                  map[string]string `json:"taints"`
 }
 
+// PoolWithGenericNodeSpecs contains the requested `Pool` with additional `Specs` information
 type PoolWithGenericNodeSpecs struct {
 	Pool  *Pool            `json:"pool"`
 	Specs GenericNodeSpecs `json:"specs"`
 }
 
+// ListPoolsResponse is returned from `ListPools` method
 type ListPoolsResponse struct {
 	// TotalCount: the total number of pools that exists for the cluster
 	TotalCount uint32 `json:"total_count"`
@@ -341,6 +376,7 @@ type ListPoolsResponse struct {
 	Pools []*PoolWithGenericNodeSpecs `json:"pools"`
 }
 
+// ListPools returns pools associated to a cluster id, pagination optional
 func (c *client) ListPools(ctx context.Context, req *ListPoolsRequest) (*ListPoolsResponse, error) {
 	klog.V(4).Info("ListPools,ClusterID=", req.ClusterID)
 
@@ -418,6 +454,7 @@ func (c *client) listPoolsPaginated(ctx context.Context, req *ListPoolsRequest) 
 	return &resp, nil
 }
 
+// UpdatePoolRequest is passed to `UpdatePool` method
 type UpdatePoolRequest struct {
 	// PoolID: the ID of the pool to update
 	PoolID string `json:"-"`
@@ -425,6 +462,7 @@ type UpdatePoolRequest struct {
 	Size *uint32 `json:"size"`
 }
 
+// UpdatePool is used to resize a pool, to decrease pool size `DeleteNode` should be used instead
 func (c *client) UpdatePool(ctx context.Context, req *UpdatePoolRequest) (*Pool, error) {
 	var err error
 
@@ -454,6 +492,7 @@ func (c *client) UpdatePool(ctx context.Context, req *UpdatePoolRequest) (*Pool,
 	return &resp, nil
 }
 
+// ListNodesRequest is passed to `ListNodes` method
 type ListNodesRequest struct {
 	// ClusterID: the cluster ID from which the nodes will be listed from
 	ClusterID string `json:"-"`
@@ -465,6 +504,7 @@ type ListNodesRequest struct {
 	PageSize *uint32 `json:"-"`
 }
 
+// ListNodesResponse is returned from `ListNodes` method
 type ListNodesResponse struct {
 	// TotalCount: the total number of nodes
 	TotalCount uint32 `json:"total_count"`
@@ -472,6 +512,7 @@ type ListNodesResponse struct {
 	Nodes []*Node `json:"nodes"`
 }
 
+// ListNodes returns the Nodes associated to a Cluster and/or a Pool
 func (c *client) ListNodes(ctx context.Context, req *ListNodesRequest) (*ListNodesResponse, error) {
 	klog.V(4).Info("ListNodes,ClusterID=", req.ClusterID)
 
@@ -553,10 +594,12 @@ func (c *client) listNodesPaginated(ctx context.Context, req *ListNodesRequest) 
 	return &resp, nil
 }
 
+// DeleteNodeRequest is passed to `DeleteNode` method
 type DeleteNodeRequest struct {
 	NodeID string `json:"-"`
 }
 
+// DeleteNode asynchronously deletes a Node by its id
 func (c *client) DeleteNode(ctx context.Context, req *DeleteNodeRequest) (*Node, error) {
 	var err error
 

@@ -32,10 +32,8 @@ import (
 	"strings"
 )
 
-var (
-	ErrNodeNotInPool = errors.New("node marked for deletion and not found in pool")
-)
-
+// NodeGroup implements cloudprovider.NodeGroup interface.
+// it is used to resize a Scaleway Pool which is a group of nodes with the same capacity.
 type NodeGroup struct {
 	scalewaygo.Client
 
@@ -44,23 +42,32 @@ type NodeGroup struct {
 	p     *scalewaygo.Pool
 }
 
+// MaxSize returns maximum size of the node group.
 func (ng *NodeGroup) MaxSize() int {
 	klog.V(6).Info("MaxSize,called")
 
 	return int(ng.p.MaxSize)
 }
 
+// MinSize returns minimum size of the node group.
 func (ng *NodeGroup) MinSize() int {
 	klog.V(6).Info("MinSize,called")
 
 	return int(ng.p.MinSize)
 }
 
+// TargetSize returns the current target size of the node group. It is possible that the
+// number of nodes in Kubernetes is different at the moment but should be equal
+// to Size() once everything stabilizes (new nodes finish startup and registration or
+// removed nodes are deleted completely).
 func (ng *NodeGroup) TargetSize() (int, error) {
 	klog.V(6).Info("TargetSize,called")
 	return int(ng.p.Size), nil
 }
 
+// IncreaseSize increases the size of the node group. To delete a node you need
+// to explicitly name it and use DeleteNode. This function should wait until
+// node group size is updated.
 func (ng *NodeGroup) IncreaseSize(delta int) error {
 
 	klog.V(4).Infof("IncreaseSize,ClusterID=%s,delta=%d", ng.p.ClusterID, delta)
@@ -94,6 +101,9 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// DeleteNodes deletes nodes from this node group. Error is returned either on
+// failure or if the given node doesn't belong to this node group. This function
+// should wait until node group size is updated.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	ctx := context.Background()
 	klog.V(4).Info("DeleteNodes,", len(nodes), " nodes to reclaim")
@@ -101,7 +111,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 		node, ok := ng.nodes[n.Spec.ProviderID]
 		if !ok {
-			klog.Errorf("DeleteNodes,ProviderID=%s,PoolID=%s,%s", n.Spec.ProviderID, ng.p.ID, ErrNodeNotInPool)
+			klog.Errorf("DeleteNodes,ProviderID=%s,PoolID=%s,node marked for deletion not found in pool", n.Spec.ProviderID, ng.p.ID)
 			continue
 		}
 
@@ -119,6 +129,11 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// DecreaseTargetSize decreases the target size of the node group. This function
+// doesn't permit to delete any existing node and can be used only to reduce the
+// request for new nodes that have not been yet fulfilled. Delta should be negative.
+// It is assumed that cloud provider will not delete the existing nodes when there
+// is an option to just decrease the target.
 func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
 
 	klog.V(4).Infof("DecreaseTargetSize,ClusterID=%s,delta=%d", ng.p.ClusterID, delta)
@@ -151,15 +166,18 @@ func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
 	return nil
 }
 
+// Id returns an unique identifier of the node group.
 func (ng *NodeGroup) Id() string {
 	return ng.p.ID
 }
 
+// Debug returns a string containing all information regarding this node group.
 func (ng *NodeGroup) Debug() string {
 	klog.V(4).Info("Debug,called")
 	return fmt.Sprintf("id:%s,status:%s,version:%s,autoscaling:%t,size:%d,min_size:%d,max_size:%d", ng.Id(), ng.p.Status, ng.p.Version, ng.p.Autoscaling, ng.p.Size, ng.MinSize(), ng.MaxSize())
 }
 
+// Nodes returns a list of all nodes that belong to this node group.
 func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	var nodes []cloudprovider.Instance
 
@@ -218,7 +236,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 }
 
 func parseTaints(taints map[string]string) []apiv1.Taint {
-	k8s_taints := make([]apiv1.Taint, 0, len(taints))
+	k8sTaints := make([]apiv1.Taint, 0, len(taints))
 
 	for key, valueEffect := range taints {
 
@@ -240,11 +258,13 @@ func parseTaints(taints map[string]string) []apiv1.Taint {
 		}
 		taint.Key = key
 
-		k8s_taints = append(k8s_taints, taint)
+		k8sTaints = append(k8sTaints, taint)
 	}
-	return k8s_taints
+	return k8sTaints
 }
 
+// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
+// theoretical node group from the real one.
 func (ng *NodeGroup) Exist() bool {
 
 	klog.V(4).Infof("Exist,PoolID=%s", ng.p.ID)
@@ -261,14 +281,17 @@ func (ng *NodeGroup) Exist() bool {
 
 // Pool Autoprovision feature is not supported by Scaleway
 
+// Create creates the node group on the cloud provider side.
 func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// Delete deletes the node group on the cloud provider side.
 func (ng *NodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// Autoprovisioned returns true if the node group is autoprovisioned.
 func (ng *NodeGroup) Autoprovisioned() bool {
 	return false
 }
@@ -302,7 +325,8 @@ func fromScwStatus(status scalewaygo.NodeStatus) *cloudprovider.InstanceStatus {
 	switch status {
 	case scalewaygo.NodeStatusReady:
 		st.State = cloudprovider.InstanceRunning
-	case scalewaygo.NodeStatusCreating, scalewaygo.NodeStatusNotReady,
+	case scalewaygo.NodeStatusCreating, scalewaygo.NodeStatusStarting,
+		scalewaygo.NodeStatusRegistering, scalewaygo.NodeStatusNotReady,
 		scalewaygo.NodeStatusUpgrading, scalewaygo.NodeStatusRebooting:
 		st.State = cloudprovider.InstanceCreating
 	case scalewaygo.NodeStatusDeleting:
