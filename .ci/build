@@ -63,13 +63,13 @@ if [[ -z "$LOCAL_BUILD" ]]; then
   GO111MODULE=off go build \
     -a \
     -v \
-    -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler \
+    -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler-amd64 \
     cluster-autoscaler/main.go
 
 # If the LOCAL_BUILD environment variable is set, we simply run `go build`.
 else
   GO111MODULE=off go build \
     -v \
-    -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler \
+    -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler-amd64 \
     cluster-autoscaler/main.go
 fi
