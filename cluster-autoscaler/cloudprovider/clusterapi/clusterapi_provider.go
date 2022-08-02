@@ -180,16 +180,16 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatalf("create scale client failed: %v", err)
 	}
 
-	controller, err := newMachineController(managementClient, workloadClient, managementDiscoveryClient, managementScaleClient, do)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
 	// Ideally this would be passed in but the builder is not
 	// currently organised to do so.
 	stopCh := make(chan struct{})
 
-	if err := controller.run(stopCh); err != nil {
+	controller, err := newMachineController(managementClient, workloadClient, managementDiscoveryClient, managementScaleClient, do, stopCh)
+	if err != nil {
+		klog.Fatal(err)
+	}
+
+	if err := controller.run(); err != nil {
 		klog.Fatal(err)
 	}
 
