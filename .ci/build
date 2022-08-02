@@ -59,8 +59,9 @@ fi
 
 # If no LOCAL_BUILD environment variable is set, we configure the `go build` command
 # to build for linux OS, amd64 architectures and without CGO enablement.
+# ldflags used, same as Makefile , this reduces size of binary considerably
 if [[ -z "$LOCAL_BUILD" ]]; then
-  GO111MODULE=off go build \
+  CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=off go build --ldflags="-s -w" \
     -a \
     -v \
     -o ${BINARY_PATH}/cluster-autoscaler/cluster-autoscaler-amd64 \
