@@ -250,13 +250,13 @@ func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machin
 	}
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{})
+	stopCh := make(chan struct{})
+	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}
 
-	stopCh := make(chan struct{})
-	if err := controller.run(stopCh); err != nil {
+	if err := controller.run(); err != nil {
 		t.Fatalf("failed to run controller: %v", err)
 	}
 
