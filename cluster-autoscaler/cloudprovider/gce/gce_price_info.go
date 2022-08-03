@@ -58,7 +58,7 @@ type PriceInfo interface {
 const hoursInMonth = float64(24 * 30)
 
 const (
-	//TODO: Move it to a config file.
+	// TODO: Move it to a config file.
 	cpuPricePerHour          = 0.033174
 	memoryPricePerHourPerGb  = 0.004446
 	preemptibleDiscount      = 0.00698 / 0.033174
@@ -130,6 +130,10 @@ var (
 		"a2-highgpu-4g":    14.69354,
 		"a2-highgpu-8g":    29.38708,
 		"a2-megagpu-16g":   55.739504,
+		"a2-ultragpu-1g":   5.0688,
+		"a2-ultragpu-2g":   10.1376,
+		"a2-ultragpu-4g":   20.2752,
+		"a2-ultragpu-8g":   40.5504,
 		"c2-standard-4":    0.2088,
 		"c2-standard-8":    0.4176,
 		"c2-standard-16":   0.8352,
@@ -280,6 +284,10 @@ var (
 		"a2-highgpu-4g":    4.408062,
 		"a2-highgpu-8g":    8.816124,
 		"a2-megagpu-16g":   16.721851,
+		"a2-ultragpu-1g":   1.6,
+		"a2-ultragpu-2g":   3.2,
+		"a2-ultragpu-4g":   6.4,
+		"a2-ultragpu-8g":   12.8,
 		"c2-standard-4":    0.0505,
 		"c2-standard-8":    0.1011,
 		"c2-standard-16":   0.2021,
@@ -428,6 +436,7 @@ var (
 		"nvidia-tesla-p100": 1.46,
 		"nvidia-tesla-k80":  0.45,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
 	}
 	preemptibleGpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.11,
@@ -436,6 +445,7 @@ var (
 		"nvidia-tesla-p100": 0.43,
 		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
 	}
 	bootDiskPricePerHour = map[string]float64{
 		"pd-standard": 0.04 / hoursInMonth,
