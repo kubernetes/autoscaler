@@ -131,7 +131,7 @@ spec:
         app: cluster-autoscaler
     spec:
       priorityClassName: system-cluster-critical
-      serviceAccountName: admin
+      serviceAccountName: cluster-autoscaler
       containers:
         - image: registry.cn-hangzhou.aliyuncs.com/acs/autoscaler:v1.3.1
           name: cluster-autoscaler
