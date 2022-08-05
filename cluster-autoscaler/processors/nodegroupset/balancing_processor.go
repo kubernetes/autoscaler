@@ -17,15 +17,33 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"sort"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
+
+const (
+	// BalanceByCpu is the name for balancing by cpu
+	BalanceByCpu string = "cpu"
+	// BalanceByMemory is the name for balancing by memory
+	BalanceByMemory string = "memory"
+	// BalanceByCount is the name for balancing by count
+	BalanceByCount string = "count"
+)
+
+// BalanceBySupported is a map of supported balancing options for user input verification
+var BalanceBySupported = map[string]bool{
+	BalanceByCpu:    true,
+	BalanceByMemory: true,
+	BalanceByCount:  true,
+}
 
 // BalancingNodeGroupSetProcessor tries to keep similar node groups balanced on scale-up.
 type BalancingNodeGroupSetProcessor struct {
@@ -76,11 +94,14 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(
+	context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int, nodes []*apiv1.Node) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")
 	}
+
+	averageAllocatableResources := b.averageNodegroupAllocatableResources(context, groups, nodes)
 
 	// get all data from cloudprovider, build data structure
 	scaleUpInfos := make([]ScaleUpInfo, 0)
@@ -106,6 +127,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 			CurrentSize: currentSize,
 			NewSize:     currentSize,
 			MaxSize:     maxSize,
+			Weight:      averageAllocatableResources[ng.Id()],
 		})
 	}
 	if totalCapacity < newNodes {
@@ -132,7 +154,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 	// 5. startIndex <= i < j < currentIndex -> scaleUpInfos[i].CurrentSize == scaleUpInfos[j].CurrentSize
 	// 6. startIndex <= i < currentIndex <= j -> scaleUpInfos[i].CurrentSize <= scaleUpInfos[j].CurrentSize + 1
 	sort.Slice(scaleUpInfos, func(i, j int) bool {
-		return scaleUpInfos[i].CurrentSize < scaleUpInfos[j].CurrentSize
+		return scaleUpInfos[i].TotalWeight() < scaleUpInfos[j].TotalWeight()
 	})
 	startIndex := 0
 	currentIndex := 0
@@ -156,7 +178,8 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 		// Update currentIndex.
 		// If we removed a group in this loop currentIndex may be equal to startIndex-1,
 		// in which case both branches of below if will make currentIndex == startIndex.
-		if currentIndex < len(scaleUpInfos)-1 && currentInfo.NewSize > scaleUpInfos[currentIndex+1].NewSize {
+		if currentIndex < len(scaleUpInfos)-1 &&
+			currentInfo.TotalWeight() > scaleUpInfos[currentIndex+1].TotalWeight() {
 			// Next group has exactly one less node, than current one.
 			// We will increase it in next iteration.
 			currentIndex++
@@ -178,6 +201,75 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 	}
 
 	return result, nil
+}
+
+// averageNodegroupAllocatableResources collects the average capacity by nodegroup id,
+// so we can add new nodes to the one with the lowest capacity instead of the one with the lowest node count
+func (b *BalancingNodeGroupSetProcessor) averageNodegroupAllocatableResources(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, nodes []*apiv1.Node) map[string]int {
+	// collect info
+	averageNodegroupCapacities := map[string]int{}
+	nodegroupCounts := map[string]int{}
+
+	if context.BalanceSimilarNodeGroupsBy == BalanceByCpu || context.BalanceSimilarNodeGroupsBy == BalanceByMemory {
+		for _, ng := range groups {
+			averageNodegroupCapacities[ng.Id()] = 0
+			nodegroupCounts[ng.Id()] = 0
+			ngNodes, err := ng.Nodes()
+			if err != nil {
+				klog.V(1).Infof("Failed to get nodes from NodeGroup %v: %v", ng.Id(), err)
+				continue
+			}
+			for _, n := range nodes {
+				nId := n.Spec.ProviderID
+				for _, ngNode := range ngNodes {
+					if nId == ngNode.Id {
+						nodegroupCounts[ng.Id()]++
+						var resource *resource.Quantity
+						if context.BalanceSimilarNodeGroupsBy == "cpu" {
+							resource = n.Status.Allocatable.Cpu()
+						} else {
+							resource = n.Status.Allocatable.Memory()
+						}
+						averageNodegroupCapacities[ng.Id()] += int(resource.MilliValue())
+					}
+				}
+			}
+		}
+
+		// calculate average
+		for _, ng := range groups {
+			if nodegroupCounts[ng.Id()] == 0 {
+				klog.V(3).Infof("Failed to find nodes for NodeGroup %v: %v", ng.Id())
+			} else {
+				averageNodegroupCapacities[ng.Id()] /= nodegroupCounts[ng.Id()]
+			}
+		}
+	} else if context.BalanceSimilarNodeGroupsBy == BalanceByCount || context.BalanceSimilarNodeGroupsBy == "" {
+		// do nothing: fallback will set everything to 1
+	} else {
+		panic(fmt.Sprintf("Unknown balance option %v", context.BalanceSimilarNodeGroupsBy))
+	}
+
+	// fallback missing to average of those not missing
+	fallback := 1
+	foundCapacity := 0
+	foundCount := 0
+	for id, capacity := range averageNodegroupCapacities {
+		if nodegroupCounts[id] != 0 {
+			foundCapacity += capacity
+			foundCount += 1
+		}
+	}
+	if foundCount != 0 {
+		fallback = foundCapacity / foundCount
+	}
+	for _, ng := range groups {
+		if nodegroupCounts[ng.Id()] == 0 {
+			averageNodegroupCapacities[ng.Id()] = fallback
+		}
+	}
+
+	return averageNodegroupCapacities
 }
 
 // CleanUp performs final clean up of processor state.

@@ -175,6 +175,7 @@ var (
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
+	balanceSimilarNodeGroupsByFlag   = flag.String("balance-similar-node-groups-by", "count", "Decides what to balance nodegroups by: \"count\", \"cpu\", or \"memory\"")
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
@@ -226,10 +227,12 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
+
 	minMemoryTotal, maxMemoryTotal, err := parseMinMaxFlag(*memoryTotal)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
+
 	// Convert memory limits to bytes.
 	minMemoryTotal = minMemoryTotal * units.GiB
 	maxMemoryTotal = maxMemoryTotal * units.GiB
@@ -238,9 +241,15 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
+
+	if !nodegroupset.BalanceBySupported[*balanceSimilarNodeGroupsByFlag] {
+		klog.Fatalf("Unsupported value for --balance-similar-node-groups-by: %v", balanceSimilarNodeGroupsByFlag)
+	}
+
 	if *maxDrainParallelismFlag > 1 && !*parallelDrain {
 		klog.Fatalf("Invalid configuration, could not use --max-drain-parallelism > 1 if --parallel-drain is false")
 	}
+
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -284,6 +293,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		WriteStatusConfigMap:               *writeStatusConfigMapFlag,
 		StatusConfigMapName:                *statusConfigMapName,
 		BalanceSimilarNodeGroups:           *balanceSimilarNodeGroupsFlag,
+		BalanceSimilarNodeGroupsBy:         *balanceSimilarNodeGroupsByFlag,
 		ConfigNamespace:                    *namespace,
 		ClusterName:                        *clusterName,
 		NodeAutoprovisioningEnabled:        *nodeAutoprovisioningEnabled,

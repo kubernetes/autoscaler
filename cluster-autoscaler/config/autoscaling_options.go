@@ -158,6 +158,8 @@ type AutoscalingOptions struct {
 	StatusConfigMapName string
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
+	// BalanceSimilarNodeGroupsBy decides what to balance nodegroups by default is node "count", other options are "cpu" and "memory"
+	BalanceSimilarNodeGroupsBy string
 	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
 	ConfigNamespace string
 	// ClusterName if available
