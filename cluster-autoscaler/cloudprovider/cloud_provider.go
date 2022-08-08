@@ -76,6 +76,8 @@ const (
 	TencentcloudProviderName = "tencentcloud"
 	// ExternalGrpcProviderName gets the provider name of the external grpc provider
 	ExternalGrpcProviderName = "externalgrpc"
+	// CivoProviderName gets the provider name of civo
+	CivoProviderName = "civo"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
