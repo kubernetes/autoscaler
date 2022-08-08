@@ -229,7 +229,7 @@ type fakeEvictFactory struct {
 	evict eviction.PodsEvictionRestriction
 }
 
-func (f fakeEvictFactory) NewPodsEvictionRestriction(pods []*apiv1.Pod) eviction.PodsEvictionRestriction {
+func (f fakeEvictFactory) NewPodsEvictionRestriction(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) eviction.PodsEvictionRestriction {
 	return f.evict
 }
 

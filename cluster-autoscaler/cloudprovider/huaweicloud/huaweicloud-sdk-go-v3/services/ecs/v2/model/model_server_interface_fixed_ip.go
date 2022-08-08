@@ -1,26 +1,25 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 type ServerInterfaceFixedIp struct {
 	// 网卡私网IP信息。
+
 	IpAddress *string `json:"ip_address,omitempty"`
 	// 网卡私网IP对应子网信息。
+
 	SubnetId *string `json:"subnet_id,omitempty"`
 }
 
 func (o ServerInterfaceFixedIp) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ServerInterfaceFixedIp struct{}"
+	}
+
 	return strings.Join([]string{"ServerInterfaceFixedIp", string(data)}, " ")
 }

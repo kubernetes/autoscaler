@@ -53,9 +53,11 @@ D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial] .
 
 Note: The keys for the tags that you entered don't have values. Cluster Autoscaler ignores any value set for the keys.
 
-- Create an IAM Policy for cluster autoscaler and to enable AutoDiscovery. 
+__NOTE:__ Please see [the README](README.md#IAM-Policy) for more information on best practices with this IAM role.
 
-```sh
+- Create an IAM Policy for cluster autoscaler and to enable AutoDiscovery as well as discovery of instance types.
+
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -65,17 +67,24 @@ Note: The keys for the tags that you entered don't have values. Cluster Autoscal
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeScalingActivities",
                 "autoscaling:DescribeTags",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeLaunchTemplateVersions"
+            ],
+            "Resource": ["*"]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
-            "Resource": "*"
+            "Resource": ["*"]
         }
     ]
 }
 ```
-
-NOTE: ``` autoscaling:DescribeTags ``` is very important if you are making use of the AutoDiscovery feature of the Cluster AutoScaler. 
 
 - Attach the above created policy to the *instance role* that's attached to your Amazon EKS worker nodes.
 - Download a deployment example file provided by the Cluster Autoscaler project on GitHub, run the following command:

@@ -305,7 +305,7 @@ func toInstanceStatus(status hcloud.ServerStatus) *cloudprovider.InstanceStatus 
 }
 
 func newNodeName(n *hetznerNodeGroup) string {
-	return fmt.Sprintf("%s-%d", n.id, rand.Int63())
+	return fmt.Sprintf("%s-%x", n.id, rand.Int63())
 }
 
 func buildNodeGroupLabels(n *hetznerNodeGroup) map[string]string {

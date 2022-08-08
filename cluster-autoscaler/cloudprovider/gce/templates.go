@@ -59,7 +59,8 @@ func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.Accelerator
 }
 
 // BuildCapacity builds a list of resource capacities given list of hardware.
-func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig, os OperatingSystem, osDistribution OperatingSystemDistribution, arch SystemArchitecture,
+	ephemeralStorage int64, ephemeralStorageLocalSSDCount int64, pods *int64, version string, r OsReservedCalculator) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	if pods == nil {
 		capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
@@ -68,7 +69,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 	}
 
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, version)
+	memTotal := mem - r.CalculateKernelReserved(mem, os, osDistribution, arch, version)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
@@ -80,7 +81,7 @@ func (t *GceTemplateBuilder) BuildCapacity(cpu int64, mem int64, accelerators []
 		if ephemeralStorageLocalSSDCount > 0 {
 			storageTotal = ephemeralStorage - EphemeralStorageOnLocalSSDFilesystemOverheadInBytes(ephemeralStorageLocalSSDCount, osDistribution)
 		} else {
-			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, version)
+			storageTotal = ephemeralStorage - r.CalculateOSReservedEphemeralStorage(ephemeralStorage, os, osDistribution, arch, version)
 		}
 		capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(math.Max(float64(storageTotal), 0)), resource.DecimalSI)
 	}
@@ -174,6 +175,10 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	if osDistribution == OperatingSystemDistributionUnknown {
 		return nil, fmt.Errorf("could not obtain os-distribution from kube-env from template metadata")
 	}
+	arch := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
+	if arch == UnknownArch {
+		return nil, fmt.Errorf("could not obtain arch from kube-env from template metadata")
+	}
 
 	var ephemeralStorage int64 = -1
 	ssdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
@@ -186,7 +191,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
+	capacity, err := t.BuildCapacity(cpu, mem, template.Properties.GuestAccelerators, os, osDistribution, arch, ephemeralStorage, ssdCount, pods, mig.Version(), reserved)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +323,7 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string, os Oper
 	}
 
 	// TODO: extract it somehow
-	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelArchStable] = string(DefaultArch)
 	result[apiv1.LabelOSStable] = string(os)
 
 	result[apiv1.LabelInstanceTypeStable] = machineType
@@ -470,6 +475,33 @@ func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
 	}
 }
 
+// OperatingSystemImage denotes  image of the operating system used by nodes coming from node group
+type OperatingSystemImage string
+
+const (
+	// OperatingSystemImageUnknown is used if operating distribution system is unknown
+	OperatingSystemImageUnknown OperatingSystemImage = ""
+	// OperatingSystemImageUbuntu is used if operating distribution system is Ubuntu
+	OperatingSystemImageUbuntu OperatingSystemImage = "ubuntu"
+	// OperatingSystemImageWindowsLTSC is used if operating distribution system is Windows LTSC
+	OperatingSystemImageWindowsLTSC OperatingSystemImage = "windows_ltsc"
+	// OperatingSystemImageWindowsSAC is used if operating distribution system is Windows SAC
+	OperatingSystemImageWindowsSAC OperatingSystemImage = "windows_sac"
+	// OperatingSystemImageCOS is used if operating distribution system is COS
+	OperatingSystemImageCOS OperatingSystemImage = "cos"
+	// OperatingSystemImageCOSContainerd is used if operating distribution system is COS Containerd
+	OperatingSystemImageCOSContainerd OperatingSystemImage = "cos_containerd"
+	// OperatingSystemImageUbuntuContainerd is used if operating distribution system is Ubuntu Containerd
+	OperatingSystemImageUbuntuContainerd OperatingSystemImage = "ubuntu_containerd"
+	// OperatingSystemImageWindowsLTSCContainerd is used if operating distribution system is Windows LTSC Containerd
+	OperatingSystemImageWindowsLTSCContainerd OperatingSystemImage = "windows_ltsc_containerd"
+	// OperatingSystemImageWindowsSACContainerd is used if operating distribution system is Windows SAC Containerd
+	OperatingSystemImageWindowsSACContainerd OperatingSystemImage = "windows_sac_containerd"
+
+	// OperatingSystemImageDefault defines which operating system will be assumed as default.
+	OperatingSystemImageDefault = OperatingSystemImageCOSContainerd
+)
+
 // OperatingSystemDistribution denotes  distribution of the operating system used by nodes coming from node group
 type OperatingSystemDistribution string
 
@@ -484,14 +516,59 @@ const (
 	OperatingSystemDistributionWindowsSAC OperatingSystemDistribution = "windows_sac"
 	// OperatingSystemDistributionCOS is used if operating distribution system is COS
 	OperatingSystemDistributionCOS OperatingSystemDistribution = "cos"
-	// OperatingSystemDistributionCOSContainerd is used if operating distribution system is COS Containerd
-	OperatingSystemDistributionCOSContainerd OperatingSystemDistribution = "cos_containerd"
-	// OperatingSystemDistributionUbuntuContainerd is used if operating distribution system is Ubuntu Containerd
-	OperatingSystemDistributionUbuntuContainerd OperatingSystemDistribution = "ubuntu_containerd"
 
 	// OperatingSystemDistributionDefault defines which operating system will be assumed if not explicitly passed via AUTOSCALER_ENV_VARS
 	OperatingSystemDistributionDefault = OperatingSystemDistributionCOS
 )
+
+func extractOperatingSystemDistributionFromImageType(imageType string) OperatingSystemDistribution {
+	switch imageType {
+	case string(OperatingSystemImageUbuntu), string(OperatingSystemImageUbuntuContainerd):
+		return OperatingSystemDistributionUbuntu
+	case string(OperatingSystemImageWindowsLTSC), string(OperatingSystemImageWindowsLTSCContainerd):
+		return OperatingSystemDistributionWindowsLTSC
+	case string(OperatingSystemImageWindowsSAC), string(OperatingSystemImageWindowsSACContainerd):
+		return OperatingSystemDistributionWindowsSAC
+	case string(OperatingSystemImageCOS), string(OperatingSystemImageCOSContainerd):
+		return OperatingSystemDistributionCOS
+	default:
+		return OperatingSystemDistributionUnknown
+	}
+}
+
+// SystemArchitecture denotes distribution of the System Architecture used by nodes coming from node group
+type SystemArchitecture string
+
+const (
+	// UnknownArch is used if the Architecture is Unknown
+	UnknownArch SystemArchitecture = ""
+	// Amd64 is used if the Architecture is x86_64
+	Amd64 SystemArchitecture = "amd64"
+	// Arm64 is used if the Architecture is ARM
+	Arm64 SystemArchitecture = "arm64"
+	// DefaultArch is used if the Architecture is used as a fallback if not passed by AUTOSCALER_ENV_VARS
+	DefaultArch SystemArchitecture = Amd64
+)
+
+func extractSystemArchitectureFromKubeEnv(kubeEnv string) SystemArchitecture {
+	arch, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
+	if err != nil {
+		klog.Errorf("error while obtaining arch from AUTOSCALER_ENV_VARS; using default %v", err)
+		return UnknownArch
+	}
+	if !found {
+		klog.V(4).Infof("no arch defined in AUTOSCALER_ENV_VARS; using default %v", err)
+		return DefaultArch
+	}
+	switch arch {
+	case string(Arm64):
+		return Arm64
+	case string(Amd64):
+		return Amd64
+	default:
+		return UnknownArch
+	}
+}
 
 func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSystemDistribution {
 	osDistributionValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os_distribution")
@@ -515,10 +592,14 @@ func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSyst
 		return OperatingSystemDistributionWindowsSAC
 	case string(OperatingSystemDistributionCOS):
 		return OperatingSystemDistributionCOS
-	case string(OperatingSystemDistributionCOSContainerd):
-		return OperatingSystemDistributionCOSContainerd
-	case string(OperatingSystemDistributionUbuntuContainerd):
-		return OperatingSystemDistributionUbuntuContainerd
+	// Deprecated
+	case "cos_containerd":
+		klog.Warning("cos_containerd os distribution is deprecated")
+		return OperatingSystemDistributionCOS
+	// Deprecated
+	case "ubuntu_containerd":
+		klog.Warning("ubuntu_containerd os distribution is deprecated")
+		return OperatingSystemDistributionUbuntu
 	default:
 		klog.Errorf("unexpected os-distribution=%v passed via AUTOSCALER_ENV_VARS", osDistributionValue)
 		return OperatingSystemDistributionUnknown

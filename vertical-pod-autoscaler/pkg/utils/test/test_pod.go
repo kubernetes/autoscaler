@@ -87,7 +87,9 @@ func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
 }
 
 func (pb *podBuilderImpl) Get() *apiv1.Pod {
-	startTime := metav1.Time{testTimestamp}
+	startTime := metav1.Time{
+		Time: testTimestamp,
+	}
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",

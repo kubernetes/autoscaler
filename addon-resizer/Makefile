@@ -39,12 +39,18 @@ all: all-container
 sub-container-%:
 	$(MAKE) ARCH=$* container
 
+sub-manifest-push-%:
+	$(MAKE) ARCH=$* manifest-push
+
 sub-push-%:
 	$(MAKE) ARCH=$* push
 
 all-container: test $(addprefix sub-container-,$(ALL_ARCH))
 
-all-push: $(addprefix sub-push-,$(ALL_ARCH))
+all-manifest-push: $(addprefix sub-manifest-push-,$(ALL_ARCH))
+	docker manifest push -p $(IMAGE):$(TAG)
+
+all-push: $(addprefix sub-push-,$(ALL_ARCH)) all-manifest-push
 
 buildx-setup:
 	docker buildx inspect img-builder > /dev/null || docker buildx create --name img-builder --use
@@ -86,6 +92,11 @@ push: .push-$(ARCH)
 ifeq ($(ARCH), amd64)
 	gcloud docker -- push $(IMAGE):$(TAG)
 endif
+
+manifest-push: .manifest-push-$(ARCH)
+.manifest-push-$(ARCH):
+	docker manifest create --amend $(IMAGE):$(TAG) $(MULTI_ARCH_IMG):$(TAG) && \
+	docker manifest annotate --os=linux --arch=$(ARCH) $(IMAGE):$(TAG) $(MULTI_ARCH_IMG):$(TAG)
 
 clean: $(addprefix sub-clean-,$(ALL_ARCH))
 sub-clean-%:

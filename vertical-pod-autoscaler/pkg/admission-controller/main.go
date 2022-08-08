@@ -136,5 +136,8 @@ func main() {
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
 	}()
-	server.ListenAndServeTLS("", "")
+
+	if err = server.ListenAndServeTLS("", ""); err != nil {
+		klog.Fatalf("HTTPS Error: %s", err)
+	}
 }

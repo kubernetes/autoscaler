@@ -1,24 +1,23 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type ShowResetPasswordFlagRequest struct {
+	// 云服务器ID。
+
 	ServerId string `json:"server_id"`
 }
 
 func (o ShowResetPasswordFlagRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ShowResetPasswordFlagRequest struct{}"
+	}
+
 	return strings.Join([]string{"ShowResetPasswordFlagRequest", string(data)}, " ")
 }

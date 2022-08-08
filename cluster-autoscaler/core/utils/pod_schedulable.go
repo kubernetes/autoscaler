@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // PodSchedulableInfo data structure is used to avoid running predicates #pending_pods * #nodes
@@ -45,8 +46,21 @@ type PodSchedulableInfo struct {
 	schedulingError *simulator.PredicateError
 }
 
+const maxPodsPerOwnerRef = 10
+
 // PodSchedulableMap stores mapping from controller ref to PodSchedulableInfo
-type PodSchedulableMap map[string][]PodSchedulableInfo
+type PodSchedulableMap struct {
+	items                  map[string][]PodSchedulableInfo
+	overflowingControllers map[string]bool
+}
+
+// NewPodSchedulableMap creates a new PodSchedulableMap
+func NewPodSchedulableMap() PodSchedulableMap {
+	return PodSchedulableMap{
+		items:                  make(map[string][]PodSchedulableInfo),
+		overflowingControllers: make(map[string]bool),
+	}
+}
 
 // Match tests if given pod matches PodSchedulableInfo
 func (psi *PodSchedulableInfo) Match(pod *apiv1.Pod) bool {
@@ -54,13 +68,13 @@ func (psi *PodSchedulableInfo) Match(pod *apiv1.Pod) bool {
 }
 
 // Get returns scheduling info for given pod if matching one exists in PodSchedulableMap
-func (podMap PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool) {
+func (p PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, bool) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
 		return nil, false
 	}
 	uid := string(ref.UID)
-	if infos, found := podMap[uid]; found {
+	if infos, found := p.items[uid]; found {
 		for _, info := range infos {
 			if info.Match(pod) {
 				return info.schedulingError, true
@@ -71,15 +85,29 @@ func (podMap PodSchedulableMap) Get(pod *apiv1.Pod) (*simulator.PredicateError, 
 }
 
 // Set sets scheduling info for given pod in PodSchedulableMap
-func (podMap PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateError) {
+func (p PodSchedulableMap) Set(pod *apiv1.Pod, err *simulator.PredicateError) {
 	ref := drain.ControllerRef(pod)
-	if ref == nil {
+	if ref == nil || pod_utils.IsDaemonSetPod(pod) {
 		return
 	}
 	uid := string(ref.UID)
-	podMap[uid] = append(podMap[uid], PodSchedulableInfo{
+	pm := p.items[uid]
+	if len(pm) >= maxPodsPerOwnerRef {
+		// Too many different pods per owner reference. Don't cache the
+		// entry to avoid O(N) search in Get(). It would defeat the
+		// benefits from caching anyway.
+		p.overflowingControllers[uid] = true
+		return
+	}
+	p.items[uid] = append(pm, PodSchedulableInfo{
 		spec:            pod.Spec,
 		labels:          pod.Labels,
 		schedulingError: err,
 	})
+}
+
+// OverflowingControllerCount returns the number of controllers that had too
+// many different pods to be effectively cached.
+func (p PodSchedulableMap) OverflowingControllerCount() int {
+	return len(p.overflowingControllers)
 }

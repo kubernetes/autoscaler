@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 // This is a auto create Body Object
 type BatchAddServerNicsRequestBody struct {
 	// 需要添加的网卡参数列表。
+
 	Nics []BatchAddServerNicOption `json:"nics"`
 }
 
 func (o BatchAddServerNicsRequestBody) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "BatchAddServerNicsRequestBody struct{}"
+	}
+
 	return strings.Join([]string{"BatchAddServerNicsRequestBody", string(data)}, " ")
 }

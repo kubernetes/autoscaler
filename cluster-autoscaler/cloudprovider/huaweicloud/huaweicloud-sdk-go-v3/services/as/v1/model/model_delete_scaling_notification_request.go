@@ -1,25 +1,26 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
 
 // Request Object
 type DeleteScalingNotificationRequest struct {
+	// 伸缩组标识。
+
 	ScalingGroupId string `json:"scaling_group_id"`
-	TopicUrn       string `json:"topic_urn"`
+	// SMN服务中Topic的唯一的资源标识。
+
+	TopicUrn string `json:"topic_urn"`
 }
 
 func (o DeleteScalingNotificationRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "DeleteScalingNotificationRequest struct{}"
+	}
+
 	return strings.Join([]string{"DeleteScalingNotificationRequest", string(data)}, " ")
 }

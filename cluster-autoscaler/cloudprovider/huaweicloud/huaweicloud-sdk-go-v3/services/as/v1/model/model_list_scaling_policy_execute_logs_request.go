@@ -1,35 +1,52 @@
-/*
- * As
- *
- * 弹性伸缩API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
+
 	"errors"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/converter"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/sdktime"
+
 	"strings"
 )
 
 // Request Object
 type ListScalingPolicyExecuteLogsRequest struct {
-	ScalingPolicyId     string                                                  `json:"scaling_policy_id"`
-	LogId               *string                                                 `json:"log_id,omitempty"`
+	// 伸缩策略ID。
+
+	ScalingPolicyId string `json:"scaling_policy_id"`
+	// 日志ID。
+
+	LogId *string `json:"log_id,omitempty"`
+	// 伸缩资源类型：伸缩组：SCALING_GROUP。带宽：BANDWIDTH
+
 	ScalingResourceType *ListScalingPolicyExecuteLogsRequestScalingResourceType `json:"scaling_resource_type,omitempty"`
-	ScalingResourceId   *string                                                 `json:"scaling_resource_id,omitempty"`
-	ExecuteType         *ListScalingPolicyExecuteLogsRequestExecuteType         `json:"execute_type,omitempty"`
-	StartTime           *sdktime.SdkTime                                        `json:"start_time,omitempty"`
-	EndTime             *sdktime.SdkTime                                        `json:"end_time,omitempty"`
-	StartNumber         *int32                                                  `json:"start_number,omitempty"`
-	Limit               *int32                                                  `json:"limit,omitempty"`
+	// 伸缩资源ID。
+
+	ScalingResourceId *string `json:"scaling_resource_id,omitempty"`
+	// 策略执行类型：SCHEDULED：自动触发（定时）。RECURRENCE：自动触发（周期）。ALARM：自动触发（告警）。MANUAL：手动触发。
+
+	ExecuteType *ListScalingPolicyExecuteLogsRequestExecuteType `json:"execute_type,omitempty"`
+	// 查询的起始时间，格式是“yyyy-MM-ddThh:mm:ssZ”。
+
+	StartTime *string `json:"start_time,omitempty"`
+	// 查询的截止时间，格式是“yyyy-MM-ddThh:mm:ssZ”。
+
+	EndTime *string `json:"end_time,omitempty"`
+	// 查询的起始行号，默认为0。
+
+	StartNumber *int32 `json:"start_number,omitempty"`
+	// 查询记录数，默认20，最大100。
+
+	Limit *int32 `json:"limit,omitempty"`
 }
 
 func (o ListScalingPolicyExecuteLogsRequest) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "ListScalingPolicyExecuteLogsRequest struct{}"
+	}
+
 	return strings.Join([]string{"ListScalingPolicyExecuteLogsRequest", string(data)}, " ")
 }
 
@@ -54,7 +71,7 @@ func GetListScalingPolicyExecuteLogsRequestScalingResourceTypeEnum() ListScaling
 }
 
 func (c ListScalingPolicyExecuteLogsRequestScalingResourceType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingPolicyExecuteLogsRequestScalingResourceType) UnmarshalJSON(b []byte) error {
@@ -100,7 +117,7 @@ func GetListScalingPolicyExecuteLogsRequestExecuteTypeEnum() ListScalingPolicyEx
 }
 
 func (c ListScalingPolicyExecuteLogsRequestExecuteType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.value)
+	return utils.Marshal(c.value)
 }
 
 func (c *ListScalingPolicyExecuteLogsRequestExecuteType) UnmarshalJSON(b []byte) error {

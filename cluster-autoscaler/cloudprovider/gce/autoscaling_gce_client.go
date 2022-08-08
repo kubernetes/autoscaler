@@ -229,6 +229,10 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 		if op, err := client.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
 			klog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
+				if op.Error != nil {
+					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+				}
+
 				return nil
 			}
 		} else {

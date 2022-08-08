@@ -55,13 +55,14 @@ type ClusterResponse struct {
 
 // Cluster contains the CKS Cluster details
 type Cluster struct {
-	ID              string            `json:"id"`
-	Name            string            `json:"name"`
-	Minsize         int               `json:"minsize"`
-	Maxsize         int               `json:"maxsize"`
-	WorkerCount     int               `json:"size"`
-	MasterCount     int               `json:"masternodes"`
-	VirtualMachines []*VirtualMachine `json:"virtualmachines"`
+	ID                string            `json:"id"`
+	Name              string            `json:"name"`
+	Minsize           int               `json:"minsize"`
+	Maxsize           int               `json:"maxsize"`
+	WorkerCount       int               `json:"size"`
+	MasterCount       int               `json:"masternodes"`
+	VirtualMachines   []*VirtualMachine `json:"virtualmachines"`
+	VirtualMachineMap map[string]*VirtualMachine
 }
 
 // VirtualMachine represents a node in a CKS cluster
@@ -74,6 +75,16 @@ type VirtualMachine struct {
 // cksService implements the CKSService interface
 type cksService struct {
 	client APIClient
+}
+
+func virtaulMachinesToMap(vms []*VirtualMachine) map[string]*VirtualMachine {
+	vmMap := make(map[string]*VirtualMachine)
+	for _, vm := range vms {
+		if vm.Name != "" {
+			vmMap[vm.Name] = vm
+		}
+	}
+	return vmMap
 }
 
 func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error) {
@@ -90,7 +101,9 @@ func (service *cksService) GetClusterDetails(clusterID string) (*Cluster, error)
 	if len(clusters) == 0 {
 		return nil, fmt.Errorf("Unable to fetch cluster with id : %v", clusterID)
 	}
-	return clusters[0], err
+	cluster := clusters[0]
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Cluster, error) {
@@ -103,7 +116,9 @@ func (service *cksService) ScaleCluster(clusterID string, workerCount int) (*Clu
 	if err != nil {
 		return nil, fmt.Errorf("Unable to scale cluster : %v", err)
 	}
-	return out.Cluster, err
+	cluster := out.Cluster
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) RemoveNodesFromCluster(clusterID string, nodeIDs ...string) (*Cluster, error) {
@@ -115,7 +130,9 @@ func (service *cksService) RemoveNodesFromCluster(clusterID string, nodeIDs ...s
 	if err != nil {
 		return nil, fmt.Errorf("Unable to delete %v from cluster : %v", nodeIDs, err)
 	}
-	return out.Cluster, err
+	cluster := out.Cluster
+	cluster.VirtualMachineMap = virtaulMachinesToMap(cluster.VirtualMachines)
+	return cluster, err
 }
 
 func (service *cksService) Close() {

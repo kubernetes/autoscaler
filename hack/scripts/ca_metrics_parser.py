@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -21,11 +21,6 @@ from __future__ import division
 from __future__ import print_function
 import argparse
 import json
-
-try:
-  range = xrange   # Python 2
-except NameError:  # Python 3
-  pass
 
 
 class CAMetric(object):

@@ -985,6 +985,135 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	})
 }
 
+func TestNodeGroupDeleteNodesSequential(t *testing.T) {
+	// This is the size we expect the NodeGroup to be after we have called DeleteNodes.
+	// We need at least 8 nodes for this test to be valid.
+	expectedSize := 7
+
+	test := func(t *testing.T, testConfig *testConfig) {
+		controller, stop := mustCreateTestController(t, testConfig)
+		defer stop()
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0]
+		nodeNames, err := ng.Nodes()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Check that the test case is valid before executing DeleteNodes
+		// 1. We must have at least 1 more node than the expected size otherwise DeleteNodes is a no-op
+		// 2. MinSize must be less than the expected size otherwise a second call to DeleteNodes may
+		//    not make the nodegroup size less than the expected size.
+		if len(nodeNames) <= expectedSize {
+			t.Fatalf("expected more nodes than the expected size: %d <= %d", len(nodeNames), expectedSize)
+		}
+		if ng.MinSize() >= expectedSize {
+			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(), expectedSize)
+		}
+
+		if len(nodeNames) != len(testConfig.nodes) {
+			t.Fatalf("expected len=%v, got len=%v", len(testConfig.nodes), len(nodeNames))
+		}
+
+		sort.SliceStable(nodeNames, func(i, j int) bool {
+			return nodeNames[i].Id < nodeNames[j].Id
+		})
+
+		for i := 0; i < len(nodeNames); i++ {
+			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
+			}
+		}
+
+		// These are the nodes which are over the final expectedSize
+		nodesToBeDeleted := testConfig.nodes[expectedSize:]
+
+		// Assert that we have no DeletionTimestamp
+		for i := expectedSize; i < len(testConfig.machines); i++ {
+			if !testConfig.machines[i].GetDeletionTimestamp().IsZero() {
+				t.Fatalf("unexpected DeletionTimestamp")
+			}
+		}
+
+		// When the core autoscaler scales down nodes, it fetches the node group for each node in separate
+		// go routines and then scales them down individually, we use a lock to ensure the scale down is
+		// performed sequentially but this means that the cached scalable resource may not be up to date.
+		// We need to replicate this out of date nature by constructing the node groups then deleting.
+		nodeToNodeGroup := make(map[*corev1.Node]*nodegroup)
+
+		for _, node := range nodesToBeDeleted {
+			nodeGroup, err := controller.nodeGroupForNode(node)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			nodeToNodeGroup[node] = nodeGroup
+		}
+
+		for node, nodeGroup := range nodeToNodeGroup {
+			if err := nodeGroup.DeleteNodes([]*corev1.Node{node}); err != nil {
+				t.Fatalf("unexpected error deleting node: %v", err)
+			}
+		}
+
+		nodegroups, err = controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		ng = nodegroups[0]
+
+		// Check the nodegroup is at the expected size
+		actualSize, err := ng.TargetSize()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if actualSize != expectedSize {
+			t.Fatalf("expected %d nodes, got %d", expectedSize, actualSize)
+		}
+
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+
+		if scalableResource.Spec.Replicas != int32(expectedSize) {
+			t.Errorf("expected %v, got %v", expectedSize, scalableResource.Spec.Replicas)
+		}
+	}
+
+	// Note: 10 is an upper bound for the number of nodes/replicas
+	// Going beyond 10 will break the sorting that happens in the
+	// test() function because sort.Strings() will not do natural
+	// sorting and the expected semantics in test() will fail.
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		test(t, createMachineDeploymentTestConfig(RandomString(6), RandomString(6), RandomString(6), 10, map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		}))
+	})
+}
+
 func TestNodeGroupWithFailedMachine(t *testing.T) {
 	test := func(t *testing.T, testConfig *testConfig) {
 		controller, stop := mustCreateTestController(t, testConfig)

@@ -125,7 +125,8 @@ func TestControllerCache_GetRefreshesDeleteAfter(t *testing.T) {
 	assert.Equal(t, startTime.Add(10*time.Second), c.cache[key].deleteAfter)
 
 	timeNow = startTime.Add(5 * time.Second)
-	c.Get(key.namespace, key.groupResource, key.name)
+	_, _, err := c.Get(key.namespace, key.groupResource, key.name)
+	assert.NoError(t, err)
 	assert.Equal(t, startTime.Add(15*time.Second), c.cache[key].deleteAfter)
 }
 
@@ -154,7 +155,8 @@ func TestControllerCache_GetChangesLifeTimeNotFreshness(t *testing.T) {
 	assertTimeBetween(t, firstRefreshAfter, startTime.Add(time.Second), startTime.Add(2*time.Second))
 
 	timeNow = startTime.Add(5 * time.Second)
-	c.Get(key.namespace, key.groupResource, key.name)
+	_, _, err := c.Get(key.namespace, key.groupResource, key.name)
+	assert.NoError(t, err)
 	cacheEntry = c.cache[key]
 	// scheduled to delete 10s after get (15s after insert)
 	assert.Equal(t, startTime.Add(15*time.Second), cacheEntry.deleteAfter)

@@ -87,7 +87,7 @@ var (
 		}, {
 			Id: "ionos://3",
 			Status: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
+				State: cloudprovider.InstanceDeleting,
 			},
 		}, {
 			Id: "ionos://4",
@@ -123,12 +123,15 @@ func TestUtils_ConvertToNodeId(t *testing.T) {
 
 func TestUtils_ConvertToInstances(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		in := ionos.KubernetesNodes{
-			Items: &kubernetesNodes,
-		}
 		want := cloudproviderInstances
-		got := convertToInstances(&in)
+		got, err := convertToInstances(kubernetesNodes)
+		require.NoError(t, err)
 		require.Equal(t, want, got)
+	})
+	t.Run("Fail", func(t *testing.T) {
+		got, err := convertToInstances([]ionos.KubernetesNode{{}})
+		require.ErrorIs(t, err, errMissingNodeID)
+		require.Empty(t, got)
 	})
 }
 
@@ -146,8 +149,13 @@ func TestUtils_ConvertToInstance(t *testing.T) {
 				State: cloudprovider.InstanceRunning,
 			},
 		}
-		got := convertToInstance(in)
+		got, err := convertToInstance(in)
+		require.NoError(t, err)
 		require.Equal(t, want, got)
+	})
+	t.Run("Fail", func(t *testing.T) {
+		_, err := convertToInstance(ionos.KubernetesNode{})
+		require.ErrorIs(t, err, errMissingNodeID)
 	})
 }
 
@@ -172,7 +180,7 @@ func TestUtils_ConvertToInstanceStatus(t *testing.T) {
 			name: "success, ionos server rebuiling",
 			in:   K8sNodeStateRebuilding,
 			want: &cloudprovider.InstanceStatus{
-				State: cloudprovider.InstanceCreating,
+				State: cloudprovider.InstanceDeleting,
 			},
 		}, {
 			name: "success, ionos server terminating",

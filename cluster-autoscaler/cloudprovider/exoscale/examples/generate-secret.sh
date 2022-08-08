@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2020 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: exoscale-credentials
+  name: exoscale-api-credentials
   namespace: kube-system
 type: Opaque
 data:
-  api-endpoint: '$(printf "%s" "$EXOSCALE_API_ENDPOINT" | base64)'
   api-key: '$(printf "%s" "$EXOSCALE_API_KEY" | base64)'
   api-secret: '$(printf "%s" "$EXOSCALE_API_SECRET" | base64)'
+  api-zone: '$(printf "%s" "$EXOSCALE_ZONE" | base64)'
 EOF

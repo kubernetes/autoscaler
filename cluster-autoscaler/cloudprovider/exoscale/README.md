@@ -1,7 +1,7 @@
 # Cluster Autoscaler for Exoscale
 
 The Cluster Autoscaler (CA) for Exoscale scales worker nodes running in
-Exoscale Instance Pools.
+Exoscale SKS Nodepools or Instance Pools.
 
 
 ## Configuration
@@ -20,11 +20,13 @@ the CA *Deployment*.
 
 First, start by exporting the Exoscale API credentials (we recommend that you
 create dedicated API credentials using the [Exoscale IAM][exo-iam] service) to
-provide to the CA in your shell:
+provide to the CA in your shell, as well as the zone the target Kubernetes
+cluster is located in:
 
 ```sh
 export EXOSCALE_API_KEY="EXOxxxxxxxxxxxxxxxxxxxxxxxx"
 export EXOSCALE_API_SECRET="xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+export EXOSCALE_ZONE="ch-gva-2"
 ```
 
 Next, run the following command from the same shell:
@@ -33,12 +35,16 @@ Next, run the following command from the same shell:
 ./examples/generate-secret.sh
 ```
 
-Finally, ensure that the `exoscale-secret` *Secret* has been created
+Next, ensure that the `exoscale-api-credentials` *Secret* has been created
 successfully by running the following command:
 
 ```
-kubectl get secret --namespace kube-system exoscale-credentials
+kubectl get secret --namespace kube-system exoscale-api-credentials
 ```
+
+Finally, a `EXOSCALE_ZONE` variable must be set to the target Kubernetes
+cluster zone along with the API credentials in the CA *Deployment* shell
+environment.
 
 
 ### Deploying the Cluster Autoscaler
@@ -57,8 +63,7 @@ kubectl apply -f ./examples/cluster-autoscaler-run-on-control-plane.yaml
 * The maximum node group size is computed based on the current [Compute
   instances limit][exo-limits] of the Exoscale account the Cluster Autoscaler
   is running in.
-* It is not possible to target which Exoscale Instance Pool will be scaled. The
-  Instance Pool candidate for scaling is determined based on the Compute
+* The Instance Pool candidate for scaling is determined based on the Compute
   instance the Kubernetes node is running on, depending on cluster resource
   constraining events emitted by the Kubernetes scheduler.
 

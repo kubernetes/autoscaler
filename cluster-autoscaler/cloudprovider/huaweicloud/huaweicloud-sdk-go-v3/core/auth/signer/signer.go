@@ -6,15 +6,16 @@
 package signer
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"net/url"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
 )
 
 const (
@@ -27,53 +28,95 @@ const (
 )
 
 func hmacsha256(key []byte, data string) ([]byte, error) {
-	h := hmac.New(sha256.New, []byte(key))
+	h := hmac.New(sha256.New, key)
 	if _, err := h.Write([]byte(data)); err != nil {
 		return nil, err
 	}
 	return h.Sum(nil), nil
 }
 
-func CanonicalRequest(r *http.Request, signedHeaders []string) (string, error) {
-	var hexencode string
-	var err error
-	if hex := r.Header.Get(HeaderContentSha256); hex != "" {
-		hexencode = hex
+func CanonicalRequest(r *request.DefaultHttpRequest, signedHeaders []string) (string, error) {
+	var hexEncode string
+
+	userHeaders := r.GetHeaderParams()
+	if hex, ok := userHeaders[HeaderContentSha256]; ok {
+		hexEncode = hex
 	} else {
-		data, err := RequestPayload(r)
+		buffer, err := r.GetBodyToBytes()
 		if err != nil {
 			return "", err
 		}
-		hexencode, err = HexEncodeSHA256Hash(data)
+		data := buffer.Bytes()
+
+		hexEncode, err = HexEncodeSHA256Hash(data)
 		if err != nil {
 			return "", err
 		}
 	}
-	return fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s", r.Method, CanonicalURI(r), CanonicalQueryString(r), CanonicalHeaders(r, signedHeaders), strings.Join(signedHeaders, ";"), hexencode), err
+
+	return fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s",
+		r.GetMethod(),
+		CanonicalURI(r),
+		CanonicalQueryString(r),
+		CanonicalHeaders(r, signedHeaders),
+		strings.Join(signedHeaders, ";"), hexEncode), nil
 }
 
 // CanonicalURI returns request uri
-func CanonicalURI(r *http.Request) string {
-	pattens := strings.Split(r.URL.Path, "/")
+func CanonicalURI(r *request.DefaultHttpRequest) string {
+	pattens := strings.Split(r.GetPath(), "/")
+
 	var uri []string
 	for _, v := range pattens {
 		uri = append(uri, escape(v))
 	}
-	urlpath := strings.Join(uri, "/")
-	if len(urlpath) == 0 || urlpath[len(urlpath)-1] != '/' {
-		urlpath = urlpath + "/"
+
+	urlPath := strings.Join(uri, "/")
+	if len(urlPath) == 0 || urlPath[len(urlPath)-1] != '/' {
+		urlPath = urlPath + "/"
 	}
-	return urlpath
+
+	return urlPath
 }
 
 // CanonicalQueryString
-func CanonicalQueryString(r *http.Request) string {
+func CanonicalQueryString(r *request.DefaultHttpRequest) string {
+	var query = make(map[string][]string, 0)
+	for key, value := range r.GetQueryParams() {
+		valueWithType := value.(reflect.Value)
+
+		if valueWithType.Kind() == reflect.Slice {
+			params := r.CanonicalSliceQueryParamsToMulti(valueWithType)
+			for _, param := range params {
+				if _, ok := query[key]; !ok {
+					query[key] = make([]string, 0)
+				}
+				query[key] = append(query[key], param)
+			}
+		} else if valueWithType.Kind() == reflect.Map {
+			params := r.CanonicalMapQueryParams(key, valueWithType)
+			for _, param := range params {
+				for k, v := range param {
+					if _, ok := query[k]; !ok {
+						query[k] = make([]string, 0)
+					}
+					query[k] = append(query[k], v)
+				}
+			}
+		} else {
+			if _, ok := query[key]; !ok {
+				query[key] = make([]string, 0)
+			}
+			query[key] = append(query[key], r.CanonicalStringQueryParams(valueWithType))
+		}
+	}
+
 	var keys []string
-	query := r.URL.Query()
 	for key := range query {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
+
 	var a []string
 	for _, key := range keys {
 		k := escape(key)
@@ -84,51 +127,52 @@ func CanonicalQueryString(r *http.Request) string {
 		}
 	}
 	queryStr := strings.Join(a, "&")
-	r.URL.RawQuery = queryStr
+
 	return queryStr
 }
 
 // CanonicalHeaders
-func CanonicalHeaders(r *http.Request, signerHeaders []string) string {
+func CanonicalHeaders(r *request.DefaultHttpRequest, signerHeaders []string) string {
 	var a []string
 	header := make(map[string][]string)
-	for k, v := range r.Header {
-		header[strings.ToLower(k)] = v
+	userHeaders := r.GetHeaderParams()
+
+	for k, v := range userHeaders {
+		if _, ok := header[strings.ToLower(k)]; !ok {
+			header[strings.ToLower(k)] = make([]string, 0)
+		}
+		header[strings.ToLower(k)] = append(header[strings.ToLower(k)], v)
 	}
+
 	for _, key := range signerHeaders {
 		value := header[key]
 		if strings.EqualFold(key, HeaderHost) {
-			value = []string{r.Host}
+			if u, err := url.Parse(r.GetEndpoint()); err == nil {
+				header[HeaderHost] = []string{u.Host}
+			}
 		}
+
 		sort.Strings(value)
 		for _, v := range value {
 			a = append(a, key+":"+strings.TrimSpace(v))
 		}
 	}
+
 	return fmt.Sprintf("%s\n", strings.Join(a, "\n"))
 }
 
 // SignedHeaders
-func SignedHeaders(r *http.Request) []string {
-	var a []string
-	for key := range r.Header {
-		a = append(a, strings.ToLower(key))
+func SignedHeaders(headers map[string]string) []string {
+	var signedHeaders []string
+	for key := range headers {
+		if strings.HasPrefix(strings.ToLower(key), "content-type") {
+			continue
+		}
+		signedHeaders = append(signedHeaders, strings.ToLower(key))
 	}
-	sort.Strings(a)
-	return a
-}
+	sort.Strings(signedHeaders)
 
-// RequestPayload
-func RequestPayload(r *http.Request) ([]byte, error) {
-	if r.Body == nil {
-		return []byte(""), nil
-	}
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return []byte(""), err
-	}
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-	return b, err
+	return signedHeaders
 }
 
 // Create a "String to Sign".
@@ -138,6 +182,7 @@ func StringToSign(canonicalRequest string, t time.Time) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return fmt.Sprintf("%s\n%s\n%x",
 		Algorithm, t.UTC().Format(BasicDateFormat), hash.Sum(nil)), nil
 }
@@ -164,34 +209,42 @@ func AuthHeaderValue(signature, accessKey string, signedHeaders []string) string
 }
 
 // SignRequest set Authorization header
-func Sign(r *http.Request, ak string, sk string) (map[string]string, error) {
-	var t time.Time
+func Sign(r *request.DefaultHttpRequest, ak string, sk string) (map[string]string, error) {
 	var err error
-	var dt string
-	headerParams := make(map[string]string)
-	if dt = r.Header.Get(HeaderXDate); dt != "" {
-		t, err = time.Parse(BasicDateFormat, dt)
-	}
-	if err != nil || dt == "" {
+	var t time.Time
+	var headerParams = make(map[string]string)
+
+	userHeaders := r.GetHeaderParams()
+	if date, ok := userHeaders[HeaderXDate]; ok {
+		t, err = time.Parse(BasicDateFormat, date)
+		if date == "" || err != nil {
+			t = time.Now()
+			userHeaders[HeaderXDate] = t.UTC().Format(BasicDateFormat)
+			headerParams[HeaderXDate] = t.UTC().Format(BasicDateFormat)
+		}
+	} else {
 		t = time.Now()
-		r.Header.Set(HeaderXDate, t.UTC().Format(BasicDateFormat))
+		userHeaders[HeaderXDate] = t.UTC().Format(BasicDateFormat)
 		headerParams[HeaderXDate] = t.UTC().Format(BasicDateFormat)
 	}
-	signedHeaders := SignedHeaders(r)
+
+	signedHeaders := SignedHeaders(userHeaders)
+
 	canonicalRequest, err := CanonicalRequest(r, signedHeaders)
 	if err != nil {
 		return nil, err
 	}
+
 	stringToSign, err := StringToSign(canonicalRequest, t)
 	if err != nil {
 		return nil, err
 	}
+
 	signature, err := SignStringToSign(stringToSign, []byte(sk))
 	if err != nil {
 		return nil, err
 	}
-	authValue := AuthHeaderValue(signature, ak, signedHeaders)
-	r.Header.Set(HeaderAuthorization, authValue)
-	headerParams[HeaderAuthorization] = authValue
+
+	headerParams[HeaderAuthorization] = AuthHeaderValue(signature, ak, signedHeaders)
 	return headerParams, nil
 }

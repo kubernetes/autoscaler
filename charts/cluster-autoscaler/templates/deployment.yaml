@@ -1,11 +1,14 @@
-{{- if or .Values.autoDiscovery.clusterName .Values.autoscalingGroups }}
+{{- if or ( or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels ) .Values.autoscalingGroups }}
 {{/* one of the above is required */}}
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
 metadata:
+  annotations:
+{{ toYaml .Values.deployment.annotations | indent 4 }}
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   name: {{ template "cluster-autoscaler.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -46,7 +49,11 @@ spec:
           command:
             - ./cluster-autoscaler
             - --cloud-provider={{ .Values.cloudProvider }}
+          {{- if and (eq .Values.cloudProvider "clusterapi") (eq .Values.clusterAPIMode "kubeconfig-incluster") }}
+            - --namespace={{ .Values.clusterAPIConfigMapsNamespace | default "kube-system" }}
+          {{- else }}
             - --namespace={{ .Release.Namespace }}
+          {{- end }}
           {{- if .Values.autoscalingGroups }}
             {{- range .Values.autoscalingGroups }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
@@ -68,6 +75,21 @@ spec:
             - --node-group-auto-discovery=magnum:role={{ tpl (join "," .Values.autoDiscovery.roles) . }}
             {{- else }}
             - --cluster-name={{ .Values.magnumClusterName }}
+            {{- end }}
+          {{- else if eq .Values.cloudProvider "clusterapi" }}
+            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels }}
+            - --node-group-auto-discovery=clusterapi:{{ template "cluster-autoscaler.capiAutodiscoveryConfig" . }}
+            {{- end }}
+            {{- if eq .Values.clusterAPIMode "incluster-kubeconfig"}}
+            - --cloud-config={{ .Values.clusterAPICloudConfigPath }}
+            {{- else if eq .Values.clusterAPIMode "kubeconfig-incluster"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            - --clusterapi-cloud-config-authoritative
+            {{- else if eq .Values.clusterAPIMode "kubeconfig-kubeconfig"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            - --cloud-config={{ .Values.clusterAPICloudConfigPath }}
+            {{- else if eq .Values.clusterAPIMode "single-kubeconfig"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "magnum" }}
@@ -114,6 +136,11 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: {{ template "cluster-autoscaler.fullname" . }}
+            - name: AZURE_CLUSTER_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: ClusterName
+                  name: {{ template "cluster-autoscaler.fullname" . }}
             {{- if .Values.azureUseManagedIdentityExtension }}
             - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
               value: "true"
@@ -132,11 +159,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: ClientSecret
-                  name: {{ template "cluster-autoscaler.fullname" . }}
-            - name: AZURE_CLUSTER_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: ClusterName
                   name: {{ template "cluster-autoscaler.fullname" . }}
             - name: AZURE_NODE_RESOURCE_GROUP
               valueFrom:
@@ -186,7 +208,7 @@ spec:
           securityContext:
             {{ toYaml .Values.containerSecurityContext | nindent 12 | trim }}
           {{- end }}
-          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts }}
+          {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts .Values.clusterAPIKubeconfigSecret }}
           volumeMounts:
           {{- if eq .Values.cloudProvider "magnum" }}
             - name: cloudconfig
@@ -203,8 +225,12 @@ spec:
               mountPath: {{ required "Must specify mountPath!" $value.mountPath }}
               readOnly: true
           {{- end }}
+          {{- if .Values.clusterAPIKubeconfigSecret }}
+            - name: cluster-api-kubeconfig
+              mountPath: {{ .Values.clusterAPIWorkloadKubeconfigPath | trimSuffix "/value" }}
+          {{- end }}
           {{- if .Values.extraVolumeMounts }}
-            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
           {{- end }}
           {{- end }}
     {{- if .Values.affinity }}
@@ -218,11 +244,15 @@ spec:
       serviceAccountName: {{ template "cluster-autoscaler.serviceAccountName" . }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
+    {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml .Values.topologySpreadConstraints | indent 8 }}
+    {{- end }}
       {{- if .Values.securityContext }}
       securityContext:
         {{ toYaml .Values.securityContext | nindent 8 | trim }}
       {{- end }}
-      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes }}
+      {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes .Values.clusterAPIKubeconfigSecret }}
       volumes:
       {{- if eq .Values.cloudProvider "magnum" }}
         - name: cloudconfig
@@ -244,7 +274,12 @@ spec:
             {{- end }}
       {{- end }}
       {{- if .Values.extraVolumes }}
-        {{- toYaml .Values.extraVolumes | nindent 10 }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+      {{- end }}
+      {{- if .Values.clusterAPIKubeconfigSecret }}
+        - name: cluster-api-kubeconfig
+          secret:
+            secretName: {{ .Values.clusterAPIKubeconfigSecret }}
       {{- end }}
       {{- end }}
       {{- if .Values.image.pullSecrets }}

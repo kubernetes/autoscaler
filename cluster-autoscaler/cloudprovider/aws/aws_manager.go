@@ -60,10 +60,11 @@ const (
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	awsService    awsWrapper
-	asgCache      *asgCache
-	lastRefresh   time.Time
-	instanceTypes map[string]*InstanceType
+	awsService            awsWrapper
+	asgCache              *asgCache
+	lastRefresh           time.Time
+	instanceTypes         map[string]*InstanceType
+	managedNodegroupCache *managedNodegroupCache
 }
 
 type asgTemplate struct {
@@ -211,10 +212,13 @@ func createAWSManagerInternal(
 		return nil, err
 	}
 
+	mngCache := newManagedNodeGroupCache(awsService)
+
 	manager := &AwsManager{
-		awsService:    *awsService,
-		asgCache:      cache,
-		instanceTypes: instanceTypes,
+		awsService:            *awsService,
+		asgCache:              cache,
+		instanceTypes:         instanceTypes,
+		managedNodegroupCache: mngCache,
 	}
 
 	if err := manager.forceRefresh(); err != nil {
@@ -273,7 +277,7 @@ func (m *AwsManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AwsManager) getAsgs() []*asg {
+func (m *AwsManager) getAsgs() map[AwsRef]*asg {
 	return m.asgCache.Get()
 }
 
@@ -299,6 +303,11 @@ func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
 // GetAsgNodes returns Asg nodes.
 func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 	return m.asgCache.InstancesByAsg(ref)
+}
+
+// GetInstanceStatus returns the status of ASG nodes
+func (m *AwsManager) GetInstanceStatus(ref AwsInstanceRef) (*string, error) {
+	return m.asgCache.InstanceStatus(ref)
 }
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
@@ -405,18 +414,54 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+
 	// NodeLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 
+	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
+
 	if nodegroupName, clusterName := node.Labels["nodegroup-name"], node.Labels["cluster-name"]; nodegroupName != "" && clusterName != "" {
 		klog.V(5).Infof("Nodegroup %s in cluster %s is an EKS managed nodegroup.", nodegroupName, clusterName)
-		// TODO: Call AWS EKS DescribeNodegroup API, check if keys already exist in Labels and do NOT overwrite
-	}
 
-	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
+		// Call AWS EKS DescribeNodegroup API, check if keys already exist in Labels and do NOT overwrite
+		mngLabels, err := m.managedNodegroupCache.getManagedNodegroupLabels(nodegroupName, clusterName)
+		if err != nil {
+			klog.Errorf("Failed to get labels from EKS DescribeNodegroup API for nodegroup %s in cluster %s because %s.", nodegroupName, clusterName, err)
+		} else if mngLabels != nil && len(mngLabels) > 0 {
+			node.Labels = joinNodeLabelsChoosingUserValuesOverAPIValues(node.Labels, mngLabels)
+			klog.V(5).Infof("node.Labels : %+v\n", node.Labels)
+		}
+
+		mngTaints, err := m.managedNodegroupCache.getManagedNodegroupTaints(nodegroupName, clusterName)
+		if err != nil {
+			klog.Errorf("Failed to get taints from EKS DescribeNodegroup API for nodegroup %s in cluster %s because %s.", nodegroupName, clusterName, err)
+		} else if mngTaints != nil && len(mngTaints) > 0 {
+			node.Spec.Taints = append(node.Spec.Taints, mngTaints...)
+			klog.V(5).Infof("node.Spec.Taints : %+v\n", node.Spec.Taints)
+		}
+	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]string, mngLabels map[string]string) map[string]string {
+	result := make(map[string]string)
+
+	// Copy Generic Labels and Labels from ASG
+	for k, v := range extractedLabels {
+		result[k] = v
+	}
+
+	// Copy Labels from EKS DescribeNodegroup API call
+	// If the there is a duplicate key, this will overwrite the ASG Tag specified values with the EKS DescribeNodegroup API values
+	// We are overwriting them because it seems like EKS isn't sending the ASG Tags to Kubernetes itself
+	//     so scale ups based on the ASG Tag aren't working
+	for k, v := range mngLabels {
+		result[k] = v
+	}
+
+	return result
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
@@ -541,7 +586,7 @@ func parseASGAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]as
 func parseASGAutoDiscoverySpec(spec string) (asgAutoDiscoveryConfig, error) {
 	cfg := asgAutoDiscoveryConfig{}
 
-	tokens := strings.Split(spec, ":")
+	tokens := strings.SplitN(spec, ":", 2)
 	if len(tokens) != 2 {
 		return cfg, fmt.Errorf("invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
 	}

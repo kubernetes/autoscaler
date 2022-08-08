@@ -20,13 +20,18 @@
 package impl
 
 import (
+	"bytes"
 	"crypto/tls"
+	"io/ioutil"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/config"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/httphandler"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/response"
-	"net/http"
-	"net/url"
 )
 
 type DefaultHttpClient struct {
@@ -39,6 +44,10 @@ type DefaultHttpClient struct {
 func NewDefaultHttpClient(httpConfig *config.HttpConfig) *DefaultHttpClient {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: httpConfig.IgnoreSSLVerification},
+	}
+
+	if httpConfig.DialContext != nil {
+		transport.DialContext = httpConfig.DialContext
 	}
 
 	if httpConfig.HttpProxy != nil {
@@ -70,6 +79,19 @@ func (client *DefaultHttpClient) SyncInvokeHttp(request *request.DefaultHttpRequ
 		return nil, err
 	}
 
+	if client.httpHandler != nil && client.httpHandler.RequestHandlers != nil && req != nil {
+		bodyBytes, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			return nil, err
+		}
+		reqClone := req.Clone(req.Context())
+		reqClone.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		defer reqClone.Body.Close()
+		client.httpHandler.RequestHandlers(*reqClone)
+	}
+
+	startTime := time.Now()
+
 	var resp *http.Response
 	tried := 0
 	for {
@@ -81,17 +103,53 @@ func (client *DefaultHttpClient) SyncInvokeHttp(request *request.DefaultHttpRequ
 		}
 	}
 
-	if client.httpHandler != nil {
-		if client.httpHandler.RequestHandlers != nil && req != nil {
-			client.httpHandler.RequestHandlers(*req)
+	endTime := time.Now()
+
+	if client.httpHandler != nil && client.httpHandler.ResponseHandlers != nil && resp != nil {
+		bodyBytes, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return nil, err
 		}
-		if client.httpHandler.ResponseHandlers != nil && resp != nil {
-			client.httpHandler.ResponseHandlers(*resp)
+		respClone := http.Response{
+			Body:             ioutil.NopCloser(bytes.NewBuffer(bodyBytes)),
+			Status:           resp.Status,
+			StatusCode:       resp.StatusCode,
+			Proto:            resp.Proto,
+			ProtoMajor:       resp.ProtoMajor,
+			ProtoMinor:       resp.ProtoMinor,
+			Header:           resp.Header,
+			ContentLength:    resp.ContentLength,
+			TransferEncoding: resp.TransferEncoding,
+			Close:            resp.Close,
+			Uncompressed:     resp.Uncompressed,
+			Trailer:          resp.Trailer,
 		}
+		defer respClone.Body.Close()
+		client.httpHandler.ResponseHandlers(respClone)
+	}
+
+	if client.httpHandler != nil && client.httpHandler.MonitorHandlers != nil {
+		metric := &httphandler.MonitorMetric{
+			Host:      req.URL.Host,
+			Method:    req.Method,
+			Path:      req.URL.Path,
+			Raw:       req.URL.RawQuery,
+			UserAgent: req.UserAgent(),
+			Latency:   endTime.Sub(startTime),
+		}
+
+		if resp != nil {
+			metric.RequestId = resp.Header.Get("X-Request-Id")
+			metric.StatusCode = resp.StatusCode
+			metric.ContentLength = resp.ContentLength
+		}
+
+		client.httpHandler.MonitorHandlers(metric)
 	}
 
 	if err != nil {
 		return nil, err
 	}
+
 	return response.NewDefaultHttpResponse(resp), nil
 }

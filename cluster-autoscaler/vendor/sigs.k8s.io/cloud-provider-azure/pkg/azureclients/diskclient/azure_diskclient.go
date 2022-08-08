@@ -65,7 +65,7 @@ func New(config *azclients.ClientConfig) *Client {
 	}
 
 	klog.V(2).Infof("Azure DisksClient using API version: %s", apiVersion)
-	armClient := armclient.New(authorizer, baseURI, config.UserAgent, apiVersion, config.Location, config.Backoff)
+	armClient := armclient.New(authorizer, *config, baseURI, apiVersion)
 	rateLimiterReader, rateLimiterWriter := azclients.NewRateLimiter(config.RateLimitConfig)
 
 	if azclients.RateLimitEnabled(config.RateLimitConfig) {

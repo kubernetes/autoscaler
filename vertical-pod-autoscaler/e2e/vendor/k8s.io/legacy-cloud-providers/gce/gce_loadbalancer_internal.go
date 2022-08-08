@@ -1,3 +1,4 @@
+//go:build !providerless
 // +build !providerless
 
 /*
@@ -47,21 +48,25 @@ const (
 	ILBFinalizerV2 = "gke.networking.io/l4-ilb-v2"
 	// maxInstancesPerInstanceGroup defines maximum number of VMs per InstanceGroup.
 	maxInstancesPerInstanceGroup = 1000
+	// maxL4ILBPorts is the maximum number of ports that can be specified in an L4 ILB Forwarding Rule. Beyond this, "AllPorts" field should be used.
+	maxL4ILBPorts = 5
 )
 
 func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v1.Service, existingFwdRule *compute.ForwardingRule, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
-	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) && existingFwdRule == nil {
-		// When ILBSubsets is enabled, new ILB services will not be processed here.
-		// Services that have existing GCE resources created by this controller will continue to update.
-		g.eventRecorder.Eventf(svc, v1.EventTypeNormal, "SkippingEnsureInternalLoadBalancer",
-			"Skipped ensureInternalLoadBalancer since %s feature is enabled.", AlphaFeatureILBSubsets)
-		return nil, cloudprovider.ImplementedElsewhere
-	}
-	if hasFinalizer(svc, ILBFinalizerV2) {
-		// Another controller is handling the resources for this service.
-		g.eventRecorder.Eventf(svc, v1.EventTypeNormal, "SkippingEnsureInternalLoadBalancer",
-			"Skipped ensureInternalLoadBalancer as service contains '%s' finalizer.", ILBFinalizerV2)
-		return nil, cloudprovider.ImplementedElsewhere
+	if existingFwdRule == nil && !hasFinalizer(svc, ILBFinalizerV1) {
+		// Neither the forwarding rule nor the V1 finalizer exists. This is most likely a new service.
+		if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) {
+			// When ILBSubsets is enabled, new ILB services will not be processed here.
+			// Services that have existing GCE resources created by this controller or the v1 finalizer
+			// will continue to update.
+			klog.V(2).Infof("Skipped ensureInternalLoadBalancer for service %s/%s, since %s feature is enabled.", svc.Namespace, svc.Name, AlphaFeatureILBSubsets)
+			return nil, cloudprovider.ImplementedElsewhere
+		}
+		if hasFinalizer(svc, ILBFinalizerV2) {
+			// No V1 resources present - Another controller is handling the resources for this service.
+			klog.V(2).Infof("Skipped ensureInternalLoadBalancer for service %s/%s, as service contains %q finalizer.", svc.Namespace, svc.Name, ILBFinalizerV2)
+			return nil, cloudprovider.ImplementedElsewhere
+		}
 	}
 
 	nm := types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}
@@ -90,12 +95,6 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 	if g.IsLegacyNetwork() {
 		g.eventRecorder.Event(svc, v1.EventTypeWarning, "ILBOptionsIgnored", "Internal LoadBalancer options are not supported with Legacy Networks.")
 		options = ILBOptions{}
-	}
-	if !g.AlphaFeatureGate.Enabled(AlphaFeatureILBCustomSubnet) {
-		if options.SubnetName != "" {
-			g.eventRecorder.Event(svc, v1.EventTypeWarning, "ILBCustomSubnetOptionIgnored", "Internal LoadBalancer CustomSubnet options ignored as the feature gate is disabled.")
-			options.SubnetName = ""
-		}
 	}
 
 	sharedBackend := shareBackendService(svc)
@@ -137,20 +136,12 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 	}
 
 	subnetworkURL := g.SubnetworkURL()
-	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBCustomSubnet) {
-		// If this feature is enabled, changes to subnet annotation will be
-		// picked up and reflected in the forwarding rule.
-		// Removing the annotation will set the forwarding rule to use the default subnet.
-		if options.SubnetName != "" {
-			subnetworkURL = gceSubnetworkURL("", g.networkProjectID, g.region, options.SubnetName)
-		}
-	} else {
-		// TODO(84885) remove this once ILBCustomSubnet goes beta.
-		if existingFwdRule != nil && existingFwdRule.Subnetwork != "" {
-			// If the ILB already exists, continue using the subnet that it's already using.
-			// This is to support existing ILBs that were setup using the wrong subnet - https://github.com/kubernetes/kubernetes/pull/57861
-			subnetworkURL = existingFwdRule.Subnetwork
-		}
+	// Any subnet specified using the subnet annotation will be picked up and reflected in the forwarding rule.
+	// Removing the annotation will set the forwarding rule to use the default subnet and result in a VIP change.
+	// In order to support existing ILBs that were setup using the wrong subnet - https://github.com/kubernetes/kubernetes/pull/57861,
+	// users will need to specify that subnet with the annotation.
+	if options.SubnetName != "" {
+		subnetworkURL = gceSubnetworkURL("", g.networkProjectID, g.region, options.SubnetName)
 	}
 	// Determine IP which will be used for this LB. If no forwarding rule has been established
 	// or specified in the Service spec, then requestedIP = "".
@@ -200,6 +191,10 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 	}
 	if options.AllowGlobalAccess {
 		newFwdRule.AllowGlobalAccess = options.AllowGlobalAccess
+	}
+	if len(ports) > maxL4ILBPorts {
+		newFwdRule.Ports = nil
+		newFwdRule.AllPorts = true
 	}
 
 	fwdRuleDeleted := false
@@ -282,7 +277,8 @@ func (g *Cloud) clearPreviousInternalResources(svc *v1.Service, loadBalancerName
 // updateInternalLoadBalancer is called when the list of nodes has changed. Therefore, only the instance groups
 // and possibly the backend service need to be updated.
 func (g *Cloud) updateInternalLoadBalancer(clusterName, clusterID string, svc *v1.Service, nodes []*v1.Node) error {
-	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) {
+	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) && !hasFinalizer(svc, ILBFinalizerV1) {
+		klog.V(2).Infof("Skipped updateInternalLoadBalancer for service %s/%s since it does not contain %q finalizer.", svc.Namespace, svc.Name, ILBFinalizerV1)
 		return cloudprovider.ImplementedElsewhere
 	}
 	g.sharedResourceLock.Lock()
@@ -891,7 +887,7 @@ func getPortRanges(ports []int) (ranges []string) {
 }
 
 func (g *Cloud) getBackendServiceLink(name string) string {
-	return g.service.BasePath + strings.Join([]string{g.projectID, "regions", g.region, "backendServices", name}, "/")
+	return g.projectsBasePath + strings.Join([]string{g.projectID, "regions", g.region, "backendServices", name}, "/")
 }
 
 func getNameFromLink(link string) string {
@@ -994,6 +990,7 @@ func forwardingRulesEqual(old, new *compute.ForwardingRule) bool {
 		old.IPProtocol == new.IPProtocol &&
 		old.LoadBalancingScheme == new.LoadBalancingScheme &&
 		equalStringSets(old.Ports, new.Ports) &&
+		old.AllPorts == new.AllPorts &&
 		oldResourceID.Equal(newResourceID) &&
 		old.AllowGlobalAccess == new.AllowGlobalAccess &&
 		old.Subnetwork == new.Subnetwork

@@ -1,14 +1,7 @@
-/*
- * ecs
- *
- * ECS Open API
- *
- */
-
 package model
 
 import (
-	"encoding/json"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/core/utils"
 
 	"strings"
 )
@@ -16,10 +9,15 @@ import (
 //
 type NovaServerSecurityGroup struct {
 	// 安全组名称或者uuid。
+
 	Name *string `json:"name,omitempty"`
 }
 
 func (o NovaServerSecurityGroup) String() string {
-	data, _ := json.Marshal(o)
+	data, err := utils.Marshal(o)
+	if err != nil {
+		return "NovaServerSecurityGroup struct{}"
+	}
+
 	return strings.Join([]string{"NovaServerSecurityGroup", string(data)}, " ")
 }

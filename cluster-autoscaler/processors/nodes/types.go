@@ -20,6 +20,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
@@ -30,6 +31,14 @@ type ScaleDownNodeProcessor interface {
 	GetPodDestinationCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
 	// GetScaleDownCandidates returns nodes that potentially could be scaled down.
 	GetScaleDownCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
+	// CleanUp is called at CA termination
+	CleanUp()
+}
+
+// ScaleDownSetProcessor contains a method to select nodes for deletion
+type ScaleDownSetProcessor interface {
+	// GetNodesToRemove selects up to maxCount nodes for deletion
+	GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved
 	// CleanUp is called at CA termination
 	CleanUp()
 }

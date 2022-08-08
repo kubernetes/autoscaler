@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest"
@@ -150,6 +151,7 @@ type azClient struct {
 	disksClient                     diskclient.Interface
 	storageAccountsClient           storageaccountclient.Interface
 	managedKubernetesServicesClient containerserviceclient.Interface
+	skuClient                       compute.ResourceSkusClient
 }
 
 // newServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
@@ -263,6 +265,10 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	kubernetesServicesClient := containerserviceclient.New(aksClientConfig)
 	klog.V(5).Infof("Created kubernetes services client with authorizer: %v", kubernetesServicesClient)
 
+	skuClient := compute.NewResourceSkusClient(cfg.SubscriptionID)
+	skuClient.Authorizer = azClientConfig.Authorizer
+	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
+
 	return &azClient{
 		disksClient:                     disksClient,
 		interfacesClient:                interfacesClient,
@@ -272,5 +278,6 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		virtualMachinesClient:           virtualMachinesClient,
 		storageAccountsClient:           storageAccountsClient,
 		managedKubernetesServicesClient: kubernetesServicesClient,
+		skuClient:                       skuClient,
 	}, nil
 }

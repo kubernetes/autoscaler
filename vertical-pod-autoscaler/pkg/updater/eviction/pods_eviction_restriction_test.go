@@ -26,6 +26,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
@@ -37,6 +38,10 @@ type podWithExpectations struct {
 	pod             *apiv1.Pod
 	canEvict        bool
 	evictionSuccess bool
+}
+
+func getBasicVpa() *vpa_types.VerticalPodAutoscaler {
+	return test.VerticalPodAutoscaler().WithContainer("any").Get()
 }
 
 func TestEvictReplicatedByController(t *testing.T) {
@@ -51,6 +56,10 @@ func TestEvictReplicatedByController(t *testing.T) {
 		},
 	}
 
+	vpaSingleReplica := getBasicVpa()
+	minReplicas := int32(1)
+	vpaSingleReplica.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{MinReplicas: &minReplicas}
+
 	index := 0
 	generatePod := func() test.PodBuilder {
 		index++
@@ -58,16 +67,19 @@ func TestEvictReplicatedByController(t *testing.T) {
 	}
 
 	testCases := []struct {
+		name               string
 		replicas           int32
 		evictionTollerance float64
+		vpa                *vpa_types.VerticalPodAutoscaler
 		pods               []podWithExpectations
 	}{
 		{
+			name:               "Evict only first pod (half of 3).",
 			replicas:           3,
 			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					// Only first pod will be evicted.
 					pod:             generatePod().Get(),
 					canEvict:        true,
 					evictionSuccess: true,
@@ -85,9 +97,10 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
-			// Half of the population can be evicted.
+			name:               "Evict two pods (half of 4).",
 			replicas:           4,
 			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
 
@@ -113,12 +126,12 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
-			// Half of the population can be evicted. One pod is missing already.
+			name:               "Half of the population can be evicted. One pod is missing already.",
 			replicas:           4,
 			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					// Half of the population can be evicted.
 					pod:             generatePod().Get(),
 					canEvict:        true,
 					evictionSuccess: true,
@@ -136,11 +149,12 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
+			name:               "For small eviction tollerance at least one pod is evicted.",
 			replicas:           3,
 			evictionTollerance: 0.1,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					// For small eviction tollerance at least one pod is evicted.
 					pod:             generatePod().Get(),
 					canEvict:        true,
 					evictionSuccess: true,
@@ -158,11 +172,12 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
+			name:               "Only 2 pods in replica of 3 and tollerance is 0. None of pods can be evicted.",
 			replicas:           3,
 			evictionTollerance: 0.1,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					// only 2 pods in replica of 3 and tollerance is 0. None of pods can be evicted
 					pod:             generatePod().Get(),
 					canEvict:        false,
 					evictionSuccess: false,
@@ -175,8 +190,10 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
+			name:               "Only pending pod can be evicted without violation of tollerance.",
 			replicas:           3,
 			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -184,7 +201,6 @@ func TestEvictReplicatedByController(t *testing.T) {
 					evictionSuccess: false,
 				},
 				{
-					// Only pending pod can be evicted without violation of tollerance
 					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
@@ -197,9 +213,10 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
-			// Pending pods are always evictable
+			name:               "Pending pods are always evictable.",
 			replicas:           4,
 			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().Get(),
@@ -218,6 +235,32 @@ func TestEvictReplicatedByController(t *testing.T) {
 				},
 				{
 					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+			},
+		},
+		{
+			name:               "Cannot evict a single Pod under default settings.",
+			replicas:           1,
+			evictionTollerance: 0.5,
+			vpa:                getBasicVpa(),
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			name:               "Can evict even a single Pod using PodUpdatePolicy.MinReplicas.",
+			replicas:           1,
+			evictionTollerance: 0.5,
+			vpa:                vpaSingleReplica,
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
@@ -225,7 +268,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 		},
 	}
 
-	for tcIndex, testCase := range testCases {
+	for _, testCase := range testCases {
 		rc.Spec = apiv1.ReplicationControllerSpec{
 			Replicas: &testCase.replicas,
 		}
@@ -234,16 +277,16 @@ func TestEvictReplicatedByController(t *testing.T) {
 			pods = append(pods, p.pod)
 		}
 		factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, testCase.evictionTollerance)
-		eviction := factory.NewPodsEvictionRestriction(pods)
+		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa)
 		for i, p := range testCase.pods {
-			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", tcIndex, i, p.pod)
+			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", testCase.name, i, p.pod)
 		}
 		for i, p := range testCase.pods {
 			err := eviction.Evict(p.pod, test.FakeEventRecorder())
 			if p.evictionSuccess {
-				assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", tcIndex, i, p.pod)
+				assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
 			} else {
-				assert.Errorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", tcIndex, i, p.pod)
+				assert.Errorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
 			}
 		}
 	}
@@ -273,7 +316,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, &rs, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -312,7 +355,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, nil, &ss, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -347,7 +390,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -386,7 +429,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 10, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.False(t, eviction.CanEvict(pod))
@@ -422,7 +465,7 @@ func TestEvictionTolerance(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2 /*minReplicas*/, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -462,7 +505,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods)
+	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))

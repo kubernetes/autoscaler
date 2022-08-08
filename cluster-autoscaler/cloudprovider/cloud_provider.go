@@ -62,12 +62,18 @@ const (
 	MCMProviderName = "mcm"
 	// IonoscloudProviderName gets the provider name of ionoscloud
 	IonoscloudProviderName = "ionoscloud"
+	// OracleCloudProviderName gets the provider name of oci
+	OracleCloudProviderName = "oci"
 	// OVHcloudProviderName gets the provider name of ovhcloud
 	OVHcloudProviderName = "ovhcloud"
 	// LinodeProviderName gets the provider name of linode
 	LinodeProviderName = "linode"
+	// VultrProviderName gets the provider name of vultr
+	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
+	// TencentcloudProviderName gets the provider name of tencentcloud
+	TencentcloudProviderName = "tencentcloud"
 )
 
 // CloudProvider contains configuration info and functions for interacting with

@@ -3,24 +3,29 @@
 affinity: {}
 
 autoDiscovery:
-  # cloudProviders `aws`, `gce` and `magnum` are supported by auto-discovery at this time
+  # cloudProviders `aws`, `gce`, `magnum` and `clusterapi` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 
   # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
+  # Enable autodiscovery for `cloudProvider=clusterapi`, for groups matching `autoDiscovery.labels`.
   # Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required.
   # Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`.
   clusterName:  # cluster.local
 
   # autoDiscovery.tags -- ASG tags to match, run through `tpl`.
   tags:
-  - k8s.io/cluster-autoscaler/enabled
-  - k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}
+    - k8s.io/cluster-autoscaler/enabled
+    - k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}
   # - kubernetes.io/cluster/{{ .Values.autoDiscovery.clusterName }}
 
   # autoDiscovery.roles -- Magnum node group roles to match.
   roles:
-  - worker
+    - worker
 
+  # autoDiscovery.labels -- Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery
+  labels: []
+    # - color: green
+    # - shape: circle
 # autoscalingGroups -- For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example:
 # <pre>
 # - name: asg1<br />
@@ -89,7 +94,7 @@ azureClusterName: ""
 # Required if `cloudProvider=azure`
 azureNodeResourceGroup: ""
 
-# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID and resource group are set.
+# azureUseManagedIdentityExtension -- Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set.
 azureUseManagedIdentityExtension: false
 
 # magnumClusterName -- Cluster name or ID in Magnum.
@@ -99,13 +104,32 @@ magnumClusterName: ""
 # magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
 magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
 
+# clusterAPIMode --  Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters
+# Syntax: workloadClusterMode-ManagementClusterMode
+# for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes`
+# if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well
+clusterAPIMode: incluster-incluster  # incluster-incluster, incluster-kubeconfig, kubeconfig-incluster, kubeconfig-kubeconfig, single-kubeconfig
+
+# clusterAPIKubeconfigSecret -- Secret containing kubeconfig for connecting to Cluster API managed workloadcluster
+# Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig`
+clusterAPIKubeconfigSecret: ""
+
+# clusterAPIWorkloadKubeconfigPath -- Path to kubeconfig for connecting to Cluster API managed workloadcluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or kubeconfig-incluster`
+clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
+
+# clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
+clusterAPICloudConfigPath: /etc/kubernetes/mgmt-kubeconfig
+
+# clusterAPIConfigMapsNamespace -- Namespace on the workload cluster to store Leader election and status configmaps
+clusterAPIConfigMapsNamespace: ""
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: /etc/gce.conf
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, `azure` and `magnum` are supported.
+# Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
-# `magnum` for OpenStack Magnum.
+# `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
 cloudProvider: aws
 
 # containerSecurityContext -- [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
@@ -114,14 +138,18 @@ containerSecurityContext: {}
   #   drop:
   #   - ALL
 
+deployment:
+  # deployment.annotations -- Annotations to add to the Deployment object.
+  annotations: {}
+
 # dnsPolicy -- Defaults to `ClusterFirst`. Valid values are:
 # `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`.
 # If autoscaler does not depend on cluster DNS, recommended to set this to `Default`.
 dnsPolicy: ClusterFirst
 
 ## Priorities Expander
-# expanderPriorities -- The expanderPriorities is used if `extraArgs.expander` is set to `priority` and expanderPriorities is also set with the priorities.
-# If `extraArgs.expander` is set to `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities.
+# expanderPriorities -- The expanderPriorities is used if `extraArgs.expander` contains `priority` and expanderPriorities is also set with the priorities.
+# If `extraArgs.expander` contains `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities.
 # See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md
 expanderPriorities: {}
 
@@ -204,7 +232,7 @@ image:
   # image.repository -- Image repository
   repository: k8s.gcr.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.21.1
+  tag: v1.23.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -247,6 +275,8 @@ rbac:
   # rbac.pspEnabled -- If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled.
   # Must be used with `rbac.create` set to `true`.
   pspEnabled: false
+  # rbac.clusterScoped -- if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API
+  clusterScoped: true
   serviceAccount:
     # rbac.serviceAccount.annotations -- Additional Service Account annotations.
     annotations: {}
@@ -327,6 +357,15 @@ prometheusRule:
 
 # tolerations -- List of node taints to tolerate (requires Kubernetes >= 1.6).
 tolerations: []
+
+# topologySpreadConstraints -- You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19).
+topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: topology.kubernetes.io/zone
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app.kubernetes.io/instance: cluster-autoscaler
 
 # updateStrategy -- [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
 updateStrategy: {}

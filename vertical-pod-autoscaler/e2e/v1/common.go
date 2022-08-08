@@ -208,8 +208,7 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 }
 
 // NewTestCronJob returns a CronJob for test purposes.
-func NewTestCronJob(name, schedule string) *batchv1beta1.CronJob {
-	replicas := defaultHamsterReplicas
+func NewTestCronJob(name, schedule string, replicas int32) *batchv1beta1.CronJob {
 	backoffLimit := defaultHamsterBackoffLimit
 	sj := &batchv1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
@@ -262,7 +261,7 @@ func getCronJob(c clientset.Interface, ns, name string) (*batchv1beta1.CronJob, 
 
 // SetupHamsterCronJob creates and sets up a new CronJob
 func SetupHamsterCronJob(f *framework.Framework, schedule, cpu, memory string, replicas int32) {
-	cronJob := NewTestCronJob("hamster-cronjob", schedule)
+	cronJob := NewTestCronJob("hamster-cronjob", schedule, replicas)
 	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers = []apiv1.Container{SetupHamsterContainer(cpu, memory)}
 	for label, value := range hamsterLabels {
 		cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
@@ -293,14 +292,20 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 }
 
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
-func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
-	SetupVPAForNHamsters(f, 1, cpu, mode, targetRef)
+func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
+	return SetupVPAForNHamsters(f, 1, cpu, mode, targetRef)
 }
 
-// SetupVPAForNHamsters creates and installs a simple pod with n hamster containers for e2e test purposes.
-func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
+// SetupVPAForNHamsters creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
+func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
+	return SetupVPAForNHamstersWithMinReplicas(f, n, cpu, mode, targetRef, nil)
+}
+
+// SetupVPAForNHamstersWithMinReplicas creates and installs a simple hamster VPA for a pod with n containers, setting MinReplicas. To be used for e2e test purposes.
+func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32) *vpa_types.VerticalPodAutoscaler {
 	vpaCRD := NewVPA(f, "hamster-vpa", targetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
 	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+	vpaCRD.Spec.UpdatePolicy.MinReplicas = minReplicas
 
 	cpuQuantity := ParseQuantityOrDie(cpu)
 	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
@@ -321,6 +326,7 @@ func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_ty
 	}
 
 	InstallVPA(f, vpaCRD)
+	return vpaCRD
 }
 
 // NewVPA creates a VPA object for e2e test purposes.
@@ -380,7 +386,7 @@ func InstallRawVPA(f *framework.Framework, obj interface{}) error {
 	return err.Error()
 }
 
-// PatchVpaRecommendation installs a new reocmmendation for VPA object.
+// PatchVpaRecommendation installs a new recommendation for VPA object.
 func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler,
 	recommendation *vpa_types.RecommendedPodResources) {
 	newStatus := vpa.Status.DeepCopy()
