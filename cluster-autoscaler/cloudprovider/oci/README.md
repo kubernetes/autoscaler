@@ -1,25 +1,25 @@
 # Cluster Autoscaler for Oracle Cloud Infrastructure (OCI)
 
-**Note**: this implementation of Cluster Autoscaler is intended for use with self-managed Kubernetes running on Oracle Cloud Infrastructure and not [Oracle Container Engine for Kubernetes](https://www.oracle.com/cloud-native/container-engine-kubernetes/). Refer to [Using the Kubernetes Cluster Autoscaler](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengusingclusterautoscaler.htm#Using_Kubernetes_Horizontal_Pod_Autoscaler), for information about using Cluster Autoscaler with Oracle Container Engine for Kubernetes. 
+**Note**: this implementation of Cluster Autoscaler is intended for use with self-managed Kubernetes running on Oracle Cloud Infrastructure and not [Oracle Container Engine for Kubernetes](https://www.oracle.com/cloud-native/container-engine-kubernetes/). Refer to [Using the Kubernetes Cluster Autoscaler](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengusingclusterautoscaler.htm#Using_Kubernetes_Horizontal_Pod_Autoscaler), for information about using Cluster Autoscaler with Oracle Container Engine for Kubernetes.
 
 
-When operating a self-managed Kubernetes cluster in OCI, the Cluster Autoscaler utilizes [Instance Pools](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstancepool.htm) 
-combined with [Instance Configurations](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstanceconfig.htm) to 
+When operating a self-managed Kubernetes cluster in OCI, the Cluster Autoscaler utilizes [Instance Pools](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstancepool.htm)
+combined with [Instance Configurations](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstanceconfig.htm) to
 automatically resize a cluster's nodes based on application workload demands by:
 
 - adding nodes to static instance-pool(s) when a pod cannot be scheduled in the cluster because of insufficient resource constraints.
 - removing nodes from an instance-pool(s) when the nodes have been underutilized for an extended time, and when pods can be placed on other existing nodes.
 
-The Cluster Autoscaler works on a per-instance pool basis. You configure the Cluster Autoscaler to tell it which instance pools to target 
-for expansion and contraction, the minimum and maximum sizes for each pool, and how you want the autoscaling to take place. 
+The Cluster Autoscaler works on a per-instance pool basis. You configure the Cluster Autoscaler to tell it which instance pools to target
+for expansion and contraction, the minimum and maximum sizes for each pool, and how you want the autoscaling to take place.
 Instance pools not referenced in the configuration file are not managed by the Cluster Autoscaler.
 
 ## Create Required OCI Resources
 
 ### IAM Policy (if using Instance Principals)
 
-We recommend setting up and configuring the Cluster Autoscaler to use 
-[Instance Principals](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm) 
+We recommend setting up and configuring the Cluster Autoscaler to use
+[Instance Principals](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm)
 to authenticate to the OCI APIs.
 
 The following policy provides the minimum privileges necessary for Cluster Autoscaler to run:
@@ -44,12 +44,12 @@ Allow dynamic-group acme-oci-cluster-autoscaler-dyn-grp to inspect compartments 
 
 ### Instance Pool and Instance Configurations
 
-Before you deploy the Cluster Autoscaler on OCI, your need to create one or more static Instance Pools and Instance 
-Configuration with `cloud-init` specified in the launch details so new nodes automatically joins the existing cluster on 
+Before you deploy the Cluster Autoscaler on OCI, your need to create one or more static Instance Pools and Instance
+Configuration with `cloud-init` specified in the launch details so new nodes automatically joins the existing cluster on
 start up.
 
-Advanced Instance Pool and Instance Configuration configuration is out of scope for this document. However, a 
-working [instance-details.json](./examples/instance-details.json) and [placement-config.json](./examples/placement-config.json) 
+Advanced Instance Pool and Instance Configuration configuration is out of scope for this document. However, a
+working [instance-details.json](./examples/instance-details.json) and [placement-config.json](./examples/placement-config.json)
 ([example](./examples/instance-details.json) based on Rancher [RKE](https://rancher.com/products/rke/)) using [cloud-init](https://cloudinit.readthedocs.io/en/latest/) are
 included in the examples, which can be applied using the [OCI CLI](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm).
 
@@ -80,9 +80,9 @@ ocid1.instancepool.oc1.phx.aaaaaaaayd5bxwrzomzr2b2enchm4mof7uhw7do5hc2afkhks576s
 
 ## Configure Cluster Autoscaler
 
-Use the `--nodes=<min-nodes>:<max-nodes>:<instancepool-ocid>` parameter to specify which pre-existing instance 
-pools to target for automatic expansion and contraction, the minimum and maximum sizes for each node pool, and how you 
-want the autoscaling to take place. Instance pools not referenced in the configuration file are not managed by the 
+Use the `--nodes=<min-nodes>:<max-nodes>:<instancepool-ocid>` parameter to specify which pre-existing instance
+pools to target for automatic expansion and contraction, the minimum and maximum sizes for each node pool, and how you
+want the autoscaling to take place. Instance pools not referenced in the configuration file are not managed by the
 autoscaler where:
 
 - `<min-nodes>` is the minimum number of nodes allowed in the instance-pool.
@@ -102,7 +102,7 @@ env:
 
 _Optional_ cloud-config file mounted in the path specified by `--cloud-config`.
 
-An example, of passing optional configuration via `cloud-config` file that uses configures the cluster-autoscaler to use 
+An example, of passing optional configuration via `cloud-config` file that uses configures the cluster-autoscaler to use
 instance-principals authenticating via instance principalsand only see configured instance-pools in a single compartment:
 
 ```ini
@@ -172,7 +172,7 @@ Note the 3 specified instance-pools are intended to correspond to different avai
 ```yaml
 ...
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
+        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           command:
             - ./cluster-autoscaler
@@ -198,21 +198,21 @@ kubectl apply -f ./cloudprovider/oci/examples/oci-ip-cluster-autoscaler-w-config
 ```
 
 ## Common Notes and Gotchas:
-- You must configure the instance configuration of new compute instances to join the existing cluster when they start. This can 
+- You must configure the instance configuration of new compute instances to join the existing cluster when they start. This can
   be accomplished with `cloud-init` / `user-data` in the instance launch configuration [example](./examples/instance-details.json).
-- If opting for a file based OCI configuration (as opposed to instance principals), ensure the OCI config and private-key 
+- If opting for a file based OCI configuration (as opposed to instance principals), ensure the OCI config and private-key
   PEM files are mounted into the container filesystem at the [expected path](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm). Note the `key_file` option in the example `~/.oci/config` above references a private-key file mounted into container by the example [volumeMount](./examples/oci-ip-cluster-autoscaler-w-config.yaml#L165)
 - Make sure the maximum number of nodes you specify does not exceed the limit for the instance-pool or the tenancy.
-- We recommend creating multiple instance-pools with one availability domain specified so new nodes can be created to meet 
+- We recommend creating multiple instance-pools with one availability domain specified so new nodes can be created to meet
   affinity requirements across availability domains.
-- If you are authenticating via instance principals, be sure the `OCI_REGION` environment variable is set to the correct 
+- If you are authenticating via instance principals, be sure the `OCI_REGION` environment variable is set to the correct
   value in the deployment.
-- The Cluster Autoscaler will not automatically remove scaled down (terminated) `Node` objects from the Kubernetes API 
-  without assistance from the [OCI Cloud Controller Manager](https://github.com/oracle/oci-cloud-controller-manager) (CCM). 
-  If scaled down nodes are lingering in your cluster in the `NotReady` status, ensure the OCI CCM is installed and running 
+- The Cluster Autoscaler will not automatically remove scaled down (terminated) `Node` objects from the Kubernetes API
+  without assistance from the [OCI Cloud Controller Manager](https://github.com/oracle/oci-cloud-controller-manager) (CCM).
+  If scaled down nodes are lingering in your cluster in the `NotReady` status, ensure the OCI CCM is installed and running
   correctly (`oci-cloud-controller-manager`).
-- Avoid manually changing node pools that are managed by the Cluster Autoscaler. For example, do not add or remove nodes 
-  using kubectl, or using the Console (or the Oracle Cloud Infrastructure CLI or API). 
+- Avoid manually changing node pools that are managed by the Cluster Autoscaler. For example, do not add or remove nodes
+  using kubectl, or using the Console (or the Oracle Cloud Infrastructure CLI or API).
 - `--node-group-auto-discovery` and `--node-autoprovisioning-enabled=true` are not supported.
 - We set a `nvidia.com/gpu:NoSchedule` taint on nodes in a GPU enabled instance-pool.
 
