@@ -108,6 +108,7 @@ type VolumeListOpts struct {
 	ListOpts
 	Name   string
 	Status []VolumeStatus
+	Sort   []string
 }
 
 func (l VolumeListOpts) values() url.Values {
@@ -117,6 +118,9 @@ func (l VolumeListOpts) values() url.Values {
 	}
 	for _, status := range l.Status {
 		vals.Add("status", string(status))
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package metadata
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -88,12 +89,16 @@ func (c *Client) get(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
-	resp.Body.Close()
-	return string(body), nil
+	body := string(bodyBytes)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return body, fmt.Errorf("response status was %d", resp.StatusCode)
+	}
+	return body, nil
 }
 
 // IsHcloudServer checks if the currently called server is a hcloud server by calling a metadata endpoint
