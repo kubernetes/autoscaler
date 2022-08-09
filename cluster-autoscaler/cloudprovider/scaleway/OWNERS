@@ -1,6 +1,6 @@
-approvers:
-- louisportay
-- jtherin
+#approvers:
+#- louisportay
+#- jtherin
 reviewers:
 - remyleone
 - Sh4d1
