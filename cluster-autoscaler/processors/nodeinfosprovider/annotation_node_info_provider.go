@@ -45,18 +45,18 @@ func (p *AnnotationNodeInfoProvider) Process(ctx *context.AutoscalingContext, no
 	if err != nil {
 		return nil, err
 	}
-	for _, nodeInfo := range nodeInfos {
-		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(nodeInfo.Node())
-		if err != nil {
-			continue
-		}
-		template, err := nodeGroup.TemplateNodeInfo()
-		if err != nil {
-			continue
-		}
-		for key, val := range template.Node().Annotations {
-			if _, ok := nodeInfo.Node().Annotations[key]; !ok {
-				nodeInfo.Node().Annotations[key] = val
+	// Add annotatios to the NodeInfo to use later in expander.
+	nodeGroups := ctx.CloudProvider.NodeGroups()
+	for _, ng := range nodeGroups {
+		if nodeInfo, ok := nodeInfos[ng.Id()]; ok {
+			template, err := ng.TemplateNodeInfo()
+			if err != nil {
+				continue
+			}
+			for key, val := range template.Node().Annotations {
+				if _, ok := nodeInfo.Node().Annotations[key]; !ok {
+					nodeInfo.Node().Annotations[key] = val
+				}
 			}
 		}
 	}
