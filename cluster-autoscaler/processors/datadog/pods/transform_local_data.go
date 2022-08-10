@@ -64,6 +64,12 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const (
+	storageClassNameLocal   = "local-data"
+	storageClassNameTopolvm = "topolvm-provisioner"
+	storageClassNameOpenEBS = "openebs-lvmpv"
+)
+
 type transformLocalData struct {
 	pvcLister   v1lister.PersistentVolumeClaimLister
 	stopChannel chan struct{}
@@ -102,7 +108,7 @@ func (p *transformLocalData) Process(ctx *context.AutoscalingContext, pods []*ap
 				volumes = append(volumes, vol)
 				continue
 			}
-			if *pvc.Spec.StorageClassName != "local-data" {
+			if !isSpecialPVCStorageClass(*pvc.Spec.StorageClassName) {
 				volumes = append(volumes, vol)
 				continue
 			}
@@ -113,14 +119,44 @@ func (p *transformLocalData) Process(ctx *context.AutoscalingContext, pods []*ap
 			if len(po.Spec.Containers[0].Resources.Limits) == 0 {
 				po.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{}
 			}
+			if len(pvc.Spec.Resources.Requests) == 0 {
+				pvc.Spec.Resources.Requests = apiv1.ResourceList{}
+			}
 
-			po.Spec.Containers[0].Resources.Requests[common.DatadogLocalDataResource] = common.DatadogLocalDataQuantity.DeepCopy()
-			po.Spec.Containers[0].Resources.Limits[common.DatadogLocalDataResource] = common.DatadogLocalDataQuantity.DeepCopy()
+			switch *pvc.Spec.StorageClassName {
+			case storageClassNameTopolvm, storageClassNameOpenEBS:
+				if storage, ok := pvc.Spec.Resources.Requests["storage"]; ok {
+					po.Spec.Containers[0].Resources.Requests[common.DatadogLocalDataResource] = storage.DeepCopy()
+					po.Spec.Containers[0].Resources.Limits[common.DatadogLocalDataResource] = storage.DeepCopy()
+				} else {
+					klog.Warningf("ignoring pvc as it does not have storage request information")
+					volumes = append(volumes, vol)
+				}
+			case storageClassNameLocal:
+				po.Spec.Containers[0].Resources.Requests[common.DatadogLocalDataResource] = common.DatadogLocalDataQuantity.DeepCopy()
+				po.Spec.Containers[0].Resources.Limits[common.DatadogLocalDataResource] = common.DatadogLocalDataQuantity.DeepCopy()
+			default:
+				klog.Warningf("this should never be reached. pvc storage class (%s) cannot be used for scaling on pod: %s", *pvc.Spec.StorageClassName, po.Name)
+				volumes = append(volumes, vol)
+			}
 		}
 		po.Spec.Volumes = volumes
 	}
 
 	return pods, nil
+}
+
+func isSpecialPVCStorageClass(className string) bool {
+	switch className {
+	case storageClassNameOpenEBS:
+		return true
+	case storageClassNameTopolvm:
+		return true
+	case storageClassNameLocal:
+		return true
+	default:
+		return false
+	}
 }
 
 // NewPersistentVolumeClaimLister builds a persistentvolumeclaim lister.
