@@ -33,6 +33,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Vultr](./cloudprovider/vultr/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
 * [Scaleway](./cloudprovider/scaleway/README.md)
+* [Rancher](./cloudprovider/rancher/README.md)
 
 # Releases
 
@@ -180,3 +181,4 @@ Supported cloud providers:
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
 * BaiduCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/baiducloud/README.md
 * Huawei Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/huaweicloud/README.md
+* Rancher https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/rancher/README.md
