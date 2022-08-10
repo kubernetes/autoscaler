@@ -335,6 +335,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 			Tags:         asg.Tags,
 		}, nil
 	}
+
 	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
 }
 
@@ -404,6 +405,10 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
+	if err := m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy); err != nil {
+		return nil, err
+	}
+
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	for resourceName, val := range resourcesFromTags {
 		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
@@ -462,6 +467,58 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	}
 
 	return result
+}
+
+func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) error {
+	if policy == nil {
+		return nil
+	}
+
+	instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(policy)
+	if err != nil {
+		return fmt.Errorf("error while building node template using instance requirements: (%s)", err)
+	}
+
+	if instanceRequirements.VCpuCount != nil && instanceRequirements.VCpuCount.Min != nil {
+		(*capacity)[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceRequirements.VCpuCount.Min, resource.DecimalSI)
+	}
+
+	if instanceRequirements.MemoryMiB != nil && instanceRequirements.MemoryMiB.Min != nil {
+		(*capacity)[apiv1.ResourceMemory] = *resource.NewQuantity(*instanceRequirements.MemoryMiB.Min*1024*1024, resource.DecimalSI)
+	}
+
+	for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
+		if *manufacturer == autoscaling.AcceleratorManufacturerNvidia {
+			for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
+				if *acceleratorType == autoscaling.AcceleratorTypeGpu {
+					(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(*instanceRequirements.AcceleratorCount.Min, resource.DecimalSI)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
+	instanceRequirements := &ec2.InstanceRequirements{}
+	if policy.instanceRequirementsOverrides != nil {
+		var err error
+		instanceRequirements, err = m.awsService.getEC2RequirementsFromAutoscaling(policy.instanceRequirementsOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else if policy.launchTemplate != nil {
+		templateData, err := m.awsService.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
+		if err != nil {
+			return nil, err
+		}
+
+		if templateData.InstanceRequirements != nil {
+			instanceRequirements = templateData.InstanceRequirements
+		}
+	}
+	return instanceRequirements, nil
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
