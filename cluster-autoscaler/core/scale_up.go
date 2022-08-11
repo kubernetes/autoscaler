@@ -373,7 +373,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 					typedErr.AddPrefix("failed to find matching node groups: "))
 			}
 
-			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, expansionOptions)
+			similarNodeGroups = filterNodeGroupsByPods(context, similarNodeGroups, bestOption.Pods, expansionOptions)
 			for _, ng := range similarNodeGroups {
 				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now) {
 					targetNodeGroups = append(targetNodeGroups, ng)
@@ -572,17 +572,25 @@ func getPodsAwaitingEvaluation(egs []*podEquivalenceGroup, bestOption string) []
 }
 
 func filterNodeGroupsByPods(
+	context *context.AutoscalingContext,
 	groups []cloudprovider.NodeGroup,
 	podsRequiredToFit []*apiv1.Pod,
-	expansionOptions map[string]expander.Option) []cloudprovider.NodeGroup {
-
+	expansionOptions map[string]expander.Option,
+) []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0)
 
 	for _, group := range groups {
 		option, found := expansionOptions[group.Id()]
 		if !found {
-			klog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
-			continue
+			if context.BalanceIgnoreMissingExpansion {
+				// still show that something went wrong so users can see when the issue was resolved
+				klog.V(1).Infof("No info about pods passing predicates found for group %v, ignoring", group.Id())
+				result = append(result, group)
+				continue
+			} else {
+				klog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
+				continue
+			}
 		}
 		fittingPods := make(map[*apiv1.Pod]bool, len(option.Pods))
 		for _, pod := range option.Pods {

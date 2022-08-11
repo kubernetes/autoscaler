@@ -158,6 +158,8 @@ type AutoscalingOptions struct {
 	StatusConfigMapName string
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
+	// BalanceIgnoreMissingExpansion When balancing nodegroups, sometimes expansion options are unknown, in that case proceed with scheduling pods
+	BalanceIgnoreMissingExpansion bool
 	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
 	ConfigNamespace string
 	// ClusterName if available
