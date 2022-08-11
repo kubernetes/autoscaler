@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"reflect"
 	"regexp"
 	"strings"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/skewer"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	"k8s.io/klog/v2"
@@ -55,9 +57,10 @@ type azureCache struct {
 	instanceToNodeGroup  map[azureRef]cloudprovider.NodeGroup
 	unownedInstances     map[azureRef]bool
 	autoscalingOptions   map[azureRef]map[string]string
+	skus                 map[string]*skewer.Cache
 }
 
-func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string) (*azureCache, error) {
+func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string, enableDynamicInstanceList bool, defaultLocation string) (*azureCache, error) {
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
@@ -70,6 +73,11 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmTy
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
+		skus:                 make(map[string]*skewer.Cache),
+	}
+
+	if enableDynamicInstanceList {
+		cache.skus[defaultLocation] = &skewer.Cache{}
 	}
 
 	if err := cache.regenerate(); err != nil {
@@ -131,11 +139,21 @@ func (m *azureCache) regenerate() error {
 		newAutoscalingOptions[ref] = options
 	}
 
+	newSkuCache := make(map[string]*skewer.Cache)
+	for location := range m.skus {
+		cache, err := m.fetchSKUs(context.Background(), location)
+		if err != nil {
+			return err
+		}
+		newSkuCache[location] = cache
+	}
+
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
 	m.autoscalingOptions = newAutoscalingOptions
+	m.skus = newSkuCache
 
 	// Reset unowned instances cache.
 	m.unownedInstances = make(map[azureRef]bool)
@@ -262,6 +280,31 @@ func (m *azureCache) Unregister(nodeGroup cloudprovider.NodeGroup) bool {
 	}
 	m.registeredNodeGroups = updated
 	return changed
+}
+
+func (m *azureCache) fetchSKUs(ctx context.Context, location string) (*skewer.Cache, error) {
+	return skewer.NewCache(ctx,
+		skewer.WithLocation(location),
+		skewer.WithResourceClient(m.azClient.skuClient),
+	)
+}
+
+func (m *azureCache) GetSKU(ctx context.Context, skuName, location string) (skewer.SKU, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	cache, ok := m.skus[location]
+	if !ok {
+		var err error
+		cache, err = m.fetchSKUs(ctx, location)
+		if err != nil {
+			klog.V(1).Infof("Failed to instantiate cache, err: %v", err)
+			return skewer.SKU{}, err
+		}
+		m.skus[location] = cache
+	}
+
+	return cache.Get(ctx, skuName, skewer.VirtualMachines, location)
 }
 
 func (m *azureCache) getRegisteredNodeGroups() []cloudprovider.NodeGroup {
