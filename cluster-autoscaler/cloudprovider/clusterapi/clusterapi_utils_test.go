@@ -18,7 +18,6 @@ package clusterapi
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -854,9 +853,7 @@ func Test_getKeyHelpers(t *testing.T) {
 	}
 
 	testgroup := "test.k8s.io"
-	if err := os.Setenv(CAPIGroupEnvVar, testgroup); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	t.Setenv(CAPIGroupEnvVar, testgroup)
 
 	for _, tc := range []struct {
 		name     string

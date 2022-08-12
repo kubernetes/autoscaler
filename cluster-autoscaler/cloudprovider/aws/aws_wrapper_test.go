@@ -19,7 +19,6 @@ package aws
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"testing"
 
@@ -333,9 +332,7 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 		},
 	})
 
-	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
-	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-	os.Setenv("AWS_REGION", "fanghorn")
+	t.Setenv("AWS_REGION", "fanghorn")
 
 	awsWrapper := &awsWrapper{
 		autoScalingI: a,
