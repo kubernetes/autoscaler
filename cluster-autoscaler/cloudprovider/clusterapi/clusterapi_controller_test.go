@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"os"
 	"path"
 	"reflect"
 	"sort"
@@ -1403,43 +1402,42 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 }
 
 func TestControllerGetAPIVersionGroup(t *testing.T) {
-	expected := "mygroup"
-	if err := os.Setenv(CAPIGroupEnvVar, expected); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	observed := getCAPIGroup()
-	if observed != expected {
-		t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
-	}
+	t.Run("CAPI_GROUP is set", func(t *testing.T) {
+		expected := "mygroup"
+		t.Setenv(CAPIGroupEnvVar, expected)
+		observed := getCAPIGroup()
+		if observed != expected {
+			t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
+		}
+	})
 
-	expected = defaultCAPIGroup
-	if err := os.Setenv(CAPIGroupEnvVar, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	observed = getCAPIGroup()
-	if observed != expected {
-		t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
-	}
+	t.Run("CAPI_GROUP is empty", func(t *testing.T) {
+		expected := defaultCAPIGroup
+		t.Setenv(CAPIGroupEnvVar, "")
+		observed := getCAPIGroup()
+		if observed != expected {
+			t.Fatalf("Wrong Version Group detected, expected %q, got %q", expected, observed)
+		}
+	})
 }
 
 func TestControllerGetAPIVersion(t *testing.T) {
-	expected := "v1beta1"
-	if err := os.Setenv(CAPIVersionEnvVar, expected); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	observed := getCAPIVersion()
-	if observed != expected {
-		t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
-	}
+	t.Run("CAPI_VERSION is not set", func(t *testing.T) {
+		expected := ""
+		observed := getCAPIVersion()
+		if observed != expected {
+			t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
+		}
+	})
 
-	if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	expected = ""
-	observed = getCAPIVersion()
-	if observed != expected {
-		t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
-	}
+	t.Run("CAPI_VERSION is set", func(t *testing.T) {
+		expected := "v1beta1"
+		t.Setenv(CAPIVersionEnvVar, expected)
+		observed := getCAPIVersion()
+		if observed != expected {
+			t.Fatalf("Wrong API Version detected, expected %q, got %q", expected, observed)
+		}
+	})
 }
 
 func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
@@ -1447,9 +1445,7 @@ func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
 		nodeGroupMinSizeAnnotationKey: "1",
 		nodeGroupMaxSizeAnnotationKey: "1",
 	}, nil)
-	if err := os.Setenv(CAPIGroupEnvVar, customCAPIGroup); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	t.Setenv(CAPIGroupEnvVar, customCAPIGroup)
 
 	testConfig.machineDeployment.SetAPIVersion(fmt.Sprintf("%s/v1beta1", customCAPIGroup))
 	testConfig.machineSet.SetAPIVersion(fmt.Sprintf("%s/v1beta1", customCAPIGroup))
@@ -1489,10 +1485,6 @@ func TestControllerGetAPIVersionGroupWithMachineDeployments(t *testing.T) {
 
 	if l := len(machines.Items); l != 1 {
 		t.Fatalf("Incorrect number of Machines, expected 1, got %d", l)
-	}
-
-	if err := os.Unsetenv(CAPIGroupEnvVar); err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
@@ -1552,15 +1544,7 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			if tc.envVar == "" {
-				if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
-					t.Fatalf("unexpected error: %v", err)
-				}
-			} else {
-				if err := os.Setenv(CAPIVersionEnvVar, tc.envVar); err != nil {
-					t.Fatalf("unexpected error: %v", err)
-				}
-			}
+			t.Setenv(CAPIVersionEnvVar, tc.envVar)
 			version, err := getAPIGroupPreferredVersion(discoveryClient, tc.APIGroup)
 			if (err != nil) != tc.error {
 				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
@@ -1569,10 +1553,6 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 				t.Errorf("expected %v, got: %v", tc.preferredVersion, version)
 			}
 		})
-	}
-
-	if err := os.Unsetenv(CAPIVersionEnvVar); err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
