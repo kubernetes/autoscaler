@@ -234,7 +234,11 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 			klog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				if op.Error != nil {
-					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+					errBytes, err := op.Error.MarshalJSON()
+					if err != nil {
+						errBytes = []byte(fmt.Sprintf("operation failed, but error couldn't be recovered: %v", err))
+					}
+					return fmt.Errorf("error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, errBytes)
 				}
 
 				return nil
