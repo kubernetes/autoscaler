@@ -342,6 +342,8 @@ serviceMonitor:
     release: prometheus-operator
   # serviceMonitor.path -- The path to scrape for metrics; autoscaler exposes `/metrics` (this is standard)
   path: /metrics
+  # serviceMonitor.annotations -- Annotations to add to service monitor
+  annotations: {}
 
 ## Custom PrometheusRule to be defined
 ## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart

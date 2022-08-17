@@ -6,6 +6,8 @@ metadata:
   {{- if .Values.serviceMonitor.namespace }}
   namespace: {{ .Values.serviceMonitor.namespace }}
   {{- end }}
+  annotations:
+{{ toYaml .Values.serviceMonitor.annotations | indent 4 }}
   labels:
   {{- range $key, $value := .Values.serviceMonitor.selector }}
     {{ $key }}: {{ $value | quote }}
