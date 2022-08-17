@@ -18,15 +18,35 @@ package metrics
 
 import (
 	"context"
+	"strconv"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/klog/v2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	klog "k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
+
+const (
+	metricsNamespace = metrics.TopMetricsNamespace + "metrics-server-client"
+)
+
+var metricServerResponses = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Namespace: metricsNamespace,
+		Name:      "metric_server_responses",
+		Help:      "Count of responses to queries to metrics server",
+	}, []string{"is_error"},
+)
+
+// Register initializes all VPA metrics for metrics server client
+func Register() {
+	prometheus.MustRegister(metricServerResponses)
+}
 
 // ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
 type ContainerMetricsSnapshot struct {
@@ -68,6 +88,7 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 	podMetricsInterface := c.metricsGetter.PodMetricses(c.namespace)
 	podMetricsList, err := podMetricsInterface.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
+		metricServerResponses.WithLabelValues(strconv.FormatBool(true)).Inc()
 		return nil, err
 	}
 	klog.V(3).Infof("%v podMetrics retrieved for all namespaces", len(podMetricsList.Items))
@@ -75,7 +96,7 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 		metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
 		metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
 	}
-
+	metricServerResponses.WithLabelValues(strconv.FormatBool(false)).Inc()
 	return metricsSnapshots, nil
 }
 
