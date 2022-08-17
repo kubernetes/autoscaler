@@ -364,6 +364,7 @@ Though enough for the majority of installations, the default PodSecurityPolicy _
 | service.portName | string | `"http"` | Name for service port. |
 | service.servicePort | int | `8085` | Service port to expose. |
 | service.type | string | `"ClusterIP"` | Type of service to create. |
+| serviceMonitor.annotations | object | `{}` | Annotations to add to service monitor |
 | serviceMonitor.enabled | bool | `false` | If true, creates a Prometheus Operator ServiceMonitor. |
 | serviceMonitor.interval | string | `"10s"` | Interval that Prometheus scrapes Cluster Autoscaler metrics. |
 | serviceMonitor.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
