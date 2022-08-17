@@ -419,6 +419,7 @@ spec:
         run: overprovisioning
     spec:
       priorityClassName: overprovisioning
+      terminationGracePeriodSeconds: 0
       containers:
       - name: reserve-resources
         image: k8s.gcr.io/pause
