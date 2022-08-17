@@ -182,7 +182,7 @@ var (
 	daemonSetEvictionForOccupiedNodes  = flag.Bool("daemonset-eviction-for-occupied-nodes", true, "DaemonSet pods will be gracefully terminated from non-empty nodes")
 	userAgent                          = flag.String("user-agent", "cluster-autoscaler", "User agent used for HTTP calls.")
 
-	emitPerNodeGroupMetrics = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
+	emitPerNodeGroupMetrics         = flag.Bool("emit-per-nodegroup-metrics", false, "If true, emit per node group metrics.")
 	initialNodeGroupBackoffDuration = flag.Duration("initial-node-group-backoff-duration", 5*time.Minute,
 		"initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start.")
 	maxNodeGroupBackoffDuration = flag.Duration("max-node-group-backoff-duration", 30*time.Minute,
