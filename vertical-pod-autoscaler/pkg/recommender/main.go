@@ -23,13 +23,14 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
+	vpa_metrics_client "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	kube_flag "k8s.io/component-base/cli/flag"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 // DefaultRecommenderName denotes the current recommender name as the "default" one.
@@ -81,6 +82,7 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_recommender.Register()
 	metrics_quality.Register()
+	vpa_metrics_client.Register()
 
 	useCheckpoints := *storage != "prometheus"
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *vpaObjectNamespace)
