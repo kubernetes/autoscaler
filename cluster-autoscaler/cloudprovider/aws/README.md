@@ -58,7 +58,6 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:DescribeImages",
-        "ec2:DescribeInstanceTypes",
         "ec2:GetInstanceTypesFromInstanceRequirements",
         "eks:DescribeNodegroup"
       ],
