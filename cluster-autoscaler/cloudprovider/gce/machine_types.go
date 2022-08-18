@@ -83,19 +83,23 @@ func NewCustomMachineType(name string) (MachineType, error) {
 		return MachineType{}, fmt.Errorf("%q is not a valid custom machine type", name)
 	}
 
+	// Identify the "custom" part of the name, assume the next part is the CPU count, and the one after that is the memory amount.
+	// This should work if the type name has a "custom-*-*" infix, regardless of the rest of the name.
 	parts := strings.Split(name, "-")
-	var cpuPart, memPart string
-	if len(parts) == 3 {
-		cpuPart = parts[1]
-		memPart = parts[2]
-	} else if len(parts) == 4 {
-		cpuPart = parts[2]
-		memPart = parts[3]
-	} else {
+	customPartIndex := -1
+	for i, part := range parts {
+		if part == "custom" {
+			customPartIndex = i
+			break
+		}
+	}
+	if customPartIndex == -1 || customPartIndex+2 >= len(parts) {
 		return MachineType{}, fmt.Errorf("unable to parse custom machine type %q", name)
 	}
+	cpuPart := parts[customPartIndex+1]
+	memPart := parts[customPartIndex+2]
 
-	cpu, err := strconv.ParseInt(cpuPart, 10, 64)
+	cpu, err := parseCustomCpu(name, cpuPart)
 	if err != nil {
 		return MachineType{}, fmt.Errorf("unable to parse CPU %q from machine type %q: %v", cpuPart, name, err)
 	}
@@ -109,4 +113,20 @@ func NewCustomMachineType(name string) (MachineType, error) {
 		CPU:    cpu,
 		Memory: memBytes * units.MiB,
 	}, nil
+}
+
+func parseCustomCpu(machineType string, cpuPart string) (int64, error) {
+	// We need to identify the family because some e2 machine types have special names.
+	family, err := GetMachineFamily(machineType)
+	if err != nil {
+		return 0, fmt.Errorf("unable to get family while parsing custom machine type %q: %v", machineType, err)
+	}
+
+	// There are e2-custom-micro-*, e2-custom-small-*, e2-custom-medium-* custom machine types in the e2 family. They all have 2 guestCpus
+	// in the API.
+	if family == "e2" && (cpuPart == "micro" || cpuPart == "small" || cpuPart == "medium") {
+		return 2, nil
+	}
+
+	return strconv.ParseInt(cpuPart, 10, 64)
 }
