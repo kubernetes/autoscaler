@@ -421,6 +421,42 @@ If you want to update the vendored AWS SDK to a newer version, please make sure 
 2. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`).
 3. Update the version number above to indicate the new vendored version.
 
+## Using cloud config with helm
+
+If you want to use custom AWS cloud config e.g. endpoint urls
+
+1. Create ConfigMap with cloud config file definition (see [example](examples/configmap-cloudconfig-example.yaml)):
+   ```shell
+   kubectl apply -f examples/configmap-cloudconfig-example.yaml
+   ```
+2. Add the following in your `values.yaml`:
+    ```yaml
+    cloudConfigPath: config/cloud.conf
+    
+    extraVolumes:
+      - name: cloud-config
+        configMap:
+          name: cloud-config
+    
+    extraVolumeMounts:
+      - name: cloud-config
+        mountPath: config
+    ```
+3. Install (or upgrade) helm chart with updated values (see [example](examples/values-cloudconfig-example.yaml))
+
+Please note: it is also possible to mount the cloud config file from host:
+```yaml
+    extraVolumes:
+      - name: cloud-config
+        hostPath:
+          path: /path/to/file/on/host
+    
+    extraVolumeMounts:
+      - name: cloud-config
+        mountPath: config/cloud.conf
+        readOnly: true
+```
+
 ## Common Notes and Gotchas:
 
 - The `/etc/ssl/certs/ca-bundle.crt` should exist by default on ec2 instance in
