@@ -204,17 +204,17 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch         bool
 	}{{
 		name:                "no clustername, namespace, or label selector specified should match any MachineSet",
-		testSpec:            createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, false, nil),
+		testSpec:            createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, false, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{labelSelector: labels.NewSelector()},
 		shouldMatch:         true,
 	}, {
 		name:                "no clustername, namespace, or label selector specified should match any MachineDeployment",
-		testSpec:            createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, true, nil),
+		testSpec:            createTestSpec(RandomString(6), RandomString(6), RandomString(6), 1, true, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{labelSelector: labels.NewSelector()},
 		shouldMatch:         true,
 	}, {
 		name:     "clustername specified does not match MachineSet, namespace matches, no labels specified",
-		testSpec: createTestSpec("default", RandomString(6), RandomString(6), 1, false, nil),
+		testSpec: createTestSpec("default", RandomString(6), RandomString(6), 1, false, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -223,7 +223,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:     "clustername specified does not match MachineDeployment, namespace matches, no labels specified",
-		testSpec: createTestSpec("default", RandomString(6), RandomString(6), 1, true, nil),
+		testSpec: createTestSpec("default", RandomString(6), RandomString(6), 1, true, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -232,7 +232,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:     "namespace specified does not match MachineSet, clusterName matches, no labels specified",
-		testSpec: createTestSpec(RandomString(6), "foo", RandomString(6), 1, false, nil),
+		testSpec: createTestSpec(RandomString(6), "foo", RandomString(6), 1, false, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -241,7 +241,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:     "clustername specified does not match MachineDeployment, namespace matches, no labels specified",
-		testSpec: createTestSpec(RandomString(6), "foo", RandomString(6), 1, true, nil),
+		testSpec: createTestSpec(RandomString(6), "foo", RandomString(6), 1, true, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -250,7 +250,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:     "namespace and clusterName matches MachineSet, no labels specified",
-		testSpec: createTestSpec("default", "foo", RandomString(6), 1, false, nil),
+		testSpec: createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -259,7 +259,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:     "namespace and clusterName matches MachineDeployment, no labels specified",
-		testSpec: createTestSpec("default", "foo", RandomString(6), 1, true, nil),
+		testSpec: createTestSpec("default", "foo", RandomString(6), 1, true, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -268,7 +268,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:     "namespace and clusterName matches MachineSet, does not match label selector",
-		testSpec: createTestSpec("default", "foo", RandomString(6), 1, false, nil),
+		testSpec: createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -277,7 +277,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:     "namespace and clusterName matches MachineDeployment, does not match label selector",
-		testSpec: createTestSpec("default", "foo", RandomString(6), 1, true, nil),
+		testSpec: createTestSpec("default", "foo", RandomString(6), 1, true, nil, nil),
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
 			namespace:     "default",
@@ -286,7 +286,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: false,
 	}, {
 		name:             "namespace, clusterName, and label selector matches MachineSet",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil),
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, false, nil, nil),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
@@ -296,7 +296,7 @@ func Test_allowedByAutoDiscoverySpec(t *testing.T) {
 		shouldMatch: true,
 	}, {
 		name:             "namespace, clusterName, and label selector matches MachineDeployment",
-		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil),
+		testSpec:         createTestSpec("default", "foo", RandomString(6), 1, true, nil, nil),
 		additionalLabels: map[string]string{"color": "green"},
 		autoDiscoveryConfig: &clusterAPIAutoDiscoveryConfig{
 			clusterName:   "foo",
