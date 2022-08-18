@@ -670,26 +670,29 @@ func filterNodeGroupsByPods(
 
 	result := make([]cloudprovider.NodeGroup, 0)
 
-groupsloop:
 	for _, group := range groups {
 		option, found := expansionOptions[group.Id()]
 		if !found {
 			klog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
 			continue
 		}
-		fittingPods := option.Pods
-		podSet := make(map[*apiv1.Pod]bool, len(fittingPods))
-		for _, pod := range fittingPods {
-			podSet[pod] = true
+		fittingPods := make(map[*apiv1.Pod]bool, len(option.Pods))
+		for _, pod := range option.Pods {
+			fittingPods[pod] = true
 		}
+		allFit := true
 		for _, pod := range podsRequiredToFit {
-			if _, found := podSet[pod]; !found {
+			if _, found := fittingPods[pod]; !found {
 				klog.V(1).Infof("Group %v, can't fit pod %v/%v, removing from scale-up consideration", group.Id(), pod.Namespace, pod.Name)
-				continue groupsloop
+				allFit = false
+				break
 			}
 		}
-		result = append(result, group)
+		if allFit {
+			result = append(result, group)
+		}
 	}
+
 	return result
 }
 
