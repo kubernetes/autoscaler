@@ -473,7 +473,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		options = append(options, o)
 	}
 	bestOption := context.ExpanderStrategy.BestOption(options, nodeInfos)
-	if bestOption != nil && bestOption.NodeCount > 0 {
+	if bestOption != nil {
 		klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
 		if len(bestOption.Debug) > 0 {
 			klog.V(1).Info(bestOption.Debug)
