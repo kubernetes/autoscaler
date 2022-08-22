@@ -45,22 +45,12 @@ import (
 	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
-// resetAWSRegion resets AWS_REGION environment variable key to its pre-test
-// value, but only if it was originally present among environment variables.
-func resetAWSRegion(value string, present bool) {
-	os.Unsetenv("AWS_REGION")
-	if present {
-		os.Setenv("AWS_REGION", value)
-	}
-}
-
 // TestGetRegion ensures correct source supplies AWS Region.
 func TestGetRegion(t *testing.T) {
 	key := "AWS_REGION"
-	defer resetAWSRegion(os.LookupEnv(key))
 	// Ensure environment variable retains precedence.
 	expected1 := "the-shire-1"
-	os.Setenv(key, expected1)
+	t.Setenv(key, expected1)
 	assert.Equal(t, expected1, getRegion())
 	// Ensure without environment variable, EC2 Metadata is used.
 	expected2 := "mordor-2"
@@ -639,9 +629,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 			fmt.Sprintf("%d:%d:%s", min, max-1, groupname),
 		},
 	}
-	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
-	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-	os.Setenv("AWS_REGION", "fanghorn")
+	t.Setenv("AWS_REGION", "fanghorn")
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
 	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil, nil}, instanceTypes)
 	assert.NoError(t, err)
@@ -702,9 +690,7 @@ func TestGetASGTemplate(t *testing.T) {
 				},
 			})
 
-			// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
-			defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-			os.Setenv("AWS_REGION", "fanghorn")
+			t.Setenv("AWS_REGION", "fanghorn")
 			instanceTypes, _ := GetStaticEC2InstanceTypes()
 			do := cloudprovider.NodeGroupDiscoveryOptions{}
 
@@ -802,9 +788,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},
 	}
 
-	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
-	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
-	os.Setenv("AWS_REGION", "fanghorn")
+	t.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
 	instanceTypes, _ := GetStaticEC2InstanceTypes()
 	m, err := createAWSManagerInternal(nil, do, &awsWrapper{a, nil, nil}, instanceTypes)
