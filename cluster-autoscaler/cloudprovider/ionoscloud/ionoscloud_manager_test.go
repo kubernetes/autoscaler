@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -109,8 +108,7 @@ func TestLoadConfigFromEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			for key, value := range c.env {
-				os.Setenv(key, value)
-				defer os.Unsetenv(key)
+				t.Setenv(key, value)
 			}
 
 			cfg, err := LoadConfigFromEnv()
@@ -121,12 +119,8 @@ func TestLoadConfigFromEnv(t *testing.T) {
 }
 
 func TestCreateIonosCloudManager(t *testing.T) {
-	os.Setenv(envKeyClusterId, "test")
-	os.Setenv(envKeyToken, "token")
-	defer func() {
-		os.Unsetenv(envKeyClusterId)
-		os.Unsetenv(envKeyToken)
-	}()
+	t.Setenv(envKeyClusterId, "test")
+	t.Setenv(envKeyToken, "token")
 
 	manager, err := CreateIonosCloudManager(nil, "ua")
 	require.Nil(t, manager)
