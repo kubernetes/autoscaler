@@ -17,7 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -119,8 +118,7 @@ func TestInstanceTypeFallback(t *testing.T) {
 	do := cloudprovider.NodeGroupDiscoveryOptions{}
 	opts := config.AutoscalingOptions{}
 
-	os.Setenv("AWS_REGION", "non-existent-region")
-	defer os.Unsetenv("AWS_REGION")
+	t.Setenv("AWS_REGION", "non-existent-region")
 
 	// This test ensures that no klog.Fatalf calls occur when constructing the AWS cloud provider.  Specifically it is
 	// intended to ensure that instance type fallback works correctly in the event of an error enumerating instance
