@@ -166,6 +166,7 @@ func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
 		splits := strings.Split(tagName, nodeLabelTagName)
 		if len(splits) > 1 {
 			label := strings.Replace(splits[1], "_", "/", -1)
+			label = strings.Replace(label, "~2", "_", -1)
 			if label != "" {
 				result[label] = *tagValue
 			}
@@ -188,6 +189,7 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 				values := strings.SplitN(*tagValue, ":", 2)
 				if len(values) > 1 {
 					taintKey := strings.Replace(splits[1], "_", "/", -1)
+					taintKey = strings.Replace(taintKey, "~2", "_", -1)
 					taints = append(taints, apiv1.Taint{
 						Key:    taintKey,
 						Value:  values[0],
@@ -258,6 +260,7 @@ func extractAllocatableResourcesFromScaleSet(tags map[string]*string) map[string
 		}
 
 		normalizedResourceName := strings.Replace(resourceName[1], "_", "/", -1)
+		normalizedResourceName = strings.Replace(normalizedResourceName, "~2", "/", -1)
 		quantity, err := resource.ParseQuantity(*tagValue)
 		if err != nil {
 			continue

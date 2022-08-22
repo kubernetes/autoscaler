@@ -31,15 +31,27 @@ func TestExtractLabelsFromScaleSet(t *testing.T) {
 	extraNodeLabelValue := "buzz"
 	blankString := ""
 
+	escapedSlashNodeLabelKey := "spam_egg"
+	escapedSlashNodeLabelValue := "foo"
+	expectedSlashEscapedNodeLabelKey := "spam/egg"
+
+	escapedUnderscoreNodeLabelKey := "foo~2bar"
+	escapedUnderscoreNodeLabelValue := "egg"
+	expectedUnderscoreEscapedNodeLabelKey := "foo_bar"
+
 	tags := map[string]*string{
 		fmt.Sprintf("%s%s", nodeLabelTagName, expectedNodeLabelKey): &expectedNodeLabelValue,
 		"fizz": &extraNodeLabelValue,
 		"bip":  &blankString,
+		fmt.Sprintf("%s%s", nodeLabelTagName, escapedSlashNodeLabelKey):      &escapedSlashNodeLabelValue,
+		fmt.Sprintf("%s%s", nodeLabelTagName, escapedUnderscoreNodeLabelKey): &escapedUnderscoreNodeLabelValue,
 	}
 
 	labels := extractLabelsFromScaleSet(tags)
-	assert.Len(t, labels, 1)
+	assert.Len(t, labels, 3)
 	assert.Equal(t, expectedNodeLabelValue, labels[expectedNodeLabelKey])
+	assert.Equal(t, escapedSlashNodeLabelValue, labels[expectedSlashEscapedNodeLabelKey])
+	assert.Equal(t, escapedUnderscoreNodeLabelValue, labels[expectedUnderscoreEscapedNodeLabelKey])
 }
 
 func TestExtractTaintsFromScaleSet(t *testing.T) {
