@@ -50,6 +50,27 @@ func TestIsClusterAPINodeInfoSimilar(t *testing.T) {
 			removeOneLabel: false,
 		},
 		{
+			description:    "topology.diskplugin.csi.alibabacloud.com/zone different values",
+			label:          "topology.diskplugin.csi.alibabacloud.com/zone",
+			value1:         "foo",
+			value2:         "bar",
+			removeOneLabel: false,
+		},
+		{
+			description:    "ibm-cloud.kubernetes.io/worker-id different values",
+			label:          "ibm-cloud.kubernetes.io/worker-id",
+			value1:         "foo",
+			value2:         "bar",
+			removeOneLabel: false,
+		},
+		{
+			description:    "vpc-block-csi-driver-labels different values",
+			label:          "vpc-block-csi-driver-labels",
+			value1:         "foo",
+			value2:         "bar",
+			removeOneLabel: false,
+		},
+		{
 			description:    "topology.ebs.csi.aws.com/zone one node labeled",
 			label:          "topology.ebs.csi.aws.com/zone",
 			value1:         "foo",
