@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -36,7 +37,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -45,11 +45,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-)
-
-const (
-	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
-	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
 )
 
 type scaleDownResourcesLimits map[string]int64
@@ -246,24 +241,27 @@ type ScaleDown struct {
 	usageTracker         *simulator.UsageTracker
 	nodeDeletionTracker  *deletiontracker.NodeDeletionTracker
 	removalSimulator     *simulator.RemovalSimulator
+	eligibilityChecker   *eligibility.Checker
 }
 
 // NewScaleDown builds new ScaleDown object.
 func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker) *ScaleDown {
 	usageTracker := simulator.NewUsageTracker()
 	removalSimulator := simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, usageTracker)
+	unremovableNodes := unremovable.NewNodes()
 	return &ScaleDown{
 		context:              context,
 		processors:           processors,
 		clusterStateRegistry: clusterStateRegistry,
 		unneededNodes:        make(map[string]time.Time),
-		unremovableNodes:     unremovable.NewNodes(),
+		unremovableNodes:     unremovableNodes,
 		podLocationHints:     make(map[string]string),
 		nodeUtilizationMap:   make(map[string]utilization.Info),
 		usageTracker:         usageTracker,
 		unneededNodesList:    make([]*apiv1.Node, 0),
 		nodeDeletionTracker:  ndt,
 		removalSimulator:     removalSimulator,
+		eligibilityChecker:   eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 	}
 }
 
@@ -283,57 +281,6 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // UnneededNodes returns a list of nodes that can potentially be scaled down.
 func (sd *ScaleDown) UnneededNodes() []*apiv1.Node {
 	return sd.unneededNodesList
-}
-
-func (sd *ScaleDown) checkNodeUtilization(timestamp time.Time, node *apiv1.Node, nodeInfo *schedulerframework.NodeInfo) (simulator.UnremovableReason, *utilization.Info) {
-	// Skip nodes that were recently checked.
-	if sd.unremovableNodes.IsRecent(node.Name) {
-		return simulator.RecentlyUnremovable, nil
-	}
-
-	// Skip nodes marked to be deleted, if they were marked recently.
-	// Old-time marked nodes are again eligible for deletion - something went wrong with them
-	// and they have not been deleted.
-	if actuation.IsNodeBeingDeleted(node, timestamp) {
-		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
-		return simulator.CurrentlyBeingDeleted, nil
-	}
-
-	// Skip nodes marked with no scale down annotation
-	if hasNoScaleDownAnnotation(node) {
-		klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
-		return simulator.ScaleDownDisabledAnnotation, nil
-	}
-
-	utilInfo, err := utilization.Calculate(nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel(), timestamp)
-	if err != nil {
-		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
-	}
-
-	nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
-	if err != nil {
-		return simulator.UnexpectedError, nil
-	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		// We should never get here as non-autoscaled nodes should not be included in scaleDownCandidates list
-		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
-		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)
-		return simulator.NotAutoscaled, nil
-	}
-
-	underutilized, err := sd.isNodeBelowUtilizationThreshold(node, nodeGroup, utilInfo)
-	if err != nil {
-		klog.Warningf("Failed to check utilization thresholds for %s: %v", node.Name, err)
-		return simulator.UnexpectedError, nil
-	}
-	if !underutilized {
-		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-		return simulator.NotUnderutilized, &utilInfo
-	}
-
-	klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
-
-	return simulator.NoReason, &utilInfo
 }
 
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
@@ -358,42 +305,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	sd.unremovableNodes.Update(sd.context.ClusterSnapshot.NodeInfos(), timestamp)
-
-	skipped := 0
-	utilizationMap := make(map[string]utilization.Info)
-	currentlyUnneededNodeNames := make([]string, 0, len(scaleDownCandidates))
-
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	for _, node := range scaleDownCandidates {
-		nodeInfo, err := sd.context.ClusterSnapshot.NodeInfos().Get(node.Name)
-		if err != nil {
-			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
-			sd.unremovableNodes.AddReason(node, simulator.UnexpectedError)
-			continue
-		}
-
-		reason, utilInfo := sd.checkNodeUtilization(timestamp, node, nodeInfo)
-		if utilInfo != nil {
-			utilizationMap[node.Name] = *utilInfo
-		}
-		if reason != simulator.NoReason {
-			// For logging purposes.
-			if reason == simulator.RecentlyUnremovable {
-				skipped++
-			}
-
-			sd.unremovableNodes.AddReason(node, reason)
-			continue
-		}
-
-		currentlyUnneededNodeNames = append(currentlyUnneededNodeNames, node.Name)
-	}
-
-	if skipped > 0 {
-		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
-	}
+	currentlyUnneededNodeNames, utilizationMap := sd.eligibilityChecker.FilterOutUnremovable(sd.context, scaleDownCandidates, timestamp, sd.unremovableNodes)
 
 	emptyNodesToRemove := sd.getEmptyNodesToRemoveNoResourceLimits(currentlyUnneededNodeNames, timestamp)
 
@@ -518,27 +432,6 @@ func (sd *ScaleDown) NodeUtilizationMap() map[string]utilization.Info {
 	return sd.nodeUtilizationMap
 }
 
-// isNodeBelowUtilizationThreshold determines if a given node utilization is below threshold.
-func (sd *ScaleDown) isNodeBelowUtilizationThreshold(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
-	var threshold float64
-	var err error
-	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
-		threshold, err = sd.processors.NodeGroupConfigProcessor.GetScaleDownGpuUtilizationThreshold(sd.context, nodeGroup)
-		if err != nil {
-			return false, err
-		}
-	} else {
-		threshold, err = sd.processors.NodeGroupConfigProcessor.GetScaleDownUtilizationThreshold(sd.context, nodeGroup)
-		if err != nil {
-			return false, err
-		}
-	}
-	if utilInfo.Utilization >= threshold {
-		return false, nil
-	}
-	return true, nil
-}
-
 // UnremovableNodes returns a list of nodes that cannot be removed according to
 // the scale down algorithm.
 func (sd *ScaleDown) UnremovableNodes() []*simulator.UnremovableNode {
@@ -636,7 +529,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		node := nodeInfo.Node()
 
 		// Check if node is marked with no scale down annotation.
-		if hasNoScaleDownAnnotation(node) {
+		if eligibility.HasNoScaleDownAnnotation(node) {
 			klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
 			sd.unremovableNodes.AddReason(node, simulator.ScaleDownDisabledAnnotation)
 			continue
@@ -844,10 +737,6 @@ func (sd *ScaleDown) getEmptyNodesToRemove(candidates []string, resourcesLimits 
 	}
 
 	return nodesToRemove
-}
-
-func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
-	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
 
 const (
