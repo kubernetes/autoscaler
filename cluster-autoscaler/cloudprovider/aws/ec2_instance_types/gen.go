@@ -83,7 +83,14 @@ func main() {
 	flag.Parse()
 	defer klog.Flush()
 
-	instanceTypes, err := aws.GenerateEC2InstanceTypes(*region)
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceTypes, err := aws.GenerateEC2InstanceTypes(sess)
 	if err != nil {
 		klog.Fatal(err)
 	}
