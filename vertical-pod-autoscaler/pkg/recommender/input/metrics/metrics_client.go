@@ -51,15 +51,17 @@ type MetricsClient interface {
 type metricsClient struct {
 	metricsGetter resourceclient.PodMetricsesGetter
 	namespace     string
+	clientName    string
 }
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
 // It requires an instance of PodMetricsesGetter, which is used for underlying communication with metrics server.
 // namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
-func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace string) MetricsClient {
+func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace, clientName string) MetricsClient {
 	return &metricsClient{
 		metricsGetter: metricsGetter,
 		namespace:     namespace,
+		clientName:    clientName,
 	}
 }
 
@@ -68,7 +70,7 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 
 	podMetricsInterface := c.metricsGetter.PodMetricses(c.namespace)
 	podMetricsList, err := podMetricsInterface.List(context.TODO(), metav1.ListOptions{})
-	recommender_metrics.RecordMetricsServerResponse(err)
+	recommender_metrics.RecordMetricsServerResponse(err, c.clientName)
 	if err != nil {
 		return nil, err
 	}

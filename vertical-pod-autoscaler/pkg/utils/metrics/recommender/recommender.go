@@ -78,7 +78,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "metric_server_responses",
 			Help:      "Count of responses to queries to metrics server",
-		}, []string{"is_error"},
+		}, []string{"is_error", "client_name"},
 	)
 )
 
@@ -116,8 +116,8 @@ func RecordAggregateContainerStatesCount(statesCount int) {
 }
 
 // RecordMetricsServerResponse records result of a query to metrics server
-func RecordMetricsServerResponse(err error) {
-	metricServerResponses.WithLabelValues(strconv.FormatBool(err != nil)).Inc()
+func RecordMetricsServerResponse(err error, clientName string) {
+	metricServerResponses.WithLabelValues(strconv.FormatBool(err != nil), clientName).Inc()
 }
 
 // NewObjectCounter creates a new helper to split VPA objects into buckets
