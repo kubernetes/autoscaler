@@ -35,7 +35,7 @@ import (
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -261,7 +261,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	return RecommenderFactory{
 		ClusterState:           clusterState,
-		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace),
+		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace, "default-metrics-client"),
 		ControllerFetcher:      controllerFetcher,
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
 		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
