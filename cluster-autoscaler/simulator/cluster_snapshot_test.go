@@ -22,9 +22,8 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
 	apiv1 "k8s.io/api/core/v1"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
@@ -462,5 +461,237 @@ func TestNodeAlreadyExists(t *testing.T) {
 					assert.Error(t, err)
 				})
 		}
+	}
+}
+
+func TestPVCUsedByPods(t *testing.T) {
+	node := BuildTestNode("node", 10, 10)
+	pod1 := BuildTestPod("pod1", 10, 10)
+	pod1.Spec.NodeName = node.Name
+	pod1.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim1",
+				},
+			},
+		},
+	}
+	pod2 := BuildTestPod("pod2", 10, 10)
+	pod2.Spec.NodeName = node.Name
+	pod2.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim1",
+				},
+			},
+		},
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim2",
+				},
+			},
+		},
+	}
+	nonPvcPod := BuildTestPod("pod3", 10, 10)
+	nonPvcPod.Spec.NodeName = node.Name
+	nonPvcPod.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				NFS: &apiv1.NFSVolumeSource{
+					Server:   "",
+					Path:     "",
+					ReadOnly: false,
+				},
+			},
+		},
+	}
+	testcase := []struct {
+		desc              string
+		node              *apiv1.Node
+		pods              []*apiv1.Pod
+		claimName         string
+		exists            bool
+		removePod         string
+		existsAfterRemove bool
+	}{
+		{
+			desc:      "pvc new pod with volume fetch",
+			node:      node,
+			pods:      []*apiv1.Pod{pod1},
+			claimName: "claim1",
+			exists:    true,
+			removePod: "",
+		},
+		{
+			desc:      "pvc new pod with incorrect volume fetch",
+			node:      node,
+			pods:      []*apiv1.Pod{pod1},
+			claimName: "incorrect-claim",
+			exists:    false,
+			removePod: "",
+		},
+		{
+			desc:      "new pod with non-pvc volume fetch",
+			node:      node,
+			pods:      []*apiv1.Pod{nonPvcPod},
+			claimName: "incorrect-claim",
+			exists:    false,
+			removePod: "",
+		},
+		{
+			desc:              "pvc new pod with delete volume fetch",
+			node:              node,
+			pods:              []*apiv1.Pod{pod1},
+			claimName:         "claim1",
+			exists:            true,
+			removePod:         "pod1",
+			existsAfterRemove: false,
+		},
+		{
+			desc:              "pvc two pods with duplicated volume, delete one pod, fetch",
+			node:              node,
+			pods:              []*apiv1.Pod{pod1, pod2},
+			claimName:         "claim1",
+			exists:            true,
+			removePod:         "pod1",
+			existsAfterRemove: true,
+		},
+		{
+			desc:              "pvc and non-pvc pods, fetch and delete non-pvc pod",
+			node:              node,
+			pods:              []*apiv1.Pod{pod1, nonPvcPod},
+			claimName:         "claim1",
+			exists:            true,
+			removePod:         "pod3",
+			existsAfterRemove: true,
+		},
+		{
+			desc:              "pvc and non-pvc pods, delete pvc pod and fetch",
+			node:              node,
+			pods:              []*apiv1.Pod{pod1, nonPvcPod},
+			claimName:         "claim1",
+			exists:            true,
+			removePod:         "pod1",
+			existsAfterRemove: false,
+		},
+	}
+
+	for snapshotName, snapshotFactory := range snapshots {
+		for _, tc := range testcase {
+			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
+				snapshot := snapshotFactory()
+				err := snapshot.AddNodeWithPods(tc.node, tc.pods)
+				assert.NoError(t, err)
+
+				volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+				assert.Equal(t, tc.exists, volumeExists)
+
+				if tc.removePod != "" {
+					err = snapshot.RemovePod("default", tc.removePod, "node")
+					assert.NoError(t, err)
+
+					volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+					assert.Equal(t, tc.existsAfterRemove, volumeExists)
+				}
+			})
+		}
+	}
+}
+
+func TestPVCClearAndFork(t *testing.T) {
+	node := BuildTestNode("node", 10, 10)
+	pod1 := BuildTestPod("pod1", 10, 10)
+	pod1.Spec.NodeName = node.Name
+	pod1.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim1",
+				},
+			},
+		},
+	}
+	pod2 := BuildTestPod("pod2", 10, 10)
+	pod2.Spec.NodeName = node.Name
+	pod2.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim1",
+				},
+			},
+		},
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "claim2",
+				},
+			},
+		},
+	}
+	nonPvcPod := BuildTestPod("pod3", 10, 10)
+	nonPvcPod.Spec.NodeName = node.Name
+	nonPvcPod.Spec.Volumes = []apiv1.Volume{
+		{
+			Name: "v1",
+			VolumeSource: apiv1.VolumeSource{
+				NFS: &apiv1.NFSVolumeSource{
+					Server:   "",
+					Path:     "",
+					ReadOnly: false,
+				},
+			},
+		},
+	}
+
+	for snapshotName, snapshotFactory := range snapshots {
+		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
+			snapshot := snapshotFactory()
+			err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod1})
+			assert.NoError(t, err)
+			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			assert.Equal(t, true, volumeExists)
+
+			err = snapshot.Fork()
+			assert.NoError(t, err)
+			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			assert.Equal(t, true, volumeExists)
+
+			err = snapshot.AddPod(pod2, "node")
+			assert.NoError(t, err)
+
+			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			assert.Equal(t, true, volumeExists)
+
+			err = snapshot.Revert()
+			assert.NoError(t, err)
+
+			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			assert.Equal(t, false, volumeExists)
+
+		})
+
+		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
+			snapshot := snapshotFactory()
+			err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod1})
+			assert.NoError(t, err)
+			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			assert.Equal(t, true, volumeExists)
+
+			snapshot.Clear()
+			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			assert.Equal(t, false, volumeExists)
+
+		})
 	}
 }

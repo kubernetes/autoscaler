@@ -56,6 +56,7 @@ func NewSchedulerBasedPredicateChecker(kubeClient kube_client.Interface, stop <-
 	framework, err := schedulerframeworkruntime.NewFramework(
 		scheduler_plugins.NewInTreeRegistry(),
 		&config.Profiles[0],
+		stop,
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)

@@ -31,7 +31,8 @@ type BasicClusterSnapshot struct {
 }
 
 type internalBasicSnapshotData struct {
-	nodeInfoMap map[string]*schedulerframework.NodeInfo
+	nodeInfoMap        map[string]*schedulerframework.NodeInfo
+	pvcNamespacePodMap map[string]map[string]bool
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulerframework.NodeInfo, error) {
@@ -71,9 +72,55 @@ func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulerf
 	return nil, errNodeNotFound
 }
 
+func (data *internalBasicSnapshotData) isPVCUsedByPods(key string) bool {
+	if v, found := data.pvcNamespacePodMap[key]; found && v != nil && len(v) > 0 {
+		return true
+	}
+	return false
+}
+
+func (data *internalBasicSnapshotData) addPvcUsedByPod(pod *apiv1.Pod) {
+	if pod == nil {
+		return
+	}
+	nameSpace := pod.GetNamespace()
+	for _, volume := range pod.Spec.Volumes {
+		if volume.PersistentVolumeClaim == nil {
+			continue
+		}
+		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		_, found := data.pvcNamespacePodMap[k]
+		if !found {
+			data.pvcNamespacePodMap[k] = make(map[string]bool)
+		}
+		data.pvcNamespacePodMap[k][pod.GetName()] = true
+	}
+}
+
+func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
+	if pod == nil {
+		return
+	}
+
+	nameSpace := pod.GetNamespace()
+	for _, volume := range pod.Spec.Volumes {
+		if volume.PersistentVolumeClaim == nil {
+			continue
+		}
+		k := schedulerframework.GetNamespacedName(nameSpace, volume.PersistentVolumeClaim.ClaimName)
+		if _, found := data.pvcNamespacePodMap[k]; found {
+			delete(data.pvcNamespacePodMap[k], pod.GetName())
+			if len(data.pvcNamespacePodMap[k]) == 0 {
+				delete(data.pvcNamespacePodMap, k)
+			}
+		}
+	}
+}
+
 func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
-		nodeInfoMap: make(map[string]*schedulerframework.NodeInfo),
+		nodeInfoMap:        make(map[string]*schedulerframework.NodeInfo),
+		pvcNamespacePodMap: make(map[string]map[string]bool),
 	}
 }
 
@@ -82,8 +129,16 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	for k, v := range data.nodeInfoMap {
 		clonedNodeInfoMap[k] = v.Clone()
 	}
+	clonedPvcNamespaceNodeMap := make(map[string]map[string]bool)
+	for k, v := range data.pvcNamespacePodMap {
+		clonedPvcNamespaceNodeMap[k] = make(map[string]bool)
+		for k1, v1 := range v {
+			clonedPvcNamespaceNodeMap[k][k1] = v1
+		}
+	}
 	return &internalBasicSnapshotData{
-		nodeInfoMap: clonedNodeInfoMap,
+		nodeInfoMap:        clonedNodeInfoMap,
+		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
 	}
 }
 
@@ -110,6 +165,9 @@ func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return errNodeNotFound
 	}
+	for _, pod := range data.nodeInfoMap[nodeName].Pods {
+		data.removePvcUsedByPod(pod.Pod)
+	}
 	delete(data.nodeInfoMap, nodeName)
 	return nil
 }
@@ -119,6 +177,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 		return errNodeNotFound
 	}
 	data.nodeInfoMap[nodeName].AddPod(pod)
+	data.addPvcUsedByPod(pod)
 	return nil
 }
 
@@ -129,8 +188,10 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == podName {
+			data.removePvcUsedByPod(podInfo.Pod)
 			err := nodeInfo.RemovePod(podInfo.Pod)
 			if err != nil {
+				data.addPvcUsedByPod(podInfo.Pod)
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
 			return nil
@@ -191,6 +252,11 @@ func (snapshot *BasicClusterSnapshot) RemovePod(namespace, podName, nodeName str
 	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
 }
 
+// IsPVCUsedByPods returns if the pvc is used by any pod
+func (snapshot *BasicClusterSnapshot) IsPVCUsedByPods(key string) bool {
+	return snapshot.getInternalData().isPVCUsedByPods(key)
+}
+
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert()
 // Forking already forked snapshot is not allowed and will result with an error.
 func (snapshot *BasicClusterSnapshot) Fork() error {
@@ -227,10 +293,16 @@ func (snapshot *BasicClusterSnapshot) Clear() {
 // implementation of SharedLister interface
 
 type basicClusterSnapshotNodeLister BasicClusterSnapshot
+type basicClusterSnapshotStorageLister BasicClusterSnapshot
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicClusterSnapshot) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*basicClusterSnapshotNodeLister)(snapshot)
+}
+
+// StorageInfos exposes snapshot as StorageInfoLister.
+func (snapshot *BasicClusterSnapshot) StorageInfos() schedulerframework.StorageInfoLister {
+	return (*basicClusterSnapshotStorageLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
@@ -251,4 +323,9 @@ func (snapshot *basicClusterSnapshotNodeLister) HavePodsWithRequiredAntiAffinity
 // Returns the NodeInfo of the given node name.
 func (snapshot *basicClusterSnapshotNodeLister) Get(nodeName string) (*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().getNodeInfo(nodeName)
+}
+
+// Returns the IsPVCUsedByPods in a given key.
+func (snapshot *basicClusterSnapshotStorageLister) IsPVCUsedByPods(key string) bool {
+	return (*BasicClusterSnapshot)(snapshot).getInternalData().isPVCUsedByPods(key)
 }

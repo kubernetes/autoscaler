@@ -100,8 +100,8 @@ func New(
 		FlowcontrolClient:      flowcontrolClient,
 		ServerConcurrencyLimit: serverConcurrencyLimit,
 		RequestWaitLimit:       requestWaitLimit,
-		ReqsObsPairGenerator:   metrics.PriorityLevelConcurrencyObserverPairGenerator,
-		ExecSeatsObsGenerator:  metrics.PriorityLevelExecutionSeatsObserverGenerator,
+		ReqsGaugeVec:           metrics.PriorityLevelConcurrencyGaugeVec,
+		ExecSeatsGaugeVec:      metrics.PriorityLevelExecutionSeatsGaugeVec,
 		QueueSetFactory:        fqs.NewQueueSetFactory(clk),
 	})
 }
@@ -140,11 +140,11 @@ type TestableConfig struct {
 	// RequestWaitLimit configured on the server
 	RequestWaitLimit time.Duration
 
-	// ObsPairGenerator for metrics about requests
-	ReqsObsPairGenerator metrics.RatioedChangeObserverPairGenerator
+	// GaugeVec for metrics about requests, broken down by phase and priority_level
+	ReqsGaugeVec metrics.RatioedGaugeVec
 
-	// RatioedChangeObserverPairGenerator for metrics about seats occupied by all phases of execution
-	ExecSeatsObsGenerator metrics.RatioedChangeObserverGenerator
+	// RatioedGaugePairVec for metrics about seats occupied by all phases of execution
+	ExecSeatsGaugeVec metrics.RatioedGaugeVec
 
 	// QueueSetFactory for the queuing implementation
 	QueueSetFactory fq.QueueSetFactory

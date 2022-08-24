@@ -40,6 +40,11 @@ func (lister *DelegatingSchedulerSharedLister) NodeInfos() schedulerframework.No
 	return lister.delegate.NodeInfos()
 }
 
+// StorageInfos returns a StorageInfoLister
+func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
+	return lister.delegate.StorageInfos()
+}
+
 // UpdateDelegate updates the delegate
 func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate schedulerframework.SharedLister) {
 	lister.delegate = delegate
@@ -52,6 +57,7 @@ func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 
 type unsetSharedLister struct{}
 type unsetNodeInfoLister unsetSharedLister
+type unsetStorageInfoLister unsetSharedLister
 
 // List always returns an error
 func (lister *unsetNodeInfoLister) List() ([]*schedulerframework.NodeInfo, error) {
@@ -73,9 +79,18 @@ func (lister *unsetNodeInfoLister) Get(nodeName string) (*schedulerframework.Nod
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
-// Pods returns a fake NodeInfoLister which always returns an error
+func (lister *unsetStorageInfoLister) IsPVCUsedByPods(key string) bool {
+	return false
+}
+
+// NodeInfos: Pods returns a fake NodeInfoLister which always returns an error
 func (lister *unsetSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
 	return (*unsetNodeInfoLister)(lister)
+}
+
+// StorageInfos: Pods returns a fake StorageInfoLister which always returns an error
+func (lister *unsetSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
+	return (*unsetStorageInfoLister)(lister)
 }
 
 var unsetSharedListerSingleton *unsetSharedLister
