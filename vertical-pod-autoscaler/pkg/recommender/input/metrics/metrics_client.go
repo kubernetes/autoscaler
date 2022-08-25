@@ -18,35 +18,16 @@ package metrics
 
 import (
 	"context"
-	"strconv"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	recommender_metrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	klog "k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
-
-const (
-	metricsNamespace = metrics.TopMetricsNamespace + "metrics-server-client"
-)
-
-var metricServerResponses = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Namespace: metricsNamespace,
-		Name:      "metric_server_responses",
-		Help:      "Count of responses to queries to metrics server",
-	}, []string{"is_error"},
-)
-
-// Register initializes all VPA metrics for metrics server client
-func Register() {
-	prometheus.MustRegister(metricServerResponses)
-}
 
 // ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
 type ContainerMetricsSnapshot struct {
@@ -70,15 +51,17 @@ type MetricsClient interface {
 type metricsClient struct {
 	metricsGetter resourceclient.PodMetricsesGetter
 	namespace     string
+	clientName    string
 }
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
 // It requires an instance of PodMetricsesGetter, which is used for underlying communication with metrics server.
 // namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
-func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace string) MetricsClient {
+func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace, clientName string) MetricsClient {
 	return &metricsClient{
 		metricsGetter: metricsGetter,
 		namespace:     namespace,
+		clientName:    clientName,
 	}
 }
 
@@ -87,8 +70,8 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 
 	podMetricsInterface := c.metricsGetter.PodMetricses(c.namespace)
 	podMetricsList, err := podMetricsInterface.List(context.TODO(), metav1.ListOptions{})
+	recommender_metrics.RecordMetricsServerResponse(err, c.clientName)
 	if err != nil {
-		metricServerResponses.WithLabelValues(strconv.FormatBool(true)).Inc()
 		return nil, err
 	}
 	klog.V(3).Infof("%v podMetrics retrieved for all namespaces", len(podMetricsList.Items))
@@ -96,7 +79,6 @@ func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, err
 		metricsSnapshotsForPod := createContainerMetricsSnapshots(podMetrics)
 		metricsSnapshots = append(metricsSnapshots, metricsSnapshotsForPod...)
 	}
-	metricServerResponses.WithLabelValues(strconv.FormatBool(false)).Inc()
 	return metricsSnapshots, nil
 }
 

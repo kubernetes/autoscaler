@@ -19,6 +19,7 @@ package recommender
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -71,6 +72,14 @@ var (
 			Help:      "Number of aggregate container states being tracked by the recommender",
 		},
 	)
+
+	metricServerResponses = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "metric_server_responses",
+			Help:      "Count of responses to queries to metrics server",
+		}, []string{"is_error", "client_name"},
+	)
 )
 
 type objectCounterKey struct {
@@ -88,7 +97,7 @@ type ObjectCounter struct {
 
 // Register initializes all metrics for VPA Recommender
 func Register() {
-	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount)
+	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, metricServerResponses)
 }
 
 // NewExecutionTimer provides a timer for Recommender's RunOnce execution
@@ -104,6 +113,11 @@ func ObserveRecommendationLatency(created time.Time) {
 // RecordAggregateContainerStatesCount records the number of containers being tracked by the recommender
 func RecordAggregateContainerStatesCount(statesCount int) {
 	aggregateContainerStatesCount.Set(float64(statesCount))
+}
+
+// RecordMetricsServerResponse records result of a query to metrics server
+func RecordMetricsServerResponse(err error, clientName string) {
+	metricServerResponses.WithLabelValues(strconv.FormatBool(err != nil), clientName).Inc()
 }
 
 // NewObjectCounter creates a new helper to split VPA objects into buckets
