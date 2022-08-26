@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a PrometheusService client from just a session.
-//     svc := prometheusservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a PrometheusService client with additional configuration
-//     svc := prometheusservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a PrometheusService client from just a session.
+//	svc := prometheusservice.New(mySession)
+//
+//	// Create a PrometheusService client with additional configuration
+//	svc := prometheusservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *PrometheusService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

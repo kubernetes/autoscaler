@@ -11,7 +11,7 @@ import (
 
 // ListAppCatalogListingsRequest wrapper for the ListAppCatalogListings operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListAppCatalogListings.go.html to see an example of how to use ListAppCatalogListingsRequest.
 type ListAppCatalogListingsRequest struct {

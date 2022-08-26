@@ -28,14 +28,13 @@ const opCreateReplicationConfigurationTemplate = "CreateReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplicationConfigurationTemplateRequest method.
+//	req, resp := client.CreateReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the CreateReplicationConfigurationTemplateRequest method.
-//    req, resp := client.CreateReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/CreateReplicationConfigurationTemplate
 func (c *Drs) CreateReplicationConfigurationTemplateRequest(input *CreateReplicationConfigurationTemplateInput) (req *request.Request, output *CreateReplicationConfigurationTemplateOutput) {
@@ -66,24 +65,25 @@ func (c *Drs) CreateReplicationConfigurationTemplateRequest(input *CreateReplica
 // API operation CreateReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ServiceQuotaExceededException
-//   The request could not be completed because its exceeded the service quota.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     The request could not be completed because its exceeded the service quota.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/CreateReplicationConfigurationTemplate
 func (c *Drs) CreateReplicationConfigurationTemplate(input *CreateReplicationConfigurationTemplateInput) (*CreateReplicationConfigurationTemplateOutput, error) {
@@ -123,14 +123,13 @@ const opDeleteJob = "DeleteJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobRequest method.
+//	req, resp := client.DeleteJobRequest(params)
 //
-//    // Example sending a request using the DeleteJobRequest method.
-//    req, resp := client.DeleteJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteJob
 func (c *Drs) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, output *DeleteJobOutput) {
@@ -162,22 +161,23 @@ func (c *Drs) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, out
 // API operation DeleteJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteJob
 func (c *Drs) DeleteJob(input *DeleteJobInput) (*DeleteJobOutput, error) {
@@ -217,14 +217,13 @@ const opDeleteRecoveryInstance = "DeleteRecoveryInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecoveryInstanceRequest method.
+//	req, resp := client.DeleteRecoveryInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteRecoveryInstanceRequest method.
-//    req, resp := client.DeleteRecoveryInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteRecoveryInstance
 func (c *Drs) DeleteRecoveryInstanceRequest(input *DeleteRecoveryInstanceInput) (req *request.Request, output *DeleteRecoveryInstanceOutput) {
@@ -258,22 +257,23 @@ func (c *Drs) DeleteRecoveryInstanceRequest(input *DeleteRecoveryInstanceInput) 
 // API operation DeleteRecoveryInstance for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteRecoveryInstance
 func (c *Drs) DeleteRecoveryInstance(input *DeleteRecoveryInstanceInput) (*DeleteRecoveryInstanceOutput, error) {
@@ -313,14 +313,13 @@ const opDeleteReplicationConfigurationTemplate = "DeleteReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReplicationConfigurationTemplateRequest method.
+//	req, resp := client.DeleteReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteReplicationConfigurationTemplateRequest method.
-//    req, resp := client.DeleteReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteReplicationConfigurationTemplate
 func (c *Drs) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplicationConfigurationTemplateInput) (req *request.Request, output *DeleteReplicationConfigurationTemplateOutput) {
@@ -342,7 +341,7 @@ func (c *Drs) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplica
 
 // DeleteReplicationConfigurationTemplate API operation for Elastic Disaster Recovery Service.
 //
-// Deletes a single Replication Configuration Template by ID
+// # Deletes a single Replication Configuration Template by ID
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -352,22 +351,23 @@ func (c *Drs) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplica
 // API operation DeleteReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteReplicationConfigurationTemplate
 func (c *Drs) DeleteReplicationConfigurationTemplate(input *DeleteReplicationConfigurationTemplateInput) (*DeleteReplicationConfigurationTemplateOutput, error) {
@@ -407,14 +407,13 @@ const opDeleteSourceServer = "DeleteSourceServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSourceServerRequest method.
+//	req, resp := client.DeleteSourceServerRequest(params)
 //
-//    // Example sending a request using the DeleteSourceServerRequest method.
-//    req, resp := client.DeleteSourceServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteSourceServer
 func (c *Drs) DeleteSourceServerRequest(input *DeleteSourceServerInput) (req *request.Request, output *DeleteSourceServerOutput) {
@@ -447,22 +446,23 @@ func (c *Drs) DeleteSourceServerRequest(input *DeleteSourceServerInput) (req *re
 // API operation DeleteSourceServer for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DeleteSourceServer
 func (c *Drs) DeleteSourceServer(input *DeleteSourceServerInput) (*DeleteSourceServerOutput, error) {
@@ -502,14 +502,13 @@ const opDescribeJobLogItems = "DescribeJobLogItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobLogItemsRequest method.
+//	req, resp := client.DescribeJobLogItemsRequest(params)
 //
-//    // Example sending a request using the DescribeJobLogItemsRequest method.
-//    req, resp := client.DescribeJobLogItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeJobLogItems
 func (c *Drs) DescribeJobLogItemsRequest(input *DescribeJobLogItemsInput) (req *request.Request, output *DescribeJobLogItemsOutput) {
@@ -546,18 +545,19 @@ func (c *Drs) DescribeJobLogItemsRequest(input *DescribeJobLogItemsInput) (req *
 // API operation DescribeJobLogItems for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeJobLogItems
 func (c *Drs) DescribeJobLogItems(input *DescribeJobLogItemsInput) (*DescribeJobLogItemsOutput, error) {
@@ -589,15 +589,14 @@ func (c *Drs) DescribeJobLogItemsWithContext(ctx aws.Context, input *DescribeJob
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeJobLogItems operation.
-//    pageNum := 0
-//    err := client.DescribeJobLogItemsPages(params,
-//        func(page *drs.DescribeJobLogItemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeJobLogItems operation.
+//	pageNum := 0
+//	err := client.DescribeJobLogItemsPages(params,
+//	    func(page *drs.DescribeJobLogItemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeJobLogItemsPages(input *DescribeJobLogItemsInput, fn func(*DescribeJobLogItemsOutput, bool) bool) error {
 	return c.DescribeJobLogItemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -649,14 +648,13 @@ const opDescribeJobs = "DescribeJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobsRequest method.
+//	req, resp := client.DescribeJobsRequest(params)
 //
-//    // Example sending a request using the DescribeJobsRequest method.
-//    req, resp := client.DescribeJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeJobs
 func (c *Drs) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Request, output *DescribeJobsOutput) {
@@ -698,18 +696,19 @@ func (c *Drs) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Reques
 // API operation DescribeJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeJobs
 func (c *Drs) DescribeJobs(input *DescribeJobsInput) (*DescribeJobsOutput, error) {
@@ -741,15 +740,14 @@ func (c *Drs) DescribeJobsWithContext(ctx aws.Context, input *DescribeJobsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeJobs operation.
-//    pageNum := 0
-//    err := client.DescribeJobsPages(params,
-//        func(page *drs.DescribeJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeJobs operation.
+//	pageNum := 0
+//	err := client.DescribeJobsPages(params,
+//	    func(page *drs.DescribeJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeJobsPages(input *DescribeJobsInput, fn func(*DescribeJobsOutput, bool) bool) error {
 	return c.DescribeJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -801,14 +799,13 @@ const opDescribeRecoveryInstances = "DescribeRecoveryInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecoveryInstancesRequest method.
+//	req, resp := client.DescribeRecoveryInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeRecoveryInstancesRequest method.
-//    req, resp := client.DescribeRecoveryInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeRecoveryInstances
 func (c *Drs) DescribeRecoveryInstancesRequest(input *DescribeRecoveryInstancesInput) (req *request.Request, output *DescribeRecoveryInstancesOutput) {
@@ -845,18 +842,19 @@ func (c *Drs) DescribeRecoveryInstancesRequest(input *DescribeRecoveryInstancesI
 // API operation DescribeRecoveryInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeRecoveryInstances
 func (c *Drs) DescribeRecoveryInstances(input *DescribeRecoveryInstancesInput) (*DescribeRecoveryInstancesOutput, error) {
@@ -888,15 +886,14 @@ func (c *Drs) DescribeRecoveryInstancesWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeRecoveryInstances operation.
-//    pageNum := 0
-//    err := client.DescribeRecoveryInstancesPages(params,
-//        func(page *drs.DescribeRecoveryInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeRecoveryInstances operation.
+//	pageNum := 0
+//	err := client.DescribeRecoveryInstancesPages(params,
+//	    func(page *drs.DescribeRecoveryInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeRecoveryInstancesPages(input *DescribeRecoveryInstancesInput, fn func(*DescribeRecoveryInstancesOutput, bool) bool) error {
 	return c.DescribeRecoveryInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -948,14 +945,13 @@ const opDescribeRecoverySnapshots = "DescribeRecoverySnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecoverySnapshotsRequest method.
+//	req, resp := client.DescribeRecoverySnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeRecoverySnapshotsRequest method.
-//    req, resp := client.DescribeRecoverySnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeRecoverySnapshots
 func (c *Drs) DescribeRecoverySnapshotsRequest(input *DescribeRecoverySnapshotsInput) (req *request.Request, output *DescribeRecoverySnapshotsOutput) {
@@ -992,21 +988,22 @@ func (c *Drs) DescribeRecoverySnapshotsRequest(input *DescribeRecoverySnapshotsI
 // API operation DescribeRecoverySnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeRecoverySnapshots
 func (c *Drs) DescribeRecoverySnapshots(input *DescribeRecoverySnapshotsInput) (*DescribeRecoverySnapshotsOutput, error) {
@@ -1038,15 +1035,14 @@ func (c *Drs) DescribeRecoverySnapshotsWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeRecoverySnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeRecoverySnapshotsPages(params,
-//        func(page *drs.DescribeRecoverySnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeRecoverySnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeRecoverySnapshotsPages(params,
+//	    func(page *drs.DescribeRecoverySnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeRecoverySnapshotsPages(input *DescribeRecoverySnapshotsInput, fn func(*DescribeRecoverySnapshotsOutput, bool) bool) error {
 	return c.DescribeRecoverySnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1098,14 +1094,13 @@ const opDescribeReplicationConfigurationTemplates = "DescribeReplicationConfigur
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplicationConfigurationTemplatesRequest method.
+//	req, resp := client.DescribeReplicationConfigurationTemplatesRequest(params)
 //
-//    // Example sending a request using the DescribeReplicationConfigurationTemplatesRequest method.
-//    req, resp := client.DescribeReplicationConfigurationTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeReplicationConfigurationTemplates
 func (c *Drs) DescribeReplicationConfigurationTemplatesRequest(input *DescribeReplicationConfigurationTemplatesInput) (req *request.Request, output *DescribeReplicationConfigurationTemplatesOutput) {
@@ -1142,21 +1137,22 @@ func (c *Drs) DescribeReplicationConfigurationTemplatesRequest(input *DescribeRe
 // API operation DescribeReplicationConfigurationTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeReplicationConfigurationTemplates
 func (c *Drs) DescribeReplicationConfigurationTemplates(input *DescribeReplicationConfigurationTemplatesInput) (*DescribeReplicationConfigurationTemplatesOutput, error) {
@@ -1188,15 +1184,14 @@ func (c *Drs) DescribeReplicationConfigurationTemplatesWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReplicationConfigurationTemplates operation.
-//    pageNum := 0
-//    err := client.DescribeReplicationConfigurationTemplatesPages(params,
-//        func(page *drs.DescribeReplicationConfigurationTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReplicationConfigurationTemplates operation.
+//	pageNum := 0
+//	err := client.DescribeReplicationConfigurationTemplatesPages(params,
+//	    func(page *drs.DescribeReplicationConfigurationTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeReplicationConfigurationTemplatesPages(input *DescribeReplicationConfigurationTemplatesInput, fn func(*DescribeReplicationConfigurationTemplatesOutput, bool) bool) error {
 	return c.DescribeReplicationConfigurationTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1248,14 +1243,13 @@ const opDescribeSourceServers = "DescribeSourceServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSourceServersRequest method.
+//	req, resp := client.DescribeSourceServersRequest(params)
 //
-//    // Example sending a request using the DescribeSourceServersRequest method.
-//    req, resp := client.DescribeSourceServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeSourceServers
 func (c *Drs) DescribeSourceServersRequest(input *DescribeSourceServersInput) (req *request.Request, output *DescribeSourceServersOutput) {
@@ -1292,18 +1286,19 @@ func (c *Drs) DescribeSourceServersRequest(input *DescribeSourceServersInput) (r
 // API operation DescribeSourceServers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DescribeSourceServers
 func (c *Drs) DescribeSourceServers(input *DescribeSourceServersInput) (*DescribeSourceServersOutput, error) {
@@ -1335,15 +1330,14 @@ func (c *Drs) DescribeSourceServersWithContext(ctx aws.Context, input *DescribeS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSourceServers operation.
-//    pageNum := 0
-//    err := client.DescribeSourceServersPages(params,
-//        func(page *drs.DescribeSourceServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSourceServers operation.
+//	pageNum := 0
+//	err := client.DescribeSourceServersPages(params,
+//	    func(page *drs.DescribeSourceServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Drs) DescribeSourceServersPages(input *DescribeSourceServersInput, fn func(*DescribeSourceServersOutput, bool) bool) error {
 	return c.DescribeSourceServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1395,14 +1389,13 @@ const opDisconnectRecoveryInstance = "DisconnectRecoveryInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectRecoveryInstanceRequest method.
+//	req, resp := client.DisconnectRecoveryInstanceRequest(params)
 //
-//    // Example sending a request using the DisconnectRecoveryInstanceRequest method.
-//    req, resp := client.DisconnectRecoveryInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DisconnectRecoveryInstance
 func (c *Drs) DisconnectRecoveryInstanceRequest(input *DisconnectRecoveryInstanceInput) (req *request.Request, output *DisconnectRecoveryInstanceOutput) {
@@ -1444,25 +1437,26 @@ func (c *Drs) DisconnectRecoveryInstanceRequest(input *DisconnectRecoveryInstanc
 // API operation DisconnectRecoveryInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DisconnectRecoveryInstance
 func (c *Drs) DisconnectRecoveryInstance(input *DisconnectRecoveryInstanceInput) (*DisconnectRecoveryInstanceOutput, error) {
@@ -1502,14 +1496,13 @@ const opDisconnectSourceServer = "DisconnectSourceServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectSourceServerRequest method.
+//	req, resp := client.DisconnectSourceServerRequest(params)
 //
-//    // Example sending a request using the DisconnectSourceServerRequest method.
-//    req, resp := client.DisconnectSourceServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DisconnectSourceServer
 func (c *Drs) DisconnectSourceServerRequest(input *DisconnectSourceServerInput) (req *request.Request, output *DisconnectSourceServerOutput) {
@@ -1551,22 +1544,23 @@ func (c *Drs) DisconnectSourceServerRequest(input *DisconnectSourceServerInput) 
 // API operation DisconnectSourceServer for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/DisconnectSourceServer
 func (c *Drs) DisconnectSourceServer(input *DisconnectSourceServerInput) (*DisconnectSourceServerOutput, error) {
@@ -1606,14 +1600,13 @@ const opGetFailbackReplicationConfiguration = "GetFailbackReplicationConfigurati
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFailbackReplicationConfigurationRequest method.
+//	req, resp := client.GetFailbackReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetFailbackReplicationConfigurationRequest method.
-//    req, resp := client.GetFailbackReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetFailbackReplicationConfiguration
 func (c *Drs) GetFailbackReplicationConfigurationRequest(input *GetFailbackReplicationConfigurationInput) (req *request.Request, output *GetFailbackReplicationConfigurationOutput) {
@@ -1645,18 +1638,19 @@ func (c *Drs) GetFailbackReplicationConfigurationRequest(input *GetFailbackRepli
 // API operation GetFailbackReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetFailbackReplicationConfiguration
 func (c *Drs) GetFailbackReplicationConfiguration(input *GetFailbackReplicationConfigurationInput) (*GetFailbackReplicationConfigurationOutput, error) {
@@ -1696,14 +1690,13 @@ const opGetLaunchConfiguration = "GetLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchConfigurationRequest method.
+//	req, resp := client.GetLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the GetLaunchConfigurationRequest method.
-//    req, resp := client.GetLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetLaunchConfiguration
 func (c *Drs) GetLaunchConfigurationRequest(input *GetLaunchConfigurationInput) (req *request.Request, output *GetLaunchConfigurationOutput) {
@@ -1734,18 +1727,19 @@ func (c *Drs) GetLaunchConfigurationRequest(input *GetLaunchConfigurationInput) 
 // API operation GetLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetLaunchConfiguration
 func (c *Drs) GetLaunchConfiguration(input *GetLaunchConfigurationInput) (*GetLaunchConfigurationOutput, error) {
@@ -1785,14 +1779,13 @@ const opGetReplicationConfiguration = "GetReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReplicationConfigurationRequest method.
+//	req, resp := client.GetReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetReplicationConfigurationRequest method.
-//    req, resp := client.GetReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetReplicationConfiguration
 func (c *Drs) GetReplicationConfigurationRequest(input *GetReplicationConfigurationInput) (req *request.Request, output *GetReplicationConfigurationOutput) {
@@ -1823,18 +1816,19 @@ func (c *Drs) GetReplicationConfigurationRequest(input *GetReplicationConfigurat
 // API operation GetReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/GetReplicationConfiguration
 func (c *Drs) GetReplicationConfiguration(input *GetReplicationConfigurationInput) (*GetReplicationConfigurationOutput, error) {
@@ -1874,14 +1868,13 @@ const opInitializeService = "InitializeService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InitializeServiceRequest method.
+//	req, resp := client.InitializeServiceRequest(params)
 //
-//    // Example sending a request using the InitializeServiceRequest method.
-//    req, resp := client.InitializeServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/InitializeService
 func (c *Drs) InitializeServiceRequest(input *InitializeServiceInput) (req *request.Request, output *InitializeServiceOutput) {
@@ -1913,18 +1906,19 @@ func (c *Drs) InitializeServiceRequest(input *InitializeServiceInput) (req *requ
 // API operation InitializeService for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/InitializeService
 func (c *Drs) InitializeService(input *InitializeServiceInput) (*InitializeServiceOutput, error) {
@@ -1964,14 +1958,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/ListTagsForResource
 func (c *Drs) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2002,21 +1995,22 @@ func (c *Drs) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/ListTagsForResource
 func (c *Drs) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2056,14 +2050,13 @@ const opRetryDataReplication = "RetryDataReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetryDataReplicationRequest method.
+//	req, resp := client.RetryDataReplicationRequest(params)
 //
-//    // Example sending a request using the RetryDataReplicationRequest method.
-//    req, resp := client.RetryDataReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/RetryDataReplication
 func (c *Drs) RetryDataReplicationRequest(input *RetryDataReplicationInput) (req *request.Request, output *RetryDataReplicationOutput) {
@@ -2097,21 +2090,22 @@ func (c *Drs) RetryDataReplicationRequest(input *RetryDataReplicationInput) (req
 // API operation RetryDataReplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/RetryDataReplication
 func (c *Drs) RetryDataReplication(input *RetryDataReplicationInput) (*RetryDataReplicationOutput, error) {
@@ -2151,14 +2145,13 @@ const opStartFailbackLaunch = "StartFailbackLaunch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFailbackLaunchRequest method.
+//	req, resp := client.StartFailbackLaunchRequest(params)
 //
-//    // Example sending a request using the StartFailbackLaunchRequest method.
-//    req, resp := client.StartFailbackLaunchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StartFailbackLaunch
 func (c *Drs) StartFailbackLaunchRequest(input *StartFailbackLaunchInput) (req *request.Request, output *StartFailbackLaunchOutput) {
@@ -2191,25 +2184,26 @@ func (c *Drs) StartFailbackLaunchRequest(input *StartFailbackLaunchInput) (req *
 // API operation StartFailbackLaunch for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ServiceQuotaExceededException
-//   The request could not be completed because its exceeded the service quota.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     The request could not be completed because its exceeded the service quota.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StartFailbackLaunch
 func (c *Drs) StartFailbackLaunch(input *StartFailbackLaunchInput) (*StartFailbackLaunchOutput, error) {
@@ -2249,14 +2243,13 @@ const opStartRecovery = "StartRecovery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartRecoveryRequest method.
+//	req, resp := client.StartRecoveryRequest(params)
 //
-//    // Example sending a request using the StartRecoveryRequest method.
-//    req, resp := client.StartRecoveryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StartRecovery
 func (c *Drs) StartRecoveryRequest(input *StartRecoveryInput) (req *request.Request, output *StartRecoveryOutput) {
@@ -2289,22 +2282,23 @@ func (c *Drs) StartRecoveryRequest(input *StartRecoveryInput) (req *request.Requ
 // API operation StartRecovery for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ServiceQuotaExceededException
-//   The request could not be completed because its exceeded the service quota.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     The request could not be completed because its exceeded the service quota.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StartRecovery
 func (c *Drs) StartRecovery(input *StartRecoveryInput) (*StartRecoveryOutput, error) {
@@ -2344,14 +2338,13 @@ const opStopFailback = "StopFailback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopFailbackRequest method.
+//	req, resp := client.StopFailbackRequest(params)
 //
-//    // Example sending a request using the StopFailbackRequest method.
-//    req, resp := client.StopFailbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StopFailback
 func (c *Drs) StopFailbackRequest(input *StopFailbackInput) (req *request.Request, output *StopFailbackOutput) {
@@ -2384,18 +2377,19 @@ func (c *Drs) StopFailbackRequest(input *StopFailbackInput) (req *request.Reques
 // API operation StopFailback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/StopFailback
 func (c *Drs) StopFailback(input *StopFailbackInput) (*StopFailbackOutput, error) {
@@ -2435,14 +2429,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/TagResource
 func (c *Drs) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2477,21 +2470,22 @@ func (c *Drs) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/TagResource
 func (c *Drs) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2531,14 +2525,13 @@ const opTerminateRecoveryInstances = "TerminateRecoveryInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateRecoveryInstancesRequest method.
+//	req, resp := client.TerminateRecoveryInstancesRequest(params)
 //
-//    // Example sending a request using the TerminateRecoveryInstancesRequest method.
-//    req, resp := client.TerminateRecoveryInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/TerminateRecoveryInstances
 func (c *Drs) TerminateRecoveryInstancesRequest(input *TerminateRecoveryInstancesInput) (req *request.Request, output *TerminateRecoveryInstancesOutput) {
@@ -2571,22 +2564,23 @@ func (c *Drs) TerminateRecoveryInstancesRequest(input *TerminateRecoveryInstance
 // API operation TerminateRecoveryInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ServiceQuotaExceededException
-//   The request could not be completed because its exceeded the service quota.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     The request could not be completed because its exceeded the service quota.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/TerminateRecoveryInstances
 func (c *Drs) TerminateRecoveryInstances(input *TerminateRecoveryInstancesInput) (*TerminateRecoveryInstancesOutput, error) {
@@ -2626,14 +2620,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UntagResource
 func (c *Drs) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2666,21 +2659,22 @@ func (c *Drs) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UntagResource
 func (c *Drs) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2720,14 +2714,13 @@ const opUpdateFailbackReplicationConfiguration = "UpdateFailbackReplicationConfi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFailbackReplicationConfigurationRequest method.
+//	req, resp := client.UpdateFailbackReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateFailbackReplicationConfigurationRequest method.
-//    req, resp := client.UpdateFailbackReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateFailbackReplicationConfiguration
 func (c *Drs) UpdateFailbackReplicationConfigurationRequest(input *UpdateFailbackReplicationConfigurationInput) (req *request.Request, output *UpdateFailbackReplicationConfigurationOutput) {
@@ -2760,21 +2753,22 @@ func (c *Drs) UpdateFailbackReplicationConfigurationRequest(input *UpdateFailbac
 // API operation UpdateFailbackReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateFailbackReplicationConfiguration
 func (c *Drs) UpdateFailbackReplicationConfiguration(input *UpdateFailbackReplicationConfigurationInput) (*UpdateFailbackReplicationConfigurationOutput, error) {
@@ -2814,14 +2808,13 @@ const opUpdateLaunchConfiguration = "UpdateLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLaunchConfigurationRequest method.
+//	req, resp := client.UpdateLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateLaunchConfigurationRequest method.
-//    req, resp := client.UpdateLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateLaunchConfiguration
 func (c *Drs) UpdateLaunchConfigurationRequest(input *UpdateLaunchConfigurationInput) (req *request.Request, output *UpdateLaunchConfigurationOutput) {
@@ -2852,25 +2845,26 @@ func (c *Drs) UpdateLaunchConfigurationRequest(input *UpdateLaunchConfigurationI
 // API operation UpdateLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateLaunchConfiguration
 func (c *Drs) UpdateLaunchConfiguration(input *UpdateLaunchConfigurationInput) (*UpdateLaunchConfigurationOutput, error) {
@@ -2910,14 +2904,13 @@ const opUpdateReplicationConfiguration = "UpdateReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationConfigurationRequest method.
+//	req, resp := client.UpdateReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationConfigurationRequest method.
-//    req, resp := client.UpdateReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateReplicationConfiguration
 func (c *Drs) UpdateReplicationConfigurationRequest(input *UpdateReplicationConfigurationInput) (req *request.Request, output *UpdateReplicationConfigurationOutput) {
@@ -2948,28 +2941,29 @@ func (c *Drs) UpdateReplicationConfigurationRequest(input *UpdateReplicationConf
 // API operation UpdateReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateReplicationConfiguration
 func (c *Drs) UpdateReplicationConfiguration(input *UpdateReplicationConfigurationInput) (*UpdateReplicationConfigurationOutput, error) {
@@ -3009,14 +3003,13 @@ const opUpdateReplicationConfigurationTemplate = "UpdateReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationConfigurationTemplateRequest method.
+//	req, resp := client.UpdateReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationConfigurationTemplateRequest method.
-//    req, resp := client.UpdateReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateReplicationConfigurationTemplate
 func (c *Drs) UpdateReplicationConfigurationTemplateRequest(input *UpdateReplicationConfigurationTemplateInput) (req *request.Request, output *UpdateReplicationConfigurationTemplateOutput) {
@@ -3047,24 +3040,25 @@ func (c *Drs) UpdateReplicationConfigurationTemplateRequest(input *UpdateReplica
 // API operation UpdateReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource for this operation was not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     The resource for this operation was not found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * AccessDeniedException
-//   TYou do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by the AWS service.
+//   - AccessDeniedException
+//     TYou do not have sufficient access to perform this action.
 //
-//   * UninitializedAccountException
-//   The account performing the request has not been initialized.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by the AWS service.
+//
+//   - UninitializedAccountException
+//     The account performing the request has not been initialized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/drs-2020-02-26/UpdateReplicationConfigurationTemplate
 func (c *Drs) UpdateReplicationConfigurationTemplate(input *UpdateReplicationConfigurationTemplateInput) (*UpdateReplicationConfigurationTemplateOutput, error) {

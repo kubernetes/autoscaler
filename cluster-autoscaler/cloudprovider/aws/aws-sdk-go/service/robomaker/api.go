@@ -29,14 +29,13 @@ const opBatchDeleteWorlds = "BatchDeleteWorlds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteWorldsRequest method.
+//	req, resp := client.BatchDeleteWorldsRequest(params)
 //
-//    // Example sending a request using the BatchDeleteWorldsRequest method.
-//    req, resp := client.BatchDeleteWorldsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/BatchDeleteWorlds
 func (c *RoboMaker) BatchDeleteWorldsRequest(input *BatchDeleteWorldsInput) (req *request.Request, output *BatchDeleteWorldsOutput) {
@@ -67,16 +66,17 @@ func (c *RoboMaker) BatchDeleteWorldsRequest(input *BatchDeleteWorldsInput) (req
 // API operation BatchDeleteWorlds for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/BatchDeleteWorlds
 func (c *RoboMaker) BatchDeleteWorlds(input *BatchDeleteWorldsInput) (*BatchDeleteWorldsOutput, error) {
@@ -116,14 +116,13 @@ const opBatchDescribeSimulationJob = "BatchDescribeSimulationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDescribeSimulationJobRequest method.
+//	req, resp := client.BatchDescribeSimulationJobRequest(params)
 //
-//    // Example sending a request using the BatchDescribeSimulationJobRequest method.
-//    req, resp := client.BatchDescribeSimulationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/BatchDescribeSimulationJob
 func (c *RoboMaker) BatchDescribeSimulationJobRequest(input *BatchDescribeSimulationJobInput) (req *request.Request, output *BatchDescribeSimulationJobOutput) {
@@ -154,19 +153,20 @@ func (c *RoboMaker) BatchDescribeSimulationJobRequest(input *BatchDescribeSimula
 // API operation BatchDescribeSimulationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/BatchDescribeSimulationJob
 func (c *RoboMaker) BatchDescribeSimulationJob(input *BatchDescribeSimulationJobInput) (*BatchDescribeSimulationJobOutput, error) {
@@ -206,14 +206,13 @@ const opCancelDeploymentJob = "CancelDeploymentJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelDeploymentJobRequest method.
+//	req, resp := client.CancelDeploymentJobRequest(params)
 //
-//    // Example sending a request using the CancelDeploymentJobRequest method.
-//    req, resp := client.CancelDeploymentJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelDeploymentJob
 //
@@ -253,19 +252,20 @@ func (c *RoboMaker) CancelDeploymentJobRequest(input *CancelDeploymentJobInput) 
 // API operation CancelDeploymentJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelDeploymentJob
 //
@@ -309,14 +309,13 @@ const opCancelSimulationJob = "CancelSimulationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSimulationJobRequest method.
+//	req, resp := client.CancelSimulationJobRequest(params)
 //
-//    // Example sending a request using the CancelSimulationJobRequest method.
-//    req, resp := client.CancelSimulationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelSimulationJob
 func (c *RoboMaker) CancelSimulationJobRequest(input *CancelSimulationJobInput) (req *request.Request, output *CancelSimulationJobOutput) {
@@ -348,19 +347,20 @@ func (c *RoboMaker) CancelSimulationJobRequest(input *CancelSimulationJobInput) 
 // API operation CancelSimulationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelSimulationJob
 func (c *RoboMaker) CancelSimulationJob(input *CancelSimulationJobInput) (*CancelSimulationJobOutput, error) {
@@ -400,14 +400,13 @@ const opCancelSimulationJobBatch = "CancelSimulationJobBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSimulationJobBatchRequest method.
+//	req, resp := client.CancelSimulationJobBatchRequest(params)
 //
-//    // Example sending a request using the CancelSimulationJobBatchRequest method.
-//    req, resp := client.CancelSimulationJobBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelSimulationJobBatch
 func (c *RoboMaker) CancelSimulationJobBatchRequest(input *CancelSimulationJobBatchInput) (req *request.Request, output *CancelSimulationJobBatchOutput) {
@@ -441,19 +440,20 @@ func (c *RoboMaker) CancelSimulationJobBatchRequest(input *CancelSimulationJobBa
 // API operation CancelSimulationJobBatch for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelSimulationJobBatch
 func (c *RoboMaker) CancelSimulationJobBatch(input *CancelSimulationJobBatchInput) (*CancelSimulationJobBatchOutput, error) {
@@ -493,14 +493,13 @@ const opCancelWorldExportJob = "CancelWorldExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelWorldExportJobRequest method.
+//	req, resp := client.CancelWorldExportJobRequest(params)
 //
-//    // Example sending a request using the CancelWorldExportJobRequest method.
-//    req, resp := client.CancelWorldExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelWorldExportJob
 func (c *RoboMaker) CancelWorldExportJobRequest(input *CancelWorldExportJobInput) (req *request.Request, output *CancelWorldExportJobOutput) {
@@ -532,19 +531,20 @@ func (c *RoboMaker) CancelWorldExportJobRequest(input *CancelWorldExportJobInput
 // API operation CancelWorldExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelWorldExportJob
 func (c *RoboMaker) CancelWorldExportJob(input *CancelWorldExportJobInput) (*CancelWorldExportJobOutput, error) {
@@ -584,14 +584,13 @@ const opCancelWorldGenerationJob = "CancelWorldGenerationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelWorldGenerationJobRequest method.
+//	req, resp := client.CancelWorldGenerationJobRequest(params)
 //
-//    // Example sending a request using the CancelWorldGenerationJobRequest method.
-//    req, resp := client.CancelWorldGenerationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelWorldGenerationJob
 func (c *RoboMaker) CancelWorldGenerationJobRequest(input *CancelWorldGenerationJobInput) (req *request.Request, output *CancelWorldGenerationJobOutput) {
@@ -623,19 +622,20 @@ func (c *RoboMaker) CancelWorldGenerationJobRequest(input *CancelWorldGeneration
 // API operation CancelWorldGenerationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CancelWorldGenerationJob
 func (c *RoboMaker) CancelWorldGenerationJob(input *CancelWorldGenerationJobInput) (*CancelWorldGenerationJobOutput, error) {
@@ -675,14 +675,13 @@ const opCreateDeploymentJob = "CreateDeploymentJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentJobRequest method.
+//	req, resp := client.CreateDeploymentJobRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentJobRequest method.
-//    req, resp := client.CreateDeploymentJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateDeploymentJob
 //
@@ -727,31 +726,32 @@ func (c *RoboMaker) CreateDeploymentJobRequest(input *CreateDeploymentJobInput) 
 // API operation CreateDeploymentJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * ConcurrentDeploymentException
-//   The failure percentage threshold percentage was met.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - ConcurrentDeploymentException
+//     The failure percentage threshold percentage was met.
+//
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateDeploymentJob
 //
@@ -795,14 +795,13 @@ const opCreateFleet = "CreateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetRequest method.
+//	req, resp := client.CreateFleetRequest(params)
 //
-//    // Example sending a request using the CreateFleetRequest method.
-//    req, resp := client.CreateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateFleet
 //
@@ -840,20 +839,21 @@ func (c *RoboMaker) CreateFleetRequest(input *CreateFleetInput) (req *request.Re
 // API operation CreateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateFleet
 //
@@ -897,14 +897,13 @@ const opCreateRobot = "CreateRobot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRobotRequest method.
+//	req, resp := client.CreateRobotRequest(params)
 //
-//    // Example sending a request using the CreateRobotRequest method.
-//    req, resp := client.CreateRobotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobot
 //
@@ -942,23 +941,24 @@ func (c *RoboMaker) CreateRobotRequest(input *CreateRobotInput) (req *request.Re
 // API operation CreateRobot for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobot
 //
@@ -1002,14 +1002,13 @@ const opCreateRobotApplication = "CreateRobotApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRobotApplicationRequest method.
+//	req, resp := client.CreateRobotApplicationRequest(params)
 //
-//    // Example sending a request using the CreateRobotApplicationRequest method.
-//    req, resp := client.CreateRobotApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobotApplication
 func (c *RoboMaker) CreateRobotApplicationRequest(input *CreateRobotApplicationInput) (req *request.Request, output *CreateRobotApplicationOutput) {
@@ -1040,28 +1039,29 @@ func (c *RoboMaker) CreateRobotApplicationRequest(input *CreateRobotApplicationI
 // API operation CreateRobotApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobotApplication
 func (c *RoboMaker) CreateRobotApplication(input *CreateRobotApplicationInput) (*CreateRobotApplicationOutput, error) {
@@ -1101,14 +1101,13 @@ const opCreateRobotApplicationVersion = "CreateRobotApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRobotApplicationVersionRequest method.
+//	req, resp := client.CreateRobotApplicationVersionRequest(params)
 //
-//    // Example sending a request using the CreateRobotApplicationVersionRequest method.
-//    req, resp := client.CreateRobotApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobotApplicationVersion
 func (c *RoboMaker) CreateRobotApplicationVersionRequest(input *CreateRobotApplicationVersionInput) (req *request.Request, output *CreateRobotApplicationVersionOutput) {
@@ -1139,25 +1138,26 @@ func (c *RoboMaker) CreateRobotApplicationVersionRequest(input *CreateRobotAppli
 // API operation CreateRobotApplicationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateRobotApplicationVersion
 func (c *RoboMaker) CreateRobotApplicationVersion(input *CreateRobotApplicationVersionInput) (*CreateRobotApplicationVersionOutput, error) {
@@ -1197,14 +1197,13 @@ const opCreateSimulationApplication = "CreateSimulationApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSimulationApplicationRequest method.
+//	req, resp := client.CreateSimulationApplicationRequest(params)
 //
-//    // Example sending a request using the CreateSimulationApplicationRequest method.
-//    req, resp := client.CreateSimulationApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationApplication
 func (c *RoboMaker) CreateSimulationApplicationRequest(input *CreateSimulationApplicationInput) (req *request.Request, output *CreateSimulationApplicationOutput) {
@@ -1235,28 +1234,29 @@ func (c *RoboMaker) CreateSimulationApplicationRequest(input *CreateSimulationAp
 // API operation CreateSimulationApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationApplication
 func (c *RoboMaker) CreateSimulationApplication(input *CreateSimulationApplicationInput) (*CreateSimulationApplicationOutput, error) {
@@ -1296,14 +1296,13 @@ const opCreateSimulationApplicationVersion = "CreateSimulationApplicationVersion
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSimulationApplicationVersionRequest method.
+//	req, resp := client.CreateSimulationApplicationVersionRequest(params)
 //
-//    // Example sending a request using the CreateSimulationApplicationVersionRequest method.
-//    req, resp := client.CreateSimulationApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationApplicationVersion
 func (c *RoboMaker) CreateSimulationApplicationVersionRequest(input *CreateSimulationApplicationVersionInput) (req *request.Request, output *CreateSimulationApplicationVersionOutput) {
@@ -1334,25 +1333,26 @@ func (c *RoboMaker) CreateSimulationApplicationVersionRequest(input *CreateSimul
 // API operation CreateSimulationApplicationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationApplicationVersion
 func (c *RoboMaker) CreateSimulationApplicationVersion(input *CreateSimulationApplicationVersionInput) (*CreateSimulationApplicationVersionOutput, error) {
@@ -1392,14 +1392,13 @@ const opCreateSimulationJob = "CreateSimulationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSimulationJobRequest method.
+//	req, resp := client.CreateSimulationJobRequest(params)
 //
-//    // Example sending a request using the CreateSimulationJobRequest method.
-//    req, resp := client.CreateSimulationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationJob
 func (c *RoboMaker) CreateSimulationJobRequest(input *CreateSimulationJobInput) (req *request.Request, output *CreateSimulationJobOutput) {
@@ -1433,31 +1432,32 @@ func (c *RoboMaker) CreateSimulationJobRequest(input *CreateSimulationJobInput) 
 // API operation CreateSimulationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
+//
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateSimulationJob
 func (c *RoboMaker) CreateSimulationJob(input *CreateSimulationJobInput) (*CreateSimulationJobOutput, error) {
@@ -1497,14 +1497,13 @@ const opCreateWorldExportJob = "CreateWorldExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorldExportJobRequest method.
+//	req, resp := client.CreateWorldExportJobRequest(params)
 //
-//    // Example sending a request using the CreateWorldExportJobRequest method.
-//    req, resp := client.CreateWorldExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldExportJob
 func (c *RoboMaker) CreateWorldExportJobRequest(input *CreateWorldExportJobInput) (req *request.Request, output *CreateWorldExportJobOutput) {
@@ -1535,27 +1534,28 @@ func (c *RoboMaker) CreateWorldExportJobRequest(input *CreateWorldExportJobInput
 // API operation CreateWorldExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
+//
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldExportJob
 func (c *RoboMaker) CreateWorldExportJob(input *CreateWorldExportJobInput) (*CreateWorldExportJobOutput, error) {
@@ -1595,14 +1595,13 @@ const opCreateWorldGenerationJob = "CreateWorldGenerationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorldGenerationJobRequest method.
+//	req, resp := client.CreateWorldGenerationJobRequest(params)
 //
-//    // Example sending a request using the CreateWorldGenerationJobRequest method.
-//    req, resp := client.CreateWorldGenerationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldGenerationJob
 func (c *RoboMaker) CreateWorldGenerationJobRequest(input *CreateWorldGenerationJobInput) (req *request.Request, output *CreateWorldGenerationJobOutput) {
@@ -1633,31 +1632,32 @@ func (c *RoboMaker) CreateWorldGenerationJobRequest(input *CreateWorldGeneration
 // API operation CreateWorldGenerationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the server.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
+//
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the server.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldGenerationJob
 func (c *RoboMaker) CreateWorldGenerationJob(input *CreateWorldGenerationJobInput) (*CreateWorldGenerationJobOutput, error) {
@@ -1697,14 +1697,13 @@ const opCreateWorldTemplate = "CreateWorldTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorldTemplateRequest method.
+//	req, resp := client.CreateWorldTemplateRequest(params)
 //
-//    // Example sending a request using the CreateWorldTemplateRequest method.
-//    req, resp := client.CreateWorldTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldTemplate
 func (c *RoboMaker) CreateWorldTemplateRequest(input *CreateWorldTemplateInput) (req *request.Request, output *CreateWorldTemplateOutput) {
@@ -1735,26 +1734,27 @@ func (c *RoboMaker) CreateWorldTemplateRequest(input *CreateWorldTemplateInput) 
 // API operation CreateWorldTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/CreateWorldTemplate
 func (c *RoboMaker) CreateWorldTemplate(input *CreateWorldTemplateInput) (*CreateWorldTemplateOutput, error) {
@@ -1794,14 +1794,13 @@ const opDeleteFleet = "DeleteFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetRequest method.
+//	req, resp := client.DeleteFleetRequest(params)
 //
-//    // Example sending a request using the DeleteFleetRequest method.
-//    req, resp := client.DeleteFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteFleet
 //
@@ -1841,16 +1840,17 @@ func (c *RoboMaker) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Re
 // API operation DeleteFleet for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteFleet
 //
@@ -1894,14 +1894,13 @@ const opDeleteRobot = "DeleteRobot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRobotRequest method.
+//	req, resp := client.DeleteRobotRequest(params)
 //
-//    // Example sending a request using the DeleteRobotRequest method.
-//    req, resp := client.DeleteRobotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteRobot
 //
@@ -1941,16 +1940,17 @@ func (c *RoboMaker) DeleteRobotRequest(input *DeleteRobotInput) (req *request.Re
 // API operation DeleteRobot for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteRobot
 //
@@ -1994,14 +1994,13 @@ const opDeleteRobotApplication = "DeleteRobotApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRobotApplicationRequest method.
+//	req, resp := client.DeleteRobotApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteRobotApplicationRequest method.
-//    req, resp := client.DeleteRobotApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteRobotApplication
 func (c *RoboMaker) DeleteRobotApplicationRequest(input *DeleteRobotApplicationInput) (req *request.Request, output *DeleteRobotApplicationOutput) {
@@ -2033,16 +2032,17 @@ func (c *RoboMaker) DeleteRobotApplicationRequest(input *DeleteRobotApplicationI
 // API operation DeleteRobotApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteRobotApplication
 func (c *RoboMaker) DeleteRobotApplication(input *DeleteRobotApplicationInput) (*DeleteRobotApplicationOutput, error) {
@@ -2082,14 +2082,13 @@ const opDeleteSimulationApplication = "DeleteSimulationApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSimulationApplicationRequest method.
+//	req, resp := client.DeleteSimulationApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteSimulationApplicationRequest method.
-//    req, resp := client.DeleteSimulationApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteSimulationApplication
 func (c *RoboMaker) DeleteSimulationApplicationRequest(input *DeleteSimulationApplicationInput) (req *request.Request, output *DeleteSimulationApplicationOutput) {
@@ -2121,16 +2120,17 @@ func (c *RoboMaker) DeleteSimulationApplicationRequest(input *DeleteSimulationAp
 // API operation DeleteSimulationApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteSimulationApplication
 func (c *RoboMaker) DeleteSimulationApplication(input *DeleteSimulationApplicationInput) (*DeleteSimulationApplicationOutput, error) {
@@ -2170,14 +2170,13 @@ const opDeleteWorldTemplate = "DeleteWorldTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorldTemplateRequest method.
+//	req, resp := client.DeleteWorldTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteWorldTemplateRequest method.
-//    req, resp := client.DeleteWorldTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteWorldTemplate
 func (c *RoboMaker) DeleteWorldTemplateRequest(input *DeleteWorldTemplateInput) (req *request.Request, output *DeleteWorldTemplateOutput) {
@@ -2209,19 +2208,20 @@ func (c *RoboMaker) DeleteWorldTemplateRequest(input *DeleteWorldTemplateInput) 
 // API operation DeleteWorldTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeleteWorldTemplate
 func (c *RoboMaker) DeleteWorldTemplate(input *DeleteWorldTemplateInput) (*DeleteWorldTemplateOutput, error) {
@@ -2261,14 +2261,13 @@ const opDeregisterRobot = "DeregisterRobot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterRobotRequest method.
+//	req, resp := client.DeregisterRobotRequest(params)
 //
-//    // Example sending a request using the DeregisterRobotRequest method.
-//    req, resp := client.DeregisterRobotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeregisterRobot
 //
@@ -2307,19 +2306,20 @@ func (c *RoboMaker) DeregisterRobotRequest(input *DeregisterRobotInput) (req *re
 // API operation DeregisterRobot for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DeregisterRobot
 //
@@ -2363,14 +2363,13 @@ const opDescribeDeploymentJob = "DescribeDeploymentJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeploymentJobRequest method.
+//	req, resp := client.DescribeDeploymentJobRequest(params)
 //
-//    // Example sending a request using the DescribeDeploymentJobRequest method.
-//    req, resp := client.DescribeDeploymentJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeDeploymentJob
 //
@@ -2409,19 +2408,20 @@ func (c *RoboMaker) DescribeDeploymentJobRequest(input *DescribeDeploymentJobInp
 // API operation DescribeDeploymentJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeDeploymentJob
 //
@@ -2465,14 +2465,13 @@ const opDescribeFleet = "DescribeFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetRequest method.
+//	req, resp := client.DescribeFleetRequest(params)
 //
-//    // Example sending a request using the DescribeFleetRequest method.
-//    req, resp := client.DescribeFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeFleet
 //
@@ -2511,19 +2510,20 @@ func (c *RoboMaker) DescribeFleetRequest(input *DescribeFleetInput) (req *reques
 // API operation DescribeFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeFleet
 //
@@ -2567,14 +2567,13 @@ const opDescribeRobot = "DescribeRobot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRobotRequest method.
+//	req, resp := client.DescribeRobotRequest(params)
 //
-//    // Example sending a request using the DescribeRobotRequest method.
-//    req, resp := client.DescribeRobotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeRobot
 //
@@ -2613,19 +2612,20 @@ func (c *RoboMaker) DescribeRobotRequest(input *DescribeRobotInput) (req *reques
 // API operation DescribeRobot for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeRobot
 //
@@ -2669,14 +2669,13 @@ const opDescribeRobotApplication = "DescribeRobotApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRobotApplicationRequest method.
+//	req, resp := client.DescribeRobotApplicationRequest(params)
 //
-//    // Example sending a request using the DescribeRobotApplicationRequest method.
-//    req, resp := client.DescribeRobotApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeRobotApplication
 func (c *RoboMaker) DescribeRobotApplicationRequest(input *DescribeRobotApplicationInput) (req *request.Request, output *DescribeRobotApplicationOutput) {
@@ -2707,19 +2706,20 @@ func (c *RoboMaker) DescribeRobotApplicationRequest(input *DescribeRobotApplicat
 // API operation DescribeRobotApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeRobotApplication
 func (c *RoboMaker) DescribeRobotApplication(input *DescribeRobotApplicationInput) (*DescribeRobotApplicationOutput, error) {
@@ -2759,14 +2759,13 @@ const opDescribeSimulationApplication = "DescribeSimulationApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSimulationApplicationRequest method.
+//	req, resp := client.DescribeSimulationApplicationRequest(params)
 //
-//    // Example sending a request using the DescribeSimulationApplicationRequest method.
-//    req, resp := client.DescribeSimulationApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationApplication
 func (c *RoboMaker) DescribeSimulationApplicationRequest(input *DescribeSimulationApplicationInput) (req *request.Request, output *DescribeSimulationApplicationOutput) {
@@ -2797,19 +2796,20 @@ func (c *RoboMaker) DescribeSimulationApplicationRequest(input *DescribeSimulati
 // API operation DescribeSimulationApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationApplication
 func (c *RoboMaker) DescribeSimulationApplication(input *DescribeSimulationApplicationInput) (*DescribeSimulationApplicationOutput, error) {
@@ -2849,14 +2849,13 @@ const opDescribeSimulationJob = "DescribeSimulationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSimulationJobRequest method.
+//	req, resp := client.DescribeSimulationJobRequest(params)
 //
-//    // Example sending a request using the DescribeSimulationJobRequest method.
-//    req, resp := client.DescribeSimulationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationJob
 func (c *RoboMaker) DescribeSimulationJobRequest(input *DescribeSimulationJobInput) (req *request.Request, output *DescribeSimulationJobOutput) {
@@ -2887,19 +2886,20 @@ func (c *RoboMaker) DescribeSimulationJobRequest(input *DescribeSimulationJobInp
 // API operation DescribeSimulationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationJob
 func (c *RoboMaker) DescribeSimulationJob(input *DescribeSimulationJobInput) (*DescribeSimulationJobOutput, error) {
@@ -2939,14 +2939,13 @@ const opDescribeSimulationJobBatch = "DescribeSimulationJobBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSimulationJobBatchRequest method.
+//	req, resp := client.DescribeSimulationJobBatchRequest(params)
 //
-//    // Example sending a request using the DescribeSimulationJobBatchRequest method.
-//    req, resp := client.DescribeSimulationJobBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationJobBatch
 func (c *RoboMaker) DescribeSimulationJobBatchRequest(input *DescribeSimulationJobBatchInput) (req *request.Request, output *DescribeSimulationJobBatchOutput) {
@@ -2977,15 +2976,16 @@ func (c *RoboMaker) DescribeSimulationJobBatchRequest(input *DescribeSimulationJ
 // API operation DescribeSimulationJobBatch for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeSimulationJobBatch
 func (c *RoboMaker) DescribeSimulationJobBatch(input *DescribeSimulationJobBatchInput) (*DescribeSimulationJobBatchOutput, error) {
@@ -3025,14 +3025,13 @@ const opDescribeWorld = "DescribeWorld"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorldRequest method.
+//	req, resp := client.DescribeWorldRequest(params)
 //
-//    // Example sending a request using the DescribeWorldRequest method.
-//    req, resp := client.DescribeWorldRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorld
 func (c *RoboMaker) DescribeWorldRequest(input *DescribeWorldInput) (req *request.Request, output *DescribeWorldOutput) {
@@ -3063,19 +3062,20 @@ func (c *RoboMaker) DescribeWorldRequest(input *DescribeWorldInput) (req *reques
 // API operation DescribeWorld for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorld
 func (c *RoboMaker) DescribeWorld(input *DescribeWorldInput) (*DescribeWorldOutput, error) {
@@ -3115,14 +3115,13 @@ const opDescribeWorldExportJob = "DescribeWorldExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorldExportJobRequest method.
+//	req, resp := client.DescribeWorldExportJobRequest(params)
 //
-//    // Example sending a request using the DescribeWorldExportJobRequest method.
-//    req, resp := client.DescribeWorldExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldExportJob
 func (c *RoboMaker) DescribeWorldExportJobRequest(input *DescribeWorldExportJobInput) (req *request.Request, output *DescribeWorldExportJobOutput) {
@@ -3153,19 +3152,20 @@ func (c *RoboMaker) DescribeWorldExportJobRequest(input *DescribeWorldExportJobI
 // API operation DescribeWorldExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldExportJob
 func (c *RoboMaker) DescribeWorldExportJob(input *DescribeWorldExportJobInput) (*DescribeWorldExportJobOutput, error) {
@@ -3205,14 +3205,13 @@ const opDescribeWorldGenerationJob = "DescribeWorldGenerationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorldGenerationJobRequest method.
+//	req, resp := client.DescribeWorldGenerationJobRequest(params)
 //
-//    // Example sending a request using the DescribeWorldGenerationJobRequest method.
-//    req, resp := client.DescribeWorldGenerationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldGenerationJob
 func (c *RoboMaker) DescribeWorldGenerationJobRequest(input *DescribeWorldGenerationJobInput) (req *request.Request, output *DescribeWorldGenerationJobOutput) {
@@ -3243,19 +3242,20 @@ func (c *RoboMaker) DescribeWorldGenerationJobRequest(input *DescribeWorldGenera
 // API operation DescribeWorldGenerationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldGenerationJob
 func (c *RoboMaker) DescribeWorldGenerationJob(input *DescribeWorldGenerationJobInput) (*DescribeWorldGenerationJobOutput, error) {
@@ -3295,14 +3295,13 @@ const opDescribeWorldTemplate = "DescribeWorldTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorldTemplateRequest method.
+//	req, resp := client.DescribeWorldTemplateRequest(params)
 //
-//    // Example sending a request using the DescribeWorldTemplateRequest method.
-//    req, resp := client.DescribeWorldTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldTemplate
 func (c *RoboMaker) DescribeWorldTemplateRequest(input *DescribeWorldTemplateInput) (req *request.Request, output *DescribeWorldTemplateOutput) {
@@ -3333,19 +3332,20 @@ func (c *RoboMaker) DescribeWorldTemplateRequest(input *DescribeWorldTemplateInp
 // API operation DescribeWorldTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/DescribeWorldTemplate
 func (c *RoboMaker) DescribeWorldTemplate(input *DescribeWorldTemplateInput) (*DescribeWorldTemplateOutput, error) {
@@ -3385,14 +3385,13 @@ const opGetWorldTemplateBody = "GetWorldTemplateBody"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorldTemplateBodyRequest method.
+//	req, resp := client.GetWorldTemplateBodyRequest(params)
 //
-//    // Example sending a request using the GetWorldTemplateBodyRequest method.
-//    req, resp := client.GetWorldTemplateBodyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/GetWorldTemplateBody
 func (c *RoboMaker) GetWorldTemplateBodyRequest(input *GetWorldTemplateBodyInput) (req *request.Request, output *GetWorldTemplateBodyOutput) {
@@ -3423,19 +3422,20 @@ func (c *RoboMaker) GetWorldTemplateBodyRequest(input *GetWorldTemplateBodyInput
 // API operation GetWorldTemplateBody for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/GetWorldTemplateBody
 func (c *RoboMaker) GetWorldTemplateBody(input *GetWorldTemplateBodyInput) (*GetWorldTemplateBodyOutput, error) {
@@ -3475,14 +3475,13 @@ const opListDeploymentJobs = "ListDeploymentJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeploymentJobsRequest method.
+//	req, resp := client.ListDeploymentJobsRequest(params)
 //
-//    // Example sending a request using the ListDeploymentJobsRequest method.
-//    req, resp := client.ListDeploymentJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListDeploymentJobs
 //
@@ -3528,19 +3527,20 @@ func (c *RoboMaker) ListDeploymentJobsRequest(input *ListDeploymentJobsInput) (r
 // API operation ListDeploymentJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListDeploymentJobs
 //
@@ -3576,15 +3576,14 @@ func (c *RoboMaker) ListDeploymentJobsWithContext(ctx aws.Context, input *ListDe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeploymentJobs operation.
-//    pageNum := 0
-//    err := client.ListDeploymentJobsPages(params,
-//        func(page *robomaker.ListDeploymentJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeploymentJobs operation.
+//	pageNum := 0
+//	err := client.ListDeploymentJobsPages(params,
+//	    func(page *robomaker.ListDeploymentJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Support for the AWS RoboMaker application deployment feature has ended. For additional information, see https://docs.aws.amazon.com/robomaker/latest/dg/fleets.html.
 func (c *RoboMaker) ListDeploymentJobsPages(input *ListDeploymentJobsInput, fn func(*ListDeploymentJobsOutput, bool) bool) error {
@@ -3640,14 +3639,13 @@ const opListFleets = "ListFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFleetsRequest method.
+//	req, resp := client.ListFleetsRequest(params)
 //
-//    // Example sending a request using the ListFleetsRequest method.
-//    req, resp := client.ListFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListFleets
 //
@@ -3693,19 +3691,20 @@ func (c *RoboMaker) ListFleetsRequest(input *ListFleetsInput) (req *request.Requ
 // API operation ListFleets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListFleets
 //
@@ -3741,15 +3740,14 @@ func (c *RoboMaker) ListFleetsWithContext(ctx aws.Context, input *ListFleetsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFleets operation.
-//    pageNum := 0
-//    err := client.ListFleetsPages(params,
-//        func(page *robomaker.ListFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFleets operation.
+//	pageNum := 0
+//	err := client.ListFleetsPages(params,
+//	    func(page *robomaker.ListFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Support for the AWS RoboMaker application deployment feature has ended. For additional information, see https://docs.aws.amazon.com/robomaker/latest/dg/fleets.html.
 func (c *RoboMaker) ListFleetsPages(input *ListFleetsInput, fn func(*ListFleetsOutput, bool) bool) error {
@@ -3805,14 +3803,13 @@ const opListRobotApplications = "ListRobotApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRobotApplicationsRequest method.
+//	req, resp := client.ListRobotApplicationsRequest(params)
 //
-//    // Example sending a request using the ListRobotApplicationsRequest method.
-//    req, resp := client.ListRobotApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListRobotApplications
 func (c *RoboMaker) ListRobotApplicationsRequest(input *ListRobotApplicationsInput) (req *request.Request, output *ListRobotApplicationsOutput) {
@@ -3850,16 +3847,17 @@ func (c *RoboMaker) ListRobotApplicationsRequest(input *ListRobotApplicationsInp
 // API operation ListRobotApplications for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListRobotApplications
 func (c *RoboMaker) ListRobotApplications(input *ListRobotApplicationsInput) (*ListRobotApplicationsOutput, error) {
@@ -3891,15 +3889,14 @@ func (c *RoboMaker) ListRobotApplicationsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRobotApplications operation.
-//    pageNum := 0
-//    err := client.ListRobotApplicationsPages(params,
-//        func(page *robomaker.ListRobotApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRobotApplications operation.
+//	pageNum := 0
+//	err := client.ListRobotApplicationsPages(params,
+//	    func(page *robomaker.ListRobotApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListRobotApplicationsPages(input *ListRobotApplicationsInput, fn func(*ListRobotApplicationsOutput, bool) bool) error {
 	return c.ListRobotApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3951,14 +3948,13 @@ const opListRobots = "ListRobots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRobotsRequest method.
+//	req, resp := client.ListRobotsRequest(params)
 //
-//    // Example sending a request using the ListRobotsRequest method.
-//    req, resp := client.ListRobotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListRobots
 //
@@ -4004,19 +4000,20 @@ func (c *RoboMaker) ListRobotsRequest(input *ListRobotsInput) (req *request.Requ
 // API operation ListRobots for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListRobots
 //
@@ -4052,15 +4049,14 @@ func (c *RoboMaker) ListRobotsWithContext(ctx aws.Context, input *ListRobotsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRobots operation.
-//    pageNum := 0
-//    err := client.ListRobotsPages(params,
-//        func(page *robomaker.ListRobotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRobots operation.
+//	pageNum := 0
+//	err := client.ListRobotsPages(params,
+//	    func(page *robomaker.ListRobotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Support for the AWS RoboMaker application deployment feature has ended. For additional information, see https://docs.aws.amazon.com/robomaker/latest/dg/fleets.html.
 func (c *RoboMaker) ListRobotsPages(input *ListRobotsInput, fn func(*ListRobotsOutput, bool) bool) error {
@@ -4116,14 +4112,13 @@ const opListSimulationApplications = "ListSimulationApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSimulationApplicationsRequest method.
+//	req, resp := client.ListSimulationApplicationsRequest(params)
 //
-//    // Example sending a request using the ListSimulationApplicationsRequest method.
-//    req, resp := client.ListSimulationApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationApplications
 func (c *RoboMaker) ListSimulationApplicationsRequest(input *ListSimulationApplicationsInput) (req *request.Request, output *ListSimulationApplicationsOutput) {
@@ -4161,16 +4156,17 @@ func (c *RoboMaker) ListSimulationApplicationsRequest(input *ListSimulationAppli
 // API operation ListSimulationApplications for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationApplications
 func (c *RoboMaker) ListSimulationApplications(input *ListSimulationApplicationsInput) (*ListSimulationApplicationsOutput, error) {
@@ -4202,15 +4198,14 @@ func (c *RoboMaker) ListSimulationApplicationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSimulationApplications operation.
-//    pageNum := 0
-//    err := client.ListSimulationApplicationsPages(params,
-//        func(page *robomaker.ListSimulationApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSimulationApplications operation.
+//	pageNum := 0
+//	err := client.ListSimulationApplicationsPages(params,
+//	    func(page *robomaker.ListSimulationApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListSimulationApplicationsPages(input *ListSimulationApplicationsInput, fn func(*ListSimulationApplicationsOutput, bool) bool) error {
 	return c.ListSimulationApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4262,14 +4257,13 @@ const opListSimulationJobBatches = "ListSimulationJobBatches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSimulationJobBatchesRequest method.
+//	req, resp := client.ListSimulationJobBatchesRequest(params)
 //
-//    // Example sending a request using the ListSimulationJobBatchesRequest method.
-//    req, resp := client.ListSimulationJobBatchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationJobBatches
 func (c *RoboMaker) ListSimulationJobBatchesRequest(input *ListSimulationJobBatchesInput) (req *request.Request, output *ListSimulationJobBatchesOutput) {
@@ -4307,12 +4301,13 @@ func (c *RoboMaker) ListSimulationJobBatchesRequest(input *ListSimulationJobBatc
 // API operation ListSimulationJobBatches for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationJobBatches
 func (c *RoboMaker) ListSimulationJobBatches(input *ListSimulationJobBatchesInput) (*ListSimulationJobBatchesOutput, error) {
@@ -4344,15 +4339,14 @@ func (c *RoboMaker) ListSimulationJobBatchesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSimulationJobBatches operation.
-//    pageNum := 0
-//    err := client.ListSimulationJobBatchesPages(params,
-//        func(page *robomaker.ListSimulationJobBatchesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSimulationJobBatches operation.
+//	pageNum := 0
+//	err := client.ListSimulationJobBatchesPages(params,
+//	    func(page *robomaker.ListSimulationJobBatchesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListSimulationJobBatchesPages(input *ListSimulationJobBatchesInput, fn func(*ListSimulationJobBatchesOutput, bool) bool) error {
 	return c.ListSimulationJobBatchesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4404,14 +4398,13 @@ const opListSimulationJobs = "ListSimulationJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSimulationJobsRequest method.
+//	req, resp := client.ListSimulationJobsRequest(params)
 //
-//    // Example sending a request using the ListSimulationJobsRequest method.
-//    req, resp := client.ListSimulationJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationJobs
 func (c *RoboMaker) ListSimulationJobsRequest(input *ListSimulationJobsInput) (req *request.Request, output *ListSimulationJobsOutput) {
@@ -4449,16 +4442,17 @@ func (c *RoboMaker) ListSimulationJobsRequest(input *ListSimulationJobsInput) (r
 // API operation ListSimulationJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListSimulationJobs
 func (c *RoboMaker) ListSimulationJobs(input *ListSimulationJobsInput) (*ListSimulationJobsOutput, error) {
@@ -4490,15 +4484,14 @@ func (c *RoboMaker) ListSimulationJobsWithContext(ctx aws.Context, input *ListSi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSimulationJobs operation.
-//    pageNum := 0
-//    err := client.ListSimulationJobsPages(params,
-//        func(page *robomaker.ListSimulationJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSimulationJobs operation.
+//	pageNum := 0
+//	err := client.ListSimulationJobsPages(params,
+//	    func(page *robomaker.ListSimulationJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListSimulationJobsPages(input *ListSimulationJobsInput, fn func(*ListSimulationJobsOutput, bool) bool) error {
 	return c.ListSimulationJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4550,14 +4543,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListTagsForResource
 func (c *RoboMaker) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4588,19 +4580,20 @@ func (c *RoboMaker) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListTagsForResource
 func (c *RoboMaker) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4640,14 +4633,13 @@ const opListWorldExportJobs = "ListWorldExportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorldExportJobsRequest method.
+//	req, resp := client.ListWorldExportJobsRequest(params)
 //
-//    // Example sending a request using the ListWorldExportJobsRequest method.
-//    req, resp := client.ListWorldExportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldExportJobs
 func (c *RoboMaker) ListWorldExportJobsRequest(input *ListWorldExportJobsInput) (req *request.Request, output *ListWorldExportJobsOutput) {
@@ -4684,16 +4676,17 @@ func (c *RoboMaker) ListWorldExportJobsRequest(input *ListWorldExportJobsInput) 
 // API operation ListWorldExportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldExportJobs
 func (c *RoboMaker) ListWorldExportJobs(input *ListWorldExportJobsInput) (*ListWorldExportJobsOutput, error) {
@@ -4725,15 +4718,14 @@ func (c *RoboMaker) ListWorldExportJobsWithContext(ctx aws.Context, input *ListW
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorldExportJobs operation.
-//    pageNum := 0
-//    err := client.ListWorldExportJobsPages(params,
-//        func(page *robomaker.ListWorldExportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorldExportJobs operation.
+//	pageNum := 0
+//	err := client.ListWorldExportJobsPages(params,
+//	    func(page *robomaker.ListWorldExportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListWorldExportJobsPages(input *ListWorldExportJobsInput, fn func(*ListWorldExportJobsOutput, bool) bool) error {
 	return c.ListWorldExportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4785,14 +4777,13 @@ const opListWorldGenerationJobs = "ListWorldGenerationJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorldGenerationJobsRequest method.
+//	req, resp := client.ListWorldGenerationJobsRequest(params)
 //
-//    // Example sending a request using the ListWorldGenerationJobsRequest method.
-//    req, resp := client.ListWorldGenerationJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldGenerationJobs
 func (c *RoboMaker) ListWorldGenerationJobsRequest(input *ListWorldGenerationJobsInput) (req *request.Request, output *ListWorldGenerationJobsOutput) {
@@ -4829,16 +4820,17 @@ func (c *RoboMaker) ListWorldGenerationJobsRequest(input *ListWorldGenerationJob
 // API operation ListWorldGenerationJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldGenerationJobs
 func (c *RoboMaker) ListWorldGenerationJobs(input *ListWorldGenerationJobsInput) (*ListWorldGenerationJobsOutput, error) {
@@ -4870,15 +4862,14 @@ func (c *RoboMaker) ListWorldGenerationJobsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorldGenerationJobs operation.
-//    pageNum := 0
-//    err := client.ListWorldGenerationJobsPages(params,
-//        func(page *robomaker.ListWorldGenerationJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorldGenerationJobs operation.
+//	pageNum := 0
+//	err := client.ListWorldGenerationJobsPages(params,
+//	    func(page *robomaker.ListWorldGenerationJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListWorldGenerationJobsPages(input *ListWorldGenerationJobsInput, fn func(*ListWorldGenerationJobsOutput, bool) bool) error {
 	return c.ListWorldGenerationJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4930,14 +4921,13 @@ const opListWorldTemplates = "ListWorldTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorldTemplatesRequest method.
+//	req, resp := client.ListWorldTemplatesRequest(params)
 //
-//    // Example sending a request using the ListWorldTemplatesRequest method.
-//    req, resp := client.ListWorldTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldTemplates
 func (c *RoboMaker) ListWorldTemplatesRequest(input *ListWorldTemplatesInput) (req *request.Request, output *ListWorldTemplatesOutput) {
@@ -4974,16 +4964,17 @@ func (c *RoboMaker) ListWorldTemplatesRequest(input *ListWorldTemplatesInput) (r
 // API operation ListWorldTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorldTemplates
 func (c *RoboMaker) ListWorldTemplates(input *ListWorldTemplatesInput) (*ListWorldTemplatesOutput, error) {
@@ -5015,15 +5006,14 @@ func (c *RoboMaker) ListWorldTemplatesWithContext(ctx aws.Context, input *ListWo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorldTemplates operation.
-//    pageNum := 0
-//    err := client.ListWorldTemplatesPages(params,
-//        func(page *robomaker.ListWorldTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorldTemplates operation.
+//	pageNum := 0
+//	err := client.ListWorldTemplatesPages(params,
+//	    func(page *robomaker.ListWorldTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListWorldTemplatesPages(input *ListWorldTemplatesInput, fn func(*ListWorldTemplatesOutput, bool) bool) error {
 	return c.ListWorldTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5075,14 +5065,13 @@ const opListWorlds = "ListWorlds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorldsRequest method.
+//	req, resp := client.ListWorldsRequest(params)
 //
-//    // Example sending a request using the ListWorldsRequest method.
-//    req, resp := client.ListWorldsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorlds
 func (c *RoboMaker) ListWorldsRequest(input *ListWorldsInput) (req *request.Request, output *ListWorldsOutput) {
@@ -5119,16 +5108,17 @@ func (c *RoboMaker) ListWorldsRequest(input *ListWorldsInput) (req *request.Requ
 // API operation ListWorlds for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/ListWorlds
 func (c *RoboMaker) ListWorlds(input *ListWorldsInput) (*ListWorldsOutput, error) {
@@ -5160,15 +5150,14 @@ func (c *RoboMaker) ListWorldsWithContext(ctx aws.Context, input *ListWorldsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorlds operation.
-//    pageNum := 0
-//    err := client.ListWorldsPages(params,
-//        func(page *robomaker.ListWorldsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorlds operation.
+//	pageNum := 0
+//	err := client.ListWorldsPages(params,
+//	    func(page *robomaker.ListWorldsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RoboMaker) ListWorldsPages(input *ListWorldsInput, fn func(*ListWorldsOutput, bool) bool) error {
 	return c.ListWorldsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5220,14 +5209,13 @@ const opRegisterRobot = "RegisterRobot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterRobotRequest method.
+//	req, resp := client.RegisterRobotRequest(params)
 //
-//    // Example sending a request using the RegisterRobotRequest method.
-//    req, resp := client.RegisterRobotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/RegisterRobot
 //
@@ -5265,23 +5253,24 @@ func (c *RoboMaker) RegisterRobotRequest(input *RegisterRobotInput) (req *reques
 // API operation RegisterRobot for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/RegisterRobot
 //
@@ -5325,14 +5314,13 @@ const opRestartSimulationJob = "RestartSimulationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestartSimulationJobRequest method.
+//	req, resp := client.RestartSimulationJobRequest(params)
 //
-//    // Example sending a request using the RestartSimulationJobRequest method.
-//    req, resp := client.RestartSimulationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/RestartSimulationJob
 func (c *RoboMaker) RestartSimulationJobRequest(input *RestartSimulationJobInput) (req *request.Request, output *RestartSimulationJobOutput) {
@@ -5364,23 +5352,24 @@ func (c *RoboMaker) RestartSimulationJobRequest(input *RestartSimulationJobInput
 // API operation RestartSimulationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/RestartSimulationJob
 func (c *RoboMaker) RestartSimulationJob(input *RestartSimulationJobInput) (*RestartSimulationJobOutput, error) {
@@ -5420,14 +5409,13 @@ const opStartSimulationJobBatch = "StartSimulationJobBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSimulationJobBatchRequest method.
+//	req, resp := client.StartSimulationJobBatchRequest(params)
 //
-//    // Example sending a request using the StartSimulationJobBatchRequest method.
-//    req, resp := client.StartSimulationJobBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/StartSimulationJobBatch
 func (c *RoboMaker) StartSimulationJobBatchRequest(input *StartSimulationJobBatchInput) (req *request.Request, output *StartSimulationJobBatchOutput) {
@@ -5459,25 +5447,26 @@ func (c *RoboMaker) StartSimulationJobBatchRequest(input *StartSimulationJobBatc
 // API operation StartSimulationJobBatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/StartSimulationJobBatch
 func (c *RoboMaker) StartSimulationJobBatch(input *StartSimulationJobBatchInput) (*StartSimulationJobBatchOutput, error) {
@@ -5517,14 +5506,13 @@ const opSyncDeploymentJob = "SyncDeploymentJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SyncDeploymentJobRequest method.
+//	req, resp := client.SyncDeploymentJobRequest(params)
 //
-//    // Example sending a request using the SyncDeploymentJobRequest method.
-//    req, resp := client.SyncDeploymentJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/SyncDeploymentJob
 //
@@ -5564,31 +5552,32 @@ func (c *RoboMaker) SyncDeploymentJobRequest(input *SyncDeploymentJobInput) (req
 // API operation SyncDeploymentJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
-//   * ConcurrentDeploymentException
-//   The failure percentage threshold percentage was met.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * IdempotentParameterMismatchException
-//   The request uses the same client token as a previous, but non-identical request.
-//   Do not reuse a client token with different requests, unless the requests
-//   are identical.
+//   - ConcurrentDeploymentException
+//     The failure percentage threshold percentage was met.
+//
+//   - IdempotentParameterMismatchException
+//     The request uses the same client token as a previous, but non-identical request.
+//     Do not reuse a client token with different requests, unless the requests
+//     are identical.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/SyncDeploymentJob
 //
@@ -5632,14 +5621,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/TagResource
 func (c *RoboMaker) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5678,19 +5666,20 @@ func (c *RoboMaker) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/TagResource
 func (c *RoboMaker) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5730,14 +5719,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UntagResource
 func (c *RoboMaker) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5772,19 +5760,20 @@ func (c *RoboMaker) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
+//
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UntagResource
 func (c *RoboMaker) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5824,14 +5813,13 @@ const opUpdateRobotApplication = "UpdateRobotApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRobotApplicationRequest method.
+//	req, resp := client.UpdateRobotApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateRobotApplicationRequest method.
-//    req, resp := client.UpdateRobotApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateRobotApplication
 func (c *RoboMaker) UpdateRobotApplicationRequest(input *UpdateRobotApplicationInput) (req *request.Request, output *UpdateRobotApplicationOutput) {
@@ -5862,23 +5850,24 @@ func (c *RoboMaker) UpdateRobotApplicationRequest(input *UpdateRobotApplicationI
 // API operation UpdateRobotApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateRobotApplication
 func (c *RoboMaker) UpdateRobotApplication(input *UpdateRobotApplicationInput) (*UpdateRobotApplicationOutput, error) {
@@ -5918,14 +5907,13 @@ const opUpdateSimulationApplication = "UpdateSimulationApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSimulationApplicationRequest method.
+//	req, resp := client.UpdateSimulationApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateSimulationApplicationRequest method.
-//    req, resp := client.UpdateSimulationApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateSimulationApplication
 func (c *RoboMaker) UpdateSimulationApplicationRequest(input *UpdateSimulationApplicationInput) (req *request.Request, output *UpdateSimulationApplicationOutput) {
@@ -5956,23 +5944,24 @@ func (c *RoboMaker) UpdateSimulationApplicationRequest(input *UpdateSimulationAp
 // API operation UpdateSimulationApplication for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateSimulationApplication
 func (c *RoboMaker) UpdateSimulationApplication(input *UpdateSimulationApplicationInput) (*UpdateSimulationApplicationOutput, error) {
@@ -6012,14 +6001,13 @@ const opUpdateWorldTemplate = "UpdateWorldTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorldTemplateRequest method.
+//	req, resp := client.UpdateWorldTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateWorldTemplateRequest method.
-//    req, resp := client.UpdateWorldTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateWorldTemplate
 func (c *RoboMaker) UpdateWorldTemplateRequest(input *UpdateWorldTemplateInput) (req *request.Request, output *UpdateWorldTemplateOutput) {
@@ -6050,19 +6038,20 @@ func (c *RoboMaker) UpdateWorldTemplateRequest(input *UpdateWorldTemplateInput) 
 // API operation UpdateWorldTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A parameter specified in a request is not valid, is unsupported, or cannot
-//   be used. The returned message provides an explanation of the error value.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidParameterException
+//     A parameter specified in a request is not valid, is unsupported, or cannot
+//     be used. The returned message provides an explanation of the error value.
 //
-//   * ThrottlingException
-//   AWS RoboMaker is temporarily unable to process the request. Try your call
-//   again.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * InternalServerException
-//   AWS RoboMaker experienced a service issue. Try your call again.
+//   - ThrottlingException
+//     AWS RoboMaker is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InternalServerException
+//     AWS RoboMaker experienced a service issue. Try your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/robomaker-2018-06-29/UpdateWorldTemplate
 func (c *RoboMaker) UpdateWorldTemplate(input *UpdateWorldTemplateInput) (*UpdateWorldTemplateOutput, error) {

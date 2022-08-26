@@ -29,14 +29,13 @@ const opCreateExperimentTemplate = "CreateExperimentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateExperimentTemplateRequest method.
+//	req, resp := client.CreateExperimentTemplateRequest(params)
 //
-//    // Example sending a request using the CreateExperimentTemplateRequest method.
-//    req, resp := client.CreateExperimentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/CreateExperimentTemplate
 func (c *FIS) CreateExperimentTemplateRequest(input *CreateExperimentTemplateInput) (req *request.Request, output *CreateExperimentTemplateOutput) {
@@ -61,17 +60,17 @@ func (c *FIS) CreateExperimentTemplateRequest(input *CreateExperimentTemplateInp
 //
 // An experiment template includes the following components:
 //
-//    * Targets: A target can be a specific resource in your Amazon Web Services
-//    environment, or one or more resources that match criteria that you specify,
-//    for example, resources that have specific tags.
+//   - Targets: A target can be a specific resource in your Amazon Web Services
+//     environment, or one or more resources that match criteria that you specify,
+//     for example, resources that have specific tags.
 //
-//    * Actions: The actions to carry out on the target. You can specify multiple
-//    actions, the duration of each action, and when to start each action during
-//    an experiment.
+//   - Actions: The actions to carry out on the target. You can specify multiple
+//     actions, the duration of each action, and when to start each action during
+//     an experiment.
 //
-//    * Stop conditions: If a stop condition is triggered while an experiment
-//    is running, the experiment is automatically stopped. You can define a
-//    stop condition as a CloudWatch alarm.
+//   - Stop conditions: If a stop condition is triggered while an experiment
+//     is running, the experiment is automatically stopped. You can define a
+//     stop condition as a CloudWatch alarm.
 //
 // For more information, see Experiment templates (https://docs.aws.amazon.com/fis/latest/userguide/experiment-templates.html)
 // in the Fault Injection Simulator User Guide.
@@ -84,18 +83,19 @@ func (c *FIS) CreateExperimentTemplateRequest(input *CreateExperimentTemplateInp
 // API operation CreateExperimentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ConflictException
-//   The request could not be processed because of a conflict.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ConflictException
+//     The request could not be processed because of a conflict.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/CreateExperimentTemplate
 func (c *FIS) CreateExperimentTemplate(input *CreateExperimentTemplateInput) (*CreateExperimentTemplateOutput, error) {
@@ -135,14 +135,13 @@ const opDeleteExperimentTemplate = "DeleteExperimentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteExperimentTemplateRequest method.
+//	req, resp := client.DeleteExperimentTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteExperimentTemplateRequest method.
-//    req, resp := client.DeleteExperimentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/DeleteExperimentTemplate
 func (c *FIS) DeleteExperimentTemplateRequest(input *DeleteExperimentTemplateInput) (req *request.Request, output *DeleteExperimentTemplateOutput) {
@@ -173,12 +172,13 @@ func (c *FIS) DeleteExperimentTemplateRequest(input *DeleteExperimentTemplateInp
 // API operation DeleteExperimentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/DeleteExperimentTemplate
 func (c *FIS) DeleteExperimentTemplate(input *DeleteExperimentTemplateInput) (*DeleteExperimentTemplateOutput, error) {
@@ -218,14 +218,13 @@ const opGetAction = "GetAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetActionRequest method.
+//	req, resp := client.GetActionRequest(params)
 //
-//    // Example sending a request using the GetActionRequest method.
-//    req, resp := client.GetActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetAction
 func (c *FIS) GetActionRequest(input *GetActionInput) (req *request.Request, output *GetActionOutput) {
@@ -256,12 +255,13 @@ func (c *FIS) GetActionRequest(input *GetActionInput) (req *request.Request, out
 // API operation GetAction for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetAction
 func (c *FIS) GetAction(input *GetActionInput) (*GetActionOutput, error) {
@@ -301,14 +301,13 @@ const opGetExperiment = "GetExperiment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExperimentRequest method.
+//	req, resp := client.GetExperimentRequest(params)
 //
-//    // Example sending a request using the GetExperimentRequest method.
-//    req, resp := client.GetExperimentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperiment
 func (c *FIS) GetExperimentRequest(input *GetExperimentInput) (req *request.Request, output *GetExperimentOutput) {
@@ -339,12 +338,13 @@ func (c *FIS) GetExperimentRequest(input *GetExperimentInput) (req *request.Requ
 // API operation GetExperiment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperiment
 func (c *FIS) GetExperiment(input *GetExperimentInput) (*GetExperimentOutput, error) {
@@ -384,14 +384,13 @@ const opGetExperimentTemplate = "GetExperimentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExperimentTemplateRequest method.
+//	req, resp := client.GetExperimentTemplateRequest(params)
 //
-//    // Example sending a request using the GetExperimentTemplateRequest method.
-//    req, resp := client.GetExperimentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperimentTemplate
 func (c *FIS) GetExperimentTemplateRequest(input *GetExperimentTemplateInput) (req *request.Request, output *GetExperimentTemplateOutput) {
@@ -422,12 +421,13 @@ func (c *FIS) GetExperimentTemplateRequest(input *GetExperimentTemplateInput) (r
 // API operation GetExperimentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperimentTemplate
 func (c *FIS) GetExperimentTemplate(input *GetExperimentTemplateInput) (*GetExperimentTemplateOutput, error) {
@@ -467,14 +467,13 @@ const opGetTargetResourceType = "GetTargetResourceType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTargetResourceTypeRequest method.
+//	req, resp := client.GetTargetResourceTypeRequest(params)
 //
-//    // Example sending a request using the GetTargetResourceTypeRequest method.
-//    req, resp := client.GetTargetResourceTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetTargetResourceType
 func (c *FIS) GetTargetResourceTypeRequest(input *GetTargetResourceTypeInput) (req *request.Request, output *GetTargetResourceTypeOutput) {
@@ -505,12 +504,13 @@ func (c *FIS) GetTargetResourceTypeRequest(input *GetTargetResourceTypeInput) (r
 // API operation GetTargetResourceType for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetTargetResourceType
 func (c *FIS) GetTargetResourceType(input *GetTargetResourceTypeInput) (*GetTargetResourceTypeOutput, error) {
@@ -550,14 +550,13 @@ const opListActions = "ListActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListActionsRequest method.
+//	req, resp := client.ListActionsRequest(params)
 //
-//    // Example sending a request using the ListActionsRequest method.
-//    req, resp := client.ListActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListActions
 func (c *FIS) ListActionsRequest(input *ListActionsInput) (req *request.Request, output *ListActionsOutput) {
@@ -594,9 +593,9 @@ func (c *FIS) ListActionsRequest(input *ListActionsInput) (req *request.Request,
 // API operation ListActions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListActions
 func (c *FIS) ListActions(input *ListActionsInput) (*ListActionsOutput, error) {
@@ -628,15 +627,14 @@ func (c *FIS) ListActionsWithContext(ctx aws.Context, input *ListActionsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListActions operation.
-//    pageNum := 0
-//    err := client.ListActionsPages(params,
-//        func(page *fis.ListActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListActions operation.
+//	pageNum := 0
+//	err := client.ListActionsPages(params,
+//	    func(page *fis.ListActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FIS) ListActionsPages(input *ListActionsInput, fn func(*ListActionsOutput, bool) bool) error {
 	return c.ListActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -688,14 +686,13 @@ const opListExperimentTemplates = "ListExperimentTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExperimentTemplatesRequest method.
+//	req, resp := client.ListExperimentTemplatesRequest(params)
 //
-//    // Example sending a request using the ListExperimentTemplatesRequest method.
-//    req, resp := client.ListExperimentTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentTemplates
 func (c *FIS) ListExperimentTemplatesRequest(input *ListExperimentTemplatesInput) (req *request.Request, output *ListExperimentTemplatesOutput) {
@@ -732,9 +729,9 @@ func (c *FIS) ListExperimentTemplatesRequest(input *ListExperimentTemplatesInput
 // API operation ListExperimentTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentTemplates
 func (c *FIS) ListExperimentTemplates(input *ListExperimentTemplatesInput) (*ListExperimentTemplatesOutput, error) {
@@ -766,15 +763,14 @@ func (c *FIS) ListExperimentTemplatesWithContext(ctx aws.Context, input *ListExp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExperimentTemplates operation.
-//    pageNum := 0
-//    err := client.ListExperimentTemplatesPages(params,
-//        func(page *fis.ListExperimentTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExperimentTemplates operation.
+//	pageNum := 0
+//	err := client.ListExperimentTemplatesPages(params,
+//	    func(page *fis.ListExperimentTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FIS) ListExperimentTemplatesPages(input *ListExperimentTemplatesInput, fn func(*ListExperimentTemplatesOutput, bool) bool) error {
 	return c.ListExperimentTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -826,14 +822,13 @@ const opListExperiments = "ListExperiments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExperimentsRequest method.
+//	req, resp := client.ListExperimentsRequest(params)
 //
-//    // Example sending a request using the ListExperimentsRequest method.
-//    req, resp := client.ListExperimentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperiments
 func (c *FIS) ListExperimentsRequest(input *ListExperimentsInput) (req *request.Request, output *ListExperimentsOutput) {
@@ -870,9 +865,9 @@ func (c *FIS) ListExperimentsRequest(input *ListExperimentsInput) (req *request.
 // API operation ListExperiments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperiments
 func (c *FIS) ListExperiments(input *ListExperimentsInput) (*ListExperimentsOutput, error) {
@@ -904,15 +899,14 @@ func (c *FIS) ListExperimentsWithContext(ctx aws.Context, input *ListExperiments
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExperiments operation.
-//    pageNum := 0
-//    err := client.ListExperimentsPages(params,
-//        func(page *fis.ListExperimentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExperiments operation.
+//	pageNum := 0
+//	err := client.ListExperimentsPages(params,
+//	    func(page *fis.ListExperimentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FIS) ListExperimentsPages(input *ListExperimentsInput, fn func(*ListExperimentsOutput, bool) bool) error {
 	return c.ListExperimentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -964,14 +958,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListTagsForResource
 func (c *FIS) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1038,14 +1031,13 @@ const opListTargetResourceTypes = "ListTargetResourceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTargetResourceTypesRequest method.
+//	req, resp := client.ListTargetResourceTypesRequest(params)
 //
-//    // Example sending a request using the ListTargetResourceTypesRequest method.
-//    req, resp := client.ListTargetResourceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListTargetResourceTypes
 func (c *FIS) ListTargetResourceTypesRequest(input *ListTargetResourceTypesInput) (req *request.Request, output *ListTargetResourceTypesOutput) {
@@ -1082,9 +1074,9 @@ func (c *FIS) ListTargetResourceTypesRequest(input *ListTargetResourceTypesInput
 // API operation ListTargetResourceTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListTargetResourceTypes
 func (c *FIS) ListTargetResourceTypes(input *ListTargetResourceTypesInput) (*ListTargetResourceTypesOutput, error) {
@@ -1116,15 +1108,14 @@ func (c *FIS) ListTargetResourceTypesWithContext(ctx aws.Context, input *ListTar
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTargetResourceTypes operation.
-//    pageNum := 0
-//    err := client.ListTargetResourceTypesPages(params,
-//        func(page *fis.ListTargetResourceTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTargetResourceTypes operation.
+//	pageNum := 0
+//	err := client.ListTargetResourceTypesPages(params,
+//	    func(page *fis.ListTargetResourceTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FIS) ListTargetResourceTypesPages(input *ListTargetResourceTypesInput, fn func(*ListTargetResourceTypesOutput, bool) bool) error {
 	return c.ListTargetResourceTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1176,14 +1167,13 @@ const opStartExperiment = "StartExperiment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartExperimentRequest method.
+//	req, resp := client.StartExperimentRequest(params)
 //
-//    // Example sending a request using the StartExperimentRequest method.
-//    req, resp := client.StartExperimentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/StartExperiment
 func (c *FIS) StartExperimentRequest(input *StartExperimentInput) (req *request.Request, output *StartExperimentOutput) {
@@ -1214,18 +1204,19 @@ func (c *FIS) StartExperimentRequest(input *StartExperimentInput) (req *request.
 // API operation StartExperiment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ConflictException
-//   The request could not be processed because of a conflict.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ConflictException
+//     The request could not be processed because of a conflict.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/StartExperiment
 func (c *FIS) StartExperiment(input *StartExperimentInput) (*StartExperimentOutput, error) {
@@ -1265,14 +1256,13 @@ const opStopExperiment = "StopExperiment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopExperimentRequest method.
+//	req, resp := client.StopExperimentRequest(params)
 //
-//    // Example sending a request using the StopExperimentRequest method.
-//    req, resp := client.StopExperimentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/StopExperiment
 func (c *FIS) StopExperimentRequest(input *StopExperimentInput) (req *request.Request, output *StopExperimentOutput) {
@@ -1303,12 +1293,13 @@ func (c *FIS) StopExperimentRequest(input *StopExperimentInput) (req *request.Re
 // API operation StopExperiment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/StopExperiment
 func (c *FIS) StopExperiment(input *StopExperimentInput) (*StopExperimentOutput, error) {
@@ -1348,14 +1339,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/TagResource
 func (c *FIS) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1423,14 +1413,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/UntagResource
 func (c *FIS) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1498,14 +1487,13 @@ const opUpdateExperimentTemplate = "UpdateExperimentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateExperimentTemplateRequest method.
+//	req, resp := client.UpdateExperimentTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateExperimentTemplateRequest method.
-//    req, resp := client.UpdateExperimentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/UpdateExperimentTemplate
 func (c *FIS) UpdateExperimentTemplateRequest(input *UpdateExperimentTemplateInput) (req *request.Request, output *UpdateExperimentTemplateOutput) {
@@ -1536,15 +1524,16 @@ func (c *FIS) UpdateExperimentTemplateRequest(input *UpdateExperimentTemplateInp
 // API operation UpdateExperimentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The specified input is not valid, or fails to satisfy the constraints for
-//   the request.
 //
-//   * ResourceNotFoundException
-//   The specified resource cannot be found.
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota.
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/UpdateExperimentTemplate
 func (c *FIS) UpdateExperimentTemplate(input *UpdateExperimentTemplateInput) (*UpdateExperimentTemplateOutput, error) {

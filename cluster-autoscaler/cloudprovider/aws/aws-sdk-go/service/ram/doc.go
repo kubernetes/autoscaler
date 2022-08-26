@@ -15,16 +15,16 @@
 //
 // To learn more about RAM, see the following resources:
 //
-//    * Resource Access Manager product page (http://aws.amazon.com/ram)
+//   - Resource Access Manager product page (http://aws.amazon.com/ram)
 //
-//    * Resource Access Manager User Guide (https://docs.aws.amazon.com/ram/latest/userguide/)
+//   - Resource Access Manager User Guide (https://docs.aws.amazon.com/ram/latest/userguide/)
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04 for more information on this service.
 //
 // See ram package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ram/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Resource Access Manager with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

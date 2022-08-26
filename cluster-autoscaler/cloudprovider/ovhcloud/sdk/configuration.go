@@ -42,7 +42,6 @@ var (
 // - ./ovh.conf
 // - $HOME/.ovh.conf
 // - /etc/ovh.conf
-//
 func (c *Client) loadConfig(endpointName string) error {
 	// Load real endpoint URL by name. If endpoint contains a '/', consider it as a URL
 	if strings.Contains(endpointName, "/") {

@@ -61,13 +61,14 @@ type OutputService1ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService1ProtocolTest client from just a session.
-//     svc := outputservice1protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService1ProtocolTest client with additional configuration
-//     svc := outputservice1protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService1ProtocolTest client from just a session.
+//	svc := outputservice1protocoltest.New(mySession)
+//
+//	// Create a OutputService1ProtocolTest client with additional configuration
+//	svc := outputservice1protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService1ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService1ProtocolTest {
 	c := p.ClientConfig("outputservice1protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -128,14 +129,13 @@ const opOutputService1TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService1TestCaseOperation1Request method.
+//	req, resp := client.OutputService1TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService1TestCaseOperation1Request method.
-//    req, resp := client.OutputService1TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(input *OutputService1TestShapeOutputService1TestCaseOperation1Input) (req *request.Request, output *OutputService1TestShapeOutputService1TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService1TestCaseOperation1,
@@ -267,13 +267,14 @@ type OutputService2ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService2ProtocolTest client from just a session.
-//     svc := outputservice2protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService2ProtocolTest client with additional configuration
-//     svc := outputservice2protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService2ProtocolTest client from just a session.
+//	svc := outputservice2protocoltest.New(mySession)
+//
+//	// Create a OutputService2ProtocolTest client with additional configuration
+//	svc := outputservice2protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService2ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService2ProtocolTest {
 	c := p.ClientConfig("outputservice2protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -334,14 +335,13 @@ const opOutputService2TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService2TestCaseOperation1Request method.
+//	req, resp := client.OutputService2TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService2TestCaseOperation1Request method.
-//    req, resp := client.OutputService2TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(input *OutputService2TestShapeOutputService2TestCaseOperation1Input) (req *request.Request, output *OutputService2TestShapeOutputService2TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService2TestCaseOperation1,
@@ -439,13 +439,14 @@ type OutputService3ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService3ProtocolTest client from just a session.
-//     svc := outputservice3protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService3ProtocolTest client with additional configuration
-//     svc := outputservice3protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService3ProtocolTest client from just a session.
+//	svc := outputservice3protocoltest.New(mySession)
+//
+//	// Create a OutputService3ProtocolTest client with additional configuration
+//	svc := outputservice3protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService3ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService3ProtocolTest {
 	c := p.ClientConfig("outputservice3protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -506,14 +507,13 @@ const opOutputService3TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService3TestCaseOperation1Request method.
+//	req, resp := client.OutputService3TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService3TestCaseOperation1Request method.
-//    req, resp := client.OutputService3TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(input *OutputService3TestShapeOutputService3TestCaseOperation1Input) (req *request.Request, output *OutputService3TestShapeOutputService3TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService3TestCaseOperation1,
@@ -633,13 +633,14 @@ type OutputService4ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService4ProtocolTest client from just a session.
-//     svc := outputservice4protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService4ProtocolTest client with additional configuration
-//     svc := outputservice4protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService4ProtocolTest client from just a session.
+//	svc := outputservice4protocoltest.New(mySession)
+//
+//	// Create a OutputService4ProtocolTest client with additional configuration
+//	svc := outputservice4protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService4ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService4ProtocolTest {
 	c := p.ClientConfig("outputservice4protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -700,14 +701,13 @@ const opOutputService4TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService4TestCaseOperation1Request method.
+//	req, resp := client.OutputService4TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService4TestCaseOperation1Request method.
-//    req, resp := client.OutputService4TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(input *OutputService4TestShapeOutputService4TestCaseOperation1Input) (req *request.Request, output *OutputService4TestShapeOutputService4TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService4TestCaseOperation1,
@@ -768,14 +768,13 @@ const opOutputService4TestCaseOperation2 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService4TestCaseOperation2Request method.
+//	req, resp := client.OutputService4TestCaseOperation2Request(params)
 //
-//    // Example sending a request using the OutputService4TestCaseOperation2Request method.
-//    req, resp := client.OutputService4TestCaseOperation2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation2Request(input *OutputService4TestShapeOutputService4TestCaseOperation2Input) (req *request.Request, output *OutputService4TestShapeOutputService4TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:     opOutputService4TestCaseOperation2,
@@ -903,13 +902,14 @@ type OutputService5ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService5ProtocolTest client from just a session.
-//     svc := outputservice5protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService5ProtocolTest client with additional configuration
-//     svc := outputservice5protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService5ProtocolTest client from just a session.
+//	svc := outputservice5protocoltest.New(mySession)
+//
+//	// Create a OutputService5ProtocolTest client with additional configuration
+//	svc := outputservice5protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService5ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService5ProtocolTest {
 	c := p.ClientConfig("outputservice5protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -970,14 +970,13 @@ const opOutputService5TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService5TestCaseOperation1Request method.
+//	req, resp := client.OutputService5TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService5TestCaseOperation1Request method.
-//    req, resp := client.OutputService5TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(input *OutputService5TestShapeOutputService5TestCaseOperation1Input) (req *request.Request, output *OutputService5TestShapeOutputService5TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService5TestCaseOperation1,
@@ -1053,13 +1052,14 @@ type OutputService6ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService6ProtocolTest client from just a session.
-//     svc := outputservice6protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService6ProtocolTest client with additional configuration
-//     svc := outputservice6protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService6ProtocolTest client from just a session.
+//	svc := outputservice6protocoltest.New(mySession)
+//
+//	// Create a OutputService6ProtocolTest client with additional configuration
+//	svc := outputservice6protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService6ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService6ProtocolTest {
 	c := p.ClientConfig("outputservice6protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -1120,14 +1120,13 @@ const opOutputService6TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService6TestCaseOperation1Request method.
+//	req, resp := client.OutputService6TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService6TestCaseOperation1Request method.
-//    req, resp := client.OutputService6TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(input *OutputService6TestShapeOutputService6TestCaseOperation1Input) (req *request.Request, output *OutputService6TestShapeOutputService6TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService6TestCaseOperation1,
@@ -1203,13 +1202,14 @@ type OutputService7ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService7ProtocolTest client from just a session.
-//     svc := outputservice7protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService7ProtocolTest client with additional configuration
-//     svc := outputservice7protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService7ProtocolTest client from just a session.
+//	svc := outputservice7protocoltest.New(mySession)
+//
+//	// Create a OutputService7ProtocolTest client with additional configuration
+//	svc := outputservice7protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService7ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService7ProtocolTest {
 	c := p.ClientConfig("outputservice7protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -1270,14 +1270,13 @@ const opOutputService7TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService7TestCaseOperation1Request method.
+//	req, resp := client.OutputService7TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService7TestCaseOperation1Request method.
-//    req, resp := client.OutputService7TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService7ProtocolTest) OutputService7TestCaseOperation1Request(input *OutputService7TestShapeOutputService7TestCaseOperation1Input) (req *request.Request, output *OutputService7TestShapeOutputService7TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService7TestCaseOperation1,
@@ -1377,13 +1376,14 @@ type OutputService8ProtocolTest struct {
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService8ProtocolTest client from just a session.
-//     svc := outputservice8protocoltest.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OutputService8ProtocolTest client with additional configuration
-//     svc := outputservice8protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OutputService8ProtocolTest client from just a session.
+//	svc := outputservice8protocoltest.New(mySession)
+//
+//	// Create a OutputService8ProtocolTest client with additional configuration
+//	svc := outputservice8protocoltest.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func NewOutputService8ProtocolTest(p client.ConfigProvider, cfgs ...*aws.Config) *OutputService8ProtocolTest {
 	c := p.ClientConfig("outputservice8protocoltest", cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -1444,14 +1444,13 @@ const opOutputService8TestCaseOperation1 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService8TestCaseOperation1Request method.
+//	req, resp := client.OutputService8TestCaseOperation1Request(params)
 //
-//    // Example sending a request using the OutputService8TestCaseOperation1Request method.
-//    req, resp := client.OutputService8TestCaseOperation1Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService8ProtocolTest) OutputService8TestCaseOperation1Request(input *OutputService8TestShapeOutputService8TestCaseOperation1Input) (req *request.Request, output *OutputService8TestShapeOutputService8TestCaseOperation1Output) {
 	op := &request.Operation{
 		Name:     opOutputService8TestCaseOperation1,
@@ -1513,14 +1512,13 @@ const opOutputService8TestCaseOperation2 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService8TestCaseOperation2Request method.
+//	req, resp := client.OutputService8TestCaseOperation2Request(params)
 //
-//    // Example sending a request using the OutputService8TestCaseOperation2Request method.
-//    req, resp := client.OutputService8TestCaseOperation2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService8ProtocolTest) OutputService8TestCaseOperation2Request(input *OutputService8TestShapeOutputService8TestCaseOperation2Input) (req *request.Request, output *OutputService8TestShapeOutputService8TestCaseOperation2Output) {
 	op := &request.Operation{
 		Name:     opOutputService8TestCaseOperation2,
@@ -1582,14 +1580,13 @@ const opOutputService8TestCaseOperation3 = "OperationName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OutputService8TestCaseOperation3Request method.
+//	req, resp := client.OutputService8TestCaseOperation3Request(params)
 //
-//    // Example sending a request using the OutputService8TestCaseOperation3Request method.
-//    req, resp := client.OutputService8TestCaseOperation3Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *OutputService8ProtocolTest) OutputService8TestCaseOperation3Request(input *OutputService8TestShapeOutputService8TestCaseOperation3Input) (req *request.Request, output *OutputService8TestShapeOutputService8TestCaseOperation3Output) {
 	op := &request.Operation{
 		Name:     opOutputService8TestCaseOperation3,

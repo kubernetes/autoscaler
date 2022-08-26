@@ -29,14 +29,13 @@ const opCancelTask = "CancelTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelTaskRequest method.
+//	req, resp := client.CancelTaskRequest(params)
 //
-//    // Example sending a request using the CancelTaskRequest method.
-//    req, resp := client.CancelTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/CancelTask
 func (c *SnowDeviceManagement) CancelTaskRequest(input *CancelTaskInput) (req *request.Request, output *CancelTaskOutput) {
@@ -71,21 +70,22 @@ func (c *SnowDeviceManagement) CancelTaskRequest(input *CancelTaskInput) (req *r
 // API operation CancelTask for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/CancelTask
 func (c *SnowDeviceManagement) CancelTask(input *CancelTaskInput) (*CancelTaskOutput, error) {
@@ -125,14 +125,13 @@ const opCreateTask = "CreateTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTaskRequest method.
+//	req, resp := client.CreateTaskRequest(params)
 //
-//    // Example sending a request using the CreateTaskRequest method.
-//    req, resp := client.CreateTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/CreateTask
 func (c *SnowDeviceManagement) CreateTaskRequest(input *CreateTaskInput) (req *request.Request, output *CreateTaskOutput) {
@@ -163,24 +162,25 @@ func (c *SnowDeviceManagement) CreateTaskRequest(input *CreateTaskInput) (req *r
 // API operation CreateTask for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/CreateTask
 func (c *SnowDeviceManagement) CreateTask(input *CreateTaskInput) (*CreateTaskOutput, error) {
@@ -220,14 +220,13 @@ const opDescribeDevice = "DescribeDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeviceRequest method.
+//	req, resp := client.DescribeDeviceRequest(params)
 //
-//    // Example sending a request using the DescribeDeviceRequest method.
-//    req, resp := client.DescribeDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeDevice
 func (c *SnowDeviceManagement) DescribeDeviceRequest(input *DescribeDeviceInput) (req *request.Request, output *DescribeDeviceOutput) {
@@ -259,21 +258,22 @@ func (c *SnowDeviceManagement) DescribeDeviceRequest(input *DescribeDeviceInput)
 // API operation DescribeDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeDevice
 func (c *SnowDeviceManagement) DescribeDevice(input *DescribeDeviceInput) (*DescribeDeviceOutput, error) {
@@ -313,14 +313,13 @@ const opDescribeDeviceEc2Instances = "DescribeDeviceEc2Instances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeviceEc2InstancesRequest method.
+//	req, resp := client.DescribeDeviceEc2InstancesRequest(params)
 //
-//    // Example sending a request using the DescribeDeviceEc2InstancesRequest method.
-//    req, resp := client.DescribeDeviceEc2InstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeDeviceEc2Instances
 func (c *SnowDeviceManagement) DescribeDeviceEc2InstancesRequest(input *DescribeDeviceEc2InstancesInput) (req *request.Request, output *DescribeDeviceEc2InstancesOutput) {
@@ -353,21 +352,22 @@ func (c *SnowDeviceManagement) DescribeDeviceEc2InstancesRequest(input *Describe
 // API operation DescribeDeviceEc2Instances for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeDeviceEc2Instances
 func (c *SnowDeviceManagement) DescribeDeviceEc2Instances(input *DescribeDeviceEc2InstancesInput) (*DescribeDeviceEc2InstancesOutput, error) {
@@ -407,14 +407,13 @@ const opDescribeExecution = "DescribeExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExecutionRequest method.
+//	req, resp := client.DescribeExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeExecutionRequest method.
-//    req, resp := client.DescribeExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeExecution
 func (c *SnowDeviceManagement) DescribeExecutionRequest(input *DescribeExecutionInput) (req *request.Request, output *DescribeExecutionOutput) {
@@ -445,21 +444,22 @@ func (c *SnowDeviceManagement) DescribeExecutionRequest(input *DescribeExecution
 // API operation DescribeExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeExecution
 func (c *SnowDeviceManagement) DescribeExecution(input *DescribeExecutionInput) (*DescribeExecutionOutput, error) {
@@ -499,14 +499,13 @@ const opDescribeTask = "DescribeTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTaskRequest method.
+//	req, resp := client.DescribeTaskRequest(params)
 //
-//    // Example sending a request using the DescribeTaskRequest method.
-//    req, resp := client.DescribeTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeTask
 func (c *SnowDeviceManagement) DescribeTaskRequest(input *DescribeTaskInput) (req *request.Request, output *DescribeTaskOutput) {
@@ -537,21 +536,22 @@ func (c *SnowDeviceManagement) DescribeTaskRequest(input *DescribeTaskInput) (re
 // API operation DescribeTask for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/DescribeTask
 func (c *SnowDeviceManagement) DescribeTask(input *DescribeTaskInput) (*DescribeTaskOutput, error) {
@@ -591,14 +591,13 @@ const opListDeviceResources = "ListDeviceResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeviceResourcesRequest method.
+//	req, resp := client.ListDeviceResourcesRequest(params)
 //
-//    // Example sending a request using the ListDeviceResourcesRequest method.
-//    req, resp := client.ListDeviceResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListDeviceResources
 func (c *SnowDeviceManagement) ListDeviceResourcesRequest(input *ListDeviceResourcesInput) (req *request.Request, output *ListDeviceResourcesOutput) {
@@ -636,21 +635,22 @@ func (c *SnowDeviceManagement) ListDeviceResourcesRequest(input *ListDeviceResou
 // API operation ListDeviceResources for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListDeviceResources
 func (c *SnowDeviceManagement) ListDeviceResources(input *ListDeviceResourcesInput) (*ListDeviceResourcesOutput, error) {
@@ -682,15 +682,14 @@ func (c *SnowDeviceManagement) ListDeviceResourcesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeviceResources operation.
-//    pageNum := 0
-//    err := client.ListDeviceResourcesPages(params,
-//        func(page *snowdevicemanagement.ListDeviceResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeviceResources operation.
+//	pageNum := 0
+//	err := client.ListDeviceResourcesPages(params,
+//	    func(page *snowdevicemanagement.ListDeviceResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SnowDeviceManagement) ListDeviceResourcesPages(input *ListDeviceResourcesInput, fn func(*ListDeviceResourcesOutput, bool) bool) error {
 	return c.ListDeviceResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -742,14 +741,13 @@ const opListDevices = "ListDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDevicesRequest method.
+//	req, resp := client.ListDevicesRequest(params)
 //
-//    // Example sending a request using the ListDevicesRequest method.
-//    req, resp := client.ListDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListDevices
 func (c *SnowDeviceManagement) ListDevicesRequest(input *ListDevicesInput) (req *request.Request, output *ListDevicesOutput) {
@@ -788,18 +786,19 @@ func (c *SnowDeviceManagement) ListDevicesRequest(input *ListDevicesInput) (req 
 // API operation ListDevices for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListDevices
 func (c *SnowDeviceManagement) ListDevices(input *ListDevicesInput) (*ListDevicesOutput, error) {
@@ -831,15 +830,14 @@ func (c *SnowDeviceManagement) ListDevicesWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDevices operation.
-//    pageNum := 0
-//    err := client.ListDevicesPages(params,
-//        func(page *snowdevicemanagement.ListDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDevices operation.
+//	pageNum := 0
+//	err := client.ListDevicesPages(params,
+//	    func(page *snowdevicemanagement.ListDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SnowDeviceManagement) ListDevicesPages(input *ListDevicesInput, fn func(*ListDevicesOutput, bool) bool) error {
 	return c.ListDevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -891,14 +889,13 @@ const opListExecutions = "ListExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExecutionsRequest method.
+//	req, resp := client.ListExecutionsRequest(params)
 //
-//    // Example sending a request using the ListExecutionsRequest method.
-//    req, resp := client.ListExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListExecutions
 func (c *SnowDeviceManagement) ListExecutionsRequest(input *ListExecutionsInput) (req *request.Request, output *ListExecutionsOutput) {
@@ -935,21 +932,22 @@ func (c *SnowDeviceManagement) ListExecutionsRequest(input *ListExecutionsInput)
 // API operation ListExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListExecutions
 func (c *SnowDeviceManagement) ListExecutions(input *ListExecutionsInput) (*ListExecutionsOutput, error) {
@@ -981,15 +979,14 @@ func (c *SnowDeviceManagement) ListExecutionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExecutions operation.
-//    pageNum := 0
-//    err := client.ListExecutionsPages(params,
-//        func(page *snowdevicemanagement.ListExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExecutions operation.
+//	pageNum := 0
+//	err := client.ListExecutionsPages(params,
+//	    func(page *snowdevicemanagement.ListExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SnowDeviceManagement) ListExecutionsPages(input *ListExecutionsInput, fn func(*ListExecutionsOutput, bool) bool) error {
 	return c.ListExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1041,14 +1038,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListTagsForResource
 func (c *SnowDeviceManagement) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1079,15 +1075,16 @@ func (c *SnowDeviceManagement) ListTagsForResourceRequest(input *ListTagsForReso
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListTagsForResource
 func (c *SnowDeviceManagement) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1127,14 +1124,13 @@ const opListTasks = "ListTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTasksRequest method.
+//	req, resp := client.ListTasksRequest(params)
 //
-//    // Example sending a request using the ListTasksRequest method.
-//    req, resp := client.ListTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListTasks
 func (c *SnowDeviceManagement) ListTasksRequest(input *ListTasksInput) (req *request.Request, output *ListTasksOutput) {
@@ -1171,18 +1167,19 @@ func (c *SnowDeviceManagement) ListTasksRequest(input *ListTasksInput) (req *req
 // API operation ListTasks for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/ListTasks
 func (c *SnowDeviceManagement) ListTasks(input *ListTasksInput) (*ListTasksOutput, error) {
@@ -1214,15 +1211,14 @@ func (c *SnowDeviceManagement) ListTasksWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTasks operation.
-//    pageNum := 0
-//    err := client.ListTasksPages(params,
-//        func(page *snowdevicemanagement.ListTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTasks operation.
+//	pageNum := 0
+//	err := client.ListTasksPages(params,
+//	    func(page *snowdevicemanagement.ListTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SnowDeviceManagement) ListTasksPages(input *ListTasksInput, fn func(*ListTasksOutput, bool) bool) error {
 	return c.ListTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1274,14 +1270,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/TagResource
 func (c *SnowDeviceManagement) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1313,15 +1308,16 @@ func (c *SnowDeviceManagement) TagResourceRequest(input *TagResourceInput) (req 
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/TagResource
 func (c *SnowDeviceManagement) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1361,14 +1357,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/UntagResource
 func (c *SnowDeviceManagement) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1400,15 +1395,16 @@ func (c *SnowDeviceManagement) UntagResourceRequest(input *UntagResourceInput) (
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unexpected error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   The request references a resource that doesn't exist.
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The request references a resource that doesn't exist.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/snow-device-management-2021-08-04/UntagResource
 func (c *SnowDeviceManagement) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

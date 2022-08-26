@@ -29,14 +29,13 @@ const opCreateApp = "CreateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppRequest method.
+//	req, resp := client.CreateAppRequest(params)
 //
-//    // Example sending a request using the CreateAppRequest method.
-//    req, resp := client.CreateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateApp
 func (c *Amplify) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
@@ -67,20 +66,21 @@ func (c *Amplify) CreateAppRequest(input *CreateAppInput) (req *request.Request,
 // API operation CreateApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateApp
 func (c *Amplify) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
@@ -120,14 +120,13 @@ const opCreateBackendEnvironment = "CreateBackendEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendEnvironmentRequest method.
+//	req, resp := client.CreateBackendEnvironmentRequest(params)
 //
-//    // Example sending a request using the CreateBackendEnvironmentRequest method.
-//    req, resp := client.CreateBackendEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateBackendEnvironment
 func (c *Amplify) CreateBackendEnvironmentRequest(input *CreateBackendEnvironmentInput) (req *request.Request, output *CreateBackendEnvironmentOutput) {
@@ -158,20 +157,21 @@ func (c *Amplify) CreateBackendEnvironmentRequest(input *CreateBackendEnvironmen
 // API operation CreateBackendEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateBackendEnvironment
 func (c *Amplify) CreateBackendEnvironment(input *CreateBackendEnvironmentInput) (*CreateBackendEnvironmentOutput, error) {
@@ -211,14 +211,13 @@ const opCreateBranch = "CreateBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBranchRequest method.
+//	req, resp := client.CreateBranchRequest(params)
 //
-//    // Example sending a request using the CreateBranchRequest method.
-//    req, resp := client.CreateBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateBranch
 func (c *Amplify) CreateBranchRequest(input *CreateBranchInput) (req *request.Request, output *CreateBranchOutput) {
@@ -249,23 +248,24 @@ func (c *Amplify) CreateBranchRequest(input *CreateBranchInput) (req *request.Re
 // API operation CreateBranch for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateBranch
 func (c *Amplify) CreateBranch(input *CreateBranchInput) (*CreateBranchOutput, error) {
@@ -305,14 +305,13 @@ const opCreateDeployment = "CreateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentRequest method.
+//	req, resp := client.CreateDeploymentRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentRequest method.
-//    req, resp := client.CreateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateDeployment
 func (c *Amplify) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *CreateDeploymentOutput) {
@@ -344,17 +343,18 @@ func (c *Amplify) CreateDeploymentRequest(input *CreateDeploymentInput) (req *re
 // API operation CreateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateDeployment
 func (c *Amplify) CreateDeployment(input *CreateDeploymentInput) (*CreateDeploymentOutput, error) {
@@ -394,14 +394,13 @@ const opCreateDomainAssociation = "CreateDomainAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainAssociationRequest method.
+//	req, resp := client.CreateDomainAssociationRequest(params)
 //
-//    // Example sending a request using the CreateDomainAssociationRequest method.
-//    req, resp := client.CreateDomainAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateDomainAssociation
 func (c *Amplify) CreateDomainAssociationRequest(input *CreateDomainAssociationInput) (req *request.Request, output *CreateDomainAssociationOutput) {
@@ -433,23 +432,24 @@ func (c *Amplify) CreateDomainAssociationRequest(input *CreateDomainAssociationI
 // API operation CreateDomainAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateDomainAssociation
 func (c *Amplify) CreateDomainAssociation(input *CreateDomainAssociationInput) (*CreateDomainAssociationOutput, error) {
@@ -489,14 +489,13 @@ const opCreateWebhook = "CreateWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWebhookRequest method.
+//	req, resp := client.CreateWebhookRequest(params)
 //
-//    // Example sending a request using the CreateWebhookRequest method.
-//    req, resp := client.CreateWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateWebhook
 func (c *Amplify) CreateWebhookRequest(input *CreateWebhookInput) (req *request.Request, output *CreateWebhookOutput) {
@@ -527,23 +526,24 @@ func (c *Amplify) CreateWebhookRequest(input *CreateWebhookInput) (req *request.
 // API operation CreateWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/CreateWebhook
 func (c *Amplify) CreateWebhook(input *CreateWebhookInput) (*CreateWebhookOutput, error) {
@@ -583,14 +583,13 @@ const opDeleteApp = "DeleteApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppRequest method.
+//	req, resp := client.DeleteAppRequest(params)
 //
-//    // Example sending a request using the DeleteAppRequest method.
-//    req, resp := client.DeleteAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteApp
 func (c *Amplify) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
@@ -621,20 +620,21 @@ func (c *Amplify) DeleteAppRequest(input *DeleteAppInput) (req *request.Request,
 // API operation DeleteApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteApp
 func (c *Amplify) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
@@ -674,14 +674,13 @@ const opDeleteBackendEnvironment = "DeleteBackendEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackendEnvironmentRequest method.
+//	req, resp := client.DeleteBackendEnvironmentRequest(params)
 //
-//    // Example sending a request using the DeleteBackendEnvironmentRequest method.
-//    req, resp := client.DeleteBackendEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteBackendEnvironment
 func (c *Amplify) DeleteBackendEnvironmentRequest(input *DeleteBackendEnvironmentInput) (req *request.Request, output *DeleteBackendEnvironmentOutput) {
@@ -712,20 +711,21 @@ func (c *Amplify) DeleteBackendEnvironmentRequest(input *DeleteBackendEnvironmen
 // API operation DeleteBackendEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteBackendEnvironment
 func (c *Amplify) DeleteBackendEnvironment(input *DeleteBackendEnvironmentInput) (*DeleteBackendEnvironmentOutput, error) {
@@ -765,14 +765,13 @@ const opDeleteBranch = "DeleteBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBranchRequest method.
+//	req, resp := client.DeleteBranchRequest(params)
 //
-//    // Example sending a request using the DeleteBranchRequest method.
-//    req, resp := client.DeleteBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteBranch
 func (c *Amplify) DeleteBranchRequest(input *DeleteBranchInput) (req *request.Request, output *DeleteBranchOutput) {
@@ -803,20 +802,21 @@ func (c *Amplify) DeleteBranchRequest(input *DeleteBranchInput) (req *request.Re
 // API operation DeleteBranch for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteBranch
 func (c *Amplify) DeleteBranch(input *DeleteBranchInput) (*DeleteBranchOutput, error) {
@@ -856,14 +856,13 @@ const opDeleteDomainAssociation = "DeleteDomainAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainAssociationRequest method.
+//	req, resp := client.DeleteDomainAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteDomainAssociationRequest method.
-//    req, resp := client.DeleteDomainAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteDomainAssociation
 func (c *Amplify) DeleteDomainAssociationRequest(input *DeleteDomainAssociationInput) (req *request.Request, output *DeleteDomainAssociationOutput) {
@@ -894,20 +893,21 @@ func (c *Amplify) DeleteDomainAssociationRequest(input *DeleteDomainAssociationI
 // API operation DeleteDomainAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteDomainAssociation
 func (c *Amplify) DeleteDomainAssociation(input *DeleteDomainAssociationInput) (*DeleteDomainAssociationOutput, error) {
@@ -947,14 +947,13 @@ const opDeleteJob = "DeleteJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobRequest method.
+//	req, resp := client.DeleteJobRequest(params)
 //
-//    // Example sending a request using the DeleteJobRequest method.
-//    req, resp := client.DeleteJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteJob
 func (c *Amplify) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, output *DeleteJobOutput) {
@@ -985,20 +984,21 @@ func (c *Amplify) DeleteJobRequest(input *DeleteJobInput) (req *request.Request,
 // API operation DeleteJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteJob
 func (c *Amplify) DeleteJob(input *DeleteJobInput) (*DeleteJobOutput, error) {
@@ -1038,14 +1038,13 @@ const opDeleteWebhook = "DeleteWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWebhookRequest method.
+//	req, resp := client.DeleteWebhookRequest(params)
 //
-//    // Example sending a request using the DeleteWebhookRequest method.
-//    req, resp := client.DeleteWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteWebhook
 func (c *Amplify) DeleteWebhookRequest(input *DeleteWebhookInput) (req *request.Request, output *DeleteWebhookOutput) {
@@ -1076,20 +1075,21 @@ func (c *Amplify) DeleteWebhookRequest(input *DeleteWebhookInput) (req *request.
 // API operation DeleteWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/DeleteWebhook
 func (c *Amplify) DeleteWebhook(input *DeleteWebhookInput) (*DeleteWebhookOutput, error) {
@@ -1129,14 +1129,13 @@ const opGenerateAccessLogs = "GenerateAccessLogs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateAccessLogsRequest method.
+//	req, resp := client.GenerateAccessLogsRequest(params)
 //
-//    // Example sending a request using the GenerateAccessLogsRequest method.
-//    req, resp := client.GenerateAccessLogsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GenerateAccessLogs
 func (c *Amplify) GenerateAccessLogsRequest(input *GenerateAccessLogsInput) (req *request.Request, output *GenerateAccessLogsOutput) {
@@ -1168,17 +1167,18 @@ func (c *Amplify) GenerateAccessLogsRequest(input *GenerateAccessLogsInput) (req
 // API operation GenerateAccessLogs for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An entity was not found during an operation.
 //
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GenerateAccessLogs
 func (c *Amplify) GenerateAccessLogs(input *GenerateAccessLogsInput) (*GenerateAccessLogsOutput, error) {
@@ -1218,14 +1218,13 @@ const opGetApp = "GetApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppRequest method.
+//	req, resp := client.GetAppRequest(params)
 //
-//    // Example sending a request using the GetAppRequest method.
-//    req, resp := client.GetAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetApp
 func (c *Amplify) GetAppRequest(input *GetAppInput) (req *request.Request, output *GetAppOutput) {
@@ -1256,17 +1255,18 @@ func (c *Amplify) GetAppRequest(input *GetAppInput) (req *request.Request, outpu
 // API operation GetApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetApp
 func (c *Amplify) GetApp(input *GetAppInput) (*GetAppOutput, error) {
@@ -1306,14 +1306,13 @@ const opGetArtifactUrl = "GetArtifactUrl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetArtifactUrlRequest method.
+//	req, resp := client.GetArtifactUrlRequest(params)
 //
-//    // Example sending a request using the GetArtifactUrlRequest method.
-//    req, resp := client.GetArtifactUrlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetArtifactUrl
 func (c *Amplify) GetArtifactUrlRequest(input *GetArtifactUrlInput) (req *request.Request, output *GetArtifactUrlOutput) {
@@ -1344,20 +1343,21 @@ func (c *Amplify) GetArtifactUrlRequest(input *GetArtifactUrlInput) (req *reques
 // API operation GetArtifactUrl for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetArtifactUrl
 func (c *Amplify) GetArtifactUrl(input *GetArtifactUrlInput) (*GetArtifactUrlOutput, error) {
@@ -1397,14 +1397,13 @@ const opGetBackendEnvironment = "GetBackendEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendEnvironmentRequest method.
+//	req, resp := client.GetBackendEnvironmentRequest(params)
 //
-//    // Example sending a request using the GetBackendEnvironmentRequest method.
-//    req, resp := client.GetBackendEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetBackendEnvironment
 func (c *Amplify) GetBackendEnvironmentRequest(input *GetBackendEnvironmentInput) (req *request.Request, output *GetBackendEnvironmentOutput) {
@@ -1435,17 +1434,18 @@ func (c *Amplify) GetBackendEnvironmentRequest(input *GetBackendEnvironmentInput
 // API operation GetBackendEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetBackendEnvironment
 func (c *Amplify) GetBackendEnvironment(input *GetBackendEnvironmentInput) (*GetBackendEnvironmentOutput, error) {
@@ -1485,14 +1485,13 @@ const opGetBranch = "GetBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBranchRequest method.
+//	req, resp := client.GetBranchRequest(params)
 //
-//    // Example sending a request using the GetBranchRequest method.
-//    req, resp := client.GetBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetBranch
 func (c *Amplify) GetBranchRequest(input *GetBranchInput) (req *request.Request, output *GetBranchOutput) {
@@ -1523,17 +1522,18 @@ func (c *Amplify) GetBranchRequest(input *GetBranchInput) (req *request.Request,
 // API operation GetBranch for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetBranch
 func (c *Amplify) GetBranch(input *GetBranchInput) (*GetBranchOutput, error) {
@@ -1573,14 +1573,13 @@ const opGetDomainAssociation = "GetDomainAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainAssociationRequest method.
+//	req, resp := client.GetDomainAssociationRequest(params)
 //
-//    // Example sending a request using the GetDomainAssociationRequest method.
-//    req, resp := client.GetDomainAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetDomainAssociation
 func (c *Amplify) GetDomainAssociationRequest(input *GetDomainAssociationInput) (req *request.Request, output *GetDomainAssociationOutput) {
@@ -1611,17 +1610,18 @@ func (c *Amplify) GetDomainAssociationRequest(input *GetDomainAssociationInput) 
 // API operation GetDomainAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetDomainAssociation
 func (c *Amplify) GetDomainAssociation(input *GetDomainAssociationInput) (*GetDomainAssociationOutput, error) {
@@ -1661,14 +1661,13 @@ const opGetJob = "GetJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobRequest method.
+//	req, resp := client.GetJobRequest(params)
 //
-//    // Example sending a request using the GetJobRequest method.
-//    req, resp := client.GetJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetJob
 func (c *Amplify) GetJobRequest(input *GetJobInput) (req *request.Request, output *GetJobOutput) {
@@ -1699,20 +1698,21 @@ func (c *Amplify) GetJobRequest(input *GetJobInput) (req *request.Request, outpu
 // API operation GetJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetJob
 func (c *Amplify) GetJob(input *GetJobInput) (*GetJobOutput, error) {
@@ -1752,14 +1752,13 @@ const opGetWebhook = "GetWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWebhookRequest method.
+//	req, resp := client.GetWebhookRequest(params)
 //
-//    // Example sending a request using the GetWebhookRequest method.
-//    req, resp := client.GetWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetWebhook
 func (c *Amplify) GetWebhookRequest(input *GetWebhookInput) (req *request.Request, output *GetWebhookOutput) {
@@ -1790,20 +1789,21 @@ func (c *Amplify) GetWebhookRequest(input *GetWebhookInput) (req *request.Reques
 // API operation GetWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/GetWebhook
 func (c *Amplify) GetWebhook(input *GetWebhookInput) (*GetWebhookOutput, error) {
@@ -1843,14 +1843,13 @@ const opListApps = "ListApps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppsRequest method.
+//	req, resp := client.ListAppsRequest(params)
 //
-//    // Example sending a request using the ListAppsRequest method.
-//    req, resp := client.ListAppsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListApps
 func (c *Amplify) ListAppsRequest(input *ListAppsInput) (req *request.Request, output *ListAppsOutput) {
@@ -1881,14 +1880,15 @@ func (c *Amplify) ListAppsRequest(input *ListAppsInput) (req *request.Request, o
 // API operation ListApps for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListApps
 func (c *Amplify) ListApps(input *ListAppsInput) (*ListAppsOutput, error) {
@@ -1928,14 +1928,13 @@ const opListArtifacts = "ListArtifacts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListArtifactsRequest method.
+//	req, resp := client.ListArtifactsRequest(params)
 //
-//    // Example sending a request using the ListArtifactsRequest method.
-//    req, resp := client.ListArtifactsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListArtifacts
 func (c *Amplify) ListArtifactsRequest(input *ListArtifactsInput) (req *request.Request, output *ListArtifactsOutput) {
@@ -1966,17 +1965,18 @@ func (c *Amplify) ListArtifactsRequest(input *ListArtifactsInput) (req *request.
 // API operation ListArtifacts for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListArtifacts
 func (c *Amplify) ListArtifacts(input *ListArtifactsInput) (*ListArtifactsOutput, error) {
@@ -2016,14 +2016,13 @@ const opListBackendEnvironments = "ListBackendEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackendEnvironmentsRequest method.
+//	req, resp := client.ListBackendEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ListBackendEnvironmentsRequest method.
-//    req, resp := client.ListBackendEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListBackendEnvironments
 func (c *Amplify) ListBackendEnvironmentsRequest(input *ListBackendEnvironmentsInput) (req *request.Request, output *ListBackendEnvironmentsOutput) {
@@ -2054,14 +2053,15 @@ func (c *Amplify) ListBackendEnvironmentsRequest(input *ListBackendEnvironmentsI
 // API operation ListBackendEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListBackendEnvironments
 func (c *Amplify) ListBackendEnvironments(input *ListBackendEnvironmentsInput) (*ListBackendEnvironmentsOutput, error) {
@@ -2101,14 +2101,13 @@ const opListBranches = "ListBranches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBranchesRequest method.
+//	req, resp := client.ListBranchesRequest(params)
 //
-//    // Example sending a request using the ListBranchesRequest method.
-//    req, resp := client.ListBranchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListBranches
 func (c *Amplify) ListBranchesRequest(input *ListBranchesInput) (req *request.Request, output *ListBranchesOutput) {
@@ -2139,14 +2138,15 @@ func (c *Amplify) ListBranchesRequest(input *ListBranchesInput) (req *request.Re
 // API operation ListBranches for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListBranches
 func (c *Amplify) ListBranches(input *ListBranchesInput) (*ListBranchesOutput, error) {
@@ -2186,14 +2186,13 @@ const opListDomainAssociations = "ListDomainAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainAssociationsRequest method.
+//	req, resp := client.ListDomainAssociationsRequest(params)
 //
-//    // Example sending a request using the ListDomainAssociationsRequest method.
-//    req, resp := client.ListDomainAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListDomainAssociations
 func (c *Amplify) ListDomainAssociationsRequest(input *ListDomainAssociationsInput) (req *request.Request, output *ListDomainAssociationsOutput) {
@@ -2224,14 +2223,15 @@ func (c *Amplify) ListDomainAssociationsRequest(input *ListDomainAssociationsInp
 // API operation ListDomainAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListDomainAssociations
 func (c *Amplify) ListDomainAssociations(input *ListDomainAssociationsInput) (*ListDomainAssociationsOutput, error) {
@@ -2271,14 +2271,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListJobs
 func (c *Amplify) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
@@ -2309,17 +2308,18 @@ func (c *Amplify) ListJobsRequest(input *ListJobsInput) (req *request.Request, o
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListJobs
 func (c *Amplify) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
@@ -2359,14 +2359,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListTagsForResource
 func (c *Amplify) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2397,14 +2396,15 @@ func (c *Amplify) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
 //
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * ResourceNotFoundException
-//   An operation failed due to a non-existent resource.
+//   - BadRequestException
+//     A request contains unexpected data.
+//
+//   - ResourceNotFoundException
+//     An operation failed due to a non-existent resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListTagsForResource
 func (c *Amplify) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2444,14 +2444,13 @@ const opListWebhooks = "ListWebhooks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWebhooksRequest method.
+//	req, resp := client.ListWebhooksRequest(params)
 //
-//    // Example sending a request using the ListWebhooksRequest method.
-//    req, resp := client.ListWebhooksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListWebhooks
 func (c *Amplify) ListWebhooksRequest(input *ListWebhooksInput) (req *request.Request, output *ListWebhooksOutput) {
@@ -2482,17 +2481,18 @@ func (c *Amplify) ListWebhooksRequest(input *ListWebhooksInput) (req *request.Re
 // API operation ListWebhooks for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/ListWebhooks
 func (c *Amplify) ListWebhooks(input *ListWebhooksInput) (*ListWebhooksOutput, error) {
@@ -2532,14 +2532,13 @@ const opStartDeployment = "StartDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeploymentRequest method.
+//	req, resp := client.StartDeploymentRequest(params)
 //
-//    // Example sending a request using the StartDeploymentRequest method.
-//    req, resp := client.StartDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StartDeployment
 func (c *Amplify) StartDeploymentRequest(input *StartDeploymentInput) (req *request.Request, output *StartDeploymentOutput) {
@@ -2571,20 +2570,21 @@ func (c *Amplify) StartDeploymentRequest(input *StartDeploymentInput) (req *requ
 // API operation StartDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StartDeployment
 func (c *Amplify) StartDeployment(input *StartDeploymentInput) (*StartDeploymentOutput, error) {
@@ -2624,14 +2624,13 @@ const opStartJob = "StartJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartJobRequest method.
+//	req, resp := client.StartJobRequest(params)
 //
-//    // Example sending a request using the StartJobRequest method.
-//    req, resp := client.StartJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StartJob
 func (c *Amplify) StartJobRequest(input *StartJobInput) (req *request.Request, output *StartJobOutput) {
@@ -2662,20 +2661,21 @@ func (c *Amplify) StartJobRequest(input *StartJobInput) (req *request.Request, o
 // API operation StartJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StartJob
 func (c *Amplify) StartJob(input *StartJobInput) (*StartJobOutput, error) {
@@ -2715,14 +2715,13 @@ const opStopJob = "StopJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopJobRequest method.
+//	req, resp := client.StopJobRequest(params)
 //
-//    // Example sending a request using the StopJobRequest method.
-//    req, resp := client.StopJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StopJob
 func (c *Amplify) StopJobRequest(input *StopJobInput) (req *request.Request, output *StopJobOutput) {
@@ -2753,20 +2752,21 @@ func (c *Amplify) StopJobRequest(input *StopJobInput) (req *request.Request, out
 // API operation StopJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * LimitExceededException
-//   A resource could not be created because service quotas were exceeded.
+//   - NotFoundException
+//     An entity was not found during an operation.
+//
+//   - LimitExceededException
+//     A resource could not be created because service quotas were exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/StopJob
 func (c *Amplify) StopJob(input *StopJobInput) (*StopJobOutput, error) {
@@ -2806,14 +2806,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/TagResource
 func (c *Amplify) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2845,14 +2844,15 @@ func (c *Amplify) TagResourceRequest(input *TagResourceInput) (req *request.Requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
 //
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * ResourceNotFoundException
-//   An operation failed due to a non-existent resource.
+//   - BadRequestException
+//     A request contains unexpected data.
+//
+//   - ResourceNotFoundException
+//     An operation failed due to a non-existent resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/TagResource
 func (c *Amplify) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2892,14 +2892,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UntagResource
 func (c *Amplify) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2931,14 +2930,15 @@ func (c *Amplify) UntagResourceRequest(input *UntagResourceInput) (req *request.
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
 //
-//   * BadRequestException
-//   A request contains unexpected data.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
-//   * ResourceNotFoundException
-//   An operation failed due to a non-existent resource.
+//   - BadRequestException
+//     A request contains unexpected data.
+//
+//   - ResourceNotFoundException
+//     An operation failed due to a non-existent resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UntagResource
 func (c *Amplify) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2978,14 +2978,13 @@ const opUpdateApp = "UpdateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppRequest method.
+//	req, resp := client.UpdateAppRequest(params)
 //
-//    // Example sending a request using the UpdateAppRequest method.
-//    req, resp := client.UpdateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateApp
 func (c *Amplify) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, output *UpdateAppOutput) {
@@ -3016,17 +3015,18 @@ func (c *Amplify) UpdateAppRequest(input *UpdateAppInput) (req *request.Request,
 // API operation UpdateApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
+//
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateApp
 func (c *Amplify) UpdateApp(input *UpdateAppInput) (*UpdateAppOutput, error) {
@@ -3066,14 +3066,13 @@ const opUpdateBranch = "UpdateBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBranchRequest method.
+//	req, resp := client.UpdateBranchRequest(params)
 //
-//    // Example sending a request using the UpdateBranchRequest method.
-//    req, resp := client.UpdateBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateBranch
 func (c *Amplify) UpdateBranchRequest(input *UpdateBranchInput) (req *request.Request, output *UpdateBranchOutput) {
@@ -3104,20 +3103,21 @@ func (c *Amplify) UpdateBranchRequest(input *UpdateBranchInput) (req *request.Re
 // API operation UpdateBranch for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateBranch
 func (c *Amplify) UpdateBranch(input *UpdateBranchInput) (*UpdateBranchOutput, error) {
@@ -3157,14 +3157,13 @@ const opUpdateDomainAssociation = "UpdateDomainAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainAssociationRequest method.
+//	req, resp := client.UpdateDomainAssociationRequest(params)
 //
-//    // Example sending a request using the UpdateDomainAssociationRequest method.
-//    req, resp := client.UpdateDomainAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateDomainAssociation
 func (c *Amplify) UpdateDomainAssociationRequest(input *UpdateDomainAssociationInput) (req *request.Request, output *UpdateDomainAssociationOutput) {
@@ -3195,20 +3194,21 @@ func (c *Amplify) UpdateDomainAssociationRequest(input *UpdateDomainAssociationI
 // API operation UpdateDomainAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateDomainAssociation
 func (c *Amplify) UpdateDomainAssociation(input *UpdateDomainAssociationInput) (*UpdateDomainAssociationOutput, error) {
@@ -3248,14 +3248,13 @@ const opUpdateWebhook = "UpdateWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWebhookRequest method.
+//	req, resp := client.UpdateWebhookRequest(params)
 //
-//    // Example sending a request using the UpdateWebhookRequest method.
-//    req, resp := client.UpdateWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateWebhook
 func (c *Amplify) UpdateWebhookRequest(input *UpdateWebhookInput) (req *request.Request, output *UpdateWebhookOutput) {
@@ -3286,20 +3285,21 @@ func (c *Amplify) UpdateWebhookRequest(input *UpdateWebhookInput) (req *request.
 // API operation UpdateWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A request contains unexpected data.
 //
-//   * UnauthorizedException
-//   An operation failed due to a lack of access.
+//   - BadRequestException
+//     A request contains unexpected data.
 //
-//   * NotFoundException
-//   An entity was not found during an operation.
+//   - UnauthorizedException
+//     An operation failed due to a lack of access.
 //
-//   * InternalFailureException
-//   The service failed to perform an operation due to an internal issue.
+//   - NotFoundException
+//     An entity was not found during an operation.
 //
-//   * DependentServiceFailureException
-//   An operation failed because a dependent service threw an exception.
+//   - InternalFailureException
+//     The service failed to perform an operation due to an internal issue.
+//
+//   - DependentServiceFailureException
+//     An operation failed because a dependent service threw an exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplify-2017-07-25/UpdateWebhook
 func (c *Amplify) UpdateWebhook(input *UpdateWebhookInput) (*UpdateWebhookOutput, error) {

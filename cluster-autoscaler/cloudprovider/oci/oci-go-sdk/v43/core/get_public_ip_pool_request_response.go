@@ -11,7 +11,7 @@ import (
 
 // GetPublicIpPoolRequest wrapper for the GetPublicIpPool operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetPublicIpPool.go.html to see an example of how to use GetPublicIpPoolRequest.
 type GetPublicIpPoolRequest struct {

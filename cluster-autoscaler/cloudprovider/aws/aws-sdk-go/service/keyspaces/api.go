@@ -29,14 +29,13 @@ const opCreateKeyspace = "CreateKeyspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKeyspaceRequest method.
+//	req, resp := client.CreateKeyspaceRequest(params)
 //
-//    // Example sending a request using the CreateKeyspaceRequest method.
-//    req, resp := client.CreateKeyspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/CreateKeyspace
 func (c *Keyspaces) CreateKeyspaceRequest(input *CreateKeyspaceInput) (req *request.Request, output *CreateKeyspaceOutput) {
@@ -74,25 +73,26 @@ func (c *Keyspaces) CreateKeyspaceRequest(input *CreateKeyspaceInput) (req *requ
 // API operation CreateKeyspace for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/CreateKeyspace
 func (c *Keyspaces) CreateKeyspace(input *CreateKeyspaceInput) (*CreateKeyspaceOutput, error) {
@@ -132,14 +132,13 @@ const opCreateTable = "CreateTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTableRequest method.
+//	req, resp := client.CreateTableRequest(params)
 //
-//    // Example sending a request using the CreateTableRequest method.
-//    req, resp := client.CreateTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/CreateTable
 func (c *Keyspaces) CreateTableRequest(input *CreateTableInput) (req *request.Request, output *CreateTableOutput) {
@@ -179,29 +178,30 @@ func (c *Keyspaces) CreateTableRequest(input *CreateTableInput) (req *request.Re
 // API operation CreateTable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/CreateTable
 func (c *Keyspaces) CreateTable(input *CreateTableInput) (*CreateTableOutput, error) {
@@ -241,14 +241,13 @@ const opDeleteKeyspace = "DeleteKeyspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKeyspaceRequest method.
+//	req, resp := client.DeleteKeyspaceRequest(params)
 //
-//    // Example sending a request using the DeleteKeyspaceRequest method.
-//    req, resp := client.DeleteKeyspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/DeleteKeyspace
 func (c *Keyspaces) DeleteKeyspaceRequest(input *DeleteKeyspaceInput) (req *request.Request, output *DeleteKeyspaceOutput) {
@@ -280,29 +279,30 @@ func (c *Keyspaces) DeleteKeyspaceRequest(input *DeleteKeyspaceInput) (req *requ
 // API operation DeleteKeyspace for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/DeleteKeyspace
 func (c *Keyspaces) DeleteKeyspace(input *DeleteKeyspaceInput) (*DeleteKeyspaceOutput, error) {
@@ -342,14 +342,13 @@ const opDeleteTable = "DeleteTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTableRequest method.
+//	req, resp := client.DeleteTableRequest(params)
 //
-//    // Example sending a request using the DeleteTableRequest method.
-//    req, resp := client.DeleteTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/DeleteTable
 func (c *Keyspaces) DeleteTableRequest(input *DeleteTableInput) (req *request.Request, output *DeleteTableOutput) {
@@ -387,29 +386,30 @@ func (c *Keyspaces) DeleteTableRequest(input *DeleteTableInput) (req *request.Re
 // API operation DeleteTable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/DeleteTable
 func (c *Keyspaces) DeleteTable(input *DeleteTableInput) (*DeleteTableOutput, error) {
@@ -449,14 +449,13 @@ const opGetKeyspace = "GetKeyspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetKeyspaceRequest method.
+//	req, resp := client.GetKeyspaceRequest(params)
 //
-//    // Example sending a request using the GetKeyspaceRequest method.
-//    req, resp := client.GetKeyspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/GetKeyspace
 func (c *Keyspaces) GetKeyspaceRequest(input *GetKeyspaceInput) (req *request.Request, output *GetKeyspaceOutput) {
@@ -487,24 +486,25 @@ func (c *Keyspaces) GetKeyspaceRequest(input *GetKeyspaceInput) (req *request.Re
 // API operation GetKeyspace for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/GetKeyspace
 func (c *Keyspaces) GetKeyspace(input *GetKeyspaceInput) (*GetKeyspaceOutput, error) {
@@ -544,14 +544,13 @@ const opGetTable = "GetTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTableRequest method.
+//	req, resp := client.GetTableRequest(params)
 //
-//    // Example sending a request using the GetTableRequest method.
-//    req, resp := client.GetTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/GetTable
 func (c *Keyspaces) GetTableRequest(input *GetTableInput) (req *request.Request, output *GetTableOutput) {
@@ -586,24 +585,25 @@ func (c *Keyspaces) GetTableRequest(input *GetTableInput) (req *request.Request,
 // API operation GetTable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/GetTable
 func (c *Keyspaces) GetTable(input *GetTableInput) (*GetTableOutput, error) {
@@ -643,14 +643,13 @@ const opListKeyspaces = "ListKeyspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKeyspacesRequest method.
+//	req, resp := client.ListKeyspacesRequest(params)
 //
-//    // Example sending a request using the ListKeyspacesRequest method.
-//    req, resp := client.ListKeyspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListKeyspaces
 func (c *Keyspaces) ListKeyspacesRequest(input *ListKeyspacesInput) (req *request.Request, output *ListKeyspacesOutput) {
@@ -687,24 +686,25 @@ func (c *Keyspaces) ListKeyspacesRequest(input *ListKeyspacesInput) (req *reques
 // API operation ListKeyspaces for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListKeyspaces
 func (c *Keyspaces) ListKeyspaces(input *ListKeyspacesInput) (*ListKeyspacesOutput, error) {
@@ -736,15 +736,14 @@ func (c *Keyspaces) ListKeyspacesWithContext(ctx aws.Context, input *ListKeyspac
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKeyspaces operation.
-//    pageNum := 0
-//    err := client.ListKeyspacesPages(params,
-//        func(page *keyspaces.ListKeyspacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKeyspaces operation.
+//	pageNum := 0
+//	err := client.ListKeyspacesPages(params,
+//	    func(page *keyspaces.ListKeyspacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Keyspaces) ListKeyspacesPages(input *ListKeyspacesInput, fn func(*ListKeyspacesOutput, bool) bool) error {
 	return c.ListKeyspacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -796,14 +795,13 @@ const opListTables = "ListTables"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTablesRequest method.
+//	req, resp := client.ListTablesRequest(params)
 //
-//    // Example sending a request using the ListTablesRequest method.
-//    req, resp := client.ListTablesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListTables
 func (c *Keyspaces) ListTablesRequest(input *ListTablesInput) (req *request.Request, output *ListTablesOutput) {
@@ -840,24 +838,25 @@ func (c *Keyspaces) ListTablesRequest(input *ListTablesInput) (req *request.Requ
 // API operation ListTables for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListTables
 func (c *Keyspaces) ListTables(input *ListTablesInput) (*ListTablesOutput, error) {
@@ -889,15 +888,14 @@ func (c *Keyspaces) ListTablesWithContext(ctx aws.Context, input *ListTablesInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTables operation.
-//    pageNum := 0
-//    err := client.ListTablesPages(params,
-//        func(page *keyspaces.ListTablesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTables operation.
+//	pageNum := 0
+//	err := client.ListTablesPages(params,
+//	    func(page *keyspaces.ListTablesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Keyspaces) ListTablesPages(input *ListTablesInput, fn func(*ListTablesOutput, bool) bool) error {
 	return c.ListTablesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -949,14 +947,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListTagsForResource
 func (c *Keyspaces) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -994,24 +991,25 @@ func (c *Keyspaces) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/ListTagsForResource
 func (c *Keyspaces) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1043,15 +1041,14 @@ func (c *Keyspaces) ListTagsForResourceWithContext(ctx aws.Context, input *ListT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *keyspaces.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *keyspaces.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Keyspaces) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1103,14 +1100,13 @@ const opRestoreTable = "RestoreTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreTableRequest method.
+//	req, resp := client.RestoreTableRequest(params)
 //
-//    // Example sending a request using the RestoreTableRequest method.
-//    req, resp := client.RestoreTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/RestoreTable
 func (c *Keyspaces) RestoreTableRequest(input *RestoreTableInput) (req *request.Request, output *RestoreTableOutput) {
@@ -1182,29 +1178,30 @@ func (c *Keyspaces) RestoreTableRequest(input *RestoreTableInput) (req *request.
 // API operation RestoreTable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/RestoreTable
 func (c *Keyspaces) RestoreTable(input *RestoreTableInput) (*RestoreTableOutput, error) {
@@ -1244,14 +1241,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/TagResource
 func (c *Keyspaces) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1292,24 +1288,25 @@ func (c *Keyspaces) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/TagResource
 func (c *Keyspaces) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1349,14 +1346,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/UntagResource
 func (c *Keyspaces) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1388,29 +1384,30 @@ func (c *Keyspaces) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/UntagResource
 func (c *Keyspaces) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1450,14 +1447,13 @@ const opUpdateTable = "UpdateTable"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTableRequest method.
+//	req, resp := client.UpdateTableRequest(params)
 //
-//    // Example sending a request using the UpdateTableRequest method.
-//    req, resp := client.UpdateTableRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/UpdateTable
 func (c *Keyspaces) UpdateTableRequest(input *UpdateTableInput) (req *request.Request, output *UpdateTableOutput) {
@@ -1490,29 +1486,30 @@ func (c *Keyspaces) UpdateTableRequest(input *UpdateTableInput) (req *request.Re
 // API operation UpdateTable for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed due to an invalid or malformed request.
 //
-//   * ServiceQuotaExceededException
-//   The operation exceeded the service quota for this resource. For more information
-//   on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
-//   in the Amazon Keyspaces Developer Guide.
+//   - ValidationException
+//     The operation failed due to an invalid or malformed request.
 //
-//   * InternalServerException
-//   Amazon Keyspaces was unable to fully process this request because of an internal
-//   server error.
+//   - ServiceQuotaExceededException
+//     The operation exceeded the service quota for this resource. For more information
+//     on service quotas, see Quotas (https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html)
+//     in the Amazon Keyspaces Developer Guide.
 //
-//   * ConflictException
-//   Amazon Keyspaces could not complete the requested action. This error may
-//   occur if you try to perform an action and the same or a different action
-//   is already in progress, or if you try to create a resource that already exists.
+//   - InternalServerException
+//     Amazon Keyspaces was unable to fully process this request because of an internal
+//     server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     Amazon Keyspaces could not complete the requested action. This error may
+//     occur if you try to perform an action and the same or a different action
+//     is already in progress, or if you try to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   The operation tried to access a keyspace or table that doesn't exist. The
-//   resource might not be specified correctly, or its status might not be ACTIVE.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access a keyspace or table that doesn't exist. The
+//     resource might not be specified correctly, or its status might not be ACTIVE.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/keyspaces-2022-02-10/UpdateTable
 func (c *Keyspaces) UpdateTable(input *UpdateTableInput) (*UpdateTableOutput, error) {

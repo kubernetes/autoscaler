@@ -29,14 +29,13 @@ const opCreateCliToken = "CreateCliToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCliTokenRequest method.
+//	req, resp := client.CreateCliTokenRequest(params)
 //
-//    // Example sending a request using the CreateCliTokenRequest method.
-//    req, resp := client.CreateCliTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateCliToken
 func (c *MWAA) CreateCliTokenRequest(input *CreateCliTokenInput) (req *request.Request, output *CreateCliTokenOutput) {
@@ -70,8 +69,8 @@ func (c *MWAA) CreateCliTokenRequest(input *CreateCliTokenInput) (req *request.R
 // API operation CreateCliToken for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateCliToken
 func (c *MWAA) CreateCliToken(input *CreateCliTokenInput) (*CreateCliTokenOutput, error) {
@@ -111,14 +110,13 @@ const opCreateEnvironment = "CreateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentRequest method.
+//	req, resp := client.CreateEnvironmentRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentRequest method.
-//    req, resp := client.CreateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateEnvironment
 func (c *MWAA) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *request.Request, output *CreateEnvironmentOutput) {
@@ -151,11 +149,12 @@ func (c *MWAA) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *req
 // API operation CreateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateEnvironment
 func (c *MWAA) CreateEnvironment(input *CreateEnvironmentInput) (*CreateEnvironmentOutput, error) {
@@ -195,14 +194,13 @@ const opCreateWebLoginToken = "CreateWebLoginToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWebLoginTokenRequest method.
+//	req, resp := client.CreateWebLoginTokenRequest(params)
 //
-//    // Example sending a request using the CreateWebLoginTokenRequest method.
-//    req, resp := client.CreateWebLoginTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateWebLoginToken
 func (c *MWAA) CreateWebLoginTokenRequest(input *CreateWebLoginTokenInput) (req *request.Request, output *CreateWebLoginTokenOutput) {
@@ -236,18 +234,19 @@ func (c *MWAA) CreateWebLoginTokenRequest(input *CreateWebLoginTokenInput) (req 
 // API operation CreateWebLoginToken for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access to the Apache Airflow Web UI or CLI has been denied due to insufficient
-//   permissions. To learn more, see Accessing an Amazon MWAA environment (https://docs.aws.amazon.com/mwaa/latest/userguide/access-policies.html).
 //
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
+//   - AccessDeniedException
+//     Access to the Apache Airflow Web UI or CLI has been denied due to insufficient
+//     permissions. To learn more, see Accessing an Amazon MWAA environment (https://docs.aws.amazon.com/mwaa/latest/userguide/access-policies.html).
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/CreateWebLoginToken
 func (c *MWAA) CreateWebLoginToken(input *CreateWebLoginTokenInput) (*CreateWebLoginTokenOutput, error) {
@@ -287,14 +286,13 @@ const opDeleteEnvironment = "DeleteEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentRequest method.
+//	req, resp := client.DeleteEnvironmentRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentRequest method.
-//    req, resp := client.DeleteEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/DeleteEnvironment
 func (c *MWAA) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *request.Request, output *DeleteEnvironmentOutput) {
@@ -328,14 +326,15 @@ func (c *MWAA) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *req
 // API operation DeleteEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/DeleteEnvironment
 func (c *MWAA) DeleteEnvironment(input *DeleteEnvironmentInput) (*DeleteEnvironmentOutput, error) {
@@ -375,14 +374,13 @@ const opGetEnvironment = "GetEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentRequest method.
+//	req, resp := client.GetEnvironmentRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentRequest method.
-//    req, resp := client.GetEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/GetEnvironment
 func (c *MWAA) GetEnvironmentRequest(input *GetEnvironmentInput) (req *request.Request, output *GetEnvironmentOutput) {
@@ -415,14 +413,15 @@ func (c *MWAA) GetEnvironmentRequest(input *GetEnvironmentInput) (req *request.R
 // API operation GetEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/GetEnvironment
 func (c *MWAA) GetEnvironment(input *GetEnvironmentInput) (*GetEnvironmentOutput, error) {
@@ -462,14 +461,13 @@ const opListEnvironments = "ListEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentsRequest method.
+//	req, resp := client.ListEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentsRequest method.
-//    req, resp := client.ListEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/ListEnvironments
 func (c *MWAA) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *request.Request, output *ListEnvironmentsOutput) {
@@ -508,11 +506,12 @@ func (c *MWAA) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *reque
 // API operation ListEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/ListEnvironments
 func (c *MWAA) ListEnvironments(input *ListEnvironmentsInput) (*ListEnvironmentsOutput, error) {
@@ -544,15 +543,14 @@ func (c *MWAA) ListEnvironmentsWithContext(ctx aws.Context, input *ListEnvironme
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironments operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentsPages(params,
-//        func(page *mwaa.ListEnvironmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironments operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentsPages(params,
+//	    func(page *mwaa.ListEnvironmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MWAA) ListEnvironmentsPages(input *ListEnvironmentsInput, fn func(*ListEnvironmentsOutput, bool) bool) error {
 	return c.ListEnvironmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -604,14 +602,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/ListTagsForResource
 func (c *MWAA) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -645,14 +642,15 @@ func (c *MWAA) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/ListTagsForResource
 func (c *MWAA) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -692,14 +690,13 @@ const opPublishMetrics = "PublishMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishMetricsRequest method.
+//	req, resp := client.PublishMetricsRequest(params)
 //
-//    // Example sending a request using the PublishMetricsRequest method.
-//    req, resp := client.PublishMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/PublishMetrics
 func (c *MWAA) PublishMetricsRequest(input *PublishMetricsInput) (req *request.Request, output *PublishMetricsOutput) {
@@ -733,11 +730,12 @@ func (c *MWAA) PublishMetricsRequest(input *PublishMetricsInput) (req *request.R
 // API operation PublishMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/PublishMetrics
 func (c *MWAA) PublishMetrics(input *PublishMetricsInput) (*PublishMetricsOutput, error) {
@@ -777,14 +775,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/TagResource
 func (c *MWAA) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -819,14 +816,15 @@ func (c *MWAA) TagResourceRequest(input *TagResourceInput) (req *request.Request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/TagResource
 func (c *MWAA) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -866,14 +864,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/UntagResource
 func (c *MWAA) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -908,14 +905,15 @@ func (c *MWAA) UntagResourceRequest(input *UntagResourceInput) (req *request.Req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/UntagResource
 func (c *MWAA) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -955,14 +953,13 @@ const opUpdateEnvironment = "UpdateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentRequest method.
+//	req, resp := client.UpdateEnvironmentRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentRequest method.
-//    req, resp := client.UpdateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/UpdateEnvironment
 func (c *MWAA) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *request.Request, output *UpdateEnvironmentOutput) {
@@ -995,14 +992,15 @@ func (c *MWAA) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *req
 // API operation UpdateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   ResourceNotFoundException: The resource is not available.
 //
-//   * ValidationException
-//   ValidationException: The provided input is not valid.
+//   - ResourceNotFoundException
+//     ResourceNotFoundException: The resource is not available.
 //
-//   * InternalServerException
-//   InternalServerException: An internal error has occurred.
+//   - ValidationException
+//     ValidationException: The provided input is not valid.
+//
+//   - InternalServerException
+//     InternalServerException: An internal error has occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01/UpdateEnvironment
 func (c *MWAA) UpdateEnvironment(input *UpdateEnvironmentInput) (*UpdateEnvironmentOutput, error) {

@@ -55,19 +55,19 @@ Example to List Clusters
 
 Example to List Clusters with detailed information
 
-    allPagesDetail, err := clusters.ListDetail(serviceClient, clusters.ListOpts{}).AllPages()
-    if err != nil {
-        panic(err)
-    }
+	allPagesDetail, err := clusters.ListDetail(serviceClient, clusters.ListOpts{}).AllPages()
+	if err != nil {
+	    panic(err)
+	}
 
-    allClustersDetail, err := clusters.ExtractClusters(allPagesDetail)
-    if err != nil {
-        panic(err)
-    }
+	allClustersDetail, err := clusters.ExtractClusters(allPagesDetail)
+	if err != nil {
+	    panic(err)
+	}
 
-    for _, clusterDetail := range allClustersDetail {
-        fmt.Printf("%+v\n", clusterDetail)
-    }
+	for _, clusterDetail := range allClustersDetail {
+	    fmt.Printf("%+v\n", clusterDetail)
+	}
 
 Example to Update a Cluster
 
@@ -96,6 +96,5 @@ Example to Delete a Cluster
 	if err != nil {
 		panic(err)
 	}
-
 */
 package clusters

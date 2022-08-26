@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a NetworkFirewall client from just a session.
-//     svc := networkfirewall.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a NetworkFirewall client with additional configuration
-//     svc := networkfirewall.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a NetworkFirewall client from just a session.
+//	svc := networkfirewall.New(mySession)
+//
+//	// Create a NetworkFirewall client with additional configuration
+//	svc := networkfirewall.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *NetworkFirewall {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

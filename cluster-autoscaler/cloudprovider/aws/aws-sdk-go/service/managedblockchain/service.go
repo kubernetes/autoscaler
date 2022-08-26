@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ManagedBlockchain client from just a session.
-//     svc := managedblockchain.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ManagedBlockchain client with additional configuration
-//     svc := managedblockchain.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ManagedBlockchain client from just a session.
+//	svc := managedblockchain.New(mySession)
+//
+//	// Create a ManagedBlockchain client with additional configuration
+//	svc := managedblockchain.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ManagedBlockchain {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -28,14 +28,13 @@ const opCreateDataIntegration = "CreateDataIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataIntegrationRequest method.
+//	req, resp := client.CreateDataIntegrationRequest(params)
 //
-//    // Example sending a request using the CreateDataIntegrationRequest method.
-//    req, resp := client.CreateDataIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateDataIntegration
 func (c *AppIntegrationsService) CreateDataIntegrationRequest(input *CreateDataIntegrationInput) (req *request.Request, output *CreateDataIntegrationOutput) {
@@ -70,23 +69,24 @@ func (c *AppIntegrationsService) CreateDataIntegrationRequest(input *CreateDataI
 // API operation CreateDataIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ResourceQuotaExceededException
-//   The allowed quota for the resource has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * DuplicateResourceException
-//   A resource with the specified name already exists.
+//   - ResourceQuotaExceededException
+//     The allowed quota for the resource has been exceeded.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - DuplicateResourceException
+//     A resource with the specified name already exists.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateDataIntegration
 func (c *AppIntegrationsService) CreateDataIntegration(input *CreateDataIntegrationInput) (*CreateDataIntegrationOutput, error) {
@@ -126,14 +126,13 @@ const opCreateEventIntegration = "CreateEventIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventIntegrationRequest method.
+//	req, resp := client.CreateEventIntegrationRequest(params)
 //
-//    // Example sending a request using the CreateEventIntegrationRequest method.
-//    req, resp := client.CreateEventIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateEventIntegration
 func (c *AppIntegrationsService) CreateEventIntegrationRequest(input *CreateEventIntegrationInput) (req *request.Request, output *CreateEventIntegrationOutput) {
@@ -167,23 +166,24 @@ func (c *AppIntegrationsService) CreateEventIntegrationRequest(input *CreateEven
 // API operation CreateEventIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ResourceQuotaExceededException
-//   The allowed quota for the resource has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * DuplicateResourceException
-//   A resource with the specified name already exists.
+//   - ResourceQuotaExceededException
+//     The allowed quota for the resource has been exceeded.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - DuplicateResourceException
+//     A resource with the specified name already exists.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateEventIntegration
 func (c *AppIntegrationsService) CreateEventIntegration(input *CreateEventIntegrationInput) (*CreateEventIntegrationOutput, error) {
@@ -223,14 +223,13 @@ const opDeleteDataIntegration = "DeleteDataIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataIntegrationRequest method.
+//	req, resp := client.DeleteDataIntegrationRequest(params)
 //
-//    // Example sending a request using the DeleteDataIntegrationRequest method.
-//    req, resp := client.DeleteDataIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/DeleteDataIntegration
 func (c *AppIntegrationsService) DeleteDataIntegrationRequest(input *DeleteDataIntegrationInput) (req *request.Request, output *DeleteDataIntegrationOutput) {
@@ -269,20 +268,21 @@ func (c *AppIntegrationsService) DeleteDataIntegrationRequest(input *DeleteDataI
 // API operation DeleteDataIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/DeleteDataIntegration
 func (c *AppIntegrationsService) DeleteDataIntegration(input *DeleteDataIntegrationInput) (*DeleteDataIntegrationOutput, error) {
@@ -322,14 +322,13 @@ const opDeleteEventIntegration = "DeleteEventIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventIntegrationRequest method.
+//	req, resp := client.DeleteEventIntegrationRequest(params)
 //
-//    // Example sending a request using the DeleteEventIntegrationRequest method.
-//    req, resp := client.DeleteEventIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/DeleteEventIntegration
 func (c *AppIntegrationsService) DeleteEventIntegrationRequest(input *DeleteEventIntegrationInput) (req *request.Request, output *DeleteEventIntegrationOutput) {
@@ -362,20 +361,21 @@ func (c *AppIntegrationsService) DeleteEventIntegrationRequest(input *DeleteEven
 // API operation DeleteEventIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/DeleteEventIntegration
 func (c *AppIntegrationsService) DeleteEventIntegration(input *DeleteEventIntegrationInput) (*DeleteEventIntegrationOutput, error) {
@@ -415,14 +415,13 @@ const opGetDataIntegration = "GetDataIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataIntegrationRequest method.
+//	req, resp := client.GetDataIntegrationRequest(params)
 //
-//    // Example sending a request using the GetDataIntegrationRequest method.
-//    req, resp := client.GetDataIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetDataIntegration
 func (c *AppIntegrationsService) GetDataIntegrationRequest(input *GetDataIntegrationInput) (req *request.Request, output *GetDataIntegrationOutput) {
@@ -458,20 +457,21 @@ func (c *AppIntegrationsService) GetDataIntegrationRequest(input *GetDataIntegra
 // API operation GetDataIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetDataIntegration
 func (c *AppIntegrationsService) GetDataIntegration(input *GetDataIntegrationInput) (*GetDataIntegrationOutput, error) {
@@ -511,14 +511,13 @@ const opGetEventIntegration = "GetEventIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEventIntegrationRequest method.
+//	req, resp := client.GetEventIntegrationRequest(params)
 //
-//    // Example sending a request using the GetEventIntegrationRequest method.
-//    req, resp := client.GetEventIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetEventIntegration
 func (c *AppIntegrationsService) GetEventIntegrationRequest(input *GetEventIntegrationInput) (req *request.Request, output *GetEventIntegrationOutput) {
@@ -549,20 +548,21 @@ func (c *AppIntegrationsService) GetEventIntegrationRequest(input *GetEventInteg
 // API operation GetEventIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetEventIntegration
 func (c *AppIntegrationsService) GetEventIntegration(input *GetEventIntegrationInput) (*GetEventIntegrationOutput, error) {
@@ -602,14 +602,13 @@ const opListDataIntegrationAssociations = "ListDataIntegrationAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataIntegrationAssociationsRequest method.
+//	req, resp := client.ListDataIntegrationAssociationsRequest(params)
 //
-//    // Example sending a request using the ListDataIntegrationAssociationsRequest method.
-//    req, resp := client.ListDataIntegrationAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListDataIntegrationAssociations
 func (c *AppIntegrationsService) ListDataIntegrationAssociationsRequest(input *ListDataIntegrationAssociationsInput) (req *request.Request, output *ListDataIntegrationAssociationsOutput) {
@@ -645,20 +644,21 @@ func (c *AppIntegrationsService) ListDataIntegrationAssociationsRequest(input *L
 // API operation ListDataIntegrationAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListDataIntegrationAssociations
 func (c *AppIntegrationsService) ListDataIntegrationAssociations(input *ListDataIntegrationAssociationsInput) (*ListDataIntegrationAssociationsOutput, error) {
@@ -698,14 +698,13 @@ const opListDataIntegrations = "ListDataIntegrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataIntegrationsRequest method.
+//	req, resp := client.ListDataIntegrationsRequest(params)
 //
-//    // Example sending a request using the ListDataIntegrationsRequest method.
-//    req, resp := client.ListDataIntegrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListDataIntegrations
 func (c *AppIntegrationsService) ListDataIntegrationsRequest(input *ListDataIntegrationsInput) (req *request.Request, output *ListDataIntegrationsOutput) {
@@ -741,17 +740,18 @@ func (c *AppIntegrationsService) ListDataIntegrationsRequest(input *ListDataInte
 // API operation ListDataIntegrations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListDataIntegrations
 func (c *AppIntegrationsService) ListDataIntegrations(input *ListDataIntegrationsInput) (*ListDataIntegrationsOutput, error) {
@@ -791,14 +791,13 @@ const opListEventIntegrationAssociations = "ListEventIntegrationAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventIntegrationAssociationsRequest method.
+//	req, resp := client.ListEventIntegrationAssociationsRequest(params)
 //
-//    // Example sending a request using the ListEventIntegrationAssociationsRequest method.
-//    req, resp := client.ListEventIntegrationAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListEventIntegrationAssociations
 func (c *AppIntegrationsService) ListEventIntegrationAssociationsRequest(input *ListEventIntegrationAssociationsInput) (req *request.Request, output *ListEventIntegrationAssociationsOutput) {
@@ -829,20 +828,21 @@ func (c *AppIntegrationsService) ListEventIntegrationAssociationsRequest(input *
 // API operation ListEventIntegrationAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListEventIntegrationAssociations
 func (c *AppIntegrationsService) ListEventIntegrationAssociations(input *ListEventIntegrationAssociationsInput) (*ListEventIntegrationAssociationsOutput, error) {
@@ -882,14 +882,13 @@ const opListEventIntegrations = "ListEventIntegrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventIntegrationsRequest method.
+//	req, resp := client.ListEventIntegrationsRequest(params)
 //
-//    // Example sending a request using the ListEventIntegrationsRequest method.
-//    req, resp := client.ListEventIntegrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListEventIntegrations
 func (c *AppIntegrationsService) ListEventIntegrationsRequest(input *ListEventIntegrationsInput) (req *request.Request, output *ListEventIntegrationsOutput) {
@@ -920,17 +919,18 @@ func (c *AppIntegrationsService) ListEventIntegrationsRequest(input *ListEventIn
 // API operation ListEventIntegrations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListEventIntegrations
 func (c *AppIntegrationsService) ListEventIntegrations(input *ListEventIntegrationsInput) (*ListEventIntegrationsOutput, error) {
@@ -970,14 +970,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListTagsForResource
 func (c *AppIntegrationsService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1008,17 +1007,18 @@ func (c *AppIntegrationsService) ListTagsForResourceRequest(input *ListTagsForRe
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListTagsForResource
 func (c *AppIntegrationsService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1058,14 +1058,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/TagResource
 func (c *AppIntegrationsService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1097,17 +1096,18 @@ func (c *AppIntegrationsService) TagResourceRequest(input *TagResourceInput) (re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/TagResource
 func (c *AppIntegrationsService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1147,14 +1147,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UntagResource
 func (c *AppIntegrationsService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1186,17 +1185,18 @@ func (c *AppIntegrationsService) UntagResourceRequest(input *UntagResourceInput)
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UntagResource
 func (c *AppIntegrationsService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1236,14 +1236,13 @@ const opUpdateDataIntegration = "UpdateDataIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDataIntegrationRequest method.
+//	req, resp := client.UpdateDataIntegrationRequest(params)
 //
-//    // Example sending a request using the UpdateDataIntegrationRequest method.
-//    req, resp := client.UpdateDataIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateDataIntegration
 func (c *AppIntegrationsService) UpdateDataIntegrationRequest(input *UpdateDataIntegrationInput) (req *request.Request, output *UpdateDataIntegrationOutput) {
@@ -1280,20 +1279,21 @@ func (c *AppIntegrationsService) UpdateDataIntegrationRequest(input *UpdateDataI
 // API operation UpdateDataIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateDataIntegration
 func (c *AppIntegrationsService) UpdateDataIntegration(input *UpdateDataIntegrationInput) (*UpdateDataIntegrationOutput, error) {
@@ -1333,14 +1333,13 @@ const opUpdateEventIntegration = "UpdateEventIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEventIntegrationRequest method.
+//	req, resp := client.UpdateEventIntegrationRequest(params)
 //
-//    // Example sending a request using the UpdateEventIntegrationRequest method.
-//    req, resp := client.UpdateEventIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateEventIntegration
 func (c *AppIntegrationsService) UpdateEventIntegrationRequest(input *UpdateEventIntegrationInput) (req *request.Request, output *UpdateEventIntegrationOutput) {
@@ -1372,20 +1371,21 @@ func (c *AppIntegrationsService) UpdateEventIntegrationRequest(input *UpdateEven
 // API operation UpdateEventIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceError
-//   Request processing failed due to an error or failure with the service.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateEventIntegration
 func (c *AppIntegrationsService) UpdateEventIntegration(input *UpdateEventIntegrationInput) (*UpdateEventIntegrationOutput, error) {

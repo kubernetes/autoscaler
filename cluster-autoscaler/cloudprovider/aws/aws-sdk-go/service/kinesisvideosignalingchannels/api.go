@@ -27,14 +27,13 @@ const opGetIceServerConfig = "GetIceServerConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIceServerConfigRequest method.
+//	req, resp := client.GetIceServerConfigRequest(params)
 //
-//    // Example sending a request using the GetIceServerConfigRequest method.
-//    req, resp := client.GetIceServerConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-signaling-2019-12-04/GetIceServerConfig
 func (c *KinesisVideoSignalingChannels) GetIceServerConfigRequest(input *GetIceServerConfigInput) (req *request.Request, output *GetIceServerConfigOutput) {
@@ -80,26 +79,27 @@ func (c *KinesisVideoSignalingChannels) GetIceServerConfigRequest(input *GetIceS
 // API operation GetIceServerConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidClientException
-//   The specified client is invalid.
 //
-//   * SessionExpiredException
-//   If the client session is expired. Once the client is connected, the session
-//   is valid for 45 minutes. Client should reconnect to the channel to continue
-//   sending/receiving messages.
+//   - InvalidClientException
+//     The specified client is invalid.
 //
-//   * ClientLimitExceededException
-//   Your request was throttled because you have exceeded the limit of allowed
-//   client calls. Try making the call later.
+//   - SessionExpiredException
+//     If the client session is expired. Once the client is connected, the session
+//     is valid for 45 minutes. Client should reconnect to the channel to continue
+//     sending/receiving messages.
 //
-//   * ResourceNotFoundException
-//   The specified resource is not found.
+//   - ClientLimitExceededException
+//     Your request was throttled because you have exceeded the limit of allowed
+//     client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ResourceNotFoundException
+//     The specified resource is not found.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
+//
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-signaling-2019-12-04/GetIceServerConfig
 func (c *KinesisVideoSignalingChannels) GetIceServerConfig(input *GetIceServerConfigInput) (*GetIceServerConfigOutput, error) {
@@ -139,14 +139,13 @@ const opSendAlexaOfferToMaster = "SendAlexaOfferToMaster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendAlexaOfferToMasterRequest method.
+//	req, resp := client.SendAlexaOfferToMasterRequest(params)
 //
-//    // Example sending a request using the SendAlexaOfferToMasterRequest method.
-//    req, resp := client.SendAlexaOfferToMasterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-signaling-2019-12-04/SendAlexaOfferToMaster
 func (c *KinesisVideoSignalingChannels) SendAlexaOfferToMasterRequest(input *SendAlexaOfferToMasterInput) (req *request.Request, output *SendAlexaOfferToMasterOutput) {
@@ -182,18 +181,19 @@ func (c *KinesisVideoSignalingChannels) SendAlexaOfferToMasterRequest(input *Sen
 // API operation SendAlexaOfferToMaster for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Your request was throttled because you have exceeded the limit of allowed
-//   client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   The specified resource is not found.
+//   - ClientLimitExceededException
+//     Your request was throttled because you have exceeded the limit of allowed
+//     client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ResourceNotFoundException
+//     The specified resource is not found.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
+//
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-signaling-2019-12-04/SendAlexaOfferToMaster
 func (c *KinesisVideoSignalingChannels) SendAlexaOfferToMaster(input *SendAlexaOfferToMasterInput) (*SendAlexaOfferToMasterOutput, error) {

@@ -27,14 +27,13 @@ const opGetLatestConfiguration = "GetLatestConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLatestConfigurationRequest method.
+//	req, resp := client.GetLatestConfigurationRequest(params)
 //
-//    // Example sending a request using the GetLatestConfigurationRequest method.
-//    req, resp := client.GetLatestConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/GetLatestConfiguration
 func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurationInput) (req *request.Request, output *GetLatestConfigurationOutput) {
@@ -64,13 +63,13 @@ func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurat
 //
 // Note the following important information.
 //
-//    * Each configuration token is only valid for one call to GetLatestConfiguration.
-//    The GetLatestConfiguration response includes a NextPollConfigurationToken
-//    that should always replace the token used for the just-completed call
-//    in preparation for the next one.
+//   - Each configuration token is only valid for one call to GetLatestConfiguration.
+//     The GetLatestConfiguration response includes a NextPollConfigurationToken
+//     that should always replace the token used for the just-completed call
+//     in preparation for the next one.
 //
-//    * GetLatestConfiguration is a priced call. For more information, see Pricing
-//    (https://aws.amazon.com/systems-manager/pricing/).
+//   - GetLatestConfiguration is a priced call. For more information, see Pricing
+//     (https://aws.amazon.com/systems-manager/pricing/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -80,17 +79,18 @@ func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurat
 // API operation GetLatestConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by the service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by the service.
+//
+//   - InternalServerException
+//     There was an internal failure in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/GetLatestConfiguration
 func (c *AppConfigData) GetLatestConfiguration(input *GetLatestConfigurationInput) (*GetLatestConfigurationOutput, error) {
@@ -130,14 +130,13 @@ const opStartConfigurationSession = "StartConfigurationSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartConfigurationSessionRequest method.
+//	req, resp := client.StartConfigurationSessionRequest(params)
 //
-//    // Example sending a request using the StartConfigurationSessionRequest method.
-//    req, resp := client.StartConfigurationSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/StartConfigurationSession
 func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurationSessionInput) (req *request.Request, output *StartConfigurationSessionOutput) {
@@ -172,17 +171,18 @@ func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurati
 // API operation StartConfigurationSession for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by the service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by the service.
+//
+//   - InternalServerException
+//     There was an internal failure in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/StartConfigurationSession
 func (c *AppConfigData) StartConfigurationSession(input *StartConfigurationSessionInput) (*StartConfigurationSessionOutput, error) {

@@ -29,14 +29,13 @@ const opDeleteHumanLoop = "DeleteHumanLoop"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHumanLoopRequest method.
+//	req, resp := client.DeleteHumanLoopRequest(params)
 //
-//    // Example sending a request using the DeleteHumanLoopRequest method.
-//    req, resp := client.DeleteHumanLoopRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/DeleteHumanLoop
 func (c *AugmentedAIRuntime) DeleteHumanLoopRequest(input *DeleteHumanLoopInput) (req *request.Request, output *DeleteHumanLoopOutput) {
@@ -70,20 +69,21 @@ func (c *AugmentedAIRuntime) DeleteHumanLoopRequest(input *DeleteHumanLoopInput)
 // API operation DeleteHumanLoop for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request isn't valid. Check the syntax and try again.
 //
-//   * ResourceNotFoundException
-//   We couldn't find the requested resource. Check that your resources exists
-//   and were created in the same AWS Region as your request, and try your request
-//   again.
+//   - ValidationException
+//     The request isn't valid. Check the syntax and try again.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     We couldn't find the requested resource. Check that your resources exists
+//     and were created in the same AWS Region as your request, and try your request
+//     again.
 //
-//   * InternalServerException
-//   We couldn't process your request because of an issue with the server. Try
-//   again later.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     We couldn't process your request because of an issue with the server. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/DeleteHumanLoop
 func (c *AugmentedAIRuntime) DeleteHumanLoop(input *DeleteHumanLoopInput) (*DeleteHumanLoopOutput, error) {
@@ -123,14 +123,13 @@ const opDescribeHumanLoop = "DescribeHumanLoop"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHumanLoopRequest method.
+//	req, resp := client.DescribeHumanLoopRequest(params)
 //
-//    // Example sending a request using the DescribeHumanLoopRequest method.
-//    req, resp := client.DescribeHumanLoopRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/DescribeHumanLoop
 func (c *AugmentedAIRuntime) DescribeHumanLoopRequest(input *DescribeHumanLoopInput) (req *request.Request, output *DescribeHumanLoopOutput) {
@@ -162,20 +161,21 @@ func (c *AugmentedAIRuntime) DescribeHumanLoopRequest(input *DescribeHumanLoopIn
 // API operation DescribeHumanLoop for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request isn't valid. Check the syntax and try again.
 //
-//   * ResourceNotFoundException
-//   We couldn't find the requested resource. Check that your resources exists
-//   and were created in the same AWS Region as your request, and try your request
-//   again.
+//   - ValidationException
+//     The request isn't valid. Check the syntax and try again.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     We couldn't find the requested resource. Check that your resources exists
+//     and were created in the same AWS Region as your request, and try your request
+//     again.
 //
-//   * InternalServerException
-//   We couldn't process your request because of an issue with the server. Try
-//   again later.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     We couldn't process your request because of an issue with the server. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/DescribeHumanLoop
 func (c *AugmentedAIRuntime) DescribeHumanLoop(input *DescribeHumanLoopInput) (*DescribeHumanLoopOutput, error) {
@@ -215,14 +215,13 @@ const opListHumanLoops = "ListHumanLoops"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHumanLoopsRequest method.
+//	req, resp := client.ListHumanLoopsRequest(params)
 //
-//    // Example sending a request using the ListHumanLoopsRequest method.
-//    req, resp := client.ListHumanLoopsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/ListHumanLoops
 func (c *AugmentedAIRuntime) ListHumanLoopsRequest(input *ListHumanLoopsInput) (req *request.Request, output *ListHumanLoopsOutput) {
@@ -260,20 +259,21 @@ func (c *AugmentedAIRuntime) ListHumanLoopsRequest(input *ListHumanLoopsInput) (
 // API operation ListHumanLoops for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request isn't valid. Check the syntax and try again.
 //
-//   * ResourceNotFoundException
-//   We couldn't find the requested resource. Check that your resources exists
-//   and were created in the same AWS Region as your request, and try your request
-//   again.
+//   - ValidationException
+//     The request isn't valid. Check the syntax and try again.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     We couldn't find the requested resource. Check that your resources exists
+//     and were created in the same AWS Region as your request, and try your request
+//     again.
 //
-//   * InternalServerException
-//   We couldn't process your request because of an issue with the server. Try
-//   again later.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     We couldn't process your request because of an issue with the server. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/ListHumanLoops
 func (c *AugmentedAIRuntime) ListHumanLoops(input *ListHumanLoopsInput) (*ListHumanLoopsOutput, error) {
@@ -305,15 +305,14 @@ func (c *AugmentedAIRuntime) ListHumanLoopsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHumanLoops operation.
-//    pageNum := 0
-//    err := client.ListHumanLoopsPages(params,
-//        func(page *augmentedairuntime.ListHumanLoopsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHumanLoops operation.
+//	pageNum := 0
+//	err := client.ListHumanLoopsPages(params,
+//	    func(page *augmentedairuntime.ListHumanLoopsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AugmentedAIRuntime) ListHumanLoopsPages(input *ListHumanLoopsInput, fn func(*ListHumanLoopsOutput, bool) bool) error {
 	return c.ListHumanLoopsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -365,14 +364,13 @@ const opStartHumanLoop = "StartHumanLoop"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartHumanLoopRequest method.
+//	req, resp := client.StartHumanLoopRequest(params)
 //
-//    // Example sending a request using the StartHumanLoopRequest method.
-//    req, resp := client.StartHumanLoopRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/StartHumanLoop
 func (c *AugmentedAIRuntime) StartHumanLoopRequest(input *StartHumanLoopInput) (req *request.Request, output *StartHumanLoopOutput) {
@@ -403,30 +401,31 @@ func (c *AugmentedAIRuntime) StartHumanLoopRequest(input *StartHumanLoopInput) (
 // API operation StartHumanLoop for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request isn't valid. Check the syntax and try again.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ValidationException
+//     The request isn't valid. Check the syntax and try again.
 //
-//   * ServiceQuotaExceededException
-//   You exceeded your service quota. Service quotas, also referred to as limits,
-//   are the maximum number of service resources or operations for your AWS account.
-//   For a list of Amazon A2I service quotes, see Amazon Augmented AI Service
-//   Quotes (https://docs.aws.amazon.com/general/latest/gr/a2i.html). Delete some
-//   resources or request an increase in your service quota. You can request a
-//   quota increase using Service Quotas or the AWS Support Center. To request
-//   an increase, see AWS Service Quotas (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html)
-//   in the AWS General Reference.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
 //
-//   * InternalServerException
-//   We couldn't process your request because of an issue with the server. Try
-//   again later.
+//   - ServiceQuotaExceededException
+//     You exceeded your service quota. Service quotas, also referred to as limits,
+//     are the maximum number of service resources or operations for your AWS account.
+//     For a list of Amazon A2I service quotes, see Amazon Augmented AI Service
+//     Quotes (https://docs.aws.amazon.com/general/latest/gr/a2i.html). Delete some
+//     resources or request an increase in your service quota. You can request a
+//     quota increase using Service Quotas or the AWS Support Center. To request
+//     an increase, see AWS Service Quotas (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html)
+//     in the AWS General Reference.
 //
-//   * ConflictException
-//   Your request has the same name as another active human loop but has different
-//   input data. You cannot start two human loops with the same name and different
-//   input data.
+//   - InternalServerException
+//     We couldn't process your request because of an issue with the server. Try
+//     again later.
+//
+//   - ConflictException
+//     Your request has the same name as another active human loop but has different
+//     input data. You cannot start two human loops with the same name and different
+//     input data.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/StartHumanLoop
 func (c *AugmentedAIRuntime) StartHumanLoop(input *StartHumanLoopInput) (*StartHumanLoopOutput, error) {
@@ -466,14 +465,13 @@ const opStopHumanLoop = "StopHumanLoop"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopHumanLoopRequest method.
+//	req, resp := client.StopHumanLoopRequest(params)
 //
-//    // Example sending a request using the StopHumanLoopRequest method.
-//    req, resp := client.StopHumanLoopRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/StopHumanLoop
 func (c *AugmentedAIRuntime) StopHumanLoopRequest(input *StopHumanLoopInput) (req *request.Request, output *StopHumanLoopOutput) {
@@ -505,20 +503,21 @@ func (c *AugmentedAIRuntime) StopHumanLoopRequest(input *StopHumanLoopInput) (re
 // API operation StopHumanLoop for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request isn't valid. Check the syntax and try again.
 //
-//   * ResourceNotFoundException
-//   We couldn't find the requested resource. Check that your resources exists
-//   and were created in the same AWS Region as your request, and try your request
-//   again.
+//   - ValidationException
+//     The request isn't valid. Check the syntax and try again.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     We couldn't find the requested resource. Check that your resources exists
+//     and were created in the same AWS Region as your request, and try your request
+//     again.
 //
-//   * InternalServerException
-//   We couldn't process your request because of an issue with the server. Try
-//   again later.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     We couldn't process your request because of an issue with the server. Try
+//     again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-a2i-runtime-2019-11-07/StopHumanLoop
 func (c *AugmentedAIRuntime) StopHumanLoop(input *StopHumanLoopInput) (*StopHumanLoopOutput, error) {

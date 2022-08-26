@@ -29,14 +29,13 @@ const opGetRawMessageContent = "GetRawMessageContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRawMessageContentRequest method.
+//	req, resp := client.GetRawMessageContentRequest(params)
 //
-//    // Example sending a request using the GetRawMessageContentRequest method.
-//    req, resp := client.GetRawMessageContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workmailmessageflow-2019-05-01/GetRawMessageContent
 func (c *WorkMailMessageFlow) GetRawMessageContentRequest(input *GetRawMessageContentInput) (req *request.Request, output *GetRawMessageContentOutput) {
@@ -67,8 +66,8 @@ func (c *WorkMailMessageFlow) GetRawMessageContentRequest(input *GetRawMessageCo
 // API operation GetRawMessageContent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested email message is not found.
+//   - ResourceNotFoundException
+//     The requested email message is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workmailmessageflow-2019-05-01/GetRawMessageContent
 func (c *WorkMailMessageFlow) GetRawMessageContent(input *GetRawMessageContentInput) (*GetRawMessageContentOutput, error) {
@@ -108,14 +107,13 @@ const opPutRawMessageContent = "PutRawMessageContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRawMessageContentRequest method.
+//	req, resp := client.PutRawMessageContentRequest(params)
 //
-//    // Example sending a request using the PutRawMessageContentRequest method.
-//    req, resp := client.PutRawMessageContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workmailmessageflow-2019-05-01/PutRawMessageContent
 func (c *WorkMailMessageFlow) PutRawMessageContentRequest(input *PutRawMessageContentInput) (req *request.Request, output *PutRawMessageContentOutput) {
@@ -157,28 +155,29 @@ func (c *WorkMailMessageFlow) PutRawMessageContentRequest(input *PutRawMessageCo
 // API operation PutRawMessageContent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested email message is not found.
 //
-//   * InvalidContentLocation
-//   WorkMail could not access the updated email content. Possible reasons:
+//   - ResourceNotFoundException
+//     The requested email message is not found.
 //
-//      * You made the request in a region other than your S3 bucket region.
+//   - InvalidContentLocation
+//     WorkMail could not access the updated email content. Possible reasons:
 //
-//      * The S3 bucket owner (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-owner-condition.html)
-//      is not the same as the calling AWS account.
+//   - You made the request in a region other than your S3 bucket region.
 //
-//      * You have an incomplete or missing S3 bucket policy. For more information
-//      about policies, see Updating message content with AWS Lambda (https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html)
-//      in the WorkMail Administrator Guide.
+//   - The S3 bucket owner (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-owner-condition.html)
+//     is not the same as the calling AWS account.
 //
-//   * MessageRejected
-//   The requested email could not be updated due to an error in the MIME content.
-//   Check the error message for more information about what caused the error.
+//   - You have an incomplete or missing S3 bucket policy. For more information
+//     about policies, see Updating message content with AWS Lambda (https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html)
+//     in the WorkMail Administrator Guide.
 //
-//   * MessageFrozen
-//   The requested email is not eligible for update. This is usually the case
-//   for a redirected email.
+//   - MessageRejected
+//     The requested email could not be updated due to an error in the MIME content.
+//     Check the error message for more information about what caused the error.
+//
+//   - MessageFrozen
+//     The requested email is not eligible for update. This is usually the case
+//     for a redirected email.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workmailmessageflow-2019-05-01/PutRawMessageContent
 func (c *WorkMailMessageFlow) PutRawMessageContent(input *PutRawMessageContentInput) (*PutRawMessageContentOutput, error) {
@@ -286,14 +285,14 @@ func (s *GetRawMessageContentOutput) SetMessageContent(v io.ReadCloser) *GetRawM
 
 // WorkMail could not access the updated email content. Possible reasons:
 //
-//    * You made the request in a region other than your S3 bucket region.
+//   - You made the request in a region other than your S3 bucket region.
 //
-//    * The S3 bucket owner (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-owner-condition.html)
-//    is not the same as the calling AWS account.
+//   - The S3 bucket owner (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-owner-condition.html)
+//     is not the same as the calling AWS account.
 //
-//    * You have an incomplete or missing S3 bucket policy. For more information
-//    about policies, see Updating message content with AWS Lambda (https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html)
-//    in the WorkMail Administrator Guide.
+//   - You have an incomplete or missing S3 bucket policy. For more information
+//     about policies, see Updating message content with AWS Lambda (https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html)
+//     in the WorkMail Administrator Guide.
 type InvalidContentLocation struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -580,26 +579,26 @@ func (s PutRawMessageContentOutput) GoString() string {
 // Provides the MIME content of the updated email message as an S3 object. All
 // MIME content must meet the following criteria:
 //
-//    * Each part of a multipart MIME message must be formatted properly.
+//   - Each part of a multipart MIME message must be formatted properly.
 //
-//    * Attachments must be of a content type that Amazon SES supports. For
-//    more information, see Unsupported Attachment Types (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mime-types-appendix.html).
+//   - Attachments must be of a content type that Amazon SES supports. For
+//     more information, see Unsupported Attachment Types (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mime-types-appendix.html).
 //
-//    * If any of the MIME parts in a message contain content that is outside
-//    of the 7-bit ASCII character range, we recommend encoding that content.
+//   - If any of the MIME parts in a message contain content that is outside
+//     of the 7-bit ASCII character range, we recommend encoding that content.
 //
-//    * Per RFC 5321 (https://tools.ietf.org/html/rfc5321#section-4.5.3.1.6),
-//    the maximum length of each line of text, including the <CRLF>, must not
-//    exceed 1,000 characters.
+//   - Per RFC 5321 (https://tools.ietf.org/html/rfc5321#section-4.5.3.1.6),
+//     the maximum length of each line of text, including the <CRLF>, must not
+//     exceed 1,000 characters.
 //
-//    * The message must contain all the required header fields. Check the returned
-//    error message for more information.
+//   - The message must contain all the required header fields. Check the returned
+//     error message for more information.
 //
-//    * The value of immutable headers must remain unchanged. Check the returned
-//    error message for more information.
+//   - The value of immutable headers must remain unchanged. Check the returned
+//     error message for more information.
 //
-//    * Certain unique headers can only appear once. Check the returned error
-//    message for more information.
+//   - Certain unique headers can only appear once. Check the returned error
+//     message for more information.
 type RawMessageContent struct {
 	_ struct{} `type:"structure"`
 

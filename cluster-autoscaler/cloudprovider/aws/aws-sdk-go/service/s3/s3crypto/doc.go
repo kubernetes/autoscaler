@@ -68,14 +68,14 @@ Configuration of the S3 cryptography client
 		panic(err) // handle error
 	}
 
-Object Metadata SaveStrategy
+# Object Metadata SaveStrategy
 
 The default SaveStrategy is to save metadata to an object's headers. An alternative SaveStrategy can be provided to the EncryptionClientV2.
 For example, the S3SaveStrategy can be used to save the encryption metadata to a instruction file that is stored in S3
 using the objects KeyName+InstructionFileSuffix. The InstructionFileSuffix defaults to .instruction. If using this strategy you will need to
 configure the DecryptionClientV2 to use the matching S3LoadStrategy LoadStrategy in order to decrypt object using this save strategy.
 
-Custom Key Wrappers and Custom Content Encryption Algorithms
+# Custom Key Wrappers and Custom Content Encryption Algorithms
 
 Registration of custom key wrapping or content encryption algorithms not provided by AWS is allowed by the SDK, but
 security and compatibility with custom types can not be guaranteed. For example if you want to support `CustomWrap`
@@ -109,14 +109,14 @@ defined ciphers.
 	// Our content cipher builder, NewCustomCEKContentBuilder
 	svc := s3crypto.NewEncryptionClientV2(sess, NewCustomCEKContentBuilder(handler))
 
-Maintenance Mode Notification for V1 Clients
+# Maintenance Mode Notification for V1 Clients
 
 The EncryptionClient and DecryptionClient are in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 Users of these clients should migrate to EncryptionClientV2 and DecryptionClientV2.
 
 EncryptionClientV2 removes encryption support of the following features
-	* AES/CBC (content cipher)
-	* kms (key wrap algorithm)
+  - AES/CBC (content cipher)
+  - kms (key wrap algorithm)
 
 Attempting to construct an EncryptionClientV2 with deprecated features will result in an error returned back to the
 calling application during construction of the client.
@@ -127,12 +127,11 @@ Users of `kms` key provider will need to migrate `kms+context`.
 DecryptionClientV2 client adds support for the `kms+context` key provider and maintains backwards comparability with
 objects encrypted with the V1 EncryptionClient.
 
-Migrating from V1 to V2 Clients
+# Migrating from V1 to V2 Clients
 
 Examples of how to migrate usage of the V1 clients to the V2 equivalents have been documented as usage examples of
 the NewEncryptionClientV2 and NewDecryptionClientV2 functions.
 
 Please see the AWS SDK for Go Developer Guide for additional migration steps https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/s3-encryption-migration.html
-
 */
 package s3crypto

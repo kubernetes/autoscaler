@@ -12,18 +12,18 @@
 // can configure the AWS Cost and Usage report to show only the data that you
 // want, using the AWS Cost and Usage API.
 //
-// Service Endpoint
+// # Service Endpoint
 //
 // The AWS Cost and Usage Report API provides the following endpoint:
 //
-//    * cur.us-east-1.amazonaws.com
+//   - cur.us-east-1.amazonaws.com
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06 for more information on this service.
 //
 // See costandusagereportservice package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/costandusagereportservice/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Cost and Usage Report Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

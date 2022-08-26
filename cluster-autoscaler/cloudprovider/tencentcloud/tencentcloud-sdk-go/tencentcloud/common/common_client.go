@@ -33,7 +33,6 @@ func NewCommonClient(cred CredentialIface, region string, clientProfile *profile
 //  2. only TC3-HMAC-SHA256 signature method can be specified.
 //  3. only POST request method can be specified
 //  4. the request Must be a CommonRequest and called SetOctetStreamParameters
-//
 func (c *Client) SendOctetStream(request tchttp.Request, response tchttp.Response) (err error) {
 	if c.profile.SignMethod != "TC3-HMAC-SHA256" {
 		return tcerr.NewTencentCloudSDKError("ClientError", "Invalid signature method.", "")

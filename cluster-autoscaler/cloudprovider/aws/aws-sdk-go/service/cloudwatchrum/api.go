@@ -29,14 +29,13 @@ const opCreateAppMonitor = "CreateAppMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppMonitorRequest method.
+//	req, resp := client.CreateAppMonitorRequest(params)
 //
-//    // Example sending a request using the CreateAppMonitorRequest method.
-//    req, resp := client.CreateAppMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/CreateAppMonitor
 func (c *CloudWatchRUM) CreateAppMonitorRequest(input *CreateAppMonitorInput) (req *request.Request, output *CreateAppMonitorOutput) {
@@ -79,23 +78,24 @@ func (c *CloudWatchRUM) CreateAppMonitorRequest(input *CreateAppMonitorInput) (r
 // API operation CreateAppMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   This operation attempted to create a resource that already exists.
 //
-//   * ServiceQuotaExceededException
-//   This request exceeds a service quota.
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ServiceQuotaExceededException
+//     This request exceeds a service quota.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/CreateAppMonitor
 func (c *CloudWatchRUM) CreateAppMonitor(input *CreateAppMonitorInput) (*CreateAppMonitorOutput, error) {
@@ -135,14 +135,13 @@ const opDeleteAppMonitor = "DeleteAppMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppMonitorRequest method.
+//	req, resp := client.DeleteAppMonitorRequest(params)
 //
-//    // Example sending a request using the DeleteAppMonitorRequest method.
-//    req, resp := client.DeleteAppMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/DeleteAppMonitor
 func (c *CloudWatchRUM) DeleteAppMonitorRequest(input *DeleteAppMonitorInput) (req *request.Request, output *DeleteAppMonitorOutput) {
@@ -175,23 +174,24 @@ func (c *CloudWatchRUM) DeleteAppMonitorRequest(input *DeleteAppMonitorInput) (r
 // API operation DeleteAppMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   This operation attempted to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   Resource not found.
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/DeleteAppMonitor
 func (c *CloudWatchRUM) DeleteAppMonitor(input *DeleteAppMonitorInput) (*DeleteAppMonitorOutput, error) {
@@ -231,14 +231,13 @@ const opGetAppMonitor = "GetAppMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppMonitorRequest method.
+//	req, resp := client.GetAppMonitorRequest(params)
 //
-//    // Example sending a request using the GetAppMonitorRequest method.
-//    req, resp := client.GetAppMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/GetAppMonitor
 func (c *CloudWatchRUM) GetAppMonitorRequest(input *GetAppMonitorInput) (req *request.Request, output *GetAppMonitorOutput) {
@@ -269,20 +268,21 @@ func (c *CloudWatchRUM) GetAppMonitorRequest(input *GetAppMonitorInput) (req *re
 // API operation GetAppMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/GetAppMonitor
 func (c *CloudWatchRUM) GetAppMonitor(input *GetAppMonitorInput) (*GetAppMonitorOutput, error) {
@@ -322,14 +322,13 @@ const opGetAppMonitorData = "GetAppMonitorData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppMonitorDataRequest method.
+//	req, resp := client.GetAppMonitorDataRequest(params)
 //
-//    // Example sending a request using the GetAppMonitorDataRequest method.
-//    req, resp := client.GetAppMonitorDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/GetAppMonitorData
 func (c *CloudWatchRUM) GetAppMonitorDataRequest(input *GetAppMonitorDataInput) (req *request.Request, output *GetAppMonitorDataOutput) {
@@ -367,20 +366,21 @@ func (c *CloudWatchRUM) GetAppMonitorDataRequest(input *GetAppMonitorDataInput) 
 // API operation GetAppMonitorData for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/GetAppMonitorData
 func (c *CloudWatchRUM) GetAppMonitorData(input *GetAppMonitorDataInput) (*GetAppMonitorDataOutput, error) {
@@ -412,15 +412,14 @@ func (c *CloudWatchRUM) GetAppMonitorDataWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAppMonitorData operation.
-//    pageNum := 0
-//    err := client.GetAppMonitorDataPages(params,
-//        func(page *cloudwatchrum.GetAppMonitorDataOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAppMonitorData operation.
+//	pageNum := 0
+//	err := client.GetAppMonitorDataPages(params,
+//	    func(page *cloudwatchrum.GetAppMonitorDataOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatchRUM) GetAppMonitorDataPages(input *GetAppMonitorDataInput, fn func(*GetAppMonitorDataOutput, bool) bool) error {
 	return c.GetAppMonitorDataPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -472,14 +471,13 @@ const opListAppMonitors = "ListAppMonitors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppMonitorsRequest method.
+//	req, resp := client.ListAppMonitorsRequest(params)
 //
-//    // Example sending a request using the ListAppMonitorsRequest method.
-//    req, resp := client.ListAppMonitorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListAppMonitors
 func (c *CloudWatchRUM) ListAppMonitorsRequest(input *ListAppMonitorsInput) (req *request.Request, output *ListAppMonitorsOutput) {
@@ -516,17 +514,18 @@ func (c *CloudWatchRUM) ListAppMonitorsRequest(input *ListAppMonitorsInput) (req
 // API operation ListAppMonitors for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Internal service exception.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListAppMonitors
 func (c *CloudWatchRUM) ListAppMonitors(input *ListAppMonitorsInput) (*ListAppMonitorsOutput, error) {
@@ -558,15 +557,14 @@ func (c *CloudWatchRUM) ListAppMonitorsWithContext(ctx aws.Context, input *ListA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppMonitors operation.
-//    pageNum := 0
-//    err := client.ListAppMonitorsPages(params,
-//        func(page *cloudwatchrum.ListAppMonitorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppMonitors operation.
+//	pageNum := 0
+//	err := client.ListAppMonitorsPages(params,
+//	    func(page *cloudwatchrum.ListAppMonitorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudWatchRUM) ListAppMonitorsPages(input *ListAppMonitorsInput, fn func(*ListAppMonitorsOutput, bool) bool) error {
 	return c.ListAppMonitorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -618,14 +616,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListTagsForResource
 func (c *CloudWatchRUM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -656,14 +653,15 @@ func (c *CloudWatchRUM) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListTagsForResource
 func (c *CloudWatchRUM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -703,14 +701,13 @@ const opPutRumEvents = "PutRumEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRumEventsRequest method.
+//	req, resp := client.PutRumEventsRequest(params)
 //
-//    // Example sending a request using the PutRumEventsRequest method.
-//    req, resp := client.PutRumEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/PutRumEvents
 func (c *CloudWatchRUM) PutRumEventsRequest(input *PutRumEventsInput) (req *request.Request, output *PutRumEventsOutput) {
@@ -748,20 +745,21 @@ func (c *CloudWatchRUM) PutRumEventsRequest(input *PutRumEventsInput) (req *requ
 // API operation PutRumEvents for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/PutRumEvents
 func (c *CloudWatchRUM) PutRumEvents(input *PutRumEventsInput) (*PutRumEventsOutput, error) {
@@ -801,14 +799,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/TagResource
 func (c *CloudWatchRUM) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -858,14 +855,15 @@ func (c *CloudWatchRUM) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/TagResource
 func (c *CloudWatchRUM) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -905,14 +903,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UntagResource
 func (c *CloudWatchRUM) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -944,14 +941,15 @@ func (c *CloudWatchRUM) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UntagResource
 func (c *CloudWatchRUM) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -991,14 +989,13 @@ const opUpdateAppMonitor = "UpdateAppMonitor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppMonitorRequest method.
+//	req, resp := client.UpdateAppMonitorRequest(params)
 //
-//    // Example sending a request using the UpdateAppMonitorRequest method.
-//    req, resp := client.UpdateAppMonitorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UpdateAppMonitor
 func (c *CloudWatchRUM) UpdateAppMonitorRequest(input *UpdateAppMonitorInput) (req *request.Request, output *UpdateAppMonitorOutput) {
@@ -1043,23 +1040,24 @@ func (c *CloudWatchRUM) UpdateAppMonitorRequest(input *UpdateAppMonitorInput) (r
 // API operation UpdateAppMonitor for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   This operation attempted to create a resource that already exists.
 //
-//   * ResourceNotFoundException
-//   Resource not found.
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
 //
-//   * InternalServerException
-//   Internal service exception.
+//   - ResourceNotFoundException
+//     Resource not found.
 //
-//   * ValidationException
-//   One of the arguments for the request is not valid.
+//   - InternalServerException
+//     Internal service exception.
 //
-//   * ThrottlingException
-//   The request was throttled because of quota limits.
+//   - ValidationException
+//     One of the arguments for the request is not valid.
 //
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UpdateAppMonitor
 func (c *CloudWatchRUM) UpdateAppMonitor(input *UpdateAppMonitorInput) (*UpdateAppMonitorOutput, error) {

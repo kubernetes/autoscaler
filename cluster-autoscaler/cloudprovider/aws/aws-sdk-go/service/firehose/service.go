@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Firehose client from just a session.
-//     svc := firehose.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Firehose client with additional configuration
-//     svc := firehose.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Firehose client from just a session.
+//	svc := firehose.New(mySession)
+//
+//	// Create a Firehose client with additional configuration
+//	svc := firehose.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Firehose {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

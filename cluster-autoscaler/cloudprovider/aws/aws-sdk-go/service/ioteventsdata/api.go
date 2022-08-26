@@ -28,14 +28,13 @@ const opBatchAcknowledgeAlarm = "BatchAcknowledgeAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAcknowledgeAlarmRequest method.
+//	req, resp := client.BatchAcknowledgeAlarmRequest(params)
 //
-//    // Example sending a request using the BatchAcknowledgeAlarmRequest method.
-//    req, resp := client.BatchAcknowledgeAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchAcknowledgeAlarm
 func (c *IoTEventsData) BatchAcknowledgeAlarmRequest(input *BatchAcknowledgeAlarmInput) (req *request.Request, output *BatchAcknowledgeAlarmOutput) {
@@ -67,17 +66,18 @@ func (c *IoTEventsData) BatchAcknowledgeAlarmRequest(input *BatchAcknowledgeAlar
 // API operation BatchAcknowledgeAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchAcknowledgeAlarm
 func (c *IoTEventsData) BatchAcknowledgeAlarm(input *BatchAcknowledgeAlarmInput) (*BatchAcknowledgeAlarmOutput, error) {
@@ -117,14 +117,13 @@ const opBatchDeleteDetector = "BatchDeleteDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteDetectorRequest method.
+//	req, resp := client.BatchDeleteDetectorRequest(params)
 //
-//    // Example sending a request using the BatchDeleteDetectorRequest method.
-//    req, resp := client.BatchDeleteDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchDeleteDetector
 func (c *IoTEventsData) BatchDeleteDetectorRequest(input *BatchDeleteDetectorInput) (req *request.Request, output *BatchDeleteDetectorOutput) {
@@ -159,17 +158,18 @@ func (c *IoTEventsData) BatchDeleteDetectorRequest(input *BatchDeleteDetectorInp
 // API operation BatchDeleteDetector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchDeleteDetector
 func (c *IoTEventsData) BatchDeleteDetector(input *BatchDeleteDetectorInput) (*BatchDeleteDetectorOutput, error) {
@@ -209,14 +209,13 @@ const opBatchDisableAlarm = "BatchDisableAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisableAlarmRequest method.
+//	req, resp := client.BatchDisableAlarmRequest(params)
 //
-//    // Example sending a request using the BatchDisableAlarmRequest method.
-//    req, resp := client.BatchDisableAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchDisableAlarm
 func (c *IoTEventsData) BatchDisableAlarmRequest(input *BatchDisableAlarmInput) (req *request.Request, output *BatchDisableAlarmOutput) {
@@ -248,17 +247,18 @@ func (c *IoTEventsData) BatchDisableAlarmRequest(input *BatchDisableAlarmInput) 
 // API operation BatchDisableAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchDisableAlarm
 func (c *IoTEventsData) BatchDisableAlarm(input *BatchDisableAlarmInput) (*BatchDisableAlarmOutput, error) {
@@ -298,14 +298,13 @@ const opBatchEnableAlarm = "BatchEnableAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchEnableAlarmRequest method.
+//	req, resp := client.BatchEnableAlarmRequest(params)
 //
-//    // Example sending a request using the BatchEnableAlarmRequest method.
-//    req, resp := client.BatchEnableAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchEnableAlarm
 func (c *IoTEventsData) BatchEnableAlarmRequest(input *BatchEnableAlarmInput) (req *request.Request, output *BatchEnableAlarmOutput) {
@@ -337,17 +336,18 @@ func (c *IoTEventsData) BatchEnableAlarmRequest(input *BatchEnableAlarmInput) (r
 // API operation BatchEnableAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchEnableAlarm
 func (c *IoTEventsData) BatchEnableAlarm(input *BatchEnableAlarmInput) (*BatchEnableAlarmOutput, error) {
@@ -387,14 +387,13 @@ const opBatchPutMessage = "BatchPutMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchPutMessageRequest method.
+//	req, resp := client.BatchPutMessageRequest(params)
 //
-//    // Example sending a request using the BatchPutMessageRequest method.
-//    req, resp := client.BatchPutMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchPutMessage
 func (c *IoTEventsData) BatchPutMessageRequest(input *BatchPutMessageInput) (req *request.Request, output *BatchPutMessageOutput) {
@@ -429,17 +428,18 @@ func (c *IoTEventsData) BatchPutMessageRequest(input *BatchPutMessageInput) (req
 // API operation BatchPutMessage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchPutMessage
 func (c *IoTEventsData) BatchPutMessage(input *BatchPutMessageInput) (*BatchPutMessageOutput, error) {
@@ -479,14 +479,13 @@ const opBatchResetAlarm = "BatchResetAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchResetAlarmRequest method.
+//	req, resp := client.BatchResetAlarmRequest(params)
 //
-//    // Example sending a request using the BatchResetAlarmRequest method.
-//    req, resp := client.BatchResetAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchResetAlarm
 func (c *IoTEventsData) BatchResetAlarmRequest(input *BatchResetAlarmInput) (req *request.Request, output *BatchResetAlarmOutput) {
@@ -518,17 +517,18 @@ func (c *IoTEventsData) BatchResetAlarmRequest(input *BatchResetAlarmInput) (req
 // API operation BatchResetAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchResetAlarm
 func (c *IoTEventsData) BatchResetAlarm(input *BatchResetAlarmInput) (*BatchResetAlarmOutput, error) {
@@ -568,14 +568,13 @@ const opBatchSnoozeAlarm = "BatchSnoozeAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchSnoozeAlarmRequest method.
+//	req, resp := client.BatchSnoozeAlarmRequest(params)
 //
-//    // Example sending a request using the BatchSnoozeAlarmRequest method.
-//    req, resp := client.BatchSnoozeAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchSnoozeAlarm
 func (c *IoTEventsData) BatchSnoozeAlarmRequest(input *BatchSnoozeAlarmInput) (req *request.Request, output *BatchSnoozeAlarmOutput) {
@@ -607,17 +606,18 @@ func (c *IoTEventsData) BatchSnoozeAlarmRequest(input *BatchSnoozeAlarmInput) (r
 // API operation BatchSnoozeAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchSnoozeAlarm
 func (c *IoTEventsData) BatchSnoozeAlarm(input *BatchSnoozeAlarmInput) (*BatchSnoozeAlarmOutput, error) {
@@ -657,14 +657,13 @@ const opBatchUpdateDetector = "BatchUpdateDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpdateDetectorRequest method.
+//	req, resp := client.BatchUpdateDetectorRequest(params)
 //
-//    // Example sending a request using the BatchUpdateDetectorRequest method.
-//    req, resp := client.BatchUpdateDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchUpdateDetector
 func (c *IoTEventsData) BatchUpdateDetectorRequest(input *BatchUpdateDetectorInput) (req *request.Request, output *BatchUpdateDetectorOutput) {
@@ -696,17 +695,18 @@ func (c *IoTEventsData) BatchUpdateDetectorRequest(input *BatchUpdateDetectorInp
 // API operation BatchUpdateDetector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/BatchUpdateDetector
 func (c *IoTEventsData) BatchUpdateDetector(input *BatchUpdateDetectorInput) (*BatchUpdateDetectorOutput, error) {
@@ -746,14 +746,13 @@ const opDescribeAlarm = "DescribeAlarm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlarmRequest method.
+//	req, resp := client.DescribeAlarmRequest(params)
 //
-//    // Example sending a request using the DescribeAlarmRequest method.
-//    req, resp := client.DescribeAlarmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/DescribeAlarm
 func (c *IoTEventsData) DescribeAlarmRequest(input *DescribeAlarmInput) (req *request.Request, output *DescribeAlarmOutput) {
@@ -784,20 +783,21 @@ func (c *IoTEventsData) DescribeAlarmRequest(input *DescribeAlarmInput) (req *re
 // API operation DescribeAlarm for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/DescribeAlarm
 func (c *IoTEventsData) DescribeAlarm(input *DescribeAlarmInput) (*DescribeAlarmOutput, error) {
@@ -837,14 +837,13 @@ const opDescribeDetector = "DescribeDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDetectorRequest method.
+//	req, resp := client.DescribeDetectorRequest(params)
 //
-//    // Example sending a request using the DescribeDetectorRequest method.
-//    req, resp := client.DescribeDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/DescribeDetector
 func (c *IoTEventsData) DescribeDetectorRequest(input *DescribeDetectorInput) (req *request.Request, output *DescribeDetectorOutput) {
@@ -875,20 +874,21 @@ func (c *IoTEventsData) DescribeDetectorRequest(input *DescribeDetectorInput) (r
 // API operation DescribeDetector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/DescribeDetector
 func (c *IoTEventsData) DescribeDetector(input *DescribeDetectorInput) (*DescribeDetectorOutput, error) {
@@ -928,14 +928,13 @@ const opListAlarms = "ListAlarms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlarmsRequest method.
+//	req, resp := client.ListAlarmsRequest(params)
 //
-//    // Example sending a request using the ListAlarmsRequest method.
-//    req, resp := client.ListAlarmsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/ListAlarms
 func (c *IoTEventsData) ListAlarmsRequest(input *ListAlarmsInput) (req *request.Request, output *ListAlarmsOutput) {
@@ -967,20 +966,21 @@ func (c *IoTEventsData) ListAlarmsRequest(input *ListAlarmsInput) (req *request.
 // API operation ListAlarms for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/ListAlarms
 func (c *IoTEventsData) ListAlarms(input *ListAlarmsInput) (*ListAlarmsOutput, error) {
@@ -1020,14 +1020,13 @@ const opListDetectors = "ListDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDetectorsRequest method.
+//	req, resp := client.ListDetectorsRequest(params)
 //
-//    // Example sending a request using the ListDetectorsRequest method.
-//    req, resp := client.ListDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/ListDetectors
 func (c *IoTEventsData) ListDetectorsRequest(input *ListDetectorsInput) (req *request.Request, output *ListDetectorsOutput) {
@@ -1058,20 +1057,21 @@ func (c *IoTEventsData) ListDetectorsRequest(input *ListDetectorsInput) (req *re
 // API operation ListDetectors for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-data-2018-10-23/ListDetectors
 func (c *IoTEventsData) ListDetectors(input *ListDetectorsInput) (*ListDetectorsOutput, error) {
@@ -1578,15 +1578,15 @@ func (s *BatchAcknowledgeAlarmOutput) SetErrorEntries(v []*BatchAlarmActionError
 
 // Contains error messages associated with one of the following requests:
 //
-//    * BatchAcknowledgeAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchAcknowledgeAlarm.html)
+//   - BatchAcknowledgeAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchAcknowledgeAlarm.html)
 //
-//    * BatchDisableAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchDisableAlarm.html)
+//   - BatchDisableAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchDisableAlarm.html)
 //
-//    * BatchEnableAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchEnableAlarm.html)
+//   - BatchEnableAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchEnableAlarm.html)
 //
-//    * BatchResetAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchResetAlarm.html)
+//   - BatchResetAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchResetAlarm.html)
 //
-//    * BatchSnoozeAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchSnoozeAlarm.html)
+//   - BatchSnoozeAlarm (https://docs.aws.amazon.com/iotevents/latest/apireference/API_iotevents-data_BatchSnoozeAlarm.html)
 type BatchAlarmActionErrorEntry struct {
 	_ struct{} `type:"structure"`
 

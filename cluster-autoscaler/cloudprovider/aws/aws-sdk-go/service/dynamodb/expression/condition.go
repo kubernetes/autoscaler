@@ -95,20 +95,20 @@ type ConditionBuilder struct {
 //
 // Example:
 //
-//     // condition represents the equal clause of the item attribute "foo" and
-//     // the value 5
-//     condition := expression.Equal(expression.Name("foo"), expression.Value(5))
+//	// condition represents the equal clause of the item attribute "foo" and
+//	// the value 5
+//	condition := expression.Equal(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Equal(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo = :five"
+//	expression.Equal(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo = :five"
 func Equal(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -123,20 +123,20 @@ func Equal(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the equal clause of the item attribute "foo" and
-//     // the value 5
-//     condition := expression.Name("foo").Equal(expression.Value(5))
+//	// condition represents the equal clause of the item attribute "foo" and
+//	// the value 5
+//	condition := expression.Name("foo").Equal(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").Equal(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo = :five"
+//	expression.Name("foo").Equal(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo = :five"
 func (nb NameBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(nb, right)
 }
@@ -148,20 +148,20 @@ func (nb NameBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the equal clause of the item attribute "foo" and
-//     // the value 5
-//     condition := expression.Value(5).Equal(expression.Name("foo"))
+//	// condition represents the equal clause of the item attribute "foo" and
+//	// the value 5
+//	condition := expression.Value(5).Equal(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).Equal(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five = foo"
+//	expression.Value(5).Equal(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five = foo"
 func (vb ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(vb, right)
 }
@@ -173,20 +173,20 @@ func (vb ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the equal clause of the size of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).Equal(expression.Value(5))
+//	// condition represents the equal clause of the size of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).Equal(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).Equal(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) = :five"
+//	expression.Size(expression.Name("foo")).Equal(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) = :five"
 func (sb SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(sb, right)
 }
@@ -198,20 +198,20 @@ func (sb SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the not equal clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.NotEqual(expression.Name("foo"), expression.Value(5))
+//	// condition represents the not equal clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.NotEqual(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.NotEqual(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo <> :five"
+//	expression.NotEqual(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo <> :five"
 func NotEqual(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -226,20 +226,20 @@ func NotEqual(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the not equal clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.Name("foo").NotEqual(expression.Value(5))
+//	// condition represents the not equal clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.Name("foo").NotEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").NotEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo <> :five"
+//	expression.Name("foo").NotEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo <> :five"
 func (nb NameBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 	return NotEqual(nb, right)
 }
@@ -251,20 +251,20 @@ func (nb NameBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the not equal clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.Value(5).NotEqual(expression.Name("foo"))
+//	// condition represents the not equal clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.Value(5).NotEqual(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).NotEqual(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five <> foo"
+//	expression.Value(5).NotEqual(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five <> foo"
 func (vb ValueBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 	return NotEqual(vb, right)
 }
@@ -276,20 +276,20 @@ func (vb ValueBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the not equal clause of the size of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).NotEqual(expression.Value(5))
+//	// condition represents the not equal clause of the size of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).NotEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).NotEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) <> :five"
+//	expression.Size(expression.Name("foo")).NotEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) <> :five"
 func (sb SizeBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 	return NotEqual(sb, right)
 }
@@ -301,20 +301,20 @@ func (sb SizeBuilder) NotEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.LessThan(expression.Name("foo"), expression.Value(5))
+//	// condition represents the less than clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.LessThan(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.LessThan(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo < :five"
+//	expression.LessThan(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo < :five"
 func LessThan(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -329,20 +329,20 @@ func LessThan(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.Name("foo").LessThan(expression.Value(5))
+//	// condition represents the less than clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.Name("foo").LessThan(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").LessThan(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo < :five"
+//	expression.Name("foo").LessThan(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo < :five"
 func (nb NameBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 	return LessThan(nb, right)
 }
@@ -354,20 +354,20 @@ func (nb NameBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than clause of the item attribute "foo"
-//     // and the value 5
-//     condition := expression.Value(5).LessThan(expression.Name("foo"))
+//	// condition represents the less than clause of the item attribute "foo"
+//	// and the value 5
+//	condition := expression.Value(5).LessThan(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).LessThan(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five < foo"
+//	expression.Value(5).LessThan(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five < foo"
 func (vb ValueBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 	return LessThan(vb, right)
 }
@@ -379,20 +379,20 @@ func (vb ValueBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than clause of the size of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).LessThan(expression.Value(5))
+//	// condition represents the less than clause of the size of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).LessThan(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).LessThan(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) < :five"
+//	expression.Size(expression.Name("foo")).LessThan(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) < :five"
 func (sb SizeBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 	return LessThan(sb, right)
 }
@@ -404,20 +404,20 @@ func (sb SizeBuilder) LessThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.LessThanEqual(expression.Name("foo"), expression.Value(5))
+//	// condition represents the less than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.LessThanEqual(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.LessThanEqual(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo <= :five"
+//	expression.LessThanEqual(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo <= :five"
 func LessThanEqual(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -432,20 +432,20 @@ func LessThanEqual(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Name("foo").LessThanEqual(expression.Value(5))
+//	// condition represents the less than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Name("foo").LessThanEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").LessThanEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo <= :five"
+//	expression.Name("foo").LessThanEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo <= :five"
 func (nb NameBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 	return LessThanEqual(nb, right)
 }
@@ -457,20 +457,20 @@ func (nb NameBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Value(5).LessThanEqual(expression.Name("foo"))
+//	// condition represents the less than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Value(5).LessThanEqual(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).LessThanEqual(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five <= foo"
+//	expression.Value(5).LessThanEqual(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five <= foo"
 func (vb ValueBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 	return LessThanEqual(vb, right)
 }
@@ -482,20 +482,20 @@ func (vb ValueBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the less than equal to clause of the size of the
-//     // item attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).LessThanEqual(expression.Value(5))
+//	// condition represents the less than equal to clause of the size of the
+//	// item attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).LessThanEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).LessThanEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) <= :five"
+//	expression.Size(expression.Name("foo")).LessThanEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) <= :five"
 func (sb SizeBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 	return LessThanEqual(sb, right)
 }
@@ -507,20 +507,20 @@ func (sb SizeBuilder) LessThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than clause of the item attribute
-//     // "foo" and the value 5
-//     condition := expression.GreaterThan(expression.Name("foo"), expression.Value(5))
+//	// condition represents the greater than clause of the item attribute
+//	// "foo" and the value 5
+//	condition := expression.GreaterThan(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.GreaterThan(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo > :five"
+//	expression.GreaterThan(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo > :five"
 func GreaterThan(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -535,20 +535,20 @@ func GreaterThan(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than clause of the item attribute
-//     // "foo" and the value 5
-//     condition := expression.Name("foo").GreaterThan(expression.Value(5))
+//	// condition represents the greater than clause of the item attribute
+//	// "foo" and the value 5
+//	condition := expression.Name("foo").GreaterThan(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").GreaterThan(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo > :five"
+//	expression.Name("foo").GreaterThan(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo > :five"
 func (nb NameBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 	return GreaterThan(nb, right)
 }
@@ -560,20 +560,20 @@ func (nb NameBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than clause of the item attribute
-//     // "foo" and the value 5
-//     condition := expression.Value(5).GreaterThan(expression.Name("foo"))
+//	// condition represents the greater than clause of the item attribute
+//	// "foo" and the value 5
+//	condition := expression.Value(5).GreaterThan(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).GreaterThan(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five > foo"
+//	expression.Value(5).GreaterThan(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five > foo"
 func (vb ValueBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 	return GreaterThan(vb, right)
 }
@@ -585,20 +585,20 @@ func (vb ValueBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than clause of the size of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).GreaterThan(expression.Value(5))
+//	// condition represents the greater than clause of the size of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).GreaterThan(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).GreaterThan(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) > :five"
+//	expression.Size(expression.Name("foo")).GreaterThan(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) > :five"
 func (sb SizeBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 	return GreaterThan(sb, right)
 }
@@ -610,20 +610,20 @@ func (sb SizeBuilder) GreaterThan(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.GreaterThanEqual(expression.Name("foo"), expression.Value(5))
+//	// condition represents the greater than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.GreaterThanEqual(expression.Name("foo"), expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.GreaterThanEqual(expression.Name("foo"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo >= :five"
+//	expression.GreaterThanEqual(expression.Name("foo"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo >= :five"
 func GreaterThanEqual(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -638,20 +638,20 @@ func GreaterThanEqual(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Name("foo").GreaterThanEqual(expression.Value(5))
+//	// condition represents the greater than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Name("foo").GreaterThanEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").GreaterThanEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "foo >= :five"
+//	expression.Name("foo").GreaterThanEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"foo >= :five"
 func (nb NameBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 	return GreaterThanEqual(nb, right)
 }
@@ -663,20 +663,20 @@ func (nb NameBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than equal to clause of the item
-//     // attribute "foo" and the value 5
-//     condition := expression.Value(5).GreaterThanEqual(expression.Name("foo"))
+//	// condition represents the greater than equal to clause of the item
+//	// attribute "foo" and the value 5
+//	condition := expression.Value(5).GreaterThanEqual(expression.Name("foo"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(5).GreaterThanEqual(expression.Name("foo"))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     ":five >= foo"
+//	expression.Value(5).GreaterThanEqual(expression.Name("foo"))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	":five >= foo"
 func (vb ValueBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 	return GreaterThanEqual(vb, right)
 }
@@ -688,20 +688,20 @@ func (vb ValueBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the greater than equal to clause of the size of
-//     // the item attribute "foo" and the value 5
-//     condition := expression.Size(expression.Name("foo")).GreaterThanEqual(expression.Value(5))
+//	// condition represents the greater than equal to clause of the size of
+//	// the item attribute "foo" and the value 5
+//	condition := expression.Size(expression.Name("foo")).GreaterThanEqual(expression.Value(5))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("foo")).GreaterThanEqual(expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "size (foo) >= :five"
+//	expression.Size(expression.Name("foo")).GreaterThanEqual(expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"size (foo) >= :five"
 func (sb SizeBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 	return GreaterThanEqual(sb, right)
 }
@@ -714,23 +714,23 @@ func (sb SizeBuilder) GreaterThanEqual(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Name" is
-//     // equal to value "Generic Name" AND the item attribute "Age" is less
-//     // than value 40
-//     condition := expression.And(expression.Name("Name").Equal(expression.Value("Generic Name")), expression.Name("Age").LessThan(expression.Value(40)))
+//	// condition represents the condition where the item attribute "Name" is
+//	// equal to value "Generic Name" AND the item attribute "Age" is less
+//	// than value 40
+//	condition := expression.And(expression.Name("Name").Equal(expression.Value("Generic Name")), expression.Name("Age").LessThan(expression.Value(40)))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.And(expression.Name("Name").Equal(expression.Value("Generic Name")), expression.Name("Age").LessThan(expression.Value(40)))
-//     // Let #NAME, :name, and :forty be ExpressionAttributeName and
-//     // ExpressionAttributeValues representing the item attribute "Name", the
-//     // value "Generic Name", and the value 40
-//     "(#NAME = :name) AND (Age < :forty)"
+//	expression.And(expression.Name("Name").Equal(expression.Value("Generic Name")), expression.Name("Age").LessThan(expression.Value(40)))
+//	// Let #NAME, :name, and :forty be ExpressionAttributeName and
+//	// ExpressionAttributeValues representing the item attribute "Name", the
+//	// value "Generic Name", and the value 40
+//	"(#NAME = :name) AND (Age < :forty)"
 func And(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
 	other = append([]ConditionBuilder{left, right}, other...)
 	return ConditionBuilder{
@@ -747,23 +747,23 @@ func And(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuild
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Name" is
-//     // equal to value "Generic Name" AND the item attribute "Age" is less
-//     // than value 40
-//     condition := expression.Name("Name").Equal(expression.Value("Generic Name")).And(expression.Name("Age").LessThan(expression.Value(40)))
+//	// condition represents the condition where the item attribute "Name" is
+//	// equal to value "Generic Name" AND the item attribute "Age" is less
+//	// than value 40
+//	condition := expression.Name("Name").Equal(expression.Value("Generic Name")).And(expression.Name("Age").LessThan(expression.Value(40)))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Name").Equal(expression.Value("Generic Name")).And(expression.Name("Age").LessThan(expression.Value(40)))
-//     // Let #NAME, :name, and :forty be ExpressionAttributeName and
-//     // ExpressionAttributeValues representing the item attribute "Name", the
-//     // value "Generic Name", and the value 40
-//     "(#NAME = :name) AND (Age < :forty)"
+//	expression.Name("Name").Equal(expression.Value("Generic Name")).And(expression.Name("Age").LessThan(expression.Value(40)))
+//	// Let #NAME, :name, and :forty be ExpressionAttributeName and
+//	// ExpressionAttributeValues representing the item attribute "Name", the
+//	// value "Generic Name", and the value 40
+//	"(#NAME = :name) AND (Age < :forty)"
 func (cb ConditionBuilder) And(right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
 	return And(cb, right, other...)
 }
@@ -776,22 +776,22 @@ func (cb ConditionBuilder) And(right ConditionBuilder, other ...ConditionBuilder
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Price" is
-//     // less than the value 100 OR the item attribute "Rating" is greater than
-//     // the value 8
-//     condition := expression.Or(expression.Name("Price").Equal(expression.Value(100)), expression.Name("Rating").LessThan(expression.Value(8)))
+//	// condition represents the condition where the item attribute "Price" is
+//	// less than the value 100 OR the item attribute "Rating" is greater than
+//	// the value 8
+//	condition := expression.Or(expression.Name("Price").Equal(expression.Value(100)), expression.Name("Rating").LessThan(expression.Value(8)))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Or(expression.Name("Price").Equal(expression.Value(100)), expression.Name("Rating").LessThan(expression.Value(8)))
-//     // Let :price and :rating be ExpressionAttributeValues representing the
-//     // the value 100 and value 8 respectively
-//     "(Price < :price) OR (Rating > :rating)"
+//	expression.Or(expression.Name("Price").Equal(expression.Value(100)), expression.Name("Rating").LessThan(expression.Value(8)))
+//	// Let :price and :rating be ExpressionAttributeValues representing the
+//	// the value 100 and value 8 respectively
+//	"(Price < :price) OR (Rating > :rating)"
 func Or(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
 	other = append([]ConditionBuilder{left, right}, other...)
 	return ConditionBuilder{
@@ -808,22 +808,22 @@ func Or(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuilde
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Price" is
-//     // less than the value 100 OR the item attribute "Rating" is greater than
-//     // the value 8
-//     condition := expression.Name("Price").Equal(expression.Value(100)).Or(expression.Name("Rating").LessThan(expression.Value(8)))
+//	// condition represents the condition where the item attribute "Price" is
+//	// less than the value 100 OR the item attribute "Rating" is greater than
+//	// the value 8
+//	condition := expression.Name("Price").Equal(expression.Value(100)).Or(expression.Name("Rating").LessThan(expression.Value(8)))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Price").Equal(expression.Value(100)).Or(expression.Name("Rating").LessThan(expression.Value(8)))
-//     // Let :price and :rating be ExpressionAttributeValues representing the
-//     // the value 100 and value 8 respectively
-//     "(Price < :price) OR (Rating > :rating)"
+//	expression.Name("Price").Equal(expression.Value(100)).Or(expression.Name("Rating").LessThan(expression.Value(8)))
+//	// Let :price and :rating be ExpressionAttributeValues representing the
+//	// the value 100 and value 8 respectively
+//	"(Price < :price) OR (Rating > :rating)"
 func (cb ConditionBuilder) Or(right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
 	return Or(cb, right, other...)
 }
@@ -835,21 +835,21 @@ func (cb ConditionBuilder) Or(right ConditionBuilder, other ...ConditionBuilder)
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Name"
-//     // does not begin with "test"
-//     condition := expression.Not(expression.Name("Name").BeginsWith("test"))
+//	// condition represents the condition where the item attribute "Name"
+//	// does not begin with "test"
+//	condition := expression.Not(expression.Name("Name").BeginsWith("test"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Not(expression.Name("Name").BeginsWith("test"))
-//     // Let :prefix be an ExpressionAttributeValue representing the value
-//     // "test"
-//     "NOT (begins_with (:prefix))"
+//	expression.Not(expression.Name("Name").BeginsWith("test"))
+//	// Let :prefix be an ExpressionAttributeValue representing the value
+//	// "test"
+//	"NOT (begins_with (:prefix))"
 func Not(conditionBuilder ConditionBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		conditionList: []ConditionBuilder{conditionBuilder},
@@ -864,21 +864,21 @@ func Not(conditionBuilder ConditionBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the item attribute "Name"
-//     // does not begin with "test"
-//     condition := expression.Name("Name").BeginsWith("test").Not()
+//	// condition represents the condition where the item attribute "Name"
+//	// does not begin with "test"
+//	condition := expression.Name("Name").BeginsWith("test").Not()
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Name").BeginsWith("test").Not()
-//     // Let :prefix be an ExpressionAttributeValue representing the value
-//     // "test"
-//     "NOT (begins_with (:prefix))"
+//	expression.Name("Name").BeginsWith("test").Not()
+//	// Let :prefix be an ExpressionAttributeValue representing the value
+//	// "test"
+//	"NOT (begins_with (:prefix))"
 func (cb ConditionBuilder) Not() ConditionBuilder {
 	return Not(cb)
 }
@@ -890,21 +890,21 @@ func (cb ConditionBuilder) Not() ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the value of the item
-//     // attribute "Rating" is between values 5 and 10
-//     condition := expression.Between(expression.Name("Rating"), expression.Value(5), expression.Value(10))
+//	// condition represents the condition where the value of the item
+//	// attribute "Rating" is between values 5 and 10
+//	condition := expression.Between(expression.Name("Rating"), expression.Value(5), expression.Value(10))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Between(expression.Name("Rating"), expression.Value(5), expression.Value(10))
-//     // Let :five and :ten be ExpressionAttributeValues representing the value
-//     // 5 and the value 10
-//     "Rating BETWEEN :five AND :ten"
+//	expression.Between(expression.Name("Rating"), expression.Value(5), expression.Value(10))
+//	// Let :five and :ten be ExpressionAttributeValues representing the value
+//	// 5 and the value 10
+//	"Rating BETWEEN :five AND :ten"
 func Between(op, lower, upper OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{op, lower, upper},
@@ -919,21 +919,21 @@ func Between(op, lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the value of the item
-//     // attribute "Rating" is between values 5 and 10
-//     condition := expression.Name("Rating").Between(expression.Value(5), expression.Value(10))
+//	// condition represents the condition where the value of the item
+//	// attribute "Rating" is between values 5 and 10
+//	condition := expression.Name("Rating").Between(expression.Value(5), expression.Value(10))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Rating").Between(expression.Value(5), expression.Value(10))
-//     // Let :five and :ten be ExpressionAttributeValues representing the value
-//     // 5 and the value 10
-//     "Rating BETWEEN :five AND :ten"
+//	expression.Name("Rating").Between(expression.Value(5), expression.Value(10))
+//	// Let :five and :ten be ExpressionAttributeValues representing the value
+//	// 5 and the value 10
+//	"Rating BETWEEN :five AND :ten"
 func (nb NameBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(nb, lower, upper)
 }
@@ -945,21 +945,21 @@ func (nb NameBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the value 6 is between values
-//     // 5 and 10
-//     condition := expression.Value(6).Between(expression.Value(5), expression.Value(10))
+//	// condition represents the condition where the value 6 is between values
+//	// 5 and 10
+//	condition := expression.Value(6).Between(expression.Value(5), expression.Value(10))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value(6).Between(expression.Value(5), expression.Value(10))
-//     // Let :six, :five and :ten be ExpressionAttributeValues representing the
-//     // values 6, 5, and 10 respectively
-//     ":six BETWEEN :five AND :ten"
+//	expression.Value(6).Between(expression.Value(5), expression.Value(10))
+//	// Let :six, :five and :ten be ExpressionAttributeValues representing the
+//	// values 6, 5, and 10 respectively
+//	":six BETWEEN :five AND :ten"
 func (vb ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(vb, lower, upper)
 }
@@ -971,21 +971,21 @@ func (vb ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the size of the item
-//     // attribute "InviteList" is between values 5 and 10
-//     condition := expression.Size(expression.Name("InviteList")).Between(expression.Value(5), expression.Value(10))
+//	// condition represents the condition where the size of the item
+//	// attribute "InviteList" is between values 5 and 10
+//	condition := expression.Size(expression.Name("InviteList")).Between(expression.Value(5), expression.Value(10))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("InviteList")).Between(expression.Value(5), expression.Value(10))
-//     // Let :five and :ten be ExpressionAttributeValues representing the value
-//     // 5 and the value 10
-//     "size (InviteList) BETWEEN :five AND :ten"
+//	expression.Size(expression.Name("InviteList")).Between(expression.Value(5), expression.Value(10))
+//	// Let :five and :ten be ExpressionAttributeValues representing the value
+//	// 5 and the value 10
+//	"size (InviteList) BETWEEN :five AND :ten"
 func (sb SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(sb, lower, upper)
 }
@@ -997,22 +997,22 @@ func (sb SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the value of the item
-//     // attribute "Color" is checked against the list of colors "red",
-//     // "green", and "blue".
-//     condition := expression.In(expression.Name("Color"), expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// condition represents the condition where the value of the item
+//	// attribute "Color" is checked against the list of colors "red",
+//	// "green", and "blue".
+//	condition := expression.In(expression.Name("Color"), expression.Value("red"), expression.Value("green"), expression.Value("blue"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.In(expression.Name("Color"), expression.Value("red"), expression.Value("green"), expression.Value("blue"))
-//     // Let :red, :green, :blue be ExpressionAttributeValues representing the
-//     // values "red", "green", and "blue" respectively
-//     "Color IN (:red, :green, :blue)"
+//	expression.In(expression.Name("Color"), expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// Let :red, :green, :blue be ExpressionAttributeValues representing the
+//	// values "red", "green", and "blue" respectively
+//	"Color IN (:red, :green, :blue)"
 func In(left, right OperandBuilder, other ...OperandBuilder) ConditionBuilder {
 	other = append([]OperandBuilder{left, right}, other...)
 	return ConditionBuilder{
@@ -1028,22 +1028,22 @@ func In(left, right OperandBuilder, other ...OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the condition where the value of the item
-//     // attribute "Color" is checked against the list of colors "red",
-//     // "green", and "blue".
-//     condition := expression.Name("Color").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// condition represents the condition where the value of the item
+//	// attribute "Color" is checked against the list of colors "red",
+//	// "green", and "blue".
+//	condition := expression.Name("Color").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Color").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
-//     // Let :red, :green, :blue be ExpressionAttributeValues representing the
-//     // values "red", "green", and "blue" respectively
-//     "Color IN (:red, :green, :blue)"
+//	expression.Name("Color").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// Let :red, :green, :blue be ExpressionAttributeValues representing the
+//	// values "red", "green", and "blue" respectively
+//	"Color IN (:red, :green, :blue)"
 func (nb NameBuilder) In(right OperandBuilder, other ...OperandBuilder) ConditionBuilder {
 	return In(nb, right, other...)
 }
@@ -1056,22 +1056,22 @@ func (nb NameBuilder) In(right OperandBuilder, other ...OperandBuilder) Conditio
 //
 // Example:
 //
-//     // condition represents the condition where the value "yellow" is checked
-//     // against the list of colors "red", "green", and "blue".
-//     condition := expression.Value("yellow").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// condition represents the condition where the value "yellow" is checked
+//	// against the list of colors "red", "green", and "blue".
+//	condition := expression.Value("yellow").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Value("yellow").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
-//     // Let :yellow, :red, :green, :blue be ExpressionAttributeValues
-//     // representing the values "yellow", "red", "green", and "blue"
-//     // respectively
-//     ":yellow IN (:red, :green, :blue)"
+//	expression.Value("yellow").In(expression.Value("red"), expression.Value("green"), expression.Value("blue"))
+//	// Let :yellow, :red, :green, :blue be ExpressionAttributeValues
+//	// representing the values "yellow", "red", "green", and "blue"
+//	// respectively
+//	":yellow IN (:red, :green, :blue)"
 func (vb ValueBuilder) In(right OperandBuilder, other ...OperandBuilder) ConditionBuilder {
 	return In(vb, right, other...)
 }
@@ -1083,22 +1083,22 @@ func (vb ValueBuilder) In(right OperandBuilder, other ...OperandBuilder) Conditi
 //
 // Example:
 //
-//     // condition represents the condition where the size of the item
-//     // attribute "Donuts" is checked against the list of numbers 12, 24, and
-//     // 36.
-//     condition := expression.Size(expression.Name("Donuts")).In(expression.Value(12), expression.Value(24), expression.Value(36))
+//	// condition represents the condition where the size of the item
+//	// attribute "Donuts" is checked against the list of numbers 12, 24, and
+//	// 36.
+//	condition := expression.Size(expression.Name("Donuts")).In(expression.Value(12), expression.Value(24), expression.Value(36))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Size(expression.Name("Donuts")).In(expression.Value(12), expression.Value(24), expression.Value(36))
-//     // Let :dozen, :twoDozen, :threeDozen be ExpressionAttributeValues
-//     // representing the values 12, 24, and 36 respectively
-//     "size (Donuts) IN (12, 24, 36)"
+//	expression.Size(expression.Name("Donuts")).In(expression.Value(12), expression.Value(24), expression.Value(36))
+//	// Let :dozen, :twoDozen, :threeDozen be ExpressionAttributeValues
+//	// representing the values 12, 24, and 36 respectively
+//	"size (Donuts) IN (12, 24, 36)"
 func (sb SizeBuilder) In(right OperandBuilder, other ...OperandBuilder) ConditionBuilder {
 	return In(sb, right, other...)
 }
@@ -1110,19 +1110,19 @@ func (sb SizeBuilder) In(right OperandBuilder, other ...OperandBuilder) Conditio
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" exists or not
-//     condition := expression.AttributeExists(expression.Name("Age"))
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" exists or not
+//	condition := expression.AttributeExists(expression.Name("Age"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.AttributeExists(expression.Name("Age"))
-//     "attribute_exists (Age))"
+//	expression.AttributeExists(expression.Name("Age"))
+//	"attribute_exists (Age))"
 func AttributeExists(nameBuilder NameBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{nameBuilder},
@@ -1137,19 +1137,19 @@ func AttributeExists(nameBuilder NameBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" exists or not
-//     condition := expression.Name("Age").AttributeExists()
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" exists or not
+//	condition := expression.Name("Age").AttributeExists()
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Age").AttributeExists()
-//     "attribute_exists (Age))"
+//	expression.Name("Age").AttributeExists()
+//	"attribute_exists (Age))"
 func (nb NameBuilder) AttributeExists() ConditionBuilder {
 	return AttributeExists(nb)
 }
@@ -1162,19 +1162,19 @@ func (nb NameBuilder) AttributeExists() ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" exists or not
-//     condition := expression.AttributeNotExists(expression.Name("Age"))
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" exists or not
+//	condition := expression.AttributeNotExists(expression.Name("Age"))
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.AttributeNotExists(expression.Name("Age"))
-//     "attribute_not_exists (Age))"
+//	expression.AttributeNotExists(expression.Name("Age"))
+//	"attribute_not_exists (Age))"
 func AttributeNotExists(nameBuilder NameBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{nameBuilder},
@@ -1190,19 +1190,19 @@ func AttributeNotExists(nameBuilder NameBuilder) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" exists or not
-//     condition := expression.Name("Age").AttributeNotExists()
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" exists or not
+//	condition := expression.Name("Age").AttributeNotExists()
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Age").AttributeNotExists()
-//     "attribute_not_exists (Age))"
+//	expression.Name("Age").AttributeNotExists()
+//	"attribute_not_exists (Age))"
 func (nb NameBuilder) AttributeNotExists() ConditionBuilder {
 	return AttributeNotExists(nb)
 }
@@ -1215,20 +1215,20 @@ func (nb NameBuilder) AttributeNotExists() ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" has the DynamoDB type Number or not
-//     condition := expression.AttributeType(expression.Name("Age"), expression.Number)
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" has the DynamoDB type Number or not
+//	condition := expression.AttributeType(expression.Name("Age"), expression.Number)
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.AttributeType(expression.Name("Age"), expression.Number)
-//     // Let :type be an ExpressionAttributeValue representing the value "N"
-//     "attribute_type (Age, :type)"
+//	expression.AttributeType(expression.Name("Age"), expression.Number)
+//	// Let :type be an ExpressionAttributeValue representing the value "N"
+//	"attribute_type (Age, :type)"
 func AttributeType(nameBuilder NameBuilder, attributeType DynamoDBAttributeType) ConditionBuilder {
 	v := ValueBuilder{
 		value: string(attributeType),
@@ -1247,20 +1247,20 @@ func AttributeType(nameBuilder NameBuilder, attributeType DynamoDBAttributeType)
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "Age" has the DynamoDB type Number or not
-//     condition := expression.Name("Age").AttributeType(expression.Number)
+//	// condition represents the boolean condition of whether the item
+//	// attribute "Age" has the DynamoDB type Number or not
+//	condition := expression.Name("Age").AttributeType(expression.Number)
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("Age").AttributeType(expression.Number)
-//     // Let :type be an ExpressionAttributeValue representing the value "N"
-//     "attribute_type (Age, :type)"
+//	expression.Name("Age").AttributeType(expression.Number)
+//	// Let :type be an ExpressionAttributeValue representing the value "N"
+//	"attribute_type (Age, :type)"
 func (nb NameBuilder) AttributeType(attributeType DynamoDBAttributeType) ConditionBuilder {
 	return AttributeType(nb, attributeType)
 }
@@ -1272,20 +1272,20 @@ func (nb NameBuilder) AttributeType(attributeType DynamoDBAttributeType) Conditi
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "CodeName" starts with the substring "Ben"
-//     condition := expression.BeginsWith(expression.Name("CodeName"), "Ben")
+//	// condition represents the boolean condition of whether the item
+//	// attribute "CodeName" starts with the substring "Ben"
+//	condition := expression.BeginsWith(expression.Name("CodeName"), "Ben")
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.BeginsWith(expression.Name("CodeName"), "Ben")
-//     // Let :ben be an ExpressionAttributeValue representing the value "Ben"
-//     "begins_with (CodeName, :ben)"
+//	expression.BeginsWith(expression.Name("CodeName"), "Ben")
+//	// Let :ben be an ExpressionAttributeValue representing the value "Ben"
+//	"begins_with (CodeName, :ben)"
 func BeginsWith(nameBuilder NameBuilder, prefix string) ConditionBuilder {
 	v := ValueBuilder{
 		value: prefix,
@@ -1303,20 +1303,20 @@ func BeginsWith(nameBuilder NameBuilder, prefix string) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "CodeName" starts with the substring "Ben"
-//     condition := expression.Name("CodeName").BeginsWith("Ben")
+//	// condition represents the boolean condition of whether the item
+//	// attribute "CodeName" starts with the substring "Ben"
+//	condition := expression.Name("CodeName").BeginsWith("Ben")
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("CodeName").BeginsWith("Ben")
-//     // Let :ben be an ExpressionAttributeValue representing the value "Ben"
-//     "begins_with (CodeName, :ben)"
+//	expression.Name("CodeName").BeginsWith("Ben")
+//	// Let :ben be an ExpressionAttributeValue representing the value "Ben"
+//	"begins_with (CodeName, :ben)"
 func (nb NameBuilder) BeginsWith(prefix string) ConditionBuilder {
 	return BeginsWith(nb, prefix)
 }
@@ -1328,20 +1328,20 @@ func (nb NameBuilder) BeginsWith(prefix string) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "InviteList" has the value "Ben"
-//     condition := expression.Contains(expression.Name("InviteList"), "Ben")
+//	// condition represents the boolean condition of whether the item
+//	// attribute "InviteList" has the value "Ben"
+//	condition := expression.Contains(expression.Name("InviteList"), "Ben")
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Contains(expression.Name("InviteList"), "Ben")
-//     // Let :ben be an ExpressionAttributeValue representing the value "Ben"
-//     "contains (InviteList, :ben)"
+//	expression.Contains(expression.Name("InviteList"), "Ben")
+//	// Let :ben be an ExpressionAttributeValue representing the value "Ben"
+//	"contains (InviteList, :ben)"
 func Contains(nameBuilder NameBuilder, substr string) ConditionBuilder {
 	v := ValueBuilder{
 		value: substr,
@@ -1359,20 +1359,20 @@ func Contains(nameBuilder NameBuilder, substr string) ConditionBuilder {
 //
 // Example:
 //
-//     // condition represents the boolean condition of whether the item
-//     // attribute "InviteList" has the value "Ben"
-//     condition := expression.Name("InviteList").Contains("Ben")
+//	// condition represents the boolean condition of whether the item
+//	// attribute "InviteList" has the value "Ben"
+//	condition := expression.Name("InviteList").Contains("Ben")
 //
-//     // Used in another Condition Expression
-//     anotherCondition := expression.Not(condition)
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithCondition(condition)
+//	// Used in another Condition Expression
+//	anotherCondition := expression.Not(condition)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithCondition(condition)
 //
 // Expression Equivalent:
 //
-//     expression.Name("InviteList").Contains("Ben")
-//     // Let :ben be an ExpressionAttributeValue representing the value "Ben"
-//     "contains (InviteList, :ben)"
+//	expression.Name("InviteList").Contains("Ben")
+//	// Let :ben be an ExpressionAttributeValue representing the value "Ben"
+//	"contains (InviteList, :ben)"
 func (nb NameBuilder) Contains(substr string) ConditionBuilder {
 	return Contains(nb, substr)
 }

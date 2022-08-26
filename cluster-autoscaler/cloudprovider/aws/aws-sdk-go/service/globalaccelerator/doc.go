@@ -12,14 +12,14 @@
 // the performance of your applications for local and global users. Depending
 // on the type of accelerator you choose, you can gain additional benefits.
 //
-//    * By using a standard accelerator, you can improve availability of your
-//    internet applications that are used by a global audience. With a standard
-//    accelerator, Global Accelerator directs traffic to optimal endpoints over
-//    the AWS global network.
+//   - By using a standard accelerator, you can improve availability of your
+//     internet applications that are used by a global audience. With a standard
+//     accelerator, Global Accelerator directs traffic to optimal endpoints over
+//     the AWS global network.
 //
-//    * For other scenarios, you might choose a custom routing accelerator.
-//    With a custom routing accelerator, you can use application logic to directly
-//    map one or more users to a specific endpoint among many endpoints.
+//   - For other scenarios, you might choose a custom routing accelerator.
+//     With a custom routing accelerator, you can use application logic to directly
+//     map one or more users to a specific endpoint among many endpoints.
 //
 // Global Accelerator is a global service that supports endpoints in multiple
 // AWS Regions but you must specify the US West (Oregon) Region to create or
@@ -58,7 +58,7 @@
 //
 // AWS Global Accelerator includes the following components:
 //
-// Static IP addresses
+// # Static IP addresses
 //
 // Global Accelerator provides you with a set of two static IP addresses that
 // are anycast from the AWS edge network. If you bring your own IP address range
@@ -80,7 +80,7 @@
 // Accelerator to delete an accelerator. For more information, see Tag-based
 // policies (https://docs.aws.amazon.com/global-accelerator/latest/dg/access-control-manage-access-tag-policies.html).
 //
-// Accelerator
+// # Accelerator
 //
 // An accelerator directs traffic to endpoints over the AWS global network to
 // improve the performance of your internet applications. Each accelerator includes
@@ -88,25 +88,25 @@
 //
 // There are two types of accelerators:
 //
-//    * A standard accelerator directs traffic to the optimal AWS endpoint based
-//    on several factors, including the user’s location, the health of the
-//    endpoint, and the endpoint weights that you configure. This improves the
-//    availability and performance of your applications. Endpoints can be Network
-//    Load Balancers, Application Load Balancers, Amazon EC2 instances, or Elastic
-//    IP addresses.
+//   - A standard accelerator directs traffic to the optimal AWS endpoint based
+//     on several factors, including the user’s location, the health of the
+//     endpoint, and the endpoint weights that you configure. This improves the
+//     availability and performance of your applications. Endpoints can be Network
+//     Load Balancers, Application Load Balancers, Amazon EC2 instances, or Elastic
+//     IP addresses.
 //
-//    * A custom routing accelerator directs traffic to one of possibly thousands
-//    of Amazon EC2 instances running in a single or multiple virtual private
-//    clouds (VPCs). With custom routing, listener ports are mapped to statically
-//    associate port ranges with VPC subnets, which allows Global Accelerator
-//    to determine an EC2 instance IP address at the time of connection. By
-//    default, all port mapping destinations in a VPC subnet can't receive traffic.
-//    You can choose to configure all destinations in the subnet to receive
-//    traffic, or to specify individual port mappings that can receive traffic.
+//   - A custom routing accelerator directs traffic to one of possibly thousands
+//     of Amazon EC2 instances running in a single or multiple virtual private
+//     clouds (VPCs). With custom routing, listener ports are mapped to statically
+//     associate port ranges with VPC subnets, which allows Global Accelerator
+//     to determine an EC2 instance IP address at the time of connection. By
+//     default, all port mapping destinations in a VPC subnet can't receive traffic.
+//     You can choose to configure all destinations in the subnet to receive
+//     traffic, or to specify individual port mappings that can receive traffic.
 //
 // For more information, see Types of accelerators (https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-accelerator-types.html).
 //
-// DNS name
+// # DNS name
 //
 // Global Accelerator assigns each accelerator a default Domain Name System
 // (DNS) name, similar to a1234567890abcdef.awsglobalaccelerator.com, that points
@@ -116,7 +116,7 @@
 // to your accelerator, or set up DNS records to route traffic using your own
 // custom domain name.
 //
-// Network zone
+// # Network zone
 //
 // A network zone services the static IP addresses for your accelerator from
 // a unique IP subnet. Similar to an AWS Availability Zone, a network zone is
@@ -127,7 +127,7 @@
 // client applications can retry on the healthy static IP address from the other
 // isolated network zone.
 //
-// Listener
+// # Listener
 //
 // A listener processes inbound connections from clients to Global Accelerator,
 // based on the port (or port range) and protocol (or protocols) that you configure.
@@ -138,7 +138,7 @@
 // to. With a standard accelerator, traffic is distributed to optimal endpoints
 // within the endpoint groups associated with a listener.
 //
-// Endpoint group
+// # Endpoint group
 //
 // Each endpoint group is associated with a specific AWS Region. Endpoint groups
 // include one or more endpoints in the Region. With a standard accelerator,
@@ -147,7 +147,7 @@
 // The traffic dial lets you easily do performance testing or blue/green deployment
 // testing, for example, for new releases across different AWS Regions.
 //
-// Endpoint
+// # Endpoint
 //
 // An endpoint is a resource that Global Accelerator directs traffic to.
 //
@@ -168,7 +168,7 @@
 // See globalaccelerator package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/globalaccelerator/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Global Accelerator with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

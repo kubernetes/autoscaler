@@ -806,12 +806,12 @@ func (r ApiDatacentersPostRequest) Execute() (Datacenter, *APIResponse, error) {
 }
 
 /*
- * DatacentersPost Create data centers
- * Create new data centers, and data centers that already contain elements, such as servers and storage volumes.
+  - DatacentersPost Create data centers
+  - Create new data centers, and data centers that already contain elements, such as servers and storage volumes.
 
 Virtual data centers are the foundation of the platform; they act as logical containers for all other objects you create, such as servers and storage volumes. You can provision as many data centers as needed. Data centers have their own private networks and are logically segmented from each other to create isolation.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiDatacentersPostRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiDatacentersPostRequest
 */
 func (a *DataCentersApiService) DatacentersPost(ctx _context.Context) ApiDatacentersPostRequest {
 	return ApiDatacentersPostRequest{

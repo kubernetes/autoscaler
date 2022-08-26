@@ -11,7 +11,7 @@ import (
 
 // GetLocalPeeringGatewayRequest wrapper for the GetLocalPeeringGateway operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetLocalPeeringGateway.go.html to see an example of how to use GetLocalPeeringGatewayRequest.
 type GetLocalPeeringGatewayRequest struct {

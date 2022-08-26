@@ -29,14 +29,13 @@ const opCreateBroker = "CreateBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBrokerRequest method.
+//	req, resp := client.CreateBrokerRequest(params)
 //
-//    // Example sending a request using the CreateBrokerRequest method.
-//    req, resp := client.CreateBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateBroker
 func (c *MQ) CreateBrokerRequest(input *CreateBrokerRequest) (req *request.Request, output *CreateBrokerResponse) {
@@ -62,31 +61,31 @@ func (c *MQ) CreateBrokerRequest(input *CreateBrokerRequest) (req *request.Reque
 // To create a broker, you must either use the AmazonMQFullAccess IAM policy
 // or include the following EC2 permissions in your IAM policy.
 //
-//    * ec2:CreateNetworkInterface This permission is required to allow Amazon
-//    MQ to create an elastic network interface (ENI) on behalf of your account.
+//   - ec2:CreateNetworkInterface This permission is required to allow Amazon
+//     MQ to create an elastic network interface (ENI) on behalf of your account.
 //
-//    * ec2:CreateNetworkInterfacePermission This permission is required to
-//    attach the ENI to the broker instance.
+//   - ec2:CreateNetworkInterfacePermission This permission is required to
+//     attach the ENI to the broker instance.
 //
-//    * ec2:DeleteNetworkInterface
+//   - ec2:DeleteNetworkInterface
 //
-//    * ec2:DeleteNetworkInterfacePermission
+//   - ec2:DeleteNetworkInterfacePermission
 //
-//    * ec2:DetachNetworkInterface
+//   - ec2:DetachNetworkInterface
 //
-//    * ec2:DescribeInternetGateways
+//   - ec2:DescribeInternetGateways
 //
-//    * ec2:DescribeNetworkInterfaces
+//   - ec2:DescribeNetworkInterfaces
 //
-//    * ec2:DescribeNetworkInterfacePermissions
+//   - ec2:DescribeNetworkInterfacePermissions
 //
-//    * ec2:DescribeRouteTables
+//   - ec2:DescribeRouteTables
 //
-//    * ec2:DescribeSecurityGroups
+//   - ec2:DescribeSecurityGroups
 //
-//    * ec2:DescribeSubnets
+//   - ec2:DescribeSubnets
 //
-//    * ec2:DescribeVpcs
+//   - ec2:DescribeVpcs
 //
 // For more information, see Create an IAM User and Get Your AWS Credentials
 // (https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/amazon-mq-setting-up.html#create-iam-user)
@@ -101,20 +100,21 @@ func (c *MQ) CreateBrokerRequest(input *CreateBrokerRequest) (req *request.Reque
 // API operation CreateBroker for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateBroker
 func (c *MQ) CreateBroker(input *CreateBrokerRequest) (*CreateBrokerResponse, error) {
@@ -154,14 +154,13 @@ const opCreateConfiguration = "CreateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationRequest method.
+//	req, resp := client.CreateConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationRequest method.
-//    req, resp := client.CreateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateConfiguration
 func (c *MQ) CreateConfigurationRequest(input *CreateConfigurationRequest) (req *request.Request, output *CreateConfigurationResponse) {
@@ -193,17 +192,18 @@ func (c *MQ) CreateConfigurationRequest(input *CreateConfigurationRequest) (req 
 // API operation CreateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateConfiguration
 func (c *MQ) CreateConfiguration(input *CreateConfigurationRequest) (*CreateConfigurationResponse, error) {
@@ -243,14 +243,13 @@ const opCreateTags = "CreateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTagsRequest method.
+//	req, resp := client.CreateTagsRequest(params)
 //
-//    // Example sending a request using the CreateTagsRequest method.
-//    req, resp := client.CreateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateTags
 func (c *MQ) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
@@ -282,17 +281,18 @@ func (c *MQ) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, ou
 // API operation CreateTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateTags
 func (c *MQ) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
@@ -332,14 +332,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateUser
 func (c *MQ) CreateUserRequest(input *CreateUserRequest) (req *request.Request, output *CreateUserOutput) {
@@ -371,20 +370,21 @@ func (c *MQ) CreateUserRequest(input *CreateUserRequest) (req *request.Request, 
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/CreateUser
 func (c *MQ) CreateUser(input *CreateUserRequest) (*CreateUserOutput, error) {
@@ -424,14 +424,13 @@ const opDeleteBroker = "DeleteBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBrokerRequest method.
+//	req, resp := client.DeleteBrokerRequest(params)
 //
-//    // Example sending a request using the DeleteBrokerRequest method.
-//    req, resp := client.DeleteBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteBroker
 func (c *MQ) DeleteBrokerRequest(input *DeleteBrokerInput) (req *request.Request, output *DeleteBrokerResponse) {
@@ -462,17 +461,18 @@ func (c *MQ) DeleteBrokerRequest(input *DeleteBrokerInput) (req *request.Request
 // API operation DeleteBroker for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteBroker
 func (c *MQ) DeleteBroker(input *DeleteBrokerInput) (*DeleteBrokerResponse, error) {
@@ -512,14 +512,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteTags
 func (c *MQ) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
@@ -551,17 +550,18 @@ func (c *MQ) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, ou
 // API operation DeleteTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteTags
 func (c *MQ) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
@@ -601,14 +601,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteUser
 func (c *MQ) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -640,17 +639,18 @@ func (c *MQ) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, ou
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DeleteUser
 func (c *MQ) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -690,14 +690,13 @@ const opDescribeBroker = "DescribeBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBrokerRequest method.
+//	req, resp := client.DescribeBrokerRequest(params)
 //
-//    // Example sending a request using the DescribeBrokerRequest method.
-//    req, resp := client.DescribeBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBroker
 func (c *MQ) DescribeBrokerRequest(input *DescribeBrokerInput) (req *request.Request, output *DescribeBrokerResponse) {
@@ -728,17 +727,18 @@ func (c *MQ) DescribeBrokerRequest(input *DescribeBrokerInput) (req *request.Req
 // API operation DescribeBroker for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBroker
 func (c *MQ) DescribeBroker(input *DescribeBrokerInput) (*DescribeBrokerResponse, error) {
@@ -778,14 +778,13 @@ const opDescribeBrokerEngineTypes = "DescribeBrokerEngineTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBrokerEngineTypesRequest method.
+//	req, resp := client.DescribeBrokerEngineTypesRequest(params)
 //
-//    // Example sending a request using the DescribeBrokerEngineTypesRequest method.
-//    req, resp := client.DescribeBrokerEngineTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBrokerEngineTypes
 func (c *MQ) DescribeBrokerEngineTypesRequest(input *DescribeBrokerEngineTypesInput) (req *request.Request, output *DescribeBrokerEngineTypesOutput) {
@@ -816,14 +815,15 @@ func (c *MQ) DescribeBrokerEngineTypesRequest(input *DescribeBrokerEngineTypesIn
 // API operation DescribeBrokerEngineTypes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBrokerEngineTypes
 func (c *MQ) DescribeBrokerEngineTypes(input *DescribeBrokerEngineTypesInput) (*DescribeBrokerEngineTypesOutput, error) {
@@ -863,14 +863,13 @@ const opDescribeBrokerInstanceOptions = "DescribeBrokerInstanceOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBrokerInstanceOptionsRequest method.
+//	req, resp := client.DescribeBrokerInstanceOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeBrokerInstanceOptionsRequest method.
-//    req, resp := client.DescribeBrokerInstanceOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBrokerInstanceOptions
 func (c *MQ) DescribeBrokerInstanceOptionsRequest(input *DescribeBrokerInstanceOptionsInput) (req *request.Request, output *DescribeBrokerInstanceOptionsOutput) {
@@ -901,14 +900,15 @@ func (c *MQ) DescribeBrokerInstanceOptionsRequest(input *DescribeBrokerInstanceO
 // API operation DescribeBrokerInstanceOptions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBrokerInstanceOptions
 func (c *MQ) DescribeBrokerInstanceOptions(input *DescribeBrokerInstanceOptionsInput) (*DescribeBrokerInstanceOptionsOutput, error) {
@@ -948,14 +948,13 @@ const opDescribeConfiguration = "DescribeConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRequest method.
+//	req, resp := client.DescribeConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRequest method.
-//    req, resp := client.DescribeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeConfiguration
 func (c *MQ) DescribeConfigurationRequest(input *DescribeConfigurationInput) (req *request.Request, output *DescribeConfigurationOutput) {
@@ -986,17 +985,18 @@ func (c *MQ) DescribeConfigurationRequest(input *DescribeConfigurationInput) (re
 // API operation DescribeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeConfiguration
 func (c *MQ) DescribeConfiguration(input *DescribeConfigurationInput) (*DescribeConfigurationOutput, error) {
@@ -1036,14 +1036,13 @@ const opDescribeConfigurationRevision = "DescribeConfigurationRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRevisionRequest method.
+//	req, resp := client.DescribeConfigurationRevisionRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRevisionRequest method.
-//    req, resp := client.DescribeConfigurationRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeConfigurationRevision
 func (c *MQ) DescribeConfigurationRevisionRequest(input *DescribeConfigurationRevisionInput) (req *request.Request, output *DescribeConfigurationRevisionResponse) {
@@ -1074,17 +1073,18 @@ func (c *MQ) DescribeConfigurationRevisionRequest(input *DescribeConfigurationRe
 // API operation DescribeConfigurationRevision for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeConfigurationRevision
 func (c *MQ) DescribeConfigurationRevision(input *DescribeConfigurationRevisionInput) (*DescribeConfigurationRevisionResponse, error) {
@@ -1124,14 +1124,13 @@ const opDescribeUser = "DescribeUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserRequest method.
+//	req, resp := client.DescribeUserRequest(params)
 //
-//    // Example sending a request using the DescribeUserRequest method.
-//    req, resp := client.DescribeUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeUser
 func (c *MQ) DescribeUserRequest(input *DescribeUserInput) (req *request.Request, output *DescribeUserResponse) {
@@ -1162,17 +1161,18 @@ func (c *MQ) DescribeUserRequest(input *DescribeUserInput) (req *request.Request
 // API operation DescribeUser for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeUser
 func (c *MQ) DescribeUser(input *DescribeUserInput) (*DescribeUserResponse, error) {
@@ -1212,14 +1212,13 @@ const opListBrokers = "ListBrokers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBrokersRequest method.
+//	req, resp := client.ListBrokersRequest(params)
 //
-//    // Example sending a request using the ListBrokersRequest method.
-//    req, resp := client.ListBrokersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListBrokers
 func (c *MQ) ListBrokersRequest(input *ListBrokersInput) (req *request.Request, output *ListBrokersResponse) {
@@ -1256,14 +1255,15 @@ func (c *MQ) ListBrokersRequest(input *ListBrokersInput) (req *request.Request, 
 // API operation ListBrokers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListBrokers
 func (c *MQ) ListBrokers(input *ListBrokersInput) (*ListBrokersResponse, error) {
@@ -1295,15 +1295,14 @@ func (c *MQ) ListBrokersWithContext(ctx aws.Context, input *ListBrokersInput, op
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBrokers operation.
-//    pageNum := 0
-//    err := client.ListBrokersPages(params,
-//        func(page *mq.ListBrokersResponse, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBrokers operation.
+//	pageNum := 0
+//	err := client.ListBrokersPages(params,
+//	    func(page *mq.ListBrokersResponse, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MQ) ListBrokersPages(input *ListBrokersInput, fn func(*ListBrokersResponse, bool) bool) error {
 	return c.ListBrokersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1355,14 +1354,13 @@ const opListConfigurationRevisions = "ListConfigurationRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationRevisionsRequest method.
+//	req, resp := client.ListConfigurationRevisionsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationRevisionsRequest method.
-//    req, resp := client.ListConfigurationRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListConfigurationRevisions
 func (c *MQ) ListConfigurationRevisionsRequest(input *ListConfigurationRevisionsInput) (req *request.Request, output *ListConfigurationRevisionsResponse) {
@@ -1393,17 +1391,18 @@ func (c *MQ) ListConfigurationRevisionsRequest(input *ListConfigurationRevisions
 // API operation ListConfigurationRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListConfigurationRevisions
 func (c *MQ) ListConfigurationRevisions(input *ListConfigurationRevisionsInput) (*ListConfigurationRevisionsResponse, error) {
@@ -1443,14 +1442,13 @@ const opListConfigurations = "ListConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationsRequest method.
+//	req, resp := client.ListConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationsRequest method.
-//    req, resp := client.ListConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListConfigurations
 func (c *MQ) ListConfigurationsRequest(input *ListConfigurationsInput) (req *request.Request, output *ListConfigurationsResponse) {
@@ -1481,14 +1479,15 @@ func (c *MQ) ListConfigurationsRequest(input *ListConfigurationsInput) (req *req
 // API operation ListConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListConfigurations
 func (c *MQ) ListConfigurations(input *ListConfigurationsInput) (*ListConfigurationsResponse, error) {
@@ -1528,14 +1527,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListTags
 func (c *MQ) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -1566,17 +1564,18 @@ func (c *MQ) ListTagsRequest(input *ListTagsInput) (req *request.Request, output
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListTags
 func (c *MQ) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -1616,14 +1615,13 @@ const opListUsers = "ListUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsersRequest method.
+//	req, resp := client.ListUsersRequest(params)
 //
-//    // Example sending a request using the ListUsersRequest method.
-//    req, resp := client.ListUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListUsers
 func (c *MQ) ListUsersRequest(input *ListUsersInput) (req *request.Request, output *ListUsersResponse) {
@@ -1654,17 +1652,18 @@ func (c *MQ) ListUsersRequest(input *ListUsersInput) (req *request.Request, outp
 // API operation ListUsers for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListUsers
 func (c *MQ) ListUsers(input *ListUsersInput) (*ListUsersResponse, error) {
@@ -1704,14 +1703,13 @@ const opRebootBroker = "RebootBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootBrokerRequest method.
+//	req, resp := client.RebootBrokerRequest(params)
 //
-//    // Example sending a request using the RebootBrokerRequest method.
-//    req, resp := client.RebootBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/RebootBroker
 func (c *MQ) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Request, output *RebootBrokerOutput) {
@@ -1743,17 +1741,18 @@ func (c *MQ) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Request
 // API operation RebootBroker for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/RebootBroker
 func (c *MQ) RebootBroker(input *RebootBrokerInput) (*RebootBrokerOutput, error) {
@@ -1793,14 +1792,13 @@ const opUpdateBroker = "UpdateBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerRequest method.
+//	req, resp := client.UpdateBrokerRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerRequest method.
-//    req, resp := client.UpdateBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateBroker
 func (c *MQ) UpdateBrokerRequest(input *UpdateBrokerRequest) (req *request.Request, output *UpdateBrokerResponse) {
@@ -1831,20 +1829,21 @@ func (c *MQ) UpdateBrokerRequest(input *UpdateBrokerRequest) (req *request.Reque
 // API operation UpdateBroker for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateBroker
 func (c *MQ) UpdateBroker(input *UpdateBrokerRequest) (*UpdateBrokerResponse, error) {
@@ -1884,14 +1883,13 @@ const opUpdateConfiguration = "UpdateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationRequest method.
+//	req, resp := client.UpdateConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationRequest method.
-//    req, resp := client.UpdateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateConfiguration
 func (c *MQ) UpdateConfigurationRequest(input *UpdateConfigurationRequest) (req *request.Request, output *UpdateConfigurationResponse) {
@@ -1922,20 +1920,21 @@ func (c *MQ) UpdateConfigurationRequest(input *UpdateConfigurationRequest) (req 
 // API operation UpdateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateConfiguration
 func (c *MQ) UpdateConfiguration(input *UpdateConfigurationRequest) (*UpdateConfigurationResponse, error) {
@@ -1975,14 +1974,13 @@ const opUpdateUser = "UpdateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserRequest method.
+//	req, resp := client.UpdateUserRequest(params)
 //
-//    // Example sending a request using the UpdateUserRequest method.
-//    req, resp := client.UpdateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateUser
 func (c *MQ) UpdateUserRequest(input *UpdateUserRequest) (req *request.Request, output *UpdateUserOutput) {
@@ -2014,20 +2012,21 @@ func (c *MQ) UpdateUserRequest(input *UpdateUserRequest) (req *request.Request, 
 // API operation UpdateUser for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/UpdateUser
 func (c *MQ) UpdateUser(input *UpdateUserRequest) (*UpdateUserOutput, error) {

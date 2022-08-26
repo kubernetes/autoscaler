@@ -11,7 +11,7 @@ import (
 
 // DeleteInternetGatewayRequest wrapper for the DeleteInternetGateway operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteInternetGateway.go.html to see an example of how to use DeleteInternetGatewayRequest.
 type DeleteInternetGatewayRequest struct {

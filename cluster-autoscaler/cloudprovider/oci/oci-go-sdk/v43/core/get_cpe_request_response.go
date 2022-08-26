@@ -11,7 +11,7 @@ import (
 
 // GetCpeRequest wrapper for the GetCpe operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetCpe.go.html to see an example of how to use GetCpeRequest.
 type GetCpeRequest struct {

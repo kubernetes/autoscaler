@@ -28,14 +28,13 @@ const opCreateConfigurationSet = "CreateConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetRequest method.
+//	req, resp := client.CreateConfigurationSetRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetRequest method.
-//    req, resp := client.CreateConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/CreateConfigurationSet
 func (c *PinpointSMSVoice) CreateConfigurationSetRequest(input *CreateConfigurationSetInput) (req *request.Request, output *CreateConfigurationSetOutput) {
@@ -68,22 +67,23 @@ func (c *PinpointSMSVoice) CreateConfigurationSetRequest(input *CreateConfigurat
 // API operation CreateConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
+//
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/CreateConfigurationSet
 func (c *PinpointSMSVoice) CreateConfigurationSet(input *CreateConfigurationSetInput) (*CreateConfigurationSetOutput, error) {
@@ -123,14 +123,13 @@ const opCreateConfigurationSetEventDestination = "CreateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/CreateConfigurationSetEventDestination
 func (c *PinpointSMSVoice) CreateConfigurationSetEventDestinationRequest(input *CreateConfigurationSetEventDestinationInput) (req *request.Request, output *CreateConfigurationSetEventDestinationOutput) {
@@ -162,25 +161,26 @@ func (c *PinpointSMSVoice) CreateConfigurationSetEventDestinationRequest(input *
 // API operation CreateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
+//
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/CreateConfigurationSetEventDestination
 func (c *PinpointSMSVoice) CreateConfigurationSetEventDestination(input *CreateConfigurationSetEventDestinationInput) (*CreateConfigurationSetEventDestinationOutput, error) {
@@ -220,14 +220,13 @@ const opDeleteConfigurationSet = "DeleteConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetRequest method.
+//	req, resp := client.DeleteConfigurationSetRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetRequest method.
-//    req, resp := client.DeleteConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/DeleteConfigurationSet
 func (c *PinpointSMSVoice) DeleteConfigurationSetRequest(input *DeleteConfigurationSetInput) (req *request.Request, output *DeleteConfigurationSetOutput) {
@@ -259,19 +258,20 @@ func (c *PinpointSMSVoice) DeleteConfigurationSetRequest(input *DeleteConfigurat
 // API operation DeleteConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/DeleteConfigurationSet
 func (c *PinpointSMSVoice) DeleteConfigurationSet(input *DeleteConfigurationSetInput) (*DeleteConfigurationSetOutput, error) {
@@ -311,14 +311,13 @@ const opDeleteConfigurationSetEventDestination = "DeleteConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
+//	req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
-//    req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/DeleteConfigurationSetEventDestination
 func (c *PinpointSMSVoice) DeleteConfigurationSetEventDestinationRequest(input *DeleteConfigurationSetEventDestinationInput) (req *request.Request, output *DeleteConfigurationSetEventDestinationOutput) {
@@ -350,19 +349,20 @@ func (c *PinpointSMSVoice) DeleteConfigurationSetEventDestinationRequest(input *
 // API operation DeleteConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/DeleteConfigurationSetEventDestination
 func (c *PinpointSMSVoice) DeleteConfigurationSetEventDestination(input *DeleteConfigurationSetEventDestinationInput) (*DeleteConfigurationSetEventDestinationOutput, error) {
@@ -402,14 +402,13 @@ const opGetConfigurationSetEventDestinations = "GetConfigurationSetEventDestinat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
+//	req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
 //
-//    // Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
-//    req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/GetConfigurationSetEventDestinations
 func (c *PinpointSMSVoice) GetConfigurationSetEventDestinationsRequest(input *GetConfigurationSetEventDestinationsInput) (req *request.Request, output *GetConfigurationSetEventDestinationsOutput) {
@@ -442,19 +441,20 @@ func (c *PinpointSMSVoice) GetConfigurationSetEventDestinationsRequest(input *Ge
 // API operation GetConfigurationSetEventDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/GetConfigurationSetEventDestinations
 func (c *PinpointSMSVoice) GetConfigurationSetEventDestinations(input *GetConfigurationSetEventDestinationsInput) (*GetConfigurationSetEventDestinationsOutput, error) {
@@ -494,14 +494,13 @@ const opListConfigurationSets = "ListConfigurationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationSetsRequest method.
+//	req, resp := client.ListConfigurationSetsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationSetsRequest method.
-//    req, resp := client.ListConfigurationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/ListConfigurationSets
 func (c *PinpointSMSVoice) ListConfigurationSetsRequest(input *ListConfigurationSetsInput) (req *request.Request, output *ListConfigurationSetsOutput) {
@@ -533,16 +532,17 @@ func (c *PinpointSMSVoice) ListConfigurationSetsRequest(input *ListConfiguration
 // API operation ListConfigurationSets for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/ListConfigurationSets
 func (c *PinpointSMSVoice) ListConfigurationSets(input *ListConfigurationSetsInput) (*ListConfigurationSetsOutput, error) {
@@ -582,14 +582,13 @@ const opSendVoiceMessage = "SendVoiceMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendVoiceMessageRequest method.
+//	req, resp := client.SendVoiceMessageRequest(params)
 //
-//    // Example sending a request using the SendVoiceMessageRequest method.
-//    req, resp := client.SendVoiceMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/SendVoiceMessage
 func (c *PinpointSMSVoice) SendVoiceMessageRequest(input *SendVoiceMessageInput) (req *request.Request, output *SendVoiceMessageOutput) {
@@ -620,16 +619,17 @@ func (c *PinpointSMSVoice) SendVoiceMessageRequest(input *SendVoiceMessageInput)
 // API operation SendVoiceMessage for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/SendVoiceMessage
 func (c *PinpointSMSVoice) SendVoiceMessage(input *SendVoiceMessageInput) (*SendVoiceMessageOutput, error) {
@@ -669,14 +669,13 @@ const opUpdateConfigurationSetEventDestination = "UpdateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/UpdateConfigurationSetEventDestination
 func (c *PinpointSMSVoice) UpdateConfigurationSetEventDestinationRequest(input *UpdateConfigurationSetEventDestinationInput) (req *request.Request, output *UpdateConfigurationSetEventDestinationOutput) {
@@ -711,19 +710,20 @@ func (c *PinpointSMSVoice) UpdateConfigurationSetEventDestinationRequest(input *
 // API operation UpdateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   You've issued too many requests to the resource. Wait a few minutes, and
-//   then try again.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     You've issued too many requests to the resource. Wait a few minutes, and
+//     then try again.
 //
-//   * InternalServiceErrorException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - InternalServiceErrorException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05/UpdateConfigurationSetEventDestination
 func (c *PinpointSMSVoice) UpdateConfigurationSetEventDestination(input *UpdateConfigurationSetEventDestinationInput) (*UpdateConfigurationSetEventDestinationOutput, error) {

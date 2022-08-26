@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type SubJobEntities struct {
 	// 云服务器相关操作显示server_id。
 

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Schemas client from just a session.
-//     svc := schemas.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Schemas client with additional configuration
-//     svc := schemas.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Schemas client from just a session.
+//	svc := schemas.New(mySession)
+//
+//	// Create a Schemas client with additional configuration
+//	svc := schemas.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Schemas {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

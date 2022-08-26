@@ -29,14 +29,13 @@ const opAssociateBrowserSettings = "AssociateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateBrowserSettingsRequest method.
+//	req, resp := client.AssociateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateBrowserSettingsRequest method.
-//    req, resp := client.AssociateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateBrowserSettings
 func (c *WorkSpacesWeb) AssociateBrowserSettingsRequest(input *AssociateBrowserSettingsInput) (req *request.Request, output *AssociateBrowserSettingsOutput) {
@@ -67,23 +66,24 @@ func (c *WorkSpacesWeb) AssociateBrowserSettingsRequest(input *AssociateBrowserS
 // API operation AssociateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateBrowserSettings
 func (c *WorkSpacesWeb) AssociateBrowserSettings(input *AssociateBrowserSettingsInput) (*AssociateBrowserSettingsOutput, error) {
@@ -123,14 +123,13 @@ const opAssociateNetworkSettings = "AssociateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateNetworkSettingsRequest method.
+//	req, resp := client.AssociateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateNetworkSettingsRequest method.
-//    req, resp := client.AssociateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateNetworkSettings
 func (c *WorkSpacesWeb) AssociateNetworkSettingsRequest(input *AssociateNetworkSettingsInput) (req *request.Request, output *AssociateNetworkSettingsOutput) {
@@ -161,23 +160,24 @@ func (c *WorkSpacesWeb) AssociateNetworkSettingsRequest(input *AssociateNetworkS
 // API operation AssociateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateNetworkSettings
 func (c *WorkSpacesWeb) AssociateNetworkSettings(input *AssociateNetworkSettingsInput) (*AssociateNetworkSettingsOutput, error) {
@@ -217,14 +217,13 @@ const opAssociateTrustStore = "AssociateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTrustStoreRequest method.
+//	req, resp := client.AssociateTrustStoreRequest(params)
 //
-//    // Example sending a request using the AssociateTrustStoreRequest method.
-//    req, resp := client.AssociateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateTrustStore
 func (c *WorkSpacesWeb) AssociateTrustStoreRequest(input *AssociateTrustStoreInput) (req *request.Request, output *AssociateTrustStoreOutput) {
@@ -255,20 +254,21 @@ func (c *WorkSpacesWeb) AssociateTrustStoreRequest(input *AssociateTrustStoreInp
 // API operation AssociateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateTrustStore
 func (c *WorkSpacesWeb) AssociateTrustStore(input *AssociateTrustStoreInput) (*AssociateTrustStoreOutput, error) {
@@ -308,14 +308,13 @@ const opAssociateUserSettings = "AssociateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateUserSettingsRequest method.
+//	req, resp := client.AssociateUserSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateUserSettingsRequest method.
-//    req, resp := client.AssociateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserSettings
 func (c *WorkSpacesWeb) AssociateUserSettingsRequest(input *AssociateUserSettingsInput) (req *request.Request, output *AssociateUserSettingsOutput) {
@@ -346,23 +345,24 @@ func (c *WorkSpacesWeb) AssociateUserSettingsRequest(input *AssociateUserSetting
 // API operation AssociateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserSettings
 func (c *WorkSpacesWeb) AssociateUserSettings(input *AssociateUserSettingsInput) (*AssociateUserSettingsOutput, error) {
@@ -402,14 +402,13 @@ const opCreateBrowserSettings = "CreateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBrowserSettingsRequest method.
+//	req, resp := client.CreateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the CreateBrowserSettingsRequest method.
-//    req, resp := client.CreateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateBrowserSettings
 func (c *WorkSpacesWeb) CreateBrowserSettingsRequest(input *CreateBrowserSettingsInput) (req *request.Request, output *CreateBrowserSettingsOutput) {
@@ -442,26 +441,27 @@ func (c *WorkSpacesWeb) CreateBrowserSettingsRequest(input *CreateBrowserSetting
 // API operation CreateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateBrowserSettings
 func (c *WorkSpacesWeb) CreateBrowserSettings(input *CreateBrowserSettingsInput) (*CreateBrowserSettingsOutput, error) {
@@ -501,14 +501,13 @@ const opCreateIdentityProvider = "CreateIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIdentityProviderRequest method.
+//	req, resp := client.CreateIdentityProviderRequest(params)
 //
-//    // Example sending a request using the CreateIdentityProviderRequest method.
-//    req, resp := client.CreateIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIdentityProvider
 func (c *WorkSpacesWeb) CreateIdentityProviderRequest(input *CreateIdentityProviderInput) (req *request.Request, output *CreateIdentityProviderOutput) {
@@ -540,26 +539,27 @@ func (c *WorkSpacesWeb) CreateIdentityProviderRequest(input *CreateIdentityProvi
 // API operation CreateIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIdentityProvider
 func (c *WorkSpacesWeb) CreateIdentityProvider(input *CreateIdentityProviderInput) (*CreateIdentityProviderOutput, error) {
@@ -599,14 +599,13 @@ const opCreateNetworkSettings = "CreateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkSettingsRequest method.
+//	req, resp := client.CreateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the CreateNetworkSettingsRequest method.
-//    req, resp := client.CreateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateNetworkSettings
 func (c *WorkSpacesWeb) CreateNetworkSettingsRequest(input *CreateNetworkSettingsInput) (req *request.Request, output *CreateNetworkSettingsOutput) {
@@ -639,23 +638,24 @@ func (c *WorkSpacesWeb) CreateNetworkSettingsRequest(input *CreateNetworkSetting
 // API operation CreateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateNetworkSettings
 func (c *WorkSpacesWeb) CreateNetworkSettings(input *CreateNetworkSettingsInput) (*CreateNetworkSettingsOutput, error) {
@@ -695,14 +695,13 @@ const opCreatePortal = "CreatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePortalRequest method.
+//	req, resp := client.CreatePortalRequest(params)
 //
-//    // Example sending a request using the CreatePortalRequest method.
-//    req, resp := client.CreatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreatePortal
 func (c *WorkSpacesWeb) CreatePortalRequest(input *CreatePortalInput) (req *request.Request, output *CreatePortalOutput) {
@@ -733,26 +732,27 @@ func (c *WorkSpacesWeb) CreatePortalRequest(input *CreatePortalInput) (req *requ
 // API operation CreatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreatePortal
 func (c *WorkSpacesWeb) CreatePortal(input *CreatePortalInput) (*CreatePortalOutput, error) {
@@ -792,14 +792,13 @@ const opCreateTrustStore = "CreateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrustStoreRequest method.
+//	req, resp := client.CreateTrustStoreRequest(params)
 //
-//    // Example sending a request using the CreateTrustStoreRequest method.
-//    req, resp := client.CreateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateTrustStore
 func (c *WorkSpacesWeb) CreateTrustStoreRequest(input *CreateTrustStoreInput) (req *request.Request, output *CreateTrustStoreOutput) {
@@ -835,23 +834,24 @@ func (c *WorkSpacesWeb) CreateTrustStoreRequest(input *CreateTrustStoreInput) (r
 // API operation CreateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateTrustStore
 func (c *WorkSpacesWeb) CreateTrustStore(input *CreateTrustStoreInput) (*CreateTrustStoreOutput, error) {
@@ -891,14 +891,13 @@ const opCreateUserSettings = "CreateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserSettingsRequest method.
+//	req, resp := client.CreateUserSettingsRequest(params)
 //
-//    // Example sending a request using the CreateUserSettingsRequest method.
-//    req, resp := client.CreateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserSettings
 func (c *WorkSpacesWeb) CreateUserSettingsRequest(input *CreateUserSettingsInput) (req *request.Request, output *CreateUserSettingsOutput) {
@@ -931,23 +930,24 @@ func (c *WorkSpacesWeb) CreateUserSettingsRequest(input *CreateUserSettingsInput
 // API operation CreateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserSettings
 func (c *WorkSpacesWeb) CreateUserSettings(input *CreateUserSettingsInput) (*CreateUserSettingsOutput, error) {
@@ -987,14 +987,13 @@ const opDeleteBrowserSettings = "DeleteBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBrowserSettingsRequest method.
+//	req, resp := client.DeleteBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteBrowserSettingsRequest method.
-//    req, resp := client.DeleteBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteBrowserSettings
 func (c *WorkSpacesWeb) DeleteBrowserSettingsRequest(input *DeleteBrowserSettingsInput) (req *request.Request, output *DeleteBrowserSettingsOutput) {
@@ -1026,20 +1025,21 @@ func (c *WorkSpacesWeb) DeleteBrowserSettingsRequest(input *DeleteBrowserSetting
 // API operation DeleteBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteBrowserSettings
 func (c *WorkSpacesWeb) DeleteBrowserSettings(input *DeleteBrowserSettingsInput) (*DeleteBrowserSettingsOutput, error) {
@@ -1079,14 +1079,13 @@ const opDeleteIdentityProvider = "DeleteIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIdentityProviderRequest method.
+//	req, resp := client.DeleteIdentityProviderRequest(params)
 //
-//    // Example sending a request using the DeleteIdentityProviderRequest method.
-//    req, resp := client.DeleteIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIdentityProvider
 func (c *WorkSpacesWeb) DeleteIdentityProviderRequest(input *DeleteIdentityProviderInput) (req *request.Request, output *DeleteIdentityProviderOutput) {
@@ -1118,20 +1117,21 @@ func (c *WorkSpacesWeb) DeleteIdentityProviderRequest(input *DeleteIdentityProvi
 // API operation DeleteIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIdentityProvider
 func (c *WorkSpacesWeb) DeleteIdentityProvider(input *DeleteIdentityProviderInput) (*DeleteIdentityProviderOutput, error) {
@@ -1171,14 +1171,13 @@ const opDeleteNetworkSettings = "DeleteNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkSettingsRequest method.
+//	req, resp := client.DeleteNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkSettingsRequest method.
-//    req, resp := client.DeleteNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteNetworkSettings
 func (c *WorkSpacesWeb) DeleteNetworkSettingsRequest(input *DeleteNetworkSettingsInput) (req *request.Request, output *DeleteNetworkSettingsOutput) {
@@ -1210,20 +1209,21 @@ func (c *WorkSpacesWeb) DeleteNetworkSettingsRequest(input *DeleteNetworkSetting
 // API operation DeleteNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteNetworkSettings
 func (c *WorkSpacesWeb) DeleteNetworkSettings(input *DeleteNetworkSettingsInput) (*DeleteNetworkSettingsOutput, error) {
@@ -1263,14 +1263,13 @@ const opDeletePortal = "DeletePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePortalRequest method.
+//	req, resp := client.DeletePortalRequest(params)
 //
-//    // Example sending a request using the DeletePortalRequest method.
-//    req, resp := client.DeletePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeletePortal
 func (c *WorkSpacesWeb) DeletePortalRequest(input *DeletePortalInput) (req *request.Request, output *DeletePortalOutput) {
@@ -1302,20 +1301,21 @@ func (c *WorkSpacesWeb) DeletePortalRequest(input *DeletePortalInput) (req *requ
 // API operation DeletePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeletePortal
 func (c *WorkSpacesWeb) DeletePortal(input *DeletePortalInput) (*DeletePortalOutput, error) {
@@ -1355,14 +1355,13 @@ const opDeleteTrustStore = "DeleteTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrustStoreRequest method.
+//	req, resp := client.DeleteTrustStoreRequest(params)
 //
-//    // Example sending a request using the DeleteTrustStoreRequest method.
-//    req, resp := client.DeleteTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteTrustStore
 func (c *WorkSpacesWeb) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (req *request.Request, output *DeleteTrustStoreOutput) {
@@ -1394,20 +1393,21 @@ func (c *WorkSpacesWeb) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (r
 // API operation DeleteTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteTrustStore
 func (c *WorkSpacesWeb) DeleteTrustStore(input *DeleteTrustStoreInput) (*DeleteTrustStoreOutput, error) {
@@ -1447,14 +1447,13 @@ const opDeleteUserSettings = "DeleteUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserSettingsRequest method.
+//	req, resp := client.DeleteUserSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteUserSettingsRequest method.
-//    req, resp := client.DeleteUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserSettings
 func (c *WorkSpacesWeb) DeleteUserSettingsRequest(input *DeleteUserSettingsInput) (req *request.Request, output *DeleteUserSettingsOutput) {
@@ -1486,20 +1485,21 @@ func (c *WorkSpacesWeb) DeleteUserSettingsRequest(input *DeleteUserSettingsInput
 // API operation DeleteUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserSettings
 func (c *WorkSpacesWeb) DeleteUserSettings(input *DeleteUserSettingsInput) (*DeleteUserSettingsOutput, error) {
@@ -1539,14 +1539,13 @@ const opDisassociateBrowserSettings = "DisassociateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateBrowserSettingsRequest method.
+//	req, resp := client.DisassociateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateBrowserSettingsRequest method.
-//    req, resp := client.DisassociateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateBrowserSettings
 func (c *WorkSpacesWeb) DisassociateBrowserSettingsRequest(input *DisassociateBrowserSettingsInput) (req *request.Request, output *DisassociateBrowserSettingsOutput) {
@@ -1578,20 +1577,21 @@ func (c *WorkSpacesWeb) DisassociateBrowserSettingsRequest(input *DisassociateBr
 // API operation DisassociateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateBrowserSettings
 func (c *WorkSpacesWeb) DisassociateBrowserSettings(input *DisassociateBrowserSettingsInput) (*DisassociateBrowserSettingsOutput, error) {
@@ -1631,14 +1631,13 @@ const opDisassociateNetworkSettings = "DisassociateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateNetworkSettingsRequest method.
+//	req, resp := client.DisassociateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateNetworkSettingsRequest method.
-//    req, resp := client.DisassociateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateNetworkSettings
 func (c *WorkSpacesWeb) DisassociateNetworkSettingsRequest(input *DisassociateNetworkSettingsInput) (req *request.Request, output *DisassociateNetworkSettingsOutput) {
@@ -1670,20 +1669,21 @@ func (c *WorkSpacesWeb) DisassociateNetworkSettingsRequest(input *DisassociateNe
 // API operation DisassociateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateNetworkSettings
 func (c *WorkSpacesWeb) DisassociateNetworkSettings(input *DisassociateNetworkSettingsInput) (*DisassociateNetworkSettingsOutput, error) {
@@ -1723,14 +1723,13 @@ const opDisassociateTrustStore = "DisassociateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTrustStoreRequest method.
+//	req, resp := client.DisassociateTrustStoreRequest(params)
 //
-//    // Example sending a request using the DisassociateTrustStoreRequest method.
-//    req, resp := client.DisassociateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateTrustStore
 func (c *WorkSpacesWeb) DisassociateTrustStoreRequest(input *DisassociateTrustStoreInput) (req *request.Request, output *DisassociateTrustStoreOutput) {
@@ -1762,20 +1761,21 @@ func (c *WorkSpacesWeb) DisassociateTrustStoreRequest(input *DisassociateTrustSt
 // API operation DisassociateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateTrustStore
 func (c *WorkSpacesWeb) DisassociateTrustStore(input *DisassociateTrustStoreInput) (*DisassociateTrustStoreOutput, error) {
@@ -1815,14 +1815,13 @@ const opDisassociateUserSettings = "DisassociateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateUserSettingsRequest method.
+//	req, resp := client.DisassociateUserSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateUserSettingsRequest method.
-//    req, resp := client.DisassociateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserSettings
 func (c *WorkSpacesWeb) DisassociateUserSettingsRequest(input *DisassociateUserSettingsInput) (req *request.Request, output *DisassociateUserSettingsOutput) {
@@ -1854,20 +1853,21 @@ func (c *WorkSpacesWeb) DisassociateUserSettingsRequest(input *DisassociateUserS
 // API operation DisassociateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserSettings
 func (c *WorkSpacesWeb) DisassociateUserSettings(input *DisassociateUserSettingsInput) (*DisassociateUserSettingsOutput, error) {
@@ -1907,14 +1907,13 @@ const opGetBrowserSettings = "GetBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBrowserSettingsRequest method.
+//	req, resp := client.GetBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the GetBrowserSettingsRequest method.
-//    req, resp := client.GetBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetBrowserSettings
 func (c *WorkSpacesWeb) GetBrowserSettingsRequest(input *GetBrowserSettingsInput) (req *request.Request, output *GetBrowserSettingsOutput) {
@@ -1945,20 +1944,21 @@ func (c *WorkSpacesWeb) GetBrowserSettingsRequest(input *GetBrowserSettingsInput
 // API operation GetBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetBrowserSettings
 func (c *WorkSpacesWeb) GetBrowserSettings(input *GetBrowserSettingsInput) (*GetBrowserSettingsOutput, error) {
@@ -1998,14 +1998,13 @@ const opGetIdentityProvider = "GetIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIdentityProviderRequest method.
+//	req, resp := client.GetIdentityProviderRequest(params)
 //
-//    // Example sending a request using the GetIdentityProviderRequest method.
-//    req, resp := client.GetIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIdentityProvider
 func (c *WorkSpacesWeb) GetIdentityProviderRequest(input *GetIdentityProviderInput) (req *request.Request, output *GetIdentityProviderOutput) {
@@ -2036,20 +2035,21 @@ func (c *WorkSpacesWeb) GetIdentityProviderRequest(input *GetIdentityProviderInp
 // API operation GetIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIdentityProvider
 func (c *WorkSpacesWeb) GetIdentityProvider(input *GetIdentityProviderInput) (*GetIdentityProviderOutput, error) {
@@ -2089,14 +2089,13 @@ const opGetNetworkSettings = "GetNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkSettingsRequest method.
+//	req, resp := client.GetNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the GetNetworkSettingsRequest method.
-//    req, resp := client.GetNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetNetworkSettings
 func (c *WorkSpacesWeb) GetNetworkSettingsRequest(input *GetNetworkSettingsInput) (req *request.Request, output *GetNetworkSettingsOutput) {
@@ -2127,20 +2126,21 @@ func (c *WorkSpacesWeb) GetNetworkSettingsRequest(input *GetNetworkSettingsInput
 // API operation GetNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetNetworkSettings
 func (c *WorkSpacesWeb) GetNetworkSettings(input *GetNetworkSettingsInput) (*GetNetworkSettingsOutput, error) {
@@ -2180,14 +2180,13 @@ const opGetPortal = "GetPortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPortalRequest method.
+//	req, resp := client.GetPortalRequest(params)
 //
-//    // Example sending a request using the GetPortalRequest method.
-//    req, resp := client.GetPortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortal
 func (c *WorkSpacesWeb) GetPortalRequest(input *GetPortalInput) (req *request.Request, output *GetPortalOutput) {
@@ -2218,20 +2217,21 @@ func (c *WorkSpacesWeb) GetPortalRequest(input *GetPortalInput) (req *request.Re
 // API operation GetPortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortal
 func (c *WorkSpacesWeb) GetPortal(input *GetPortalInput) (*GetPortalOutput, error) {
@@ -2271,14 +2271,13 @@ const opGetPortalServiceProviderMetadata = "GetPortalServiceProviderMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPortalServiceProviderMetadataRequest method.
+//	req, resp := client.GetPortalServiceProviderMetadataRequest(params)
 //
-//    // Example sending a request using the GetPortalServiceProviderMetadataRequest method.
-//    req, resp := client.GetPortalServiceProviderMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortalServiceProviderMetadata
 func (c *WorkSpacesWeb) GetPortalServiceProviderMetadataRequest(input *GetPortalServiceProviderMetadataInput) (req *request.Request, output *GetPortalServiceProviderMetadataOutput) {
@@ -2309,20 +2308,21 @@ func (c *WorkSpacesWeb) GetPortalServiceProviderMetadataRequest(input *GetPortal
 // API operation GetPortalServiceProviderMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortalServiceProviderMetadata
 func (c *WorkSpacesWeb) GetPortalServiceProviderMetadata(input *GetPortalServiceProviderMetadataInput) (*GetPortalServiceProviderMetadataOutput, error) {
@@ -2362,14 +2362,13 @@ const opGetTrustStore = "GetTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrustStoreRequest method.
+//	req, resp := client.GetTrustStoreRequest(params)
 //
-//    // Example sending a request using the GetTrustStoreRequest method.
-//    req, resp := client.GetTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStore
 func (c *WorkSpacesWeb) GetTrustStoreRequest(input *GetTrustStoreInput) (req *request.Request, output *GetTrustStoreOutput) {
@@ -2400,20 +2399,21 @@ func (c *WorkSpacesWeb) GetTrustStoreRequest(input *GetTrustStoreInput) (req *re
 // API operation GetTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStore
 func (c *WorkSpacesWeb) GetTrustStore(input *GetTrustStoreInput) (*GetTrustStoreOutput, error) {
@@ -2453,14 +2453,13 @@ const opGetTrustStoreCertificate = "GetTrustStoreCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrustStoreCertificateRequest method.
+//	req, resp := client.GetTrustStoreCertificateRequest(params)
 //
-//    // Example sending a request using the GetTrustStoreCertificateRequest method.
-//    req, resp := client.GetTrustStoreCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStoreCertificate
 func (c *WorkSpacesWeb) GetTrustStoreCertificateRequest(input *GetTrustStoreCertificateInput) (req *request.Request, output *GetTrustStoreCertificateOutput) {
@@ -2491,20 +2490,21 @@ func (c *WorkSpacesWeb) GetTrustStoreCertificateRequest(input *GetTrustStoreCert
 // API operation GetTrustStoreCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStoreCertificate
 func (c *WorkSpacesWeb) GetTrustStoreCertificate(input *GetTrustStoreCertificateInput) (*GetTrustStoreCertificateOutput, error) {
@@ -2544,14 +2544,13 @@ const opGetUserSettings = "GetUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserSettingsRequest method.
+//	req, resp := client.GetUserSettingsRequest(params)
 //
-//    // Example sending a request using the GetUserSettingsRequest method.
-//    req, resp := client.GetUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserSettings
 func (c *WorkSpacesWeb) GetUserSettingsRequest(input *GetUserSettingsInput) (req *request.Request, output *GetUserSettingsOutput) {
@@ -2582,20 +2581,21 @@ func (c *WorkSpacesWeb) GetUserSettingsRequest(input *GetUserSettingsInput) (req
 // API operation GetUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserSettings
 func (c *WorkSpacesWeb) GetUserSettings(input *GetUserSettingsInput) (*GetUserSettingsOutput, error) {
@@ -2635,14 +2635,13 @@ const opListBrowserSettings = "ListBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBrowserSettingsRequest method.
+//	req, resp := client.ListBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the ListBrowserSettingsRequest method.
-//    req, resp := client.ListBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListBrowserSettings
 func (c *WorkSpacesWeb) ListBrowserSettingsRequest(input *ListBrowserSettingsInput) (req *request.Request, output *ListBrowserSettingsOutput) {
@@ -2679,17 +2678,18 @@ func (c *WorkSpacesWeb) ListBrowserSettingsRequest(input *ListBrowserSettingsInp
 // API operation ListBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListBrowserSettings
 func (c *WorkSpacesWeb) ListBrowserSettings(input *ListBrowserSettingsInput) (*ListBrowserSettingsOutput, error) {
@@ -2721,15 +2721,14 @@ func (c *WorkSpacesWeb) ListBrowserSettingsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBrowserSettings operation.
-//    pageNum := 0
-//    err := client.ListBrowserSettingsPages(params,
-//        func(page *workspacesweb.ListBrowserSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBrowserSettings operation.
+//	pageNum := 0
+//	err := client.ListBrowserSettingsPages(params,
+//	    func(page *workspacesweb.ListBrowserSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListBrowserSettingsPages(input *ListBrowserSettingsInput, fn func(*ListBrowserSettingsOutput, bool) bool) error {
 	return c.ListBrowserSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2781,14 +2780,13 @@ const opListIdentityProviders = "ListIdentityProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIdentityProvidersRequest method.
+//	req, resp := client.ListIdentityProvidersRequest(params)
 //
-//    // Example sending a request using the ListIdentityProvidersRequest method.
-//    req, resp := client.ListIdentityProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIdentityProviders
 func (c *WorkSpacesWeb) ListIdentityProvidersRequest(input *ListIdentityProvidersInput) (req *request.Request, output *ListIdentityProvidersOutput) {
@@ -2825,17 +2823,18 @@ func (c *WorkSpacesWeb) ListIdentityProvidersRequest(input *ListIdentityProvider
 // API operation ListIdentityProviders for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIdentityProviders
 func (c *WorkSpacesWeb) ListIdentityProviders(input *ListIdentityProvidersInput) (*ListIdentityProvidersOutput, error) {
@@ -2867,15 +2866,14 @@ func (c *WorkSpacesWeb) ListIdentityProvidersWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIdentityProviders operation.
-//    pageNum := 0
-//    err := client.ListIdentityProvidersPages(params,
-//        func(page *workspacesweb.ListIdentityProvidersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIdentityProviders operation.
+//	pageNum := 0
+//	err := client.ListIdentityProvidersPages(params,
+//	    func(page *workspacesweb.ListIdentityProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListIdentityProvidersPages(input *ListIdentityProvidersInput, fn func(*ListIdentityProvidersOutput, bool) bool) error {
 	return c.ListIdentityProvidersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2927,14 +2925,13 @@ const opListNetworkSettings = "ListNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNetworkSettingsRequest method.
+//	req, resp := client.ListNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the ListNetworkSettingsRequest method.
-//    req, resp := client.ListNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListNetworkSettings
 func (c *WorkSpacesWeb) ListNetworkSettingsRequest(input *ListNetworkSettingsInput) (req *request.Request, output *ListNetworkSettingsOutput) {
@@ -2971,17 +2968,18 @@ func (c *WorkSpacesWeb) ListNetworkSettingsRequest(input *ListNetworkSettingsInp
 // API operation ListNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListNetworkSettings
 func (c *WorkSpacesWeb) ListNetworkSettings(input *ListNetworkSettingsInput) (*ListNetworkSettingsOutput, error) {
@@ -3013,15 +3011,14 @@ func (c *WorkSpacesWeb) ListNetworkSettingsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNetworkSettings operation.
-//    pageNum := 0
-//    err := client.ListNetworkSettingsPages(params,
-//        func(page *workspacesweb.ListNetworkSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNetworkSettings operation.
+//	pageNum := 0
+//	err := client.ListNetworkSettingsPages(params,
+//	    func(page *workspacesweb.ListNetworkSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListNetworkSettingsPages(input *ListNetworkSettingsInput, fn func(*ListNetworkSettingsOutput, bool) bool) error {
 	return c.ListNetworkSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3073,14 +3070,13 @@ const opListPortals = "ListPortals"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPortalsRequest method.
+//	req, resp := client.ListPortalsRequest(params)
 //
-//    // Example sending a request using the ListPortalsRequest method.
-//    req, resp := client.ListPortalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListPortals
 func (c *WorkSpacesWeb) ListPortalsRequest(input *ListPortalsInput) (req *request.Request, output *ListPortalsOutput) {
@@ -3117,17 +3113,18 @@ func (c *WorkSpacesWeb) ListPortalsRequest(input *ListPortalsInput) (req *reques
 // API operation ListPortals for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListPortals
 func (c *WorkSpacesWeb) ListPortals(input *ListPortalsInput) (*ListPortalsOutput, error) {
@@ -3159,15 +3156,14 @@ func (c *WorkSpacesWeb) ListPortalsWithContext(ctx aws.Context, input *ListPorta
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPortals operation.
-//    pageNum := 0
-//    err := client.ListPortalsPages(params,
-//        func(page *workspacesweb.ListPortalsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPortals operation.
+//	pageNum := 0
+//	err := client.ListPortalsPages(params,
+//	    func(page *workspacesweb.ListPortalsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListPortalsPages(input *ListPortalsInput, fn func(*ListPortalsOutput, bool) bool) error {
 	return c.ListPortalsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3219,14 +3215,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTagsForResource
 func (c *WorkSpacesWeb) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3257,20 +3252,21 @@ func (c *WorkSpacesWeb) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTagsForResource
 func (c *WorkSpacesWeb) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3310,14 +3306,13 @@ const opListTrustStoreCertificates = "ListTrustStoreCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrustStoreCertificatesRequest method.
+//	req, resp := client.ListTrustStoreCertificatesRequest(params)
 //
-//    // Example sending a request using the ListTrustStoreCertificatesRequest method.
-//    req, resp := client.ListTrustStoreCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStoreCertificates
 func (c *WorkSpacesWeb) ListTrustStoreCertificatesRequest(input *ListTrustStoreCertificatesInput) (req *request.Request, output *ListTrustStoreCertificatesOutput) {
@@ -3354,20 +3349,21 @@ func (c *WorkSpacesWeb) ListTrustStoreCertificatesRequest(input *ListTrustStoreC
 // API operation ListTrustStoreCertificates for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStoreCertificates
 func (c *WorkSpacesWeb) ListTrustStoreCertificates(input *ListTrustStoreCertificatesInput) (*ListTrustStoreCertificatesOutput, error) {
@@ -3399,15 +3395,14 @@ func (c *WorkSpacesWeb) ListTrustStoreCertificatesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTrustStoreCertificates operation.
-//    pageNum := 0
-//    err := client.ListTrustStoreCertificatesPages(params,
-//        func(page *workspacesweb.ListTrustStoreCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTrustStoreCertificates operation.
+//	pageNum := 0
+//	err := client.ListTrustStoreCertificatesPages(params,
+//	    func(page *workspacesweb.ListTrustStoreCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListTrustStoreCertificatesPages(input *ListTrustStoreCertificatesInput, fn func(*ListTrustStoreCertificatesOutput, bool) bool) error {
 	return c.ListTrustStoreCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3459,14 +3454,13 @@ const opListTrustStores = "ListTrustStores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrustStoresRequest method.
+//	req, resp := client.ListTrustStoresRequest(params)
 //
-//    // Example sending a request using the ListTrustStoresRequest method.
-//    req, resp := client.ListTrustStoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStores
 func (c *WorkSpacesWeb) ListTrustStoresRequest(input *ListTrustStoresInput) (req *request.Request, output *ListTrustStoresOutput) {
@@ -3503,17 +3497,18 @@ func (c *WorkSpacesWeb) ListTrustStoresRequest(input *ListTrustStoresInput) (req
 // API operation ListTrustStores for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStores
 func (c *WorkSpacesWeb) ListTrustStores(input *ListTrustStoresInput) (*ListTrustStoresOutput, error) {
@@ -3545,15 +3540,14 @@ func (c *WorkSpacesWeb) ListTrustStoresWithContext(ctx aws.Context, input *ListT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTrustStores operation.
-//    pageNum := 0
-//    err := client.ListTrustStoresPages(params,
-//        func(page *workspacesweb.ListTrustStoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTrustStores operation.
+//	pageNum := 0
+//	err := client.ListTrustStoresPages(params,
+//	    func(page *workspacesweb.ListTrustStoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListTrustStoresPages(input *ListTrustStoresInput, fn func(*ListTrustStoresOutput, bool) bool) error {
 	return c.ListTrustStoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3605,14 +3599,13 @@ const opListUserSettings = "ListUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUserSettingsRequest method.
+//	req, resp := client.ListUserSettingsRequest(params)
 //
-//    // Example sending a request using the ListUserSettingsRequest method.
-//    req, resp := client.ListUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserSettings
 func (c *WorkSpacesWeb) ListUserSettingsRequest(input *ListUserSettingsInput) (req *request.Request, output *ListUserSettingsOutput) {
@@ -3649,17 +3642,18 @@ func (c *WorkSpacesWeb) ListUserSettingsRequest(input *ListUserSettingsInput) (r
 // API operation ListUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserSettings
 func (c *WorkSpacesWeb) ListUserSettings(input *ListUserSettingsInput) (*ListUserSettingsOutput, error) {
@@ -3691,15 +3685,14 @@ func (c *WorkSpacesWeb) ListUserSettingsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUserSettings operation.
-//    pageNum := 0
-//    err := client.ListUserSettingsPages(params,
-//        func(page *workspacesweb.ListUserSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUserSettings operation.
+//	pageNum := 0
+//	err := client.ListUserSettingsPages(params,
+//	    func(page *workspacesweb.ListUserSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListUserSettingsPages(input *ListUserSettingsInput, fn func(*ListUserSettingsOutput, bool) bool) error {
 	return c.ListUserSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3751,14 +3744,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/TagResource
 func (c *WorkSpacesWeb) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3790,23 +3782,24 @@ func (c *WorkSpacesWeb) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * TooManyTagsException
-//   There are too many tags.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - TooManyTagsException
+//     There are too many tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/TagResource
 func (c *WorkSpacesWeb) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3846,14 +3839,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UntagResource
 func (c *WorkSpacesWeb) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3885,20 +3877,21 @@ func (c *WorkSpacesWeb) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UntagResource
 func (c *WorkSpacesWeb) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3938,14 +3931,13 @@ const opUpdateBrowserSettings = "UpdateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrowserSettingsRequest method.
+//	req, resp := client.UpdateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateBrowserSettingsRequest method.
-//    req, resp := client.UpdateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateBrowserSettings
 func (c *WorkSpacesWeb) UpdateBrowserSettingsRequest(input *UpdateBrowserSettingsInput) (req *request.Request, output *UpdateBrowserSettingsOutput) {
@@ -3976,20 +3968,21 @@ func (c *WorkSpacesWeb) UpdateBrowserSettingsRequest(input *UpdateBrowserSetting
 // API operation UpdateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateBrowserSettings
 func (c *WorkSpacesWeb) UpdateBrowserSettings(input *UpdateBrowserSettingsInput) (*UpdateBrowserSettingsOutput, error) {
@@ -4029,14 +4022,13 @@ const opUpdateIdentityProvider = "UpdateIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIdentityProviderRequest method.
+//	req, resp := client.UpdateIdentityProviderRequest(params)
 //
-//    // Example sending a request using the UpdateIdentityProviderRequest method.
-//    req, resp := client.UpdateIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIdentityProvider
 func (c *WorkSpacesWeb) UpdateIdentityProviderRequest(input *UpdateIdentityProviderInput) (req *request.Request, output *UpdateIdentityProviderOutput) {
@@ -4067,20 +4059,21 @@ func (c *WorkSpacesWeb) UpdateIdentityProviderRequest(input *UpdateIdentityProvi
 // API operation UpdateIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIdentityProvider
 func (c *WorkSpacesWeb) UpdateIdentityProvider(input *UpdateIdentityProviderInput) (*UpdateIdentityProviderOutput, error) {
@@ -4120,14 +4113,13 @@ const opUpdateNetworkSettings = "UpdateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNetworkSettingsRequest method.
+//	req, resp := client.UpdateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateNetworkSettingsRequest method.
-//    req, resp := client.UpdateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateNetworkSettings
 func (c *WorkSpacesWeb) UpdateNetworkSettingsRequest(input *UpdateNetworkSettingsInput) (req *request.Request, output *UpdateNetworkSettingsOutput) {
@@ -4158,20 +4150,21 @@ func (c *WorkSpacesWeb) UpdateNetworkSettingsRequest(input *UpdateNetworkSetting
 // API operation UpdateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateNetworkSettings
 func (c *WorkSpacesWeb) UpdateNetworkSettings(input *UpdateNetworkSettingsInput) (*UpdateNetworkSettingsOutput, error) {
@@ -4211,14 +4204,13 @@ const opUpdatePortal = "UpdatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePortalRequest method.
+//	req, resp := client.UpdatePortalRequest(params)
 //
-//    // Example sending a request using the UpdatePortalRequest method.
-//    req, resp := client.UpdatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdatePortal
 func (c *WorkSpacesWeb) UpdatePortalRequest(input *UpdatePortalInput) (req *request.Request, output *UpdatePortalOutput) {
@@ -4249,20 +4241,21 @@ func (c *WorkSpacesWeb) UpdatePortalRequest(input *UpdatePortalInput) (req *requ
 // API operation UpdatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdatePortal
 func (c *WorkSpacesWeb) UpdatePortal(input *UpdatePortalInput) (*UpdatePortalOutput, error) {
@@ -4302,14 +4295,13 @@ const opUpdateTrustStore = "UpdateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTrustStoreRequest method.
+//	req, resp := client.UpdateTrustStoreRequest(params)
 //
-//    // Example sending a request using the UpdateTrustStoreRequest method.
-//    req, resp := client.UpdateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateTrustStore
 func (c *WorkSpacesWeb) UpdateTrustStoreRequest(input *UpdateTrustStoreInput) (req *request.Request, output *UpdateTrustStoreOutput) {
@@ -4340,23 +4332,24 @@ func (c *WorkSpacesWeb) UpdateTrustStoreRequest(input *UpdateTrustStoreInput) (r
 // API operation UpdateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateTrustStore
 func (c *WorkSpacesWeb) UpdateTrustStore(input *UpdateTrustStoreInput) (*UpdateTrustStoreOutput, error) {
@@ -4396,14 +4389,13 @@ const opUpdateUserSettings = "UpdateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserSettingsRequest method.
+//	req, resp := client.UpdateUserSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateUserSettingsRequest method.
-//    req, resp := client.UpdateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserSettings
 func (c *WorkSpacesWeb) UpdateUserSettingsRequest(input *UpdateUserSettingsInput) (req *request.Request, output *UpdateUserSettingsOutput) {
@@ -4434,20 +4426,21 @@ func (c *WorkSpacesWeb) UpdateUserSettingsRequest(input *UpdateUserSettingsInput
 // API operation UpdateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserSettings
 func (c *WorkSpacesWeb) UpdateUserSettings(input *UpdateUserSettingsInput) (*UpdateUserSettingsOutput, error) {

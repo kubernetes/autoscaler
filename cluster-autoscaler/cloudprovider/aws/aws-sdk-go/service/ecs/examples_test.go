@@ -60,8 +60,8 @@ func ExampleECS_CreateCluster_shared00() {
 
 // To create a new service
 //
-// This example creates a service in your default region called ``ecs-simple-service``.
-// The service uses the ``hello_world`` task definition and it maintains 10 copies of
+// This example creates a service in your default region called “ecs-simple-service“.
+// The service uses the “hello_world“ task definition and it maintains 10 copies of
 // that task.
 func ExampleECS_CreateService_shared00() {
 	svc := ecs.New(session.New())
@@ -107,8 +107,8 @@ func ExampleECS_CreateService_shared00() {
 
 // To create a new service behind a load balancer
 //
-// This example creates a service in your default region called ``ecs-simple-service-elb``.
-// The service uses the ``ecs-demo`` task definition and it maintains 10 copies of that
+// This example creates a service in your default region called “ecs-simple-service-elb“.
+// The service uses the “ecs-demo“ task definition and it maintains 10 copies of that
 // task. You must reference an existing load balancer in the same region by its name.
 func ExampleECS_CreateService_shared01() {
 	svc := ecs.New(session.New())
@@ -426,7 +426,7 @@ func ExampleECS_DescribeContainerInstances_shared00() {
 
 // To describe a service
 //
-// This example provides descriptive information about the service named ``ecs-simple-service``.
+// This example provides descriptive information about the service named “ecs-simple-service“.
 func ExampleECS_DescribeServices_shared00() {
 	svc := ecs.New(session.New())
 	input := &ecs.DescribeServicesInput{
@@ -901,7 +901,7 @@ func ExampleECS_ListTasks_shared00() {
 
 // To list the tasks on a particular container instance
 //
-// This example lists the tasks of a specified container instance. Specifying a ``containerInstance``
+// This example lists the tasks of a specified container instance. Specifying a “containerInstance“
 // value limits the results to tasks that belong to that container instance.
 func ExampleECS_ListTasks_shared01() {
 	svc := ecs.New(session.New())

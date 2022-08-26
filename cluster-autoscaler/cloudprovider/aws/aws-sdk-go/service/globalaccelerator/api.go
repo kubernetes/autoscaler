@@ -29,14 +29,13 @@ const opAddCustomRoutingEndpoints = "AddCustomRoutingEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddCustomRoutingEndpointsRequest method.
+//	req, resp := client.AddCustomRoutingEndpointsRequest(params)
 //
-//    // Example sending a request using the AddCustomRoutingEndpointsRequest method.
-//    req, resp := client.AddCustomRoutingEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AddCustomRoutingEndpoints
 func (c *GlobalAccelerator) AddCustomRoutingEndpointsRequest(input *AddCustomRoutingEndpointsInput) (req *request.Request, output *AddCustomRoutingEndpointsOutput) {
@@ -83,27 +82,28 @@ func (c *GlobalAccelerator) AddCustomRoutingEndpointsRequest(input *AddCustomRou
 // API operation AddCustomRoutingEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * EndpointAlreadyExistsException
-//   The endpoint that you specified doesn't exist.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - EndpointAlreadyExistsException
+//     The endpoint that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
-//   * ConflictException
-//   You can't use both of those options.
+//   - AccessDeniedException
+//     You don't have access permission.
+//
+//   - ConflictException
+//     You can't use both of those options.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AddCustomRoutingEndpoints
 func (c *GlobalAccelerator) AddCustomRoutingEndpoints(input *AddCustomRoutingEndpointsInput) (*AddCustomRoutingEndpointsOutput, error) {
@@ -143,14 +143,13 @@ const opAdvertiseByoipCidr = "AdvertiseByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AdvertiseByoipCidrRequest method.
+//	req, resp := client.AdvertiseByoipCidrRequest(params)
 //
-//    // Example sending a request using the AdvertiseByoipCidrRequest method.
-//    req, resp := client.AdvertiseByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AdvertiseByoipCidr
 func (c *GlobalAccelerator) AdvertiseByoipCidrRequest(input *AdvertiseByoipCidrInput) (req *request.Request, output *AdvertiseByoipCidrOutput) {
@@ -189,21 +188,22 @@ func (c *GlobalAccelerator) AdvertiseByoipCidrRequest(input *AdvertiseByoipCidrI
 // API operation AdvertiseByoipCidr for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ByoipCidrNotFoundException
-//   The CIDR that you specified was not found or is incorrect.
+//   - AccessDeniedException
+//     You don't have access permission.
 //
-//   * IncorrectCidrStateException
-//   The CIDR that you specified is not valid for this action. For example, the
-//   state of the CIDR might be incorrect for this action.
+//   - ByoipCidrNotFoundException
+//     The CIDR that you specified was not found or is incorrect.
+//
+//   - IncorrectCidrStateException
+//     The CIDR that you specified is not valid for this action. For example, the
+//     state of the CIDR might be incorrect for this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AdvertiseByoipCidr
 func (c *GlobalAccelerator) AdvertiseByoipCidr(input *AdvertiseByoipCidrInput) (*AdvertiseByoipCidrOutput, error) {
@@ -243,14 +243,13 @@ const opAllowCustomRoutingTraffic = "AllowCustomRoutingTraffic"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AllowCustomRoutingTrafficRequest method.
+//	req, resp := client.AllowCustomRoutingTrafficRequest(params)
 //
-//    // Example sending a request using the AllowCustomRoutingTrafficRequest method.
-//    req, resp := client.AllowCustomRoutingTrafficRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AllowCustomRoutingTraffic
 func (c *GlobalAccelerator) AllowCustomRoutingTrafficRequest(input *AllowCustomRoutingTrafficInput) (req *request.Request, output *AllowCustomRoutingTrafficOutput) {
@@ -290,11 +289,12 @@ func (c *GlobalAccelerator) AllowCustomRoutingTrafficRequest(input *AllowCustomR
 // API operation AllowCustomRoutingTraffic for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/AllowCustomRoutingTraffic
 func (c *GlobalAccelerator) AllowCustomRoutingTraffic(input *AllowCustomRoutingTrafficInput) (*AllowCustomRoutingTrafficOutput, error) {
@@ -334,14 +334,13 @@ const opCreateAccelerator = "CreateAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAcceleratorRequest method.
+//	req, resp := client.CreateAcceleratorRequest(params)
 //
-//    // Example sending a request using the CreateAcceleratorRequest method.
-//    req, resp := client.CreateAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateAccelerator
 func (c *GlobalAccelerator) CreateAcceleratorRequest(input *CreateAcceleratorInput) (req *request.Request, output *CreateAcceleratorOutput) {
@@ -378,15 +377,16 @@ func (c *GlobalAccelerator) CreateAcceleratorRequest(input *CreateAcceleratorInp
 // API operation CreateAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateAccelerator
 func (c *GlobalAccelerator) CreateAccelerator(input *CreateAcceleratorInput) (*CreateAcceleratorOutput, error) {
@@ -426,14 +426,13 @@ const opCreateCustomRoutingAccelerator = "CreateCustomRoutingAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomRoutingAcceleratorRequest method.
+//	req, resp := client.CreateCustomRoutingAcceleratorRequest(params)
 //
-//    // Example sending a request using the CreateCustomRoutingAcceleratorRequest method.
-//    req, resp := client.CreateCustomRoutingAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingAccelerator
 func (c *GlobalAccelerator) CreateCustomRoutingAcceleratorRequest(input *CreateCustomRoutingAcceleratorInput) (req *request.Request, output *CreateCustomRoutingAcceleratorOutput) {
@@ -476,18 +475,19 @@ func (c *GlobalAccelerator) CreateCustomRoutingAcceleratorRequest(input *CreateC
 // API operation CreateCustomRoutingAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingAccelerator
 func (c *GlobalAccelerator) CreateCustomRoutingAccelerator(input *CreateCustomRoutingAcceleratorInput) (*CreateCustomRoutingAcceleratorOutput, error) {
@@ -527,14 +527,13 @@ const opCreateCustomRoutingEndpointGroup = "CreateCustomRoutingEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomRoutingEndpointGroupRequest method.
+//	req, resp := client.CreateCustomRoutingEndpointGroupRequest(params)
 //
-//    // Example sending a request using the CreateCustomRoutingEndpointGroupRequest method.
-//    req, resp := client.CreateCustomRoutingEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) CreateCustomRoutingEndpointGroupRequest(input *CreateCustomRoutingEndpointGroupInput) (req *request.Request, output *CreateCustomRoutingEndpointGroupOutput) {
@@ -566,31 +565,32 @@ func (c *GlobalAccelerator) CreateCustomRoutingEndpointGroupRequest(input *Creat
 // API operation CreateCustomRoutingEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * EndpointGroupAlreadyExistsException
-//   The endpoint group that you specified already exists.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - EndpointGroupAlreadyExistsException
+//     The endpoint group that you specified already exists.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidPortRangeException
-//   The port numbers that you specified are not valid numbers or are not unique
-//   for this accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidPortRangeException
+//     The port numbers that you specified are not valid numbers or are not unique
+//     for this accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) CreateCustomRoutingEndpointGroup(input *CreateCustomRoutingEndpointGroupInput) (*CreateCustomRoutingEndpointGroupOutput, error) {
@@ -630,14 +630,13 @@ const opCreateCustomRoutingListener = "CreateCustomRoutingListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomRoutingListenerRequest method.
+//	req, resp := client.CreateCustomRoutingListenerRequest(params)
 //
-//    // Example sending a request using the CreateCustomRoutingListenerRequest method.
-//    req, resp := client.CreateCustomRoutingListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingListener
 func (c *GlobalAccelerator) CreateCustomRoutingListenerRequest(input *CreateCustomRoutingListenerInput) (req *request.Request, output *CreateCustomRoutingListenerOutput) {
@@ -670,22 +669,23 @@ func (c *GlobalAccelerator) CreateCustomRoutingListenerRequest(input *CreateCust
 // API operation CreateCustomRoutingListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InvalidPortRangeException
-//   The port numbers that you specified are not valid numbers or are not unique
-//   for this accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidPortRangeException
+//     The port numbers that you specified are not valid numbers or are not unique
+//     for this accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateCustomRoutingListener
 func (c *GlobalAccelerator) CreateCustomRoutingListener(input *CreateCustomRoutingListenerInput) (*CreateCustomRoutingListenerOutput, error) {
@@ -725,14 +725,13 @@ const opCreateEndpointGroup = "CreateEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEndpointGroupRequest method.
+//	req, resp := client.CreateEndpointGroupRequest(params)
 //
-//    // Example sending a request using the CreateEndpointGroupRequest method.
-//    req, resp := client.CreateEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateEndpointGroup
 func (c *GlobalAccelerator) CreateEndpointGroupRequest(input *CreateEndpointGroupInput) (req *request.Request, output *CreateEndpointGroupOutput) {
@@ -765,27 +764,28 @@ func (c *GlobalAccelerator) CreateEndpointGroupRequest(input *CreateEndpointGrou
 // API operation CreateEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * EndpointGroupAlreadyExistsException
-//   The endpoint group that you specified already exists.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - EndpointGroupAlreadyExistsException
+//     The endpoint group that you specified already exists.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateEndpointGroup
 func (c *GlobalAccelerator) CreateEndpointGroup(input *CreateEndpointGroupInput) (*CreateEndpointGroupOutput, error) {
@@ -825,14 +825,13 @@ const opCreateListener = "CreateListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateListenerRequest method.
+//	req, resp := client.CreateListenerRequest(params)
 //
-//    // Example sending a request using the CreateListenerRequest method.
-//    req, resp := client.CreateListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateListener
 func (c *GlobalAccelerator) CreateListenerRequest(input *CreateListenerInput) (req *request.Request, output *CreateListenerOutput) {
@@ -865,22 +864,23 @@ func (c *GlobalAccelerator) CreateListenerRequest(input *CreateListenerInput) (r
 // API operation CreateListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InvalidPortRangeException
-//   The port numbers that you specified are not valid numbers or are not unique
-//   for this accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidPortRangeException
+//     The port numbers that you specified are not valid numbers or are not unique
+//     for this accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/CreateListener
 func (c *GlobalAccelerator) CreateListener(input *CreateListenerInput) (*CreateListenerOutput, error) {
@@ -920,14 +920,13 @@ const opDeleteAccelerator = "DeleteAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAcceleratorRequest method.
+//	req, resp := client.DeleteAcceleratorRequest(params)
 //
-//    // Example sending a request using the DeleteAcceleratorRequest method.
-//    req, resp := client.DeleteAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteAccelerator
 func (c *GlobalAccelerator) DeleteAcceleratorRequest(input *DeleteAcceleratorInput) (req *request.Request, output *DeleteAcceleratorOutput) {
@@ -976,22 +975,23 @@ func (c *GlobalAccelerator) DeleteAcceleratorRequest(input *DeleteAcceleratorInp
 // API operation DeleteAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * AcceleratorNotDisabledException
-//   The accelerator that you specified could not be disabled.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * AssociatedListenerFoundException
-//   The accelerator that you specified has a listener associated with it. You
-//   must remove all dependent resources from an accelerator before you can delete
-//   it.
+//   - AcceleratorNotDisabledException
+//     The accelerator that you specified could not be disabled.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AssociatedListenerFoundException
+//     The accelerator that you specified has a listener associated with it. You
+//     must remove all dependent resources from an accelerator before you can delete
+//     it.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteAccelerator
 func (c *GlobalAccelerator) DeleteAccelerator(input *DeleteAcceleratorInput) (*DeleteAcceleratorOutput, error) {
@@ -1031,14 +1031,13 @@ const opDeleteCustomRoutingAccelerator = "DeleteCustomRoutingAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomRoutingAcceleratorRequest method.
+//	req, resp := client.DeleteCustomRoutingAcceleratorRequest(params)
 //
-//    // Example sending a request using the DeleteCustomRoutingAcceleratorRequest method.
-//    req, resp := client.DeleteCustomRoutingAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingAccelerator
 func (c *GlobalAccelerator) DeleteCustomRoutingAcceleratorRequest(input *DeleteCustomRoutingAcceleratorInput) (req *request.Request, output *DeleteCustomRoutingAcceleratorOutput) {
@@ -1086,22 +1085,23 @@ func (c *GlobalAccelerator) DeleteCustomRoutingAcceleratorRequest(input *DeleteC
 // API operation DeleteCustomRoutingAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * AcceleratorNotDisabledException
-//   The accelerator that you specified could not be disabled.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * AssociatedListenerFoundException
-//   The accelerator that you specified has a listener associated with it. You
-//   must remove all dependent resources from an accelerator before you can delete
-//   it.
+//   - AcceleratorNotDisabledException
+//     The accelerator that you specified could not be disabled.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AssociatedListenerFoundException
+//     The accelerator that you specified has a listener associated with it. You
+//     must remove all dependent resources from an accelerator before you can delete
+//     it.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingAccelerator
 func (c *GlobalAccelerator) DeleteCustomRoutingAccelerator(input *DeleteCustomRoutingAcceleratorInput) (*DeleteCustomRoutingAcceleratorOutput, error) {
@@ -1141,14 +1141,13 @@ const opDeleteCustomRoutingEndpointGroup = "DeleteCustomRoutingEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomRoutingEndpointGroupRequest method.
+//	req, resp := client.DeleteCustomRoutingEndpointGroupRequest(params)
 //
-//    // Example sending a request using the DeleteCustomRoutingEndpointGroupRequest method.
-//    req, resp := client.DeleteCustomRoutingEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) DeleteCustomRoutingEndpointGroupRequest(input *DeleteCustomRoutingEndpointGroupInput) (req *request.Request, output *DeleteCustomRoutingEndpointGroupOutput) {
@@ -1180,14 +1179,15 @@ func (c *GlobalAccelerator) DeleteCustomRoutingEndpointGroupRequest(input *Delet
 // API operation DeleteCustomRoutingEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) DeleteCustomRoutingEndpointGroup(input *DeleteCustomRoutingEndpointGroupInput) (*DeleteCustomRoutingEndpointGroupOutput, error) {
@@ -1227,14 +1227,13 @@ const opDeleteCustomRoutingListener = "DeleteCustomRoutingListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomRoutingListenerRequest method.
+//	req, resp := client.DeleteCustomRoutingListenerRequest(params)
 //
-//    // Example sending a request using the DeleteCustomRoutingListenerRequest method.
-//    req, resp := client.DeleteCustomRoutingListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingListener
 func (c *GlobalAccelerator) DeleteCustomRoutingListenerRequest(input *DeleteCustomRoutingListenerInput) (req *request.Request, output *DeleteCustomRoutingListenerOutput) {
@@ -1266,19 +1265,20 @@ func (c *GlobalAccelerator) DeleteCustomRoutingListenerRequest(input *DeleteCust
 // API operation DeleteCustomRoutingListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AssociatedEndpointGroupFoundException
-//   The listener that you specified has an endpoint group associated with it.
-//   You must remove all dependent resources from a listener before you can delete
-//   it.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AssociatedEndpointGroupFoundException
+//     The listener that you specified has an endpoint group associated with it.
+//     You must remove all dependent resources from a listener before you can delete
+//     it.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteCustomRoutingListener
 func (c *GlobalAccelerator) DeleteCustomRoutingListener(input *DeleteCustomRoutingListenerInput) (*DeleteCustomRoutingListenerOutput, error) {
@@ -1318,14 +1318,13 @@ const opDeleteEndpointGroup = "DeleteEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointGroupRequest method.
+//	req, resp := client.DeleteEndpointGroupRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointGroupRequest method.
-//    req, resp := client.DeleteEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteEndpointGroup
 func (c *GlobalAccelerator) DeleteEndpointGroupRequest(input *DeleteEndpointGroupInput) (req *request.Request, output *DeleteEndpointGroupOutput) {
@@ -1357,14 +1356,15 @@ func (c *GlobalAccelerator) DeleteEndpointGroupRequest(input *DeleteEndpointGrou
 // API operation DeleteEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteEndpointGroup
 func (c *GlobalAccelerator) DeleteEndpointGroup(input *DeleteEndpointGroupInput) (*DeleteEndpointGroupOutput, error) {
@@ -1404,14 +1404,13 @@ const opDeleteListener = "DeleteListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteListenerRequest method.
+//	req, resp := client.DeleteListenerRequest(params)
 //
-//    // Example sending a request using the DeleteListenerRequest method.
-//    req, resp := client.DeleteListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteListener
 func (c *GlobalAccelerator) DeleteListenerRequest(input *DeleteListenerInput) (req *request.Request, output *DeleteListenerOutput) {
@@ -1443,19 +1442,20 @@ func (c *GlobalAccelerator) DeleteListenerRequest(input *DeleteListenerInput) (r
 // API operation DeleteListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AssociatedEndpointGroupFoundException
-//   The listener that you specified has an endpoint group associated with it.
-//   You must remove all dependent resources from a listener before you can delete
-//   it.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AssociatedEndpointGroupFoundException
+//     The listener that you specified has an endpoint group associated with it.
+//     You must remove all dependent resources from a listener before you can delete
+//     it.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeleteListener
 func (c *GlobalAccelerator) DeleteListener(input *DeleteListenerInput) (*DeleteListenerOutput, error) {
@@ -1495,14 +1495,13 @@ const opDenyCustomRoutingTraffic = "DenyCustomRoutingTraffic"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DenyCustomRoutingTrafficRequest method.
+//	req, resp := client.DenyCustomRoutingTrafficRequest(params)
 //
-//    // Example sending a request using the DenyCustomRoutingTrafficRequest method.
-//    req, resp := client.DenyCustomRoutingTrafficRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DenyCustomRoutingTraffic
 func (c *GlobalAccelerator) DenyCustomRoutingTrafficRequest(input *DenyCustomRoutingTrafficInput) (req *request.Request, output *DenyCustomRoutingTrafficOutput) {
@@ -1542,11 +1541,12 @@ func (c *GlobalAccelerator) DenyCustomRoutingTrafficRequest(input *DenyCustomRou
 // API operation DenyCustomRoutingTraffic for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DenyCustomRoutingTraffic
 func (c *GlobalAccelerator) DenyCustomRoutingTraffic(input *DenyCustomRoutingTrafficInput) (*DenyCustomRoutingTrafficOutput, error) {
@@ -1586,14 +1586,13 @@ const opDeprovisionByoipCidr = "DeprovisionByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprovisionByoipCidrRequest method.
+//	req, resp := client.DeprovisionByoipCidrRequest(params)
 //
-//    // Example sending a request using the DeprovisionByoipCidrRequest method.
-//    req, resp := client.DeprovisionByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeprovisionByoipCidr
 func (c *GlobalAccelerator) DeprovisionByoipCidrRequest(input *DeprovisionByoipCidrInput) (req *request.Request, output *DeprovisionByoipCidrOutput) {
@@ -1634,21 +1633,22 @@ func (c *GlobalAccelerator) DeprovisionByoipCidrRequest(input *DeprovisionByoipC
 // API operation DeprovisionByoipCidr for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ByoipCidrNotFoundException
-//   The CIDR that you specified was not found or is incorrect.
+//   - AccessDeniedException
+//     You don't have access permission.
 //
-//   * IncorrectCidrStateException
-//   The CIDR that you specified is not valid for this action. For example, the
-//   state of the CIDR might be incorrect for this action.
+//   - ByoipCidrNotFoundException
+//     The CIDR that you specified was not found or is incorrect.
+//
+//   - IncorrectCidrStateException
+//     The CIDR that you specified is not valid for this action. For example, the
+//     state of the CIDR might be incorrect for this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DeprovisionByoipCidr
 func (c *GlobalAccelerator) DeprovisionByoipCidr(input *DeprovisionByoipCidrInput) (*DeprovisionByoipCidrOutput, error) {
@@ -1688,14 +1688,13 @@ const opDescribeAccelerator = "DescribeAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAcceleratorRequest method.
+//	req, resp := client.DescribeAcceleratorRequest(params)
 //
-//    // Example sending a request using the DescribeAcceleratorRequest method.
-//    req, resp := client.DescribeAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeAccelerator
 func (c *GlobalAccelerator) DescribeAcceleratorRequest(input *DescribeAcceleratorInput) (req *request.Request, output *DescribeAcceleratorOutput) {
@@ -1726,14 +1725,15 @@ func (c *GlobalAccelerator) DescribeAcceleratorRequest(input *DescribeAccelerato
 // API operation DescribeAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeAccelerator
 func (c *GlobalAccelerator) DescribeAccelerator(input *DescribeAcceleratorInput) (*DescribeAcceleratorOutput, error) {
@@ -1773,14 +1773,13 @@ const opDescribeAcceleratorAttributes = "DescribeAcceleratorAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAcceleratorAttributesRequest method.
+//	req, resp := client.DescribeAcceleratorAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAcceleratorAttributesRequest method.
-//    req, resp := client.DescribeAcceleratorAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeAcceleratorAttributes
 func (c *GlobalAccelerator) DescribeAcceleratorAttributesRequest(input *DescribeAcceleratorAttributesInput) (req *request.Request, output *DescribeAcceleratorAttributesOutput) {
@@ -1811,14 +1810,15 @@ func (c *GlobalAccelerator) DescribeAcceleratorAttributesRequest(input *Describe
 // API operation DescribeAcceleratorAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeAcceleratorAttributes
 func (c *GlobalAccelerator) DescribeAcceleratorAttributes(input *DescribeAcceleratorAttributesInput) (*DescribeAcceleratorAttributesOutput, error) {
@@ -1858,14 +1858,13 @@ const opDescribeCustomRoutingAccelerator = "DescribeCustomRoutingAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomRoutingAcceleratorRequest method.
+//	req, resp := client.DescribeCustomRoutingAcceleratorRequest(params)
 //
-//    // Example sending a request using the DescribeCustomRoutingAcceleratorRequest method.
-//    req, resp := client.DescribeCustomRoutingAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingAccelerator
 func (c *GlobalAccelerator) DescribeCustomRoutingAcceleratorRequest(input *DescribeCustomRoutingAcceleratorInput) (req *request.Request, output *DescribeCustomRoutingAcceleratorOutput) {
@@ -1896,14 +1895,15 @@ func (c *GlobalAccelerator) DescribeCustomRoutingAcceleratorRequest(input *Descr
 // API operation DescribeCustomRoutingAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingAccelerator
 func (c *GlobalAccelerator) DescribeCustomRoutingAccelerator(input *DescribeCustomRoutingAcceleratorInput) (*DescribeCustomRoutingAcceleratorOutput, error) {
@@ -1943,14 +1943,13 @@ const opDescribeCustomRoutingAcceleratorAttributes = "DescribeCustomRoutingAccel
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomRoutingAcceleratorAttributesRequest method.
+//	req, resp := client.DescribeCustomRoutingAcceleratorAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeCustomRoutingAcceleratorAttributesRequest method.
-//    req, resp := client.DescribeCustomRoutingAcceleratorAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingAcceleratorAttributes
 func (c *GlobalAccelerator) DescribeCustomRoutingAcceleratorAttributesRequest(input *DescribeCustomRoutingAcceleratorAttributesInput) (req *request.Request, output *DescribeCustomRoutingAcceleratorAttributesOutput) {
@@ -1981,14 +1980,15 @@ func (c *GlobalAccelerator) DescribeCustomRoutingAcceleratorAttributesRequest(in
 // API operation DescribeCustomRoutingAcceleratorAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingAcceleratorAttributes
 func (c *GlobalAccelerator) DescribeCustomRoutingAcceleratorAttributes(input *DescribeCustomRoutingAcceleratorAttributesInput) (*DescribeCustomRoutingAcceleratorAttributesOutput, error) {
@@ -2028,14 +2028,13 @@ const opDescribeCustomRoutingEndpointGroup = "DescribeCustomRoutingEndpointGroup
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomRoutingEndpointGroupRequest method.
+//	req, resp := client.DescribeCustomRoutingEndpointGroupRequest(params)
 //
-//    // Example sending a request using the DescribeCustomRoutingEndpointGroupRequest method.
-//    req, resp := client.DescribeCustomRoutingEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) DescribeCustomRoutingEndpointGroupRequest(input *DescribeCustomRoutingEndpointGroupInput) (req *request.Request, output *DescribeCustomRoutingEndpointGroupOutput) {
@@ -2066,14 +2065,15 @@ func (c *GlobalAccelerator) DescribeCustomRoutingEndpointGroupRequest(input *Des
 // API operation DescribeCustomRoutingEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingEndpointGroup
 func (c *GlobalAccelerator) DescribeCustomRoutingEndpointGroup(input *DescribeCustomRoutingEndpointGroupInput) (*DescribeCustomRoutingEndpointGroupOutput, error) {
@@ -2113,14 +2113,13 @@ const opDescribeCustomRoutingListener = "DescribeCustomRoutingListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomRoutingListenerRequest method.
+//	req, resp := client.DescribeCustomRoutingListenerRequest(params)
 //
-//    // Example sending a request using the DescribeCustomRoutingListenerRequest method.
-//    req, resp := client.DescribeCustomRoutingListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingListener
 func (c *GlobalAccelerator) DescribeCustomRoutingListenerRequest(input *DescribeCustomRoutingListenerInput) (req *request.Request, output *DescribeCustomRoutingListenerOutput) {
@@ -2151,14 +2150,15 @@ func (c *GlobalAccelerator) DescribeCustomRoutingListenerRequest(input *Describe
 // API operation DescribeCustomRoutingListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeCustomRoutingListener
 func (c *GlobalAccelerator) DescribeCustomRoutingListener(input *DescribeCustomRoutingListenerInput) (*DescribeCustomRoutingListenerOutput, error) {
@@ -2198,14 +2198,13 @@ const opDescribeEndpointGroup = "DescribeEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointGroupRequest method.
+//	req, resp := client.DescribeEndpointGroupRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointGroupRequest method.
-//    req, resp := client.DescribeEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeEndpointGroup
 func (c *GlobalAccelerator) DescribeEndpointGroupRequest(input *DescribeEndpointGroupInput) (req *request.Request, output *DescribeEndpointGroupOutput) {
@@ -2236,14 +2235,15 @@ func (c *GlobalAccelerator) DescribeEndpointGroupRequest(input *DescribeEndpoint
 // API operation DescribeEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeEndpointGroup
 func (c *GlobalAccelerator) DescribeEndpointGroup(input *DescribeEndpointGroupInput) (*DescribeEndpointGroupOutput, error) {
@@ -2283,14 +2283,13 @@ const opDescribeListener = "DescribeListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeListenerRequest method.
+//	req, resp := client.DescribeListenerRequest(params)
 //
-//    // Example sending a request using the DescribeListenerRequest method.
-//    req, resp := client.DescribeListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeListener
 func (c *GlobalAccelerator) DescribeListenerRequest(input *DescribeListenerInput) (req *request.Request, output *DescribeListenerOutput) {
@@ -2321,14 +2320,15 @@ func (c *GlobalAccelerator) DescribeListenerRequest(input *DescribeListenerInput
 // API operation DescribeListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/DescribeListener
 func (c *GlobalAccelerator) DescribeListener(input *DescribeListenerInput) (*DescribeListenerOutput, error) {
@@ -2368,14 +2368,13 @@ const opListAccelerators = "ListAccelerators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAcceleratorsRequest method.
+//	req, resp := client.ListAcceleratorsRequest(params)
 //
-//    // Example sending a request using the ListAcceleratorsRequest method.
-//    req, resp := client.ListAcceleratorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListAccelerators
 func (c *GlobalAccelerator) ListAcceleratorsRequest(input *ListAcceleratorsInput) (req *request.Request, output *ListAcceleratorsOutput) {
@@ -2412,14 +2411,15 @@ func (c *GlobalAccelerator) ListAcceleratorsRequest(input *ListAcceleratorsInput
 // API operation ListAccelerators for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListAccelerators
 func (c *GlobalAccelerator) ListAccelerators(input *ListAcceleratorsInput) (*ListAcceleratorsOutput, error) {
@@ -2451,15 +2451,14 @@ func (c *GlobalAccelerator) ListAcceleratorsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccelerators operation.
-//    pageNum := 0
-//    err := client.ListAcceleratorsPages(params,
-//        func(page *globalaccelerator.ListAcceleratorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccelerators operation.
+//	pageNum := 0
+//	err := client.ListAcceleratorsPages(params,
+//	    func(page *globalaccelerator.ListAcceleratorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListAcceleratorsPages(input *ListAcceleratorsInput, fn func(*ListAcceleratorsOutput, bool) bool) error {
 	return c.ListAcceleratorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2511,14 +2510,13 @@ const opListByoipCidrs = "ListByoipCidrs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListByoipCidrsRequest method.
+//	req, resp := client.ListByoipCidrsRequest(params)
 //
-//    // Example sending a request using the ListByoipCidrsRequest method.
-//    req, resp := client.ListByoipCidrsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListByoipCidrs
 func (c *GlobalAccelerator) ListByoipCidrsRequest(input *ListByoipCidrsInput) (req *request.Request, output *ListByoipCidrsOutput) {
@@ -2557,17 +2555,18 @@ func (c *GlobalAccelerator) ListByoipCidrsRequest(input *ListByoipCidrsInput) (r
 // API operation ListByoipCidrs for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - AccessDeniedException
+//     You don't have access permission.
+//
+//   - InvalidNextTokenException
+//     There isn't another item to return.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListByoipCidrs
 func (c *GlobalAccelerator) ListByoipCidrs(input *ListByoipCidrsInput) (*ListByoipCidrsOutput, error) {
@@ -2599,15 +2598,14 @@ func (c *GlobalAccelerator) ListByoipCidrsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListByoipCidrs operation.
-//    pageNum := 0
-//    err := client.ListByoipCidrsPages(params,
-//        func(page *globalaccelerator.ListByoipCidrsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListByoipCidrs operation.
+//	pageNum := 0
+//	err := client.ListByoipCidrsPages(params,
+//	    func(page *globalaccelerator.ListByoipCidrsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListByoipCidrsPages(input *ListByoipCidrsInput, fn func(*ListByoipCidrsOutput, bool) bool) error {
 	return c.ListByoipCidrsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2659,14 +2657,13 @@ const opListCustomRoutingAccelerators = "ListCustomRoutingAccelerators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomRoutingAcceleratorsRequest method.
+//	req, resp := client.ListCustomRoutingAcceleratorsRequest(params)
 //
-//    // Example sending a request using the ListCustomRoutingAcceleratorsRequest method.
-//    req, resp := client.ListCustomRoutingAcceleratorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingAccelerators
 func (c *GlobalAccelerator) ListCustomRoutingAcceleratorsRequest(input *ListCustomRoutingAcceleratorsInput) (req *request.Request, output *ListCustomRoutingAcceleratorsOutput) {
@@ -2703,14 +2700,15 @@ func (c *GlobalAccelerator) ListCustomRoutingAcceleratorsRequest(input *ListCust
 // API operation ListCustomRoutingAccelerators for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingAccelerators
 func (c *GlobalAccelerator) ListCustomRoutingAccelerators(input *ListCustomRoutingAcceleratorsInput) (*ListCustomRoutingAcceleratorsOutput, error) {
@@ -2742,15 +2740,14 @@ func (c *GlobalAccelerator) ListCustomRoutingAcceleratorsWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomRoutingAccelerators operation.
-//    pageNum := 0
-//    err := client.ListCustomRoutingAcceleratorsPages(params,
-//        func(page *globalaccelerator.ListCustomRoutingAcceleratorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomRoutingAccelerators operation.
+//	pageNum := 0
+//	err := client.ListCustomRoutingAcceleratorsPages(params,
+//	    func(page *globalaccelerator.ListCustomRoutingAcceleratorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListCustomRoutingAcceleratorsPages(input *ListCustomRoutingAcceleratorsInput, fn func(*ListCustomRoutingAcceleratorsOutput, bool) bool) error {
 	return c.ListCustomRoutingAcceleratorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2802,14 +2799,13 @@ const opListCustomRoutingEndpointGroups = "ListCustomRoutingEndpointGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomRoutingEndpointGroupsRequest method.
+//	req, resp := client.ListCustomRoutingEndpointGroupsRequest(params)
 //
-//    // Example sending a request using the ListCustomRoutingEndpointGroupsRequest method.
-//    req, resp := client.ListCustomRoutingEndpointGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingEndpointGroups
 func (c *GlobalAccelerator) ListCustomRoutingEndpointGroupsRequest(input *ListCustomRoutingEndpointGroupsInput) (req *request.Request, output *ListCustomRoutingEndpointGroupsOutput) {
@@ -2847,17 +2843,18 @@ func (c *GlobalAccelerator) ListCustomRoutingEndpointGroupsRequest(input *ListCu
 // API operation ListCustomRoutingEndpointGroups for usage and error information.
 //
 // Returned Error Types:
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingEndpointGroups
 func (c *GlobalAccelerator) ListCustomRoutingEndpointGroups(input *ListCustomRoutingEndpointGroupsInput) (*ListCustomRoutingEndpointGroupsOutput, error) {
@@ -2889,15 +2886,14 @@ func (c *GlobalAccelerator) ListCustomRoutingEndpointGroupsWithContext(ctx aws.C
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomRoutingEndpointGroups operation.
-//    pageNum := 0
-//    err := client.ListCustomRoutingEndpointGroupsPages(params,
-//        func(page *globalaccelerator.ListCustomRoutingEndpointGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomRoutingEndpointGroups operation.
+//	pageNum := 0
+//	err := client.ListCustomRoutingEndpointGroupsPages(params,
+//	    func(page *globalaccelerator.ListCustomRoutingEndpointGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListCustomRoutingEndpointGroupsPages(input *ListCustomRoutingEndpointGroupsInput, fn func(*ListCustomRoutingEndpointGroupsOutput, bool) bool) error {
 	return c.ListCustomRoutingEndpointGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2949,14 +2945,13 @@ const opListCustomRoutingListeners = "ListCustomRoutingListeners"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomRoutingListenersRequest method.
+//	req, resp := client.ListCustomRoutingListenersRequest(params)
 //
-//    // Example sending a request using the ListCustomRoutingListenersRequest method.
-//    req, resp := client.ListCustomRoutingListenersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingListeners
 func (c *GlobalAccelerator) ListCustomRoutingListenersRequest(input *ListCustomRoutingListenersInput) (req *request.Request, output *ListCustomRoutingListenersOutput) {
@@ -2993,17 +2988,18 @@ func (c *GlobalAccelerator) ListCustomRoutingListenersRequest(input *ListCustomR
 // API operation ListCustomRoutingListeners for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingListeners
 func (c *GlobalAccelerator) ListCustomRoutingListeners(input *ListCustomRoutingListenersInput) (*ListCustomRoutingListenersOutput, error) {
@@ -3035,15 +3031,14 @@ func (c *GlobalAccelerator) ListCustomRoutingListenersWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomRoutingListeners operation.
-//    pageNum := 0
-//    err := client.ListCustomRoutingListenersPages(params,
-//        func(page *globalaccelerator.ListCustomRoutingListenersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomRoutingListeners operation.
+//	pageNum := 0
+//	err := client.ListCustomRoutingListenersPages(params,
+//	    func(page *globalaccelerator.ListCustomRoutingListenersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListCustomRoutingListenersPages(input *ListCustomRoutingListenersInput, fn func(*ListCustomRoutingListenersOutput, bool) bool) error {
 	return c.ListCustomRoutingListenersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3095,14 +3090,13 @@ const opListCustomRoutingPortMappings = "ListCustomRoutingPortMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomRoutingPortMappingsRequest method.
+//	req, resp := client.ListCustomRoutingPortMappingsRequest(params)
 //
-//    // Example sending a request using the ListCustomRoutingPortMappingsRequest method.
-//    req, resp := client.ListCustomRoutingPortMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingPortMappings
 func (c *GlobalAccelerator) ListCustomRoutingPortMappingsRequest(input *ListCustomRoutingPortMappingsInput) (req *request.Request, output *ListCustomRoutingPortMappingsOutput) {
@@ -3153,20 +3147,21 @@ func (c *GlobalAccelerator) ListCustomRoutingPortMappingsRequest(input *ListCust
 // API operation ListCustomRoutingPortMappings for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
 //
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingPortMappings
 func (c *GlobalAccelerator) ListCustomRoutingPortMappings(input *ListCustomRoutingPortMappingsInput) (*ListCustomRoutingPortMappingsOutput, error) {
@@ -3198,15 +3193,14 @@ func (c *GlobalAccelerator) ListCustomRoutingPortMappingsWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomRoutingPortMappings operation.
-//    pageNum := 0
-//    err := client.ListCustomRoutingPortMappingsPages(params,
-//        func(page *globalaccelerator.ListCustomRoutingPortMappingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomRoutingPortMappings operation.
+//	pageNum := 0
+//	err := client.ListCustomRoutingPortMappingsPages(params,
+//	    func(page *globalaccelerator.ListCustomRoutingPortMappingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListCustomRoutingPortMappingsPages(input *ListCustomRoutingPortMappingsInput, fn func(*ListCustomRoutingPortMappingsOutput, bool) bool) error {
 	return c.ListCustomRoutingPortMappingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3258,14 +3252,13 @@ const opListCustomRoutingPortMappingsByDestination = "ListCustomRoutingPortMappi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCustomRoutingPortMappingsByDestinationRequest method.
+//	req, resp := client.ListCustomRoutingPortMappingsByDestinationRequest(params)
 //
-//    // Example sending a request using the ListCustomRoutingPortMappingsByDestinationRequest method.
-//    req, resp := client.ListCustomRoutingPortMappingsByDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingPortMappingsByDestination
 func (c *GlobalAccelerator) ListCustomRoutingPortMappingsByDestinationRequest(input *ListCustomRoutingPortMappingsByDestinationInput) (req *request.Request, output *ListCustomRoutingPortMappingsByDestinationOutput) {
@@ -3306,17 +3299,18 @@ func (c *GlobalAccelerator) ListCustomRoutingPortMappingsByDestinationRequest(in
 // API operation ListCustomRoutingPortMappingsByDestination for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * EndpointNotFoundException
-//   The endpoint that you specified doesn't exist.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointNotFoundException
+//     The endpoint that you specified doesn't exist.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListCustomRoutingPortMappingsByDestination
 func (c *GlobalAccelerator) ListCustomRoutingPortMappingsByDestination(input *ListCustomRoutingPortMappingsByDestinationInput) (*ListCustomRoutingPortMappingsByDestinationOutput, error) {
@@ -3348,15 +3342,14 @@ func (c *GlobalAccelerator) ListCustomRoutingPortMappingsByDestinationWithContex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCustomRoutingPortMappingsByDestination operation.
-//    pageNum := 0
-//    err := client.ListCustomRoutingPortMappingsByDestinationPages(params,
-//        func(page *globalaccelerator.ListCustomRoutingPortMappingsByDestinationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCustomRoutingPortMappingsByDestination operation.
+//	pageNum := 0
+//	err := client.ListCustomRoutingPortMappingsByDestinationPages(params,
+//	    func(page *globalaccelerator.ListCustomRoutingPortMappingsByDestinationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListCustomRoutingPortMappingsByDestinationPages(input *ListCustomRoutingPortMappingsByDestinationInput, fn func(*ListCustomRoutingPortMappingsByDestinationOutput, bool) bool) error {
 	return c.ListCustomRoutingPortMappingsByDestinationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3408,14 +3401,13 @@ const opListEndpointGroups = "ListEndpointGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEndpointGroupsRequest method.
+//	req, resp := client.ListEndpointGroupsRequest(params)
 //
-//    // Example sending a request using the ListEndpointGroupsRequest method.
-//    req, resp := client.ListEndpointGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListEndpointGroups
 func (c *GlobalAccelerator) ListEndpointGroupsRequest(input *ListEndpointGroupsInput) (req *request.Request, output *ListEndpointGroupsOutput) {
@@ -3452,17 +3444,18 @@ func (c *GlobalAccelerator) ListEndpointGroupsRequest(input *ListEndpointGroupsI
 // API operation ListEndpointGroups for usage and error information.
 //
 // Returned Error Types:
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListEndpointGroups
 func (c *GlobalAccelerator) ListEndpointGroups(input *ListEndpointGroupsInput) (*ListEndpointGroupsOutput, error) {
@@ -3494,15 +3487,14 @@ func (c *GlobalAccelerator) ListEndpointGroupsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEndpointGroups operation.
-//    pageNum := 0
-//    err := client.ListEndpointGroupsPages(params,
-//        func(page *globalaccelerator.ListEndpointGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEndpointGroups operation.
+//	pageNum := 0
+//	err := client.ListEndpointGroupsPages(params,
+//	    func(page *globalaccelerator.ListEndpointGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListEndpointGroupsPages(input *ListEndpointGroupsInput, fn func(*ListEndpointGroupsOutput, bool) bool) error {
 	return c.ListEndpointGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3554,14 +3546,13 @@ const opListListeners = "ListListeners"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListListenersRequest method.
+//	req, resp := client.ListListenersRequest(params)
 //
-//    // Example sending a request using the ListListenersRequest method.
-//    req, resp := client.ListListenersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListListeners
 func (c *GlobalAccelerator) ListListenersRequest(input *ListListenersInput) (req *request.Request, output *ListListenersOutput) {
@@ -3598,17 +3589,18 @@ func (c *GlobalAccelerator) ListListenersRequest(input *ListListenersInput) (req
 // API operation ListListeners for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InvalidNextTokenException
-//   There isn't another item to return.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - InvalidNextTokenException
+//     There isn't another item to return.
+//
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListListeners
 func (c *GlobalAccelerator) ListListeners(input *ListListenersInput) (*ListListenersOutput, error) {
@@ -3640,15 +3632,14 @@ func (c *GlobalAccelerator) ListListenersWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListListeners operation.
-//    pageNum := 0
-//    err := client.ListListenersPages(params,
-//        func(page *globalaccelerator.ListListenersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListListeners operation.
+//	pageNum := 0
+//	err := client.ListListenersPages(params,
+//	    func(page *globalaccelerator.ListListenersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GlobalAccelerator) ListListenersPages(input *ListListenersInput, fn func(*ListListenersOutput, bool) bool) error {
 	return c.ListListenersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3700,14 +3691,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListTagsForResource
 func (c *GlobalAccelerator) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3741,14 +3731,15 @@ func (c *GlobalAccelerator) ListTagsForResourceRequest(input *ListTagsForResourc
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ListTagsForResource
 func (c *GlobalAccelerator) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3788,14 +3779,13 @@ const opProvisionByoipCidr = "ProvisionByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionByoipCidrRequest method.
+//	req, resp := client.ProvisionByoipCidrRequest(params)
 //
-//    // Example sending a request using the ProvisionByoipCidrRequest method.
-//    req, resp := client.ProvisionByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ProvisionByoipCidr
 func (c *GlobalAccelerator) ProvisionByoipCidrRequest(input *ProvisionByoipCidrInput) (req *request.Request, output *ProvisionByoipCidrOutput) {
@@ -3832,22 +3822,23 @@ func (c *GlobalAccelerator) ProvisionByoipCidrRequest(input *ProvisionByoipCidrI
 // API operation ProvisionByoipCidr for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
-//   * IncorrectCidrStateException
-//   The CIDR that you specified is not valid for this action. For example, the
-//   state of the CIDR might be incorrect for this action.
+//   - AccessDeniedException
+//     You don't have access permission.
+//
+//   - IncorrectCidrStateException
+//     The CIDR that you specified is not valid for this action. For example, the
+//     state of the CIDR might be incorrect for this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/ProvisionByoipCidr
 func (c *GlobalAccelerator) ProvisionByoipCidr(input *ProvisionByoipCidrInput) (*ProvisionByoipCidrOutput, error) {
@@ -3887,14 +3878,13 @@ const opRemoveCustomRoutingEndpoints = "RemoveCustomRoutingEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveCustomRoutingEndpointsRequest method.
+//	req, resp := client.RemoveCustomRoutingEndpointsRequest(params)
 //
-//    // Example sending a request using the RemoveCustomRoutingEndpointsRequest method.
-//    req, resp := client.RemoveCustomRoutingEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/RemoveCustomRoutingEndpoints
 func (c *GlobalAccelerator) RemoveCustomRoutingEndpointsRequest(input *RemoveCustomRoutingEndpointsInput) (req *request.Request, output *RemoveCustomRoutingEndpointsOutput) {
@@ -3926,23 +3916,24 @@ func (c *GlobalAccelerator) RemoveCustomRoutingEndpointsRequest(input *RemoveCus
 // API operation RemoveCustomRoutingEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
 //
-//   * EndpointNotFoundException
-//   The endpoint that you specified doesn't exist.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointNotFoundException
+//     The endpoint that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ConflictException
-//   You can't use both of those options.
+//   - AccessDeniedException
+//     You don't have access permission.
+//
+//   - ConflictException
+//     You can't use both of those options.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/RemoveCustomRoutingEndpoints
 func (c *GlobalAccelerator) RemoveCustomRoutingEndpoints(input *RemoveCustomRoutingEndpointsInput) (*RemoveCustomRoutingEndpointsOutput, error) {
@@ -3982,14 +3973,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/TagResource
 func (c *GlobalAccelerator) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4024,14 +4014,15 @@ func (c *GlobalAccelerator) TagResourceRequest(input *TagResourceInput) (req *re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/TagResource
 func (c *GlobalAccelerator) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4071,14 +4062,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UntagResource
 func (c *GlobalAccelerator) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4116,14 +4106,15 @@ func (c *GlobalAccelerator) UntagResourceRequest(input *UntagResourceInput) (req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UntagResource
 func (c *GlobalAccelerator) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4163,14 +4154,13 @@ const opUpdateAccelerator = "UpdateAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAcceleratorRequest method.
+//	req, resp := client.UpdateAcceleratorRequest(params)
 //
-//    // Example sending a request using the UpdateAcceleratorRequest method.
-//    req, resp := client.UpdateAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateAccelerator
 func (c *GlobalAccelerator) UpdateAcceleratorRequest(input *UpdateAcceleratorInput) (req *request.Request, output *UpdateAcceleratorOutput) {
@@ -4205,14 +4195,15 @@ func (c *GlobalAccelerator) UpdateAcceleratorRequest(input *UpdateAcceleratorInp
 // API operation UpdateAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateAccelerator
 func (c *GlobalAccelerator) UpdateAccelerator(input *UpdateAcceleratorInput) (*UpdateAcceleratorOutput, error) {
@@ -4252,14 +4243,13 @@ const opUpdateAcceleratorAttributes = "UpdateAcceleratorAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAcceleratorAttributesRequest method.
+//	req, resp := client.UpdateAcceleratorAttributesRequest(params)
 //
-//    // Example sending a request using the UpdateAcceleratorAttributesRequest method.
-//    req, resp := client.UpdateAcceleratorAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateAcceleratorAttributes
 func (c *GlobalAccelerator) UpdateAcceleratorAttributesRequest(input *UpdateAcceleratorAttributesInput) (req *request.Request, output *UpdateAcceleratorAttributesOutput) {
@@ -4290,17 +4280,18 @@ func (c *GlobalAccelerator) UpdateAcceleratorAttributesRequest(input *UpdateAcce
 // API operation UpdateAcceleratorAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateAcceleratorAttributes
 func (c *GlobalAccelerator) UpdateAcceleratorAttributes(input *UpdateAcceleratorAttributesInput) (*UpdateAcceleratorAttributesOutput, error) {
@@ -4340,14 +4331,13 @@ const opUpdateCustomRoutingAccelerator = "UpdateCustomRoutingAccelerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCustomRoutingAcceleratorRequest method.
+//	req, resp := client.UpdateCustomRoutingAcceleratorRequest(params)
 //
-//    // Example sending a request using the UpdateCustomRoutingAcceleratorRequest method.
-//    req, resp := client.UpdateCustomRoutingAcceleratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingAccelerator
 func (c *GlobalAccelerator) UpdateCustomRoutingAcceleratorRequest(input *UpdateCustomRoutingAcceleratorInput) (req *request.Request, output *UpdateCustomRoutingAcceleratorOutput) {
@@ -4378,14 +4368,15 @@ func (c *GlobalAccelerator) UpdateCustomRoutingAcceleratorRequest(input *UpdateC
 // API operation UpdateCustomRoutingAccelerator for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingAccelerator
 func (c *GlobalAccelerator) UpdateCustomRoutingAccelerator(input *UpdateCustomRoutingAcceleratorInput) (*UpdateCustomRoutingAcceleratorOutput, error) {
@@ -4425,14 +4416,13 @@ const opUpdateCustomRoutingAcceleratorAttributes = "UpdateCustomRoutingAccelerat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCustomRoutingAcceleratorAttributesRequest method.
+//	req, resp := client.UpdateCustomRoutingAcceleratorAttributesRequest(params)
 //
-//    // Example sending a request using the UpdateCustomRoutingAcceleratorAttributesRequest method.
-//    req, resp := client.UpdateCustomRoutingAcceleratorAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingAcceleratorAttributes
 func (c *GlobalAccelerator) UpdateCustomRoutingAcceleratorAttributesRequest(input *UpdateCustomRoutingAcceleratorAttributesInput) (req *request.Request, output *UpdateCustomRoutingAcceleratorAttributesOutput) {
@@ -4463,17 +4453,18 @@ func (c *GlobalAccelerator) UpdateCustomRoutingAcceleratorAttributesRequest(inpu
 // API operation UpdateCustomRoutingAcceleratorAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * AcceleratorNotFoundException
-//   The accelerator that you specified doesn't exist.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - AcceleratorNotFoundException
+//     The accelerator that you specified doesn't exist.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingAcceleratorAttributes
 func (c *GlobalAccelerator) UpdateCustomRoutingAcceleratorAttributes(input *UpdateCustomRoutingAcceleratorAttributesInput) (*UpdateCustomRoutingAcceleratorAttributesOutput, error) {
@@ -4513,14 +4504,13 @@ const opUpdateCustomRoutingListener = "UpdateCustomRoutingListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCustomRoutingListenerRequest method.
+//	req, resp := client.UpdateCustomRoutingListenerRequest(params)
 //
-//    // Example sending a request using the UpdateCustomRoutingListenerRequest method.
-//    req, resp := client.UpdateCustomRoutingListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingListener
 func (c *GlobalAccelerator) UpdateCustomRoutingListenerRequest(input *UpdateCustomRoutingListenerInput) (req *request.Request, output *UpdateCustomRoutingListenerOutput) {
@@ -4551,22 +4541,23 @@ func (c *GlobalAccelerator) UpdateCustomRoutingListenerRequest(input *UpdateCust
 // API operation UpdateCustomRoutingListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidPortRangeException
-//   The port numbers that you specified are not valid numbers or are not unique
-//   for this accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidPortRangeException
+//     The port numbers that you specified are not valid numbers or are not unique
+//     for this accelerator.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateCustomRoutingListener
 func (c *GlobalAccelerator) UpdateCustomRoutingListener(input *UpdateCustomRoutingListenerInput) (*UpdateCustomRoutingListenerOutput, error) {
@@ -4606,14 +4597,13 @@ const opUpdateEndpointGroup = "UpdateEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEndpointGroupRequest method.
+//	req, resp := client.UpdateEndpointGroupRequest(params)
 //
-//    // Example sending a request using the UpdateEndpointGroupRequest method.
-//    req, resp := client.UpdateEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateEndpointGroup
 func (c *GlobalAccelerator) UpdateEndpointGroupRequest(input *UpdateEndpointGroupInput) (req *request.Request, output *UpdateEndpointGroupOutput) {
@@ -4645,21 +4635,22 @@ func (c *GlobalAccelerator) UpdateEndpointGroupRequest(input *UpdateEndpointGrou
 // API operation UpdateEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * EndpointGroupNotFoundException
-//   The endpoint group that you specified doesn't exist.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - EndpointGroupNotFoundException
+//     The endpoint group that you specified doesn't exist.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
+//
+//   - AccessDeniedException
+//     You don't have access permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateEndpointGroup
 func (c *GlobalAccelerator) UpdateEndpointGroup(input *UpdateEndpointGroupInput) (*UpdateEndpointGroupOutput, error) {
@@ -4699,14 +4690,13 @@ const opUpdateListener = "UpdateListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateListenerRequest method.
+//	req, resp := client.UpdateListenerRequest(params)
 //
-//    // Example sending a request using the UpdateListenerRequest method.
-//    req, resp := client.UpdateListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateListener
 func (c *GlobalAccelerator) UpdateListenerRequest(input *UpdateListenerInput) (req *request.Request, output *UpdateListenerOutput) {
@@ -4737,22 +4727,23 @@ func (c *GlobalAccelerator) UpdateListenerRequest(input *UpdateListenerInput) (r
 // API operation UpdateListener for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
 //
-//   * InvalidPortRangeException
-//   The port numbers that you specified are not valid numbers or are not unique
-//   for this accelerator.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ListenerNotFoundException
-//   The listener that you specified doesn't exist.
+//   - InvalidPortRangeException
+//     The port numbers that you specified are not valid numbers or are not unique
+//     for this accelerator.
 //
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
+//   - ListenerNotFoundException
+//     The listener that you specified doesn't exist.
 //
-//   * LimitExceededException
-//   Processing your request would cause you to exceed an AWS Global Accelerator
-//   limit.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
+//
+//   - LimitExceededException
+//     Processing your request would cause you to exceed an AWS Global Accelerator
+//     limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/UpdateListener
 func (c *GlobalAccelerator) UpdateListener(input *UpdateListenerInput) (*UpdateListenerOutput, error) {
@@ -4792,14 +4783,13 @@ const opWithdrawByoipCidr = "WithdrawByoipCidr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the WithdrawByoipCidrRequest method.
+//	req, resp := client.WithdrawByoipCidrRequest(params)
 //
-//    // Example sending a request using the WithdrawByoipCidrRequest method.
-//    req, resp := client.WithdrawByoipCidrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/WithdrawByoipCidr
 func (c *GlobalAccelerator) WithdrawByoipCidrRequest(input *WithdrawByoipCidrInput) (req *request.Request, output *WithdrawByoipCidrOutput) {
@@ -4838,21 +4828,22 @@ func (c *GlobalAccelerator) WithdrawByoipCidrRequest(input *WithdrawByoipCidrInp
 // API operation WithdrawByoipCidr for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   There was an internal error for AWS Global Accelerator.
 //
-//   * InvalidArgumentException
-//   An argument that you specified is invalid.
+//   - InternalServiceErrorException
+//     There was an internal error for AWS Global Accelerator.
 //
-//   * AccessDeniedException
-//   You don't have access permission.
+//   - InvalidArgumentException
+//     An argument that you specified is invalid.
 //
-//   * ByoipCidrNotFoundException
-//   The CIDR that you specified was not found or is incorrect.
+//   - AccessDeniedException
+//     You don't have access permission.
 //
-//   * IncorrectCidrStateException
-//   The CIDR that you specified is not valid for this action. For example, the
-//   state of the CIDR might be incorrect for this action.
+//   - ByoipCidrNotFoundException
+//     The CIDR that you specified was not found or is incorrect.
+//
+//   - IncorrectCidrStateException
+//     The CIDR that you specified is not valid for this action. For example, the
+//     state of the CIDR might be incorrect for this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/globalaccelerator-2018-08-08/WithdrawByoipCidr
 func (c *GlobalAccelerator) WithdrawByoipCidr(input *WithdrawByoipCidrInput) (*WithdrawByoipCidrOutput, error) {
@@ -5701,47 +5692,47 @@ func (s *AssociatedListenerFoundException) RequestID() string {
 // The following describes each BYOIP State that your IP address range can be
 // in.
 //
-//    * PENDING_PROVISIONING — You’ve submitted a request to provision an
-//    IP address range but it is not yet provisioned with AWS Global Accelerator.
+//   - PENDING_PROVISIONING — You’ve submitted a request to provision an
+//     IP address range but it is not yet provisioned with AWS Global Accelerator.
 //
-//    * READY — The address range is provisioned with AWS Global Accelerator
-//    and can be advertised.
+//   - READY — The address range is provisioned with AWS Global Accelerator
+//     and can be advertised.
 //
-//    * PENDING_ADVERTISING — You’ve submitted a request for AWS Global
-//    Accelerator to advertise an address range but it is not yet being advertised.
+//   - PENDING_ADVERTISING — You’ve submitted a request for AWS Global
+//     Accelerator to advertise an address range but it is not yet being advertised.
 //
-//    * ADVERTISING — The address range is being advertised by AWS Global
-//    Accelerator.
+//   - ADVERTISING — The address range is being advertised by AWS Global
+//     Accelerator.
 //
-//    * PENDING_WITHDRAWING — You’ve submitted a request to withdraw an
-//    address range from being advertised but it is still being advertised by
-//    AWS Global Accelerator.
+//   - PENDING_WITHDRAWING — You’ve submitted a request to withdraw an
+//     address range from being advertised but it is still being advertised by
+//     AWS Global Accelerator.
 //
-//    * PENDING_DEPROVISIONING — You’ve submitted a request to deprovision
-//    an address range from AWS Global Accelerator but it is still provisioned.
+//   - PENDING_DEPROVISIONING — You’ve submitted a request to deprovision
+//     an address range from AWS Global Accelerator but it is still provisioned.
 //
-//    * DEPROVISIONED — The address range is deprovisioned from AWS Global
-//    Accelerator.
+//   - DEPROVISIONED — The address range is deprovisioned from AWS Global
+//     Accelerator.
 //
-//    * FAILED_PROVISION — The request to provision the address range from
-//    AWS Global Accelerator was not successful. Please make sure that you provide
-//    all of the correct information, and try again. If the request fails a
-//    second time, contact AWS support.
+//   - FAILED_PROVISION — The request to provision the address range from
+//     AWS Global Accelerator was not successful. Please make sure that you provide
+//     all of the correct information, and try again. If the request fails a
+//     second time, contact AWS support.
 //
-//    * FAILED_ADVERTISING — The request for AWS Global Accelerator to advertise
-//    the address range was not successful. Please make sure that you provide
-//    all of the correct information, and try again. If the request fails a
-//    second time, contact AWS support.
+//   - FAILED_ADVERTISING — The request for AWS Global Accelerator to advertise
+//     the address range was not successful. Please make sure that you provide
+//     all of the correct information, and try again. If the request fails a
+//     second time, contact AWS support.
 //
-//    * FAILED_WITHDRAW — The request to withdraw the address range from advertising
-//    by AWS Global Accelerator was not successful. Please make sure that you
-//    provide all of the correct information, and try again. If the request
-//    fails a second time, contact AWS support.
+//   - FAILED_WITHDRAW — The request to withdraw the address range from advertising
+//     by AWS Global Accelerator was not successful. Please make sure that you
+//     provide all of the correct information, and try again. If the request
+//     fails a second time, contact AWS support.
 //
-//    * FAILED_DEPROVISION — The request to deprovision the address range
-//    from AWS Global Accelerator was not successful. Please make sure that
-//    you provide all of the correct information, and try again. If the request
-//    fails a second time, contact AWS support.
+//   - FAILED_DEPROVISION — The request to deprovision the address range
+//     from AWS Global Accelerator was not successful. Please make sure that
+//     you provide all of the correct information, and try again. If the request
+//     fails a second time, contact AWS support.
 type ByoipCidr struct {
 	_ struct{} `type:"structure"`
 

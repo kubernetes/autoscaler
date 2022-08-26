@@ -3,14 +3,14 @@
 // Package schemas provides the client and types for making API
 // requests to Schemas.
 //
-// Amazon EventBridge Schema Registry
+// # Amazon EventBridge Schema Registry
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02 for more information on this service.
 //
 // See schemas package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/schemas/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Schemas with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

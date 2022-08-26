@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Braket.
-//    func myFunc(svc braketiface.BraketAPI) bool {
-//        // Make svc.CancelJob request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Braket.
+//	func myFunc(svc braketiface.BraketAPI) bool {
+//	    // Make svc.CancelJob request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := braket.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := braket.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockBraketClient struct {
-//        braketiface.BraketAPI
-//    }
-//    func (m *mockBraketClient) CancelJob(input *braket.CancelJobInput) (*braket.CancelJobOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockBraketClient struct {
+//	    braketiface.BraketAPI
+//	}
+//	func (m *mockBraketClient) CancelJob(input *braket.CancelJobInput) (*braket.CancelJobOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockBraketClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockBraketClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

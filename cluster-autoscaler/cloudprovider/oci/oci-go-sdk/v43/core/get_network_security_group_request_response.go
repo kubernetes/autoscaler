@@ -11,7 +11,7 @@ import (
 
 // GetNetworkSecurityGroupRequest wrapper for the GetNetworkSecurityGroup operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetNetworkSecurityGroup.go.html to see an example of how to use GetNetworkSecurityGroupRequest.
 type GetNetworkSecurityGroupRequest struct {
